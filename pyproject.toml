@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alma-duplication-tool"
+version = "0.1.0"
+description = "A decision-support tool for checking possible duplication of ALMA observations."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "astropy",
+    "astroquery",
+    "pyvo",
+    "pandas",
+]
+
+[project.optional-dependencies]
+dev = [
+    "jupyterlab",
+    "ipykernel",
+    "matplotlib",
+    "pytest",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
