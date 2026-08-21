@@ -20,6 +20,8 @@ dev = [
     "jupyterlab",
     "ipykernel",
     "matplotlib",
+    "plotly>=6",
+    "ipywidgets>=8",
     "pytest",
 ]
 
