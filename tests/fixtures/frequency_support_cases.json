@@ -1,0 +1,82 @@
+[
+  {
+    "id": "canonical",
+    "raw": "[214.32..216.21GHz, 976.56kHz, 1.0mJy/beam@10km/s, 0.2mJy/beam@native, XX YY]",
+    "expected_status": "PARSED",
+    "expected_components": 1,
+    "expected_valid": true,
+    "expected_issue_codes": []
+  },
+  {
+    "id": "multiple_components",
+    "raw": "[84.0..86.0GHz, 0.5MHz, 1mJy/beam@10km/s, 0.2mJy/beam@native, XX YY] U [96.0..98.0GHz, 500kHz, 2mJy/beam@10km/s, 0.3mJy/beam@native, XX YY]",
+    "expected_status": "PARSED",
+    "expected_components": 2,
+    "expected_valid": true,
+    "expected_issue_codes": []
+  },
+  {
+    "id": "microjansky_sensitivity",
+    "raw": "[214.32..216.21GHz, 0.97656MHz, 872.8uJy/beam@10km/s, 200uJy/beam@native, XX XY YX YY]",
+    "expected_status": "PARSED",
+    "expected_components": 1,
+    "expected_valid": true,
+    "expected_issue_codes": []
+  },
+  {
+    "id": "reversed_frequency_range",
+    "raw": "[216.21..214.32GHz, 976.56kHz, 1mJy/beam@10km/s, 0.2mJy/beam@native, XX YY]",
+    "expected_status": "PARSED",
+    "expected_components": 1,
+    "expected_valid": false,
+    "expected_issue_codes": ["frequency_range_order"]
+  },
+  {
+    "id": "missing_native_sensitivity",
+    "raw": "[214.32..216.21GHz, 976.56kHz, 1mJy/beam@10km/s, XX YY]",
+    "expected_status": "PARSED",
+    "expected_components": 1,
+    "expected_valid": false,
+    "expected_issue_codes": ["sensitivity_basis_missing"]
+  },
+  {
+    "id": "unknown_polarization",
+    "raw": "[214.32..216.21GHz, 976.56kHz, 1mJy/beam@10km/s, 0.2mJy/beam@native, XX YY UNKNOWN]",
+    "expected_status": "PARSED",
+    "expected_components": 1,
+    "expected_valid": false,
+    "expected_issue_codes": ["unknown_token"]
+  },
+  {
+    "id": "invalid_frequency_unit",
+    "raw": "[214.32..216.21Banana, 976.56kHz, 1mJy/beam@10km/s, 0.2mJy/beam@native, XX YY]",
+    "expected_status": "PARSED",
+    "expected_components": 1,
+    "expected_valid": false,
+    "expected_issue_codes": ["frequency_unit_incompatible"]
+  },
+  {
+    "id": "malformed_frequency_range",
+    "raw": "[214.32-216.21GHz, 976.56kHz, 1mJy/beam@10km/s, 0.2mJy/beam@native, XX YY]",
+    "expected_status": "FAILED",
+    "expected_components": 1,
+    "expected_valid": false,
+    "expected_issue_codes": ["frequency_range_unparsed"]
+  },
+  {
+    "id": "missing_value",
+    "raw": null,
+    "expected_status": "FAILED",
+    "expected_components": 0,
+    "expected_valid": false,
+    "expected_issue_codes": ["frequency_support_missing"]
+  },
+  {
+    "id": "unexpected_residual",
+    "raw": "prefix [214.32..216.21GHz, 976.56kHz, 1mJy/beam@10km/s, 0.2mJy/beam@native, XX YY]",
+    "expected_status": "PARTIAL",
+    "expected_components": 1,
+    "expected_valid": false,
+    "expected_issue_codes": ["unexpected_residual_text"]
+  }
+]
