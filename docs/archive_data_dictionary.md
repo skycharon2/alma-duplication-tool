@@ -5,7 +5,7 @@ preliminary internal data model of the duplication-checking tool.
 
 The mappings are based on exploratory queries to the European ALMA TAP service,
 official metadata returned by `TAP_SCHEMA.columns`, and the structural and
-spectral validation performed in Notebooks 1, 2, 2b, and 3.
+spectral validation performed in Notebooks 1, 2, 2b, 3, and 4.
 
 Notebook 1 established Archive connectivity, schema access, complete-result
 retrieval, and the Centaurus A case study. Notebook 2 tested row granularity,
@@ -14,7 +14,9 @@ counterexamples across larger samples. Notebook 2b visualized the observed
 relationships and evaluated candidate field-ownership levels. Notebook 3
 parsed and validated `frequency_support` and investigated its relationship to
 logical SPWs, row-level frequencies, bandwidths, sensitivities, sources, and
-ASDM executions.
+ASDM executions. Notebook 4 extended the validation to observation-mode-related
+fields, Source-SPW reconstruction, overlapping support intervals, derived
+resolution fields, sensitivity ownership, and mosaic footprints.
 
 Unless explicitly identified as an official TAP field definition, structural
 relationships and field-ownership levels remain supported by the tested
@@ -36,14 +38,19 @@ counts must not be interpreted as Archive-wide prevalence estimates.
 | `s_dec` | float | deg | ICRS declination of the central coordinate |
 | `s_region` | region/string | — | Spatial footprint bounded by the observation; stable at Source Context level in the extended sample |
 | `frequency` | float | GHz | Observed/tuned reference frequency on the sky. The exact value belongs to the source–SPW Archive record. It is related to, but not identical to, the centre derived from a parsed `frequency_support` interval. |
-| `bandwidth` | float | Hz | Archive total bandwidth. It was stable within tested `(Member OUS, SPW)` groups, but must remain separate from the width derived from a `frequency_support` interval. Explicit conversion is required before comparison with GHz values. |
+| `bandwidth` | float | Hz | Archive total bandwidth. Notebook 4 found differences from parsed support-interval width ranging from -7.5 to +20 MHz in the 1,619-row sample. The two values agreed on the strict `> 1.8 GHz` boundary for every tested row but are not numerically interchangeable. |
 | `frequency_support` | string | embedded mixed units | Raw composite description of all frequency ranges used by the field. It may encode multiple intervals, resolution, 10-km/s sensitivity, native sensitivity, and polarization. It is not guaranteed to be unique at Member level and should currently be associated conservatively with a Source–Execution Context. |
-| `spatial_resolution` | float | arcsec | Archive spatial-resolution summary; stable at Source Context level in the extended sample |
-| `sensitivity_10kms` | float | mJy/beam | Row-level estimated line sensitivity normalized to 10 km/s. It varied between SPWs. It closely matched, but was not numerically identical to, the parsed component-level `@10km/s` value. |
-| `cont_sensitivity_bandwidth` | float | mJy/beam | Estimated continuum noise over the aggregate continuum bandwidth. It was stable at Source Context level in the tested structural sample, but is stored conservatively in Source–Execution Context. It is not equivalent to component-level native sensitivity. |
+| `spectral_resolution` | float | kHz | Archive spectral-resolution value. In Notebook 4 it behaved as SPW/component-level metadata and differed from parsed component resolution by at most approximately 0.00484 kHz in the tested sample. Preserve both representations. |
+| `velocity_resolution` | float | m/s | Archive velocity-resolution summary. It was constant within each of the 19 tested Member OUS datasets but did not consistently equal the row-level value derived as `c * delta_frequency / frequency`. Treat it as a setup/Member summary rather than a replacement for SPW spectral resolution. |
+| `em_resolution` | float | m | Wavelength-resolution representation. Notebook 4 found close agreement with `c * delta_frequency / frequency^2`; the mean difference was approximately `1.87e-12 m`. Preserve the Archive value but treat it as derived metadata. |
+| `s_resolution` | float | arcsec | ObsCore typical spatial resolution. It must remain distinct from the Archive-specific `spatial_resolution` value until their relationship is formally validated. |
+| `spatial_resolution` | float | arcsec | Archive spatial-resolution summary; stable at Source Context level in the extended sample. It must not be silently merged with `s_resolution`. |
+| `sensitivity_10kms` | float | mJy/beam | Row/SPW-level estimated line sensitivity normalized to 10 km/s. It varied within every tested Source–Execution Context in Notebook 4 and closely matched, but was not numerically identical to, parsed component-level `@10km/s` sensitivity. |
+| `cont_sensitivity_bandwidth` | float | mJy/beam | Estimated continuum noise over the aggregate continuum bandwidth. It was single-valued within all 376 tested Source–Execution Contexts and may vary within a Member or ASDM. It is not equivalent to component-level native sensitivity. |
 | `antenna_arrays` | string | — | Blank-separated pad–antenna pairs; source/ASDM contextual metadata |
 | `is_mosaic` | string | — | `T`/`F` mosaic flag; stable within tested Source Contexts but not always single-valued at Member level |
 | `band_list` | string | — | ALMA receiver-band description; not a substitute for exact frequency coverage |
+| `pol_states` | string | — | Archive polarization-state representation. The Notebook 4 sample contained only `/XX/YY/`, so broader polarization behavior is not established by that sample. Preserve the raw value. |
 | `t_min` | float | MJD days | Lower temporal bound returned by ObsCore; should not be interpreted as an execution duration without validation |
 | `t_max` | float | MJD days | Upper temporal bound returned by ObsCore; should not be interpreted as an execution duration without validation |
 | `science_observation` | string | — | `T` for science-target records and `F` for calibration/checking records in the tested sample |
@@ -368,6 +375,94 @@ These results are a time-specific Archive snapshot, not permanent schema
 constraints. The application must continue to handle missing, blank,
 non-finite, non-positive, malformed, and unsupported values defensively.
 
+## Notebook 4 observation-mode and Source-SPW validation
+
+### Experimental scope
+
+Notebook 4 constructed a complete purposive sample and then added one known
+multi-ASDM Member OUS. The final analysis contained:
+
+| Quantity | Result |
+|---|---:|
+| Archive science-target rows | 1,619 |
+| Member OUS datasets | 19 |
+| ASDM executions | 20 |
+| Source–Execution Contexts | 376 |
+| Parsed support components | 1,619 |
+| Parser or validation issues | 0 |
+
+All 24 selected Archive fields were populated in this sample, and all rows had
+`scan_intent = 'TARGET'`. This is a purposive-sample result, not a permanent
+non-null constraint for the Archive.
+
+All 1,619 tested `obs_id` values matched the observed
+`.source.<source>.spw.<identifier>` structure, and the embedded Member OUS UID
+matched the separate `member_ous_uid` column. `obs_id`,
+`(Member, source, SPW)`, and `(Member, ASDM, source, SPW)` were all unique in
+the sample. The normalized model nevertheless retains ASDM in the conservative
+execution-aware context and preserves raw `obs_id`.
+
+### One-to-one support-component assignment
+
+Every one of the 376 Source–Execution Contexts had equal Archive-row and parsed
+component counts. Simple interval containment was not sufficient for identity:
+1,393 rows fell inside one interval, while 226 rows fell inside two overlapping
+intervals.
+
+Context-level one-to-one assignment, ordered by row reference frequency and
+component interval centre, assigned all 1,619 rows. There were no count
+mismatches, duplicate assignments, or assigned frequencies outside their
+intervals. The maximum observed absolute row-frequency-to-centre difference was
+approximately 4.850 MHz.
+
+The mapping is strong sample-supported evidence, not an official Archive key.
+Production code must record its mapping method and status and preserve rows
+that cannot be mapped.
+
+### Observation-mode-related fields
+
+No direct FDM/TDM or correlator-mode column was found in the tested ObsCore
+schema. The model can store observation-mode evidence but must not assign a
+formal mode solely from an unvalidated resolution threshold.
+
+Notebook 4 found:
+
+- Archive `bandwidth` and parsed interval width differed by -7.5 to +20 MHz,
+  but agreed on the strict `> 1.8 GHz` boundary for all 1,619 rows;
+- Archive `spectral_resolution` and parsed component resolution differed by at
+  most approximately 0.00484 kHz and behaved as SPW/component-level values;
+- `em_resolution` closely matched the wavelength-resolution value derived as
+  `c * delta_frequency / frequency^2` and should be treated as derived metadata;
+- `velocity_resolution` was single-valued within every tested Member OUS but
+  did not consistently equal row-level `c * delta_frequency / frequency`;
+- `sensitivity_10kms`, parsed `@10km/s`, and parsed `@native` sensitivities
+  varied at SPW/component level;
+- `cont_sensitivity_bandwidth` was single-valued within all 376 tested
+  Source–Execution Contexts and is an aggregate context-level value.
+
+The observed numerical differences are evidence about representation and
+ownership. They do not define duplication-policy tolerances.
+
+### Mosaic spatial representation
+
+The expanded sample contained 59 mosaic Source–Execution Contexts from eight
+Member OUS datasets and nine ASDM executions. Each tested source context had
+one central coordinate and one STC-S footprint repeated across its SPW rows.
+All tested mosaic footprints were Polygons, and one mosaic ASDM contained from
+one to 21 source contexts.
+
+ObsCore therefore supports an aggregate Source-level spatial footprint in the
+tested data. It did not demonstrate individual mosaic pointing identifiers or
+pointing-by-pointing geometry. A footprint-overlap operation may be developed,
+but individual-pointing mosaic comparison remains unsupported by these fields.
+
+### Supervisor reference cases
+
+Projects `2021.A.00028.S` and `2018.1.00294.S` were included only to provide
+structural coverage. Their presence does not validate the supervisor's CASE1
+and CASE2 retrieval expectations or any formal duplication decision. Those
+cases must later be executed without filtering on expected `proposal_id`.
+
 ## Notebook 2 relationship validation
 
 ### Identifier hierarchy
@@ -470,7 +565,7 @@ All 836 role-test rows simultaneously had `data_rights = 'Proprietary'`,
 This association does not establish the official meaning of the date. The raw
 date, access state, and QA status must be preserved separately.
 
-## Preliminary internal model after Notebook 3
+## Preliminary internal model after Notebook 4
 
 The current evidence supports a relational rather than flat interpretation:
 
@@ -513,6 +608,9 @@ The model separates:
     layer without overwriting raw labels or observational contexts.
 16. **Normalized Frequency Coverage** — provides a future comparison-ready
     representation without embedding policy tolerances in the Archive model.
+17. **Observation-Mode Evidence** — preserves comparable bandwidth,
+    resolution, sensitivity, and coverage evidence without assigning FDM/TDM
+    or a formal duplication result.
 
 ## Current implementation implications
 
@@ -522,7 +620,9 @@ The model separates:
    values.
 4. Represent ASDM as an association because one Member may reference multiple
    ASDMs.
-5. Reconstruct Source Context using `(member_ous_uid, parsed obs_id source)`.
+5. Reconstruct Source Context using `(member_ous_uid, parsed obs_id source)`
+   and use `(Member, ASDM, source)` as the conservative Source–Execution
+   Context.
 6. Store coordinates, footprint, mosaic state, and geometry through Source
    Context and Spatial Footprint records. Store uncertain execution-related
    metadata conservatively through Source–Execution Context.
@@ -541,16 +641,23 @@ The model separates:
 14. Separate exact support-string equality, spectral-geometry equality, and
     sensitivity equality.
 15. Do not assume one support signature per Member OUS.
-16. Do not treat support-component order as an official SPW identifier.
+16. Do not treat support-component order as an official SPW identifier. Use a
+    validated context-level one-to-one mapping because support intervals may
+    overlap.
 17. Preserve Archive bandwidth and parsed interval width separately.
 18. Preserve row-level and parsed 10-km/s sensitivities separately.
 19. Do not equate component-level native sensitivity with aggregate continuum
     sensitivity.
 20. Record parser version, parse status, validation issues, mapping method, and
     provenance for every derived spectral value.
-21. Keep frequency tolerances and duplication decisions outside the Archive
+21. Treat `spectral_resolution` as SPW-level evidence, `em_resolution` as
+    derived wavelength-resolution metadata, and `velocity_resolution` as a
+    separately preserved setup summary.
+22. Preserve aggregate STC-S footprints, but do not claim that ObsCore exposes
+    individual mosaic pointings.
+23. Keep frequency tolerances and duplication decisions outside the Archive
     reconstruction layer.
-22. Treat mosaic-overlap calculation, moving objects, primary-beam calculation,
+24. Treat mosaic-overlap calculation, moving objects, primary-beam calculation,
     spectral smoothing, sensitivity policy, and duplication-rule thresholds as
     later validation tasks.
 
