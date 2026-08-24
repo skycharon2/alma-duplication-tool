@@ -1,7 +1,7 @@
-# Preliminary Internal Data Model v0.2
+# Preliminary Internal Data Model v0.3
 
 This document defines the preliminary normalized Archive representation used by
-the ALMA duplication-checking tool after Notebooks 1, 2, 2b, and 3.
+the ALMA duplication-checking tool after Notebooks 1, 2, 2b, 3, and 4.
 
 It is not a reconstruction of ALMA's complete internal database schema. It
 separates:
@@ -12,6 +12,12 @@ separates:
 4. reconstructed Archive relationships;
 5. normalized comparison-ready values;
 6. future duplication-policy results.
+
+Notebook 4 validated a conservative execution-aware Source-SPW structure,
+resolved overlapping support intervals with a one-to-one mapping, distinguished
+SPW-level from aggregate resolution and sensitivity fields, and established
+that tested ObsCore mosaic metadata exposes aggregate footprints rather than
+demonstrated individual pointings.
 
 Sample-supported relationships are not automatically treated as Archive-wide
 constraints. Raw values are never overwritten by parsed, derived, normalized,
@@ -58,6 +64,7 @@ erDiagram
 
     SOURCE_EXEC_CONTEXT ||--o{ SOURCE_SPW_RECORD : produces
     LOGICAL_SPW ||--o{ SOURCE_SPW_RECORD : indexes
+    SOURCE_SPW_RECORD ||--o| OBSERVATION_MODE_EVIDENCE : supports
 
     ARCHIVE_QUERY_RUN ||--o{ RAW_ARCHIVE_ROW : retrieves
     RAW_ARCHIVE_ROW ||--o| SOURCE_SPW_RECORD : may_parse_to
@@ -118,6 +125,8 @@ erDiagram
         string s_region_raw
         string geometry_type
         string mosaic_state
+        string footprint_scope
+        string pointing_reconstruction_status
     }
 
     SOURCE_EXEC_CONTEXT {
@@ -129,6 +138,7 @@ erDiagram
         float t_max_mjd
         float spatial_resolution_arcsec
         float continuum_sensitivity_mjy_beam
+        string frequency_support_ownership_status
     }
 
     LOGICAL_SPW {
@@ -160,7 +170,7 @@ erDiagram
         float frequency_high_ghz
         float interval_center_ghz
         float interval_width_ghz
-        float resolution_mhz
+        float resolution_khz
         float sensitivity_10kms_mjy_beam
         float sensitivity_native_mjy_beam
         string polarization_products
@@ -175,6 +185,7 @@ erDiagram
         float center_difference_mhz
         float bandwidth_difference_mhz
         boolean center_inside_interval
+        int containment_candidate_count
         string mapping_status
     }
 
@@ -186,7 +197,22 @@ erDiagram
         string obs_id_raw
         float exact_frequency_ghz
         float bandwidth_hz
+        float spectral_resolution_khz
+        float em_resolution_m
         float line_sensitivity_mjy_beam
+    }
+
+    OBSERVATION_MODE_EVIDENCE {
+        string evidence_id PK
+        string source_spw_record_id FK
+        float archive_bandwidth_hz
+        float parsed_interval_width_hz
+        float archive_resolution_khz
+        float parsed_resolution_khz
+        float archive_velocity_summary_mps
+        float derived_velocity_resolution_mps
+        string evidence_status
+        string classification_status
     }
 
     PHYSICAL_TARGET {
@@ -236,10 +262,18 @@ represents the provisional association between a Source Context and an ASDM.
 It conservatively stores fields whose final ownership cannot yet be separated
 between source, execution, field, or observing configuration.
 
+Notebook 4 supports `(member_ous_uid, asdm_uid, parsed source)` as the
+conservative execution-aware context. All 376 tested contexts had equal raw-row
+and parsed support-component counts. This remains a sample-supported internal
+identity rather than an official Archive key.
+
 `SPATIAL_FOOTPRINT` keeps the representative coordinates, complete raw
 `s_region`, geometry type, and mosaic state separate. A Polygon footprint does
 not imply a mosaic, and a Member OUS may have mixed mosaic state across Source
-Contexts.
+Contexts. The tested mosaic records exposed one aggregate coordinate and one
+Polygon footprint per Source–Execution Context. They did not demonstrate
+individual pointing identifiers, so `footprint_scope` and
+`pointing_reconstruction_status` must make this limitation explicit.
 
 ### 4. Logical spectral structure
 
@@ -275,11 +309,18 @@ Logical SPW and a parsed component. Component order is not treated as an
 official SPW identifier. The mapping preserves its method, centre difference,
 bandwidth difference, containment check, and status.
 
+Notebook 4 showed why a mapping object is required: 226 of 1,619 row
+frequencies fell inside two overlapping support intervals. Context-level
+one-to-one assignment by ordered frequency and interval centre mapped all
+1,619 rows without count mismatches, duplicate assignments, or out-of-interval
+assignments. The mapping method remains versioned derived metadata.
+
 ### 6. Row-level source–SPW representation
 
 `SOURCE_SPW_RECORD` represents one cell of the observed source-by-SPW grid. It
 retains row-level exact frequency, Archive bandwidth, line sensitivity,
-identifiers, and links to both raw and reconstructed data.
+spectral resolution, wavelength-resolution metadata, identifiers, and links to
+both raw and reconstructed data.
 
 The tested structural samples support:
 
@@ -294,6 +335,24 @@ associate multiple Source Contexts with one physical astronomical object, but
 it must never overwrite raw source labels, coordinates, footprints, or
 provenance.
 
+### 7. Observation-mode evidence
+
+`OBSERVATION_MODE_EVIDENCE` stores traceable bandwidth, frequency-coverage,
+resolution, and sensitivity comparisons without assigning an FDM/TDM label or
+a formal duplicate result. Notebook 4 found no direct FDM/TDM or correlator-mode
+field in the tested ObsCore schema.
+
+Archive bandwidth and parsed interval width must remain separate even though
+they agreed on the strict 1.8-GHz boundary for all tested rows. Archive
+`spectral_resolution` closely matched parsed component resolution and behaves
+as SPW-level evidence. `em_resolution` closely matched the wavelength value
+derived from frequency and component resolution. Archive
+`velocity_resolution` was constant within each tested Member OUS but did not
+consistently match row-level derived velocity resolution.
+
+`classification_status` therefore remains `UNKNOWN` until an authoritative
+policy rule or additional metadata source supports a formal classification.
+
 ## Preliminary field ownership
 
 | Field or value | Current model level | Evidence status |
@@ -305,14 +364,21 @@ provenance.
 | `s_ra`, `s_dec`, `s_region` | Spatial Footprint | Stable at tested Source Context level |
 | `is_mosaic` | Spatial Footprint / Source Context | May be mixed at Member level |
 | Parsed SPW identifier | Logical SPW | Derived from tested `obs_id` grammar |
-| `bandwidth` | Source–SPW Record and candidate Logical SPW property | Stable per `(Member, SPW)` in tested structural samples |
+| `bandwidth` | Source–SPW Record and candidate Logical SPW property | Related to but not interchangeable with parsed interval width; 1.8-GHz boundary agreed in Notebook 4 sample |
 | `frequency` | Source–SPW Record | Source-dependent variation observed |
 | Raw `frequency_support` | Source–Execution Context | Exact ownership unresolved |
 | Parsed support component | Frequency-Support Component | Derived and parser-versioned |
+| `spectral_resolution` | Source–SPW Record / Observation-Mode Evidence | SPW-level; closely matched parsed component resolution |
+| Parsed component resolution | Frequency-Support Component / Observation-Mode Evidence | SPW-level; separately preserved from Archive value |
+| `em_resolution` | Source–SPW Record | Row-level derived wavelength-resolution metadata |
+| `velocity_resolution` | Raw row plus optional validated setup summary | Single-valued per tested Member OUS; not interchangeable with row-level derived velocity resolution |
 | `sensitivity_10kms` | Source–SPW Record | SPW-level variation observed |
 | Parsed `@10km/s` sensitivity | Frequency-Support Component | Closely related but separately preserved |
 | Parsed `@native` sensitivity | Frequency-Support Component | Not continuum sensitivity |
-| `cont_sensitivity_bandwidth` | Source–Execution Context | Conservative placement |
+| `cont_sensitivity_bandwidth` | Source–Execution Context | Single-valued in all 376 tested contexts; aggregate continuum sensitivity |
+| `s_region` for tested mosaics | Spatial Footprint | Aggregate Source–Execution footprint; individual pointing structure not demonstrated |
+| Observation-mode evidence | Observation-Mode Evidence | Implementable without formal FDM/TDM classification |
+| Observation-mode classification | Policy/assessment layer | Remains `UNKNOWN` without authoritative rule or additional metadata |
 | `antenna_arrays`, `t_min`, `t_max` | Source–Execution Context | Execution ownership remains preliminary |
 | Normalized physical identity | Physical Target | Future application-level concept |
 | Duplication decision | Policy/assessment layer | Not part of Archive reconstruction |
@@ -343,6 +409,19 @@ provenance.
 - All 95 assigned row frequencies fell inside their parsed support intervals.
 - The sampled grammar validation across ALMA Bands 3–10 parsed and validated
   all 401 sampled components.
+- Notebook 4 parsed 1,619 components across 376 Source–Execution Contexts with
+  no parser or validation issues.
+- Every Notebook 4 context had equal row and component counts. One-to-one
+  assignment mapped all 1,619 rows without count mismatches, duplicate
+  assignments, or out-of-interval assignments.
+- Archive and parsed bandwidth representations agreed on the strict 1.8-GHz
+  boundary for all 1,619 tested rows, although their exact widths differed.
+- `spectral_resolution` closely matched parsed component resolution, while
+  `em_resolution` closely matched its wavelength-resolution derivation.
+- All 376 tested Source–Execution Contexts had one aggregate continuum
+  sensitivity value, while line and native sensitivities varied by component.
+- Tested mosaic Source–Execution Contexts exposed one aggregate coordinate and
+  Polygon footprint repeated across SPW rows.
 
 ### Preliminary derived concepts
 
@@ -352,7 +431,9 @@ provenance.
 - frequency-support geometry and sensitivity signatures;
 - support-component-to-SPW assignment;
 - nominal-bandwidth ownership;
-- field-ownership levels inferred from exact-value stability.
+- field-ownership levels inferred from exact-value stability;
+- observation-mode evidence without formal classification;
+- ordered one-to-one assignment for overlapping support intervals.
 
 These concepts are useful internal representations but are not claimed to be
 official ALMA Archive entities, primary keys, or functional dependencies.
@@ -365,6 +446,7 @@ official ALMA Archive entities, primary keys, or functional dependencies.
 - physical cause and scientific importance of small frequency differences;
 - formal frequency-equivalence tolerance;
 - sensitivity comparison policy;
+- authoritative FDM/TDM or observation-mode classification;
 - spectral smoothing;
 - primary-beam calculation;
 - individual mosaic pointings and overlap percentage;
@@ -386,8 +468,18 @@ official ALMA Archive entities, primary keys, or functional dependencies.
 8. Preserve row-level and parsed 10-km/s sensitivities separately.
 9. Do not equate native-resolution sensitivity with aggregate continuum
    sensitivity.
-10. Version parsers, validators, unit conversions, mappings, and policy rules.
-11. Keep tolerance-aware comparison objects separate from Archive
+10. Treat `spectral_resolution` as SPW-level evidence, preserve
+    `velocity_resolution` as a separate setup summary, and mark
+    `em_resolution` as derived metadata.
+11. Record containment candidate count and use a validated one-to-one mapping
+    because support intervals may overlap.
+12. Preserve aggregate STC-S footprints but represent individual mosaic
+    pointing reconstruction as unsupported unless another data source provides
+    it.
+13. Implement observation-mode evidence separately from observation-mode
+    classification; the latter remains `UNKNOWN`.
+14. Version parsers, validators, unit conversions, mappings, and policy rules.
+15. Keep tolerance-aware comparison objects separate from Archive
     reconstruction.
-12. Keep candidate retrieval, duplication assessment, and final decisions in a
+16. Keep candidate retrieval, duplication assessment, and final decisions in a
     later policy layer.
