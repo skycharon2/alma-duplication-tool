@@ -1,5 +1,12 @@
-"""Source-independent domain objects."""
+"Source-independent domain objects."
 
+from .archive import (
+    ObsIdConfidence,
+    ObsIdFailureClass,
+    ObsIdIssue,
+    ObsIdParseResult,
+    ObsIdParseStatus,
+)
 from .spectral import (
     BraceTokenSemanticStatus,
     FrequencyInterval,
@@ -18,6 +25,11 @@ __all__ = [
     "FrequencySupportComponent",
     "FrequencySupportGrammar",
     "FrequencySupportParseResult",
+    "ObsIdConfidence",
+    "ObsIdFailureClass",
+    "ObsIdIssue",
+    "ObsIdParseResult",
+    "ObsIdParseStatus",
     "ParseStatus",
     "ParsedQuantity",
     "SensitivityEntry",
