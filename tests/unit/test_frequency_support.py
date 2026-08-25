@@ -6,8 +6,15 @@ from pathlib import Path
 
 import pytest
 
-from alma_duplicate.domain.spectral import ParseStatus
-from alma_duplicate.parsers.frequency_support import parse_frequency_support
+from alma_duplicate.domain.spectral import (
+    BraceTokenSemanticStatus,
+    FrequencySupportGrammar,
+    ParseStatus,
+)
+from alma_duplicate.parsers.frequency_support import (
+    parse_frequency_support,
+    parse_frequency_support_component,
+)
 
 FIXTURE_PATH = (
     Path(__file__).parents[1] / "fixtures" / "frequency_support_cases.json"
@@ -80,3 +87,150 @@ def test_domain_result_is_immutable() -> None:
 
     with pytest.raises(FrozenInstanceError):
         result.parser_version = "changed"
+
+BRACKET_EXAMPLE = (
+    "[214.32..216.21GHz, 976.56kHz, "
+    "1mJy/beam@10km/s, "
+    "0.2mJy/beam@native, XX YY]"
+)
+
+BRACE_EXAMPLE = (
+    "{229.98GHz,2000000.00kHz,"
+    "20.8mJy/beam@10km/s,"
+    "1.3mJy/beam@native, XX YY}"
+)
+
+
+def test_bracket_parser_remains_backward_compatible() -> None:
+    result = parse_frequency_support(
+        BRACKET_EXAMPLE
+    )
+
+    assert result.parser_version == "2"
+    assert (
+        result.grammar_family
+        is FrequencySupportGrammar.BRACKET
+    )
+    assert result.parse_status is ParseStatus.PARSED
+    assert result.is_valid
+
+    component = result.components[0]
+
+    assert component.frequency_interval is not None
+    assert component.resolution is not None
+    assert component.displayed_center is None
+    assert component.brace_token_2 is None
+
+    legacy_component = (
+        parse_frequency_support_component(
+            BRACKET_EXAMPLE[1:-1]
+        )
+    )
+
+    assert legacy_component == component
+
+
+def test_canonical_brace_value_is_parsed() -> None:
+    result = parse_frequency_support(
+        BRACE_EXAMPLE
+    )
+
+    assert result.parser_version == "2"
+    assert (
+        result.grammar_family
+        is FrequencySupportGrammar.BRACE
+    )
+    assert result.parse_status is ParseStatus.PARSED
+    assert result.is_valid
+    assert len(result.components) == 1
+
+    component = result.components[0]
+
+    assert component.frequency_interval is None
+    assert component.resolution is None
+
+    assert component.displayed_center is not None
+    assert component.displayed_center.value == pytest.approx(
+        229.98
+    )
+    assert component.displayed_center.unit == "GHz"
+
+    assert component.brace_token_2 is not None
+    assert component.brace_token_2.value == pytest.approx(
+        2_000_000.0
+    )
+    assert component.brace_token_2.unit == "kHz"
+
+    assert (
+        component.representation_tolerance_mhz
+        == pytest.approx(5.0)
+    )
+
+    assert (
+        component.brace_token_semantic_status
+        is BraceTokenSemanticStatus.UNRESOLVED
+    )
+
+
+def test_multiple_brace_components_are_supported() -> None:
+    result = parse_frequency_support(
+        f"{BRACE_EXAMPLE} U {BRACE_EXAMPLE}"
+    )
+
+    assert result.parse_status is ParseStatus.PARSED
+    assert (
+        result.grammar_family
+        is FrequencySupportGrammar.BRACE
+    )
+    assert len(result.components) == 2
+    assert result.is_valid
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected_grammar", "expected_issue"),
+    [
+        (
+            None,
+            FrequencySupportGrammar.MISSING,
+            "frequency_support_missing",
+        ),
+        (
+            "   ",
+            FrequencySupportGrammar.BLANK,
+            "frequency_support_blank",
+        ),
+        (
+            "not an Archive frequency support",
+            FrequencySupportGrammar.UNKNOWN,
+            "frequency_support_grammar_unknown",
+        ),
+        (
+            "{229.98GHz",
+            FrequencySupportGrammar.BRACE,
+            "braced_component_missing",
+        ),
+    ],
+)
+def test_frequency_support_grammar_failures(
+    raw: str | None,
+    expected_grammar: FrequencySupportGrammar,
+    expected_issue: str,
+) -> None:
+    result = parse_frequency_support(raw)
+
+    assert result.parse_status is ParseStatus.FAILED
+    assert result.grammar_family is expected_grammar
+    assert expected_issue in _issue_codes(result)
+
+
+def test_component_separator_is_validated() -> None:
+    result = parse_frequency_support(
+        f"{BRACKET_EXAMPLE} garbage "
+        f"{BRACKET_EXAMPLE}"
+    )
+
+    assert result.parse_status is ParseStatus.PARTIAL
+    assert (
+        "unexpected_component_separator"
+        in _issue_codes(result)
+    )

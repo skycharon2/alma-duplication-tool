@@ -18,6 +18,23 @@ class ParseStatus(StrEnum):
     FAILED = "FAILED"
 
 
+class FrequencySupportGrammar(StrEnum):
+    """Observed top-level grammar family of frequency_support."""
+
+    BRACKET = "BRACKET"
+    BRACE = "BRACE"
+    MISSING = "MISSING"
+    BLANK = "BLANK"
+    UNKNOWN = "UNKNOWN"
+
+
+class BraceTokenSemanticStatus(StrEnum):
+    """Evidence status for the second token in a brace component."""
+
+    UNRESOLVED = "UNRESOLVED"
+
+
+
 @dataclass(frozen=True, slots=True)
 class ValidationIssue:
     """One traceable parser or validation issue."""
@@ -59,7 +76,7 @@ class SensitivityEntry:
 
 @dataclass(frozen=True, slots=True)
 class FrequencySupportComponent:
-    """One bracketed component from an Archive frequency_support string."""
+    """One component from an Archive frequency_support value."""
 
     component_index: int
     raw_text: str
@@ -71,6 +88,15 @@ class FrequencySupportComponent:
     parse_status: ParseStatus
     parse_issues: tuple[ValidationIssue, ...]
     validation_issues: tuple[ValidationIssue, ...]
+    grammar_family: FrequencySupportGrammar = (
+        FrequencySupportGrammar.BRACKET
+    )
+    displayed_center: ParsedQuantity | None = None
+    brace_token_2: ParsedQuantity | None = None
+    representation_tolerance_mhz: float | None = None
+    brace_token_semantic_status: (
+        BraceTokenSemanticStatus | None
+    ) = None
 
     @property
     def is_valid(self) -> bool:
@@ -90,6 +116,9 @@ class FrequencySupportParseResult:
     parse_status: ParseStatus
     parse_issues: tuple[ValidationIssue, ...]
     parser_version: str
+    grammar_family: FrequencySupportGrammar = (
+        FrequencySupportGrammar.UNKNOWN
+    )
 
     @property
     def validation_issues(self) -> tuple[ValidationIssue, ...]:
