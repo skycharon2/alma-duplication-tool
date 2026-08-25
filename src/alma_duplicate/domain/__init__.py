@@ -1,8 +1,10 @@
 """Source-independent domain objects."""
 
 from .spectral import (
+    BraceTokenSemanticStatus,
     FrequencyInterval,
     FrequencySupportComponent,
+    FrequencySupportGrammar,
     FrequencySupportParseResult,
     ParseStatus,
     ParsedQuantity,
@@ -11,8 +13,10 @@ from .spectral import (
 )
 
 __all__ = [
+    "BraceTokenSemanticStatus",
     "FrequencyInterval",
     "FrequencySupportComponent",
+    "FrequencySupportGrammar",
     "FrequencySupportParseResult",
     "ParseStatus",
     "ParsedQuantity",
