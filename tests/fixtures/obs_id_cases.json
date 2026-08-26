@@ -1,0 +1,148 @@
+[
+    {
+        "id": "canonical_with_whitespace",
+        "raw": "uid://A002/X303d22/X8e.source.IRAS 00183-7111.spw.23",
+        "expected_status": "PARSED",
+        "expected_confidence": "PARSED_BELOW_DECLARED_WIDTH",
+        "expected_failure_class": null,
+        "expected_member_ous_uid": "uid://A002/X303d22/X8e",
+        "expected_source_name": "IRAS 00183-7111",
+        "expected_spw_token": "23",
+        "expected_spw_index": 23,
+        "expected_safe": true,
+        "expected_issue_codes": []
+    },
+    {
+        "id": "source_with_dot",
+        "raw": "uid://A001/X1/X1.source.J1234.5+6789.spw.7",
+        "expected_status": "PARSED",
+        "expected_confidence": "PARSED_BELOW_DECLARED_WIDTH",
+        "expected_failure_class": null,
+        "expected_member_ous_uid": "uid://A001/X1/X1",
+        "expected_source_name": "J1234.5+6789",
+        "expected_spw_token": "7",
+        "expected_spw_index": 7,
+        "expected_safe": true,
+        "expected_issue_codes": []
+    },
+    {
+        "id": "source_containing_spw_marker",
+        "raw": "uid://A001/X1/X1.source.alpha.spw.beta.spw.9",
+        "expected_status": "PARSED",
+        "expected_confidence": "PARSED_BELOW_DECLARED_WIDTH",
+        "expected_failure_class": null,
+        "expected_member_ous_uid": "uid://A001/X1/X1",
+        "expected_source_name": "alpha.spw.beta",
+        "expected_spw_token": "9",
+        "expected_spw_index": 9,
+        "expected_safe": true,
+        "expected_issue_codes": []
+    },
+    {
+        "id": "parsed_at_declared_width",
+        "raw": "uid://A001/X1/X1.source.SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.spw.12",
+        "expected_status": "PARSED",
+        "expected_confidence": "PARSED_AT_DECLARED_WIDTH_TRUNCATION_POSSIBLE",
+        "expected_failure_class": null,
+        "expected_member_ous_uid": "uid://A001/X1/X1",
+        "expected_source_name": "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+        "expected_spw_token": "12",
+        "expected_spw_index": 12,
+        "expected_safe": false,
+        "expected_issue_codes": [
+            "parsed_at_declared_width_truncation_possible"
+        ]
+    },
+    {
+        "id": "truncated_after_spw_marker",
+        "raw": "uid://A001/X142c/X98.source.Calibrate_North_Molecular_Ridge.spw.",
+        "expected_status": "FAILED",
+        "expected_confidence": "FAILED_AT_DECLARED_WIDTH_TRUNCATION_LIKELY",
+        "expected_failure_class": "TRUNCATED_AFTER_SPW_MARKER_AT_WIDTH",
+        "expected_member_ous_uid": null,
+        "expected_source_name": null,
+        "expected_spw_token": null,
+        "expected_spw_index": null,
+        "expected_safe": false,
+        "expected_issue_codes": [
+            "unexpected_obs_id_format",
+            "truncated_after_spw_marker_at_width"
+        ]
+    },
+    {
+        "id": "truncated_in_source_segment",
+        "raw": "uid://A001/X1/X1.source.TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+        "expected_status": "FAILED",
+        "expected_confidence": "FAILED_AT_DECLARED_WIDTH_TRUNCATION_LIKELY",
+        "expected_failure_class": "TRUNCATED_IN_SOURCE_SEGMENT_AT_WIDTH",
+        "expected_member_ous_uid": null,
+        "expected_source_name": null,
+        "expected_spw_token": null,
+        "expected_spw_index": null,
+        "expected_safe": false,
+        "expected_issue_codes": [
+            "unexpected_obs_id_format",
+            "truncated_in_source_segment_at_width"
+        ]
+    },
+    {
+        "id": "malformed_below_width",
+        "raw": "unexpected-format",
+        "expected_status": "FAILED",
+        "expected_confidence": "FAILED_OTHER",
+        "expected_failure_class": "NON_WIDTH_GRAMMAR_EXCEPTION",
+        "expected_member_ous_uid": null,
+        "expected_source_name": null,
+        "expected_spw_token": null,
+        "expected_spw_index": null,
+        "expected_safe": false,
+        "expected_issue_codes": [
+            "unexpected_obs_id_format"
+        ]
+    },
+    {
+        "id": "non_integer_spw",
+        "raw": "uid://A001/X1/X1.source.Target.spw.A",
+        "expected_status": "FAILED",
+        "expected_confidence": "FAILED_OTHER",
+        "expected_failure_class": "NON_WIDTH_GRAMMAR_EXCEPTION",
+        "expected_member_ous_uid": null,
+        "expected_source_name": null,
+        "expected_spw_token": null,
+        "expected_spw_index": null,
+        "expected_safe": false,
+        "expected_issue_codes": [
+            "spw_token_not_integer"
+        ]
+    },
+    {
+        "id": "missing",
+        "raw": null,
+        "expected_status": "FAILED",
+        "expected_confidence": "FAILED_OTHER",
+        "expected_failure_class": "MISSING",
+        "expected_member_ous_uid": null,
+        "expected_source_name": null,
+        "expected_spw_token": null,
+        "expected_spw_index": null,
+        "expected_safe": false,
+        "expected_issue_codes": [
+            "missing_obs_id"
+        ]
+    },
+    {
+        "id": "blank",
+        "raw": "   ",
+        "expected_status": "FAILED",
+        "expected_confidence": "FAILED_OTHER",
+        "expected_failure_class": "BLANK",
+        "expected_member_ous_uid": null,
+        "expected_source_name": null,
+        "expected_spw_token": null,
+        "expected_spw_index": null,
+        "expected_safe": false,
+        "expected_issue_codes": [
+            "blank_obs_id"
+        ]
+    }
+]
