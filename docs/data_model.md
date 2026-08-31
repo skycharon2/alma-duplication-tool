@@ -4,24 +4,33 @@
 
 This document defines the evidence-based internal representation of the
 current public ALMA `ivoa.obscore` TAP view after Notebooks 01, 02, 02b, 03,
-04, and 04b.
+04, 04b, and 04c.
 
 It is not the official internal ALMA database schema. It is an application
 model for preserving Archive evidence, reconstructing relationships needed by
 the duplication-checking tool, and isolating later comparison policy from raw
 metadata.
 
-Notebook 04b closed the Archive-structure exploration phase. The current
-science-target snapshot contained 442,507 rows and 73 live columns. Later
-Archive-wide censuses and explicit counterexamples supersede earlier sample
-statements wherever they conflict.
+Notebook 04b closed the Archive-structure exploration phase using a
+2026-08-25 snapshot with 442,507 science-target rows and 73 live columns.
+Notebook 04c closed the current semantic-review phase using a
+2026-08-31 snapshot with 443,211 science-target rows and the same 73-column
+`ivoa.obscore` schema. Later Archive-wide censuses and explicit
+counterexamples supersede earlier sample statements wherever they conflict;
+counts from different capture times are never combined as one snapshot.
+
+The production Archive client v1 implements query construction,
+COUNT/retrieval reconciliation, query-status handling, schema-name checks,
+query provenance, and an incomplete-result pipeline gate. Complete per-field
+TAP metadata preservation (datatype, unit, UCD, arraysize, and description)
+remains an ingestion v2 requirement.
 
 ## Evidence summary
 
 | Question | Current evidence | Model consequence |
 |---|---|---|
 | Live schema | 73 columns; schema SHA-256 `2cb2009067ab50f1727454ccb57cb1280c81ad4bfa3a10a9c2df2f0de7044c15` | Classify all fields and detect future schema drift |
-| Science-target population | 442,507 rows in the closure snapshot | Treat all counts as time-specific snapshots |
+| Science-target population | 442,507 rows on 2026-08-25 and 443,211 rows at `2026-08-31T12:27:55.081125+00:00` | Treat all counts as time-specific snapshots and preserve capture provenance |
 | Query completeness | COUNT/retrieve reconciliation, valid empty result, and intentional `OVERFLOW` verified | Never infer absence from an incomplete response |
 | `obs_publisher_did` | 5,611 proposal IDs and 5,611 publisher DIDs; exact `ADS/JAO.ALMA#<proposal_id>` mapping with no exception | Project-level external identifier, not a row or product key |
 | `obs_id` | 442,141 parsed; 366 width-truncated failures; 275 additional parseable values at the 64-character boundary | Preserve raw value and parse confidence; never use as an Archive-wide key |
@@ -34,6 +43,11 @@ statements wherever they conflict.
 | STC-S family | 194,500 CIRCLE, 245,655 POLYGON, 2,352 UNION; no missing/blank/unknown | Support three current top-level families; retain raw geometry |
 | Product population | 305,618 cube and 136,889 image rows, all `calib_level=2` | Treat product metadata as row evidence; physical file granularity remains unresolved |
 | Spatial resolution | 41,365 of 442,507 rows had `s_resolution != spatial_resolution` | Preserve the two fields separately |
+| Primary angular-resolution evidence | Service definitions differ; official ALMA query examples use `spatial_resolution` | Use `spatial_resolution` for initial Archive candidate retrieval, preserve `s_resolution` as a cross-check, and treat neither as a measured FITS restoring beam |
+| Top-level `type` | Eight values were observed on 2026-08-31; all 5,614 distinct proposal/type pairs matched the terminal `proposal_id` suffix | Model as optional proposal/project classification with an unknown-value fallback; do not confuse `type = 'T'` with `science_observation = 'T'` |
+| Frequency-Support mode | Standard `continuum`, `line`, `FDM`, and `TDM` literals each matched zero of 443,211 science-target `frequency_support` strings; no separate mode column was identified among the 73 `ivoa.obscore` columns | Keep an explicit representation gap; do not infer FDM/TDM from top-level `type`, bandwidth, or resolution |
+| Sensitivity semantics | TAP metadata defines continuum and nominal 10 km/s sensitivity as estimates with documented limitations | Store separate estimated-evidence concepts; never label them achieved QA2 product RMS |
+| QA2 boundary | Archive metadata may be available after QA0 while processing or QA2 remains incomplete | Keep `qa2_passed` as evidence and leave inclusion/exclusion to explicit policy |
 | Reconstruction determinism | Five shuffle seeds produced identical reconstructions | Require order-independent production reconstruction |
 
 ## Modeling principles
@@ -53,6 +67,11 @@ statements wherever they conflict.
    interchangeable.
 8. Keep duplication thresholds and decisions outside the Archive
    reconstruction layer.
+9. Distinguish service-exposed values from semantics documented only for the
+   Archive Web representation. A documented field is not ingested unless a
+   stable supported programmatic representation is identified.
+10. Treat sensitivity and angular-resolution summaries as Archive evidence,
+    not achieved FITS-product measurements.
 
 ## Entity-relationship model
 
@@ -123,6 +142,8 @@ erDiagram
         string proposal_id UK
         string obs_publisher_did UK
         string publisher_mapping_status
+        string proposal_type_raw
+        string proposal_type_status
     }
 
     GROUP_OUS {
@@ -246,7 +267,7 @@ erDiagram
         string band_list_raw
         float s_resolution_arcsec
         float spatial_resolution_arcsec
-        float continuum_sensitivity_mjy_beam
+        float estimated_cont_sensitivity_mjy_beam
         string context_validation_status
     }
 
@@ -323,7 +344,7 @@ erDiagram
         float exact_frequency_ghz
         float archive_bandwidth_hz
         float spectral_resolution_khz
-        float line_sensitivity_mjy_beam
+        float estimated_line_sensitivity_10kms
         string pol_states_raw
         string association_status
     }
@@ -405,6 +426,9 @@ erDiagram
         float parsed_resolution_khz
         float archive_velocity_summary_mps
         float derived_velocity_resolution_mps
+        string mode_source
+        string mode_availability_status
+        string authoritative_mode
         string evidence_status
         string classification_status
         string evidence_version
@@ -443,6 +467,14 @@ In the closure snapshot, `proposal_id` and `obs_publisher_did` formed a
 one-to-one mapping, and every publisher DID equalled
 `ADS/JAO.ALMA#<proposal_id>`. The publisher DID is an alternate external
 Project identifier, not a product or row identifier.
+
+Top-level TAP `type` is optional Project-classification evidence. In the
+2026-08-31 census, all 5,614 distinct proposal/type pairs matched the terminal
+`proposal_id` suffix, with current values `S`, `L`, `T`, `V`, `SV`, `E`, `P`,
+and `CAL`. The model treats this as an open value set and preserves unknown
+future values. It is unrelated to `science_observation = 'T'` and must never
+be used as an FDM/TDM label. The production v1 retrieval projection does not
+need this field for reconstruction.
 
 ### `GROUP_OUS`
 
@@ -493,7 +525,13 @@ ASDMs, including:
 - antenna configuration;
 - raw frequency-support signature;
 - mosaic state;
-- aggregate spatial-resolution and continuum-sensitivity evidence.
+- separate `s_resolution` and `spatial_resolution` evidence; and
+- estimated aggregate continuum-sensitivity evidence.
+
+`spatial_resolution` is the primary Archive field for initial angular-
+resolution candidate retrieval. `s_resolution` remains an independent
+ObsCore cross-check. Neither value is modeled as a measured FITS restoring
+beam.
 
 ### `SPATIAL_FOOTPRINT`
 
@@ -527,7 +565,7 @@ It may contain comparison-relevant row evidence such as:
 - exact frequency;
 - Archive bandwidth;
 - spectral resolution;
-- line sensitivity;
+- estimated nominal 10 km/s line sensitivity;
 - polarization evidence;
 - reconstruction confidence.
 
@@ -592,6 +630,14 @@ evidence status and an optional classification status, but it is not an
 identity entity and must not turn an FDM/TDM heuristic into an authoritative
 Archive fact.
 
+The Cycle 13 Archive Manual documents a nested Frequency Support Type where
+`continuum` maps to TDM and `line` maps to FDM. Notebook 04c found neither
+those literals nor `TDM`/`FDM` in any of the 443,211 current science-target
+`frequency_support` strings, and no separate correlator-mode column among the
+73 current `ivoa.obscore` columns. Therefore mode-source and availability
+status are required even when the authoritative mode value is absent. No mode
+may be inferred solely from top-level `type`, bandwidth, or resolution.
+
 ### `ARCHIVE_QUERY_RUN`
 
 Records endpoint, ADQL, normalized parameters, start/end time, MAXREC,
@@ -599,12 +645,22 @@ expected count, retrieved count, `QUERY_STATUS`, warnings, completeness, and
 query hash. A response with `OVERFLOW`, a count mismatch, or an execution error
 must never support a negative duplication conclusion.
 
+The v1 client preserves the selected column-name schema but does not yet
+persist a complete TAP field-metadata snapshot. A future query/ingestion
+metadata record must preserve datatype, unit, UCD, arraysize, description,
+source table, and capture timestamp without changing raw row identity.
+
 ### `RAW_ARCHIVE_ROW`
 
 Immutable evidence record with an internal surrogate `raw_row_id`. It
 preserves all original TAP values, masks, units, identifiers, result order,
 and a content hash. It is linked to the exact `ARCHIVE_QUERY_RUN` that
 retrieved it. Parsing never overwrites this entity.
+
+Full service-unit and field-description preservation is a target model
+requirement. Until the v2 field-metadata contract is implemented, adapters
+must use explicit, tested unit mappings and must not claim that all service
+metadata has been persisted by v1.
 
 ### `ROW_PRODUCT_METADATA`
 
@@ -665,6 +721,12 @@ and Solar-system targets require dedicated logic.
 - Support-component order is an official SPW identifier.
 - One support component maps to at most one SPW.
 - `s_resolution` and `spatial_resolution` are aliases.
+- top-level TAP `type` is an observation-mode or FDM/TDM field.
+- FDM/TDM can be inferred authoritatively from bandwidth or spectral
+  resolution alone.
+- Archive sensitivity summaries are achieved QA2 image-product RMS values.
+- `spatial_resolution` is a measured FITS restoring beam.
+- `qa2_passed = 'T'` is an ingestion-layer requirement.
 - One ObsCore row equals one physical downloadable file.
 - A Polygon necessarily means mosaic, or a mosaic necessarily uses one
   geometry family.
@@ -674,6 +736,7 @@ and Solar-system targets require dedicated logic.
 | Field/value | Model scope | Engineering treatment |
 |---|---|---|
 | `proposal_id`, `obs_publisher_did` | Project | Preserve raw; validate current one-to-one mapping |
+| top-level `type` | Optional Project classification | Preserve raw and unknown values; validate against proposal suffix only as diagnostic evidence; never use as observation mode |
 | `group_ous_uid` | Optional Group OUS | Normalize blank to missing; retain raw |
 | `member_ous_uid` | Member OUS | Primary dataset grouping identifier |
 | `asdm_uid` | ASDM execution | Retain in Source-Execution scope |
@@ -681,11 +744,13 @@ and Solar-system targets require dedicated logic.
 | `s_ra`, `s_dec`, `s_fov`, `s_region`, `is_mosaic` | Spatial Footprint at Source-Execution scope | Preserve raw STC-S and geometry family |
 | `frequency_support` | Source-Execution Context | Grammar-dispatched, raw-preserving parser |
 | `antenna_arrays`, `t_min`, `t_max` | Source-Execution Context | Preserve raw execution evidence |
-| `cont_sensitivity_bandwidth` | Source-Execution Context | Aggregate continuum evidence |
+| `cont_sensitivity_bandwidth` | Source-Execution Context | Estimated aggregate continuum evidence; not achieved product RMS |
 | Parsed SPW, `frequency`, `bandwidth` | Source-SPW Association/raw row | Preserve exact values and units |
-| `spectral_resolution`, `sensitivity_10kms` | Source-SPW Association/raw row | SPW-sensitive comparison evidence |
+| `spectral_resolution`, `sensitivity_10kms` | Source-SPW Association/raw row | SPW-sensitive evidence; sensitivity is an estimate at nominal 10 km/s, not achieved product RMS |
 | Parsed support component | Frequency-Support Component | Versioned derived metadata |
-| `s_resolution`, `spatial_resolution` | Separate Source-Execution/raw evidence | Never merge or impose equality |
+| `s_resolution`, `spatial_resolution` | Separate Source-Execution/raw evidence | Use `spatial_resolution` for initial Archive candidate retrieval; retain `s_resolution` as a cross-check; never merge or impose equality |
+| `qa2_passed` | Raw QA evidence / later policy | Normalize known values but do not apply as an implicit client filter |
+| documented nested Frequency Support Type | Observation-mode availability evidence | Currently not exposed by `ivoa.obscore`; do not fabricate or infer; preserve representation-gap status |
 | `em_min`, `em_max`, `em_resolution`, `velocity_resolution` | Cross-check/derived evidence | Tolerance-aware validation only |
 | Axis and access metadata | Optional row/product metadata | Never required for core reconstruction |
 | Duplication result | Policy layer | Not part of this model |
@@ -698,7 +763,10 @@ and Solar-system targets require dedicated logic.
 - Preserve Archive bandwidth and parsed support width separately.
 - Preserve `s_resolution` and `spatial_resolution` separately.
 - Preserve line, native-resolution, and aggregate continuum sensitivities as
-  distinct concepts.
+  distinct estimated-evidence concepts; do not label them achieved QA2 RMS.
+- Treat `spatial_resolution` as approximate Archive angular-resolution
+  evidence and `s_resolution` as a separate cross-check; neither is a measured
+  FITS restoring beam.
 - Normalize blank optional identifiers to missing while retaining raw values.
 - Treat `3000-01-01` release dates as an observed sentinel state, not a real
   release date.
@@ -730,6 +798,12 @@ The implementation and documentation use four evidence levels:
 9. Surface parse, truncation, ambiguity, and mapping statuses to callers.
 10. Keep candidate retrieval, reconstruction, and duplication assessment as
     separate layers.
+11. Keep Project classification, science-row role, and observation mode as
+    separate concepts.
+12. Preserve QA2 state as evidence; apply any QA2 inclusion rule only in an
+    explicit, versioned policy layer.
+13. Preserve or explicitly adapt field units until the complete TAP
+    field-metadata snapshot contract is implemented.
 
 Required automated tests include malformed identifiers, 63/64/65-character
 boundaries, bracket and brace parsing, sparse associations, many-to-one
@@ -748,6 +822,11 @@ The following items do not block Archive-model v0.4:
 - individual mosaic pointing reconstruction;
 - moving and Solar-system target handling;
 - authoritative observation-mode/FDM/TDM classification;
+- stable programmatic access to the documented nested Frequency Support Type;
+- complete TAP field-metadata snapshots containing datatype, unit, UCD,
+  arraysize, description, source table, and capture timestamp;
+- achieved image-product sensitivity and measured FITS restoring-beam
+  evidence;
 - primary-beam and spectral-smoothing policy;
 - frequency, sensitivity, and spatial duplication thresholds;
 - current-cycle CSV normalization;
@@ -756,3 +835,16 @@ The following items do not block Archive-model v0.4:
 These belong to parser tests, later notebooks, or the policy layer. Archive
 structure exploration should remain closed unless a production failure exposes
 a new grammar or cardinality counterexample.
+
+## Semantic-source references
+
+- [Cycle 13 ALMA Science Archive Manual](https://almascience.eso.org/documents-and-tools/cycle13/science-archive-manual)
+- [ALMA query by spatial resolution](https://almascience.eso.org/alma-data/archive/archive-notebooks/nb5_ALMA_Query_by_spatial_resolution.html)
+- [ALMA query by sensitivity](https://almascience.eso.org/alma-data/archive/archive-notebooks/nb7_ALMA_Query_by_sensitivity.html)
+- [ALMA data resources](https://almascience.eso.org/alma-data)
+- [ALMA processing resources](https://almascience.eso.org/processing)
+
+These sources establish scientific semantics for the documented Archive
+interface. They do not create fields that the current `ivoa.obscore`
+representation does not expose, and they do not replace captured TAP values
+as ingestion evidence.
