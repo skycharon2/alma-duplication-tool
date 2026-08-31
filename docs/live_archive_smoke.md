@@ -69,3 +69,12 @@ live boundary executed and the completeness contract classified the response.
 Only `COMPLETE` permits reconstruction. `ERROR`, including schema drift or
 service failure, fails the smoke test and remains a technical outcome rather
 than a scientific conclusion.
+
+For a complete, non-empty response, the live closure test also runs the rows
+through metadata normalization, identifier parsing, frequency-support parsing,
+and deterministic Archive reconstruction.
+
+The pipeline assertions do not require a fixed Archive row count, project ID,
+or association count. They verify raw-row preservation, surrogate-row
+identity, row-accounting consistency, and at least one reconstructed
+association.
