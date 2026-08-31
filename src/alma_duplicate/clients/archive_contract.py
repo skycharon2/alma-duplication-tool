@@ -50,6 +50,28 @@ class TapExecutionError(RuntimeError):
 
 
 @dataclass(frozen=True, slots=True)
+class TapFieldMetadata:
+    """Source-reported field descriptor exposed by a TAP response."""
+
+    name: str
+    datatype: str
+    arraysize: str | None
+    unit: str | None
+    ucd: str | None
+    utype: str | None
+    xtype: str | None
+    description: str | None
+
+    def __post_init__(self) -> None:
+        if not self.name.strip():
+            raise ValueError("field metadata name must not be blank")
+        if not self.datatype.strip():
+            raise ValueError(
+                "field metadata datatype must not be blank"
+            )
+
+
+@dataclass(frozen=True, slots=True)
 class ArchiveQueryProvenance:
     """Traceable evidence for one COUNT-and-retrieval run."""
 
@@ -94,8 +116,20 @@ class TapResponse:
 
     rows: tuple[RawArchiveRow, ...]
     declared_columns: tuple[str, ...]
+    field_metadata: tuple[TapFieldMetadata, ...]
     query_status_raw: object | None
     warnings: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        metadata_columns = tuple(
+            field.name
+            for field in self.field_metadata
+        )
+        if metadata_columns != self.declared_columns:
+            raise ValueError(
+                "field metadata names must match declared columns "
+                "in response order"
+            )
 
 
 class TapExecutor(Protocol):
@@ -119,6 +153,7 @@ class ArchiveQueryResult:
     status: ArchiveQueryStatus
     rows: tuple[RawArchiveRow, ...]
     provenance: ArchiveQueryProvenance
+    field_metadata: tuple[TapFieldMetadata, ...]
     missing_columns: tuple[str, ...] = ()
     error_kind: ArchiveQueryErrorKind | None = None
     error_message: str | None = None

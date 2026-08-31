@@ -4,7 +4,8 @@
 
 The live smoke test verifies that the production Archive client can currently
 communicate with the ALMA TAP service, receive the declared retrieval schema,
-and produce complete query provenance.
+preserve its ordered VOTable field descriptors, and produce complete query
+provenance.
 
 It does not validate a fixed Archive row count, a fixed project identifier, or
 the formal duplication rules. Archive contents and external-service
@@ -59,6 +60,8 @@ The smoke test requires:
 
 - execution to reach a recognized non-error Archive query status;
 - no required-column schema drift;
+- one ordered field-metadata descriptor with a nonblank datatype for every
+  projected retrieval column;
 - COUNT and retrieval query statuses to be recognized;
 - non-negative dynamic counts;
 - retrieved count to match the number of preserved rows;

@@ -10,6 +10,7 @@ from alma_duplicate.clients.archive_client import (
 from alma_duplicate.clients.archive_contract import (
     ArchiveQueryErrorKind,
     ArchiveQueryStatus,
+    TapFieldMetadata,
     TapExecutionError,
     TapResponse,
 )
@@ -29,6 +30,24 @@ NOW = datetime(
     0,
     tzinfo=timezone.utc,
 )
+
+
+def _field_metadata(
+    columns: tuple[str, ...],
+) -> tuple[TapFieldMetadata, ...]:
+    return tuple(
+        TapFieldMetadata(
+            name=column,
+            datatype="char",
+            arraysize="*",
+            unit=None,
+            ucd=None,
+            utype=None,
+            xtype=None,
+            description=f"Metadata for {column}",
+        )
+        for column in columns
+    )
 
 
 def _spec() -> ArchiveQuerySpec:
@@ -56,6 +75,9 @@ def _count_response(
     return TapResponse(
         rows=rows,
         declared_columns=declared_columns,
+        field_metadata=_field_metadata(
+            declared_columns
+        ),
         query_status_raw=status,
         warnings=("count fixture",),
     )
@@ -89,6 +111,9 @@ def _retrieval_response(
             for index in range(count)
         ),
         declared_columns=declared_columns,
+        field_metadata=_field_metadata(
+            declared_columns
+        ),
         query_status_raw=status,
         warnings=("retrieval fixture",),
     )
@@ -129,10 +154,15 @@ def test_complete_result_reconciles_count_and_rows() -> None:
         "query-run-001"
     )
     assert len(result.provenance.query_hash) == 64
+    assert result.provenance.client_version == "2"
     assert result.provenance.warnings == (
         "count fixture",
         "retrieval fixture",
     )
+    assert tuple(
+        field.name
+        for field in result.field_metadata
+    ) == ARCHIVE_SELECTED_COLUMNS
     assert executor.calls[0].maxrec == 1
     assert executor.calls[1].maxrec == 10_000
     assert "COUNT(*)" in executor.calls[0].adql
@@ -154,6 +184,9 @@ def test_valid_empty_result_is_complete() -> None:
     assert result.rows == ()
     assert result.provenance.expected_count == 0
     assert result.provenance.retrieved_count == 0
+    assert len(result.field_metadata) == len(
+        ARCHIVE_SELECTED_COLUMNS
+    )
     assert result.can_reconstruct
 
 
@@ -170,6 +203,9 @@ def test_overflow_preserves_partial_rows() -> None:
 
     assert result.status is ArchiveQueryStatus.OVERFLOW
     assert len(result.rows) == 5
+    assert len(result.field_metadata) == len(
+        ARCHIVE_SELECTED_COLUMNS
+    )
     assert not result.can_reconstruct
 
 
@@ -195,6 +231,9 @@ def test_count_mismatch_is_not_complete(
 
     assert result.status is (
         ArchiveQueryStatus.COUNT_MISMATCH
+    )
+    assert len(result.field_metadata) == len(
+        ARCHIVE_SELECTED_COLUMNS
     )
     assert not result.can_reconstruct
 
@@ -223,6 +262,10 @@ def test_schema_drift_is_structured_error() -> None:
     )
     assert result.missing_columns == ("obs_id",)
     assert len(result.rows) == 1
+    assert tuple(
+        field.name
+        for field in result.field_metadata
+    ) == columns
     assert not result.can_reconstruct
 
 
@@ -242,6 +285,9 @@ def test_unknown_retrieval_status_is_error(
     assert result.status is ArchiveQueryStatus.ERROR
     assert result.error_kind is (
         ArchiveQueryErrorKind.UNKNOWN_QUERY_STATUS
+    )
+    assert len(result.field_metadata) == len(
+        ARCHIVE_SELECTED_COLUMNS
     )
 
 
@@ -318,6 +364,7 @@ def test_count_execution_failure_is_error() -> None:
     )
     assert result.provenance.expected_count is None
     assert result.provenance.retrieved_count is None
+    assert result.field_metadata == ()
 
 
 def test_retrieval_execution_failure_preserves_count() -> None:
@@ -339,3 +386,4 @@ def test_retrieval_execution_failure_preserves_count() -> None:
     )
     assert result.provenance.expected_count == 2
     assert result.provenance.retrieved_count is None
+    assert result.field_metadata == ()
