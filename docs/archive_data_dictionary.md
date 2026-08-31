@@ -39,18 +39,23 @@ be combined as if they describe one immutable snapshot.
 
 ## Implementation boundary
 
-The production Archive client v1 preserves row values, selected column names,
-query status, warnings, COUNT/retrieval reconciliation, and query provenance.
-It does not yet preserve a complete per-field snapshot of TAP datatype, unit,
-UCD, arraysize, and description. That field-metadata snapshot is an Archive
-ingestion v2 requirement and must be completed before a shared Archive/queue
-comparison model relies on service metadata instead of explicit adapters.
+The production Archive client v2 preserves row values, selected column names,
+query status, warnings, COUNT/retrieval reconciliation, query provenance, and
+the ordered retrieval VOTable field descriptors. For every projected field,
+the runtime contract retains `name`, `datatype`, `arraysize`, `unit`, `ucd`,
+`utype`, `xtype`, and `description`; absent optional attributes remain `None`.
+The metadata tuple remains present for valid zero-row results and for
+incomplete or erroneous results whenever a retrieval response was received.
+It is tied to the same query result and capture time through provenance.
+
+This is runtime evidence preservation, not durable database storage. A future
+persistence layer must serialize these descriptors without changing their
+column order or applying scientific-value normalization to their text.
 
 ## Ingestion contract
 
-1. Store the complete raw row, Astropy mask state, query run, and result
-   ordinal before normalization. Preserve service field metadata when the v2
-   metadata contract is introduced.
+1. Store the complete raw row, Astropy mask state, query run, result ordinal,
+   and ordered retrieval field metadata before normalization.
 2. Give every raw row an internal surrogate `raw_row_id`.
 3. Keep raw, normalized, parsed, and derived values separate.
 4. Reconcile `COUNT(*)`, retrieved row count, and `QUERY_STATUS`; incomplete

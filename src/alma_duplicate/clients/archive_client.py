@@ -21,6 +21,7 @@ from alma_duplicate.clients.archive_contract import (
     ArchiveQueryProvenance,
     ArchiveQueryResult,
     ArchiveQueryStatus,
+    TapFieldMetadata,
     TapExecutionError,
     TapExecutor,
     TapResponse,
@@ -36,13 +37,14 @@ from alma_duplicate.clients.archive_queries import (
 )
 
 
-ARCHIVE_CLIENT_VERSION = "1"
+ARCHIVE_CLIENT_VERSION = "2"
 DEFAULT_MAXREC = 10_000
 
 
 class _PyvoResult(Protocol):
     query_status: object | None
     infos: Mapping[object, object]
+    fielddescs: object
 
     def to_table(self) -> object:
         ...
@@ -56,6 +58,62 @@ class _PyvoService(Protocol):
         maxrec: int,
     ) -> _PyvoResult:
         ...
+
+
+def _optional_metadata_text(value: object | None) -> str | None:
+    if value is None:
+        return None
+    return str(value)
+
+
+def _required_metadata_text(
+    value: object | None,
+    *,
+    attribute: str,
+) -> str:
+    if value is None:
+        raise ValueError(
+            f"TAP field descriptor is missing {attribute}"
+        )
+    return str(value)
+
+
+def _extract_field_metadata(
+    result: _PyvoResult,
+) -> tuple[TapFieldMetadata, ...]:
+    fielddescs = getattr(result, "fielddescs")
+
+    return tuple(
+        TapFieldMetadata(
+            name=_required_metadata_text(
+                getattr(field, "name", None),
+                attribute="name",
+            ),
+            datatype=_required_metadata_text(
+                getattr(field, "datatype", None),
+                attribute="datatype",
+            ),
+            arraysize=_optional_metadata_text(
+                getattr(field, "arraysize", None)
+            ),
+            unit=_optional_metadata_text(
+                getattr(field, "unit", None)
+            ),
+            ucd=_optional_metadata_text(
+                getattr(field, "ucd", None)
+            ),
+            utype=_optional_metadata_text(
+                getattr(field, "utype", None)
+            ),
+            xtype=_optional_metadata_text(
+                getattr(field, "xtype", None)
+            ),
+            description=_optional_metadata_text(
+                getattr(field, "description", None)
+            ),
+        )
+        for field in fielddescs
+    )
 
 
 class PyvoTapExecutor:
@@ -124,22 +182,24 @@ class PyvoTapExecutor:
                 }
                 for table_row in table
             )
+            response = TapResponse(
+                rows=rows,
+                declared_columns=columns,
+                field_metadata=_extract_field_metadata(result),
+                query_status_raw=getattr(
+                    result,
+                    "query_status",
+                    None,
+                ),
+                warnings=_extract_info_warnings(result),
+            )
         except (AttributeError, KeyError, TypeError, ValueError) as exc:
             raise TapExecutionError(
                 ArchiveQueryErrorKind.RESPONSE_FORMAT_ERROR,
-                f"Unable to convert TAP result table: {exc}",
+                f"Unable to convert TAP result: {exc}",
             ) from exc
 
-        return TapResponse(
-            rows=rows,
-            declared_columns=columns,
-            query_status_raw=getattr(
-                result,
-                "query_status",
-                None,
-            ),
-            warnings=_extract_info_warnings(result),
-        )
+        return response
 
 
 def _extract_info_warnings(
@@ -476,6 +536,7 @@ class ArchiveClient:
             status=status,
             rows=rows,
             provenance=provenance,
+            field_metadata=retrieval_response.field_metadata,
         )
 
     def _error_result(
@@ -519,6 +580,11 @@ class ArchiveClient:
             status=ArchiveQueryStatus.ERROR,
             rows=rows,
             provenance=provenance,
+            field_metadata=(
+                retrieval_response.field_metadata
+                if retrieval_response is not None
+                else ()
+            ),
             missing_columns=missing_columns,
             error_kind=kind,
             error_message=message,

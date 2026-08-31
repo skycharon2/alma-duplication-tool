@@ -19,11 +19,11 @@ Notebook 04c closed the current semantic-review phase using a
 counterexamples supersede earlier sample statements wherever they conflict;
 counts from different capture times are never combined as one snapshot.
 
-The production Archive client v1 implements query construction,
+The production Archive client v2 implements query construction,
 COUNT/retrieval reconciliation, query-status handling, schema-name checks,
-query provenance, and an incomplete-result pipeline gate. Complete per-field
-TAP metadata preservation (datatype, unit, UCD, arraysize, and description)
-remains an ingestion v2 requirement.
+query provenance, an incomplete-result pipeline gate, and ordered retrieval
+field-metadata preservation (`name`, datatype, arraysize, unit, UCD, utype,
+xtype, and description), including valid zero-row responses.
 
 ## Evidence summary
 
@@ -32,6 +32,7 @@ remains an ingestion v2 requirement.
 | Live schema | 73 columns; schema SHA-256 `2cb2009067ab50f1727454ccb57cb1280c81ad4bfa3a10a9c2df2f0de7044c15` | Classify all fields and detect future schema drift |
 | Science-target population | 442,507 rows on 2026-08-25 and 443,211 rows at `2026-08-31T12:27:55.081125+00:00` | Treat all counts as time-specific snapshots and preserve capture provenance |
 | Query completeness | COUNT/retrieve reconciliation, valid empty result, and intentional `OVERFLOW` verified | Never infer absence from an incomplete response |
+| Retrieval field metadata | PyVO exposes VOTable `FIELD` descriptors independently of result rows; the v2 runtime contract preserves them in projection order | Carry units and semantic descriptors with the same query result, including valid empty results |
 | `obs_publisher_did` | 5,611 proposal IDs and 5,611 publisher DIDs; exact `ADS/JAO.ALMA#<proposal_id>` mapping with no exception | Project-level external identifier, not a row or product key |
 | `obs_id` | 442,141 parsed; 366 width-truncated failures; 275 additional parseable values at the 64-character boundary | Preserve raw value and parse confidence; never use as an Archive-wide key |
 | Row identity | 134 duplicate `obs_id` groups; 42 duplicate parsed Source-Execution-SPW groups, all affected by identifier-width risk | Use internal surrogate row identifiers |
@@ -473,7 +474,7 @@ Top-level TAP `type` is optional Project-classification evidence. In the
 `proposal_id` suffix, with current values `S`, `L`, `T`, `V`, `SV`, `E`, `P`,
 and `CAL`. The model treats this as an open value set and preserves unknown
 future values. It is unrelated to `science_observation = 'T'` and must never
-be used as an FDM/TDM label. The production v1 retrieval projection does not
+be used as an FDM/TDM label. The production v2 retrieval projection does not
 need this field for reconstruction.
 
 ### `GROUP_OUS`
@@ -645,10 +646,11 @@ expected count, retrieved count, `QUERY_STATUS`, warnings, completeness, and
 query hash. A response with `OVERFLOW`, a count mismatch, or an execution error
 must never support a negative duplication conclusion.
 
-The v1 client preserves the selected column-name schema but does not yet
-persist a complete TAP field-metadata snapshot. A future query/ingestion
-metadata record must preserve datatype, unit, UCD, arraysize, description,
-source table, and capture timestamp without changing raw row identity.
+The v2 client preserves the selected column-name schema and an ordered
+retrieval field-metadata snapshot containing name, datatype, arraysize, unit,
+UCD, utype, xtype, and description. It retains descriptors even when the
+retrieval contains zero rows and links them to the same query result and
+capture provenance. Descriptor names must match declared columns in order.
 
 ### `RAW_ARCHIVE_ROW`
 
@@ -657,10 +659,12 @@ preserves all original TAP values, masks, units, identifiers, result order,
 and a content hash. It is linked to the exact `ARCHIVE_QUERY_RUN` that
 retrieved it. Parsing never overwrites this entity.
 
-Full service-unit and field-description preservation is a target model
-requirement. Until the v2 field-metadata contract is implemented, adapters
-must use explicit, tested unit mappings and must not claim that all service
-metadata has been persisted by v1.
+Service-unit and field-description evidence now remains available through the
+v2 runtime result and therefore through `ArchivePipelineBatch.query_result`.
+Normalization and parsing do not overwrite descriptor text. Durable storage
+must later serialize the tuple without changing its order or optional `None`
+values; explicit tested unit adapters remain necessary when converting values
+into the future shared Archive/queue comparison model.
 
 ### `ROW_PRODUCT_METADATA`
 
@@ -802,8 +806,8 @@ The implementation and documentation use four evidence levels:
     separate concepts.
 12. Preserve QA2 state as evidence; apply any QA2 inclusion rule only in an
     explicit, versioned policy layer.
-13. Preserve or explicitly adapt field units until the complete TAP
-    field-metadata snapshot contract is implemented.
+13. Preserve ordered TAP field metadata with each retrieval result and use
+    explicit, tested adapters for any unit conversion.
 
 Required automated tests include malformed identifiers, 63/64/65-character
 boundaries, bracket and brace parsing, sparse associations, many-to-one
@@ -823,8 +827,8 @@ The following items do not block Archive-model v0.4:
 - moving and Solar-system target handling;
 - authoritative observation-mode/FDM/TDM classification;
 - stable programmatic access to the documented nested Frequency Support Type;
-- complete TAP field-metadata snapshots containing datatype, unit, UCD,
-  arraysize, description, source table, and capture timestamp;
+- durable serialization of TAP field-metadata snapshots beyond the runtime
+  query result;
 - achieved image-product sensitivity and measured FITS restoring-beam
   evidence;
 - primary-beam and spectral-smoothing policy;
