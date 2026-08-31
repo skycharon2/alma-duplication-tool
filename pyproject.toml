@@ -30,3 +30,6 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "live: requires access to a live external service and is skipped by default",
+]
