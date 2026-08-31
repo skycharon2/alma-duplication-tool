@@ -9,19 +9,11 @@ from enum import StrEnum
 from typing import Protocol, TypeAlias
 
 
-ParameterScalar: TypeAlias = (
-    str
-    | int
-    | float
-    | bool
-    | None
-)
-
+ParameterScalar: TypeAlias = str | int | float | bool | None
 NormalizedParameters: TypeAlias = tuple[
     tuple[str, ParameterScalar],
     ...,
 ]
-
 RawArchiveRow: TypeAlias = Mapping[str, object]
 
 
@@ -43,6 +35,18 @@ class ArchiveQueryErrorKind(StrEnum):
     INVALID_COUNT = "INVALID_COUNT"
     SCHEMA_DRIFT = "SCHEMA_DRIFT"
     UNKNOWN_QUERY_STATUS = "UNKNOWN_QUERY_STATUS"
+
+
+class TapExecutionError(RuntimeError):
+    """Source-neutral failure raised by a TAP executor."""
+
+    def __init__(
+        self,
+        kind: ArchiveQueryErrorKind,
+        message: str,
+    ) -> None:
+        super().__init__(message)
+        self.kind = kind
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,28 +72,17 @@ class ArchiveQueryProvenance:
 
     def __post_init__(self) -> None:
         if not self.query_run_id.strip():
-            raise ValueError(
-                "query_run_id must not be blank"
-            )
-
+            raise ValueError("query_run_id must not be blank")
         if not self.endpoint.strip():
-            raise ValueError(
-                "endpoint must not be blank"
-            )
-
+            raise ValueError("endpoint must not be blank")
         if self.configured_maxrec <= 0:
-            raise ValueError(
-                "configured_maxrec must be positive"
-            )
+            raise ValueError("configured_maxrec must be positive")
 
         for count_name, count_value in (
             ("expected_count", self.expected_count),
             ("retrieved_count", self.retrieved_count),
         ):
-            if (
-                count_value is not None
-                and count_value < 0
-            ):
+            if count_value is not None and count_value < 0:
                 raise ValueError(
                     f"{count_name} must not be negative"
                 )
