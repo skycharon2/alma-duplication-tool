@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import pytest
 from pyvo.dal.exceptions import DALQueryError
 
@@ -10,6 +12,18 @@ from alma_duplicate.clients.archive_contract import (
     ArchiveQueryErrorKind,
     TapExecutionError,
 )
+
+
+@dataclass(frozen=True)
+class _FakeField:
+    name: str
+    datatype: str
+    arraysize: str | None = None
+    unit: str | None = None
+    ucd: str | None = None
+    utype: str | None = None
+    xtype: str | None = None
+    description: str | None = None
 
 
 class _FakeTable:
@@ -32,9 +46,44 @@ class _FakeResult:
         "QUERY_STATUS": "OK",
         "NOTE": "offline fixture",
     }
+    fielddescs = (
+        _FakeField(
+            name="proposal_id",
+            datatype="char",
+            arraysize="*",
+            ucd="meta.id;obs.proposal",
+            description="Project code",
+        ),
+        _FakeField(
+            name="obs_id",
+            datatype="char",
+            arraysize="*",
+            utype="  archive:ObservationID  ",
+            description="  Observation identifier  ",
+        ),
+    )
 
     def to_table(self) -> _FakeTable:
         return _FakeTable()
+
+
+class _EmptyFakeTable(_FakeTable):
+    def __iter__(self):
+        return iter(())
+
+
+class _EmptyFakeResult(_FakeResult):
+    def to_table(self) -> _EmptyFakeTable:
+        return _EmptyFakeTable()
+
+
+class _MismatchedMetadataResult(_FakeResult):
+    fielddescs = (
+        _FakeField(
+            name="wrong_name",
+            datatype="char",
+        ),
+    )
 
 
 class _FakeService:
@@ -42,8 +91,10 @@ class _FakeService:
         self,
         *,
         error: Exception | None = None,
+        result: _FakeResult | None = None,
     ) -> None:
         self.error = error
+        self.result = result or _FakeResult()
         self.calls: list[tuple[str, int]] = []
 
     def run_sync(
@@ -55,7 +106,7 @@ class _FakeService:
         self.calls.append((query, maxrec))
         if self.error is not None:
             raise self.error
-        return _FakeResult()
+        return self.result
 
 
 def test_executor_converts_pyvo_result_without_network() -> None:
@@ -84,8 +135,61 @@ def test_executor_converts_pyvo_result_without_network() -> None:
     assert response.rows[0]["proposal_id"] == (
         "2021.A.00028.S"
     )
+    assert response.field_metadata[0].name == "proposal_id"
+    assert response.field_metadata[0].datatype == "char"
+    assert response.field_metadata[0].arraysize == "*"
+    assert response.field_metadata[0].unit is None
+    assert response.field_metadata[0].ucd == (
+        "meta.id;obs.proposal"
+    )
+    assert response.field_metadata[0].description == (
+        "Project code"
+    )
+    assert response.field_metadata[1].utype == (
+        "  archive:ObservationID  "
+    )
+    assert response.field_metadata[1].description == (
+        "  Observation identifier  "
+    )
     assert response.warnings == (
         "NOTE=offline fixture",
+    )
+
+
+def test_zero_row_result_preserves_field_metadata() -> None:
+    executor = PyvoTapExecutor(
+        "https://example.invalid/tap",
+        service=_FakeService(result=_EmptyFakeResult()),
+    )
+
+    response = executor.execute(
+        "SELECT proposal_id, obs_id FROM ivoa.obscore",
+        maxrec=25,
+    )
+
+    assert response.rows == ()
+    assert tuple(
+        field.name
+        for field in response.field_metadata
+    ) == response.declared_columns
+
+
+def test_misaligned_field_metadata_is_format_error() -> None:
+    executor = PyvoTapExecutor(
+        "https://example.invalid/tap",
+        service=_FakeService(
+            result=_MismatchedMetadataResult()
+        ),
+    )
+
+    with pytest.raises(TapExecutionError) as caught:
+        executor.execute(
+            "SELECT proposal_id, obs_id FROM ivoa.obscore",
+            maxrec=25,
+        )
+
+    assert caught.value.kind is (
+        ArchiveQueryErrorKind.RESPONSE_FORMAT_ERROR
     )
 
 

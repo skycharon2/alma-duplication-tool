@@ -17,6 +17,7 @@ from alma_duplicate.clients.archive_client import (
 from alma_duplicate.clients.archive_contract import (
     ArchiveQueryErrorKind,
     ArchiveQueryStatus,
+    TapFieldMetadata,
     TapResponse,
 )
 from alma_duplicate.clients.archive_queries import (
@@ -43,6 +44,24 @@ FIXTURE_PATH = (
     / "archive"
     / "archive_pipeline_v04.ecsv"
 )
+
+
+def _field_metadata(
+    columns: tuple[str, ...],
+) -> tuple[TapFieldMetadata, ...]:
+    return tuple(
+        TapFieldMetadata(
+            name=column,
+            datatype="char",
+            arraysize="*",
+            unit=None,
+            ucd=None,
+            utype=None,
+            xtype=None,
+            description=f"Fixture metadata for {column}",
+        )
+        for column in columns
+    )
 
 
 def _fixture_rows() -> tuple[dict[str, object], ...]:
@@ -72,11 +91,17 @@ def _complete_query_result():
                     },
                 ),
                 declared_columns=("total_matches",),
+                field_metadata=_field_metadata(
+                    ("total_matches",)
+                ),
                 query_status_raw="OK",
             ),
             TapResponse(
                 rows=rows,
                 declared_columns=declared_columns,
+                field_metadata=_field_metadata(
+                    declared_columns
+                ),
                 query_status_raw="OK",
             ),
         ]
@@ -113,6 +138,10 @@ def test_complete_fixture_runs_full_pipeline() -> None:
     assert query_result.status is (
         ArchiveQueryStatus.COMPLETE
     )
+    assert pipeline.query_result.field_metadata == (
+        query_result.field_metadata
+    )
+    assert len(pipeline.query_result.field_metadata) == 23
     assert len(pipeline.prepared_rows) == 5
     assert pipeline.reconstruction.linked_row_count == 4
     assert pipeline.reconstruction.unlinked_row_count == 1
