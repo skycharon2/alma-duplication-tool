@@ -22,6 +22,7 @@ from .archive_contract import (
     ArchiveQueryStatus,
     TapExecutionError,
     TapExecutor,
+    TapFieldMetadata,
     TapResponse,
 )
 from .archive_queries import (
@@ -57,6 +58,7 @@ __all__ = [
     "PyvoTapExecutor",
     "TapExecutionError",
     "TapExecutor",
+    "TapFieldMetadata",
     "TapResponse",
     "build_count_adql",
     "build_retrieval_adql",

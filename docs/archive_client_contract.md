@@ -1,4 +1,4 @@
-# Archive TAP Client Completeness Contract
+# Archive TAP Client Completeness and Field-Metadata Contract
 
 ## Purpose
 
@@ -17,7 +17,8 @@ The client is responsible for:
 - validating spatial query parameters;
 - constructing COUNT and retrieval ADQL from one shared predicate;
 - executing TAP queries with explicit MAXREC values;
-- preserving declared columns, raw scalar values, masks, and warnings;
+- preserving declared columns, ordered VOTable field descriptors, raw scalar
+  values, masks, and warnings;
 - inspecting TAP `QUERY_STATUS`;
 - reconciling expected and retrieved row counts;
 - validating the versioned required-column contract;
@@ -42,10 +43,11 @@ One `ArchiveClient.search()` call performs:
 3. COUNT execution with `MAXREC=1`;
 4. COUNT response and `total_matches` validation;
 5. retrieval with the configured explicit MAXREC;
-6. declared-schema validation;
+6. ordered retrieval field-metadata capture and declared-schema validation;
 7. retrieval `QUERY_STATUS` validation;
 8. COUNT/retrieval reconciliation; and
-9. construction of one immutable `ArchiveQueryResult`.
+9. construction of one immutable `ArchiveQueryResult` containing the
+   retrieval field metadata.
 
 The retrieval query uses an explicit projection. It does not use `SELECT *` or
 Notebook-style exploratory `TOP` limits.
@@ -99,6 +101,21 @@ spatial, spectral, normalization, and observation-role fields required by the
 v0.4 adapter and reconstruction model. Raw Archive field names, including
 `lastModified`, are preserved at ingestion.
 
+Each `TapResponse` also contains one ordered `TapFieldMetadata` descriptor per
+declared column. The descriptor preserves the source-reported `name`,
+`datatype`, `arraysize`, `unit`, `ucd`, `utype`, `xtype`, and `description` as
+exposed by PyVO. Optional attributes remain `None` when absent. Descriptor
+names must exactly match `declared_columns` in response order; a mismatch is a
+`RESPONSE_FORMAT_ERROR` rather than silently associating metadata with the
+wrong value column.
+
+Field descriptors come from the VOTable `FIELD` definitions and therefore
+remain available for a valid zero-row response. `ArchiveQueryResult` preserves
+the retrieval descriptors for `COMPLETE`, `OVERFLOW`, `COUNT_MISMATCH`, and
+errors that received a retrieval response. Failures before retrieval have an
+empty metadata tuple. COUNT response metadata remains available at the
+executor boundary but is not substituted for retrieval metadata.
+
 Missing fields produce:
 
 ```text
@@ -134,9 +151,10 @@ technical provenance, not an Archive entity identifier.
 ## TAP boundary
 
 `PyvoTapExecutor` is the only production component that depends on PyVO result
-and exception classes. It converts PyVO results into source-neutral
-`TapResponse` objects and converts recognized DAL failures into structured
-`TapExecutionError` values.
+and exception classes. It converts PyVO rows and `fielddescs` into
+source-neutral `TapResponse` objects and converts recognized DAL failures into
+structured `TapExecutionError` values. Metadata text is not passed through
+Archive row normalization or parser logic.
 
 `ArchiveClient` depends on the `TapExecutor` protocol. This permits the live
 executor to be replaced with `FakeTapExecutor` in local and CI tests.
@@ -171,6 +189,7 @@ Ordinary unit and integration tests are offline:
 - the pipeline integration test loads a small local ECSV fixture; and
 - incomplete-result gates are tested without a live network.
 
-Live ALMA TAP smoke tests, if added later, must be explicitly marked and placed
-in a separately invoked workflow. They must not block ordinary pull-request
-checks because service availability and Archive contents can change.
+The opt-in live ALMA TAP smoke tests are marked `live`, skipped by default, and
+run only in the manual workflow. They exercise the current service through
+reconstruction without blocking ordinary pull-request checks, because service
+availability and Archive contents can change.

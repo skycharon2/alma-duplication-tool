@@ -10,8 +10,27 @@ from alma_duplicate.clients.archive_contract import (
     ArchiveQueryProvenance,
     ArchiveQueryResult,
     ArchiveQueryStatus,
+    TapFieldMetadata,
     TapResponse,
 )
+
+
+def _field_metadata(
+    *names: str,
+) -> tuple[TapFieldMetadata, ...]:
+    return tuple(
+        TapFieldMetadata(
+            name=name,
+            datatype="char",
+            arraysize="*",
+            unit=None,
+            ucd=None,
+            utype=None,
+            xtype=None,
+            description=None,
+        )
+        for name in names
+    )
 
 
 def _provenance(
@@ -52,7 +71,7 @@ def _provenance(
         count_query_status_raw="OK",
         retrieval_query_status_raw="OK",
         query_hash="example-query-hash",
-        client_version="1",
+        client_version="2",
         schema_version="1",
     )
 
@@ -72,6 +91,7 @@ def test_valid_empty_result_is_complete() -> None:
         status=ArchiveQueryStatus.COMPLETE,
         rows=(),
         provenance=_provenance(),
+        field_metadata=(),
     )
 
     assert result.rows == ()
@@ -91,6 +111,7 @@ def test_incomplete_result_preserves_partial_rows() -> None:
             expected_count=2,
             retrieved_count=1,
         ),
+        field_metadata=_field_metadata("proposal_id"),
     )
 
     assert result.rows == (row,)
@@ -110,6 +131,7 @@ def test_error_result_requires_error_kind() -> None:
                 expected_count=None,
                 retrieved_count=None,
             ),
+            field_metadata=(),
         )
 
 
@@ -122,6 +144,7 @@ def test_non_error_result_rejects_error_kind() -> None:
             status=ArchiveQueryStatus.COMPLETE,
             rows=(),
             provenance=_provenance(),
+            field_metadata=(),
             error_kind=(
                 ArchiveQueryErrorKind.SERVICE_ERROR
             ),
@@ -137,6 +160,7 @@ def test_complete_result_rejects_schema_drift() -> None:
             status=ArchiveQueryStatus.COMPLETE,
             rows=(),
             provenance=_provenance(),
+            field_metadata=(),
             missing_columns=("obs_id",),
         )
 
@@ -146,6 +170,7 @@ def test_contract_objects_are_frozen() -> None:
         status=ArchiveQueryStatus.COMPLETE,
         rows=(),
         provenance=_provenance(),
+        field_metadata=(),
     )
 
     with pytest.raises(FrozenInstanceError):
@@ -159,6 +184,10 @@ def test_empty_tap_response_preserves_schema() -> None:
             "proposal_id",
             "obs_id",
         ),
+        field_metadata=_field_metadata(
+            "proposal_id",
+            "obs_id",
+        ),
         query_status_raw="OK",
     )
 
@@ -167,3 +196,45 @@ def test_empty_tap_response_preserves_schema() -> None:
         "proposal_id",
         "obs_id",
     )
+    assert tuple(
+        field.name
+        for field in response.field_metadata
+    ) == response.declared_columns
+
+
+def test_tap_response_rejects_misaligned_field_metadata() -> None:
+    with pytest.raises(
+        ValueError,
+        match="must match declared columns",
+    ):
+        TapResponse(
+            rows=(),
+            declared_columns=("proposal_id",),
+            field_metadata=_field_metadata("obs_id"),
+            query_status_raw="OK",
+        )
+
+
+@pytest.mark.parametrize(
+    ("name", "datatype", "message"),
+    [
+        (" ", "char", "name"),
+        ("proposal_id", " ", "datatype"),
+    ],
+)
+def test_tap_field_metadata_requires_identity(
+    name: str,
+    datatype: str,
+    message: str,
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        TapFieldMetadata(
+            name=name,
+            datatype=datatype,
+            arraysize=None,
+            unit=None,
+            ucd=None,
+            utype=None,
+            xtype=None,
+            description=None,
+        )

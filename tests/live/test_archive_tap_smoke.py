@@ -8,6 +8,7 @@ import pytest
 
 from alma_duplicate.clients import (
     ARCHIVE_SCHEMA_VERSION,
+    ARCHIVE_SELECTED_COLUMNS,
     ArchiveClient,
     ArchiveQuerySpec,
     ArchiveQueryStatus,
@@ -75,6 +76,7 @@ def test_live_archive_tap_contract(
         f"\n  count_status={provenance.count_query_status_raw}"
         f"\n  retrieval_status="
         f"{provenance.retrieval_query_status_raw}"
+        f"\n  field_metadata={len(result.field_metadata)}"
         f"\n  query_run_id={provenance.query_run_id}"
         f"\n  query_hash={provenance.query_hash}"
     )
@@ -89,6 +91,14 @@ def test_live_archive_tap_contract(
     assert result.error_kind is None
     assert result.error_message is None
     assert result.missing_columns == ()
+    assert tuple(
+        field.name
+        for field in result.field_metadata
+    ) == ARCHIVE_SELECTED_COLUMNS
+    assert all(
+        field.datatype.strip()
+        for field in result.field_metadata
+    )
 
     expected_endpoint = os.environ.get(
         "ALMA_TAP_ENDPOINT",
@@ -117,6 +127,7 @@ def test_live_archive_tap_contract(
         character in "0123456789abcdef"
         for character in provenance.query_hash
     )
+
 
 def test_live_archive_pipeline_contract(
     live_archive_result: ArchiveQueryResult,
