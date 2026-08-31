@@ -3,7 +3,8 @@
 ## Purpose
 
 Implementation contract for ingesting the 73 columns in the public ALMA
-`ivoa.obscore` TAP view into Archive Reconstruction Model v0.4. It records:
+`ivoa.obscore` TAP view into Archive Reconstruction Model v0.4. It consolidates
+evidence from Notebooks 01 through 04c and records:
 
 - the service type and unit;
 - the internal owner or engineering role;
@@ -14,26 +15,42 @@ It is not the official internal ALMA database schema. Raw TAP values always
 remain authoritative evidence; normalized and derived values are versioned
 projections.
 
-## Evidence snapshot
+## Evidence snapshots
 
-Snapshot date: 2026-08-25.
+The structural census was captured on 2026-08-25. Notebook 04c added a
+semantic-closure snapshot captured at
+`2026-08-31T12:27:55.081125+00:00`.
 
-| Evidence | Result |
-|---|---:|
-| Live columns | 73 |
-| Schema SHA-256 | `2cb2009067ab50f1727454ccb57cb1280c81ad4bfa3a10a9c2df2f0de7044c15` |
-| Science-target rows | 442,507 |
-| Proposal IDs / publisher DIDs | 5,611 / 5,611 |
-| Frequency-support bracket / brace rows | 442,452 / 55 |
-| STC-S CIRCLE / POLYGON / UNION rows | 194,500 / 245,655 / 2,352 |
-| Cube / image rows | 305,618 / 136,889 |
+| Evidence | 2026-08-25 structural snapshot | 2026-08-31 semantic snapshot |
+|---|---:|---:|
+| Live `ivoa.obscore` columns | 73 | 73 |
+| Schema SHA-256 | `2cb2009067ab50f1727454ccb57cb1280c81ad4bfa3a10a9c2df2f0de7044c15` | Not recomputed |
+| Science-target rows | 442,507 | 443,211 |
+| Proposal IDs / publisher DIDs | 5,611 / 5,611 | Not recounted |
+| Distinct proposal / top-level `type` pairs | Not counted | 5,614 |
+| Frequency-support bracket / brace rows | 442,452 / 55 | Not recounted |
+| Standard `continuum` / `line` / `FDM` / `TDM` tokens in `frequency_support` | Not counted | 0 / 0 / 0 / 0 |
+| STC-S CIRCLE / POLYGON / UNION rows | 194,500 / 245,655 / 2,352 | Not recounted |
+| Cube / image rows | 305,618 / 136,889 | Not recounted |
 
-Counts describe this snapshot, not permanent Archive constraints.
+The increase from 442,507 to 443,211 science-target rows demonstrates that
+Archive populations are dynamic. Counts from different capture times must not
+be combined as if they describe one immutable snapshot.
+
+## Implementation boundary
+
+The production Archive client v1 preserves row values, selected column names,
+query status, warnings, COUNT/retrieval reconciliation, and query provenance.
+It does not yet preserve a complete per-field snapshot of TAP datatype, unit,
+UCD, arraysize, and description. That field-metadata snapshot is an Archive
+ingestion v2 requirement and must be completed before a shared Archive/queue
+comparison model relies on service metadata instead of explicit adapters.
 
 ## Ingestion contract
 
-1. Store the complete raw row, Astropy mask state, service unit, query run, and
-   result ordinal before normalization.
+1. Store the complete raw row, Astropy mask state, query run, and result
+   ordinal before normalization. Preserve service field metadata when the v2
+   metadata contract is introduced.
 2. Give every raw row an internal surrogate `raw_row_id`.
 3. Keep raw, normalized, parsed, and derived values separate.
 4. Reconcile `COUNT(*)`, retrieved row count, and `QUERY_STATUS`; incomplete
@@ -46,12 +63,13 @@ Counts describe this snapshot, not permanent Archive constraints.
 
 ## Field catalogue
 
-### Identity and hierarchy — 7 fields
+### Identity, hierarchy, and project classification — 8 fields
 
 | Archive field | TAP type / unit | Internal owner | Required handling |
 |---|---|---|---|
 | `proposal_id` | `char` / — | `PROJECT` | Preserve raw. Current alternate project identifier with `obs_publisher_did`; not a row key. |
 | `obs_publisher_did` | `char` / — | `PROJECT` | Validate `ADS/JAO.ALMA#<proposal_id>`. It is proposal-scoped, not a row, product, Member, ASDM, Source, SPW, or file identifier. |
+| `type` | `char` / — | `PROJECT` classification evidence | Preserve raw. In the 2026-08-31 census, `S`, `L`, `T`, `V`, `SV`, `E`, `P`, and `CAL` exactly matched the terminal `proposal_id` suffix across 5,614 distinct pairs. Treat the value set as open, retain unknown values, and never interpret this field as science intent or FDM/TDM mode. |
 | `group_ous_uid` | `char` / — | `GROUP_OUS` | Optional. Normalize blank to missing while retaining the raw blank. |
 | `member_ous_uid` | `char` / — | `MEMBER_OUS` | Dataset grouping identifier. Do not equate a Member with one execution, observation, product, or row. |
 | `asdm_uid` | `char` / — | `ASDM_EXECUTION` | Retain in the Source-Execution context; one Member may associate with multiple ASDMs. |
@@ -67,8 +85,8 @@ Counts describe this snapshot, not permanent Archive constraints.
 | `s_fov` | `double` / deg | `SPATIAL_FOOTPRINT` cross-check | Preserve as representative field-of-view evidence; not a footprint replacement. |
 | `s_region` | `char` / — | `SPATIAL_FOOTPRINT` | Preserve raw STC-S. Parse current CIRCLE, POLYGON, and UNION families with unknown fallback. Execution-scoped. |
 | `is_mosaic` | `char` / — | `SOURCE_EXEC_CONTEXT` | Normalize known `T`/`F`; preserve other values. Geometry family does not determine mosaic state. |
-| `s_resolution` | `double` / arcsec | `SOURCE_EXEC_CONTEXT` cross-check | Preserve independently from `spatial_resolution`; no equality constraint. |
-| `spatial_resolution` | `double` / arcsec | `SOURCE_EXEC_CONTEXT` | Archive-specific spatial-resolution summary. Keep separate from `s_resolution`. |
+| `s_resolution` | `double` / arcsec | `SOURCE_EXEC_CONTEXT` cross-check | Preserve independently from `spatial_resolution`; no equality constraint. It is ObsCore evidence, not the primary ALMA candidate-query field. |
+| `spatial_resolution` | `double` / arcsec | `SOURCE_EXEC_CONTEXT` | Primary Archive angular-resolution evidence for candidate retrieval. The service describes it as the average of maximum and minimum spatial-resolution values across SPWs. Treat it as approximate/derived metadata, not a measured FITS restoring beam, and keep it separate from `s_resolution`. |
 | `spatial_scale_max` | `double` / arcsec | `SOURCE_EXEC_CONTEXT` cross-check | Maximum recoverable-scale evidence; optional for spatial policy. |
 | `antenna_arrays` | `char` / — | `SOURCE_EXEC_CONTEXT` | Preserve raw pad:antenna pairs. Prefix-based array type is heuristic evidence, not authoritative classification. |
 | `band_list` | `char` / — | `SOURCE_EXEC_CONTEXT` | Preserve receiver-band labels; never substitute for exact spectral coverage. |
@@ -82,15 +100,15 @@ Counts describe this snapshot, not permanent Archive constraints.
 |---|---|---|---|
 | `frequency` | `double` / GHz | `SOURCE_SPW_ASSOCIATION` | Exact row reference frequency. Keep separate from parsed support-component centre. |
 | `bandwidth` | `double` / Hz | `SOURCE_SPW_ASSOCIATION` | Archive bandwidth. Keep separate from interval width and brace token 2. |
-| `frequency_support` | `char` / GHz | `FREQUENCY_SUPPORT_SIGNATURE` | Service declares GHz, but the raw composite embeds GHz, kHz, sensitivity, and polarization values. Preserve raw text; dispatch bracket/brace grammar and retain error states. |
+| `frequency_support` | `char` / GHz | `FREQUENCY_SUPPORT_SIGNATURE` | Service declares GHz, but the raw composite embeds GHz, kHz, sensitivity, and polarization values. Preserve raw text; dispatch bracket/brace grammar and retain error states. The documented nested Frequency Support Type (`continuum`/`line`) was not exposed in the tested raw strings; do not fabricate or infer it. |
 | `spectral_resolution` | `double` / kHz | `SOURCE_SPW_ASSOCIATION` | Preserve independently from parsed component resolution and bandwidth. |
 | `velocity_resolution` | `double` / m/s | `OBSERVATION_MODE_EVIDENCE` | Archive summary; do not replace with or require equality to a row-level derivation. |
 | `em_resolution` | `double` / m | `OBSERVATION_MODE_EVIDENCE` | Wavelength-domain resolution cross-check. Compare only after explicit unit conversion. |
 | `em_min` | `double` / m | Spectral cross-check | Lower wavelength bound. Use tolerance-aware conversion to frequency. |
 | `em_max` | `double` / m | Spectral cross-check | Upper wavelength bound. Account for inverse wavelength/frequency ordering. |
 | `em_res_power` | `double` / — | Spectral cross-check | Preserve resolving-power evidence; not primary SPW identity. |
-| `sensitivity_10kms` | `double` / mJy/beam | `SOURCE_SPW_ASSOCIATION` | Line sensitivity normalized to 10 km/s. Keep distinct from native and continuum sensitivity. |
-| `cont_sensitivity_bandwidth` | `double` / mJy/beam | `SOURCE_EXEC_CONTEXT` | Aggregate continuum-sensitivity evidence; not component-native sensitivity. |
+| `sensitivity_10kms` | `double` / mJy/beam | `SOURCE_SPW_ASSOCIATION` | Estimated line sensitivity at a nominal 10 km/s bandwidth. It does not fully include flagging or Hanning-smoothing effects, and 10 km/s may not be achievable for every dataset. Keep it distinct from native and continuum sensitivity and do not label it achieved QA2 RMS. |
+| `cont_sensitivity_bandwidth` | `double` / mJy/beam | `SOURCE_EXEC_CONTEXT` | Estimated noise over the aggregated continuum bandwidth. It does not fully include flagging or dynamic-range limitations. Keep it distinct from component-native and line sensitivity and do not label it achieved QA2 RMS. |
 | `pol_states` | `char` / — | `SOURCE_SPW_ASSOCIATION` | Preserve raw polarization representation; allow future grammars. |
 
 ### Time, role, QA, and release — 10 fields
@@ -101,20 +119,19 @@ Counts describe this snapshot, not permanent Archive constraints.
 | `t_max` | `double` / d | `SOURCE_EXEC_CONTEXT` | Upper MJD temporal bound. Validate `t_max >= t_min` when both are present. |
 | `t_exptime` | `double` / s | Cross-check | Exposure summary; not a unique execution duration. |
 | `t_resolution` | `double` / s | Cross-check | Optional time-resolution evidence. |
-| `science_observation` | `char` / — | Retrieval role | Normalize known `T`/`F`. Initial duplication search uses `T`; other roles remain a separate population. |
+| `science_observation` | `char` / — | Retrieval role | Normalize known `T`/`F`. Initial duplication search uses `T`; other roles remain a separate population. Its `T` value is unrelated to top-level `type = 'T'`. |
 | `scan_intent` | `char` / — | Observation-role evidence | Preserve the complete raw intent list; do not collapse TARGET, calibration, CHECK, and WVR roles. |
 | `data_rights` | `char` / — | Access metadata | Preserve raw state. Do not infer release from this field alone. |
-| `qa2_passed` | `char` / — | QA metadata | Normalize known `T`/`F`; preserve missing or other states independently from access. |
+| `qa2_passed` | `char` / — | QA metadata | Normalize known `T`/`F`; preserve missing or other states independently from access. Retain it as quality-state evidence, not a default ingestion filter. Any inclusion/exclusion rule belongs to explicit duplication policy. |
 | `obs_release_date` | `char` / — | Release metadata | Parse into a derived timestamp. Classify `3000-01-01...` as a sentinel, not a real future date. |
 | `lastModified` | `char` / — | Cache/query provenance | Parse separately as a timestamp for cache invalidation. Not scientific identity. |
 
-### Row product and service metadata — 16 fields
+### Row product and service metadata — 15 fields
 
 | Archive field | TAP type / unit | Internal owner | Required handling |
 |---|---|---|---|
 | `dataproduct_type` | `char` / — | `ROW_PRODUCT_METADATA` | Current science rows are cube or image. Do not infer physical file count. |
 | `calib_level` | `int` / — | `ROW_PRODUCT_METADATA` | Current science snapshot is level 2; service definition also permits other levels. Do not encode level 2 as permanent. |
-| `type` | `char` / — | `ROW_PRODUCT_METADATA` | Preserve raw ALMA type flags; not entity identity. |
 | `access_url` | `char` / — | `ROW_PRODUCT_METADATA` deferred | URL locator only. Do not use URL stability as scientific or product identity. |
 | `access_format` | `char` / — | `ROW_PRODUCT_METADATA` deferred | MIME-like value. Preserve raw. Observed output was width-limited to `applicati`; validate declared width before parsing. |
 | `access_estsize` | `int` / kbyte | `ROW_PRODUCT_METADATA` optional | NULL in all current science rows. Never require it. |
@@ -169,6 +186,11 @@ The catalogue contains all 73 live fields exactly once.
 | Execution ownership | Verified `3C279`/`3c279` across two ASDMs, maximum separation 0.000547 arcsec; footprint, support, resolution, antenna, time, and sensitivity differed. | Keep these values at Source-Execution scope, not pure Source scope. |
 | STC-S | Archive-wide families: 194,500 CIRCLE, 245,655 POLYGON, 2,352 UNION; zero missing/unknown. Strict parsing tested 40 examples per family. | Support current families and raw fallback. Do not claim Archive-wide interior validation. |
 | Resolution fields | `s_resolution != spatial_resolution` in 41,365 of 442,507 rows. | Separate storage and comparison; never alias. |
+| Primary angular-resolution evidence | The service definitions differ, and the official ALMA spatial-resolution query examples use `spatial_resolution`. | Use `spatial_resolution` for initial Archive candidate retrieval; retain `s_resolution` as an independent cross-check. Neither field is a measured FITS restoring beam. |
+| Top-level `type` | On 2026-08-31, all 5,614 distinct proposal/type pairs matched the terminal `proposal_id` suffix; observed values were `S`, `L`, `T`, `V`, `SV`, `E`, `P`, and `CAL`. | Treat as proposal/project classification with an unknown-value fallback. It is unrelated to `science_observation = 'T'` and must not be interpreted as FDM/TDM. |
+| Frequency-Support mode representation | Across all 443,211 science-target rows on 2026-08-31, standard `continuum`, `line`, `FDM`, and `TDM` literals each matched zero `frequency_support` strings. No separate mode column was identified among the 73 `ivoa.obscore` columns. | Record a representation gap. Do not infer mode from top-level `type`, bandwidth, or spectral resolution. Investigate only documented TAP tables, stable APIs, DataLink, or other supported VO representations. |
+| Sensitivity basis | TAP metadata defines `cont_sensitivity_bandwidth` and `sensitivity_10kms` as estimates with documented limitations. | Preserve them as distinct estimated evidence. Do not represent either as achieved QA2 image-product RMS. |
+| QA2 boundary | Observational metadata can be available after QA0 while later processing or QA2 remains incomplete. | Preserve `qa2_passed` as evidence; do not add `qa2_passed = 'T'` as an implicit client filter. |
 | Wavelength/frequency bounds | Five exact floating-point sample failures were all within 1 Hz; maximum boundary difference was about `2.84e-5 Hz`. | Explicit unit conversion and declared tolerance; no direct float equality. |
 | Product metadata | 305,618 cube and 136,889 image rows; all current science rows level 2. Axis/size availability is uneven. | Row-level product description only; physical file granularity unresolved. |
 | Determinism | Reconstruction hashes matched for seeds 0, 1, 7, 42, and 2026. | Reconstruction and mapping must not depend on TAP row order. |
@@ -184,6 +206,8 @@ The catalogue contains all 73 live fields exactly once.
 | STC-S family | `CIRCLE`, `POLYGON`, `UNION`, `MISSING`, `BLANK`, `UNKNOWN` |
 | Reconstruction | `LINKED`, `UNLINKED_PARSE_FAILURE`, `UNLINKED_AMBIGUOUS`, `TRUNCATION_RISK` |
 | Missing normalization | `PRESENT`, `MASKED`, `NULL`, `BLANK_NORMALIZED`, `SENTINEL_3000_DATE` |
+| Project classification | Known current raw values plus explicit unknown-value preservation; never coerce an unknown value into a current class |
+| Observation-mode availability | `NOT_EXPOSED`, `AUTHORITATIVE_VALUE_AVAILABLE`, `UNKNOWN`; a later vocabulary may be introduced only when a stable source representation exists |
 
 Status vocabularies and parser versions belong in code constants and tests,
 not ad-hoc strings distributed across notebooks.
@@ -197,9 +221,26 @@ not ad-hoc strings distributed across notebooks.
 - global physical-target identity from source labels;
 - individual mosaic pointings;
 - moving/Solar-system target equivalence;
-- authoritative FDM/TDM labels;
+- a stable programmatic representation of the documented nested Frequency
+  Support Type (`continuum`/`line`, mapping to TDM/FDM);
+- achieved image-product sensitivity or measured FITS restoring-beam values;
+- a complete production snapshot of TAP datatype, unit, UCD, arraysize, and
+  description for every retrieved field;
 - primary-beam, spectral-smoothing, and final duplication thresholds; or
 - current-cycle CSV correspondence and known-duplicate end-to-end decisions.
 
 These gaps do not block Archive reconstruction v0.4. They belong to parser
 regression tests, the queue-CSV integration, or the duplication-policy layer.
+
+## Semantic-source references
+
+- [Cycle 13 ALMA Science Archive Manual](https://almascience.eso.org/documents-and-tools/cycle13/science-archive-manual)
+- [ALMA query by spatial resolution](https://almascience.eso.org/alma-data/archive/archive-notebooks/nb5_ALMA_Query_by_spatial_resolution.html)
+- [ALMA query by sensitivity](https://almascience.eso.org/alma-data/archive/archive-notebooks/nb7_ALMA_Query_by_sensitivity.html)
+- [ALMA data resources](https://almascience.eso.org/alma-data)
+- [ALMA processing resources](https://almascience.eso.org/processing)
+
+The service metadata and population counts above were captured directly from
+the ALMA TAP service. External documentation supplies scientific semantics;
+it does not override contradictory raw TAP evidence or create fields that the
+current `ivoa.obscore` representation does not expose.
