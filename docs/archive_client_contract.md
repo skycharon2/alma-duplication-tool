@@ -8,13 +8,15 @@ into a traceable COUNT-and-retrieval run, verifies that the response is usable,
 and permits normalization and reconstruction only when completeness is proven.
 
 An incomplete or technically invalid Archive response must never support a
-negative duplication conclusion.
+negative duplication conclusion. A complete response whose scientific units
+cannot be validated may still support structural reconstruction, but its
+affected values cannot enter scientific comparison.
 
 ## Scope
 
 The client is responsible for:
 
-- validating spatial query parameters;
+- validating spatial and optional broad spectral/resolution query parameters;
 - constructing COUNT and retrieval ADQL from one shared predicate;
 - executing TAP queries with explicit MAXREC values;
 - preserving declared columns, ordered VOTable field descriptors, raw scalar
@@ -51,6 +53,25 @@ One `ArchiveClient.search()` call performs:
 
 The retrieval query uses an explicit projection. It does not use `SELECT *` or
 Notebook-style exploratory `TOP` limits.
+
+## Broad candidate prefilters
+
+Every search has an ICRS spatial predicate. A caller may also supply a
+frequency interval in GHz. COUNT and retrieval then use the same strict
+overlap predicate:
+
+```text
+frequency - bandwidth / 2 < requested maximum
+frequency + bandwidth / 2 > requested minimum
+```
+
+The ADQL converts Archive `bandwidth` from Hz to GHz before applying this
+predicate. This follows the official ALMA frequency-query notebook and is a
+broad server-side filter only; exact comparison remains local.
+
+An optional angular-resolution interval may also reduce transfer volume. Rows
+with missing `spatial_resolution` are retained by that prefilter, so unknown
+resolution evidence is not silently converted into candidate absence.
 
 ## Final statuses
 
@@ -127,6 +148,26 @@ missing_columns = (...)
 They must not be allowed to fail later as an unstructured Pandas or mapping
 `KeyError`.
 
+### Comparison-field unit contract
+
+Six fields have an additional runtime contract. The current VOTable datatype
+for each is `double`:
+
+| Field | Expected live unit | Canonical unit |
+|---|---|---|
+| `frequency` | GHz | GHz |
+| `bandwidth` | Hz | GHz |
+| `spectral_resolution` | kHz | kHz |
+| `spatial_resolution` | arcsec | arcsec |
+| `sensitivity_10kms` | mJy/beam | mJy/beam |
+| `cont_sensitivity_bandwidth` | mJy/beam | mJy/beam |
+
+Compatible unit changes are converted through Astropy and reported as
+`COMPATIBLE_CONVERSION`. Missing metadata, datatype drift, missing units, and
+dimensionally incompatible units fail closed for the affected quantity. The
+adapter never treats a bare float as GHz, Hz, kHz, arcsec, or mJy/beam merely
+because of its column name.
+
 ## Query provenance
 
 Every success and failure path records:
@@ -172,8 +213,21 @@ For each accepted raw row it:
 1. assigns an internal row ID scoped to query run and result index;
 2. preserves the complete raw mapping;
 3. creates `ArchiveMetadataInput` and normalization results;
-4. creates the minimal `ArchiveRowInput` projection; and
-5. invokes deterministic reconstruction.
+4. creates the minimal `ArchiveRowInput` projection;
+5. validates the live comparison-field unit contract once per result;
+6. creates typed Archive comparison evidence for each row; and
+7. invokes deterministic reconstruction.
+
+The typed projection keeps the raw value, source unit, canonical value/unit,
+field/query provenance, and an availability status. It distinguishes Archive
+line sensitivity at 10 km/s from aggregate-bandwidth continuum sensitivity;
+both are labelled QA0-EB-metadata calculator estimates, not achieved FITS RMS.
+
+The Archive manual calls `frequency` a sky frequency but does not identify a
+public comparison-ready reference frame for the TAP value. Typed frequency
+coverage therefore carries `SKY_FREQUENCY_FRAME_UNSPECIFIED`, and cross-source
+frequency readiness remains false until an approved Archive--Queue frame
+mapping exists.
 
 The raw mapping is not overwritten by normalized or parsed values. Input row
 order is preserved in `prepared_rows`; reconstruction remains canonical under
@@ -193,3 +247,9 @@ The opt-in live ALMA TAP smoke tests are marked `live`, skipped by default, and
 run only in the manual workflow. They exercise the current service through
 reconstruction without blocking ordinary pull-request checks, because service
 availability and Archive contents can change.
+
+## Official references
+
+- [ALMA query by frequency notebook](https://almascience.eso.org/alma-data/archive/archive-notebooks/nb6_ALMA_Query_by_frequency.html)
+- [ALMA query by sensitivity notebook](https://almascience.eso.org/alma-data/archive/archive-notebooks/nb7_ALMA_Query_by_sensitivity.html)
+- [Cycle 13 Science Archive Manual](https://almascience.eso.org/documents-and-tools/cycle13/science-archive-manual)

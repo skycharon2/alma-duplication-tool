@@ -9,6 +9,14 @@ from alma_duplicate.clients.archive_contract import (
     ArchiveQueryResult,
     RawArchiveRow,
 )
+from alma_duplicate.clients.archive_field_contract import (
+    ArchiveFieldContractValidation,
+    build_archive_comparison_evidence,
+    validate_archive_comparison_metadata,
+)
+from alma_duplicate.domain.archive_evidence import (
+    ArchiveComparisonEvidence,
+)
 from alma_duplicate.domain.normalization import (
     ArchiveMetadataInput,
     ArchiveMetadataNormalization,
@@ -26,7 +34,7 @@ from alma_duplicate.reconstruction import (
 )
 
 
-ADAPTER_VERSION = "1"
+ADAPTER_VERSION = "2"
 
 
 class IncompleteArchiveQueryError(RuntimeError):
@@ -46,6 +54,7 @@ class PreparedArchiveRow:
     raw_row: RawArchiveRow
     normalized_metadata: ArchiveMetadataNormalization
     reconstruction_input: ArchiveRowInput
+    comparison_evidence: ArchiveComparisonEvidence
     adapter_version: str = ADAPTER_VERSION
 
 
@@ -54,9 +63,22 @@ class ArchivePipelineBatch:
     """Output of the offline Archive preparation pipeline."""
 
     query_result: ArchiveQueryResult
+    field_contract: ArchiveFieldContractValidation
     prepared_rows: tuple[PreparedArchiveRow, ...]
     reconstruction: ReconstructionBatch
     adapter_version: str = ADAPTER_VERSION
+
+    @property
+    def comparison_units_safe(self) -> bool:
+        """Return whether live units are usable for every prepared row."""
+
+        return (
+            self.field_contract.is_usable
+            and all(
+                prepared.comparison_evidence.unit_safe
+                for prepared in self.prepared_rows
+            )
+        )
 
 
 def _required_value(
@@ -107,6 +129,8 @@ def _optional_finite_float(
 
 def prepare_archive_rows(
     result: ArchiveQueryResult,
+    *,
+    field_contract: ArchiveFieldContractValidation | None = None,
 ) -> tuple[PreparedArchiveRow, ...]:
     """Prepare raw rows only after query completeness is established."""
 
@@ -117,6 +141,13 @@ def prepare_archive_rows(
         )
 
     prepared_rows: list[PreparedArchiveRow] = []
+    validated_fields = (
+        field_contract
+        if field_contract is not None
+        else validate_archive_comparison_metadata(
+            result.field_metadata
+        )
+    )
 
     for result_index, raw_row in enumerate(result.rows):
         raw_row_id = (
@@ -207,6 +238,13 @@ def prepare_archive_rows(
                 )
             ),
         )
+        comparison_evidence = build_archive_comparison_evidence(
+            raw_row,
+            validated_fields,
+            query_run_id=result.provenance.query_run_id,
+            raw_row_id=raw_row_id,
+            result_index=result_index,
+        )
 
         prepared_rows.append(
             PreparedArchiveRow(
@@ -215,6 +253,7 @@ def prepare_archive_rows(
                 raw_row=raw_row,
                 normalized_metadata=normalized_metadata,
                 reconstruction_input=reconstruction_input,
+                comparison_evidence=comparison_evidence,
             )
         )
 
@@ -226,7 +265,13 @@ def run_archive_pipeline(
 ) -> ArchivePipelineBatch:
     """Normalize, parse, and reconstruct one complete query result."""
 
-    prepared_rows = prepare_archive_rows(result)
+    field_contract = validate_archive_comparison_metadata(
+        result.field_metadata
+    )
+    prepared_rows = prepare_archive_rows(
+        result,
+        field_contract=field_contract,
+    )
     reconstruction = reconstruct_archive_rows(
         prepared.reconstruction_input
         for prepared in prepared_rows
@@ -234,6 +279,7 @@ def run_archive_pipeline(
 
     return ArchivePipelineBatch(
         query_result=result,
+        field_contract=field_contract,
         prepared_rows=prepared_rows,
         reconstruction=reconstruction,
     )

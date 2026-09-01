@@ -1,4 +1,4 @@
-"""Pure ADQL construction for ALMA Archive spatial searches."""
+"""Pure ADQL construction for broad ALMA Archive candidate searches."""
 
 from __future__ import annotations
 
@@ -49,12 +49,20 @@ REQUIRED_ARCHIVE_COLUMNS = frozenset(
 
 @dataclass(frozen=True, slots=True)
 class ArchiveQuerySpec:
-    """Validated spatial candidate-search parameters."""
+    """Validated broad candidate-search parameters.
+
+    Frequency and angular-resolution bounds are optional prefilters.  They
+    reduce network volume but do not replace strict local comparison.
+    """
 
     ra_deg: float
     dec_deg: float
     radius_deg: float
     science_only: bool = True
+    frequency_min_ghz: float | None = None
+    frequency_max_ghz: float | None = None
+    angular_resolution_min_arcsec: float | None = None
+    angular_resolution_max_arcsec: float | None = None
 
     def __post_init__(self) -> None:
         _validate_finite_real("ra_deg", self.ra_deg)
@@ -79,6 +87,19 @@ class ArchiveQuerySpec:
         if not isinstance(self.science_only, bool):
             raise TypeError("science_only must be a bool")
 
+        _validate_optional_interval(
+            "frequency",
+            self.frequency_min_ghz,
+            self.frequency_max_ghz,
+            minimum=0.0,
+        )
+        _validate_optional_interval(
+            "angular_resolution",
+            self.angular_resolution_min_arcsec,
+            self.angular_resolution_max_arcsec,
+            minimum=0.0,
+        )
+
 
 def _validate_finite_real(
     field_name: str,
@@ -89,6 +110,32 @@ def _validate_finite_real(
 
     if not math.isfinite(float(value)):
         raise ValueError(f"{field_name} must be finite")
+
+
+def _validate_optional_interval(
+    label: str,
+    lower: float | None,
+    upper: float | None,
+    *,
+    minimum: float,
+) -> None:
+    if (lower is None) != (upper is None):
+        raise ValueError(
+            f"{label} minimum and maximum must be provided together"
+        )
+    if lower is None or upper is None:
+        return
+
+    _validate_finite_real(f"{label}_minimum", lower)
+    _validate_finite_real(f"{label}_maximum", upper)
+    if float(lower) < minimum:
+        raise ValueError(
+            f"{label} minimum must be at least {minimum}"
+        )
+    if float(upper) <= float(lower):
+        raise ValueError(
+            f"{label} maximum must be greater than its minimum"
+        )
 
 
 def _format_adql_number(value: Real) -> str:
@@ -105,6 +152,38 @@ def normalize_query_parameters(
         ("dec_deg", float(spec.dec_deg)),
         ("radius_deg", float(spec.radius_deg)),
         ("science_only", spec.science_only),
+        (
+            "frequency_min_ghz",
+            (
+                float(spec.frequency_min_ghz)
+                if spec.frequency_min_ghz is not None
+                else None
+            ),
+        ),
+        (
+            "frequency_max_ghz",
+            (
+                float(spec.frequency_max_ghz)
+                if spec.frequency_max_ghz is not None
+                else None
+            ),
+        ),
+        (
+            "angular_resolution_min_arcsec",
+            (
+                float(spec.angular_resolution_min_arcsec)
+                if spec.angular_resolution_min_arcsec is not None
+                else None
+            ),
+        ),
+        (
+            "angular_resolution_max_arcsec",
+            (
+                float(spec.angular_resolution_max_arcsec)
+                if spec.angular_resolution_max_arcsec is not None
+                else None
+            ),
+        ),
     )
 
 
@@ -126,6 +205,33 @@ def build_where_clause(spec: ArchiveQuerySpec) -> str:
 
     if spec.science_only:
         clauses.append("science_observation = 'T'")
+
+    if spec.frequency_min_ghz is not None:
+        frequency_min = _format_adql_number(
+            spec.frequency_min_ghz
+        )
+        frequency_max = _format_adql_number(
+            spec.frequency_max_ghz
+        )
+        clauses.append(
+            "(frequency - 0.5 * bandwidth / 1000000000.0) "
+            f"< {frequency_max}\n"
+            "    AND (frequency + 0.5 * bandwidth / "
+            f"1000000000.0) > {frequency_min}"
+        )
+
+    if spec.angular_resolution_min_arcsec is not None:
+        resolution_min = _format_adql_number(
+            spec.angular_resolution_min_arcsec
+        )
+        resolution_max = _format_adql_number(
+            spec.angular_resolution_max_arcsec
+        )
+        clauses.append(
+            "(spatial_resolution IS NULL OR "
+            f"(spatial_resolution >= {resolution_min} AND "
+            f"spatial_resolution <= {resolution_max}))"
+        )
 
     return "\n    AND ".join(clauses)
 
