@@ -70,7 +70,75 @@ def test_normalized_parameters_are_immutable() -> None:
         ("dec_deg", -43.019),
         ("radius_deg", 0.006),
         ("science_only", True),
+        ("frequency_min_ghz", None),
+        ("frequency_max_ghz", None),
+        ("angular_resolution_min_arcsec", None),
+        ("angular_resolution_max_arcsec", None),
     )
+
+
+def test_frequency_prefilter_uses_archive_coverage_overlap() -> None:
+    spec = ArchiveQuerySpec(
+        ra_deg=201.365,
+        dec_deg=-43.019,
+        radius_deg=0.006,
+        frequency_min_ghz=229.0,
+        frequency_max_ghz=231.0,
+    )
+
+    where_clause = build_where_clause(spec)
+
+    assert (
+        "frequency - 0.5 * bandwidth / 1000000000.0"
+        in where_clause
+    )
+    assert "< 231" in where_clause
+    assert "> 229" in where_clause
+    assert build_count_adql(spec).endswith(where_clause)
+    assert build_retrieval_adql(spec).endswith(where_clause)
+
+
+def test_angular_prefilter_retains_unknown_resolution() -> None:
+    spec = ArchiveQuerySpec(
+        ra_deg=201.365,
+        dec_deg=-43.019,
+        radius_deg=0.006,
+        angular_resolution_min_arcsec=0.1,
+        angular_resolution_max_arcsec=1.5,
+    )
+
+    where_clause = build_where_clause(spec)
+
+    assert "spatial_resolution IS NULL" in where_clause
+    assert "spatial_resolution >= 0.1" in where_clause
+    assert "spatial_resolution <= 1.5" in where_clause
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"frequency_min_ghz": 100.0},
+        {"frequency_max_ghz": 101.0},
+        {
+            "frequency_min_ghz": 101.0,
+            "frequency_max_ghz": 100.0,
+        },
+        {
+            "angular_resolution_min_arcsec": -0.1,
+            "angular_resolution_max_arcsec": 1.0,
+        },
+    ],
+)
+def test_invalid_optional_prefilter_is_rejected(
+    kwargs: dict[str, float],
+) -> None:
+    with pytest.raises(ValueError):
+        ArchiveQuerySpec(
+            ra_deg=201.365,
+            dec_deg=-43.019,
+            radius_deg=0.006,
+            **kwargs,
+        )
 
 
 @pytest.mark.parametrize(

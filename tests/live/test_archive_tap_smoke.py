@@ -151,6 +151,11 @@ def test_live_archive_pipeline_contract(
     reconstruction = pipeline.reconstruction
 
     assert pipeline.query_result is result
+    assert pipeline.field_contract.is_usable, (
+        "Live Archive comparison-field metadata drifted: "
+        f"{pipeline.field_contract.unusable_fields}"
+    )
+    assert pipeline.comparison_units_safe
 
     assert len(pipeline.prepared_rows) == len(result.rows)
 
