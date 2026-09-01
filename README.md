@@ -33,6 +33,11 @@ The Archive implementation includes:
 - `COMPLETE`, `OVERFLOW`, `COUNT_MISMATCH`, and `ERROR` outcomes;
 - valid-empty-result and schema-drift validation;
 - query provenance and per-field TAP metadata;
+- runtime unit validation for the six Archive fields used by later
+  comparison;
+- typed frequency-coverage, resolution, and sensitivity evidence with
+  missing/invalid statuses;
+- optional broad frequency and angular-resolution candidate prefilters;
 - parsing of bracket and brace forms of `frequency_support`;
 - parsing of `obs_id`, including identifier-truncation detection;
 - normalization of text, Boolean, timestamp, and identifier fields;
@@ -47,8 +52,9 @@ The Archive implementation includes:
 The Queue implementation includes:
 
 - a versioned 79-column ingestion contract;
-- preservation of the source bytes, SHA-256 checksum, capture time, embedded
-  dictionary, secondary header, and physical row identity;
+- fingerprinting of the exact source bytes with SHA-256 and byte length, plus
+  capture time, embedded dictionary, secondary header, and physical row
+  identity;
 - explicit field aliases, units, datatypes, and schema-drift checks;
 - 16 same-number SPW triples, without Cartesian reconstruction;
 - separate regular-SPW and spectral-scan (SPS) representations;
@@ -69,13 +75,17 @@ source declarations remain available for later review.
 
 ## Current development priorities
 
-1. Define the shared comparison-ready evidence model and canonical units.
-2. Adapt Archive and Queue reconstruction batches into that shared model.
-3. Validate the shared representation with confirmed duplicate and
+1. Confirm the Archive sky-frequency reference frame and the approved
+   Archive--Queue frame mapping.
+2. Agree how Queue requested sensitivity maps to Archive continuum and
+   nominal 10-km/s estimates, including any spectral smoothing.
+3. Confirm the official SPS bandwidth unit for the conflicting Queue export.
+4. Define and implement the shared comparison-ready evidence model.
+5. Validate the shared representation with confirmed duplicate and
    non-duplicate cases.
-4. Map the Appendix A criteria into versioned, independently testable rules.
-5. Add a controlled Queue snapshot download and update workflow.
-6. Build the browser interface around the tested backend.
+6. Map the Appendix A criteria into versioned, independently testable rules.
+7. Add a controlled Queue snapshot download and update workflow.
+8. Build the browser interface around the tested backend.
 
 The ingestion pipelines deliberately do not decide whether two observations
 are duplicates. Correlator mode, reference-frame alignment, mosaic overlap,
@@ -202,6 +212,7 @@ alma-duplication-tool/
 │   ├── clients/
 │   │   ├── archive_client.py
 │   │   ├── archive_contract.py
+│   │   ├── archive_field_contract.py
 │   │   ├── archive_queries.py
 │   │   ├── archive_adapter.py
 │   │   ├── queue_csv_client.py
@@ -209,6 +220,7 @@ alma-duplication-tool/
 │   │   └── queue_csv_adapter.py
 │   ├── domain/
 │   │   ├── archive.py
+│   │   ├── archive_evidence.py
 │   │   ├── queue.py
 │   │   ├── reconstruction.py
 │   │   └── spectral.py
