@@ -1,0 +1,54 @@
+This spreadsheet lists the metadata for ongoing observations for Grade A projects that are in the observing queue as of 2026 March 3.
+
+Column Heading,Units,Description
+Project Code,string,ALMA Project code.
+Target Name,string,Name of the science target.
+RA,[deg],"Target right ascension, in decimal degrees (0 for solar system targets)."
+Dec,[deg],"Target declination, in decimal degress (0 for solar system targets)."
+RA_HMS,[h:m:s],"Target right ascension, in Hr,Min,Sec."
+Dec_DMS,[d:m:s],"Target declination, in Deg, Min, Sec."
+Long Offset,"[""]","Right Ascension/galactic-longitude offset in arcsec. Offset is in RA unless Mos.Coord.Ref.Sys is ""galactic""."
+Lat Offset,"[""]","Declination/galactic-latitude offset in arcsec. Offset is in declination unless Mos.Coord.Ref.Sys is ""galactic""."
+Velocity,[km/s],Target velocity
+Vel. Frame,string,Target velocity reference frame.
+Vel. Convention,string,"Velocity convention (radio, optical, or relativistic)."
+Mosaic,[boolean],"Type of mosaic, either Rectangle, Custom, or N/A; N/A implies there is a single pointing for the target."
+Mos. Length,"[""]",If a rectangular mosaic was requested: Length of rectangular area to be mapped as defined in the ALMA Observing Tool (OT).
+Mos. Width,"[""]",If a rectangular mosaic was requested: Width of rectangular area to be mapped as defined in the ALMA Observing Tool (OT).
+Mos. PA,[deg],If a rectangular mosaic was requested: Position Angle of rectangular area to be mapped as defined in the ALMA Observing Tool (OT).
+Mos. Spacing,"[""]",If a rectangular mosaic was requested: Spacing betweeng pointings.
+Mos. Coord. Ref. Sys,string,"If the target is a mosaic, this field gives the coordinate system sed to define the mosaic."
+Band,string,"ALMA Observing Band, in format ""ALMA_RB"" followed by Band ID."
+Req. Ang. Res.,"[""]",Requested angular resolution
+Req.LAS,"[""]",Requested largest angular scale
+Use 7-m?,[boolean],Indicates if  observations with ACA 7-m Array are requested.
+Use TP?,[boolean],Indicates if observations with ACA Total Power Array are requested.
+standAlone_ACA,[boolean],Indicates if observations are ACA 7-m Array only.
+Polarization,[FULL/DOUBLE/SINGLE],"Polarization products: Full, Dual or Single-X."
+Ref.Frequency,[GHz],Reference frequency for user-requested sensitivity.
+Ref.Freq.Width,[MHz],Reference bandwidth for user-requested sensitivity.
+Req.Sensitivity,[mJy],User-requested sensitivity
+Is Sky Freq?,[boolean],"Indicates if the frequencies for the spectral scan and spectral windows  are sky frequencies; If False,  the frequencies represent rest frequencies."
+SPS Start Freq.,[GHz],If the observation is a spectral scan: Start frequency of the spectral scan.
+SPS End Freq.,[GHz],If the observation is a spectral scan: End frequency of the spectral scan.
+SPS Bandwidth,[MHz],If the observation is a spectral scan: bandwidth of each window in the spectral scan.
+SPS Spec. Res.,[MHz],If the observation is a spectral scan: spectral resolution of the spectral scan.
+Freq SPW [N],[GHz],Central  frequency in GHz for Spectral Window #N (where N = 1-16).
+Bandwidth SPW [N],[MHz],Bandwidth of spectral window #N (where N= 1-16).
+Spec.Res SPW [N],[MHz],Spectral resolution spectral Window #N (where N = 1-16).
+
+Project Code,Target Name,RA,Dec,RA_HMS,Dec_DMS,Long Offset,Lat Offset,Velocity,Vel. Frame,Vel. Convention,Mosaic,Mos. Length,Mos. Width,Mos. PA,Mos. Spacing,Mos. Coord.,Band,Req. Ang. Res.,Req. LAS,Use 7-m?,Use TP?,Polarization,Ref.Frequency,Ref.Freq.Width,Req.Sensitivity,Is Sky Freq?,SPS Start Freq.,SPS End Freq.,SPS Bandwidth,SPS Spec. Res.,Freq SPW 1,Freq SPW 2,Freq SPW 3,Freq SPW 4,Freq SPW 5,Freq SPW 6,Freq SPW 7,Freq SPW 8,Freq SPW 9,Freq SPW 10,Freq SPW 11,Freq SPW 12,Freq SPW 13,Freq SPW 14,Freq SPW 15,Freq SPW 16,Bandwidth SPW 1,Bandwidth SPW 2,Bandwidth SPW 3,Bandwidth SPW 4,Bandwidth SPW 5,Bandwidth SPW 6,Bandwidth SPW 7,Bandwidth SPW 8,Bandwidth SPW 9,Bandwidth SPW 10,Bandwidth SPW 11,Bandwidth SPW 12,Bandwidth SPW 13,Bandwidth SPW 14,Bandwidth SPW 15,Bandwidth SPW 16,Spec.Res. SPW 1,Spec.Res. SPW 2,Spec.Res. SPW 3,Spec.Res. SPW 4,Spec.Res. SPW 5,Spec.Res. SPW 6,Spec.Res. SPW 7,Spec.Res. SPW 8,Spec.Res. SPW 9,Spec.Res. SPW 10,Spec.Res. SPW 11,Spec.Res. SPW 12,Spec.Res. SPW 13,Spec.Res. SPW 14,Spec.Res. SPW 15,Spec.Res. SPW 16
+,,[deg],[deg],,,[arcsec],[arcsec],[kms/s],,,,[arcsec],[arcsec],[deg],[arcsec],Ref. Sys.,,[arcsec],[arcsec],,,,[GHz],[MHz],[mJy],,[GHz],[GHz],[GHz],[MHz],[GHz],[GHz],[GHz],[GHz],[GHz],[GHz],[GHz],[GHz],[GHz],[GHz],[GHz],[GHz],[GHz],[GHz],[GHz],[GHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz],[MHz]
+2024.1.00750.S,NGC6240,253.24541666666667,2.4010972222222224,16h52m58.90s,2d24m04.0s,0.0,-4.7231237019733225e-11,7338.919371839999,lsrk,OPTICAL,,0.0,0.0,0.0,0.0,,ALMA_RB_07,0.4,2.0,False,False,FULL,338.5,7500.0,0.008,True,,,,,350.4999999999,348.5000000001,338.4999999999,336.5000000001,,,,,,,,,,,,,1875.0,1875.0,1875.0,1875.0,,,,,,,,,,,,,15.6240234375,15.6240234375,15.6240234375,15.6240234375,,,,,,,,,,,,
+2025.1.00299.S,HBC_687,292.25364198214,9.64523950728,19h29m00.87s,9d38m42.9s,0.0,0.0,0.0,lsrk,RADIO,,0.0,0.0,0.0,0.0,,ALMA_RB_06,0.15,1.0,False,False,DOUBLE,265.141,0.5650000000000001,2.5,True,261.5,268.7,1000.0,0.000564453125,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2025.1.00355.S,MC35,68.90624999999999,24.156388888888888,4h35m37.50s,24d09m23.0s,0.0,0.0,5.0,lsrk,RADIO,Rectangle,37.0,53.0,0.0,12.9053172382722,ICRS,ALMA_RB_06,1.6,10.0,False,False,DOUBLE,230.53415504003107,0.07689520970755023,9.4575946952123,False,,,,,233.0,219.560358,220.3986842,219.949442,216.35,230.538,231.3218283,,,,,,,,,,1875.0,62.5,125.0,62.5,1875.0,62.5,62.5,,,,,,,,,,1.12890625,0.14111328125,0.14111328125,0.14111328125,1.12890625,0.070556640625,0.070556640625,,,,,,,,,
+2025.1.00383.L,AG300.1639-0.0889,300.162415,-0.088206,20h00m38.98s,-0d05m17.5s,-2.381599345479881e-09,2.676078952049884e-09,-39.4,lsrk,RADIO,Custom,0.0,0.0,0.0,0.0,,ALMA_RB_03,2.6,120.0,True,True,DOUBLE,93.18851062107228,0.06216700379538606,34.086951488998,False,,,,,103.6,102.525,90.663564,93.176265,,,,,,,,,,,,,1875.0,125.0,62.5,62.5,,,,,,,,,,,,,1.12890625,0.070556640625,0.060577392578125,0.0352783203125,,,,,,,,,,,,
+2025.1.00383.L,AG300.1639-0.0889,300.162415,-0.088206,20h00m38.98s,-0d05m17.5s,17.2255984967422,26.884983358097653,-39.4,lsrk,RADIO,Custom,0.0,0.0,0.0,0.0,,ALMA_RB_03,2.6,120.0,True,True,DOUBLE,93.18851062107228,0.06216700379538606,34.086951488998,False,,,,,103.6,102.525,90.663564,93.176265,,,,,,,,,,,,,1875.0,125.0,62.5,62.5,,,,,,,,,,,,,1.12890625,0.070556640625,0.060577392578125,0.0352783203125,,,,,,,,,,,,
+2025.1.00539.S,M33,23.482131,30.672143,1h33m55.71s,30d40m19.7s,0.0,0.0,-180.0,hel,RELATIVISTIC,Rectangle,143.0,405.0,10.0,12.89735590387824,ICRS,ALMA_RB_06,6.667811768535553,60.0,True,True,DOUBLE,230.6764601381581,2.0003744778471,135.4419161511017,False,,,,,232.0,218.222192,220.3986842,218.475632,218.760066,219.560358,230.538,,,,,,,,,,1875.0,250.0,250.0,250.0,250.0,250.0,500.0,,,,,,,,,,31.25,0.564453125,0.2822265625,0.564453125,0.564453125,0.2822265625,0.2822265625,,,,,,,,,
+2025.1.00539.S,M33,23.482131,30.672143,1h33m55.71s,30d40m19.7s,0.0,0.0,-180.0,hel,RELATIVISTIC,Rectangle,143.0,405.0,10.0,12.89735590387824,ICRS,ALMA_RB_06,6.667811768535553,60.0,True,True,DOUBLE,230.6764601381581,2.0003744778471,135.4419161511017,False,,,,,232.0,218.222192,220.3986842,218.475632,218.760066,219.560358,230.538,,,,,,,,,,1875.0,250.0,250.0,250.0,250.0,250.0,500.0,,,,,,,,,,31.25,0.564453125,0.2822265625,0.564453125,0.564453125,0.2822265625,0.2822265625,,,,,,,,,
+2025.1.00539.S,M33,23.536475,30.776986944444445,1h34m08.75s,30d46m37.2s,0.0,0.0,-180.0,hel,RELATIVISTIC,Rectangle,143.0,405.0,10.0,12.89735590387824,ICRS,ALMA_RB_06,6.672099279603365,60.0,True,True,DOUBLE,230.6764601381581,2.0003744778471,135.616154848074,False,,,,,232.0,218.222192,220.3986842,218.475632,218.760066,219.560358,230.538,,,,,,,,,,1875.0,250.0,250.0,250.0,250.0,250.0,500.0,,,,,,,,,,31.25,0.564453125,0.2822265625,0.564453125,0.564453125,0.2822265625,0.2822265625,,,,,,,,,
+2025.1.00539.S,M33,23.46752083333333,30.561307777777778,1h33m52.21s,30d33m40.7s,0.0,0.0,-180.0,hel,RELATIVISTIC,Rectangle,143.0,405.0,10.0,12.89735590387824,ICRS,ALMA_RB_06,6.663279248851187,60.0,True,True,DOUBLE,230.6764601381581,2.0003744778471,135.2578424183765,False,,,,,232.0,218.222192,220.3986842,218.475632,218.760066,219.560358,230.538,,,,,,,,,,1875.0,250.0,250.0,250.0,250.0,250.0,500.0,,,,,,,,,,31.25,0.564453125,0.2822265625,0.564453125,0.564453125,0.2822265625,0.2822265625,,,,,,,,,
+2025.1.00539.S,M33,23.413176666666665,30.45646361111111,1h33m39.16s,30d27m23.3s,0.0,0.0,-180.0,hel,RELATIVISTIC,Rectangle,143.0,405.0,10.0,12.89735590387824,ICRS,ALMA_RB_06,6.658991728695772,60.0,True,True,DOUBLE,230.6764601381581,2.0003744778471,135.08383375763768,False,,,,,232.0,218.222192,220.3986842,218.475632,218.760066,219.560358,230.538,,,,,,,,,,1875.0,250.0,250.0,250.0,250.0,250.0,500.0,,,,,,,,,,31.25,0.564453125,0.2822265625,0.564453125,0.564453125,0.2822265625,0.2822265625,,,,,,,,,
+2025.1.00539.S,M33,23.3588325,30.351619444444445,1h33m26.12s,30d21m05.8s,0.0,0.0,-180.0,hel,RELATIVISTIC,Rectangle,143.0,405.0,10.0,12.89735590387824,ICRS,ALMA_RB_06,6.654704208540355,60.0,True,True,DOUBLE,230.6764601381581,2.0003744778471,134.9099370996708,False,,,,,232.0,218.222192,220.3986842,218.475632,218.760066,219.560358,230.538,,,,,,,,,,1875.0,250.0,250.0,250.0,250.0,250.0,500.0,,,,,,,,,,31.25,0.564453125,0.2822265625,0.564453125,0.564453125,0.2822265625,0.2822265625,,,,,,,,,
+2025.1.00576.L,NGC_0253,11.888058,-25.2888,0h47m33.13s,-25d17m19.7s,0.0,0.0,258.8,hel,RELATIVISTIC,Rectangle,100.0,200.0,320.0,12.91624732190556,ICRS,ALMA_RB_06,0.56,90.0,True,True,DOUBLE,230.33907069918584,3.8416421853278,5.0,False,,,,,219.78965464402623,232.5,218.222192,230.538,,,,,,,,,,,,,1875.0,1875.0,1875.0,1000.0,,,,,,,,,,,,,1.12890625,1.12890625,1.12890625,0.564453125,,,,,,,,,,,,
+2025.1.00576.L,NGC_0253,11.888058,-25.2888,0h47m33.13s,-25d17m19.7s,0.0,0.0,258.8,hel,RELATIVISTIC,Rectangle,100.0,200.0,320.0,13.53617728308216,ICRS,ALMA_RB_06,0.56,90.0,True,True,DOUBLE,219.79,3.66570262418,5.0,False,,,,,220.6904319171575,217.1874091883137,219.9798187350206,218.222192,,,,,,,,,,,,,1875.0,1875.0,1875.0,1875.0,,,,,,,,,,,,,1.12890625,1.12890625,1.12890625,1.12890625,,,,,,,,,,,,

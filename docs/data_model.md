@@ -1,10 +1,11 @@
-# Internal Archive Reconstruction Model v0.4
+# Internal Archive and Queue Reconstruction Model v0.5
 
 ## Status and scope
 
-This document defines the evidence-based internal representation of the
-current public ALMA `ivoa.obscore` TAP view after Notebooks 01, 02, 02b, 03,
-04, 04b, and 04c.
+This document defines the evidence-based internal representation of both the
+current public ALMA `ivoa.obscore` TAP view and the current-cycle Queue CSV.
+The Archive component follows Notebooks 01, 02, 02b, 03, 04, 04b, and 04c;
+the Queue component follows Notebook 05 and its versioned ingestion contract.
 
 It is not the official internal ALMA database schema. It is an application
 model for preserving Archive evidence, reconstructing relationships needed by
@@ -24,6 +25,12 @@ COUNT/retrieval reconciliation, query-status handling, schema-name checks,
 query provenance, an incomplete-result pipeline gate, and ordered retrieval
 field-metadata preservation (`name`, datatype, arraysize, unit, UCD, utype,
 xtype, and description), including valid zero-row responses.
+
+The production Queue CSV v1 implementation preserves the exact byte snapshot,
+embedded dictionary, mixed secondary-header row, all 79 raw operational
+values, source-line identity, both unit representations, typed row evidence,
+and observed spatial-spectral-request associations. It does not infer missing
+Cartesian relationships or policy decisions.
 
 ## Evidence summary
 
@@ -789,7 +796,7 @@ The implementation and documentation use four evidence levels:
    counterexample is sufficient to reject a universal constraint but not to
    estimate prevalence.
 
-## Production implementation contract
+## Archive production implementation contract
 
 1. Ingest raw rows before reconstruction.
 2. Count and retrieve with completeness reconciliation.
@@ -814,6 +821,71 @@ boundaries, bracket and brace parsing, sparse associations, many-to-one
 support mapping, masked values, sentinel dates, numerical tolerance, TAP
 overflow, valid empty results, schema drift, and shuffle invariance.
 
+## Queue reconstruction extension v1
+
+The Queue source has no stable Science Goal, Scheduling Block, or spectral
+setup identifier in the public CSV. Its reconstruction keys are therefore
+versioned internal signatures scoped by:
+
+```text
+(Project Code, Target Name, Band)
+```
+
+That scope is an analytical grouping key, not a claim of official ALMA entity
+identity.
+
+| Queue object | Ownership and safety rule |
+|---|---|
+| `QueueSnapshot` | Owns source URL, checksum, capture time, description, dictionary, operational header, secondary header, schema version, and parser version |
+| `RawQueueRow` | Owns the exact 79 raw strings, physical line range, source ordinal, and content fingerprint; identical content on different lines remains distinct |
+| `QueueRowInput` | Typed projection of one valid raw row; never replaces the raw row |
+| `QueueSpatialComponent` | Factored coordinates, offsets, mosaic classification, rectangle geometry, coordinate system, and `1e-6 arcsec` classification tolerance |
+| `QueueSpectralSetup` | Tagged union of complete numbered SPWs or one SPS range, including velocity context, requested sensitivity basis, raw/canonical units, and frequency-derivation provenance |
+| `QueueRequestContext` | Requested angular resolution, LAS, arrays, and polarization |
+| `QueueRowAssociation` | The one spatial-spectral-request relationship actually observed in one source row |
+| `QueueFactorizationSummary` | Reports observed versus potential spatial-spectral pairs without creating the missing pairs |
+
+The 48 numbered SPW columns are physically ordered as 16 frequencies, then
+16 bandwidths, then 16 resolutions. They are logically reconstructed only as
+same-number triples:
+
+```text
+SPW N = Freq SPW N
+      + Bandwidth SPW N
+      + Spec.Res. SPW N
+```
+
+A partial triple is an ingestion error. Empty higher slots remain empty; a
+non-contiguous population is preserved with a warning rather than silently
+renumbered.
+
+Queue quantities retain `raw_text`, `raw_value`, embedded-dictionary unit,
+secondary-header unit, canonical value/unit, and a unit-interpretation status.
+This is essential for `SPS Bandwidth`, whose current dictionary declares MHz
+while the secondary header says GHz. The pinned data support a versioned MHz
+interpretation, but both source declarations remain reachable.
+
+Regular SPW frequencies are converted to Queue-side sky intervals using the
+declared sky/rest flag and RADIO, OPTICAL, or RELATIVISTIC velocity convention.
+The conversion version and raw velocity frame remain attached. This validates
+Queue-internal coverage only; Archive/Queue frame alignment remains a later
+comparison concern.
+
+Production Queue reconstruction enforces these cardinality rules:
+
+1. each complete input row yields exactly one observed association;
+2. exact exported duplicates yield distinct associations with distinct source
+   row identities;
+3. spatial, spectral, and request entities may be factored only after the row
+   association has been recorded;
+4. absent spatial-spectral combinations are never synthesized; and
+5. an incomplete parse cannot enter reconstruction.
+
+The reduced CI fixture covers regular SPWs, SPS, custom and rectangle mosaics,
+exact duplicates, and both known sparse groups. A separate opt-in acceptance
+test validates the pinned 3,200-row snapshot, including 16,216 SPWs, 419
+project-target-band groups, two sparse groups, and 65 excess exact copies.
+
 ## Explicitly deferred work
 
 The following items do not block Archive-model v0.4:
@@ -833,7 +905,6 @@ The following items do not block Archive-model v0.4:
   evidence;
 - primary-beam and spectral-smoothing policy;
 - frequency, sensitivity, and spatial duplication thresholds;
-- current-cycle CSV normalization;
 - known-duplicate end-to-end validation.
 
 These belong to parser tests, later notebooks, or the policy layer. Archive
