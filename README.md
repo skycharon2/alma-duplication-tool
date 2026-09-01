@@ -1,72 +1,86 @@
 # ALMA Duplication Check Tool
 
-A browser-based decision-support tool for identifying existing or planned
-ALMA observations that may satisfy the formal duplication criteria defined in
-Appendix A of the ALMA User Policies.
+A decision-support tool for finding existing or planned ALMA observations that
+may meet the duplication criteria in Appendix A of the ALMA User Policies.
 
-The tool is intended to support candidate discovery and explainable
-duplication assessment. It does not replace the final scientific or policy
-decision made by ALMA reviewers.
+The project is intended to support candidate discovery and explainable
+assessment. It does not replace the final scientific or policy decision made
+by ALMA reviewers.
 
 ## Project status
 
-The Archive-structure exploration phase and the first Archive production
-client phase have been completed for the current project scope. The project
-contains tested Python components for querying, parsing, normalizing, and
-deterministically reconstructing ALMA Science Archive records.
+Production ingestion and deterministic reconstruction are implemented for two
+data sources:
 
-Implemented components include:
+- the public ALMA Science Archive `ivoa.obscore` TAP view; and
+- the current-cycle duplication-check Queue CSV.
 
-- construction of matched COUNT and retrieval ADQL queries;
-- explicit TAP MAXREC and `QUERY_STATUS` handling;
-- `COMPLETE`, `OVERFLOW`, `COUNT_MISMATCH`, and `ERROR` query outcomes;
-- valid-empty-result and versioned schema-drift validation;
-- immutable query provenance and source-neutral TAP responses;
-- an offline fake TAP executor and pipeline ECSV fixture;
+Both pipelines preserve raw evidence, source metadata, units, provenance, and
+the relationships that were actually present in the source. They report
+incomplete, conflicting, or unsupported evidence instead of silently filling
+gaps.
+
+The next phase is the shared Archive--Queue comparison model. Formal
+duplication rules, known-case assessment, automated Queue snapshot retrieval,
+and the browser interface are not yet implemented.
+
+### Archive pipeline
+
+The Archive implementation includes:
+
+- matched COUNT and retrieval ADQL queries;
+- TAP `MAXREC` and `QUERY_STATUS` handling;
+- `COMPLETE`, `OVERFLOW`, `COUNT_MISMATCH`, and `ERROR` outcomes;
+- valid-empty-result and schema-drift validation;
+- query provenance and per-field TAP metadata;
 - parsing of bracket and brace forms of `frequency_support`;
 - parsing of `obs_id`, including identifier-truncation detection;
-- normalization of Archive text, Boolean, timestamp, and identifier fields;
-- internal surrogate identifiers for raw Archive rows;
-- deterministic reconstruction of source--execution--SPW relationships;
-- support for sparse source--SPW associations;
-- explicit frequency-support mapping and ambiguity reporting; and
-- automated testing with Python 3.11 and 3.12.
+- normalization of text, Boolean, timestamp, and identifier fields;
+- surrogate identifiers for flattened Archive rows;
+- deterministic source--execution--SPW reconstruction;
+- sparse source--SPW associations and ambiguity reporting;
+- an offline ECSV integration fixture; and
+- an opt-in live TAP smoke test that continues through reconstruction.
 
-The current implementation is a backend foundation rather than a complete
-duplication-checking application.
+### Queue CSV pipeline
 
-## Main findings from Archive exploration
+The Queue implementation includes:
 
-The exploratory notebooks established the following design requirements:
+- a versioned 79-column ingestion contract;
+- preservation of the source bytes, SHA-256 checksum, capture time, embedded
+  dictionary, secondary header, and physical row identity;
+- explicit field aliases, units, datatypes, and schema-drift checks;
+- 16 same-number SPW triples, without Cartesian reconstruction;
+- separate regular-SPW and spectral-scan (SPS) representations;
+- frequency and velocity normalization with conversion provenance;
+- requested-sensitivity evidence without relabelling it as achieved Archive
+  sensitivity;
+- spatial, mosaic, rectangle, request, array, and polarization evidence;
+- reference-frequency coverage validation;
+- preservation of exact duplicate rows as distinct source associations;
+- factorization into spatial, spectral, and request components while retaining
+  every observed row association;
+- a small offline CSV integration fixture; and
+- an opt-in acceptance test for the complete current-cycle snapshot.
 
-- a flattened Archive row must not be treated as a complete observation;
-- Archive identifiers must be preserved, but cannot be assumed to be unique
-  internal row keys;
-- source--SPW relationships must be reconstructed from observed records and
-  must not be generated as a Cartesian product;
-- raw, parsed, normalized, and derived values must remain distinguishable;
-- missing, conflicting, truncated, or ambiguous metadata must be reported
-  explicitly;
-- incomplete TAP responses cannot support a negative candidate conclusion;
-- candidate retrieval must remain separate from formal duplication assessment.
-
-The current evidence and reconstruction model are documented in
-[`docs/data_model.md`](docs/data_model.md) and
-[`docs/archive_data_dictionary.md`](docs/archive_data_dictionary.md).
+The known SPS bandwidth unit conflict is retained as a structured warning. A
+complete parse with that warning is valid for reconstruction; the conflicting
+source declarations remain available for later review.
 
 ## Current development priorities
 
-The next development phases are:
+1. Define the shared comparison-ready evidence model and canonical units.
+2. Adapt Archive and Queue reconstruction batches into that shared model.
+3. Validate the shared representation with confirmed duplicate and
+   non-duplicate cases.
+4. Map the Appendix A criteria into versioned, independently testable rules.
+5. Add a controlled Queue snapshot download and update workflow.
+6. Build the browser interface around the tested backend.
 
-1. investigate and implement the current-cycle queue adapter;
-2. define the shared comparison-ready observation model;
-3. implement broad candidate retrieval across Archive and queue sources;
-4. map and implement the Appendix A duplication criteria;
-5. validate the workflow using confirmed duplicate and non-duplicate cases;
-6. develop the browser-based interface.
-
-The current-cycle adapter, duplication-rule engine, known-case assessment
-workflow, and web application are not yet complete.
+The ingestion pipelines deliberately do not decide whether two observations
+are duplicates. Correlator mode, reference-frame alignment, mosaic overlap,
+sensitivity comparison, spectral smoothing, and policy thresholds belong to
+the comparison or rule layer.
 
 ## Development environment
 
@@ -89,6 +103,34 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
+## Queue CSV usage
+
+`QueueCsvClient` reads an exact local snapshot. `run_queue_pipeline` admits
+only a complete parse and then reconstructs the relationships observed in the
+CSV.
+
+```python
+from pathlib import Path
+
+from alma_duplicate.clients import QueueCsvClient, run_queue_pipeline
+
+snapshot_path = Path(
+    "data/raw/projects_in_queue_cycle13_20260901.csv"
+)
+
+parse_result = QueueCsvClient().load(snapshot_path)
+print(parse_result.status.value)
+print(len(parse_result.raw_rows))
+print(len(parse_result.row_inputs))
+
+batch = run_queue_pipeline(parse_result)
+print(len(batch.reconstruction.associations))
+print(batch.reconstruction.sparse_group_count)
+```
+
+The full current-cycle CSV is kept outside version control. The committed
+fixture in `tests/fixtures/queue/` exercises the same pipeline offline.
+
 ## Running the tests
 
 Run the complete offline suite:
@@ -97,34 +139,48 @@ Run the complete offline suite:
 python -m pytest -q
 ```
 
-The test suite covers:
+The ordinary suite covers Archive and Queue contracts, clients, parsers,
+normalization, reconstruction, malformed input, schema drift, sparse
+relationships, exact duplicates, and input-order invariance. It does not
+contact ALMA services or require the full Queue snapshot.
 
-- Archive query parameter and ADQL construction;
-- PyVO-to-source-neutral TAP response adaptation;
-- COUNT/retrieval reconciliation and query provenance;
-- overflow, count mismatch, valid empty, schema drift, and error states;
-- offline normalization--parsing--reconstruction integration;
-- `frequency_support` parsing;
-- `obs_id` parsing and truncation handling;
-- Archive metadata normalization;
-- source--execution--SPW reconstruction;
-- sparse and ambiguous associations;
-- conflicting and incomplete records; and
-- reconstruction invariance under input-row reordering.
+Run the live Archive smoke test explicitly:
 
-Ordinary tests do not contact the live ALMA TAP service. Tests requiring live
-Archive services will be maintained separately and invoked explicitly.
+```bash
+python -m pytest -q -s \
+  --run-live \
+  tests/live/test_archive_tap_smoke.py
+```
+
+Run the full Queue snapshot acceptance test explicitly:
+
+```bash
+ALMA_QUEUE_CSV_SNAPSHOT="$PWD/data/raw/projects_in_queue_cycle13_20260901.csv" \
+python -m pytest -q \
+  tests/acceptance/test_queue_csv_snapshot.py
+```
+
+The pinned Cycle 13 snapshot contains 3,200 source rows and reconstructs 3,200
+observed associations. The acceptance test also verifies the 79-column schema,
+16,216 regular SPWs, one SPS record, 419 factorization groups, two sparse
+groups, and the expected source checksum.
 
 ## Exploratory notebooks
 
-The notebooks document the evidence used to design the production package:
+The notebooks record the evidence used to design the production package:
 
-- `01_archive_connection.ipynb`: TAP connectivity, metadata, and spatial queries.
-- `02_archive_data_relationships.ipynb`: Archive row granularity and hierarchy.
+- `01_archive_connection.ipynb`: TAP connectivity, metadata, and spatial
+  queries.
+- `02_archive_data_relationships.ipynb`: Archive row granularity and
+  hierarchy.
 - `02b_archive_relationship_visualization.ipynb`: relationship visualization.
 - `03_frequency_support_exploration.ipynb`: frequency-support structure.
 - `04_observation_modes.ipynb`: observation-mode-related metadata.
-- `04b_archive_robustness_closure.ipynb`: robustness and closure validation.
+- `04b_archive_robustness_closure.ipynb`: parser and reconstruction robustness.
+- `04c_archive_semantic_closure.ipynb`: live pipeline and Archive semantic
+  closure.
+- `05_queue_csv_exploration.ipynb`: Queue file layout, schema, units,
+  cardinality, and reconstruction evidence.
 
 Validated behaviour is migrated from notebooks into `src/` and covered by
 automated tests. Notebooks are evidence records, not the production pipeline.
@@ -134,49 +190,80 @@ automated tests. Notebooks are evidence records, not the production pipeline.
 ```text
 alma-duplication-tool/
 ├── notebooks/
+│   ├── 01_archive_connection.ipynb
+│   ├── 02_archive_data_relationships.ipynb
+│   ├── 02b_archive_relationship_visualization.ipynb
+│   ├── 03_frequency_support_exploration.ipynb
+│   ├── 04_observation_modes.ipynb
+│   ├── 04b_archive_robustness_closure.ipynb
+│   ├── 04c_archive_semantic_closure.ipynb
+│   └── 05_queue_csv_exploration.ipynb
 ├── src/alma_duplicate/
 │   ├── clients/
+│   │   ├── archive_client.py
 │   │   ├── archive_contract.py
 │   │   ├── archive_queries.py
-│   │   ├── archive_client.py
-│   │   └── archive_adapter.py
+│   │   ├── archive_adapter.py
+│   │   ├── queue_csv_client.py
+│   │   ├── queue_csv_contract.py
+│   │   └── queue_csv_adapter.py
 │   ├── domain/
+│   │   ├── archive.py
+│   │   ├── queue.py
+│   │   ├── reconstruction.py
+│   │   └── spectral.py
 │   ├── parsers/
+│   │   ├── frequency_support.py
+│   │   ├── obs_id.py
+│   │   └── queue_csv.py
 │   ├── normalization.py
-│   └── reconstruction.py
+│   ├── queue_csv_contract.py
+│   ├── queue_normalization.py
+│   ├── reconstruction.py
+│   └── queue_reconstruction.py
 ├── tests/
+│   ├── acceptance/
 │   ├── fakes/
-│   ├── fixtures/archive/
+│   ├── fixtures/
+│   │   ├── archive/
+│   │   └── queue/
 │   ├── integration/
+│   ├── live/
 │   └── unit/
 ├── docs/
 │   ├── archive_client_contract.md
 │   ├── archive_data_dictionary.md
-│   └── data_model.md
+│   ├── data_model.md
+│   ├── live_archive_smoke.md
+│   └── queue_csv_contract.md
 ├── pyproject.toml
 └── README.md
 ```
 
 ## Design principles
 
-- Preserve raw data and provenance.
-- Use internal surrogate identifiers.
-- Represent observational relationships explicitly.
-- Keep source-specific ingestion separate from the shared domain model.
+- Preserve raw data, units, and provenance.
+- Use internal surrogate identifiers where source identifiers are not unique.
+- Reconstruct only relationships observed in the source.
+- Keep source-specific ingestion separate from the shared comparison model.
 - Keep reconstruction separate from policy evaluation.
 - Distinguish candidate relevance from confirmed duplication.
-- Never interpret incomplete searches or missing metadata as scientific
-  conclusions.
-- Keep scientific and policy rules independently testable and explainable.
+- Report missing, conflicting, or incomplete evidence explicitly.
+- Keep scientific and policy rules versioned, explainable, and independently
+  testable.
 
 ## Documentation
 
-- [`docs/archive_client_contract.md`](docs/archive_client_contract.md): TAP
-  completeness, schema, provenance, and pipeline-gating contract.
-- [`docs/data_model.md`](docs/data_model.md): internal Archive reconstruction
-  model and evidence.
-- [`docs/archive_data_dictionary.md`](docs/archive_data_dictionary.md):
-  field-level ownership, semantics, units, and known limitations.
+- [`docs/archive_client_contract.md`](docs/archive_client_contract.md): Archive
+  query completeness, schema, provenance, and pipeline gating.
+- [`docs/archive_data_dictionary.md`](docs/archive_data_dictionary.md): Archive
+  field ownership, semantics, units, and limitations.
+- [`docs/data_model.md`](docs/data_model.md): Archive and Queue reconstruction
+  entities and relationships.
+- [`docs/live_archive_smoke.md`](docs/live_archive_smoke.md): opt-in live TAP
+  validation.
+- [`docs/queue_csv_contract.md`](docs/queue_csv_contract.md): Queue layout,
+  schema, units, parsing, and reconstruction contract.
 
 ## License
 
