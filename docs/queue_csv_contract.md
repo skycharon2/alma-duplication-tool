@@ -270,6 +270,11 @@ while retaining:
 A future change in either declaration must be revalidated. It must not silently
 inherit this evidence-based resolution.
 
+This is an ingestion decision for the pinned snapshot, not an official ALMA
+unit declaration. Until the unit is confirmed by the supervisor or ALMA
+Helpdesk, later comparison code must retain the conflict status and must not
+present SPS-bandwidth-dependent policy results as authoritative.
+
 ## Field semantics and canonical units
 
 ### Identity, coordinate, and spatial fields
@@ -602,6 +607,11 @@ The analytical group key used in Notebook 05 is:
 It is a reconstruction scope, not an official ALMA Science Goal or Scheduling
 Block identifier.
 
+It is also not a candidate identity. Scientific comparison must start from a
+`QueueRowAssociation` (or evidence reached through that association), so
+position, spectral setup, angular resolution, and requested sensitivity still
+come from one real CSV row.
+
 Within 419 pinned-snapshot groups:
 
 - 417 groups' observed spatial–spectral pairs happen to fill the local
@@ -760,7 +770,7 @@ explicitly in the rule contract.
 The intended v1 flow is:
 
 ```text
-source bytes
+source bytes (read transiently and fingerprinted)
     -> QueueSnapshot
     -> RawQueueRow collection
     -> typed Queue row projection

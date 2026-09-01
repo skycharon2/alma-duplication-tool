@@ -25,6 +25,15 @@ from .archive_contract import (
     TapFieldMetadata,
     TapResponse,
 )
+from .archive_field_contract import (
+    ARCHIVE_COMPARISON_CONTRACT_VERSION,
+    ARCHIVE_COMPARISON_FIELD_SPECS,
+    ArchiveFieldContractValidation,
+    ArchiveFieldSpec,
+    ArchiveFieldValidation,
+    build_archive_comparison_evidence,
+    validate_archive_comparison_metadata,
+)
 from .archive_queries import (
     ARCHIVE_SCHEMA_VERSION,
     ARCHIVE_SELECTED_COLUMNS,
@@ -66,6 +75,8 @@ from .queue_csv_contract import (
 __all__ = [
     "ADAPTER_VERSION",
     "ARCHIVE_CLIENT_VERSION",
+    "ARCHIVE_COMPARISON_CONTRACT_VERSION",
+    "ARCHIVE_COMPARISON_FIELD_SPECS",
     "ARCHIVE_SCHEMA_VERSION",
     "ARCHIVE_SELECTED_COLUMNS",
     "COUNT_ALIAS",
@@ -80,6 +91,9 @@ __all__ = [
     "QUEUE_SPW_COLUMNS",
     "REQUIRED_ARCHIVE_COLUMNS",
     "ArchiveClient",
+    "ArchiveFieldContractValidation",
+    "ArchiveFieldSpec",
+    "ArchiveFieldValidation",
     "ArchivePipelineBatch",
     "ArchiveQueryErrorKind",
     "ArchiveQueryProvenance",
@@ -104,6 +118,7 @@ __all__ = [
     "TapFieldMetadata",
     "TapResponse",
     "build_count_adql",
+    "build_archive_comparison_evidence",
     "build_retrieval_adql",
     "build_where_clause",
     "classify_secondary_token",
@@ -112,4 +127,5 @@ __all__ = [
     "run_archive_pipeline",
     "run_queue_pipeline",
     "spw_columns",
+    "validate_archive_comparison_metadata",
 ]

@@ -1,4 +1,4 @@
-# Internal Archive and Queue Reconstruction Model v0.5
+# Internal Archive and Queue Reconstruction Model v0.6
 
 ## Status and scope
 
@@ -26,11 +26,13 @@ query provenance, an incomplete-result pipeline gate, and ordered retrieval
 field-metadata preservation (`name`, datatype, arraysize, unit, UCD, utype,
 xtype, and description), including valid zero-row responses.
 
-The production Queue CSV v1 implementation preserves the exact byte snapshot,
-embedded dictionary, mixed secondary-header row, all 79 raw operational
-values, source-line identity, both unit representations, typed row evidence,
-and observed spatial-spectral-request associations. It does not infer missing
-Cartesian relationships or policy decisions.
+The production Queue CSV v1 implementation fingerprints the exact byte
+snapshot with SHA-256 and byte length, and preserves its embedded dictionary,
+mixed secondary-header row, all 79 raw operational values, source-line
+identity, both unit representations, typed row evidence, and observed
+spatial-spectral-request associations. It does not retain the complete source
+byte content inside `QueueSnapshot`, infer missing Cartesian relationships, or
+apply policy decisions.
 
 ## Evidence summary
 
@@ -40,6 +42,8 @@ Cartesian relationships or policy decisions.
 | Science-target population | 442,507 rows on 2026-08-25 and 443,211 rows at `2026-08-31T12:27:55.081125+00:00` | Treat all counts as time-specific snapshots and preserve capture provenance |
 | Query completeness | COUNT/retrieve reconciliation, valid empty result, and intentional `OVERFLOW` verified | Never infer absence from an incomplete response |
 | Retrieval field metadata | PyVO exposes VOTable `FIELD` descriptors independently of result rows; the v2 runtime contract preserves them in projection order | Carry units and semantic descriptors with the same query result, including valid empty results |
+| Comparison-field units | Live units for frequency, bandwidth, spectral/spatial resolution, and two sensitivity estimates are checked at runtime | Convert only compatible units; preserve missing/incompatible status rather than assuming units from names |
+| Archive frequency frame | Public documentation identifies sky frequency but not a comparison-ready TAP reference frame | Derive typed Archive coverage but keep cross-source frame alignment unavailable |
 | `obs_publisher_did` | 5,611 proposal IDs and 5,611 publisher DIDs; exact `ADS/JAO.ALMA#<proposal_id>` mapping with no exception | Project-level external identifier, not a row or product key |
 | `obs_id` | 442,141 parsed; 366 width-truncated failures; 275 additional parseable values at the 64-character boundary | Preserve raw value and parse confidence; never use as an Archive-wide key |
 | Row identity | 134 duplicate `obs_id` groups; 42 duplicate parsed Source-Execution-SPW groups, all affected by identifier-width risk | Use internal surrogate row identifiers |
@@ -80,6 +84,8 @@ Cartesian relationships or policy decisions.
    stable supported programmatic representation is identified.
 10. Treat sensitivity and angular-resolution summaries as Archive evidence,
     not achieved FITS-product measurements.
+11. Keep analytical Queue grouping separate from row-level comparison
+    identity; only `QueueRowAssociation` preserves an observed combination.
 
 ## Entity-relationship model
 
@@ -670,8 +676,10 @@ Service-unit and field-description evidence now remains available through the
 v2 runtime result and therefore through `ArchivePipelineBatch.query_result`.
 Normalization and parsing do not overwrite descriptor text. Durable storage
 must later serialize the tuple without changing its order or optional `None`
-values; explicit tested unit adapters remain necessary when converting values
-into the future shared Archive/queue comparison model.
+values. The v0.6 Archive adapter validates the six comparison-facing units,
+converts compatible source units into canonical values, and preserves
+missing/incompatible states. The future shared Archive/Queue adapter must use
+this typed projection rather than recasting raw row values.
 
 ### `ROW_PRODUCT_METADATA`
 

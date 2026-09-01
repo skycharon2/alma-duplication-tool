@@ -49,12 +49,29 @@ FIXTURE_PATH = (
 def _field_metadata(
     columns: tuple[str, ...],
 ) -> tuple[TapFieldMetadata, ...]:
+    units = {
+        "frequency": "GHz",
+        "bandwidth": "Hz",
+        "spectral_resolution": "kHz",
+        "spatial_resolution": "arcsec",
+        "sensitivity_10kms": "mJy / beam",
+        "cont_sensitivity_bandwidth": "mJy / beam",
+    }
+    numeric_fields = frozenset(units)
     return tuple(
         TapFieldMetadata(
             name=column,
-            datatype="char",
-            arraysize="*",
-            unit=None,
+            datatype=(
+                "double"
+                if column in numeric_fields
+                else "char"
+            ),
+            arraysize=(
+                None
+                if column in numeric_fields
+                else "*"
+            ),
+            unit=units.get(column),
             ucd=None,
             utype=None,
             xtype=None,
@@ -143,6 +160,8 @@ def test_complete_fixture_runs_full_pipeline() -> None:
     )
     assert len(pipeline.query_result.field_metadata) == 23
     assert len(pipeline.prepared_rows) == 5
+    assert pipeline.field_contract.is_usable
+    assert pipeline.comparison_units_safe
     assert pipeline.reconstruction.linked_row_count == 4
     assert pipeline.reconstruction.unlinked_row_count == 1
 
@@ -219,6 +238,18 @@ def test_normalization_preserves_raw_and_status() -> None:
     )
     assert first.raw_row_id == (
         "fixture-query-run:00000000"
+    )
+    assert first.comparison_evidence.unit_safe
+    assert first.comparison_evidence.has_frequency_coverage
+    assert first.comparison_evidence.frequency.lower_ghz == (
+        pytest.approx(99.9)
+    )
+    assert first.comparison_evidence.frequency.upper_ghz == (
+        pytest.approx(100.1)
+    )
+    assert (
+        first.comparison_evidence.cross_source_frequency_ready
+        is False
     )
 
 
