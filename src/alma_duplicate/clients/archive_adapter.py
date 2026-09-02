@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 
 from alma_duplicate.clients.archive_contract import (
     ArchiveQueryResult,
@@ -33,8 +32,7 @@ from alma_duplicate.reconstruction import (
     reconstruct_archive_rows,
 )
 
-
-ADAPTER_VERSION = "2"
+ADAPTER_VERSION = "3"
 
 
 class IncompleteArchiveQueryError(RuntimeError):
@@ -99,32 +97,6 @@ def _required_value(
 
 def _optional_text(value: object) -> str | None:
     return normalize_optional_text(value).value
-
-
-def _optional_finite_float(
-    value: object,
-) -> float | None:
-    mask = getattr(value, "mask", False)
-    try:
-        if bool(mask):
-            return None
-    except (TypeError, ValueError):
-        raise ArchiveRowAdapterError(
-            "Archive adapter expects scalar values"
-        ) from None
-
-    if value is None:
-        return None
-
-    try:
-        converted = float(value)
-    except (TypeError, ValueError):
-        return None
-
-    if not math.isfinite(converted):
-        return None
-
-    return converted
 
 
 def prepare_archive_rows(
@@ -200,6 +172,20 @@ def prepare_archive_rows(
             )
         )
 
+        # Keep structural absence distinct from an explicit missing value.
+        _required_value(
+            raw_row,
+            "frequency",
+            result_index=result_index,
+        )
+        comparison_evidence = build_archive_comparison_evidence(
+            raw_row,
+            validated_fields,
+            query_run_id=result.provenance.query_run_id,
+            raw_row_id=raw_row_id,
+            result_index=result_index,
+        )
+
         reconstruction_input = ArchiveRowInput(
             raw_row_id=raw_row_id,
             member_ous_uid=_optional_text(
@@ -223,12 +209,11 @@ def prepare_archive_rows(
                     result_index=result_index,
                 )
             ),
-            frequency_ghz=_optional_finite_float(
-                _required_value(
-                    raw_row,
-                    "frequency",
-                    result_index=result_index,
-                )
+            frequency_ghz=(
+                comparison_evidence
+                .frequency
+                .centre
+                .canonical_value
             ),
             frequency_support=_optional_text(
                 _required_value(
@@ -238,14 +223,6 @@ def prepare_archive_rows(
                 )
             ),
         )
-        comparison_evidence = build_archive_comparison_evidence(
-            raw_row,
-            validated_fields,
-            query_run_id=result.provenance.query_run_id,
-            raw_row_id=raw_row_id,
-            result_index=result_index,
-        )
-
         prepared_rows.append(
             PreparedArchiveRow(
                 raw_row_id=raw_row_id,

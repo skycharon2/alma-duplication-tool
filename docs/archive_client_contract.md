@@ -213,15 +213,22 @@ For each accepted raw row it:
 1. assigns an internal row ID scoped to query run and result index;
 2. preserves the complete raw mapping;
 3. creates `ArchiveMetadataInput` and normalization results;
-4. creates the minimal `ArchiveRowInput` projection;
-5. validates the live comparison-field unit contract once per result;
-6. creates typed Archive comparison evidence for each row; and
+4. validates the live comparison-field unit contract once per result;
+5. creates typed Archive comparison evidence for each row;
+6. creates the minimal `ArchiveRowInput` projection using the typed
+   frequency's canonical GHz value; and
 7. invokes deterministic reconstruction.
 
 The typed projection keeps the raw value, source unit, canonical value/unit,
 field/query provenance, and an availability status. It distinguishes Archive
 line sensitivity at 10 km/s from aggregate-bandwidth continuum sensitivity;
 both are labelled QA0-EB-metadata calculator estimates, not achieved FITS RMS.
+
+Reconstruction never reads the raw `frequency` float directly. If TAP returns
+a compatible changed unit such as MHz, typed evidence converts the value to
+GHz before frequency-support mapping. If the source unit is missing or
+incompatible, the reconstruction frequency is unavailable rather than guessed
+from the column name.
 
 The Archive manual calls `frequency` a sky frequency but does not identify a
 public comparison-ready reference frame for the TAP value. Typed frequency
