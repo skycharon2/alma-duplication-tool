@@ -13,7 +13,23 @@ from alma_duplicate.domain.queue import (
 
 QUEUE_FREQUENCY_DERIVATION_VERSION = "2"
 QUEUE_UNIT_NORMALIZATION_VERSION = "1"
+QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION = (
+    "cycle13-technical-handbook-table-5.3-v1"
+)
 SPEED_OF_LIGHT_KMS = 299792.458
+
+# Cycle 13 Technical Handbook, Table 5.3. Keep this as a finite,
+# versioned mapping so a future correlator setup cannot silently inherit
+# an unverified usable-width rule.
+_USABLE_BANDWIDTH_MHZ_BY_NOMINAL_MHZ = {
+    62.5: 58.6,
+    125.0: 117.2,
+    250.0: 234.4,
+    500.0: 468.8,
+    1000.0: 937.5,
+    1875.0: 1875.0,
+    2000.0: 1875.0,
+}
 
 
 class QueueFrequencyDerivationError(ValueError):
@@ -126,21 +142,64 @@ def derived_sky_interval(
         )
 
     nominal_bandwidth_ghz = bandwidth_mhz / 1000.0
-    lower = (
-        derivation.sky_frequency_ghz
-        - nominal_bandwidth_ghz / 2.0
-    )
-    upper = (
-        derivation.sky_frequency_ghz
-        + nominal_bandwidth_ghz / 2.0
+    lower, upper = centred_frequency_interval(
+        derivation.sky_frequency_ghz,
+        nominal_bandwidth_ghz,
     )
 
-    if lower >= upper or lower <= 0.0:
+    return nominal_bandwidth_ghz, lower, upper
+
+
+def derive_usable_bandwidth_ghz(
+    source_bandwidth_mhz: QueueQuantity,
+) -> float:
+    """Map a recognized nominal correlator width to usable GHz."""
+
+    nominal_mhz = source_bandwidth_mhz.value
+    if not math.isfinite(nominal_mhz) or nominal_mhz <= 0.0:
+        raise QueueFrequencyDerivationError(
+            "source bandwidth must be finite and positive"
+        )
+
+    for expected_mhz, usable_mhz in (
+        _USABLE_BANDWIDTH_MHZ_BY_NOMINAL_MHZ.items()
+    ):
+        if math.isclose(
+            nominal_mhz,
+            expected_mhz,
+            rel_tol=0.0,
+            abs_tol=1e-9,
+        ):
+            return usable_mhz / 1000.0
+
+    raise QueueFrequencyDerivationError(
+        "nominal SPW bandwidth has no verified Cycle 13 usable-width "
+        f"mapping: {nominal_mhz!r} MHz"
+    )
+
+
+def centred_frequency_interval(
+    centre_ghz: float,
+    bandwidth_ghz: float,
+) -> tuple[float, float]:
+    """Return validated bounds for a positive, centred GHz interval."""
+
+    if not math.isfinite(centre_ghz) or centre_ghz <= 0.0:
+        raise QueueFrequencyDerivationError(
+            "interval centre must be finite and positive"
+        )
+    if not math.isfinite(bandwidth_ghz) or bandwidth_ghz <= 0.0:
+        raise QueueFrequencyDerivationError(
+            "interval bandwidth must be finite and positive"
+        )
+
+    lower = centre_ghz - bandwidth_ghz / 2.0
+    upper = centre_ghz + bandwidth_ghz / 2.0
+    if lower <= 0.0 or lower >= upper:
         raise QueueFrequencyDerivationError(
             "derived frequency interval is invalid"
         )
-
-    return nominal_bandwidth_ghz, lower, upper
+    return lower, upper
 
 
 def observed_to_velocity_kms(

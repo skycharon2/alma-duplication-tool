@@ -28,12 +28,12 @@ from alma_duplicate.domain.archive_evidence import (
 )
 
 
-ARCHIVE_COMPARISON_CONTRACT_VERSION = "1"
+ARCHIVE_COMPARISON_CONTRACT_VERSION = "2"
 
 
 @dataclass(frozen=True, slots=True)
 class ArchiveFieldSpec:
-    """Expected live unit and canonical unit for one Archive field."""
+    """Expected units and an exclusive physical lower bound."""
 
     name: str
     expected_unit: str
@@ -306,7 +306,7 @@ def _quantity(
         not math.isfinite(numeric)
         or (
             validation.spec.minimum_value is not None
-            and numeric < validation.spec.minimum_value
+            and numeric <= validation.spec.minimum_value
         )
     ):
         return ArchiveQuantity(
@@ -395,8 +395,25 @@ def build_archive_comparison_evidence(
         assert centre.canonical_value is not None
         assert bandwidth.canonical_value is not None
         half_bandwidth = bandwidth.canonical_value / 2.0
-        lower_ghz = centre.canonical_value - half_bandwidth
-        upper_ghz = centre.canonical_value + half_bandwidth
+        candidate_lower = centre.canonical_value - half_bandwidth
+        candidate_upper = centre.canonical_value + half_bandwidth
+        if 0.0 < candidate_lower < candidate_upper:
+            lower_ghz = candidate_lower
+            upper_ghz = candidate_upper
+        else:
+            issues += (
+                ArchiveEvidenceIssue(
+                    kind=(
+                        ArchiveEvidenceIssueKind
+                        .FREQUENCY_INTERVAL_INVALID
+                    ),
+                    message=(
+                        "frequency and bandwidth do not define a "
+                        "strictly positive interval"
+                    ),
+                    source_field="frequency,bandwidth",
+                ),
+            )
 
     issues += (
         ArchiveEvidenceIssue(

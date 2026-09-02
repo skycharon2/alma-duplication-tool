@@ -14,6 +14,12 @@ from alma_duplicate.clients.archive_contract import (
 ARCHIVE_TABLE = "ivoa.obscore"
 COUNT_ALIAS = "total_matches"
 ARCHIVE_SCHEMA_VERSION = "1"
+ARCHIVE_QUERY_UNIT_CONTRACT_VERSION = "1"
+
+ARCHIVE_FREQUENCY_QUERY_UNITS = (
+    ("frequency", "double", "GHz"),
+    ("bandwidth", "double", "Hz"),
+)
 
 # Explicit projection used by normalization and v0.4 reconstruction.
 ARCHIVE_SELECTED_COLUMNS = (
@@ -187,7 +193,22 @@ def normalize_query_parameters(
     )
 
 
-def build_where_clause(spec: ArchiveQuerySpec) -> str:
+def build_query_unit_metadata_adql() -> str:
+    """Return the TAP_SCHEMA probe required before frequency arithmetic."""
+
+    return (
+        "SELECT column_name, datatype, unit\n"
+        "FROM TAP_SCHEMA.columns\n"
+        f"WHERE table_name = '{ARCHIVE_TABLE}'\n"
+        "    AND column_name IN ('frequency', 'bandwidth')"
+    )
+
+
+def build_where_clause(
+    spec: ArchiveQuerySpec,
+    *,
+    frequency_units_verified: bool = False,
+) -> str:
     """Build the shared predicate for COUNT and retrieval."""
 
     ra_text = _format_adql_number(spec.ra_deg)
@@ -207,6 +228,10 @@ def build_where_clause(spec: ArchiveQuerySpec) -> str:
         clauses.append("science_observation = 'T'")
 
     if spec.frequency_min_ghz is not None:
+        if not frequency_units_verified:
+            raise ValueError(
+                "frequency prefilter requires verified Archive query units"
+            )
         frequency_min = _format_adql_number(
             spec.frequency_min_ghz
         )
@@ -236,13 +261,22 @@ def build_where_clause(spec: ArchiveQuerySpec) -> str:
     return "\n    AND ".join(clauses)
 
 
-def build_count_adql(spec: ArchiveQuerySpec) -> str:
+def build_count_adql(
+    spec: ArchiveQuerySpec,
+    *,
+    frequency_units_verified: bool = False,
+) -> str:
     """Build a server-side COUNT query."""
+
+    where_clause = build_where_clause(
+        spec,
+        frequency_units_verified=frequency_units_verified,
+    )
 
     return (
         f"SELECT COUNT(*) AS {COUNT_ALIAS}\n"
         f"FROM {ARCHIVE_TABLE}\n"
-        f"WHERE {build_where_clause(spec)}"
+        f"WHERE {where_clause}"
     )
 
 
@@ -250,6 +284,7 @@ def build_retrieval_adql(
     spec: ArchiveQuerySpec,
     *,
     columns: tuple[str, ...] = ARCHIVE_SELECTED_COLUMNS,
+    frequency_units_verified: bool = False,
 ) -> str:
     """Build retrieval ADQL with an explicit projection."""
 
@@ -269,10 +304,14 @@ def build_retrieval_adql(
         )
 
     projection = ",\n    ".join(columns)
+    where_clause = build_where_clause(
+        spec,
+        frequency_units_verified=frequency_units_verified,
+    )
 
     return (
         "SELECT\n"
         f"    {projection}\n"
         f"FROM {ARCHIVE_TABLE}\n"
-        f"WHERE {build_where_clause(spec)}"
+        f"WHERE {where_clause}"
     )

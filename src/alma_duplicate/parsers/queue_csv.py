@@ -51,7 +51,10 @@ from alma_duplicate.queue_csv_contract import (
 )
 from alma_duplicate.queue_normalization import (
     QUEUE_UNIT_NORMALIZATION_VERSION,
+    QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION,
     QueueFrequencyDerivationError,
+    centred_frequency_interval,
+    derive_usable_bandwidth_ghz,
     derive_sky_frequency,
     derived_sky_interval,
 )
@@ -827,6 +830,13 @@ class _RowParser:
                     derivation,
                     bandwidth,
                 )
+                usable_bandwidth = derive_usable_bandwidth_ghz(
+                    bandwidth
+                )
+                usable_lower, usable_upper = centred_frequency_interval(
+                    derivation.sky_frequency_ghz,
+                    usable_bandwidth,
+                )
             except QueueFrequencyDerivationError as exc:
                 self._issue(
                     QueueIssueKind.INVALID_FREQUENCY_INTERVAL,
@@ -844,8 +854,14 @@ class _RowParser:
                     spectral_resolution_mhz=resolution,
                     frequency_derivation=derivation,
                     nominal_bandwidth_ghz=nominal_bandwidth,
+                    usable_bandwidth_ghz=usable_bandwidth,
+                    usable_bandwidth_derivation_version=(
+                        QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION
+                    ),
                     lower_sky_frequency_ghz=lower,
                     upper_sky_frequency_ghz=upper,
+                    usable_lower_sky_frequency_ghz=usable_lower,
+                    usable_upper_sky_frequency_ghz=usable_upper,
                 )
             )
 

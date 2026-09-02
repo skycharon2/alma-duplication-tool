@@ -37,6 +37,16 @@ class ArchiveQueryErrorKind(StrEnum):
     UNKNOWN_QUERY_STATUS = "UNKNOWN_QUERY_STATUS"
 
 
+class ArchiveFrequencyPrefilterStatus(StrEnum):
+    """Whether Archive frequency arithmetic was safe to execute."""
+
+    NOT_REQUESTED = "NOT_REQUESTED"
+    VERIFIED_EXACT_UNITS = "VERIFIED_EXACT_UNITS"
+    FALLBACK_METADATA_QUERY_ERROR = "FALLBACK_METADATA_QUERY_ERROR"
+    FALLBACK_METADATA_INCOMPLETE = "FALLBACK_METADATA_INCOMPLETE"
+    FALLBACK_UNIT_MISMATCH = "FALLBACK_UNIT_MISMATCH"
+
+
 class TapExecutionError(RuntimeError):
     """Source-neutral failure raised by a TAP executor."""
 
@@ -72,6 +82,19 @@ class TapFieldMetadata:
 
 
 @dataclass(frozen=True, slots=True)
+class ArchiveQueryColumnUnit:
+    """One TAP_SCHEMA descriptor used to gate server-side arithmetic."""
+
+    column_name: str
+    datatype: str | None
+    unit: str | None
+
+    def __post_init__(self) -> None:
+        if not self.column_name.strip():
+            raise ValueError("query column name must not be blank")
+
+
+@dataclass(frozen=True, slots=True)
 class ArchiveQueryProvenance:
     """Traceable evidence for one COUNT-and-retrieval run."""
 
@@ -90,6 +113,11 @@ class ArchiveQueryProvenance:
     query_hash: str
     client_version: str
     schema_version: str
+    frequency_prefilter_status: ArchiveFrequencyPrefilterStatus = (
+        ArchiveFrequencyPrefilterStatus.NOT_REQUESTED
+    )
+    query_unit_contract_version: str = "1"
+    query_unit_metadata: tuple[ArchiveQueryColumnUnit, ...] = ()
     warnings: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
@@ -99,6 +127,10 @@ class ArchiveQueryProvenance:
             raise ValueError("endpoint must not be blank")
         if self.configured_maxrec <= 0:
             raise ValueError("configured_maxrec must be positive")
+        if not self.query_unit_contract_version.strip():
+            raise ValueError(
+                "query_unit_contract_version must not be blank"
+            )
 
         for count_name, count_value in (
             ("expected_count", self.expected_count),

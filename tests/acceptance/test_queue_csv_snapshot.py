@@ -17,6 +17,10 @@ from alma_duplicate.domain.queue import (
 from alma_duplicate.queue_csv_contract import (
     QUEUE_EVIDENCE_SNAPSHOT_SHA256,
 )
+from alma_duplicate.queue_normalization import (
+    QUEUE_FREQUENCY_DERIVATION_VERSION,
+    QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION,
+)
 
 
 @pytest.mark.snapshot
@@ -71,6 +75,22 @@ def test_pinned_full_queue_snapshot() -> None:
         for spw in high_redshift_spectral.spws
     ] == pytest.approx([1.875] * 4)
     assert [
+        spw.usable_bandwidth_ghz
+        for spw in high_redshift_spectral.spws
+    ] == pytest.approx([1.875] * 4)
+    assert [
+        spw.spectral_resolution_mhz.value
+        for spw in high_redshift_spectral.spws
+    ] == pytest.approx([7.81201171875] * 4)
+    assert {
+        spw.frequency_derivation.derivation_version
+        for spw in high_redshift_spectral.spws
+    } == {QUEUE_FREQUENCY_DERIVATION_VERSION}
+    assert {
+        spw.usable_bandwidth_derivation_version
+        for spw in high_redshift_spectral.spws
+    } == {QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION}
+    assert [
         spw.frequency_derivation.sky_frequency_ghz
         for spw in high_redshift_spectral.spws
     ] == pytest.approx(
@@ -80,6 +100,33 @@ def test_pinned_full_queue_snapshot() -> None:
             282.81977440953057,
             280.96971047028603,
         ]
+    )
+
+    all_regular_spws = [
+        spw
+        for row in result.row_inputs
+        if isinstance(row.spectral, RegularSpwEvidence)
+        for spw in row.spectral.spws
+    ]
+    assert all(
+        spw.usable_bandwidth_ghz <= spw.nominal_bandwidth_ghz
+        for spw in all_regular_spws
+    )
+    assert Counter(
+        (
+            spw.bandwidth_mhz.value,
+            spw.usable_bandwidth_ghz * 1000.0,
+        )
+        for spw in all_regular_spws
+    ) == Counter(
+        {
+            (62.5, 58.6): 12561,
+            (125.0, 117.2): 1353,
+            (250.0, 234.4): 277,
+            (500.0, 468.8): 63,
+            (1000.0, 937.5): 47,
+            (1875.0, 1875.0): 1915,
+        }
     )
 
     content_counts = Counter(
