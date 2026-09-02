@@ -8,6 +8,7 @@ from alma_duplicate.clients.archive_queries import (
     ARCHIVE_SELECTED_COLUMNS,
     ArchiveQuerySpec,
     build_count_adql,
+    build_query_unit_metadata_adql,
     build_retrieval_adql,
     build_where_clause,
     normalize_query_parameters,
@@ -28,7 +29,10 @@ def _spec(
 
 def test_count_and_retrieval_share_where_clause() -> None:
     spec = _spec()
-    where_clause = build_where_clause(spec)
+    where_clause = build_where_clause(
+        spec,
+        frequency_units_verified=True,
+    )
 
     assert build_count_adql(spec).endswith(where_clause)
     assert build_retrieval_adql(spec).endswith(
@@ -86,7 +90,10 @@ def test_frequency_prefilter_uses_archive_coverage_overlap() -> None:
         frequency_max_ghz=231.0,
     )
 
-    where_clause = build_where_clause(spec)
+    where_clause = build_where_clause(
+        spec,
+        frequency_units_verified=True,
+    )
 
     assert (
         "frequency - 0.5 * bandwidth / 1000000000.0"
@@ -94,8 +101,35 @@ def test_frequency_prefilter_uses_archive_coverage_overlap() -> None:
     )
     assert "< 231" in where_clause
     assert "> 229" in where_clause
-    assert build_count_adql(spec).endswith(where_clause)
-    assert build_retrieval_adql(spec).endswith(where_clause)
+    assert build_count_adql(
+        spec,
+        frequency_units_verified=True,
+    ).endswith(where_clause)
+    assert build_retrieval_adql(
+        spec,
+        frequency_units_verified=True,
+    ).endswith(where_clause)
+
+
+def test_frequency_prefilter_requires_verified_query_units() -> None:
+    spec = ArchiveQuerySpec(
+        ra_deg=201.365,
+        dec_deg=-43.019,
+        radius_deg=0.006,
+        frequency_min_ghz=229.0,
+        frequency_max_ghz=231.0,
+    )
+
+    with pytest.raises(ValueError, match="verified Archive query units"):
+        build_count_adql(spec)
+
+
+def test_query_unit_probe_targets_only_arithmetic_fields() -> None:
+    query = build_query_unit_metadata_adql()
+
+    assert "FROM TAP_SCHEMA.columns" in query
+    assert "table_name = 'ivoa.obscore'" in query
+    assert "'frequency', 'bandwidth'" in query
 
 
 def test_angular_prefilter_retains_unknown_resolution() -> None:

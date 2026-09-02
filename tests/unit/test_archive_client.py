@@ -8,6 +8,7 @@ from alma_duplicate.clients.archive_client import (
     ArchiveClient,
 )
 from alma_duplicate.clients.archive_contract import (
+    ArchiveFrequencyPrefilterStatus,
     ArchiveQueryErrorKind,
     ArchiveQueryStatus,
     TapFieldMetadata,
@@ -119,6 +120,48 @@ def _retrieval_response(
     )
 
 
+def _query_unit_response(
+    *,
+    frequency_unit: str = "GHz",
+    bandwidth_unit: str = "Hz",
+    status: object | None = "OK",
+    include_bandwidth: bool = True,
+) -> TapResponse:
+    columns = ("column_name", "datatype", "unit")
+    rows = [
+        {
+            "column_name": "frequency",
+            "datatype": "double",
+            "unit": frequency_unit,
+        }
+    ]
+    if include_bandwidth:
+        rows.append(
+            {
+                "column_name": "bandwidth",
+                "datatype": "double",
+                "unit": bandwidth_unit,
+            }
+        )
+    return TapResponse(
+        rows=tuple(rows),
+        declared_columns=columns,
+        field_metadata=_field_metadata(columns),
+        query_status_raw=status,
+        warnings=("unit metadata fixture",),
+    )
+
+
+def _frequency_spec() -> ArchiveQuerySpec:
+    return ArchiveQuerySpec(
+        ra_deg=201.365,
+        dec_deg=-43.019,
+        radius_deg=0.006,
+        frequency_min_ghz=229.0,
+        frequency_max_ghz=231.0,
+    )
+
+
 def _client(
     actions: list[TapResponse | TapExecutionError],
     *,
@@ -154,7 +197,10 @@ def test_complete_result_reconciles_count_and_rows() -> None:
         "query-run-001"
     )
     assert len(result.provenance.query_hash) == 64
-    assert result.provenance.client_version == "2"
+    assert result.provenance.client_version == "3"
+    assert result.provenance.frequency_prefilter_status is (
+        ArchiveFrequencyPrefilterStatus.NOT_REQUESTED
+    )
     assert result.provenance.warnings == (
         "count fixture",
         "retrieval fixture",
@@ -168,6 +214,89 @@ def test_complete_result_reconciles_count_and_rows() -> None:
     assert "COUNT(*)" in executor.calls[0].adql
     assert "COUNT(*)" not in executor.calls[1].adql
     assert executor.remaining_action_count == 0
+
+
+def test_frequency_prefilter_runs_only_after_exact_unit_probe() -> None:
+    client, executor = _client(
+        [
+            _query_unit_response(),
+            _count_response(1),
+            _retrieval_response(1),
+        ]
+    )
+
+    result = client.search(_frequency_spec())
+
+    assert result.status is ArchiveQueryStatus.COMPLETE
+    assert result.provenance.frequency_prefilter_status is (
+        ArchiveFrequencyPrefilterStatus.VERIFIED_EXACT_UNITS
+    )
+    assert len(result.provenance.query_unit_metadata) == 2
+    assert "TAP_SCHEMA.columns" in executor.calls[0].adql
+    assert "bandwidth / 1000000000.0" in executor.calls[1].adql
+    assert "bandwidth / 1000000000.0" in executor.calls[2].adql
+
+
+def test_frequency_unit_mismatch_falls_back_to_spatial_query() -> None:
+    client, executor = _client(
+        [
+            _query_unit_response(frequency_unit="MHz"),
+            _count_response(1),
+            _retrieval_response(1),
+        ]
+    )
+
+    result = client.search(_frequency_spec())
+
+    assert result.status is ArchiveQueryStatus.COMPLETE
+    assert result.provenance.frequency_prefilter_status is (
+        ArchiveFrequencyPrefilterStatus.FALLBACK_UNIT_MISMATCH
+    )
+    assert "bandwidth / 1000000000.0" not in executor.calls[1].adql
+    assert "bandwidth / 1000000000.0" not in executor.calls[2].adql
+    assert dict(result.provenance.normalized_parameters)[
+        "frequency_min_ghz"
+    ] == 229.0
+
+
+def test_incomplete_query_metadata_falls_back_to_spatial_query() -> None:
+    client, executor = _client(
+        [
+            _query_unit_response(include_bandwidth=False),
+            _count_response(1),
+            _retrieval_response(1),
+        ]
+    )
+
+    result = client.search(_frequency_spec())
+
+    assert result.status is ArchiveQueryStatus.COMPLETE
+    assert result.provenance.frequency_prefilter_status is (
+        ArchiveFrequencyPrefilterStatus.FALLBACK_METADATA_INCOMPLETE
+    )
+    assert "bandwidth / 1000000000.0" not in executor.calls[1].adql
+
+
+def test_query_metadata_error_falls_back_to_spatial_query() -> None:
+    client, executor = _client(
+        [
+            TapExecutionError(
+                ArchiveQueryErrorKind.SERVICE_ERROR,
+                "metadata unavailable",
+            ),
+            _count_response(1),
+            _retrieval_response(1),
+        ]
+    )
+
+    result = client.search(_frequency_spec())
+
+    assert result.status is ArchiveQueryStatus.COMPLETE
+    assert result.provenance.frequency_prefilter_status is (
+        ArchiveFrequencyPrefilterStatus
+        .FALLBACK_METADATA_QUERY_ERROR
+    )
+    assert "bandwidth / 1000000000.0" not in executor.calls[1].adql
 
 
 def test_valid_empty_result_is_complete() -> None:

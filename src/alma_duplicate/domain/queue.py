@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
+import math
 from typing import TypeAlias
 
 
@@ -292,8 +293,63 @@ class QueueSpw:
     spectral_resolution_mhz: QueueQuantity
     frequency_derivation: QueueFrequencyDerivation
     nominal_bandwidth_ghz: float
+    usable_bandwidth_ghz: float
+    usable_bandwidth_derivation_version: str
     lower_sky_frequency_ghz: float
     upper_sky_frequency_ghz: float
+    usable_lower_sky_frequency_ghz: float
+    usable_upper_sky_frequency_ghz: float
+
+    def __post_init__(self) -> None:
+        if self.number <= 0:
+            raise ValueError("SPW number must be positive")
+        if not self.usable_bandwidth_derivation_version.strip():
+            raise ValueError(
+                "usable bandwidth derivation version must not be blank"
+            )
+
+        for name, value in (
+            ("nominal_bandwidth_ghz", self.nominal_bandwidth_ghz),
+            ("usable_bandwidth_ghz", self.usable_bandwidth_ghz),
+        ):
+            if not math.isfinite(value) or value <= 0.0:
+                raise ValueError(f"{name} must be finite and positive")
+
+        if self.usable_bandwidth_ghz > self.nominal_bandwidth_ghz:
+            raise ValueError(
+                "usable bandwidth must not exceed nominal bandwidth"
+            )
+
+        for label, lower, upper, width in (
+            (
+                "nominal",
+                self.lower_sky_frequency_ghz,
+                self.upper_sky_frequency_ghz,
+                self.nominal_bandwidth_ghz,
+            ),
+            (
+                "usable",
+                self.usable_lower_sky_frequency_ghz,
+                self.usable_upper_sky_frequency_ghz,
+                self.usable_bandwidth_ghz,
+            ),
+        ):
+            if (
+                not math.isfinite(lower)
+                or not math.isfinite(upper)
+                or lower <= 0.0
+                or lower >= upper
+            ):
+                raise ValueError(f"{label} frequency interval is invalid")
+            if not math.isclose(
+                upper - lower,
+                width,
+                rel_tol=1e-12,
+                abs_tol=1e-12,
+            ):
+                raise ValueError(
+                    f"{label} interval width does not match bandwidth"
+                )
 
     @property
     def sky_bandwidth_ghz(self) -> float:
@@ -304,6 +360,18 @@ class QueueSpw:
         """
 
         return self.nominal_bandwidth_ghz
+
+    @property
+    def nominal_lower_sky_frequency_ghz(self) -> float:
+        """Explicit name for the conservative nominal lower bound."""
+
+        return self.lower_sky_frequency_ghz
+
+    @property
+    def nominal_upper_sky_frequency_ghz(self) -> float:
+        """Explicit name for the conservative nominal upper bound."""
+
+        return self.upper_sky_frequency_ghz
 
 
 @dataclass(frozen=True, slots=True)

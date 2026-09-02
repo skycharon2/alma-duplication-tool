@@ -531,8 +531,8 @@ scaling is applied without an authoritative source definition.
 ```text
 doppler_factor = derived_sky_frequency / source_frequency
 nominal_bandwidth_ghz = bandwidth_mhz / 1000
-lower = derived_sky_frequency - nominal_bandwidth_ghz / 2
-upper = derived_sky_frequency + nominal_bandwidth_ghz / 2
+nominal_lower = derived_sky_frequency - nominal_bandwidth_ghz / 2
+nominal_upper = derived_sky_frequency + nominal_bandwidth_ghz / 2
 ```
 
 The model retains the source `bandwidth_mhz` quantity and the normalized
@@ -540,9 +540,30 @@ The model retains the source `bandwidth_mhz` quantity and the normalized
 property named `sky_bandwidth_ghz` returns the same unscaled nominal width; it
 must not be interpreted as a Doppler-derived quantity.
 
-This contract does not yet replace nominal correlator bandwidth with usable
-bandwidth. That later derivation requires a separately versioned rule and must
-preserve both values.
+Scientific coverage also carries a separately derived usable width. The Cycle
+13 mapping follows Table 5.3 of the
+[ALMA Cycle 13 Technical Handbook](https://almascience.eso.org/documents-and-tools/cycle13/alma-technical-handbook)
+and is versioned as
+`cycle13-technical-handbook-table-5.3-v1`:
+
+| Nominal MHz | Usable MHz |
+|---:|---:|
+| 62.5 | 58.6 |
+| 125 | 117.2 |
+| 250 | 234.4 |
+| 500 | 468.8 |
+| 1000 | 937.5 |
+| 1875 | 1875 |
+| 2000 | 1875 |
+
+Usable bounds are centred on the same derived sky frequency. They are not
+Doppler-scaled. Unknown nominal values fail closed until the applicable ALMA
+Technical Handbook supplies an approved mapping. Nominal bounds remain
+available for conservative discovery and the pinned snapshot's historical
+reference-frequency consistency check; usable bounds are the intended input
+to later formal coverage comparison. In the pinned snapshot, all 3,199 regular
+rows place `Ref.Frequency` inside both at least one nominal interval and at
+least one usable interval.
 
 The reference-frequency consistency gate permits a numerical boundary
 tolerance of `1e-12 GHz` and requires `Ref.Frequency` to lie inside at least one
@@ -870,6 +891,7 @@ The following versions are independent:
 - parser version;
 - unit-normalization version;
 - frequency-derivation version;
+- usable-bandwidth-derivation version;
 - spatial-signature version;
 - spectral-signature version; and
 - reconstruction version.
