@@ -5,7 +5,9 @@
 The live smoke test verifies that the production Archive client can currently
 communicate with the ALMA TAP service, receive the declared retrieval schema,
 preserve its ordered VOTable field descriptors, and produce complete query
-provenance. A separate live case requests frequency and angular-resolution
+provenance. The complete pipeline case also verifies the public `em_xel`
+integer descriptor and per-Source-SPW spectral-mode derivation. A separate
+live case requests frequency and angular-resolution
 prefilters and verifies that `TAP_SCHEMA` reports the exact units required by
 both ADQL arithmetic expressions.
 
@@ -70,7 +72,9 @@ The smoke test requires:
 - endpoint, ADQL, timestamps, versions, run ID, and query hash provenance; and
 - exact `frequency=GHz`, `bandwidth=Hz`, and
   `spatial_resolution=arcsec` gates before the live numeric prefilters are
-  used.
+  used; and
+- an integer `em_xel` descriptor plus non-UNKNOWN mode evidence for every
+  reconstructed Source-SPW association in the selected live closure case.
 
 `COMPLETE`, `OVERFLOW`, and `COUNT_MISMATCH` are accepted as evidence that the
 live boundary executed and the completeness contract classified the response.
@@ -85,4 +89,5 @@ and deterministic Archive reconstruction.
 The pipeline assertions do not require a fixed Archive row count, project ID,
 or association count. They verify raw-row preservation, surrogate-row
 identity, row-accounting consistency, and at least one reconstructed
-association.
+association. FDM/TDM is asserted only as versioned `DERIVED` evidence, not as
+a direct TAP mode field or a final duplication decision.
