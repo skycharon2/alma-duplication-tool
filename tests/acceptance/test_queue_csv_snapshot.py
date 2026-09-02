@@ -11,6 +11,8 @@ from alma_duplicate.clients.queue_csv_client import QueueCsvClient
 from alma_duplicate.domain.queue import (
     QueueIssueKind,
     QueueParseStatus,
+    QueueUsableBandwidthApplicability,
+    QueueUsableBandwidthDerivationKind,
     RegularSpwEvidence,
     SpectralScanEvidence,
 )
@@ -90,6 +92,17 @@ def test_pinned_full_queue_snapshot() -> None:
         spw.usable_bandwidth_derivation_version
         for spw in high_redshift_spectral.spws
     } == {QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION}
+    assert {
+        spw.usable_bandwidth_derivation_kind
+        for spw in high_redshift_spectral.spws
+    } == {QueueUsableBandwidthDerivationKind.NOMINAL_MAPPED}
+    assert {
+        spw.usable_bandwidth_applicability
+        for spw in high_redshift_spectral.spws
+    } == {
+        QueueUsableBandwidthApplicability
+        .PENDING_ARRAY_PROCESSOR_CONFIRMATION
+    }
     assert [
         spw.frequency_derivation.sky_frequency_ghz
         for spw in high_redshift_spectral.spws

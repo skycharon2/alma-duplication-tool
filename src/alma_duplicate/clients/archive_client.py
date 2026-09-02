@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from hashlib import sha256
 from numbers import Integral
-from typing import Callable, Protocol
+from typing import Protocol
 from uuid import uuid4
 
 from pyvo.dal import TAPService
@@ -18,18 +18,20 @@ from pyvo.dal.exceptions import (
 )
 
 from alma_duplicate.clients.archive_contract import (
+    ArchiveAngularResolutionPrefilterStatus,
     ArchiveFrequencyPrefilterStatus,
     ArchiveQueryColumnUnit,
     ArchiveQueryErrorKind,
     ArchiveQueryProvenance,
     ArchiveQueryResult,
     ArchiveQueryStatus,
-    TapFieldMetadata,
     TapExecutionError,
     TapExecutor,
+    TapFieldMetadata,
     TapResponse,
 )
 from alma_duplicate.clients.archive_queries import (
+    ARCHIVE_ANGULAR_RESOLUTION_QUERY_UNITS,
     ARCHIVE_FREQUENCY_QUERY_UNITS,
     ARCHIVE_QUERY_UNIT_CONTRACT_VERSION,
     ARCHIVE_SCHEMA_VERSION,
@@ -40,18 +42,20 @@ from alma_duplicate.clients.archive_queries import (
     build_query_unit_metadata_adql,
     build_retrieval_adql,
     normalize_query_parameters,
+    requested_query_unit_contract,
 )
 
-
-ARCHIVE_CLIENT_VERSION = "3"
+ARCHIVE_CLIENT_VERSION = "4"
 DEFAULT_MAXREC = 10_000
 
 
 @dataclass(frozen=True, slots=True)
-class _FrequencyPrefilterPlan:
+class _QueryArithmeticPlan:
     effective_spec: ArchiveQuerySpec
-    units_verified: bool
-    status: ArchiveFrequencyPrefilterStatus
+    frequency_units_verified: bool
+    angular_resolution_units_verified: bool
+    frequency_status: ArchiveFrequencyPrefilterStatus
+    angular_resolution_status: ArchiveAngularResolutionPrefilterStatus
     metadata: tuple[ArchiveQueryColumnUnit, ...] = ()
     warnings: tuple[str, ...] = ()
 
@@ -96,7 +100,7 @@ def _required_metadata_text(
 def _extract_field_metadata(
     result: _PyvoResult,
 ) -> tuple[TapFieldMetadata, ...]:
-    fielddescs = getattr(result, "fielddescs")
+    fielddescs = result.fielddescs
 
     return tuple(
         TapFieldMetadata(
@@ -354,11 +358,23 @@ def _missing_required_columns(
     )
 
 
-def _spatial_only_spec(spec: ArchiveQuerySpec) -> ArchiveQuerySpec:
+def _without_frequency_prefilter(
+    spec: ArchiveQuerySpec,
+) -> ArchiveQuerySpec:
     return replace(
         spec,
         frequency_min_ghz=None,
         frequency_max_ghz=None,
+    )
+
+
+def _without_angular_resolution_prefilter(
+    spec: ArchiveQuerySpec,
+) -> ArchiveQuerySpec:
+    return replace(
+        spec,
+        angular_resolution_min_arcsec=None,
+        angular_resolution_max_arcsec=None,
     )
 
 
@@ -402,6 +418,7 @@ def _query_unit_metadata(
 
 def _query_units_are_exact(
     metadata: tuple[ArchiveQueryColumnUnit, ...],
+    expected_units: tuple[tuple[str, str, str], ...],
 ) -> bool | None:
     by_name: dict[str, ArchiveQueryColumnUnit] = {}
     for item in metadata:
@@ -412,9 +429,9 @@ def _query_units_are_exact(
 
     expected_names = {
         name.casefold()
-        for name, _, _ in ARCHIVE_FREQUENCY_QUERY_UNITS
+        for name, _, _ in expected_units
     }
-    if set(by_name) != expected_names:
+    if not expected_names.issubset(by_name):
         return None
 
     return all(
@@ -424,7 +441,7 @@ def _query_units_are_exact(
             == datatype.casefold()
             and by_name[name.casefold()].unit == unit
         )
-        for name, datatype, unit in ARCHIVE_FREQUENCY_QUERY_UNITS
+        for name, datatype, unit in expected_units
     )
 
 
@@ -452,95 +469,192 @@ class ArchiveClient:
             normalized_endpoint
         )
         self._clock = clock or (
-            lambda: datetime.now(timezone.utc)
+            lambda: datetime.now(UTC)
         )
         self._run_id_factory = run_id_factory or (
             lambda: str(uuid4())
         )
 
-    def _plan_frequency_prefilter(
+    def _plan_query_arithmetic(
         self,
         spec: ArchiveQuerySpec,
-    ) -> _FrequencyPrefilterPlan:
-        if spec.frequency_min_ghz is None:
-            return _FrequencyPrefilterPlan(
+    ) -> _QueryArithmeticPlan:
+        requested_units = requested_query_unit_contract(spec)
+        frequency_requested = spec.frequency_min_ghz is not None
+        angular_requested = (
+            spec.angular_resolution_min_arcsec is not None
+        )
+
+        if not requested_units:
+            return _QueryArithmeticPlan(
                 effective_spec=spec,
-                units_verified=False,
-                status=ArchiveFrequencyPrefilterStatus.NOT_REQUESTED,
+                frequency_units_verified=False,
+                angular_resolution_units_verified=False,
+                frequency_status=(
+                    ArchiveFrequencyPrefilterStatus.NOT_REQUESTED
+                ),
+                angular_resolution_status=(
+                    ArchiveAngularResolutionPrefilterStatus.NOT_REQUESTED
+                ),
             )
 
         try:
             response = self._executor.execute(
-                build_query_unit_metadata_adql(),
-                maxrec=len(ARCHIVE_FREQUENCY_QUERY_UNITS),
+                build_query_unit_metadata_adql(requested_units),
+                maxrec=len(requested_units),
             )
         except TapExecutionError as exc:
-            return _FrequencyPrefilterPlan(
-                effective_spec=_spatial_only_spec(spec),
-                units_verified=False,
-                status=(
+            effective_spec = spec
+            if frequency_requested:
+                effective_spec = _without_frequency_prefilter(
+                    effective_spec
+                )
+            if angular_requested:
+                effective_spec = (
+                    _without_angular_resolution_prefilter(
+                        effective_spec
+                    )
+                )
+            warnings = tuple(
+                f"{label} prefilter disabled because TAP_SCHEMA "
+                f"could not be verified: {exc}"
+                for requested, label in (
+                    (frequency_requested, "frequency"),
+                    (angular_requested, "angular-resolution"),
+                )
+                if requested
+            )
+            return _QueryArithmeticPlan(
+                effective_spec=effective_spec,
+                frequency_units_verified=False,
+                angular_resolution_units_verified=False,
+                frequency_status=(
                     ArchiveFrequencyPrefilterStatus
                     .FALLBACK_METADATA_QUERY_ERROR
+                    if frequency_requested
+                    else ArchiveFrequencyPrefilterStatus.NOT_REQUESTED
                 ),
-                warnings=(
-                    "frequency prefilter disabled because TAP_SCHEMA "
-                    f"could not be verified: {exc}",
+                angular_resolution_status=(
+                    ArchiveAngularResolutionPrefilterStatus
+                    .FALLBACK_METADATA_QUERY_ERROR
+                    if angular_requested
+                    else ArchiveAngularResolutionPrefilterStatus
+                    .NOT_REQUESTED
                 ),
+                warnings=warnings,
             )
 
         metadata = _query_unit_metadata(response)
         if metadata is None:
-            return _FrequencyPrefilterPlan(
-                effective_spec=_spatial_only_spec(spec),
-                units_verified=False,
-                status=(
+            effective_spec = spec
+            if frequency_requested:
+                effective_spec = _without_frequency_prefilter(
+                    effective_spec
+                )
+            if angular_requested:
+                effective_spec = (
+                    _without_angular_resolution_prefilter(
+                        effective_spec
+                    )
+                )
+            return _QueryArithmeticPlan(
+                effective_spec=effective_spec,
+                frequency_units_verified=False,
+                angular_resolution_units_verified=False,
+                frequency_status=(
                     ArchiveFrequencyPrefilterStatus
                     .FALLBACK_METADATA_INCOMPLETE
+                    if frequency_requested
+                    else ArchiveFrequencyPrefilterStatus.NOT_REQUESTED
+                ),
+                angular_resolution_status=(
+                    ArchiveAngularResolutionPrefilterStatus
+                    .FALLBACK_METADATA_INCOMPLETE
+                    if angular_requested
+                    else ArchiveAngularResolutionPrefilterStatus
+                    .NOT_REQUESTED
                 ),
                 warnings=response.warnings + (
-                    "frequency prefilter disabled because TAP_SCHEMA "
-                    "metadata was incomplete",
+                    (
+                        "query prefilter arithmetic disabled because "
+                        "TAP_SCHEMA metadata was incomplete"
+                    ),
                 ),
             )
 
-        exact = _query_units_are_exact(metadata)
-        if exact is None:
-            return _FrequencyPrefilterPlan(
-                effective_spec=_spatial_only_spec(spec),
-                units_verified=False,
-                status=(
-                    ArchiveFrequencyPrefilterStatus
-                    .FALLBACK_METADATA_INCOMPLETE
-                ),
-                metadata=metadata,
-                warnings=response.warnings + (
-                    "frequency prefilter disabled because TAP_SCHEMA "
-                    "did not describe exactly frequency and bandwidth",
-                ),
-            )
-        if not exact:
-            return _FrequencyPrefilterPlan(
-                effective_spec=_spatial_only_spec(spec),
-                units_verified=False,
-                status=(
-                    ArchiveFrequencyPrefilterStatus
-                    .FALLBACK_UNIT_MISMATCH
-                ),
-                metadata=metadata,
-                warnings=response.warnings + (
-                    "frequency prefilter disabled because Archive query "
-                    "units did not match frequency=GHz and bandwidth=Hz",
-                ),
-            )
+        effective_spec = spec
+        warnings = list(response.warnings)
 
-        return _FrequencyPrefilterPlan(
-            effective_spec=spec,
-            units_verified=True,
-            status=(
-                ArchiveFrequencyPrefilterStatus.VERIFIED_EXACT_UNITS
+        frequency_exact: bool | None = False
+        if frequency_requested:
+            frequency_exact = _query_units_are_exact(
+                metadata,
+                ARCHIVE_FREQUENCY_QUERY_UNITS,
+            )
+            if frequency_exact is not True:
+                effective_spec = _without_frequency_prefilter(
+                    effective_spec
+                )
+                warnings.append(
+                    "frequency prefilter disabled because "
+                    + (
+                        "TAP_SCHEMA metadata was incomplete"
+                        if frequency_exact is None
+                        else "Archive query units did not match "
+                        "frequency=GHz and bandwidth=Hz"
+                    )
+                )
+
+        angular_exact: bool | None = False
+        if angular_requested:
+            angular_exact = _query_units_are_exact(
+                metadata,
+                ARCHIVE_ANGULAR_RESOLUTION_QUERY_UNITS,
+            )
+            if angular_exact is not True:
+                effective_spec = (
+                    _without_angular_resolution_prefilter(
+                        effective_spec
+                    )
+                )
+                warnings.append(
+                    "angular-resolution prefilter disabled because "
+                    + (
+                        "TAP_SCHEMA metadata was incomplete"
+                        if angular_exact is None
+                        else "Archive query units did not match "
+                        "spatial_resolution=arcsec"
+                    )
+                )
+
+        return _QueryArithmeticPlan(
+            effective_spec=effective_spec,
+            frequency_units_verified=frequency_exact is True,
+            angular_resolution_units_verified=angular_exact is True,
+            frequency_status=(
+                ArchiveFrequencyPrefilterStatus.NOT_REQUESTED
+                if not frequency_requested
+                else ArchiveFrequencyPrefilterStatus.VERIFIED_EXACT_UNITS
+                if frequency_exact is True
+                else ArchiveFrequencyPrefilterStatus
+                .FALLBACK_METADATA_INCOMPLETE
+                if frequency_exact is None
+                else ArchiveFrequencyPrefilterStatus.FALLBACK_UNIT_MISMATCH
+            ),
+            angular_resolution_status=(
+                ArchiveAngularResolutionPrefilterStatus.NOT_REQUESTED
+                if not angular_requested
+                else ArchiveAngularResolutionPrefilterStatus
+                .VERIFIED_EXACT_UNITS
+                if angular_exact is True
+                else ArchiveAngularResolutionPrefilterStatus
+                .FALLBACK_METADATA_INCOMPLETE
+                if angular_exact is None
+                else ArchiveAngularResolutionPrefilterStatus
+                .FALLBACK_UNIT_MISMATCH
             ),
             metadata=metadata,
-            warnings=response.warnings,
+            warnings=tuple(warnings),
         )
 
     def search(
@@ -549,14 +663,24 @@ class ArchiveClient:
     ) -> ArchiveQueryResult:
         query_run_id = self._run_id_factory()
         started_at = self._clock()
-        prefilter_plan = self._plan_frequency_prefilter(spec)
+        prefilter_plan = self._plan_query_arithmetic(spec)
         count_adql = build_count_adql(
             prefilter_plan.effective_spec,
-            frequency_units_verified=prefilter_plan.units_verified,
+            frequency_units_verified=(
+                prefilter_plan.frequency_units_verified
+            ),
+            angular_resolution_units_verified=(
+                prefilter_plan.angular_resolution_units_verified
+            ),
         )
         retrieval_adql = build_retrieval_adql(
             prefilter_plan.effective_spec,
-            frequency_units_verified=prefilter_plan.units_verified,
+            frequency_units_verified=(
+                prefilter_plan.frequency_units_verified
+            ),
+            angular_resolution_units_verified=(
+                prefilter_plan.angular_resolution_units_verified
+            ),
         )
         normalized_parameters = (
             normalize_query_parameters(spec)
@@ -569,7 +693,9 @@ class ArchiveClient:
                 + "\0"
                 + retrieval_adql
                 + "\0"
-                + prefilter_plan.status.value
+                + prefilter_plan.frequency_status.value
+                + "\0"
+                + prefilter_plan.angular_resolution_status.value
                 + "\0"
                 + repr(prefilter_plan.metadata)
             ).encode("utf-8")
@@ -749,7 +875,7 @@ class ArchiveClient:
         expected_count: int | None,
         count_response: TapResponse | None,
         retrieval_response: TapResponse | None,
-        prefilter_plan: _FrequencyPrefilterPlan,
+        prefilter_plan: _QueryArithmeticPlan,
     ) -> ArchiveQueryResult:
         provenance = self._provenance(
             query_run_id=query_run_id,
@@ -799,7 +925,7 @@ class ArchiveClient:
         retrieved_count: int | None,
         count_response: TapResponse | None,
         retrieval_response: TapResponse | None,
-        prefilter_plan: _FrequencyPrefilterPlan,
+        prefilter_plan: _QueryArithmeticPlan,
     ) -> ArchiveQueryProvenance:
         warnings = (
             prefilter_plan.warnings
@@ -841,7 +967,12 @@ class ArchiveClient:
             query_hash=query_hash,
             client_version=ARCHIVE_CLIENT_VERSION,
             schema_version=ARCHIVE_SCHEMA_VERSION,
-            frequency_prefilter_status=prefilter_plan.status,
+            frequency_prefilter_status=(
+                prefilter_plan.frequency_status
+            ),
+            angular_resolution_prefilter_status=(
+                prefilter_plan.angular_resolution_status
+            ),
             query_unit_contract_version=(
                 ARCHIVE_QUERY_UNIT_CONTRACT_VERSION
             ),

@@ -8,7 +8,6 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Protocol, TypeAlias
 
-
 ParameterScalar: TypeAlias = str | int | float | bool | None
 NormalizedParameters: TypeAlias = tuple[
     tuple[str, ParameterScalar],
@@ -39,6 +38,16 @@ class ArchiveQueryErrorKind(StrEnum):
 
 class ArchiveFrequencyPrefilterStatus(StrEnum):
     """Whether Archive frequency arithmetic was safe to execute."""
+
+    NOT_REQUESTED = "NOT_REQUESTED"
+    VERIFIED_EXACT_UNITS = "VERIFIED_EXACT_UNITS"
+    FALLBACK_METADATA_QUERY_ERROR = "FALLBACK_METADATA_QUERY_ERROR"
+    FALLBACK_METADATA_INCOMPLETE = "FALLBACK_METADATA_INCOMPLETE"
+    FALLBACK_UNIT_MISMATCH = "FALLBACK_UNIT_MISMATCH"
+
+
+class ArchiveAngularResolutionPrefilterStatus(StrEnum):
+    """Whether Archive angular arithmetic was safe to execute."""
 
     NOT_REQUESTED = "NOT_REQUESTED"
     VERIFIED_EXACT_UNITS = "VERIFIED_EXACT_UNITS"
@@ -116,7 +125,10 @@ class ArchiveQueryProvenance:
     frequency_prefilter_status: ArchiveFrequencyPrefilterStatus = (
         ArchiveFrequencyPrefilterStatus.NOT_REQUESTED
     )
-    query_unit_contract_version: str = "1"
+    angular_resolution_prefilter_status: (
+        ArchiveAngularResolutionPrefilterStatus
+    ) = ArchiveAngularResolutionPrefilterStatus.NOT_REQUESTED
+    query_unit_contract_version: str = "2"
     query_unit_metadata: tuple[ArchiveQueryColumnUnit, ...] = ()
     warnings: tuple[str, ...] = ()
 

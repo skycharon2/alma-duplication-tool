@@ -5,8 +5,9 @@
 The live smoke test verifies that the production Archive client can currently
 communicate with the ALMA TAP service, receive the declared retrieval schema,
 preserve its ordered VOTable field descriptors, and produce complete query
-provenance. A separate live case requests a frequency prefilter and verifies
-that `TAP_SCHEMA` reports the exact units required by its ADQL arithmetic.
+provenance. A separate live case requests frequency and angular-resolution
+prefilters and verifies that `TAP_SCHEMA` reports the exact units required by
+both ADQL arithmetic expressions.
 
 It does not validate a fixed Archive row count, a fixed project identifier, or
 the formal duplication rules. Archive contents and external-service
@@ -67,8 +68,9 @@ The smoke test requires:
 - non-negative dynamic counts;
 - retrieved count to match the number of preserved rows;
 - endpoint, ADQL, timestamps, versions, run ID, and query hash provenance; and
-- an exact `frequency=GHz`, `bandwidth=Hz` unit gate before the live frequency
-  prefilter is used.
+- exact `frequency=GHz`, `bandwidth=Hz`, and
+  `spatial_resolution=arcsec` gates before the live numeric prefilters are
+  used.
 
 `COMPLETE`, `OVERFLOW`, and `COUNT_MISMATCH` are accepted as evidence that the
 live boundary executed and the completeness contract classified the response.

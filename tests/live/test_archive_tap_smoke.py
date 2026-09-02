@@ -9,14 +9,14 @@ import pytest
 from alma_duplicate.clients import (
     ARCHIVE_SCHEMA_VERSION,
     ARCHIVE_SELECTED_COLUMNS,
+    ArchiveAngularResolutionPrefilterStatus,
     ArchiveClient,
     ArchiveFrequencyPrefilterStatus,
+    ArchiveQueryResult,
     ArchiveQuerySpec,
     ArchiveQueryStatus,
-    ArchiveQueryResult,
     run_archive_pipeline,
 )
-
 
 pytestmark = pytest.mark.live
 
@@ -199,8 +199,8 @@ def test_live_archive_pipeline_contract(
     )
 
 
-def test_live_frequency_prefilter_is_unit_gated() -> None:
-    """Exercise TAP_SCHEMA verification before Archive unit arithmetic."""
+def test_live_numeric_prefilters_are_unit_gated() -> None:
+    """Verify TAP_SCHEMA before frequency or angular arithmetic."""
 
     endpoint = os.environ.get(
         "ALMA_TAP_ENDPOINT",
@@ -213,6 +213,8 @@ def test_live_frequency_prefilter_is_unit_gated() -> None:
             radius_deg=1.0 / 3600.0,
             frequency_min_ghz=1.0,
             frequency_max_ghz=1000.0,
+            angular_resolution_min_arcsec=0.0001,
+            angular_resolution_max_arcsec=10000.0,
         )
     )
 
@@ -220,7 +222,13 @@ def test_live_frequency_prefilter_is_unit_gated() -> None:
     assert result.provenance.frequency_prefilter_status is (
         ArchiveFrequencyPrefilterStatus.VERIFIED_EXACT_UNITS
     )
-    assert len(result.provenance.query_unit_metadata) == 2
+    assert result.provenance.angular_resolution_prefilter_status is (
+        ArchiveAngularResolutionPrefilterStatus.VERIFIED_EXACT_UNITS
+    )
+    assert len(result.provenance.query_unit_metadata) == 3
     assert "bandwidth / 1000000000.0" in (
+        result.provenance.count_adql
+    )
+    assert "spatial_resolution >= 0.0001" in (
         result.provenance.count_adql
     )
