@@ -10,6 +10,7 @@ from alma_duplicate.clients import (
     ARCHIVE_SCHEMA_VERSION,
     ARCHIVE_SELECTED_COLUMNS,
     ArchiveClient,
+    ArchiveFrequencyPrefilterStatus,
     ArchiveQuerySpec,
     ArchiveQueryStatus,
     ArchiveQueryResult,
@@ -195,4 +196,31 @@ def test_live_archive_pipeline_contract(
         f"\n  associations={len(reconstruction.associations)}"
         f"\n  support_mappings="
         f"{len(reconstruction.support_mappings)}"
+    )
+
+
+def test_live_frequency_prefilter_is_unit_gated() -> None:
+    """Exercise TAP_SCHEMA verification before Archive unit arithmetic."""
+
+    endpoint = os.environ.get(
+        "ALMA_TAP_ENDPOINT",
+        DEFAULT_ALMA_TAP_ENDPOINT,
+    )
+    result = ArchiveClient(endpoint, maxrec=LIVE_MAXREC).search(
+        ArchiveQuerySpec(
+            ra_deg=278.4163333333333,
+            dec_deg=-21.0610833333333,
+            radius_deg=1.0 / 3600.0,
+            frequency_min_ghz=1.0,
+            frequency_max_ghz=1000.0,
+        )
+    )
+
+    assert result.status in EXECUTED_STATUSES
+    assert result.provenance.frequency_prefilter_status is (
+        ArchiveFrequencyPrefilterStatus.VERIFIED_EXACT_UNITS
+    )
+    assert len(result.provenance.query_unit_metadata) == 2
+    assert "bandwidth / 1000000000.0" in (
+        result.provenance.count_adql
     )

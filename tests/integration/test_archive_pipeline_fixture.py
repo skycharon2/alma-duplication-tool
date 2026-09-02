@@ -8,6 +8,7 @@ import pytest
 from astropy.table import Table
 
 from alma_duplicate.clients.archive_adapter import (
+    ADAPTER_VERSION,
     IncompleteArchiveQueryError,
     run_archive_pipeline,
 )
@@ -181,6 +182,7 @@ def test_complete_fixture_runs_full_pipeline() -> None:
     assert len(pipeline.prepared_rows) == 5
     assert pipeline.field_contract.is_usable
     assert pipeline.comparison_units_safe
+    assert pipeline.adapter_version == ADAPTER_VERSION == "3"
     assert pipeline.reconstruction.linked_row_count == 4
     assert pipeline.reconstruction.unlinked_row_count == 1
 

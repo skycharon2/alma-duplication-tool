@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from hashlib import sha256
 from numbers import Integral
@@ -17,6 +18,8 @@ from pyvo.dal.exceptions import (
 )
 
 from alma_duplicate.clients.archive_contract import (
+    ArchiveFrequencyPrefilterStatus,
+    ArchiveQueryColumnUnit,
     ArchiveQueryErrorKind,
     ArchiveQueryProvenance,
     ArchiveQueryResult,
@@ -27,18 +30,30 @@ from alma_duplicate.clients.archive_contract import (
     TapResponse,
 )
 from alma_duplicate.clients.archive_queries import (
+    ARCHIVE_FREQUENCY_QUERY_UNITS,
+    ARCHIVE_QUERY_UNIT_CONTRACT_VERSION,
     ARCHIVE_SCHEMA_VERSION,
     COUNT_ALIAS,
     REQUIRED_ARCHIVE_COLUMNS,
     ArchiveQuerySpec,
     build_count_adql,
+    build_query_unit_metadata_adql,
     build_retrieval_adql,
     normalize_query_parameters,
 )
 
 
-ARCHIVE_CLIENT_VERSION = "2"
+ARCHIVE_CLIENT_VERSION = "3"
 DEFAULT_MAXREC = 10_000
+
+
+@dataclass(frozen=True, slots=True)
+class _FrequencyPrefilterPlan:
+    effective_spec: ArchiveQuerySpec
+    units_verified: bool
+    status: ArchiveFrequencyPrefilterStatus
+    metadata: tuple[ArchiveQueryColumnUnit, ...] = ()
+    warnings: tuple[str, ...] = ()
 
 
 class _PyvoResult(Protocol):
@@ -339,6 +354,80 @@ def _missing_required_columns(
     )
 
 
+def _spatial_only_spec(spec: ArchiveQuerySpec) -> ArchiveQuerySpec:
+    return replace(
+        spec,
+        frequency_min_ghz=None,
+        frequency_max_ghz=None,
+    )
+
+
+def _query_unit_metadata(
+    response: TapResponse,
+) -> tuple[ArchiveQueryColumnUnit, ...] | None:
+    if _status_text(response.query_status_raw) != "OK":
+        return None
+
+    columns = _column_lookup(response.declared_columns)
+    required = ("column_name", "datatype", "unit")
+    if any(name not in columns for name in required):
+        return None
+
+    parsed: list[ArchiveQueryColumnUnit] = []
+    try:
+        for row in response.rows:
+            name = str(row[columns["column_name"]]).strip()
+            datatype_raw = row[columns["datatype"]]
+            unit_raw = row[columns["unit"]]
+            parsed.append(
+                ArchiveQueryColumnUnit(
+                    column_name=name,
+                    datatype=(
+                        str(datatype_raw).strip()
+                        if datatype_raw is not None
+                        else None
+                    ),
+                    unit=(
+                        str(unit_raw).strip()
+                        if unit_raw is not None
+                        else None
+                    ),
+                )
+            )
+    except (KeyError, TypeError, ValueError):
+        return None
+
+    return tuple(parsed)
+
+
+def _query_units_are_exact(
+    metadata: tuple[ArchiveQueryColumnUnit, ...],
+) -> bool | None:
+    by_name: dict[str, ArchiveQueryColumnUnit] = {}
+    for item in metadata:
+        key = item.column_name.casefold()
+        if key in by_name:
+            return None
+        by_name[key] = item
+
+    expected_names = {
+        name.casefold()
+        for name, _, _ in ARCHIVE_FREQUENCY_QUERY_UNITS
+    }
+    if set(by_name) != expected_names:
+        return None
+
+    return all(
+        (
+            by_name[name.casefold()].datatype is not None
+            and by_name[name.casefold()].datatype.casefold()
+            == datatype.casefold()
+            and by_name[name.casefold()].unit == unit
+        )
+        for name, datatype, unit in ARCHIVE_FREQUENCY_QUERY_UNITS
+    )
+
+
 class ArchiveClient:
     """Execute COUNT and retrieval as one safe Archive query run."""
 
@@ -369,12 +458,106 @@ class ArchiveClient:
             lambda: str(uuid4())
         )
 
+    def _plan_frequency_prefilter(
+        self,
+        spec: ArchiveQuerySpec,
+    ) -> _FrequencyPrefilterPlan:
+        if spec.frequency_min_ghz is None:
+            return _FrequencyPrefilterPlan(
+                effective_spec=spec,
+                units_verified=False,
+                status=ArchiveFrequencyPrefilterStatus.NOT_REQUESTED,
+            )
+
+        try:
+            response = self._executor.execute(
+                build_query_unit_metadata_adql(),
+                maxrec=len(ARCHIVE_FREQUENCY_QUERY_UNITS),
+            )
+        except TapExecutionError as exc:
+            return _FrequencyPrefilterPlan(
+                effective_spec=_spatial_only_spec(spec),
+                units_verified=False,
+                status=(
+                    ArchiveFrequencyPrefilterStatus
+                    .FALLBACK_METADATA_QUERY_ERROR
+                ),
+                warnings=(
+                    "frequency prefilter disabled because TAP_SCHEMA "
+                    f"could not be verified: {exc}",
+                ),
+            )
+
+        metadata = _query_unit_metadata(response)
+        if metadata is None:
+            return _FrequencyPrefilterPlan(
+                effective_spec=_spatial_only_spec(spec),
+                units_verified=False,
+                status=(
+                    ArchiveFrequencyPrefilterStatus
+                    .FALLBACK_METADATA_INCOMPLETE
+                ),
+                warnings=response.warnings + (
+                    "frequency prefilter disabled because TAP_SCHEMA "
+                    "metadata was incomplete",
+                ),
+            )
+
+        exact = _query_units_are_exact(metadata)
+        if exact is None:
+            return _FrequencyPrefilterPlan(
+                effective_spec=_spatial_only_spec(spec),
+                units_verified=False,
+                status=(
+                    ArchiveFrequencyPrefilterStatus
+                    .FALLBACK_METADATA_INCOMPLETE
+                ),
+                metadata=metadata,
+                warnings=response.warnings + (
+                    "frequency prefilter disabled because TAP_SCHEMA "
+                    "did not describe exactly frequency and bandwidth",
+                ),
+            )
+        if not exact:
+            return _FrequencyPrefilterPlan(
+                effective_spec=_spatial_only_spec(spec),
+                units_verified=False,
+                status=(
+                    ArchiveFrequencyPrefilterStatus
+                    .FALLBACK_UNIT_MISMATCH
+                ),
+                metadata=metadata,
+                warnings=response.warnings + (
+                    "frequency prefilter disabled because Archive query "
+                    "units did not match frequency=GHz and bandwidth=Hz",
+                ),
+            )
+
+        return _FrequencyPrefilterPlan(
+            effective_spec=spec,
+            units_verified=True,
+            status=(
+                ArchiveFrequencyPrefilterStatus.VERIFIED_EXACT_UNITS
+            ),
+            metadata=metadata,
+            warnings=response.warnings,
+        )
+
     def search(
         self,
         spec: ArchiveQuerySpec,
     ) -> ArchiveQueryResult:
-        count_adql = build_count_adql(spec)
-        retrieval_adql = build_retrieval_adql(spec)
+        query_run_id = self._run_id_factory()
+        started_at = self._clock()
+        prefilter_plan = self._plan_frequency_prefilter(spec)
+        count_adql = build_count_adql(
+            prefilter_plan.effective_spec,
+            frequency_units_verified=prefilter_plan.units_verified,
+        )
+        retrieval_adql = build_retrieval_adql(
+            prefilter_plan.effective_spec,
+            frequency_units_verified=prefilter_plan.units_verified,
+        )
         normalized_parameters = (
             normalize_query_parameters(spec)
         )
@@ -385,10 +568,12 @@ class ArchiveClient:
                 + count_adql
                 + "\0"
                 + retrieval_adql
+                + "\0"
+                + prefilter_plan.status.value
+                + "\0"
+                + repr(prefilter_plan.metadata)
             ).encode("utf-8")
         ).hexdigest()
-        query_run_id = self._run_id_factory()
-        started_at = self._clock()
 
         count_response: TapResponse | None = None
         retrieval_response: TapResponse | None = None
@@ -414,6 +599,7 @@ class ArchiveClient:
                 expected_count=None,
                 count_response=None,
                 retrieval_response=None,
+                prefilter_plan=prefilter_plan,
             )
 
         try:
@@ -435,6 +621,7 @@ class ArchiveClient:
                 expected_count=None,
                 count_response=count_response,
                 retrieval_response=None,
+                prefilter_plan=prefilter_plan,
             )
 
         try:
@@ -457,6 +644,7 @@ class ArchiveClient:
                 expected_count=expected_count,
                 count_response=count_response,
                 retrieval_response=None,
+                prefilter_plan=prefilter_plan,
             )
 
         rows = retrieval_response.rows
@@ -483,6 +671,7 @@ class ArchiveClient:
                 expected_count=expected_count,
                 count_response=count_response,
                 retrieval_response=retrieval_response,
+                prefilter_plan=prefilter_plan,
             )
 
         retrieval_status = _status_text(
@@ -510,6 +699,7 @@ class ArchiveClient:
                 expected_count=expected_count,
                 count_response=count_response,
                 retrieval_response=retrieval_response,
+                prefilter_plan=prefilter_plan,
             )
 
         if retrieval_status == "OVERFLOW":
@@ -530,6 +720,7 @@ class ArchiveClient:
             retrieved_count=retrieved_count,
             count_response=count_response,
             retrieval_response=retrieval_response,
+            prefilter_plan=prefilter_plan,
         )
 
         return ArchiveQueryResult(
@@ -558,6 +749,7 @@ class ArchiveClient:
         expected_count: int | None,
         count_response: TapResponse | None,
         retrieval_response: TapResponse | None,
+        prefilter_plan: _FrequencyPrefilterPlan,
     ) -> ArchiveQueryResult:
         provenance = self._provenance(
             query_run_id=query_run_id,
@@ -574,6 +766,7 @@ class ArchiveClient:
             ),
             count_response=count_response,
             retrieval_response=retrieval_response,
+            prefilter_plan=prefilter_plan,
         )
 
         return ArchiveQueryResult(
@@ -606,9 +799,11 @@ class ArchiveClient:
         retrieved_count: int | None,
         count_response: TapResponse | None,
         retrieval_response: TapResponse | None,
+        prefilter_plan: _FrequencyPrefilterPlan,
     ) -> ArchiveQueryProvenance:
         warnings = (
-            (
+            prefilter_plan.warnings
+            + (
                 count_response.warnings
                 if count_response is not None
                 else ()
@@ -646,5 +841,10 @@ class ArchiveClient:
             query_hash=query_hash,
             client_version=ARCHIVE_CLIENT_VERSION,
             schema_version=ARCHIVE_SCHEMA_VERSION,
+            frequency_prefilter_status=prefilter_plan.status,
+            query_unit_contract_version=(
+                ARCHIVE_QUERY_UNIT_CONTRACT_VERSION
+            ),
+            query_unit_metadata=prefilter_plan.metadata,
             warnings=warnings,
         )

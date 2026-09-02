@@ -41,14 +41,16 @@ The client does not:
 One `ArchiveClient.search()` call performs:
 
 1. local validation of `ArchiveQuerySpec`;
-2. construction of COUNT and retrieval ADQL using the same WHERE clause;
-3. COUNT execution with `MAXREC=1`;
-4. COUNT response and `total_matches` validation;
-5. retrieval with the configured explicit MAXREC;
-6. ordered retrieval field-metadata capture and declared-schema validation;
-7. retrieval `QUERY_STATUS` validation;
-8. COUNT/retrieval reconciliation; and
-9. construction of one immutable `ArchiveQueryResult` containing the
+2. when frequency bounds were requested, a two-row `TAP_SCHEMA` unit probe;
+3. construction of COUNT and retrieval ADQL using the same effective WHERE
+   clause;
+4. COUNT execution with `MAXREC=1`;
+5. COUNT response and `total_matches` validation;
+6. retrieval with the configured explicit MAXREC;
+7. ordered retrieval field-metadata capture and declared-schema validation;
+8. retrieval `QUERY_STATUS` validation;
+9. COUNT/retrieval reconciliation; and
+10. construction of one immutable `ArchiveQueryResult` containing the
    retrieval field metadata.
 
 The retrieval query uses an explicit projection. It does not use `SELECT *` or
@@ -57,8 +59,11 @@ Notebook-style exploratory `TOP` limits.
 ## Broad candidate prefilters
 
 Every search has an ICRS spatial predicate. A caller may also supply a
-frequency interval in GHz. COUNT and retrieval then use the same strict
-overlap predicate:
+frequency interval in GHz. Before constructing either data query, the client
+reads the `frequency` and `bandwidth` descriptors from `TAP_SCHEMA.columns`.
+The frequency predicate is enabled only when the service reports exactly
+`double/GHz` and `double/Hz`, respectively. COUNT and retrieval then use the
+same strict overlap predicate:
 
 ```text
 frequency - bandwidth / 2 < requested maximum
@@ -66,8 +71,10 @@ frequency + bandwidth / 2 > requested minimum
 ```
 
 The ADQL converts Archive `bandwidth` from Hz to GHz before applying this
-predicate. This follows the official ALMA frequency-query notebook and is a
-broad server-side filter only; exact comparison remains local.
+predicate. If the metadata query fails, is incomplete, or reports different
+units, the client records the reason and runs a spatial-only broad query. This
+prevents a compatible returned-value conversion from masking an unsafe
+server-side filter. Exact comparison remains local.
 
 An optional angular-resolution interval may also reduce transfer volume. Rows
 with missing `spatial_resolution` are retained by that prefilter, so unknown
@@ -168,6 +175,11 @@ dimensionally incompatible units fail closed for the affected quantity. The
 adapter never treats a bare float as GHz, Hz, kHz, arcsec, or mJy/beam merely
 because of its column name.
 
+All six physical quantities must also be finite and strictly greater than
+zero. Frequency coverage is exposed only when its converted bounds satisfy
+`0 < lower_ghz < upper_ghz`; otherwise the quantities and an explicit invalid-
+interval issue are retained, but the interval is unavailable.
+
 ## Query provenance
 
 Every success and failure path records:
@@ -178,6 +190,8 @@ Every success and failure path records:
 - retrieval ADQL;
 - normalized parameters;
 - configured MAXREC;
+- frequency-prefilter unit-gate status and the relevant `TAP_SCHEMA`
+  descriptors;
 - start and finish timestamps;
 - expected and retrieved counts when available;
 - raw COUNT and retrieval query statuses;
@@ -186,8 +200,9 @@ Every success and failure path records:
 - client version; and
 - schema version.
 
-The query hash identifies the endpoint and exact COUNT/retrieval text. It is
-technical provenance, not an Archive entity identifier.
+The query hash identifies the endpoint, exact COUNT/retrieval text, unit-gate
+status, and captured arithmetic-field descriptors. It is technical
+provenance, not an Archive entity identifier.
 
 ## TAP boundary
 
@@ -252,8 +267,9 @@ Ordinary unit and integration tests are offline:
 
 The opt-in live ALMA TAP smoke tests are marked `live`, skipped by default, and
 run only in the manual workflow. They exercise the current service through
-reconstruction without blocking ordinary pull-request checks, because service
-availability and Archive contents can change.
+reconstruction and separately verify the frequency-prefilter unit gate without
+blocking ordinary pull-request checks, because service availability and Archive
+contents can change.
 
 ## Official references
 

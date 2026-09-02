@@ -38,6 +38,9 @@ The Archive implementation includes:
 - typed frequency-coverage, resolution, and sensitivity evidence with
   missing/invalid statuses;
 - optional broad frequency and angular-resolution candidate prefilters;
+- a TAP-schema unit gate that disables server-side frequency arithmetic and
+  falls back to spatial retrieval when `frequency=GHz` and `bandwidth=Hz`
+  cannot be verified exactly;
 - parsing of bracket and brace forms of `frequency_support`;
 - parsing of `obs_id`, including identifier-truncation detection;
 - normalization of text, Boolean, timestamp, and identifier fields;
@@ -59,6 +62,7 @@ The Queue implementation includes:
 - 16 same-number SPW triples, without Cartesian reconstruction;
 - separate regular-SPW and spectral-scan (SPS) representations;
 - frequency and velocity normalization with conversion provenance;
+- separate nominal and Technical-Handbook-derived usable SPW bandwidths;
 - requested-sensitivity evidence without relabelling it as achieved Archive
   sensitivity;
 - spatial, mosaic, rectangle, request, array, and polarization evidence;
