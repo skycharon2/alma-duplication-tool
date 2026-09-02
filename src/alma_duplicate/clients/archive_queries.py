@@ -12,7 +12,7 @@ from alma_duplicate.clients.archive_contract import (
 
 ARCHIVE_TABLE = "ivoa.obscore"
 COUNT_ALIAS = "total_matches"
-ARCHIVE_SCHEMA_VERSION = "1"
+ARCHIVE_SCHEMA_VERSION = "2"
 ARCHIVE_QUERY_UNIT_CONTRACT_VERSION = "2"
 
 ARCHIVE_FREQUENCY_QUERY_UNITS = (
@@ -41,6 +41,7 @@ ARCHIVE_SELECTED_COLUMNS = (
     "s_region",
     "frequency",
     "bandwidth",
+    "em_xel",
     "frequency_support",
     "spectral_resolution",
     "spatial_resolution",

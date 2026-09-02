@@ -228,7 +228,7 @@ def test_complete_result_reconciles_count_and_rows() -> None:
         "query-run-001"
     )
     assert len(result.provenance.query_hash) == 64
-    assert result.provenance.client_version == "4"
+    assert result.provenance.client_version == "5"
     assert result.provenance.frequency_prefilter_status is (
         ArchiveFrequencyPrefilterStatus.NOT_REQUESTED
     )
@@ -473,11 +473,14 @@ def test_count_mismatch_is_not_complete(
     assert not result.can_reconstruct
 
 
-def test_schema_drift_is_structured_error() -> None:
+@pytest.mark.parametrize("missing_column", ["obs_id", "em_xel"])
+def test_schema_drift_is_structured_error(
+    missing_column: str,
+) -> None:
     columns = tuple(
         column
         for column in ARCHIVE_SELECTED_COLUMNS
-        if column != "obs_id"
+        if column != missing_column
     )
     client, _ = _client(
         [
@@ -495,7 +498,7 @@ def test_schema_drift_is_structured_error() -> None:
     assert result.error_kind is (
         ArchiveQueryErrorKind.SCHEMA_DRIFT
     )
-    assert result.missing_columns == ("obs_id",)
+    assert result.missing_columns == (missing_column,)
     assert len(result.rows) == 1
     assert tuple(
         field.name

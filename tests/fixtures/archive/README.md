@@ -13,6 +13,7 @@ It covers:
 - sparse Source-SPW associations (`SourceA` has SPWs 0 and 2 only);
 - brace frequency-support parsing;
 - two SPWs mapping to one brace support component;
+- mixed per-SPW mode evidence (`em_xel=128` and `em_xel=1920`);
 - a blank optional Group OUS value;
 - a `3000-01-01` release-date sentinel;
 - a publisher-DID mismatch; and
