@@ -291,9 +291,19 @@ class QueueSpw:
     bandwidth_mhz: QueueQuantity
     spectral_resolution_mhz: QueueQuantity
     frequency_derivation: QueueFrequencyDerivation
-    sky_bandwidth_ghz: float
+    nominal_bandwidth_ghz: float
     lower_sky_frequency_ghz: float
     upper_sky_frequency_ghz: float
+
+    @property
+    def sky_bandwidth_ghz(self) -> float:
+        """Compatibility alias for the pre-v2 field name.
+
+        The value is the nominal correlator bandwidth converted to GHz;
+        it is not Doppler-scaled.
+        """
+
+        return self.nominal_bandwidth_ghz
 
 
 @dataclass(frozen=True, slots=True)

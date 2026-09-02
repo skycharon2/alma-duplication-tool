@@ -820,7 +820,7 @@ class _RowParser:
                     velocity,
                 )
                 (
-                    sky_bandwidth,
+                    nominal_bandwidth,
                     lower,
                     upper,
                 ) = derived_sky_interval(
@@ -843,7 +843,7 @@ class _RowParser:
                     bandwidth_mhz=bandwidth,
                     spectral_resolution_mhz=resolution,
                     frequency_derivation=derivation,
-                    sky_bandwidth_ghz=sky_bandwidth,
+                    nominal_bandwidth_ghz=nominal_bandwidth,
                     lower_sky_frequency_ghz=lower,
                     upper_sky_frequency_ghz=upper,
                 )
