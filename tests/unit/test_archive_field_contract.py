@@ -192,10 +192,14 @@ def test_missing_value_is_distinct_from_bad_metadata() -> None:
     )
 
 
-def test_negative_physical_quantity_is_invalid() -> None:
+@pytest.mark.parametrize(
+    "value",
+    [-1.0, 0.0],
+)
+def test_non_positive_physical_quantity_is_invalid(value: float) -> None:
     validation = validate_archive_comparison_metadata(_metadata())
     row = _row()
-    row["bandwidth"] = -1.0
+    row["bandwidth"] = value
 
     evidence = build_archive_comparison_evidence(
         row,
@@ -209,3 +213,68 @@ def test_negative_physical_quantity_is_invalid() -> None:
         ArchiveQuantityStatus.INVALID_VALUE
     )
     assert not evidence.has_frequency_coverage
+
+
+@pytest.mark.parametrize(
+    "field_name",
+    [
+        "frequency",
+        "bandwidth",
+        "spectral_resolution",
+        "spatial_resolution",
+        "sensitivity_10kms",
+        "cont_sensitivity_bandwidth",
+    ],
+)
+def test_all_comparison_quantities_require_strictly_positive_values(
+    field_name: str,
+) -> None:
+    validation = validate_archive_comparison_metadata(_metadata())
+    row = _row()
+    row[field_name] = 0.0
+
+    evidence = build_archive_comparison_evidence(
+        row,
+        validation,
+        query_run_id="query-1",
+        raw_row_id="query-1:00000000",
+        result_index=0,
+    )
+
+    quantities = {
+        "frequency": evidence.frequency.centre,
+        "bandwidth": evidence.frequency.bandwidth,
+        "spectral_resolution": evidence.spectral_resolution.quantity,
+        "spatial_resolution": evidence.angular_resolution.quantity,
+        "sensitivity_10kms": evidence.line_sensitivity.quantity,
+        "cont_sensitivity_bandwidth": (
+            evidence.continuum_sensitivity.quantity
+        ),
+    }
+    assert quantities[field_name].status is (
+        ArchiveQuantityStatus.INVALID_VALUE
+    )
+
+
+def test_non_positive_frequency_interval_is_not_available() -> None:
+    validation = validate_archive_comparison_metadata(_metadata())
+    row = _row()
+    row["frequency"] = 0.05
+    row["bandwidth"] = 200_000_000.0
+
+    evidence = build_archive_comparison_evidence(
+        row,
+        validation,
+        query_run_id="query-1",
+        raw_row_id="query-1:00000000",
+        result_index=0,
+    )
+
+    assert evidence.frequency.centre.is_available
+    assert evidence.frequency.bandwidth.is_available
+    assert not evidence.has_frequency_coverage
+    assert evidence.frequency.lower_ghz is None
+    assert evidence.frequency.upper_ghz is None
+    assert ArchiveEvidenceIssueKind.FREQUENCY_INTERVAL_INVALID in {
+        issue.kind for issue in evidence.issues
+    }

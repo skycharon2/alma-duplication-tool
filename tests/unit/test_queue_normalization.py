@@ -11,8 +11,11 @@ from alma_duplicate.domain.queue import (
     QueueVelocityContext,
 )
 from alma_duplicate.queue_normalization import (
+    QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION,
     SPEED_OF_LIGHT_KMS,
     QueueFrequencyDerivationError,
+    centred_frequency_interval,
+    derive_usable_bandwidth_ghz,
     derive_sky_frequency,
     derived_sky_interval,
     observed_to_velocity_kms,
@@ -139,6 +142,45 @@ def test_high_redshift_centre_does_not_collapse_correlator_width() -> None:
     assert nominal_width == pytest.approx(1.875)
     assert lower == pytest.approx(280.03221047028603)
     assert upper == pytest.approx(281.90721047028603)
+
+
+@pytest.mark.parametrize(
+    ("nominal_mhz", "usable_mhz"),
+    [
+        (62.5, 58.6),
+        (125.0, 117.2),
+        (250.0, 234.4),
+        (500.0, 468.8),
+        (1000.0, 937.5),
+        (1875.0, 1875.0),
+        (2000.0, 1875.0),
+    ],
+)
+def test_cycle13_usable_bandwidth_mapping(
+    nominal_mhz: float,
+    usable_mhz: float,
+) -> None:
+    assert derive_usable_bandwidth_ghz(
+        _quantity(nominal_mhz, "MHz")
+    ) == pytest.approx(usable_mhz / 1000.0)
+    assert QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION == (
+        "cycle13-technical-handbook-table-5.3-v1"
+    )
+
+
+def test_unknown_nominal_bandwidth_fails_closed() -> None:
+    with pytest.raises(
+        QueueFrequencyDerivationError,
+        match="no verified Cycle 13",
+    ):
+        derive_usable_bandwidth_ghz(_quantity(750.0, "MHz"))
+
+
+def test_usable_interval_is_centred_without_doppler_scaling() -> None:
+    lower, upper = centred_frequency_interval(100.0, 0.9375)
+
+    assert lower == pytest.approx(99.53125)
+    assert upper == pytest.approx(100.46875)
 
 
 @pytest.mark.parametrize(

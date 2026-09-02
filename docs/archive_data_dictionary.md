@@ -103,8 +103,8 @@ column order or applying scientific-value normalization to their text.
 
 | Archive field | TAP type / unit | Internal owner | Required handling |
 |---|---|---|---|
-| `frequency` | `double` / GHz | `SOURCE_SPW_ASSOCIATION` | Exact row reference frequency. Keep separate from parsed support-component centre. |
-| `bandwidth` | `double` / Hz | `SOURCE_SPW_ASSOCIATION` | Archive bandwidth. Keep separate from interval width and brace token 2. |
+| `frequency` | `double` / GHz | `SOURCE_SPW_ASSOCIATION` | Exact row reference frequency. Require a finite value strictly greater than zero; keep separate from parsed support-component centre. |
+| `bandwidth` | `double` / Hz | `SOURCE_SPW_ASSOCIATION` | Archive bandwidth. Require a finite value strictly greater than zero; keep separate from interval width and brace token 2. |
 | `frequency_support` | `char` / GHz | `FREQUENCY_SUPPORT_SIGNATURE` | Service declares GHz, but the raw composite embeds GHz, kHz, sensitivity, and polarization values. Preserve raw text; dispatch bracket/brace grammar and retain error states. The documented nested Frequency Support Type (`continuum`/`line`) was not exposed in the tested raw strings; do not fabricate or infer it. |
 | `spectral_resolution` | `double` / kHz | `SOURCE_SPW_ASSOCIATION` | Preserve independently from parsed component resolution and bandwidth. |
 | `velocity_resolution` | `double` / m/s | `OBSERVATION_MODE_EVIDENCE` | Archive summary; do not replace with or require equality to a row-level derivation. |
@@ -195,6 +195,7 @@ The catalogue contains all 73 live fields exactly once.
 | Top-level `type` | On 2026-08-31, all 5,614 distinct proposal/type pairs matched the terminal `proposal_id` suffix; observed values were `S`, `L`, `T`, `V`, `SV`, `E`, `P`, and `CAL`. | Treat as proposal/project classification with an unknown-value fallback. It is unrelated to `science_observation = 'T'` and must not be interpreted as FDM/TDM. |
 | Frequency-Support mode representation | Across all 443,211 science-target rows on 2026-08-31, standard `continuum`, `line`, `FDM`, and `TDM` literals each matched zero `frequency_support` strings. No separate mode column was identified among the 73 `ivoa.obscore` columns. | Record a representation gap. Do not infer mode from top-level `type`, bandwidth, or spectral resolution. Investigate only documented TAP tables, stable APIs, DataLink, or other supported VO representations. |
 | Sensitivity basis | TAP metadata defines `cont_sensitivity_bandwidth` and `sensitivity_10kms` as estimates with documented limitations. | Preserve them as distinct estimated evidence. Do not represent either as achieved QA2 image-product RMS. |
+| Frequency-query units | The server-side overlap predicate divides `bandwidth` by `1e9` and therefore requires `frequency=GHz`, `bandwidth=Hz`. | Probe `TAP_SCHEMA.columns` before using the predicate. On query failure, incomplete metadata, or unit mismatch, record the gate status and fall back to spatial-only retrieval. |
 | QA2 boundary | Observational metadata can be available after QA0 while later processing or QA2 remains incomplete. | Preserve `qa2_passed` as evidence; do not add `qa2_passed = 'T'` as an implicit client filter. |
 | Wavelength/frequency bounds | Five exact floating-point sample failures were all within 1 Hz; maximum boundary difference was about `2.84e-5 Hz`. | Explicit unit conversion and declared tolerance; no direct float equality. |
 | Product metadata | 305,618 cube and 136,889 image rows; all current science rows level 2. Axis/size availability is uneven. | Row-level product description only; physical file granularity unresolved. |

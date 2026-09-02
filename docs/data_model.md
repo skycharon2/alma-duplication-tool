@@ -43,6 +43,7 @@ apply policy decisions.
 | Query completeness | COUNT/retrieve reconciliation, valid empty result, and intentional `OVERFLOW` verified | Never infer absence from an incomplete response |
 | Retrieval field metadata | PyVO exposes VOTable `FIELD` descriptors independently of result rows; the v2 runtime contract preserves them in projection order | Carry units and semantic descriptors with the same query result, including valid empty results |
 | Comparison-field units | Live units for frequency, bandwidth, spectral/spatial resolution, and two sensitivity estimates are checked at runtime | Convert only compatible units; preserve missing/incompatible status rather than assuming units from names |
+| Query arithmetic units | Frequency prefilter ADQL assumes `frequency=GHz` and `bandwidth=Hz` | Verify exact `TAP_SCHEMA` units before applying it; otherwise retain requested bounds and fall back to spatial-only retrieval |
 | Archive frequency frame | Public documentation identifies sky frequency but not a comparison-ready TAP reference frame | Derive typed Archive coverage but keep cross-source frame alignment unavailable |
 | `obs_publisher_did` | 5,611 proposal IDs and 5,611 publisher DIDs; exact `ADS/JAO.ALMA#<proposal_id>` mapping with no exception | Project-level external identifier, not a row or product key |
 | `obs_id` | 442,141 parsed; 366 width-truncated failures; 275 additional parseable values at the 64-character boundary | Preserve raw value and parse confidence; never use as an Archive-wide key |
@@ -682,7 +683,9 @@ missing/incompatible states. The future shared Archive/Queue adapter must use
 this typed projection rather than recasting raw row values. Archive
 reconstruction already consumes the canonical typed `frequency` value, so a
 compatible TAP unit change cannot split comparison evidence from
-frequency-support mapping.
+frequency-support mapping. Comparison quantities must be finite and strictly
+positive, and frequency coverage is unavailable unless its canonical bounds
+satisfy `0 < lower < upper`.
 
 ### `ROW_PRODUCT_METADATA`
 
@@ -851,7 +854,7 @@ identity.
 | `RawQueueRow` | Owns the exact 79 raw strings, physical line range, source ordinal, and content fingerprint; identical content on different lines remains distinct |
 | `QueueRowInput` | Typed projection of one valid raw row; never replaces the raw row |
 | `QueueSpatialComponent` | Factored coordinates, offsets, mosaic classification, rectangle geometry, coordinate system, and `1e-6 arcsec` classification tolerance |
-| `QueueSpectralSetup` | Tagged union of complete numbered SPWs or one SPS range, including velocity context, requested sensitivity basis, raw/canonical units, and frequency-derivation provenance |
+| `QueueSpectralSetup` | Tagged union of complete numbered SPWs or one SPS range, including velocity context, requested sensitivity basis, raw/canonical units, nominal and usable bandwidths, and frequency-derivation provenance |
 | `QueueRequestContext` | Requested angular resolution, LAS, arrays, and polarization |
 | `QueueRowAssociation` | The one spatial-spectral-request relationship actually observed in one source row |
 | `QueueFactorizationSummary` | Reports observed versus potential spatial-spectral pairs without creating the missing pairs |
