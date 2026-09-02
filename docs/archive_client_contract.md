@@ -41,7 +41,8 @@ The client does not:
 One `ArchiveClient.search()` call performs:
 
 1. local validation of `ArchiveQuerySpec`;
-2. when frequency bounds were requested, a two-row `TAP_SCHEMA` unit probe;
+2. when numeric bounds were requested, a prefilter-specific `TAP_SCHEMA`
+   unit probe for frequency/bandwidth and/or angular resolution;
 3. construction of COUNT and retrieval ADQL using the same effective WHERE
    clause;
 4. COUNT execution with `MAXREC=1`;
@@ -59,11 +60,13 @@ Notebook-style exploratory `TOP` limits.
 ## Broad candidate prefilters
 
 Every search has an ICRS spatial predicate. A caller may also supply a
-frequency interval in GHz. Before constructing either data query, the client
-reads the `frequency` and `bandwidth` descriptors from `TAP_SCHEMA.columns`.
+frequency interval in GHz and/or an angular-resolution interval in arcsec.
+Before constructing either data query, the client reads only the arithmetic
+field descriptors required by that request from `TAP_SCHEMA.columns`.
+
 The frequency predicate is enabled only when the service reports exactly
-`double/GHz` and `double/Hz`, respectively. COUNT and retrieval then use the
-same strict overlap predicate:
+`frequency=double/GHz` and `bandwidth=double/Hz`. COUNT and retrieval then use
+the same strict overlap predicate:
 
 ```text
 frequency - bandwidth / 2 < requested maximum
@@ -71,14 +74,20 @@ frequency + bandwidth / 2 > requested minimum
 ```
 
 The ADQL converts Archive `bandwidth` from Hz to GHz before applying this
-predicate. If the metadata query fails, is incomplete, or reports different
-units, the client records the reason and runs a spatial-only broad query. This
-prevents a compatible returned-value conversion from masking an unsafe
-server-side filter. Exact comparison remains local.
+predicate. Rows with NULL `frequency` or `bandwidth` are retained so missing
+comparison evidence can become `NOT_EVALUABLE` locally rather than a false
+candidate absence.
 
-An optional angular-resolution interval may also reduce transfer volume. Rows
-with missing `spatial_resolution` are retained by that prefilter, so unknown
-resolution evidence is not silently converted into candidate absence.
+The angular-resolution predicate is enabled only when the service reports
+exactly `spatial_resolution=double/arcsec`. Rows with missing
+`spatial_resolution` are retained by that prefilter.
+
+If the metadata query fails, is incomplete, or reports different units, each
+requested numeric prefilter is disabled independently and the reason is
+recorded. For example, verified frequency units may still permit frequency
+filtering when the angular unit mismatches. If neither numeric prefilter is
+safe, the effective query is spatial-only. Compatible conversion of values
+after retrieval never authorizes unsafe server-side arithmetic.
 
 ## Final statuses
 
@@ -190,8 +199,8 @@ Every success and failure path records:
 - retrieval ADQL;
 - normalized parameters;
 - configured MAXREC;
-- frequency-prefilter unit-gate status and the relevant `TAP_SCHEMA`
-  descriptors;
+- separate frequency and angular-resolution unit-gate statuses and the
+  relevant `TAP_SCHEMA` descriptors;
 - start and finish timestamps;
 - expected and retrieved counts when available;
 - raw COUNT and retrieval query statuses;
@@ -200,8 +209,8 @@ Every success and failure path records:
 - client version; and
 - schema version.
 
-The query hash identifies the endpoint, exact COUNT/retrieval text, unit-gate
-status, and captured arithmetic-field descriptors. It is technical
+The query hash identifies the endpoint, exact COUNT/retrieval text, both
+unit-gate statuses, and captured arithmetic-field descriptors. It is technical
 provenance, not an Archive entity identifier.
 
 ## TAP boundary
@@ -267,7 +276,7 @@ Ordinary unit and integration tests are offline:
 
 The opt-in live ALMA TAP smoke tests are marked `live`, skipped by default, and
 run only in the manual workflow. They exercise the current service through
-reconstruction and separately verify the frequency-prefilter unit gate without
+reconstruction and separately verify both numeric-prefilter unit gates without
 blocking ordinary pull-request checks, because service availability and Archive
 contents can change.
 

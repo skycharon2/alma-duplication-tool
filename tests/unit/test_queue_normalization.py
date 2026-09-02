@@ -8,6 +8,7 @@ from alma_duplicate.domain.queue import (
     QueueFrequencyDerivationKind,
     QueueQuantity,
     QueueUnitInterpretation,
+    QueueUsableBandwidthDerivationKind,
     QueueVelocityContext,
 )
 from alma_duplicate.queue_normalization import (
@@ -15,8 +16,9 @@ from alma_duplicate.queue_normalization import (
     SPEED_OF_LIGHT_KMS,
     QueueFrequencyDerivationError,
     centred_frequency_interval,
-    derive_usable_bandwidth_ghz,
     derive_sky_frequency,
+    derive_usable_bandwidth,
+    derive_usable_bandwidth_ghz,
     derived_sky_interval,
     observed_to_velocity_kms,
 )
@@ -164,14 +166,48 @@ def test_cycle13_usable_bandwidth_mapping(
         _quantity(nominal_mhz, "MHz")
     ) == pytest.approx(usable_mhz / 1000.0)
     assert QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION == (
-        "cycle13-technical-handbook-table-5.3-v1"
+        "cycle13-portal-plotobs-v1.3.1-v1"
+    )
+
+
+@pytest.mark.parametrize(
+    ("input_mhz", "usable_mhz"),
+    [
+        (62.50000001, 58.6),
+        (58.6, 58.6),
+        (117.2, 117.2),
+        (937.5, 937.5),
+        (1900.0, 1875.0),
+    ],
+)
+def test_portal_script_tolerances_and_already_usable_values(
+    input_mhz: float,
+    usable_mhz: float,
+) -> None:
+    result = derive_usable_bandwidth(_quantity(input_mhz, "MHz"))
+
+    assert result.usable_bandwidth_ghz == pytest.approx(
+        usable_mhz / 1000.0
+    )
+    assert result.kind in {
+        QueueUsableBandwidthDerivationKind.NOMINAL_MAPPED,
+        QueueUsableBandwidthDerivationKind.ALREADY_USABLE,
+    }
+
+
+def test_unrecognized_usable_bandwidth_is_explicit_evidence() -> None:
+    result = derive_usable_bandwidth(_quantity(750.0, "MHz"))
+
+    assert result.usable_bandwidth_ghz is None
+    assert result.kind is (
+        QueueUsableBandwidthDerivationKind.UNRECOGNIZED
     )
 
 
 def test_unknown_nominal_bandwidth_fails_closed() -> None:
     with pytest.raises(
         QueueFrequencyDerivationError,
-        match="no verified Cycle 13",
+        match="UNRECOGNIZED",
     ):
         derive_usable_bandwidth_ghz(_quantity(750.0, "MHz"))
 
