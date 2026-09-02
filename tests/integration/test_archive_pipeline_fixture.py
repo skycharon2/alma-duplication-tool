@@ -24,6 +24,11 @@ from alma_duplicate.clients.archive_contract import (
 from alma_duplicate.clients.archive_queries import (
     ArchiveQuerySpec,
 )
+from alma_duplicate.domain.archive_evidence import (
+    ArchiveCorrelatorMode,
+    ArchiveFrequencySupportType,
+    ArchiveSpectralModeStatus,
+)
 from alma_duplicate.domain.normalization import (
     MissingValueStatus,
     PublisherDidMappingStatus,
@@ -59,13 +64,15 @@ def _field_metadata(
         "sensitivity_10kms": "mJy / beam",
         "cont_sensitivity_bandwidth": "mJy / beam",
     }
-    numeric_fields = frozenset(units)
+    numeric_fields = frozenset(units) | {"em_xel"}
     effective_units = units | (unit_overrides or {})
     return tuple(
         TapFieldMetadata(
             name=column,
             datatype=(
-                "double"
+                "int"
+                if column == "em_xel"
+                else "double"
                 if column in numeric_fields
                 else "char"
             ),
@@ -178,11 +185,11 @@ def test_complete_fixture_runs_full_pipeline() -> None:
     assert pipeline.query_result.field_metadata == (
         query_result.field_metadata
     )
-    assert len(pipeline.query_result.field_metadata) == 23
+    assert len(pipeline.query_result.field_metadata) == 24
     assert len(pipeline.prepared_rows) == 5
     assert pipeline.field_contract.is_usable
     assert pipeline.comparison_units_safe
-    assert pipeline.adapter_version == ADAPTER_VERSION == "3"
+    assert pipeline.adapter_version == ADAPTER_VERSION == "4"
     assert pipeline.reconstruction.linked_row_count == 4
     assert pipeline.reconstruction.unlinked_row_count == 1
 
@@ -233,6 +240,33 @@ def test_complete_fixture_runs_full_pipeline() -> None:
     ]
     assert len(unsafe_rows) == 1
 
+    modes = {
+        (
+            item.association_key.context.source_name,
+            item.association_key.spw_index,
+        ): item
+        for item in pipeline.source_spw_spectral_modes
+    }
+    assert len(modes) == len(pipeline.reconstruction.associations)
+    assert modes[("SourceA", 0)].spectral_axis_elements == 128
+    assert modes[("SourceA", 0)].frequency_support_type is (
+        ArchiveFrequencySupportType.CONTINUUM
+    )
+    assert modes[("SourceA", 0)].correlator_mode is (
+        ArchiveCorrelatorMode.TDM
+    )
+    assert modes[("SourceA", 2)].spectral_axis_elements == 1920
+    assert modes[("SourceA", 2)].frequency_support_type is (
+        ArchiveFrequencySupportType.LINE
+    )
+    assert modes[("SourceA", 2)].correlator_mode is (
+        ArchiveCorrelatorMode.FDM
+    )
+    assert all(
+        item.status is ArchiveSpectralModeStatus.DERIVED
+        for item in modes.values()
+    )
+
 
 def test_normalization_preserves_raw_and_status() -> None:
     pipeline = run_archive_pipeline(
@@ -259,6 +293,11 @@ def test_normalization_preserves_raw_and_status() -> None:
     )
     assert first.raw_row_id == (
         "fixture-query-run:00000000"
+    )
+    assert first.raw_row["em_xel"] == 128
+    assert first.spectral_mode_evidence.raw_spectral_axis_elements == 128
+    assert first.spectral_mode_evidence.status is (
+        ArchiveSpectralModeStatus.DERIVED
     )
     assert first.comparison_evidence.unit_safe
     assert first.comparison_evidence.has_frequency_coverage

@@ -17,6 +17,7 @@ from alma_duplicate.clients import (
     ArchiveQueryStatus,
     run_archive_pipeline,
 )
+from alma_duplicate.domain import ArchiveSpectralModeStatus
 
 pytestmark = pytest.mark.live
 
@@ -157,6 +158,10 @@ def test_live_archive_pipeline_contract(
         f"{pipeline.field_contract.unusable_fields}"
     )
     assert pipeline.comparison_units_safe
+    assert pipeline.spectral_axis_contract.is_usable, (
+        "Live Archive em_xel metadata drifted: "
+        f"{pipeline.spectral_axis_contract.status}"
+    )
 
     assert len(pipeline.prepared_rows) == len(result.rows)
 
@@ -186,6 +191,13 @@ def test_live_archive_pipeline_contract(
 
     assert reconstruction.linked_row_count > 0
     assert reconstruction.associations
+    assert len(pipeline.source_spw_spectral_modes) == len(
+        reconstruction.associations
+    )
+    assert all(
+        item.status is ArchiveSpectralModeStatus.DERIVED
+        for item in pipeline.source_spw_spectral_modes
+    )
 
     print(
         "\nLive Archive pipeline result:"
@@ -196,6 +208,8 @@ def test_live_archive_pipeline_contract(
         f"\n  associations={len(reconstruction.associations)}"
         f"\n  support_mappings="
         f"{len(reconstruction.support_mappings)}"
+        f"\n  spectral_mode_evidence="
+        f"{len(pipeline.source_spw_spectral_modes)}"
     )
 
 

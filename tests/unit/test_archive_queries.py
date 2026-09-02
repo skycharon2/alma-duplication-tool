@@ -59,6 +59,7 @@ def test_retrieval_uses_explicit_projection() -> None:
     assert "SELECT *" not in query.upper()
     for column in ARCHIVE_SELECTED_COLUMNS:
         assert column in query
+    assert "em_xel" in ARCHIVE_SELECTED_COLUMNS
 
 
 def test_science_filter_can_be_disabled() -> None:
