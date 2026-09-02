@@ -103,24 +103,42 @@ def test_declared_sky_frequency_is_not_shifted() -> None:
     assert result.sky_frequency_ghz == 93.188
 
 
-def test_bandwidth_uses_same_doppler_factor_as_centre() -> None:
+def test_nominal_bandwidth_is_not_doppler_scaled() -> None:
     derivation = derive_sky_frequency(
         _quantity(230.0, "GHz"),
         _velocity(300.0, "RADIO"),
     )
 
-    sky_width, lower, upper = derived_sky_interval(
+    nominal_width, lower, upper = derived_sky_interval(
         derivation,
         _quantity(1875.0, "MHz"),
     )
 
-    assert sky_width == pytest.approx(
-        1.875 * derivation.doppler_factor
-    )
-    assert upper - lower == pytest.approx(sky_width)
+    assert derivation.doppler_factor != pytest.approx(1.0)
+    assert nominal_width == pytest.approx(1.875)
+    assert upper - lower == pytest.approx(nominal_width)
     assert (upper + lower) / 2.0 == pytest.approx(
         derivation.sky_frequency_ghz
     )
+
+
+def test_high_redshift_centre_does_not_collapse_correlator_width() -> None:
+    derivation = derive_sky_frequency(
+        _quantity(3375.28913187956, "GHz"),
+        _velocity(274836.78847531846, "RADIO"),
+    )
+
+    nominal_width, lower, upper = derived_sky_interval(
+        derivation,
+        _quantity(1875.0, "MHz"),
+    )
+
+    assert derivation.sky_frequency_ghz == pytest.approx(
+        280.96971047028603
+    )
+    assert nominal_width == pytest.approx(1.875)
+    assert lower == pytest.approx(280.03221047028603)
+    assert upper == pytest.approx(281.90721047028603)
 
 
 @pytest.mark.parametrize(

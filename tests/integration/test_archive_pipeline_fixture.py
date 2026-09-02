@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
-from astropy.table import Table
 import pytest
+from astropy.table import Table
 
 from alma_duplicate.clients.archive_adapter import (
     IncompleteArchiveQueryError,
@@ -37,7 +37,6 @@ from alma_duplicate.reconstruction import (
 )
 from tests.fakes import FakeTapExecutor
 
-
 FIXTURE_PATH = (
     Path(__file__).parents[1]
     / "fixtures"
@@ -48,6 +47,8 @@ FIXTURE_PATH = (
 
 def _field_metadata(
     columns: tuple[str, ...],
+    *,
+    unit_overrides: dict[str, str | None] | None = None,
 ) -> tuple[TapFieldMetadata, ...]:
     units = {
         "frequency": "GHz",
@@ -58,6 +59,7 @@ def _field_metadata(
         "cont_sensitivity_bandwidth": "mJy / beam",
     }
     numeric_fields = frozenset(units)
+    effective_units = units | (unit_overrides or {})
     return tuple(
         TapFieldMetadata(
             name=column,
@@ -71,7 +73,7 @@ def _field_metadata(
                 if column in numeric_fields
                 else "*"
             ),
-            unit=units.get(column),
+            unit=effective_units.get(column),
             ucd=None,
             utype=None,
             xtype=None,
@@ -96,8 +98,22 @@ def _fixture_rows() -> tuple[dict[str, object], ...]:
     )
 
 
-def _complete_query_result():
+def _complete_query_result(
+    *,
+    frequency_unit: str = "GHz",
+    frequency_scale: float = 1.0,
+):
     rows = _fixture_rows()
+    if frequency_scale != 1.0:
+        rows = tuple(
+            {
+                **row,
+                "frequency": (
+                    float(row["frequency"]) * frequency_scale
+                ),
+            }
+            for row in rows
+        )
     declared_columns = tuple(rows[0])
     executor = FakeTapExecutor(
         [
@@ -117,7 +133,10 @@ def _complete_query_result():
                 rows=rows,
                 declared_columns=declared_columns,
                 field_metadata=_field_metadata(
-                    declared_columns
+                    declared_columns,
+                    unit_overrides={
+                        "frequency": frequency_unit,
+                    },
                 ),
                 query_status_raw="OK",
             ),
@@ -129,7 +148,7 @@ def _complete_query_result():
         31,
         10,
         0,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
     client = ArchiveClient(
         "https://example.invalid/tap",
@@ -251,6 +270,36 @@ def test_normalization_preserves_raw_and_status() -> None:
         first.comparison_evidence.cross_source_frequency_ready
         is False
     )
+
+
+def test_reconstruction_uses_canonical_tap_frequency_unit() -> None:
+    pipeline = run_archive_pipeline(
+        _complete_query_result(
+            frequency_unit="MHz",
+            frequency_scale=1000.0,
+        )
+    )
+
+    first = pipeline.prepared_rows[0]
+    assert first.raw_row["frequency"] == pytest.approx(100_000.0)
+    assert (
+        first.comparison_evidence.frequency.centre.source_unit
+        == "MHz"
+    )
+    assert (
+        first.comparison_evidence.frequency.centre.canonical_value
+        == pytest.approx(100.0)
+    )
+    assert first.reconstruction_input.frequency_ghz == pytest.approx(
+        100.0
+    )
+    assert pipeline.reconstruction.linked_row_count == 4
+    assert pipeline.reconstruction.unlinked_row_count == 1
+    assert {
+        mapping.status
+        for mapping in pipeline.reconstruction.support_mappings
+        if mapping.association_key is not None
+    } == {SupportMappingStatus.ASSIGNED}
 
 
 def test_reconstruction_remains_shuffle_invariant() -> None:

@@ -679,7 +679,10 @@ must later serialize the tuple without changing its order or optional `None`
 values. The v0.6 Archive adapter validates the six comparison-facing units,
 converts compatible source units into canonical values, and preserves
 missing/incompatible states. The future shared Archive/Queue adapter must use
-this typed projection rather than recasting raw row values.
+this typed projection rather than recasting raw row values. Archive
+reconstruction already consumes the canonical typed `frequency` value, so a
+compatible TAP unit change cannot split comparison evidence from
+frequency-support mapping.
 
 ### `ROW_PRODUCT_METADATA`
 
