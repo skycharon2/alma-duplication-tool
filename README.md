@@ -62,7 +62,8 @@ The Queue implementation includes:
 - 16 same-number SPW triples, without Cartesian reconstruction;
 - separate regular-SPW and spectral-scan (SPS) representations;
 - frequency and velocity normalization with conversion provenance;
-- separate nominal and Technical-Handbook-derived usable SPW bandwidths;
+- separate nominal and portal-script-derived usable SPW bandwidth evidence,
+  with processor-scope confirmation still pending;
 - requested-sensitivity evidence without relabelling it as achieved Archive
   sensitivity;
 - spatial, mosaic, rectangle, request, array, and polarization evidence;
@@ -283,4 +284,5 @@ alma-duplication-tool/
 
 ## License
 
-See [`LICENSE`](LICENSE).
+No project license has been selected yet. Do not assume redistribution or
+reuse rights until the repository owner adds an explicit license.

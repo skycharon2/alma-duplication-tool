@@ -2,23 +2,29 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 from numbers import Real
 
 from alma_duplicate.clients.archive_contract import (
     NormalizedParameters,
 )
 
-
 ARCHIVE_TABLE = "ivoa.obscore"
 COUNT_ALIAS = "total_matches"
 ARCHIVE_SCHEMA_VERSION = "1"
-ARCHIVE_QUERY_UNIT_CONTRACT_VERSION = "1"
+ARCHIVE_QUERY_UNIT_CONTRACT_VERSION = "2"
 
 ARCHIVE_FREQUENCY_QUERY_UNITS = (
     ("frequency", "double", "GHz"),
     ("bandwidth", "double", "Hz"),
+)
+ARCHIVE_ANGULAR_RESOLUTION_QUERY_UNITS = (
+    ("spatial_resolution", "double", "arcsec"),
+)
+ARCHIVE_QUERY_ARITHMETIC_UNITS = (
+    ARCHIVE_FREQUENCY_QUERY_UNITS
+    + ARCHIVE_ANGULAR_RESOLUTION_QUERY_UNITS
 )
 
 # Explicit projection used by normalization and v0.4 reconstruction.
@@ -193,14 +199,40 @@ def normalize_query_parameters(
     )
 
 
-def build_query_unit_metadata_adql() -> str:
-    """Return the TAP_SCHEMA probe required before frequency arithmetic."""
+def requested_query_unit_contract(
+    spec: ArchiveQuerySpec,
+) -> tuple[tuple[str, str, str], ...]:
+    """Return only the arithmetic-field descriptors needed by ``spec``."""
+
+    requested: tuple[tuple[str, str, str], ...] = ()
+    if spec.frequency_min_ghz is not None:
+        requested += ARCHIVE_FREQUENCY_QUERY_UNITS
+    if spec.angular_resolution_min_arcsec is not None:
+        requested += ARCHIVE_ANGULAR_RESOLUTION_QUERY_UNITS
+    return requested
+
+
+def build_query_unit_metadata_adql(
+    expected_units: tuple[tuple[str, str, str], ...] = (
+        ARCHIVE_QUERY_ARITHMETIC_UNITS
+    ),
+) -> str:
+    """Return the TAP_SCHEMA probe required before query arithmetic."""
+
+    if not expected_units:
+        raise ValueError("at least one query-arithmetic field is required")
+    column_names = tuple(name for name, _, _ in expected_units)
+    if len(column_names) != len(set(column_names)):
+        raise ValueError("query-arithmetic fields must be unique")
+    quoted_columns = ", ".join(
+        f"'{column_name}'" for column_name in column_names
+    )
 
     return (
         "SELECT column_name, datatype, unit\n"
         "FROM TAP_SCHEMA.columns\n"
         f"WHERE table_name = '{ARCHIVE_TABLE}'\n"
-        "    AND column_name IN ('frequency', 'bandwidth')"
+        f"    AND column_name IN ({quoted_columns})"
     )
 
 
@@ -208,6 +240,7 @@ def build_where_clause(
     spec: ArchiveQuerySpec,
     *,
     frequency_units_verified: bool = False,
+    angular_resolution_units_verified: bool = False,
 ) -> str:
     """Build the shared predicate for COUNT and retrieval."""
 
@@ -239,13 +272,19 @@ def build_where_clause(
             spec.frequency_max_ghz
         )
         clauses.append(
-            "(frequency - 0.5 * bandwidth / 1000000000.0) "
+            "((frequency IS NULL OR bandwidth IS NULL) OR (\n"
+            "        (frequency - 0.5 * bandwidth / 1000000000.0) "
             f"< {frequency_max}\n"
-            "    AND (frequency + 0.5 * bandwidth / "
-            f"1000000000.0) > {frequency_min}"
+            "        AND (frequency + 0.5 * bandwidth / "
+            f"1000000000.0) > {frequency_min}))"
         )
 
     if spec.angular_resolution_min_arcsec is not None:
+        if not angular_resolution_units_verified:
+            raise ValueError(
+                "angular-resolution prefilter requires verified "
+                "Archive query units"
+            )
         resolution_min = _format_adql_number(
             spec.angular_resolution_min_arcsec
         )
@@ -265,12 +304,16 @@ def build_count_adql(
     spec: ArchiveQuerySpec,
     *,
     frequency_units_verified: bool = False,
+    angular_resolution_units_verified: bool = False,
 ) -> str:
     """Build a server-side COUNT query."""
 
     where_clause = build_where_clause(
         spec,
         frequency_units_verified=frequency_units_verified,
+        angular_resolution_units_verified=(
+            angular_resolution_units_verified
+        ),
     )
 
     return (
@@ -285,6 +328,7 @@ def build_retrieval_adql(
     *,
     columns: tuple[str, ...] = ARCHIVE_SELECTED_COLUMNS,
     frequency_units_verified: bool = False,
+    angular_resolution_units_verified: bool = False,
 ) -> str:
     """Build retrieval ADQL with an explicit projection."""
 
@@ -307,6 +351,9 @@ def build_retrieval_adql(
     where_clause = build_where_clause(
         spec,
         frequency_units_verified=frequency_units_verified,
+        angular_resolution_units_verified=(
+            angular_resolution_units_verified
+        ),
     )
 
     return (
