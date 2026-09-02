@@ -58,6 +58,46 @@ class ArchiveSensitivityBasis(StrEnum):
     )
 
 
+class ArchiveFrequencySupportType(StrEnum):
+    """Archive UI-compatible frequency-support classification."""
+
+    CONTINUUM = "CONTINUUM"
+    LINE = "LINE"
+    UNKNOWN = "UNKNOWN"
+
+
+class ArchiveCorrelatorMode(StrEnum):
+    """Correlator mode mapped from Archive frequency-support type."""
+
+    TDM = "TDM"
+    FDM = "FDM"
+    UNKNOWN = "UNKNOWN"
+
+
+class ArchiveSpectralModeStatus(StrEnum):
+    """Derivation status for one row or Source-SPW association."""
+
+    DERIVED = "DERIVED"
+    UNKNOWN_MISSING_VALUE = "UNKNOWN_MISSING_VALUE"
+    UNKNOWN_INVALID_VALUE = "UNKNOWN_INVALID_VALUE"
+    UNKNOWN_METADATA_UNUSABLE = "UNKNOWN_METADATA_UNUSABLE"
+    UNKNOWN_CONFLICT = "UNKNOWN_CONFLICT"
+
+
+class ArchiveSpectralModeClassificationSource(StrEnum):
+    """Rule used to reproduce the Archive UI support type."""
+
+    ARCHIVE_UI_CHANNEL_COUNT_RULE = (
+        "ARCHIVE_UI_CHANNEL_COUNT_RULE"
+    )
+
+
+class ArchiveCorrelatorModeMappingSource(StrEnum):
+    """Published mapping from support type to correlator mode."""
+
+    SCIENCE_ARCHIVE_MANUAL = "SCIENCE_ARCHIVE_MANUAL"
+
+
 class ArchiveEvidenceIssueKind(StrEnum):
     """Structured reason why typed evidence is unavailable."""
 
@@ -155,6 +195,31 @@ class ArchiveSensitivityEstimate:
         ArchiveSensitivityBasis
         .QA0_EB_METADATA_CALCULATOR_ESTIMATE
     )
+
+
+@dataclass(frozen=True, slots=True)
+class ArchiveSpectralModeEvidence:
+    """Per-row mode evidence derived from the public TAP ``em_xel``.
+
+    ``spectral_axis_elements`` is populated only after the raw value and
+    source datatype have passed validation.  FDM/TDM remains derived
+    evidence because TAP does not expose either label directly.
+    """
+
+    raw_spectral_axis_elements: object
+    spectral_axis_elements: int | None
+    frequency_support_type: ArchiveFrequencySupportType
+    correlator_mode: ArchiveCorrelatorMode
+    status: ArchiveSpectralModeStatus
+    source_datatype: str | None
+    classification_source: ArchiveSpectralModeClassificationSource
+    classification_version: str
+    mapping_source: ArchiveCorrelatorModeMappingSource
+    mapping_version: str
+
+    @property
+    def is_derived(self) -> bool:
+        return self.status is ArchiveSpectralModeStatus.DERIVED
 
 
 @dataclass(frozen=True, slots=True)

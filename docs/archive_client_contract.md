@@ -135,7 +135,8 @@ the expected schema.
 
 The current projection contains the Project, Member, execution, identifier,
 spatial, spectral, normalization, and observation-role fields required by the
-v0.4 adapter and reconstruction model. Raw Archive field names, including
+adapter and reconstruction model. It explicitly includes the public
+`em_xel` spectral-axis element count. Raw Archive field names, including
 `lastModified`, are preserved at ingestion.
 
 Each `TapResponse` also contains one ordered `TapFieldMetadata` descriptor per
@@ -189,6 +190,31 @@ zero. Frequency coverage is exposed only when its converted bounds satisfy
 `0 < lower_ghz < upper_ghz`; otherwise the quantities and an explicit invalid-
 interval issue are retained, but the interval is unavailable.
 
+### Per-SPW spectral-mode derivation contract
+
+TAP does not expose a direct FDM/TDM string. The adapter validates that the
+projected `em_xel` descriptor remains `int`, preserves its raw row value, and
+applies two explicit versioned steps:
+
+```text
+em_xel < 129  -> CONTINUUM -> TDM
+em_xel >= 129 -> LINE      -> FDM
+```
+
+The first step reproduces the current Archive UI channel-count rule
+(`ARCHIVE_UI_CHANNEL_COUNT_RULE`, version `2026.06.01`). The second step uses
+the Cycle 13 Science Archive Manual continuum/line mapping
+(`SCIENCE_ARCHIVE_MANUAL`, version `cycle13-v1`). The resulting FDM/TDM value
+has status `DERIVED`; it is not represented as a direct authoritative TAP
+field.
+
+Missing, masked, non-integer, non-positive, or datatype-incompatible values
+produce `UNKNOWN`. Row evidence is joined only to its reconstructed
+Source--SPW association. If multiple raw rows support one association, their
+validated count and derived labels must agree; otherwise association evidence
+is `UNKNOWN_CONFLICT`. No Member OUS-level mode is synthesized, and production
+code does not call the undocumented Archive Elasticsearch endpoint.
+
 ## Query provenance
 
 Every success and failure path records:
@@ -238,10 +264,13 @@ For each accepted raw row it:
 2. preserves the complete raw mapping;
 3. creates `ArchiveMetadataInput` and normalization results;
 4. validates the live comparison-field unit contract once per result;
-5. creates typed Archive comparison evidence for each row;
-6. creates the minimal `ArchiveRowInput` projection using the typed
-   frequency's canonical GHz value; and
-7. invokes deterministic reconstruction.
+5. validates the `em_xel` integer descriptor once per result;
+6. creates typed Archive comparison and spectral-mode evidence for each row;
+7. creates the minimal `ArchiveRowInput` projection using the typed
+   frequency's canonical GHz value;
+8. invokes deterministic reconstruction; and
+9. resolves mode evidence at each observed Source--SPW association, failing
+   closed if multiple supporting rows disagree.
 
 The typed projection keeps the raw value, source unit, canonical value/unit,
 field/query provenance, and an availability status. It distinguishes Archive
