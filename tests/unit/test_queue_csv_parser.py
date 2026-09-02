@@ -88,6 +88,57 @@ def test_regular_spws_are_joined_only_by_slot_number() -> None:
     assert regular.sensitivity.reference_width_mhz.value == 7500.0
 
 
+def test_high_redshift_centres_keep_nominal_correlator_widths() -> None:
+    records = _records()
+    columns = _indices(records)
+    row = records[41]
+    replacements = {
+        "Project Code": "2025.1.00806.S",
+        "Target Name": "CAPERS_UDS_z11",
+        "Velocity": "274836.78847531846",
+        "Vel. Frame": "lsrk",
+        "Vel. Convention": "RADIO",
+        "Ref.Frequency": "280.96971047028603",
+        "Ref.Freq.Width": "7450.127878488274",
+        "Is Sky Freq?": "False",
+        "Freq SPW 1": "3539.872919987298",
+        "Freq SPW 2": "3517.6481018851578",
+        "Freq SPW 3": "3397.5139499817",
+        "Freq SPW 4": "3375.28913187956",
+    }
+    for column, value in replacements.items():
+        row[columns[column]] = value
+
+    result = parse_queue_csv_bytes(_render(records))
+    spectral = result.row_inputs[0].spectral
+
+    assert result.is_complete
+    assert isinstance(spectral, RegularSpwEvidence)
+    assert [
+        spw.frequency_derivation.sky_frequency_ghz
+        for spw in spectral.spws
+    ] == pytest.approx(
+        [
+            294.6701839663105,
+            292.82012002706637,
+            282.81977440953057,
+            280.96971047028603,
+        ]
+    )
+    assert [
+        spw.nominal_bandwidth_ghz
+        for spw in spectral.spws
+    ] == pytest.approx([1.875] * 4)
+    assert [
+        spw.spectral_resolution_mhz.value
+        for spw in spectral.spws
+    ] == pytest.approx([15.6240234375] * 4)
+    assert sum(
+        spw.bandwidth_mhz.value
+        for spw in spectral.spws
+    ) == pytest.approx(7500.0)
+
+
 def test_sps_unit_conflict_is_preserved_and_resolved_explicitly() -> None:
     result = _parse_fixture()
     spectral = result.row_inputs[1].spectral

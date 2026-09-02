@@ -522,15 +522,27 @@ Every derivation preserves:
 - derivation version; and
 - validation status.
 
-For a rest-frequency row, the SPW bandwidth is multiplied by the same frequency
-ratio used for its centre before the sky-frequency interval is formed:
+For a rest-frequency row, only the SPW centre is Doppler converted. The
+`Bandwidth SPW N` value is a nominal correlator bandwidth: it is converted from
+MHz to GHz, but is not multiplied by the centre-frequency Doppler factor.
+`Spec.Res. SPW N` is likewise preserved in its declared MHz unit; no Doppler
+scaling is applied without an authoritative source definition.
 
 ```text
 doppler_factor = derived_sky_frequency / source_frequency
-derived_sky_bandwidth_ghz = bandwidth_mhz / 1000 * doppler_factor
-lower = derived_sky_frequency - derived_sky_bandwidth_ghz / 2
-upper = derived_sky_frequency + derived_sky_bandwidth_ghz / 2
+nominal_bandwidth_ghz = bandwidth_mhz / 1000
+lower = derived_sky_frequency - nominal_bandwidth_ghz / 2
+upper = derived_sky_frequency + nominal_bandwidth_ghz / 2
 ```
+
+The model retains the source `bandwidth_mhz` quantity and the normalized
+`nominal_bandwidth_ghz` separately from the derived sky centre. A compatibility
+property named `sky_bandwidth_ghz` returns the same unscaled nominal width; it
+must not be interpreted as a Doppler-derived quantity.
+
+This contract does not yet replace nominal correlator bandwidth with usable
+bandwidth. That later derivation requires a separately versioned rule and must
+preserve both values.
 
 The reference-frequency consistency gate permits a numerical boundary
 tolerance of `1e-12 GHz` and requires `Ref.Frequency` to lie inside at least one

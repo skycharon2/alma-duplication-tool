@@ -55,6 +55,33 @@ def test_pinned_full_queue_snapshot() -> None:
         if isinstance(row.spectral, RegularSpwEvidence)
     ) == 16216
 
+    high_redshift_rows = [
+        row
+        for row in result.row_inputs
+        if (
+            row.group_key.project_code == "2025.1.00806.S"
+            and row.group_key.target_name == "CAPERS_UDS_z11"
+        )
+    ]
+    assert len(high_redshift_rows) == 1
+    high_redshift_spectral = high_redshift_rows[0].spectral
+    assert isinstance(high_redshift_spectral, RegularSpwEvidence)
+    assert [
+        spw.nominal_bandwidth_ghz
+        for spw in high_redshift_spectral.spws
+    ] == pytest.approx([1.875] * 4)
+    assert [
+        spw.frequency_derivation.sky_frequency_ghz
+        for spw in high_redshift_spectral.spws
+    ] == pytest.approx(
+        [
+            294.6701839663105,
+            292.82012002706637,
+            282.81977440953057,
+            280.96971047028603,
+        ]
+    )
+
     content_counts = Counter(
         row.content_fingerprint for row in result.raw_rows
     )
