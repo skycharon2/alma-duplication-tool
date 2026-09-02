@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -8,11 +8,12 @@ from alma_duplicate.clients.archive_client import (
     ArchiveClient,
 )
 from alma_duplicate.clients.archive_contract import (
+    ArchiveAngularResolutionPrefilterStatus,
     ArchiveFrequencyPrefilterStatus,
     ArchiveQueryErrorKind,
     ArchiveQueryStatus,
-    TapFieldMetadata,
     TapExecutionError,
+    TapFieldMetadata,
     TapResponse,
 )
 from alma_duplicate.clients.archive_queries import (
@@ -22,14 +23,13 @@ from alma_duplicate.clients.archive_queries import (
 )
 from tests.fakes import FakeTapExecutor
 
-
 NOW = datetime(
     2026,
     8,
     31,
     10,
     0,
-    tzinfo=timezone.utc,
+    tzinfo=UTC,
 )
 
 
@@ -126,6 +126,7 @@ def _query_unit_response(
     bandwidth_unit: str = "Hz",
     status: object | None = "OK",
     include_bandwidth: bool = True,
+    spatial_resolution_unit: str | None = None,
 ) -> TapResponse:
     columns = ("column_name", "datatype", "unit")
     rows = [
@@ -141,6 +142,14 @@ def _query_unit_response(
                 "column_name": "bandwidth",
                 "datatype": "double",
                 "unit": bandwidth_unit,
+            }
+        )
+    if spatial_resolution_unit is not None:
+        rows.append(
+            {
+                "column_name": "spatial_resolution",
+                "datatype": "double",
+                "unit": spatial_resolution_unit,
             }
         )
     return TapResponse(
@@ -159,6 +168,28 @@ def _frequency_spec() -> ArchiveQuerySpec:
         radius_deg=0.006,
         frequency_min_ghz=229.0,
         frequency_max_ghz=231.0,
+    )
+
+
+def _angular_spec() -> ArchiveQuerySpec:
+    return ArchiveQuerySpec(
+        ra_deg=201.365,
+        dec_deg=-43.019,
+        radius_deg=0.006,
+        angular_resolution_min_arcsec=0.1,
+        angular_resolution_max_arcsec=1.5,
+    )
+
+
+def _combined_prefilter_spec() -> ArchiveQuerySpec:
+    return ArchiveQuerySpec(
+        ra_deg=201.365,
+        dec_deg=-43.019,
+        radius_deg=0.006,
+        frequency_min_ghz=229.0,
+        frequency_max_ghz=231.0,
+        angular_resolution_min_arcsec=0.1,
+        angular_resolution_max_arcsec=1.5,
     )
 
 
@@ -197,9 +228,12 @@ def test_complete_result_reconciles_count_and_rows() -> None:
         "query-run-001"
     )
     assert len(result.provenance.query_hash) == 64
-    assert result.provenance.client_version == "3"
+    assert result.provenance.client_version == "4"
     assert result.provenance.frequency_prefilter_status is (
         ArchiveFrequencyPrefilterStatus.NOT_REQUESTED
+    )
+    assert result.provenance.angular_resolution_prefilter_status is (
+        ArchiveAngularResolutionPrefilterStatus.NOT_REQUESTED
     )
     assert result.provenance.warnings == (
         "count fixture",
@@ -297,6 +331,78 @@ def test_query_metadata_error_falls_back_to_spatial_query() -> None:
         .FALLBACK_METADATA_QUERY_ERROR
     )
     assert "bandwidth / 1000000000.0" not in executor.calls[1].adql
+
+
+def test_angular_prefilter_runs_only_after_exact_unit_probe() -> None:
+    client, executor = _client(
+        [
+            _query_unit_response(
+                include_bandwidth=False,
+                spatial_resolution_unit="arcsec",
+            ),
+            _count_response(1),
+            _retrieval_response(1),
+        ]
+    )
+
+    result = client.search(_angular_spec())
+
+    assert result.status is ArchiveQueryStatus.COMPLETE
+    assert result.provenance.angular_resolution_prefilter_status is (
+        ArchiveAngularResolutionPrefilterStatus.VERIFIED_EXACT_UNITS
+    )
+    assert len(result.provenance.query_unit_metadata) == 2
+    assert "'spatial_resolution'" in executor.calls[0].adql
+    assert "spatial_resolution >= 0.1" in executor.calls[1].adql
+    assert "spatial_resolution >= 0.1" in executor.calls[2].adql
+
+
+def test_angular_unit_mismatch_falls_back_without_losing_request() -> None:
+    client, executor = _client(
+        [
+            _query_unit_response(
+                include_bandwidth=False,
+                spatial_resolution_unit="mas",
+            ),
+            _count_response(1),
+            _retrieval_response(1),
+        ]
+    )
+
+    result = client.search(_angular_spec())
+
+    assert result.status is ArchiveQueryStatus.COMPLETE
+    assert result.provenance.angular_resolution_prefilter_status is (
+        ArchiveAngularResolutionPrefilterStatus.FALLBACK_UNIT_MISMATCH
+    )
+    assert "spatial_resolution >=" not in executor.calls[1].adql
+    assert "spatial_resolution >=" not in executor.calls[2].adql
+    assert dict(result.provenance.normalized_parameters)[
+        "angular_resolution_min_arcsec"
+    ] == 0.1
+
+
+def test_combined_prefilters_are_gated_independently() -> None:
+    client, executor = _client(
+        [
+            _query_unit_response(
+                spatial_resolution_unit="mas",
+            ),
+            _count_response(1),
+            _retrieval_response(1),
+        ]
+    )
+
+    result = client.search(_combined_prefilter_spec())
+
+    assert result.provenance.frequency_prefilter_status is (
+        ArchiveFrequencyPrefilterStatus.VERIFIED_EXACT_UNITS
+    )
+    assert result.provenance.angular_resolution_prefilter_status is (
+        ArchiveAngularResolutionPrefilterStatus.FALLBACK_UNIT_MISMATCH
+    )
+    assert "bandwidth / 1000000000.0" in executor.calls[1].adql
+    assert "spatial_resolution >=" not in executor.calls[1].adql
 
 
 def test_valid_empty_result_is_complete() -> None:

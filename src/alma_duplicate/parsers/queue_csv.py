@@ -32,6 +32,7 @@ from alma_duplicate.domain.queue import (
     QueueSpatialEvidence,
     QueueSpw,
     QueueUnitInterpretation,
+    QueueUsableBandwidthApplicability,
     QueueVelocityContext,
     RawQueueRow,
     RegularSpwEvidence,
@@ -54,8 +55,8 @@ from alma_duplicate.queue_normalization import (
     QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION,
     QueueFrequencyDerivationError,
     centred_frequency_interval,
-    derive_usable_bandwidth_ghz,
     derive_sky_frequency,
+    derive_usable_bandwidth,
     derived_sky_interval,
 )
 
@@ -830,9 +831,16 @@ class _RowParser:
                     derivation,
                     bandwidth,
                 )
-                usable_bandwidth = derive_usable_bandwidth_ghz(
-                    bandwidth
+                usable_derivation = derive_usable_bandwidth(bandwidth)
+                usable_bandwidth = (
+                    usable_derivation.usable_bandwidth_ghz
                 )
+                if usable_bandwidth is None:
+                    raise QueueFrequencyDerivationError(
+                        "UNRECOGNIZED Queue SPW bandwidth has no "
+                        "portal-script usable-width mapping: "
+                        f"{bandwidth.value!r} MHz"
+                    )
                 usable_lower, usable_upper = centred_frequency_interval(
                     derivation.sky_frequency_ghz,
                     usable_bandwidth,
@@ -857,6 +865,13 @@ class _RowParser:
                     usable_bandwidth_ghz=usable_bandwidth,
                     usable_bandwidth_derivation_version=(
                         QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION
+                    ),
+                    usable_bandwidth_derivation_kind=(
+                        usable_derivation.kind
+                    ),
+                    usable_bandwidth_applicability=(
+                        QueueUsableBandwidthApplicability
+                        .PENDING_ARRAY_PROCESSOR_CONFIRMATION
                     ),
                     lower_sky_frequency_ghz=lower,
                     upper_sky_frequency_ghz=upper,

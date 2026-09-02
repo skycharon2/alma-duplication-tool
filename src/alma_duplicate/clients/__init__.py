@@ -16,6 +16,7 @@ from .archive_client import (
     PyvoTapExecutor,
 )
 from .archive_contract import (
+    ArchiveAngularResolutionPrefilterStatus,
     ArchiveFrequencyPrefilterStatus,
     ArchiveQueryColumnUnit,
     ArchiveQueryErrorKind,
@@ -37,7 +38,9 @@ from .archive_field_contract import (
     validate_archive_comparison_metadata,
 )
 from .archive_queries import (
+    ARCHIVE_ANGULAR_RESOLUTION_QUERY_UNITS,
     ARCHIVE_FREQUENCY_QUERY_UNITS,
+    ARCHIVE_QUERY_ARITHMETIC_UNITS,
     ARCHIVE_QUERY_UNIT_CONTRACT_VERSION,
     ARCHIVE_SCHEMA_VERSION,
     ARCHIVE_SELECTED_COLUMNS,
@@ -49,6 +52,7 @@ from .archive_queries import (
     build_retrieval_adql,
     build_where_clause,
     normalize_query_parameters,
+    requested_query_unit_contract,
 )
 from .queue_csv_adapter import (
     QUEUE_ADAPTER_VERSION,
@@ -79,10 +83,12 @@ from .queue_csv_contract import (
 
 __all__ = [
     "ADAPTER_VERSION",
+    "ARCHIVE_ANGULAR_RESOLUTION_QUERY_UNITS",
     "ARCHIVE_CLIENT_VERSION",
     "ARCHIVE_COMPARISON_CONTRACT_VERSION",
     "ARCHIVE_COMPARISON_FIELD_SPECS",
     "ARCHIVE_FREQUENCY_QUERY_UNITS",
+    "ARCHIVE_QUERY_ARITHMETIC_UNITS",
     "ARCHIVE_QUERY_UNIT_CONTRACT_VERSION",
     "ARCHIVE_SCHEMA_VERSION",
     "ARCHIVE_SELECTED_COLUMNS",
@@ -97,14 +103,15 @@ __all__ = [
     "QUEUE_SCHEMA_VERSION",
     "QUEUE_SPW_COLUMNS",
     "REQUIRED_ARCHIVE_COLUMNS",
+    "ArchiveAngularResolutionPrefilterStatus",
     "ArchiveClient",
-    "ArchiveFrequencyPrefilterStatus",
     "ArchiveFieldContractValidation",
     "ArchiveFieldSpec",
     "ArchiveFieldValidation",
+    "ArchiveFrequencyPrefilterStatus",
     "ArchivePipelineBatch",
-    "ArchiveQueryErrorKind",
     "ArchiveQueryColumnUnit",
+    "ArchiveQueryErrorKind",
     "ArchiveQueryProvenance",
     "ArchiveQueryResult",
     "ArchiveQuerySpec",
@@ -126,14 +133,15 @@ __all__ = [
     "TapExecutor",
     "TapFieldMetadata",
     "TapResponse",
+    "build_archive_comparison_evidence",
     "build_count_adql",
     "build_query_unit_metadata_adql",
-    "build_archive_comparison_evidence",
     "build_retrieval_adql",
     "build_where_clause",
     "classify_secondary_token",
     "normalize_query_parameters",
     "prepare_archive_rows",
+    "requested_query_unit_contract",
     "run_archive_pipeline",
     "run_queue_pipeline",
     "spw_columns",

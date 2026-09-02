@@ -5,6 +5,8 @@ import math
 import pytest
 
 from alma_duplicate.clients.archive_queries import (
+    ARCHIVE_ANGULAR_RESOLUTION_QUERY_UNITS,
+    ARCHIVE_FREQUENCY_QUERY_UNITS,
     ARCHIVE_SELECTED_COLUMNS,
     ArchiveQuerySpec,
     build_count_adql,
@@ -12,6 +14,7 @@ from alma_duplicate.clients.archive_queries import (
     build_retrieval_adql,
     build_where_clause,
     normalize_query_parameters,
+    requested_query_unit_contract,
 )
 
 
@@ -99,6 +102,7 @@ def test_frequency_prefilter_uses_archive_coverage_overlap() -> None:
         "frequency - 0.5 * bandwidth / 1000000000.0"
         in where_clause
     )
+    assert "frequency IS NULL OR bandwidth IS NULL" in where_clause
     assert "< 231" in where_clause
     assert "> 229" in where_clause
     assert build_count_adql(
@@ -124,12 +128,37 @@ def test_frequency_prefilter_requires_verified_query_units() -> None:
         build_count_adql(spec)
 
 
-def test_query_unit_probe_targets_only_arithmetic_fields() -> None:
+def test_query_unit_probe_targets_all_arithmetic_fields_by_default() -> None:
     query = build_query_unit_metadata_adql()
 
     assert "FROM TAP_SCHEMA.columns" in query
     assert "table_name = 'ivoa.obscore'" in query
     assert "'frequency', 'bandwidth'" in query
+    assert "'spatial_resolution'" in query
+
+
+def test_requested_query_unit_contract_is_prefilter_specific() -> None:
+    frequency_spec = ArchiveQuerySpec(
+        ra_deg=201.365,
+        dec_deg=-43.019,
+        radius_deg=0.006,
+        frequency_min_ghz=229.0,
+        frequency_max_ghz=231.0,
+    )
+    angular_spec = ArchiveQuerySpec(
+        ra_deg=201.365,
+        dec_deg=-43.019,
+        radius_deg=0.006,
+        angular_resolution_min_arcsec=0.1,
+        angular_resolution_max_arcsec=1.5,
+    )
+
+    assert requested_query_unit_contract(frequency_spec) == (
+        ARCHIVE_FREQUENCY_QUERY_UNITS
+    )
+    assert requested_query_unit_contract(angular_spec) == (
+        ARCHIVE_ANGULAR_RESOLUTION_QUERY_UNITS
+    )
 
 
 def test_angular_prefilter_retains_unknown_resolution() -> None:
@@ -141,11 +170,27 @@ def test_angular_prefilter_retains_unknown_resolution() -> None:
         angular_resolution_max_arcsec=1.5,
     )
 
-    where_clause = build_where_clause(spec)
+    where_clause = build_where_clause(
+        spec,
+        angular_resolution_units_verified=True,
+    )
 
     assert "spatial_resolution IS NULL" in where_clause
     assert "spatial_resolution >= 0.1" in where_clause
     assert "spatial_resolution <= 1.5" in where_clause
+
+
+def test_angular_prefilter_requires_verified_query_units() -> None:
+    spec = ArchiveQuerySpec(
+        ra_deg=201.365,
+        dec_deg=-43.019,
+        radius_deg=0.006,
+        angular_resolution_min_arcsec=0.1,
+        angular_resolution_max_arcsec=1.5,
+    )
+
+    with pytest.raises(ValueError, match="verified Archive query units"):
+        build_count_adql(spec)
 
 
 @pytest.mark.parametrize(

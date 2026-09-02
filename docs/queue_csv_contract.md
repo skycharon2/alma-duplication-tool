@@ -540,11 +540,13 @@ The model retains the source `bandwidth_mhz` quantity and the normalized
 property named `sky_bandwidth_ghz` returns the same unscaled nominal width; it
 must not be interpreted as a Doppler-derived quantity.
 
-Scientific coverage also carries a separately derived usable width. The Cycle
-13 mapping follows Table 5.3 of the
-[ALMA Cycle 13 Technical Handbook](https://almascience.eso.org/documents-and-tools/cycle13/alma-technical-handbook)
-and is versioned as
-`cycle13-technical-handbook-table-5.3-v1`:
+Scientific coverage also carries a separately derived usable width. The
+finite mapping is reproduced from `getUsableBandwidth()` in the portal-
+provided `plotobs_cycle13.py` v1.3.1 script and is versioned as
+`cycle13-portal-plotobs-v1.3.1-v1`. The portal describes that script as
+user-contributed, distributed as-is, and not an official supported ALMA
+product. It is therefore traceable derived evidence, not yet an authoritative
+project policy:
 
 | Nominal MHz | Usable MHz |
 |---:|---:|
@@ -557,13 +559,31 @@ and is versioned as
 | 2000 | 1875 |
 
 Usable bounds are centred on the same derived sky frequency. They are not
-Doppler-scaled. Unknown nominal values fail closed until the applicable ALMA
-Technical Handbook supplies an approved mapping. Nominal bounds remain
-available for conservative discovery and the pinned snapshot's historical
-reference-frequency consistency check; usable bounds are the intended input
-to later formal coverage comparison. In the pinned snapshot, all 3,199 regular
-rows place `Ref.Frequency` inside both at least one nominal interval and at
-least one usable interval.
+Doppler-scaled. Nominal inputs are matched with the script's `1e-4 MHz`
+tolerance. Values already equal to a usable width are recognized with its
+`0.1 MHz` tolerance. Each result records `NOMINAL_MAPPED`, `ALREADY_USABLE`, or
+`UNRECOGNIZED`; unrecognized values still fail closed in typed row ingestion.
+
+Every successfully derived SPW currently carries
+`PENDING_ARRAY_PROCESSOR_CONFIRMATION`. The mapping must not become an
+authoritative formal-duplication coverage input until the project confirms
+whether it applies uniformly or must be separated for the requested 12-m,
+7-m, and TP processor contexts. In particular, one Queue row can request both
+7-m and TP observations, while the current SPW object has only one derived
+usable interval.
+
+The open scientific decision should be put to the supervisor in this exact
+form:
+
+> Should the `plotobs_cycle13.py` nominal-to-usable bandwidth mapping be
+> applied to every Queue SPW regardless of the requested arrays, or should
+> usable coverage be represented separately for the 12-m/7-m correlator and
+> the TP spectrometer?
+
+Nominal bounds remain available for conservative discovery and the pinned
+snapshot's historical reference-frequency consistency check. In the pinned
+snapshot, all 3,199 regular rows place `Ref.Frequency` inside both at least one
+nominal interval and at least one derived usable interval.
 
 The reference-frequency consistency gate permits a numerical boundary
 tolerance of `1e-12 GHz` and requires `Ref.Frequency` to lie inside at least one

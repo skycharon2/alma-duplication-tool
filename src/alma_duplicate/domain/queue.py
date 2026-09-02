@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
-import math
 from typing import TypeAlias
 
 
@@ -84,6 +84,22 @@ class QueueFrequencyDerivationKind(StrEnum):
     RADIO_DOPPLER = "RADIO_DOPPLER"
     OPTICAL_DOPPLER = "OPTICAL_DOPPLER"
     RELATIVISTIC_DOPPLER = "RELATIVISTIC_DOPPLER"
+
+
+class QueueUsableBandwidthDerivationKind(StrEnum):
+    """How a Queue usable SPW width was interpreted."""
+
+    NOMINAL_MAPPED = "NOMINAL_MAPPED"
+    ALREADY_USABLE = "ALREADY_USABLE"
+    UNRECOGNIZED = "UNRECOGNIZED"
+
+
+class QueueUsableBandwidthApplicability(StrEnum):
+    """Scientific-policy readiness of the portal-script mapping."""
+
+    PENDING_ARRAY_PROCESSOR_CONFIRMATION = (
+        "PENDING_ARRAY_PROCESSOR_CONFIRMATION"
+    )
 
 
 class QueueCapabilityStatus(StrEnum):
@@ -295,6 +311,12 @@ class QueueSpw:
     nominal_bandwidth_ghz: float
     usable_bandwidth_ghz: float
     usable_bandwidth_derivation_version: str
+    usable_bandwidth_derivation_kind: (
+        QueueUsableBandwidthDerivationKind
+    )
+    usable_bandwidth_applicability: (
+        QueueUsableBandwidthApplicability
+    )
     lower_sky_frequency_ghz: float
     upper_sky_frequency_ghz: float
     usable_lower_sky_frequency_ghz: float

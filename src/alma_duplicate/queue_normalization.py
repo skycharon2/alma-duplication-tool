@@ -3,24 +3,30 @@
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 
 from alma_duplicate.domain.queue import (
     QueueFrequencyDerivation,
     QueueFrequencyDerivationKind,
     QueueQuantity,
+    QueueUsableBandwidthDerivationKind,
     QueueVelocityContext,
 )
 
 QUEUE_FREQUENCY_DERIVATION_VERSION = "2"
 QUEUE_UNIT_NORMALIZATION_VERSION = "1"
 QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION = (
-    "cycle13-technical-handbook-table-5.3-v1"
+    "cycle13-portal-plotobs-v1.3.1-v1"
 )
 SPEED_OF_LIGHT_KMS = 299792.458
+QUEUE_NOMINAL_BANDWIDTH_TOLERANCE_MHZ = 1e-4
+QUEUE_ALREADY_USABLE_BANDWIDTH_TOLERANCE_MHZ = 0.1
 
-# Cycle 13 Technical Handbook, Table 5.3. Keep this as a finite,
-# versioned mapping so a future correlator setup cannot silently inherit
-# an unverified usable-width rule.
+# Reproduced from getUsableBandwidth() in the portal-provided Cycle 13
+# plotobs_cycle13.py v1.3.1 script. The portal labels that script as
+# user-contributed, distributed as-is, and not an official ALMA product.
+# Keep this finite and versioned; its applicability to each requested array
+# and processor remains a separate scientific-policy decision.
 _USABLE_BANDWIDTH_MHZ_BY_NOMINAL_MHZ = {
     62.5: 58.6,
     125.0: 117.2,
@@ -30,6 +36,18 @@ _USABLE_BANDWIDTH_MHZ_BY_NOMINAL_MHZ = {
     1875.0: 1875.0,
     2000.0: 1875.0,
 }
+
+
+@dataclass(frozen=True, slots=True)
+class QueueUsableBandwidthDerivation:
+    """Traceable interpretation of one Queue SPW bandwidth token."""
+
+    input_bandwidth_mhz: float
+    usable_bandwidth_ghz: float | None
+    kind: QueueUsableBandwidthDerivationKind
+    derivation_version: str = (
+        QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION
+    )
 
 
 class QueueFrequencyDerivationError(ValueError):
@@ -150,10 +168,10 @@ def derived_sky_interval(
     return nominal_bandwidth_ghz, lower, upper
 
 
-def derive_usable_bandwidth_ghz(
+def derive_usable_bandwidth(
     source_bandwidth_mhz: QueueQuantity,
-) -> float:
-    """Map a recognized nominal correlator width to usable GHz."""
+) -> QueueUsableBandwidthDerivation:
+    """Interpret one width using the portal script's finite mapping."""
 
     nominal_mhz = source_bandwidth_mhz.value
     if not math.isfinite(nominal_mhz) or nominal_mhz <= 0.0:
@@ -164,17 +182,60 @@ def derive_usable_bandwidth_ghz(
     for expected_mhz, usable_mhz in (
         _USABLE_BANDWIDTH_MHZ_BY_NOMINAL_MHZ.items()
     ):
-        if math.isclose(
-            nominal_mhz,
-            expected_mhz,
-            rel_tol=0.0,
-            abs_tol=1e-9,
+        if (
+            abs(nominal_mhz - expected_mhz)
+            < QUEUE_NOMINAL_BANDWIDTH_TOLERANCE_MHZ
         ):
-            return usable_mhz / 1000.0
+            return QueueUsableBandwidthDerivation(
+                input_bandwidth_mhz=nominal_mhz,
+                usable_bandwidth_ghz=usable_mhz / 1000.0,
+                kind=(
+                    QueueUsableBandwidthDerivationKind.NOMINAL_MAPPED
+                ),
+            )
+
+    for usable_mhz in dict.fromkeys(
+        _USABLE_BANDWIDTH_MHZ_BY_NOMINAL_MHZ.values()
+    ):
+        if (
+            abs(nominal_mhz - usable_mhz)
+            < QUEUE_ALREADY_USABLE_BANDWIDTH_TOLERANCE_MHZ
+        ):
+            return QueueUsableBandwidthDerivation(
+                input_bandwidth_mhz=nominal_mhz,
+                usable_bandwidth_ghz=usable_mhz / 1000.0,
+                kind=(
+                    QueueUsableBandwidthDerivationKind.ALREADY_USABLE
+                ),
+            )
+
+    if 1875.0 < nominal_mhz < 2000.0:
+        return QueueUsableBandwidthDerivation(
+            input_bandwidth_mhz=nominal_mhz,
+            usable_bandwidth_ghz=1.875,
+            kind=QueueUsableBandwidthDerivationKind.NOMINAL_MAPPED,
+        )
+
+    return QueueUsableBandwidthDerivation(
+        input_bandwidth_mhz=nominal_mhz,
+        usable_bandwidth_ghz=None,
+        kind=QueueUsableBandwidthDerivationKind.UNRECOGNIZED,
+    )
+
+
+def derive_usable_bandwidth_ghz(
+    source_bandwidth_mhz: QueueQuantity,
+) -> float:
+    """Return usable GHz or fail closed for an unrecognized width."""
+
+    derivation = derive_usable_bandwidth(source_bandwidth_mhz)
+    if derivation.usable_bandwidth_ghz is not None:
+        return derivation.usable_bandwidth_ghz
 
     raise QueueFrequencyDerivationError(
-        "nominal SPW bandwidth has no verified Cycle 13 usable-width "
-        f"mapping: {nominal_mhz!r} MHz"
+        "UNRECOGNIZED Queue SPW bandwidth has no portal-script "
+        "usable-width mapping: "
+        f"{source_bandwidth_mhz.value!r} MHz"
     )
 
 
