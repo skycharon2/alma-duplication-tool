@@ -11,7 +11,7 @@ from alma_duplicate.domain.queue import (
     QueueVelocityContext,
 )
 
-QUEUE_FREQUENCY_DERIVATION_VERSION = "1"
+QUEUE_FREQUENCY_DERIVATION_VERSION = "2"
 QUEUE_UNIT_NORMALIZATION_VERSION = "1"
 SPEED_OF_LIGHT_KMS = 299792.458
 
@@ -111,7 +111,13 @@ def derived_sky_interval(
     derivation: QueueFrequencyDerivation,
     source_bandwidth_mhz: QueueQuantity,
 ) -> tuple[float, float, float]:
-    """Return normalized sky bandwidth and symmetric bounds."""
+    """Return nominal correlator bandwidth and sky-centred bounds.
+
+    Queue rest frequencies require a Doppler conversion for the SPW
+    centre.  ``Bandwidth SPW N`` is a nominal correlator setup value,
+    however, so it is converted from MHz to GHz but is not multiplied by
+    the centre-frequency Doppler factor.
+    """
 
     bandwidth_mhz = source_bandwidth_mhz.value
     if not math.isfinite(bandwidth_mhz) or bandwidth_mhz <= 0.0:
@@ -119,18 +125,14 @@ def derived_sky_interval(
             "source bandwidth must be finite and positive"
         )
 
-    sky_bandwidth_ghz = (
-        bandwidth_mhz
-        / 1000.0
-        * derivation.doppler_factor
-    )
+    nominal_bandwidth_ghz = bandwidth_mhz / 1000.0
     lower = (
         derivation.sky_frequency_ghz
-        - sky_bandwidth_ghz / 2.0
+        - nominal_bandwidth_ghz / 2.0
     )
     upper = (
         derivation.sky_frequency_ghz
-        + sky_bandwidth_ghz / 2.0
+        + nominal_bandwidth_ghz / 2.0
     )
 
     if lower >= upper or lower <= 0.0:
@@ -138,7 +140,7 @@ def derived_sky_interval(
             "derived frequency interval is invalid"
         )
 
-    return sky_bandwidth_ghz, lower, upper
+    return nominal_bandwidth_ghz, lower, upper
 
 
 def observed_to_velocity_kms(
