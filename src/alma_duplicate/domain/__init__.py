@@ -6,6 +6,7 @@ from .archive import (
     ObsIdIssue,
     ObsIdParseResult,
     ObsIdParseStatus,
+    ObsIdWidthStatus,
 )
 from .archive_evidence import (
     ArchiveAngularResolution,
@@ -127,6 +128,7 @@ __all__ = [
     "ObsIdIssue",
     "ObsIdParseResult",
     "ObsIdParseStatus",
+    "ObsIdWidthStatus",
     "ParseStatus",
     "ParsedQuantity",
     "PublisherDidMappingStatus",

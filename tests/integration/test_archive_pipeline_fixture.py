@@ -24,6 +24,10 @@ from alma_duplicate.clients.archive_contract import (
 from alma_duplicate.clients.archive_queries import (
     ArchiveQuerySpec,
 )
+from alma_duplicate.domain.archive import (
+    ObsIdConfidence,
+    ObsIdWidthStatus,
+)
 from alma_duplicate.domain.normalization import (
     MissingValueStatus,
     PublisherDidMappingStatus,
@@ -322,6 +326,39 @@ def test_reconstruction_uses_canonical_tap_frequency_unit() -> None:
         for mapping in pipeline.reconstruction.support_mappings
         if mapping.association_key is not None
     } == {SupportMappingStatus.ASSIGNED}
+
+
+def test_complete_above_width_obs_id_survives_pipeline() -> None:
+    complete = _complete_query_result()
+    rows = list(complete.rows)
+    obs_id = (
+        "uid://A001/X133d/X27a9.source."
+        "Northeast_Section_of_NGC6334.spw.26"
+    )
+    assert len(obs_id) == 65
+    rows[-1] = {
+        **rows[-1],
+        "member_ous_uid": "uid://A001/X133d/X27a9",
+        "obs_id": obs_id,
+    }
+
+    pipeline = run_archive_pipeline(
+        replace(complete, rows=tuple(rows))
+    )
+    reconstruction = pipeline.reconstruction.row_reconstructions[-1]
+
+    assert pipeline.reconstruction.linked_row_count == 5
+    assert pipeline.reconstruction.unlinked_row_count == 0
+    assert reconstruction.status is ReconstructionStatus.LINKED
+    assert reconstruction.obs_id_result.confidence is (
+        ObsIdConfidence.PARSED_ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
+    )
+    assert reconstruction.obs_id_result.width_status is (
+        ObsIdWidthStatus.ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
+    )
+    assert reconstruction.issues == (
+        "parsed_above_declared_width_schema_drift",
+    )
 
 
 def test_reconstruction_remains_shuffle_invariant() -> None:
