@@ -190,29 +190,20 @@ zero. Frequency coverage is exposed only when its converted bounds satisfy
 `0 < lower_ghz < upper_ghz`; otherwise the quantities and an explicit invalid-
 interval issue are retained, but the interval is unavailable.
 
-### Per-SPW spectral-mode derivation contract
+### Correlator-mode evidence boundary
 
-TAP does not expose a direct FDM/TDM string. The adapter validates that the
-projected `em_xel` descriptor remains `int`, preserves its raw row value, and
-applies two explicit versioned steps:
+TAP does not expose a direct, policy-grade FDM/TDM field. The selected
+`em_xel` column is preserved in each raw Archive row, but the production
+adapter does not classify it as `CONTINUUM`/`LINE` and does not map it to
+TDM/FDM. Channel count alone is not a reliable correlator-mode discriminator
+across polarization, online averaging, processor, and historical setup
+variants.
 
-```text
-em_xel < 129  -> CONTINUUM -> TDM
-em_xel >= 129 -> LINE      -> FDM
-```
-
-The first step reproduces the current Archive UI channel-count rule
-(`ARCHIVE_UI_CHANNEL_COUNT_RULE`, version `2026.06.01`). The second step uses
-the Cycle 13 Science Archive Manual continuum/line mapping
-(`SCIENCE_ARCHIVE_MANUAL`, version `cycle13-v1`). The resulting FDM/TDM value
-has status `DERIVED`; it is not represented as a direct authoritative TAP
-field.
-
-Missing, masked, non-integer, non-positive, or datatype-incompatible values
-produce `UNKNOWN`. Row evidence is joined only to its reconstructed
-Source--SPW association. If multiple raw rows support one association, their
-validated count and derived labels must agree; otherwise association evidence
-is `UNKNOWN_CONFLICT`. No Member OUS-level mode is synthesized, and production
+Consequently, `PreparedArchiveRow` and `ArchivePipelineBatch` expose no
+channel-count-derived mode evidence. Until a separately validated configuration
+source is implemented and reliably associated with a candidate SPW, formal
+correlator mode remains unavailable to the policy layer. Unavailable mode must
+not satisfy an FDM requirement and must not exclude a candidate. Production
 code does not call the undocumented Archive Elasticsearch endpoint.
 
 ## Query provenance
@@ -264,13 +255,12 @@ For each accepted raw row it:
 2. preserves the complete raw mapping;
 3. creates `ArchiveMetadataInput` and normalization results;
 4. validates the live comparison-field unit contract once per result;
-5. validates the `em_xel` integer descriptor once per result;
-6. creates typed Archive comparison and spectral-mode evidence for each row;
+5. preserves `em_xel` only inside the complete raw row without interpreting
+   it as an Archive UI type or correlator mode;
+6. creates typed Archive comparison evidence for each row;
 7. creates the minimal `ArchiveRowInput` projection using the typed
    frequency's canonical GHz value;
-8. invokes deterministic reconstruction; and
-9. resolves mode evidence at each observed Source--SPW association, failing
-   closed if multiple supporting rows disagree.
+8. invokes deterministic reconstruction.
 
 The typed projection keeps the raw value, source unit, canonical value/unit,
 field/query provenance, and an availability status. It distinguishes Archive
