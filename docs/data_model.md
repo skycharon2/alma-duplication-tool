@@ -46,7 +46,7 @@ apply policy decisions.
 | Query arithmetic units | Frequency ADQL assumes `frequency=GHz`, `bandwidth=Hz`; angular ADQL assumes `spatial_resolution=arcsec` | Verify exact `TAP_SCHEMA` units for each requested numeric prefilter, disable unsafe filters independently, retain original bounds in provenance, and keep NULL evidence rows for local non-evaluability |
 | Archive frequency frame | Public documentation identifies sky frequency but not a comparison-ready TAP reference frame | Derive typed Archive coverage but keep cross-source frame alignment unavailable |
 | `obs_publisher_did` | 5,611 proposal IDs and 5,611 publisher DIDs; exact `ADS/JAO.ALMA#<proposal_id>` mapping with no exception | Project-level external identifier, not a row or product key |
-| `obs_id` | 442,141 parsed; 366 width-truncated failures; 275 additional parseable values at the 64-character boundary | Preserve raw value and parse confidence; never use as an Archive-wide key |
+| `obs_id` | 442,141 parsed; 366 width-truncated failures; 275 additional parseable values at the 64-character boundary; a later live mosaic response returned seven complete 65-character values despite the declared 64-character width | Preserve raw value; evaluate grammar and declared-width conformance independently; never use as an Archive-wide key |
 | Row identity | 134 duplicate `obs_id` groups; 42 duplicate parsed Source-Execution-SPW groups, all affected by identifier-width risk | Use internal surrogate row identifiers |
 | Source-SPW cardinality | 39 complete grids and one explicit sparse association in the expanded census | Store observed associations; never synthesize a Cartesian grid |
 | Support mapping | One context mapped 7 SPW rows to 4 support components | Allow many SPWs to map to one support component |
@@ -457,9 +457,10 @@ This is the central engineering distinction in v0.4:
   inferring correlator mode from channel count.
 
 This separation permits parse failures, 64-character identifier truncation,
-sparse Source-SPW associations, multiple raw rows supporting one association,
-and multiple SPWs mapping to one support component. It does not assert that
-multiple physical products or files have been proven.
+above-declared-width schema drift, sparse Source-SPW associations, multiple
+raw rows supporting one association, and multiple SPWs mapping to one support
+component. It does not assert that multiple physical products or files have
+been proven.
 
 ## Entity definitions
 
@@ -562,8 +563,10 @@ not demonstrate individual mosaic pointing identities.
 ### `LOGICAL_SPW`
 
 Parsed SPW candidate scoped to a Member. SPW collections are variable length.
-The raw token, parsing confidence, and derivation method are required because
-`obs_id` can be truncated at 64 characters.
+The raw token, parsing confidence, width status, and derivation method are
+required because `obs_id` can be truncated at the declared 64-character
+boundary while the live service can also return complete values above that
+declared width.
 
 ### `SOURCE_SPW_ASSOCIATION`
 
@@ -695,9 +698,18 @@ Recommended `obs_id` confidence states:
 ```text
 PARSED_BELOW_DECLARED_WIDTH
 PARSED_AT_DECLARED_WIDTH_TRUNCATION_POSSIBLE
+PARSED_ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
 FAILED_AT_DECLARED_WIDTH_TRUNCATION_LIKELY
 FAILED_OTHER
 ```
+
+Width conformance is stored independently as `NOT_AVAILABLE`,
+`BELOW_DECLARED_WIDTH`, `AT_DECLARED_WIDTH`, or
+`ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT`. A syntactically complete value above the
+declared width may proceed to reconstruction cross-checks while retaining the
+schema-drift diagnostic. A value exactly at the boundary remains unsafe
+because truncation was observed there. Above-width malformed values remain
+parse failures; their length does not make incomplete grammar trustworthy.
 
 ### `ROW_RECONSTRUCTION`
 
@@ -710,7 +722,7 @@ product multiplicity has been resolved. Reconstruction diagnostics include:
 - raw `obs_id` length;
 - parsed Member, source, and SPW candidates;
 - parse status and issue codes;
-- declared-width truncation risk;
+- declared-width relation, truncation risk, and schema-drift status;
 - reconstruction algorithm version and confidence.
 
 ### `PHYSICAL_TARGET`
@@ -816,7 +828,8 @@ The implementation and documentation use four evidence levels:
 6. Store only observed Source-SPW associations.
 7. Attach footprint and execution metadata to Source-Execution context.
 8. Version parsers, unit conversions, mappings, normalization, and policy.
-9. Surface parse, truncation, ambiguity, and mapping statuses to callers.
+9. Surface parse, width conformance, truncation, ambiguity, and mapping
+   statuses to callers.
 10. Keep candidate retrieval, reconstruction, and duplication assessment as
     separate layers.
 11. Keep Project classification, science-row role, and observation mode as

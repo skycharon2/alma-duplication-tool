@@ -21,10 +21,24 @@ class ObsIdConfidence(StrEnum):
     PARSED_AT_DECLARED_WIDTH_TRUNCATION_POSSIBLE = (
         "PARSED_AT_DECLARED_WIDTH_TRUNCATION_POSSIBLE"
     )
+    PARSED_ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT = (
+        "PARSED_ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT"
+    )
     FAILED_AT_DECLARED_WIDTH_TRUNCATION_LIKELY = (
         "FAILED_AT_DECLARED_WIDTH_TRUNCATION_LIKELY"
     )
     FAILED_OTHER = "FAILED_OTHER"
+
+
+class ObsIdWidthStatus(StrEnum):
+    """Relationship between one value and the declared TAP width."""
+
+    NOT_AVAILABLE = "NOT_AVAILABLE"
+    BELOW_DECLARED_WIDTH = "BELOW_DECLARED_WIDTH"
+    AT_DECLARED_WIDTH = "AT_DECLARED_WIDTH"
+    ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT = (
+        "ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT"
+    )
 
 
 class ObsIdFailureClass(StrEnum):
@@ -72,6 +86,7 @@ class ObsIdParseResult:
     obs_id_length: int | None
     declared_width: int
     at_declared_width: bool
+    width_status: ObsIdWidthStatus
 
     parse_status: ObsIdParseStatus
     confidence: ObsIdConfidence
@@ -94,13 +109,32 @@ class ObsIdParseResult:
         }
 
     @property
+    def has_width_schema_drift(self) -> bool:
+        """Return whether the value exceeds the declared TAP width."""
+
+        return (
+            self.width_status
+            is ObsIdWidthStatus.ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
+        )
+
+    @property
     def is_safe_for_reconstruction(self) -> bool:
-        """True only for a complete parse below the width boundary."""
+        """Return whether parsed identity candidates may be cross-checked.
+
+        A complete value above the declared width is usable because its
+        grammar is intact; the independently retained width status still
+        records the TAP schema drift.  A value exactly at the declared width
+        remains unsafe because the observed service has truncated values at
+        that boundary.
+        """
 
         return (
             self.parse_status is ObsIdParseStatus.PARSED
-            and self.confidence
-            is ObsIdConfidence.PARSED_BELOW_DECLARED_WIDTH
+            and self.confidence in {
+                ObsIdConfidence.PARSED_BELOW_DECLARED_WIDTH,
+                ObsIdConfidence
+                .PARSED_ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT,
+            }
             and self.member_ous_uid is not None
             and self.source_name is not None
             and self.spw_token is not None

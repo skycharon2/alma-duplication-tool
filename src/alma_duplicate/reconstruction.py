@@ -147,7 +147,10 @@ def _reconstruct_row(
         status=ReconstructionStatus.LINKED,
         obs_id_result=obs_id_result,
         association_key=association,
-        issues=(),
+        issues=tuple(
+            issue.code
+            for issue in obs_id_result.issues
+        ),
     )
 
 
