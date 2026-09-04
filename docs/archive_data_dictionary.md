@@ -25,8 +25,10 @@ A read-only mode-closure investigation on 2026-09-02 examined 443,335 current
 science-observation rows. `em_xel` was never NULL, ranged up to 8192, and had a
 clear observed gap between 128 and 240. A matched Archive UI/TAP example
 returned channel counts `1920, 128, 1920, 1920` from both the UI's `chaNum`
-property and public TAP `em_xel`. This evidence supports the versioned
-per-SPW derivation below; it is not a direct TAP FDM/TDM field.
+property and public TAP `em_xel`. Later review identified valid observing
+configurations for which channel count does not uniquely determine TDM/FDM.
+The production pipeline therefore preserves `em_xel` only as raw metadata and
+does not reproduce the UI classification or derive correlator mode from it.
 
 | Evidence | 2026-08-25 structural snapshot | 2026-08-31 semantic snapshot |
 |---|---:|---:|
@@ -112,8 +114,8 @@ column order or applying scientific-value normalization to their text.
 |---|---|---|---|
 | `frequency` | `double` / GHz | `SOURCE_SPW_ASSOCIATION` | Exact row reference frequency. Require a finite value strictly greater than zero; keep separate from parsed support-component centre. |
 | `bandwidth` | `double` / Hz | `SOURCE_SPW_ASSOCIATION` | Archive bandwidth. Require a finite value strictly greater than zero; keep separate from interval width and brace token 2. |
-| `em_xel` | `int` / — | `SOURCE_SPW_ASSOCIATION` mode evidence | Preserve the raw spectral-axis element count and validate the live integer datatype. Derive `CONTINUUM/TDM` for values below 129 and `LINE/FDM` for values at least 129 through the versioned Archive UI/manual mapping. Missing, non-integral, non-positive, metadata-incompatible, or conflicting association values remain `UNKNOWN`. |
-| `frequency_support` | `char` / GHz | `FREQUENCY_SUPPORT_SIGNATURE` | Service declares GHz, but the raw composite embeds GHz, kHz, sensitivity, and polarization values. Preserve raw text; dispatch bracket/brace grammar and retain error states. The raw string itself does not expose the nested Frequency Support Type; derive that type only from validated per-row `em_xel`, never from string tokens, bandwidth, resolution, or top-level `type`. |
+| `em_xel` | `int` / — | `RAW_ARCHIVE_ROW` diagnostic metadata | Preserve the raw spectral-axis element count without deriving Archive UI type or TDM/FDM. Channel count alone is not policy-grade correlator-mode evidence. |
+| `frequency_support` | `char` / GHz | `FREQUENCY_SUPPORT_SIGNATURE` | Service declares GHz, but the raw composite embeds GHz, kHz, sensitivity, and polarization values. Preserve raw text; dispatch bracket/brace grammar and retain error states. The raw string does not expose a reliable per-SPW correlator mode; never infer one from string tokens, `em_xel`, bandwidth, resolution, or top-level `type`. |
 | `spectral_resolution` | `double` / kHz | `SOURCE_SPW_ASSOCIATION` | Preserve independently from parsed component resolution and bandwidth. |
 | `velocity_resolution` | `double` / m/s | `OBSERVATION_MODE_EVIDENCE` | Archive summary; do not replace with or require equality to a row-level derivation. |
 | `em_resolution` | `double` / m | `OBSERVATION_MODE_EVIDENCE` | Wavelength-domain resolution cross-check. Compare only after explicit unit conversion. |
@@ -200,7 +202,7 @@ The catalogue contains all 73 live fields exactly once.
 | Resolution fields | `s_resolution != spatial_resolution` in 41,365 of 442,507 rows. | Separate storage and comparison; never alias. |
 | Primary angular-resolution evidence | The service definitions differ, and the official ALMA spatial-resolution query examples use `spatial_resolution`. | Use `spatial_resolution` for initial Archive candidate retrieval; retain `s_resolution` as an independent cross-check. Neither field is a measured FITS restoring beam. |
 | Top-level `type` | On 2026-08-31, all 5,614 distinct proposal/type pairs matched the terminal `proposal_id` suffix; observed values were `S`, `L`, `T`, `V`, `SV`, `E`, `P`, and `CAL`. | Treat as proposal/project classification with an unknown-value fallback. It is unrelated to `science_observation = 'T'` and must not be interpreted as FDM/TDM. |
-| Frequency-Support mode representation | TAP has no direct FDM/TDM string and the 2026-08-31 raw-string census found none of the standard tokens. The 2026-09-02 investigation matched Archive UI `chaNum` to public TAP `em_xel`; the UI rule is `<129 -> continuum`, otherwise `line`, and the Science Archive Manual maps continuum/line to TDM/FDM. | Preserve `em_xel` and derive mode per Source-SPW association with versioned source/rule metadata and `DERIVED` status. Return `UNKNOWN` for unsafe values or conflicts. Never infer mode from top-level `type`, bandwidth, or spectral resolution. |
+| Frequency-Support mode representation | TAP has no direct FDM/TDM string and the 2026-08-31 raw-string census found none of the standard tokens. Although Archive UI channel counts matched public TAP `em_xel` in a sampled case, channel count is not a unique discriminator across valid correlator configurations. | Preserve raw `em_xel` only. Do not classify it as UI `continuum`/`line` in production and never derive formal mode from `em_xel`, top-level `type`, bandwidth, or spectral resolution. Mode remains unavailable until supported configuration evidence is obtained and reliably associated with the candidate SPW. |
 | Sensitivity basis | TAP metadata defines `cont_sensitivity_bandwidth` and `sensitivity_10kms` as estimates with documented limitations. | Preserve them as distinct estimated evidence. Do not represent either as achieved QA2 image-product RMS. |
 | Query-arithmetic units | The frequency overlap predicate requires `frequency=GHz`, `bandwidth=Hz`; the angular predicate requires `spatial_resolution=arcsec`. | Probe the request-specific fields in `TAP_SCHEMA.columns`, gate frequency and angular filters independently, retain requested bounds and fallback status in provenance, and preserve NULL-valued rows for local non-evaluability. |
 | QA2 boundary | Observational metadata can be available after QA0 while later processing or QA2 remains incomplete. | Preserve `qa2_passed` as evidence; do not add `qa2_passed = 'T'` as an implicit client filter. |
@@ -220,7 +222,6 @@ The catalogue contains all 73 live fields exactly once.
 | Reconstruction | `LINKED`, `UNLINKED_PARSE_FAILURE`, `UNLINKED_AMBIGUOUS`, `TRUNCATION_RISK` |
 | Missing normalization | `PRESENT`, `MASKED`, `NULL`, `BLANK_NORMALIZED`, `SENTINEL_3000_DATE` |
 | Project classification | Known current raw values plus explicit unknown-value preservation; never coerce an unknown value into a current class |
-| Spectral-mode derivation | `DERIVED`, `UNKNOWN_MISSING_VALUE`, `UNKNOWN_INVALID_VALUE`, `UNKNOWN_METADATA_UNUSABLE`, `UNKNOWN_CONFLICT` |
 
 Status vocabularies and parser versions belong in code constants and tests,
 not ad-hoc strings distributed across notebooks.
@@ -234,18 +235,18 @@ not ad-hoc strings distributed across notebooks.
 - global physical-target identity from source labels;
 - individual mosaic pointings;
 - moving/Solar-system target equivalence;
-- policy approval to use the Archive UI-compatible `em_xel` derivation for
-  the Appendix A FDM-specific criterion;
+- supported and validated per-SPW correlator-mode evidence for the Appendix A
+  FDM-specific criterion;
 - achieved image-product sensitivity or measured FITS restoring-beam values;
 - a complete production snapshot of TAP datatype, unit, UCD, arraysize, and
   description for every retrieved field;
 - primary-beam, spectral-smoothing, and final duplication thresholds; or
 - current-cycle CSV correspondence and known-duplicate end-to-end decisions.
 
-The mode field-access gap is closed by the supported TAP `em_xel` projection;
-only its use in final duplication policy remains subject to scientific
-confirmation. The other gaps belong to parser regression tests, the queue-CSV
-integration, or the duplication-policy layer.
+The correlator-mode field-access gap is not closed by TAP `em_xel`.
+Configuration-backed mode evidence and its reliable association with Archive
+candidates remain separate future work. The other gaps belong to parser
+regression tests, the queue-CSV integration, or the duplication-policy layer.
 
 ## Semantic-source references
 
