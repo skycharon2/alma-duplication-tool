@@ -4,6 +4,7 @@
         "raw": "uid://A002/X303d22/X8e.source.IRAS 00183-7111.spw.23",
         "expected_status": "PARSED",
         "expected_confidence": "PARSED_BELOW_DECLARED_WIDTH",
+        "expected_width_status": "BELOW_DECLARED_WIDTH",
         "expected_failure_class": null,
         "expected_member_ous_uid": "uid://A002/X303d22/X8e",
         "expected_source_name": "IRAS 00183-7111",
@@ -17,6 +18,7 @@
         "raw": "uid://A001/X1/X1.source.J1234.5+6789.spw.7",
         "expected_status": "PARSED",
         "expected_confidence": "PARSED_BELOW_DECLARED_WIDTH",
+        "expected_width_status": "BELOW_DECLARED_WIDTH",
         "expected_failure_class": null,
         "expected_member_ous_uid": "uid://A001/X1/X1",
         "expected_source_name": "J1234.5+6789",
@@ -30,6 +32,7 @@
         "raw": "uid://A001/X1/X1.source.alpha.spw.beta.spw.9",
         "expected_status": "PARSED",
         "expected_confidence": "PARSED_BELOW_DECLARED_WIDTH",
+        "expected_width_status": "BELOW_DECLARED_WIDTH",
         "expected_failure_class": null,
         "expected_member_ous_uid": "uid://A001/X1/X1",
         "expected_source_name": "alpha.spw.beta",
@@ -43,6 +46,7 @@
         "raw": "uid://A001/X1/X1.source.SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.spw.12",
         "expected_status": "PARSED",
         "expected_confidence": "PARSED_AT_DECLARED_WIDTH_TRUNCATION_POSSIBLE",
+        "expected_width_status": "AT_DECLARED_WIDTH",
         "expected_failure_class": null,
         "expected_member_ous_uid": "uid://A001/X1/X1",
         "expected_source_name": "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
@@ -58,6 +62,7 @@
         "raw": "uid://A001/X142c/X98.source.Calibrate_North_Molecular_Ridge.spw.",
         "expected_status": "FAILED",
         "expected_confidence": "FAILED_AT_DECLARED_WIDTH_TRUNCATION_LIKELY",
+        "expected_width_status": "AT_DECLARED_WIDTH",
         "expected_failure_class": "TRUNCATED_AFTER_SPW_MARKER_AT_WIDTH",
         "expected_member_ous_uid": null,
         "expected_source_name": null,
@@ -74,6 +79,7 @@
         "raw": "uid://A001/X1/X1.source.TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
         "expected_status": "FAILED",
         "expected_confidence": "FAILED_AT_DECLARED_WIDTH_TRUNCATION_LIKELY",
+        "expected_width_status": "AT_DECLARED_WIDTH",
         "expected_failure_class": "TRUNCATED_IN_SOURCE_SEGMENT_AT_WIDTH",
         "expected_member_ous_uid": null,
         "expected_source_name": null,
@@ -90,6 +96,7 @@
         "raw": "unexpected-format",
         "expected_status": "FAILED",
         "expected_confidence": "FAILED_OTHER",
+        "expected_width_status": "BELOW_DECLARED_WIDTH",
         "expected_failure_class": "NON_WIDTH_GRAMMAR_EXCEPTION",
         "expected_member_ous_uid": null,
         "expected_source_name": null,
@@ -105,6 +112,7 @@
         "raw": "uid://A001/X1/X1.source.Target.spw.A",
         "expected_status": "FAILED",
         "expected_confidence": "FAILED_OTHER",
+        "expected_width_status": "BELOW_DECLARED_WIDTH",
         "expected_failure_class": "NON_WIDTH_GRAMMAR_EXCEPTION",
         "expected_member_ous_uid": null,
         "expected_source_name": null,
@@ -120,6 +128,7 @@
         "raw": null,
         "expected_status": "FAILED",
         "expected_confidence": "FAILED_OTHER",
+        "expected_width_status": "NOT_AVAILABLE",
         "expected_failure_class": "MISSING",
         "expected_member_ous_uid": null,
         "expected_source_name": null,
@@ -135,6 +144,7 @@
         "raw": "   ",
         "expected_status": "FAILED",
         "expected_confidence": "FAILED_OTHER",
+        "expected_width_status": "BELOW_DECLARED_WIDTH",
         "expected_failure_class": "BLANK",
         "expected_member_ous_uid": null,
         "expected_source_name": null,
@@ -143,6 +153,39 @@
         "expected_safe": false,
         "expected_issue_codes": [
             "blank_obs_id"
+        ]
+    },
+    {
+        "id": "parsed_above_declared_width_schema_drift",
+        "raw": "uid://A001/X133d/X27a9.source.Northeast_Section_of_NGC6334.spw.26",
+        "expected_status": "PARSED",
+        "expected_confidence": "PARSED_ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT",
+        "expected_width_status": "ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT",
+        "expected_failure_class": null,
+        "expected_member_ous_uid": "uid://A001/X133d/X27a9",
+        "expected_source_name": "Northeast_Section_of_NGC6334",
+        "expected_spw_token": "26",
+        "expected_spw_index": 26,
+        "expected_safe": true,
+        "expected_issue_codes": [
+            "parsed_above_declared_width_schema_drift"
+        ]
+    },
+    {
+        "id": "malformed_above_declared_width",
+        "raw": "uid://A001/X133d/X27a9.source.Northeast_Section_of_NGC6334.incomplete",
+        "expected_status": "FAILED",
+        "expected_confidence": "FAILED_OTHER",
+        "expected_width_status": "ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT",
+        "expected_failure_class": "NON_WIDTH_GRAMMAR_EXCEPTION",
+        "expected_member_ous_uid": null,
+        "expected_source_name": null,
+        "expected_spw_token": null,
+        "expected_spw_index": null,
+        "expected_safe": false,
+        "expected_issue_codes": [
+            "unexpected_obs_id_format",
+            "obs_id_above_declared_width_schema_drift"
         ]
     }
 ]

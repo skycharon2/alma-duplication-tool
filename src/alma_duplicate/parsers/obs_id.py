@@ -11,9 +11,10 @@ from alma_duplicate.domain.archive import (
     ObsIdIssue,
     ObsIdParseResult,
     ObsIdParseStatus,
+    ObsIdWidthStatus,
 )
 
-OBS_ID_PARSER_VERSION = "1"
+OBS_ID_PARSER_VERSION = "2"
 OBS_ID_DECLARED_WIDTH = 64
 
 OBS_ID_PATTERN = re.compile(
@@ -87,12 +88,31 @@ def _failed_result(
             if obs_id_length is not None
             else False
         ),
+        width_status=_width_status(
+            obs_id_length,
+            declared_width,
+        ),
         parse_status=ObsIdParseStatus.FAILED,
         confidence=confidence,
         failure_class=failure_class,
         issues=issues,
         parser_version=OBS_ID_PARSER_VERSION,
     )
+
+
+def _width_status(
+    obs_id_length: int | None,
+    declared_width: int,
+) -> ObsIdWidthStatus:
+    """Classify width independently from identifier grammar."""
+
+    if obs_id_length is None:
+        return ObsIdWidthStatus.NOT_AVAILABLE
+    if obs_id_length < declared_width:
+        return ObsIdWidthStatus.BELOW_DECLARED_WIDTH
+    if obs_id_length == declared_width:
+        return ObsIdWidthStatus.AT_DECLARED_WIDTH
+    return ObsIdWidthStatus.ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
 
 
 def _classify_width_failure(
@@ -226,31 +246,6 @@ def parse_obs_id(
 
     obs_id_length = len(normalized)
 
-    # Values longer than the declared Archive width are outside
-    # the currently observed service contract.
-    if obs_id_length > declared_width:
-        return _failed_result(
-            raw_value=raw_value,
-            normalized_value=normalized,
-            obs_id_length=obs_id_length,
-            declared_width=declared_width,
-            confidence=ObsIdConfidence.FAILED_OTHER,
-            failure_class=(
-                ObsIdFailureClass
-                .NON_WIDTH_GRAMMAR_EXCEPTION
-            ),
-            issues=(
-                _issue(
-                    "obs_id_exceeds_declared_width",
-                    (
-                        "obs_id exceeds the configured "
-                        "declared width."
-                    ),
-                    normalized,
-                ),
-            ),
-        )
-
     match = OBS_ID_PATTERN.fullmatch(normalized)
 
     if match is not None:
@@ -287,7 +282,22 @@ def parse_obs_id(
             )
 
         if not structural_issues:
-            if obs_id_length == declared_width:
+            if obs_id_length > declared_width:
+                confidence = (
+                    ObsIdConfidence
+                    .PARSED_ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
+                )
+                issues = (
+                    _issue(
+                        "parsed_above_declared_width_schema_drift",
+                        (
+                            "obs_id satisfies the complete grammar but "
+                            "exceeds the declared TAP width."
+                        ),
+                        normalized,
+                    ),
+                )
+            elif obs_id_length == declared_width:
                 confidence = (
                     ObsIdConfidence
                     .PARSED_AT_DECLARED_WIDTH_TRUNCATION_POSSIBLE
@@ -326,6 +336,10 @@ def parse_obs_id(
                 at_declared_width=(
                     obs_id_length == declared_width
                 ),
+                width_status=_width_status(
+                    obs_id_length,
+                    declared_width,
+                ),
                 parse_status=ObsIdParseStatus.PARSED,
                 confidence=confidence,
                 failure_class=None,
@@ -362,6 +376,30 @@ def parse_obs_id(
             ),
             failure_class=failure_class,
             issues=base_issues + (width_issue,),
+        )
+
+    if obs_id_length > declared_width:
+        return _failed_result(
+            raw_value=raw_value,
+            normalized_value=normalized,
+            obs_id_length=obs_id_length,
+            declared_width=declared_width,
+            confidence=ObsIdConfidence.FAILED_OTHER,
+            failure_class=(
+                ObsIdFailureClass
+                .NON_WIDTH_GRAMMAR_EXCEPTION
+            ),
+            issues=base_issues
+            + (
+                _issue(
+                    "obs_id_above_declared_width_schema_drift",
+                    (
+                        "obs_id exceeds the declared TAP width and does "
+                        "not satisfy the complete identifier grammar."
+                    ),
+                    normalized,
+                ),
+            ),
         )
 
     return _failed_result(
