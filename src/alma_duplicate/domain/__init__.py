@@ -1,12 +1,18 @@
 "Source-independent domain objects."
 
 from .archive import (
+    OBS_ID_HISTORICAL_TRUNCATION_BOUNDARY,
+    OBS_ID_WIDTH_CONTRACT_VERSION,
     ObsIdConfidence,
     ObsIdFailureClass,
     ObsIdIssue,
     ObsIdParseResult,
     ObsIdParseStatus,
+    ObsIdWidthContract,
+    ObsIdWidthMetadataSource,
+    ObsIdWidthMetadataStatus,
     ObsIdWidthStatus,
+    unavailable_obs_id_width_contract,
 )
 from .archive_evidence import (
     ArchiveAngularResolution,
@@ -96,6 +102,8 @@ from .spectral import (
 )
 
 __all__ = [
+    "OBS_ID_HISTORICAL_TRUNCATION_BOUNDARY",
+    "OBS_ID_WIDTH_CONTRACT_VERSION",
     "ArchiveAngularResolution",
     "ArchiveComparisonEvidence",
     "ArchiveEvidenceIssue",
@@ -128,6 +136,9 @@ __all__ = [
     "ObsIdIssue",
     "ObsIdParseResult",
     "ObsIdParseStatus",
+    "ObsIdWidthContract",
+    "ObsIdWidthMetadataSource",
+    "ObsIdWidthMetadataStatus",
     "ObsIdWidthStatus",
     "ParseStatus",
     "ParsedQuantity",
@@ -178,4 +189,5 @@ __all__ = [
     "SupportMappingStatus",
     "TimestampParseStatus",
     "ValidationIssue",
+    "unavailable_obs_id_width_contract",
 ]

@@ -13,6 +13,7 @@ from alma_duplicate.clients import (
     PyvoTapExecutor,
     TapFieldMetadata,
     TapResponse,
+    build_archive_obs_id_width_contract,
     prepare_archive_rows,
     run_archive_pipeline,
     validate_archive_comparison_metadata,
@@ -34,8 +35,14 @@ def test_archive_client_public_exports() -> None:
     assert TapFieldMetadata.__name__ == "TapFieldMetadata"
     assert TapResponse.__name__ == "TapResponse"
     assert callable(prepare_archive_rows)
+    assert callable(build_archive_obs_id_width_contract)
     assert callable(run_archive_pipeline)
     assert callable(validate_archive_comparison_metadata)
+    assert archive_domain.OBS_ID_WIDTH_CONTRACT_VERSION == "1"
+    assert (
+        archive_domain.OBS_ID_HISTORICAL_TRUNCATION_BOUNDARY
+        == 64
+    )
 
 
 def test_archive_mode_inference_is_not_publicly_exported() -> None:

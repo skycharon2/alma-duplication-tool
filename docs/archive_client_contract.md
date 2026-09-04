@@ -251,16 +251,34 @@ result.can_reconstruct is True
 
 For each accepted raw row it:
 
-1. assigns an internal row ID scoped to query run and result index;
-2. preserves the complete raw mapping;
-3. creates `ArchiveMetadataInput` and normalization results;
-4. validates the live comparison-field unit contract once per result;
-5. preserves `em_xel` only inside the complete raw row without interpreting
+1. interprets the response VOTable `obs_id` datatype and `arraysize` once,
+   preserving bounded, fixed, unbounded, missing, invalid, and incompatible
+   metadata states;
+2. assigns an internal row ID scoped to query run and result index;
+3. preserves the complete raw mapping;
+4. creates `ArchiveMetadataInput` and normalization results;
+5. validates the live comparison-field unit contract once per result;
+6. preserves `em_xel` only inside the complete raw row without interpreting
    it as an Archive UI type or correlator mode;
-6. creates typed Archive comparison evidence for each row;
-7. creates the minimal `ArchiveRowInput` projection using the typed
+7. creates typed Archive comparison evidence for each row;
+8. creates the minimal `ArchiveRowInput` projection using the typed
    frequency's canonical GHz value;
-8. invokes deterministic reconstruction.
+9. invokes deterministic reconstruction with the same per-result `obs_id`
+   width contract.
+
+The current response FIELD descriptor and the historically observed
+64-character truncation boundary are separate evidence. For VOTable character
+fields, `N*` supplies a reported maximum and `*` is unbounded. Missing or
+invalid live metadata is never silently replaced by 64. Complete identifiers
+above a reported maximum retain schema-drift diagnostics but may proceed to
+Member/source/SPW cross-checks; identifiers exactly at the historical boundary
+remain unsafe even if the current response reports a larger maximum.
+
+Direct calls to `reconstruct_archive_rows()` have no live FIELD descriptor.
+They therefore receive an explicit `DIRECT_RECONSTRUCTION_FALLBACK` contract
+with non-evaluable live width while retaining the independent historical
+boundary. Both the width-contract version and reconstruction version are
+stored in the returned batch for replay and audit.
 
 The typed projection keeps the raw value, source unit, canonical value/unit,
 field/query provenance, and an availability status. It distinguishes Archive

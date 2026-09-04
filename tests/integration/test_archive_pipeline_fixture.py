@@ -26,6 +26,7 @@ from alma_duplicate.clients.archive_queries import (
 )
 from alma_duplicate.domain.archive import (
     ObsIdConfidence,
+    ObsIdWidthMetadataStatus,
     ObsIdWidthStatus,
 )
 from alma_duplicate.domain.normalization import (
@@ -38,6 +39,7 @@ from alma_duplicate.domain.reconstruction import (
     SupportMappingStatus,
 )
 from alma_duplicate.reconstruction import (
+    RECONSTRUCTION_VERSION,
     reconstruct_archive_rows,
 )
 from tests.fakes import FakeTapExecutor
@@ -54,6 +56,10 @@ def _field_metadata(
     columns: tuple[str, ...],
     *,
     unit_overrides: dict[str, str | None] | None = None,
+    arraysize_overrides: dict[
+        str,
+        str | None,
+    ] | None = None,
 ) -> tuple[TapFieldMetadata, ...]:
     units = {
         "frequency": "GHz",
@@ -65,6 +71,9 @@ def _field_metadata(
     }
     numeric_fields = frozenset(units) | {"em_xel"}
     effective_units = units | (unit_overrides or {})
+    effective_arraysizes = {
+        "obs_id": "64*",
+    } | (arraysize_overrides or {})
     return tuple(
         TapFieldMetadata(
             name=column,
@@ -78,7 +87,10 @@ def _field_metadata(
             arraysize=(
                 None
                 if column in numeric_fields
-                else "*"
+                else effective_arraysizes.get(
+                    column,
+                    "*",
+                )
             ),
             unit=effective_units.get(column),
             ucd=None,
@@ -109,6 +121,7 @@ def _complete_query_result(
     *,
     frequency_unit: str = "GHz",
     frequency_scale: float = 1.0,
+    obs_id_arraysize: str | None = "64*",
 ):
     rows = _fixture_rows()
     if frequency_scale != 1.0:
@@ -143,6 +156,9 @@ def _complete_query_result(
                     declared_columns,
                     unit_overrides={
                         "frequency": frequency_unit,
+                    },
+                    arraysize_overrides={
+                        "obs_id": obs_id_arraysize,
                     },
                 ),
                 query_status_raw="OK",
@@ -188,7 +204,22 @@ def test_complete_fixture_runs_full_pipeline() -> None:
     assert len(pipeline.prepared_rows) == 5
     assert pipeline.field_contract.is_usable
     assert pipeline.comparison_units_safe
-    assert pipeline.adapter_version == ADAPTER_VERSION == "5"
+    assert pipeline.adapter_version == ADAPTER_VERSION == "6"
+    assert pipeline.obs_id_width_contract.metadata_status is (
+        ObsIdWidthMetadataStatus.BOUNDED_VARIABLE
+    )
+    assert (
+        pipeline.obs_id_width_contract.reported_max_length
+        == 64
+    )
+    assert pipeline.reconstruction.obs_id_width_contract == (
+        pipeline.obs_id_width_contract
+    )
+    assert (
+        pipeline.reconstruction.reconstruction_version
+        == RECONSTRUCTION_VERSION
+        == "2"
+    )
     assert pipeline.reconstruction.linked_row_count == 4
     assert pipeline.reconstruction.unlinked_row_count == 1
 
@@ -351,13 +382,82 @@ def test_complete_above_width_obs_id_survives_pipeline() -> None:
     assert pipeline.reconstruction.unlinked_row_count == 0
     assert reconstruction.status is ReconstructionStatus.LINKED
     assert reconstruction.obs_id_result.confidence is (
-        ObsIdConfidence.PARSED_ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
+        ObsIdConfidence.PARSED_COMPLETE
     )
     assert reconstruction.obs_id_result.width_status is (
-        ObsIdWidthStatus.ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
+        ObsIdWidthStatus
+        .ABOVE_REPORTED_MAXIMUM_SCHEMA_DRIFT
     )
     assert reconstruction.issues == (
-        "parsed_above_declared_width_schema_drift",
+        "obs_id_above_reported_maximum_schema_drift",
+    )
+
+
+@pytest.mark.parametrize(
+    ("arraysize", "expected_width_status"),
+    [
+        ("128*", ObsIdWidthStatus.BELOW_REPORTED_MAXIMUM),
+        ("*", ObsIdWidthStatus.WITHIN_UNBOUNDED),
+        (None, ObsIdWidthStatus.NOT_EVALUABLE),
+    ],
+)
+def test_live_obs_id_arraysize_controls_width_conformance(
+    arraysize: str | None,
+    expected_width_status: ObsIdWidthStatus,
+) -> None:
+    complete = _complete_query_result(
+        obs_id_arraysize=arraysize
+    )
+    rows = list(complete.rows)
+    rows[-1] = {
+        **rows[-1],
+        "member_ous_uid": "uid://A001/X133d/X27a9",
+        "obs_id": (
+            "uid://A001/X133d/X27a9.source."
+            "Northeast_Section_of_NGC6334.spw.26"
+        ),
+    }
+
+    pipeline = run_archive_pipeline(
+        replace(complete, rows=tuple(rows))
+    )
+    reconstruction = pipeline.reconstruction.row_reconstructions[-1]
+
+    assert reconstruction.status is ReconstructionStatus.LINKED
+    assert reconstruction.obs_id_result.width_status is (
+        expected_width_status
+    )
+    assert not reconstruction.obs_id_result.has_width_schema_drift
+    assert (
+        "obs_id_above_reported_maximum_schema_drift"
+        not in reconstruction.issues
+    )
+
+
+def test_live_larger_width_does_not_remove_historical_risk() -> None:
+    pipeline = run_archive_pipeline(
+        _complete_query_result(
+            obs_id_arraysize="128*"
+        )
+    )
+    unsafe = next(
+        reconstruction
+        for reconstruction in (
+            pipeline.reconstruction.row_reconstructions
+        )
+        if (
+            reconstruction.obs_id_result.obs_id_length
+            == 64
+        )
+    )
+
+    assert unsafe.status is ReconstructionStatus.OBS_ID_UNSAFE
+    assert unsafe.obs_id_result.confidence is (
+        ObsIdConfidence
+        .PARSED_AT_HISTORICAL_TRUNCATION_BOUNDARY
+    )
+    assert unsafe.obs_id_result.width_status is (
+        ObsIdWidthStatus.BELOW_REPORTED_MAXIMUM
     )
 
 
@@ -373,7 +473,10 @@ def test_reconstruction_remains_shuffle_invariant() -> None:
     )
 
     assert reconstruct_archive_rows(
-        reversed_inputs
+        reversed_inputs,
+        obs_id_width_contract=(
+            pipeline.obs_id_width_contract
+        ),
     ) == pipeline.reconstruction
 
 

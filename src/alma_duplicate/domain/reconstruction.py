@@ -7,6 +7,7 @@ from enum import StrEnum
 
 from alma_duplicate.domain.archive import (
     ObsIdParseResult,
+    ObsIdWidthContract,
 )
 from alma_duplicate.domain.spectral import (
     FrequencySupportGrammar,
@@ -146,6 +147,8 @@ class ReconstructionBatch:
     associations: tuple[SourceSpwAssociationKey, ...]
     row_reconstructions: tuple[RowReconstruction, ...]
     support_mappings: tuple[SupportMapping, ...]
+    obs_id_width_contract: ObsIdWidthContract
+    reconstruction_version: str
 
     @property
     def linked_row_count(self) -> int:

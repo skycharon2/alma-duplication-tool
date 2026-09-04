@@ -13,6 +13,12 @@ from alma_duplicate.clients.archive_field_contract import (
     build_archive_comparison_evidence,
     validate_archive_comparison_metadata,
 )
+from alma_duplicate.clients.archive_identifier_contract import (
+    build_archive_obs_id_width_contract,
+)
+from alma_duplicate.domain.archive import (
+    ObsIdWidthContract,
+)
 from alma_duplicate.domain.archive_evidence import (
     ArchiveComparisonEvidence,
 )
@@ -32,7 +38,7 @@ from alma_duplicate.reconstruction import (
     reconstruct_archive_rows,
 )
 
-ADAPTER_VERSION = "5"
+ADAPTER_VERSION = "6"
 
 
 class IncompleteArchiveQueryError(RuntimeError):
@@ -62,6 +68,7 @@ class ArchivePipelineBatch:
 
     query_result: ArchiveQueryResult
     field_contract: ArchiveFieldContractValidation
+    obs_id_width_contract: ObsIdWidthContract
     prepared_rows: tuple[PreparedArchiveRow, ...]
     reconstruction: ReconstructionBatch
     adapter_version: str = ADAPTER_VERSION
@@ -243,17 +250,26 @@ def run_archive_pipeline(
     field_contract = validate_archive_comparison_metadata(
         result.field_metadata
     )
+    obs_id_width_contract = (
+        build_archive_obs_id_width_contract(
+            result.field_metadata
+        )
+    )
     prepared_rows = prepare_archive_rows(
         result,
         field_contract=field_contract,
     )
     reconstruction = reconstruct_archive_rows(
-        prepared.reconstruction_input
-        for prepared in prepared_rows
+        (
+            prepared.reconstruction_input
+            for prepared in prepared_rows
+        ),
+        obs_id_width_contract=obs_id_width_contract,
     )
     return ArchivePipelineBatch(
         query_result=result,
         field_contract=field_contract,
+        obs_id_width_contract=obs_id_width_contract,
         prepared_rows=prepared_rows,
         reconstruction=reconstruction,
     )
