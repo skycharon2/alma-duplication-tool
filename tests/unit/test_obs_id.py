@@ -7,13 +7,14 @@ from pathlib import Path
 import pytest
 
 from alma_duplicate.domain.archive import (
+    OBS_ID_HISTORICAL_TRUNCATION_BOUNDARY,
     ObsIdConfidence,
     ObsIdFailureClass,
     ObsIdParseStatus,
+    ObsIdWidthMetadataSource,
     ObsIdWidthStatus,
 )
 from alma_duplicate.parsers.obs_id import (
-    OBS_ID_DECLARED_WIDTH,
     OBS_ID_PARSER_VERSION,
     parse_obs_id,
 )
@@ -93,20 +94,21 @@ def test_obs_id_contract(
         result.is_safe_for_reconstruction
         is case["expected_safe"]
     )
-    assert result.has_width_schema_drift is (
-        result.width_status
-        is ObsIdWidthStatus.ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
+    assert not result.has_width_schema_drift
+    assert result.width_contract.metadata_source is (
+        ObsIdWidthMetadataSource
+        .DIRECT_RECONSTRUCTION_FALLBACK
     )
 
     assert set(
         case["expected_issue_codes"]
     ).issubset(_issue_codes(result))
-    assert result.parser_version == OBS_ID_PARSER_VERSION == "2"
+    assert result.parser_version == OBS_ID_PARSER_VERSION == "3"
 
 
-def test_declared_width_cases_are_exactly_64_chars() -> None:
+def test_historical_boundary_cases_are_exactly_64_chars() -> None:
     width_case_ids = {
-        "parsed_at_declared_width",
+        "parsed_at_historical_boundary",
         "truncated_after_spw_marker",
         "truncated_in_source_segment",
     }
@@ -114,19 +116,21 @@ def test_declared_width_cases_are_exactly_64_chars() -> None:
     for case in _cases():
         if case["id"] in width_case_ids:
             assert len(case["raw"]) == (
-                OBS_ID_DECLARED_WIDTH
+                OBS_ID_HISTORICAL_TRUNCATION_BOUNDARY
             )
 
 
-def test_real_schema_drift_case_is_exactly_65_chars() -> None:
+def test_real_long_identifier_case_is_exactly_65_chars() -> None:
     case = next(
         item
         for item in _cases()
         if item["id"]
-        == "parsed_above_declared_width_schema_drift"
+        == "parsed_above_historical_boundary"
     )
 
-    assert len(case["raw"]) == OBS_ID_DECLARED_WIDTH + 1
+    assert len(case["raw"]) == (
+        OBS_ID_HISTORICAL_TRUNCATION_BOUNDARY + 1
+    )
 
 
 def test_bytes_are_decoded_and_raw_value_is_preserved() -> None:
@@ -152,20 +156,3 @@ def test_parse_result_is_immutable() -> None:
 
     with pytest.raises(FrozenInstanceError):
         result.parser_version = "changed"
-
-
-@pytest.mark.parametrize(
-    "declared_width",
-    [0, -1],
-)
-def test_declared_width_must_be_positive(
-    declared_width: int,
-) -> None:
-    with pytest.raises(
-        ValueError,
-        match="positive integer",
-    ):
-        parse_obs_id(
-            "uid://A001/X1/X1.source.Target.spw.4",
-            declared_width=declared_width,
-        )

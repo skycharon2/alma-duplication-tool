@@ -87,7 +87,7 @@ column order or applying scientific-value normalization to their text.
 | `group_ous_uid` | `char` / — | `GROUP_OUS` | Optional. Normalize blank to missing while retaining the raw blank. |
 | `member_ous_uid` | `char` / — | `MEMBER_OUS` | Dataset grouping identifier. Do not equate a Member with one execution, observation, product, or row. |
 | `asdm_uid` | `char` / — | `ASDM_EXECUTION` | Retain in the Source-Execution context; one Member may associate with multiple ASDMs. |
-| `obs_id` | `char` / — | `RAW_ARCHIVE_ROW` + `ROW_RECONSTRUCTION` | Preserve raw text and length. Parse grammar before applying width policy. Record below/at/above-declared-width status separately; a complete above-width value may enter cross-field reconstruction checks, while an exact-boundary or malformed value remains unsafe. Never use as an Archive-wide key. |
+| `obs_id` | `char` / — | `RAW_ARCHIVE_ROW` + `ROW_RECONSTRUCTION` | Preserve raw text and length. Parse grammar independently from the current response FIELD datatype/`arraysize`. Record live maximum conformance separately from the historical 64-character truncation boundary. Complete grammar above a reported maximum may enter cross-field checks with a schema-drift diagnostic; a value exactly at the historical boundary remains unsafe. Never use as an Archive-wide key. |
 | `target_name` | `char` / — | `SOURCE_ALIAS` / display | Preserve spelling and origin. Never use alone as physical-target identity. |
 
 ### Source-Execution and spatial context — 13 fields
@@ -191,7 +191,7 @@ The catalogue contains all 73 live fields exactly once.
 |---|---|---|
 | Query completeness | A deliberately limited result returned `OVERFLOW`; valid zero-row responses returned complete `OK`. | Require expected/retrieved reconciliation and status inspection. `OK` text alone is insufficient. |
 | Publisher DID | All 442,507 rows matched `ADS/JAO.ALMA#<proposal_id>`; 5,611 IDs mapped one-to-one and 442,501 rows repeated a DID. | Treat as Project alternate ID, never row/product key. Revalidate on ingest. |
-| `obs_id` parsing | 441,866 parsed below 64 chars; 275 parsed at 64 with risk; 366 failed at 64 due truncation. A later mosaic response returned seven syntactically complete 65-character values while TAP declared `arraysize="64*"`. | Parse into candidates before width policy. Store raw length and an independent width status. Complete above-width values retain schema-drift evidence and may proceed to Member UID validation; exact-boundary and malformed values remain unsafe. |
+| `obs_id` parsing | 441,866 parsed below 64 chars; 275 parsed at the historical 64-character boundary with risk; 366 failed there due truncation. A later mosaic response returned seven syntactically complete 65-character values while its VOTable FIELD reported `arraysize="64*"`. | Preserve and interpret the response datatype/`arraysize` once per query. Store live width conformance independently from historical boundary evidence. Complete grammar above a reported maximum retains schema-drift evidence and may proceed to Member UID validation; exact historical-boundary and malformed values remain unsafe. Missing, invalid, or unbounded metadata is not coerced to 64. |
 | Candidate keys | `obs_id`: 496 duplicate rows in 134 groups. Parsed `(Member, ASDM, Source, SPW)`: 114 rows in 42 duplicate groups, all width-risk affected. | Use surrogate row keys. Do not claim product multiplicity from collisions. |
 | Source-SPW cardinality | Expanded sample: 39 complete grids and one sparse Moon association. | Persist explicit observed associations; no Cartesian reconstruction. |
 | Support grammar | Archive-wide top-level partition: 442,452 bracket, 55 brace, zero missing/blank/unknown. | Grammar dispatch plus unknown fallback. Top-level census does not prove every bracket interior. |
@@ -215,8 +215,9 @@ The catalogue contains all 73 live fields exactly once.
 | Concern | Minimum states |
 |---|---|
 | Query | `COMPLETE`, `OVERFLOW`, `COUNT_MISMATCH`, `ERROR` |
-| `obs_id` confidence | `PARSED_BELOW_DECLARED_WIDTH`, `PARSED_AT_DECLARED_WIDTH_TRUNCATION_POSSIBLE`, `PARSED_ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT`, `FAILED_AT_DECLARED_WIDTH_TRUNCATION_LIKELY`, `FAILED_OTHER` |
-| `obs_id` width | `NOT_AVAILABLE`, `BELOW_DECLARED_WIDTH`, `AT_DECLARED_WIDTH`, `ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT` |
+| `obs_id` confidence | `PARSED_COMPLETE`, `PARSED_AT_HISTORICAL_TRUNCATION_BOUNDARY`, `FAILED_AT_HISTORICAL_TRUNCATION_BOUNDARY`, `FAILED_OTHER` |
+| `obs_id` width metadata | `BOUNDED_VARIABLE`, `FIXED`, `UNBOUNDED`, `MISSING`, `INVALID`, `INCOMPATIBLE_DATATYPE` |
+| `obs_id` live width conformance | `NOT_EVALUABLE`, `WITHIN_UNBOUNDED`, `BELOW_REPORTED_MAXIMUM`, `AT_REPORTED_MAXIMUM`, `ABOVE_REPORTED_MAXIMUM_SCHEMA_DRIFT` |
 | Support family | `BRACKET`, `BRACE`, `MISSING`, `BLANK`, `UNKNOWN` |
 | Support parse | `PARSED`, `PARTIAL`, `FAILED`, `AMBIGUOUS` |
 | STC-S family | `CIRCLE`, `POLYGON`, `UNION`, `MISSING`, `BLANK`, `UNKNOWN` |

@@ -37,6 +37,9 @@ from .archive_field_contract import (
     build_archive_comparison_evidence,
     validate_archive_comparison_metadata,
 )
+from .archive_identifier_contract import (
+    build_archive_obs_id_width_contract,
+)
 from .archive_queries import (
     ARCHIVE_ANGULAR_RESOLUTION_QUERY_UNITS,
     ARCHIVE_FREQUENCY_QUERY_UNITS,
@@ -134,6 +137,7 @@ __all__ = [
     "TapFieldMetadata",
     "TapResponse",
     "build_archive_comparison_evidence",
+    "build_archive_obs_id_width_contract",
     "build_count_adql",
     "build_query_unit_metadata_adql",
     "build_retrieval_adql",
