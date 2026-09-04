@@ -4,6 +4,10 @@ import random
 
 import pytest
 
+from alma_duplicate.domain.archive import (
+    ObsIdConfidence,
+    ObsIdWidthStatus,
+)
 from alma_duplicate.domain.reconstruction import (
     ArchiveRowInput,
     ReconstructionStatus,
@@ -203,6 +207,71 @@ def test_width_boundary_obs_id_is_not_linked() -> None:
     )
     assert mapping.association_key is None
     assert mapping.component_index is None
+
+
+def test_complete_obs_id_above_declared_width_is_linked() -> None:
+    obs_id = (
+        "uid://A001/X133d/X27a9.source."
+        "Northeast_Section_of_NGC6334.spw.26"
+    )
+    assert len(obs_id) == 65
+
+    row = _row(
+        raw_row_id="schema-width-drift",
+        source="ignored",
+        spw=26,
+        frequency_ghz=100.0,
+        frequency_support=_bracket_support(99.0, 101.0),
+        member_ous_uid="uid://A001/X133d/X27a9",
+        obs_id=obs_id,
+    )
+
+    result = reconstruct_archive_rows([row])
+    reconstruction = result.row_reconstructions[0]
+    mapping = result.support_mappings[0]
+
+    assert reconstruction.status is ReconstructionStatus.LINKED
+    assert reconstruction.is_linked
+    assert reconstruction.obs_id_result.confidence is (
+        ObsIdConfidence.PARSED_ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
+    )
+    assert reconstruction.obs_id_result.width_status is (
+        ObsIdWidthStatus.ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
+    )
+    assert reconstruction.issues == (
+        "parsed_above_declared_width_schema_drift",
+    )
+    assert reconstruction.association_key is not None
+    assert reconstruction.association_key.context.source_name == (
+        "Northeast_Section_of_NGC6334"
+    )
+    assert reconstruction.association_key.spw_index == 26
+    assert mapping.status is SupportMappingStatus.ASSIGNED
+
+
+def test_above_width_member_conflict_is_not_linked() -> None:
+    row = _row(
+        raw_row_id="schema-width-drift-member-conflict",
+        source="ignored",
+        spw=26,
+        frequency_ghz=100.0,
+        frequency_support=_bracket_support(99.0, 101.0),
+        member_ous_uid="uid://A001/DIFFERENT/X1",
+        obs_id=(
+            "uid://A001/X133d/X27a9.source."
+            "Northeast_Section_of_NGC6334.spw.26"
+        ),
+    )
+
+    reconstruction = reconstruct_archive_rows(
+        [row]
+    ).row_reconstructions[0]
+
+    assert reconstruction.status is (
+        ReconstructionStatus.PARSED_MEMBER_MISMATCH
+    )
+    assert not reconstruction.is_linked
+    assert reconstruction.association_key is None
 
 
 def test_member_uid_mismatch_is_not_linked() -> None:
