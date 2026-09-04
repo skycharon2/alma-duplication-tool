@@ -7,6 +7,10 @@ import math
 
 from astropy import units as u
 
+from alma_duplicate.domain.archive import (
+    ObsIdWidthContract,
+    unavailable_obs_id_width_contract,
+)
 from alma_duplicate.domain.reconstruction import (
     ArchiveRowInput,
     ReconstructionBatch,
@@ -28,7 +32,7 @@ from alma_duplicate.parsers.frequency_support import (
 )
 from alma_duplicate.parsers.obs_id import parse_obs_id
 
-RECONSTRUCTION_VERSION = "1"
+RECONSTRUCTION_VERSION = "2"
 
 # 04b showed that direct frequency comparisons require an
 # explicit numerical tolerance.
@@ -68,8 +72,12 @@ def _finite_frequency(
 
 def _reconstruct_row(
     row: ArchiveRowInput,
+    obs_id_width_contract: ObsIdWidthContract,
 ) -> RowReconstruction:
-    obs_id_result = parse_obs_id(row.obs_id)
+    obs_id_result = parse_obs_id(
+        row.obs_id,
+        width_contract=obs_id_width_contract,
+    )
 
     if not obs_id_result.is_safe_for_reconstruction:
         return RowReconstruction(
@@ -535,6 +543,8 @@ def _map_support(
 
 def reconstruct_archive_rows(
     rows: Iterable[ArchiveRowInput],
+    *,
+    obs_id_width_contract: ObsIdWidthContract | None = None,
 ) -> ReconstructionBatch:
     """Reconstruct only associations observed in supplied rows.
 
@@ -543,6 +553,11 @@ def reconstruct_archive_rows(
     """
 
     input_rows = tuple(rows)
+    effective_width_contract = (
+        obs_id_width_contract
+        if obs_id_width_contract is not None
+        else unavailable_obs_id_width_contract()
+    )
 
     raw_row_ids = [
         row.raw_row_id
@@ -578,7 +593,10 @@ def reconstruct_archive_rows(
     ] = set()
 
     for row in ordered_rows:
-        reconstruction = _reconstruct_row(row)
+        reconstruction = _reconstruct_row(
+            row,
+            effective_width_contract,
+        )
         mapping = _map_support(
             row,
             reconstruction,
@@ -602,4 +620,6 @@ def reconstruct_archive_rows(
         support_mappings=tuple(
             support_mappings
         ),
+        obs_id_width_contract=effective_width_contract,
+        reconstruction_version=RECONSTRUCTION_VERSION,
     )

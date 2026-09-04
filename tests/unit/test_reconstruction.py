@@ -6,6 +6,7 @@ import pytest
 
 from alma_duplicate.domain.archive import (
     ObsIdConfidence,
+    ObsIdWidthMetadataSource,
     ObsIdWidthStatus,
 )
 from alma_duplicate.domain.reconstruction import (
@@ -14,6 +15,7 @@ from alma_duplicate.domain.reconstruction import (
     SupportMappingStatus,
 )
 from alma_duplicate.reconstruction import (
+    RECONSTRUCTION_VERSION,
     reconstruct_archive_rows,
 )
 
@@ -114,6 +116,11 @@ def test_sparse_source_spw_associations_are_preserved() -> None:
     }
 
     assert len(result.associations) == 11
+    assert (
+        result.reconstruction_version
+        == RECONSTRUCTION_VERSION
+        == "2"
+    )
     assert result.linked_row_count == 11
     assert result.unlinked_row_count == 0
 
@@ -209,7 +216,7 @@ def test_width_boundary_obs_id_is_not_linked() -> None:
     assert mapping.component_index is None
 
 
-def test_complete_obs_id_above_declared_width_is_linked() -> None:
+def test_complete_obs_id_above_historical_boundary_is_linked() -> None:
     obs_id = (
         "uid://A001/X133d/X27a9.source."
         "Northeast_Section_of_NGC6334.spw.26"
@@ -233,14 +240,16 @@ def test_complete_obs_id_above_declared_width_is_linked() -> None:
     assert reconstruction.status is ReconstructionStatus.LINKED
     assert reconstruction.is_linked
     assert reconstruction.obs_id_result.confidence is (
-        ObsIdConfidence.PARSED_ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
+        ObsIdConfidence.PARSED_COMPLETE
     )
     assert reconstruction.obs_id_result.width_status is (
-        ObsIdWidthStatus.ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
+        ObsIdWidthStatus.NOT_EVALUABLE
     )
-    assert reconstruction.issues == (
-        "parsed_above_declared_width_schema_drift",
+    assert reconstruction.obs_id_result.width_contract.metadata_source is (
+        ObsIdWidthMetadataSource
+        .DIRECT_RECONSTRUCTION_FALLBACK
     )
+    assert reconstruction.issues == ()
     assert reconstruction.association_key is not None
     assert reconstruction.association_key.context.source_name == (
         "Northeast_Section_of_NGC6334"

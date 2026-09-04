@@ -11,11 +11,13 @@ from alma_duplicate.domain.archive import (
     ObsIdIssue,
     ObsIdParseResult,
     ObsIdParseStatus,
+    ObsIdWidthContract,
+    ObsIdWidthMetadataStatus,
     ObsIdWidthStatus,
+    unavailable_obs_id_width_contract,
 )
 
-OBS_ID_PARSER_VERSION = "2"
-OBS_ID_DECLARED_WIDTH = 64
+OBS_ID_PARSER_VERSION = "3"
 
 OBS_ID_PATTERN = re.compile(
     r"^(?P<member_ous_uid>uid://.+?)"
@@ -64,16 +66,71 @@ def _normalize_obs_id(
     return text, False
 
 
+def _width_status(
+    obs_id_length: int | None,
+    contract: ObsIdWidthContract,
+) -> ObsIdWidthStatus:
+    """Compare length only with usable live response metadata."""
+
+    if obs_id_length is None:
+        return ObsIdWidthStatus.NOT_EVALUABLE
+
+    if (
+        contract.metadata_status
+        is ObsIdWidthMetadataStatus.UNBOUNDED
+    ):
+        return ObsIdWidthStatus.WITHIN_UNBOUNDED
+
+    maximum = contract.reported_max_length
+    if maximum is None:
+        return ObsIdWidthStatus.NOT_EVALUABLE
+    if obs_id_length < maximum:
+        return ObsIdWidthStatus.BELOW_REPORTED_MAXIMUM
+    if obs_id_length == maximum:
+        return ObsIdWidthStatus.AT_REPORTED_MAXIMUM
+    return (
+        ObsIdWidthStatus
+        .ABOVE_REPORTED_MAXIMUM_SCHEMA_DRIFT
+    )
+
+
+def _width_issues(
+    *,
+    normalized_value: str | None,
+    width_status: ObsIdWidthStatus,
+) -> tuple[ObsIdIssue, ...]:
+    if width_status is not (
+        ObsIdWidthStatus
+        .ABOVE_REPORTED_MAXIMUM_SCHEMA_DRIFT
+    ):
+        return ()
+
+    return (
+        _issue(
+            "obs_id_above_reported_maximum_schema_drift",
+            (
+                "obs_id exceeds the maximum length reported by the "
+                "response VOTable FIELD descriptor."
+            ),
+            normalized_value,
+        ),
+    )
+
+
 def _failed_result(
     *,
     raw_value: str | bytes | float | None,
     normalized_value: str | None,
     obs_id_length: int | None,
-    declared_width: int,
+    width_contract: ObsIdWidthContract,
     confidence: ObsIdConfidence,
     failure_class: ObsIdFailureClass,
     issues: tuple[ObsIdIssue, ...],
 ) -> ObsIdParseResult:
+    width_status = _width_status(
+        obs_id_length,
+        width_contract,
+    )
     return ObsIdParseResult(
         raw_value=raw_value,
         normalized_value=normalized_value,
@@ -82,56 +139,43 @@ def _failed_result(
         spw_token=None,
         spw_index=None,
         obs_id_length=obs_id_length,
-        declared_width=declared_width,
-        at_declared_width=(
-            obs_id_length == declared_width
+        width_contract=width_contract,
+        width_status=width_status,
+        at_historical_truncation_boundary=(
+            obs_id_length
+            == width_contract.historical_truncation_boundary
             if obs_id_length is not None
             else False
-        ),
-        width_status=_width_status(
-            obs_id_length,
-            declared_width,
         ),
         parse_status=ObsIdParseStatus.FAILED,
         confidence=confidence,
         failure_class=failure_class,
-        issues=issues,
+        issues=issues
+        + _width_issues(
+            normalized_value=normalized_value,
+            width_status=width_status,
+        ),
         parser_version=OBS_ID_PARSER_VERSION,
     )
 
 
-def _width_status(
-    obs_id_length: int | None,
-    declared_width: int,
-) -> ObsIdWidthStatus:
-    """Classify width independently from identifier grammar."""
-
-    if obs_id_length is None:
-        return ObsIdWidthStatus.NOT_AVAILABLE
-    if obs_id_length < declared_width:
-        return ObsIdWidthStatus.BELOW_DECLARED_WIDTH
-    if obs_id_length == declared_width:
-        return ObsIdWidthStatus.AT_DECLARED_WIDTH
-    return ObsIdWidthStatus.ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
-
-
-def _classify_width_failure(
+def _classify_historical_boundary_failure(
     text: str,
 ) -> tuple[ObsIdFailureClass, ObsIdIssue]:
-    """Classify a failed value exactly at the declared width."""
+    """Classify failed grammar at the observed truncation boundary."""
 
     if text.endswith(".spw."):
         failure_class = (
             ObsIdFailureClass
-            .TRUNCATED_AFTER_SPW_MARKER_AT_WIDTH
+            .TRUNCATED_AFTER_SPW_MARKER_AT_HISTORICAL_BOUNDARY
         )
         return (
             failure_class,
             _issue(
                 failure_class.value.lower(),
                 (
-                    "obs_id ends immediately after the SPW "
-                    "marker at the declared width."
+                    "obs_id ends immediately after the SPW marker at "
+                    "the historical truncation boundary."
                 ),
                 text,
             ),
@@ -140,15 +184,15 @@ def _classify_width_failure(
     if ".source." in text and ".spw." not in text:
         failure_class = (
             ObsIdFailureClass
-            .TRUNCATED_IN_SOURCE_SEGMENT_AT_WIDTH
+            .TRUNCATED_IN_SOURCE_SEGMENT_AT_HISTORICAL_BOUNDARY
         )
         return (
             failure_class,
             _issue(
                 failure_class.value.lower(),
                 (
-                    "obs_id reaches the declared width while "
-                    "still inside the source segment."
+                    "obs_id reaches the historical truncation boundary "
+                    "while still inside the source segment."
                 ),
                 text,
             ),
@@ -157,16 +201,15 @@ def _classify_width_failure(
     if ".source." in text:
         failure_class = (
             ObsIdFailureClass
-            .TRUNCATED_OTHER_SUFFIX_AT_WIDTH
+            .TRUNCATED_OTHER_SUFFIX_AT_HISTORICAL_BOUNDARY
         )
         return (
             failure_class,
             _issue(
                 failure_class.value.lower(),
                 (
-                    "obs_id has a source marker but an "
-                    "incomplete or unsafe suffix at the "
-                    "declared width."
+                    "obs_id has a source marker but an incomplete or "
+                    "unsafe suffix at the historical truncation boundary."
                 ),
                 text,
             ),
@@ -174,15 +217,15 @@ def _classify_width_failure(
 
     failure_class = (
         ObsIdFailureClass
-        .WIDTH_LIMIT_WITHOUT_SOURCE_MARKER
+        .HISTORICAL_BOUNDARY_WITHOUT_SOURCE_MARKER
     )
     return (
         failure_class,
         _issue(
             failure_class.value.lower(),
             (
-                "obs_id reaches the declared width without "
-                "a recognizable source marker."
+                "obs_id reaches the historical truncation boundary "
+                "without a recognizable source marker."
             ),
             text,
         ),
@@ -192,30 +235,28 @@ def _classify_width_failure(
 def parse_obs_id(
     raw_value: str | bytes | float | None,
     *,
-    declared_width: int = OBS_ID_DECLARED_WIDTH,
+    width_contract: ObsIdWidthContract | None = None,
 ) -> ObsIdParseResult:
-    """Parse one Archive obs_id and attach width-risk evidence.
+    """Parse one Archive obs_id and attach independent width evidence.
 
-    Parsing is intentionally separate from cross-field validation.
-    This function does not compare the parsed Member UID with the
-    Archive member_ous_uid column and does not create a row key.
+    Parsing is intentionally separate from cross-field validation. This
+    function does not compare the parsed Member UID with the Archive
+    member_ous_uid column and does not create a row key.
     """
 
-    if declared_width <= 0:
-        raise ValueError(
-            "declared_width must be a positive integer"
-        )
-
-    normalized, is_missing = _normalize_obs_id(
-        raw_value
+    effective_contract = (
+        width_contract
+        if width_contract is not None
+        else unavailable_obs_id_width_contract()
     )
+    normalized, is_missing = _normalize_obs_id(raw_value)
 
     if is_missing:
         return _failed_result(
             raw_value=raw_value,
             normalized_value=None,
             obs_id_length=None,
-            declared_width=declared_width,
+            width_contract=effective_contract,
             confidence=ObsIdConfidence.FAILED_OTHER,
             failure_class=ObsIdFailureClass.MISSING,
             issues=(
@@ -233,7 +274,7 @@ def parse_obs_id(
             raw_value=raw_value,
             normalized_value=None,
             obs_id_length=0,
-            declared_width=declared_width,
+            width_contract=effective_contract,
             confidence=ObsIdConfidence.FAILED_OTHER,
             failure_class=ObsIdFailureClass.BLANK,
             issues=(
@@ -245,13 +286,18 @@ def parse_obs_id(
         )
 
     obs_id_length = len(normalized)
-
+    at_historical_boundary = (
+        obs_id_length
+        == effective_contract.historical_truncation_boundary
+    )
+    width_status = _width_status(
+        obs_id_length,
+        effective_contract,
+    )
     match = OBS_ID_PATTERN.fullmatch(normalized)
 
     if match is not None:
-        member_ous_uid = match.group(
-            "member_ous_uid"
-        )
+        member_ous_uid = match.group("member_ous_uid")
         source_name = match.group("source_name")
         spw_token = match.group("spw_token")
 
@@ -282,47 +328,28 @@ def parse_obs_id(
             )
 
         if not structural_issues:
-            if obs_id_length > declared_width:
+            if at_historical_boundary:
                 confidence = (
                     ObsIdConfidence
-                    .PARSED_ABOVE_DECLARED_WIDTH_SCHEMA_DRIFT
+                    .PARSED_AT_HISTORICAL_TRUNCATION_BOUNDARY
                 )
-                issues = (
-                    _issue(
-                        "parsed_above_declared_width_schema_drift",
-                        (
-                            "obs_id satisfies the complete grammar but "
-                            "exceeds the declared TAP width."
-                        ),
-                        normalized,
-                    ),
-                )
-            elif obs_id_length == declared_width:
-                confidence = (
-                    ObsIdConfidence
-                    .PARSED_AT_DECLARED_WIDTH_TRUNCATION_POSSIBLE
-                )
-                issues = (
+                historical_issues = (
                     _issue(
                         (
-                            "parsed_at_declared_width_"
-                            "truncation_possible"
+                            "parsed_at_historical_"
+                            "truncation_boundary"
                         ),
                         (
-                            "obs_id satisfies the visible "
-                            "grammar exactly at the declared "
-                            "width; an unseen suffix may have "
-                            "been truncated."
+                            "obs_id satisfies the visible grammar exactly "
+                            "at the historically observed truncation "
+                            "boundary; an unseen suffix may be missing."
                         ),
                         normalized,
                     ),
                 )
             else:
-                confidence = (
-                    ObsIdConfidence
-                    .PARSED_BELOW_DECLARED_WIDTH
-                )
-                issues = ()
+                confidence = ObsIdConfidence.PARSED_COMPLETE
+                historical_issues = ()
 
             return ObsIdParseResult(
                 raw_value=raw_value,
@@ -332,18 +359,19 @@ def parse_obs_id(
                 spw_token=spw_token,
                 spw_index=int(spw_token),
                 obs_id_length=obs_id_length,
-                declared_width=declared_width,
-                at_declared_width=(
-                    obs_id_length == declared_width
-                ),
-                width_status=_width_status(
-                    obs_id_length,
-                    declared_width,
+                width_contract=effective_contract,
+                width_status=width_status,
+                at_historical_truncation_boundary=(
+                    at_historical_boundary
                 ),
                 parse_status=ObsIdParseStatus.PARSED,
                 confidence=confidence,
                 failure_class=None,
-                issues=issues,
+                issues=historical_issues
+                + _width_issues(
+                    normalized_value=normalized,
+                    width_status=width_status,
+                ),
                 parser_version=OBS_ID_PARSER_VERSION,
             )
 
@@ -360,57 +388,34 @@ def parse_obs_id(
             ),
         )
 
-    if obs_id_length == declared_width:
-        failure_class, width_issue = (
-            _classify_width_failure(normalized)
+    if at_historical_boundary:
+        failure_class, boundary_issue = (
+            _classify_historical_boundary_failure(
+                normalized
+            )
         )
-
         return _failed_result(
             raw_value=raw_value,
             normalized_value=normalized,
             obs_id_length=obs_id_length,
-            declared_width=declared_width,
+            width_contract=effective_contract,
             confidence=(
                 ObsIdConfidence
-                .FAILED_AT_DECLARED_WIDTH_TRUNCATION_LIKELY
+                .FAILED_AT_HISTORICAL_TRUNCATION_BOUNDARY
             ),
             failure_class=failure_class,
-            issues=base_issues + (width_issue,),
-        )
-
-    if obs_id_length > declared_width:
-        return _failed_result(
-            raw_value=raw_value,
-            normalized_value=normalized,
-            obs_id_length=obs_id_length,
-            declared_width=declared_width,
-            confidence=ObsIdConfidence.FAILED_OTHER,
-            failure_class=(
-                ObsIdFailureClass
-                .NON_WIDTH_GRAMMAR_EXCEPTION
-            ),
-            issues=base_issues
-            + (
-                _issue(
-                    "obs_id_above_declared_width_schema_drift",
-                    (
-                        "obs_id exceeds the declared TAP width and does "
-                        "not satisfy the complete identifier grammar."
-                    ),
-                    normalized,
-                ),
-            ),
+            issues=base_issues + (boundary_issue,),
         )
 
     return _failed_result(
         raw_value=raw_value,
         normalized_value=normalized,
         obs_id_length=obs_id_length,
-        declared_width=declared_width,
+        width_contract=effective_contract,
         confidence=ObsIdConfidence.FAILED_OTHER,
         failure_class=(
             ObsIdFailureClass
-            .NON_WIDTH_GRAMMAR_EXCEPTION
+            .NON_BOUNDARY_GRAMMAR_EXCEPTION
         ),
         issues=base_issues,
     )
