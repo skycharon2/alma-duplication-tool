@@ -58,7 +58,7 @@ apply policy decisions.
 | Spatial resolution | 41,365 of 442,507 rows had `s_resolution != spatial_resolution` | Preserve the two fields separately |
 | Primary angular-resolution evidence | Service definitions differ; official ALMA query examples use `spatial_resolution` | Use `spatial_resolution` for initial Archive candidate retrieval, preserve `s_resolution` as a cross-check, and treat neither as a measured FITS restoring beam |
 | Top-level `type` | Eight values were observed on 2026-08-31; all 5,614 distinct proposal/type pairs matched the terminal `proposal_id` suffix | Model as optional proposal/project classification with an unknown-value fallback; do not confuse `type = 'T'` with `science_observation = 'T'` |
-| Frequency-Support mode | TAP has no direct FDM/TDM string, but matched Archive UI/TAP evidence identifies UI `chaNum` with public `em_xel`; the UI classifies values below 129 as `continuum` and all others as `line`, which the Science Archive Manual maps to TDM/FDM | Preserve raw `em_xel`; apply a versioned two-step derivation per Source-SPW association; mark it `DERIVED`, and fail closed to `UNKNOWN` for missing, invalid, metadata-incompatible, or conflicting evidence |
+| Frequency-Support mode | TAP has no direct policy-grade FDM/TDM field; public `em_xel` is a channel count and valid configurations overlap across modes | Preserve raw `em_xel` only; do not derive Archive UI type or correlator mode from channel count; leave formal mode unavailable until configuration-backed evidence is implemented and reliably associated |
 | Sensitivity semantics | TAP metadata defines continuum and nominal 10 km/s sensitivity as estimates with documented limitations | Store separate estimated-evidence concepts; never label them achieved QA2 product RMS |
 | QA2 boundary | Archive metadata may be available after QA0 while processing or QA2 remains incomplete | Keep `qa2_passed` as evidence and leave inclusion/exclusion to explicit policy |
 | Reconstruction determinism | Five shuffle seeds produced identical reconstructions | Require order-independent production reconstruction |
@@ -80,9 +80,9 @@ apply policy decisions.
    interchangeable.
 8. Keep duplication thresholds and decisions outside the Archive
    reconstruction layer.
-9. Distinguish service-exposed values from derived Web/manual semantics.
-   Ingest only supported programmatic evidence (`em_xel` through TAP), and
-   version any rule that reproduces a Web classification from that evidence.
+9. Distinguish service-exposed values from Web display semantics and formal
+   policy evidence. Preserve TAP `em_xel` as raw metadata, but do not reproduce
+   a UI classification or derive TDM/FDM from channel count.
 10. Treat sensitivity and angular-resolution summaries as Archive evidence,
     not achieved FITS-product measurements.
 11. Keep analytical Queue grouping separate from row-level comparison
@@ -435,14 +435,6 @@ erDiagram
     OBSERVATION_MODE_EVIDENCE {
         string evidence_id PK
         string association_id FK
-        int spectral_axis_elements
-        string frequency_support_type
-        string correlator_mode
-        string classification_source
-        string classification_version
-        string mapping_source
-        string mapping_version
-        string derivation_status
         float archive_bandwidth_hz
         float parsed_support_width_hz
         float archive_resolution_khz
@@ -461,8 +453,8 @@ This is the central engineering distinction in v0.4:
 - `ROW_RECONSTRUCTION` records whether and how that row supports an
   association;
 - `SPW_SUPPORT_MAP` maps the association to parsed support components; and
-- `OBSERVATION_MODE_EVIDENCE` stores versioned cross-checks without turning a
-  heuristic mode classification into identity.
+- `OBSERVATION_MODE_EVIDENCE` stores versioned spectral cross-checks without
+  inferring correlator mode from channel count.
 
 This separation permits parse failures, 64-character identifier truncation,
 sparse Source-SPW associations, multiple raw rows supporting one association,
@@ -644,20 +636,16 @@ SPW mappings.
 
 Versioned comparison evidence attached to a Source-SPW association. It keeps
 Archive values and parser-derived values side by side, including bandwidth,
-spectral resolution, velocity-resolution, and spectral-mode representations.
-It is not an identity entity, and its FDM/TDM value remains `DERIVED` because
-TAP exposes the underlying `em_xel` count rather than a direct mode string.
+spectral resolution, and velocity-resolution cross-checks. It is not an
+identity entity and currently contains no formal correlator-mode evidence.
 
-The production derivation first reproduces the current Archive UI rule:
-`em_xel < 129` becomes `CONTINUUM`, while `em_xel >= 129` becomes `LINE`.
-It then maps `CONTINUUM -> TDM` and `LINE -> FDM` according to the Cycle 13
-Science Archive Manual. Both source and version are stored. The raw count is
-preserved on its row and resolved only for the observed Source-SPW
-association. Missing, non-integral, non-positive, datatype-incompatible, or
-conflicting supporting rows return `UNKNOWN`; a Member-wide mode is never
-synthesized. No mode may be inferred solely from top-level `type`, bandwidth,
-or resolution, and production does not depend on the undocumented Archive
-Elasticsearch endpoint.
+Public TAP `em_xel` remains on its raw row as an uninterpreted channel count.
+Production does not convert that value into Archive UI `CONTINUUM`/`LINE` or
+TDM/FDM. Formal mode remains unavailable until configuration-backed evidence
+can be interpreted for the relevant processor and reliably associated with
+the candidate SPW. No mode may be inferred solely from top-level `type`,
+channel count, bandwidth, or resolution, and production does not depend on
+the undocumented Archive Elasticsearch endpoint.
 
 ### `ARCHIVE_QUERY_RUN`
 
@@ -755,6 +743,7 @@ and Solar-system targets require dedicated logic.
 - top-level TAP `type` is an observation-mode or FDM/TDM field.
 - FDM/TDM can be inferred authoritatively from bandwidth or spectral
   resolution alone.
+- FDM/TDM can be inferred authoritatively from `em_xel` channel count alone.
 - one FDM/TDM value applies to every SPW in a Member OUS.
 - Archive sensitivity summaries are achieved QA2 image-product RMS values.
 - `spatial_resolution` is a measured FITS restoring beam.
@@ -782,7 +771,7 @@ and Solar-system targets require dedicated logic.
 | Parsed support component | Frequency-Support Component | Versioned derived metadata |
 | `s_resolution`, `spatial_resolution` | Separate Source-Execution/raw evidence | Use `spatial_resolution` for initial Archive candidate retrieval; retain `s_resolution` as a cross-check; never merge or impose equality |
 | `qa2_passed` | Raw QA evidence / later policy | Normalize known values but do not apply as an implicit client filter |
-| `em_xel` plus derived Frequency Support Type/FDM-TDM | Source-SPW observation-mode evidence | Preserve the public TAP count; validate integer metadata/value; apply the versioned Archive UI/manual mapping; retain source/version and `DERIVED`/`UNKNOWN_*` status |
+| `em_xel` | Raw Archive row diagnostic metadata | Preserve the public TAP value without producing Archive UI type or formal FDM/TDM evidence |
 | `em_min`, `em_max`, `em_resolution`, `velocity_resolution` | Cross-check/derived evidence | Tolerance-aware validation only |
 | Axis and access metadata | Optional row/product metadata | Never required for core reconstruction |
 | Duplication result | Policy layer | Not part of this model |
@@ -918,7 +907,7 @@ The following items do not block Archive-model v0.4:
 - physical-target alias resolution;
 - individual mosaic pointing reconstruction;
 - moving and Solar-system target handling;
-- supervisor approval to apply the UI-compatible `em_xel` derivation in the
+- supported configuration-backed per-SPW correlator-mode evidence for the
   Appendix A FDM-specific duplication criterion;
 - durable serialization of TAP field-metadata snapshots beyond the runtime
   query result;
