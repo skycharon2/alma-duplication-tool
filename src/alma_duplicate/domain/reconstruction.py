@@ -8,13 +8,6 @@ from enum import StrEnum
 from alma_duplicate.domain.archive import (
     ObsIdParseResult,
 )
-from alma_duplicate.domain.archive_evidence import (
-    ArchiveCorrelatorMode,
-    ArchiveCorrelatorModeMappingSource,
-    ArchiveFrequencySupportType,
-    ArchiveSpectralModeClassificationSource,
-    ArchiveSpectralModeStatus,
-)
 from alma_duplicate.domain.spectral import (
     FrequencySupportGrammar,
 )
@@ -144,26 +137,6 @@ class SupportMapping:
             and self.component_index is not None
             and self.association_key is not None
         )
-
-
-@dataclass(frozen=True, slots=True)
-class SourceSpwSpectralModeEvidence:
-    """Resolved ``em_xel`` evidence for one observed association."""
-
-    association_key: SourceSpwAssociationKey
-    supporting_raw_row_ids: tuple[str, ...]
-    spectral_axis_elements: int | None
-    frequency_support_type: ArchiveFrequencySupportType
-    correlator_mode: ArchiveCorrelatorMode
-    status: ArchiveSpectralModeStatus
-    classification_source: ArchiveSpectralModeClassificationSource
-    classification_version: str
-    mapping_source: ArchiveCorrelatorModeMappingSource
-    mapping_version: str
-
-    @property
-    def is_derived(self) -> bool:
-        return self.status is ArchiveSpectralModeStatus.DERIVED
 
 
 @dataclass(frozen=True, slots=True)
