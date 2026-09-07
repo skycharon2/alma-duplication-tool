@@ -419,20 +419,38 @@ class _Validator:
             else:
                 interval = RequestInterval(lo, hi, midpoint, span, kind, origin)
         if center and lower and upper and kind == "NOMINAL":
-            references = {(f.kind, f.frame) for f in (center, lower, upper)}
-            compatible = len(references) == 1 and all(
-                f.kind != "UNKNOWN" and f.frame != "UNKNOWN"
+            missing_reference = any(
+                f.kind == "UNKNOWN" or f.frame == "UNKNOWN"
                 for f in (center, lower, upper)
             )
-            if not compatible:
+            differing_reference = any(
+                len(
+                    {
+                        getattr(f, dimension)
+                        for f in (center, lower, upper)
+                        if getattr(f, dimension) != "UNKNOWN"
+                    }
+                )
+                > 1
+                for dimension in ("kind", "frame")
+            )
+            if missing_reference:
+                self.missing(
+                    path + ".center",
+                    "Nominal center membership cannot yet be verified: frequency reference information is missing.",
+                    "LINE-COVERAGE",
+                )
+            if differing_reference:
                 self.capability(
                     path + ".center",
-                    "Nominal center membership cannot be verified with unknown or incompatible frequency references.",
+                    "Known frequency references differ; nominal center membership requires reference conversion before direct comparison.",
                     "LINE-COVERAGE",
                     "INCOMPATIBLE_REFERENCE",
                 )
-            elif (
-                interval
+            if (
+                not missing_reference
+                and not differing_reference
+                and interval
                 and not interval.lower_ghz
                 <= center.quantity.value
                 <= interval.upper_ghz

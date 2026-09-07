@@ -6,6 +6,54 @@ from alma_duplicate.request_validation import validate_proposed_observation
 
 
 @pytest.mark.parametrize(
+    "references,missing,differing",
+    [
+        ([("SKY", "UNKNOWN")] * 3, True, False),
+        ([("UNKNOWN", "TOPOCENTRIC")] * 3, True, False),
+        (
+            [("SKY", "LSRK"), ("SKY", "TOPOCENTRIC"), ("SKY", "TOPOCENTRIC")],
+            False,
+            True,
+        ),
+        (
+            [("REST", "TOPOCENTRIC"), ("SKY", "TOPOCENTRIC"), ("SKY", "TOPOCENTRIC")],
+            False,
+            True,
+        ),
+        (
+            [("UNKNOWN", "LSRK"), ("SKY", "TOPOCENTRIC"), ("SKY", "TOPOCENTRIC")],
+            True,
+            True,
+        ),
+        ([("SKY", "UNKNOWN"), ("SKY", "LSRK"), ("SKY", "TOPOCENTRIC")], True, True),
+        ([("REST", "UNKNOWN"), ("SKY", "UNKNOWN"), ("SKY", "UNKNOWN")], True, True),
+    ],
+)
+def test_nominal_membership_preserves_missing_and_known_reference_differences(
+    references, missing, differing
+):
+    raw = request()
+    item = {"window_id": "w1", "representation": "BOUNDS", "bandwidth_kind": "NOMINAL"}
+    for name, value, (kind, frame) in zip(
+        ("center", "lower", "upper"), (105, 99, 101), references
+    ):
+        item[name] = frequency(value, kind=kind, frame=frame)
+    raw["spectral_windows"] = [item]
+    result = validate_proposed_observation(raw, options())
+    assert result.is_valid and result.can_search
+    membership = [
+        i for i in result.issues if "nominal center membership" in i.message.lower()
+    ]
+    assert {(i.code, i.category, i.side) for i in membership} == (
+        ({("MISSING_EVIDENCE", "MISSING", "PROPOSED")} if missing else set())
+        | ({("INCOMPATIBLE_REFERENCE", "CAPABILITY", "METHOD")} if differing else set())
+    )
+    assert all(i.path == "request.spectral_windows[0].center" for i in membership)
+    assert not any(i.code == "INVALID_ASSOCIATION" for i in result.issues)
+    assert result.request.spectral_windows[0].center.quantity.value == 105
+
+
+@pytest.mark.parametrize(
     "center,kind,frame,valid,unverified",
     [
         (105, "NOMINAL", "TOPOCENTRIC", False, False),
@@ -32,7 +80,17 @@ def test_independent_nominal_center_membership(center, kind, frame, valid, unver
     result = validate_proposed_observation(raw, options())
     assert result.is_valid is valid
     assert result.can_search is valid
-    assert any(i.code == "INCOMPATIBLE_REFERENCE" for i in result.issues) is unverified
+    assert any(i.code == "INCOMPATIBLE_REFERENCE" for i in result.issues) is (
+        frame == "LSRK"
+    )
+    assert (
+        any(
+            i.code in {"MISSING_EVIDENCE", "INCOMPATIBLE_REFERENCE"}
+            and i.path.endswith(".center")
+            for i in result.issues
+        )
+        is unverified
+    )
     if valid:
         assert result.request.spectral_windows[0].center.quantity.value == center
         assert result.request.spectral_windows[0].interval.midpoint_ghz == 100
@@ -78,7 +136,7 @@ def test_line_rms_missing_is_reported_per_window(rms_present):
         for i in missing
     )
     assert result.request.sensitivities[0].window_ids == ("w1",)
-    assert result.validation_version == "2"
+    assert result.validation_version == "3"
 
 
 @pytest.mark.parametrize(

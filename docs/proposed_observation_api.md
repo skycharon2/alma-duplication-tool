@@ -142,16 +142,22 @@ mutation isolation, bad values, intervals, references, partial RMS, unsupported
 units versus missing methods, modes and one-sided predicates. Integration tests
 exercise the wire example, raw-input revalidation and invalid-output suppression.
 CASE1/CASE2 retrieval and coherent candidate pairing belong to subsequent work.
-# Validation follow-up (version 2)
+
+# Validation follow-up (version 3)
 
 The request schema and conversion version remain unchanged. Validation reports
-now carry `validation_version = "2"`:
+now carry `validation_version = "3"`:
 
 - Independently supplied SPW centers must lie within their nominal bounds when
   all three frequency references are explicit and equal. Endpoints are allowed;
   the center need not equal the midpoint. Usable coverage does not impose this
-  constraint. Unknown or differing references retain a capability diagnostic
-  (`INCOMPATIBLE_REFERENCE`); no frequency conversion is assumed.
+  constraint. Unknown reference information produces `MISSING_EVIDENCE` on the
+  `PROPOSED` side. Differing known kinds or frames produce a `METHOD` capability
+  diagnostic (`INCOMPATIBLE_REFERENCE`): conversion is needed before direct
+  comparison, not necessarily impossible. These checks are independent: unknown
+  information does not hide differences already established by known values.
+  Both diagnostics can coexist and neither blocks spatial search. Version 3
+  replaces version 2's combined diagnostic; no frequency conversion is assumed.
 - LINE requests report missing RMS for each listed window without a WINDOW-scoped
   LINE sensitivity containing an RMS value. These are request-side MISSING
   notices and do not block spatial search or imply an exhaustive negative result.
