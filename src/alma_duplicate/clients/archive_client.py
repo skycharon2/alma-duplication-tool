@@ -45,7 +45,7 @@ from alma_duplicate.clients.archive_queries import (
     requested_query_unit_contract,
 )
 
-ARCHIVE_CLIENT_VERSION = "5"
+ARCHIVE_CLIENT_VERSION = "6"
 DEFAULT_MAXREC = 10_000
 
 

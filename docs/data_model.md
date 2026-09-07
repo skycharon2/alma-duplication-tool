@@ -2,6 +2,16 @@
 
 ## Status and scope
 
+Archive raw-row immutability is enforced at both `TapResponse` and
+`ArchiveQueryResult` construction (client version 6). Each row is independently
+copied and exposed as a read-only mapping inside a tuple, including diagnostic
+rows. Supported immutable scalars and the canonical NumPy masked sentinel
+retain their types and missing semantics; mutable cell containers and arrays
+are rejected explicitly. See the Archive client contract for the exact type
+scope. Duplicate rows retain separate positions and adapter row identities.
+The adapter shares the query-result snapshot rather than the caller's mutable
+dictionary. This runtime protection does not provide persistent storage.
+
 This document defines the evidence-based internal representation of both the
 current public ALMA `ivoa.obscore` TAP view and the current-cycle Queue CSV.
 The Archive component follows Notebooks 01, 02, 02b, 03, 04, 04b, and 04c;

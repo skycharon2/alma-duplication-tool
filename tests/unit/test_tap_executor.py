@@ -128,6 +128,8 @@ def test_executor_converts_pyvo_result_without_network() -> None:
         )
     ]
     assert response.query_status_raw == "OK"
+    with pytest.raises(TypeError):
+        response.rows[0]["proposal_id"] = "changed"
     assert response.declared_columns == (
         "proposal_id",
         "obs_id",
@@ -202,6 +204,24 @@ def test_executor_normalizes_endpoint() -> None:
     assert executor.endpoint == (
         "https://example.invalid/tap"
     )
+
+
+def test_executor_rejects_array_cells_as_response_format_error():
+    class ArrayTable(_FakeTable):
+        def __iter__(self):
+            return iter(({"proposal_id": ["mutable"], "obs_id": "id"},))
+
+    class ArrayResult(_FakeResult):
+        def to_table(self):
+            return ArrayTable()
+
+    executor = PyvoTapExecutor(
+        "https://example.invalid/tap",
+        service=_FakeService(result=ArrayResult()),
+    )
+    with pytest.raises(TapExecutionError) as caught:
+        executor.execute("SELECT proposal_id, obs_id FROM ivoa.obscore", maxrec=1)
+    assert caught.value.kind is ArchiveQueryErrorKind.RESPONSE_FORMAT_ERROR
 
 
 def test_query_error_is_translated() -> None:
