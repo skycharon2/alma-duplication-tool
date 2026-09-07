@@ -190,6 +190,22 @@ def _complete_query_result(
     )
 
 
+@pytest.mark.parametrize("support", [
+    "  [99..101GHz, 1MHz, XX YY]  ",
+    b"  [99..101GHz, 1MHz, XX YY]  ",
+    "   ", None,
+])
+def test_pipeline_retains_spectral_text_even_when_identifier_fails(support):
+    complete = _complete_query_result()
+    raw = dict(complete.rows[0])
+    raw.update(obs_id="invalid", frequency_support=support)
+    pipeline = run_archive_pipeline(replace(complete, rows=(raw,)))
+    evidence = pipeline.reconstruction.frequency_support_evidence[0]
+    assert evidence.parse_result.raw_value == support
+    assert evidence.raw_row_id == pipeline.prepared_rows[0].raw_row_id
+    assert not pipeline.reconstruction.row_reconstructions[0].is_linked
+
+
 def test_complete_fixture_runs_full_pipeline() -> None:
     query_result = _complete_query_result()
     pipeline = run_archive_pipeline(query_result)
@@ -202,9 +218,10 @@ def test_complete_fixture_runs_full_pipeline() -> None:
     )
     assert len(pipeline.query_result.field_metadata) == 24
     assert len(pipeline.prepared_rows) == 5
+    assert len(pipeline.reconstruction.frequency_support_evidence) == 5
     assert pipeline.field_contract.is_usable
     assert pipeline.comparison_units_safe
-    assert pipeline.adapter_version == ADAPTER_VERSION == "6"
+    assert pipeline.adapter_version == ADAPTER_VERSION == "7"
     assert pipeline.obs_id_width_contract.metadata_status is (
         ObsIdWidthMetadataStatus.BOUNDED_VARIABLE
     )
@@ -218,10 +235,19 @@ def test_complete_fixture_runs_full_pipeline() -> None:
     assert (
         pipeline.reconstruction.reconstruction_version
         == RECONSTRUCTION_VERSION
-        == "2"
+        == "3"
     )
     assert pipeline.reconstruction.linked_row_count == 4
     assert pipeline.reconstruction.unlinked_row_count == 1
+
+    evidence_by_row = {
+        item.raw_row_id: item
+        for item in pipeline.reconstruction.frequency_support_evidence
+    }
+    for prepared in pipeline.prepared_rows:
+        assert evidence_by_row[prepared.raw_row_id].parse_result.raw_value == (
+            prepared.reconstruction_input.frequency_support
+        )
 
     observed_pairs = {
         (

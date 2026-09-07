@@ -119,7 +119,7 @@ def test_sparse_source_spw_associations_are_preserved() -> None:
     assert (
         result.reconstruction_version
         == RECONSTRUCTION_VERSION
-        == "2"
+        == "3"
     )
     assert result.linked_row_count == 11
     assert result.unlinked_row_count == 0
@@ -431,7 +431,9 @@ def test_overlapping_bracket_intervals_are_ambiguous() -> None:
         .AMBIGUOUS_MULTIPLE_INTERVALS
     )
     assert mapping.candidate_count == 2
-    assert mapping.component_index == 1
+    assert mapping.component_index is None
+    assert mapping.component_ref is None
+    assert [ref.component_index for ref in mapping.candidate_refs] == [1, 2]
 
 
 def test_frequency_outside_bracket_intervals_is_reported() -> None:
@@ -531,9 +533,10 @@ def test_brace_mapping_outside_tolerance_is_reported() -> None:
         .OUTSIDE_REPRESENTATION_TOLERANCE
     )
 
-    # The nearest component is retained as diagnostic evidence,
-    # but status is not ASSIGNED.
-    assert mapping.component_index == 1
+    # The nearest reference is diagnostic, not an assignment.
+    assert mapping.component_index is None
+    assert mapping.component_ref is None
+    assert [ref.component_index for ref in mapping.candidate_refs] == [1]
     assert (
         mapping.frequency_difference_mhz
         == pytest.approx(20.0)
@@ -567,9 +570,9 @@ def test_equal_distance_brace_mapping_is_ambiguous() -> None:
     )
     assert mapping.candidate_count == 2
 
-    # Lowest component index is retained deterministically,
-    # but the mapping is not considered assigned.
-    assert mapping.component_index == 1
+    assert mapping.component_index is None
+    assert mapping.component_ref is None
+    assert [ref.component_index for ref in mapping.candidate_refs] == [1, 2]
     assert not mapping.is_assigned
 
 

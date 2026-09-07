@@ -38,7 +38,7 @@ from alma_duplicate.reconstruction import (
     reconstruct_archive_rows,
 )
 
-ADAPTER_VERSION = "6"
+ADAPTER_VERSION = "7"
 
 
 class IncompleteArchiveQueryError(RuntimeError):
@@ -104,6 +104,14 @@ def _required_value(
 
 def _optional_text(value: object) -> str | None:
     return normalize_optional_text(value).value
+
+
+def _spectral_text(value: object) -> str | bytes | None:
+    """Preserve original spectral text; normalize only non-text missing values."""
+
+    if isinstance(value, (str, bytes)):
+        return value
+    return _optional_text(value)
 
 
 def prepare_archive_rows(
@@ -220,7 +228,7 @@ def prepare_archive_rows(
                 .centre
                 .canonical_value
             ),
-            frequency_support=_optional_text(
+            frequency_support=_spectral_text(
                 _required_value(
                     raw_row,
                     "frequency_support",

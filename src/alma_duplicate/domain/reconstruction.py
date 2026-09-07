@@ -10,7 +10,9 @@ from alma_duplicate.domain.archive import (
     ObsIdWidthContract,
 )
 from alma_duplicate.domain.spectral import (
+    FrequencySupportComponent,
     FrequencySupportGrammar,
+    FrequencySupportParseResult,
 )
 
 
@@ -119,6 +121,36 @@ class RowReconstruction:
 
 
 @dataclass(frozen=True, slots=True)
+class SupportComponentRef:
+    """A component identity scoped to a raw row and parser version."""
+
+    raw_row_id: str
+    parser_version: str
+    component_index: int
+
+
+@dataclass(frozen=True, slots=True)
+class RowFrequencySupportEvidence:
+    """Complete spectral evidence, independent of identifier linkage."""
+
+    raw_row_id: str
+    parse_result: FrequencySupportParseResult
+
+    def resolve(self, reference: SupportComponentRef) -> FrequencySupportComponent:
+        """Reject references to another row or parser version."""
+
+        if (
+            reference.raw_row_id != self.raw_row_id
+            or reference.parser_version != self.parse_result.parser_version
+        ):
+            raise ValueError("Component reference belongs to different evidence")
+        for component in self.parse_result.components:
+            if component.component_index == reference.component_index:
+                return component
+        raise KeyError(reference.component_index)
+
+
+@dataclass(frozen=True, slots=True)
 class SupportMapping:
     """Mapping evidence between one row and one support component."""
 
@@ -130,6 +162,15 @@ class SupportMapping:
     component_index: int | None
     candidate_count: int
     frequency_difference_mhz: float | None
+    candidate_refs: tuple[SupportComponentRef, ...] = ()
+
+    @property
+    def component_ref(self) -> SupportComponentRef | None:
+        """Only a unique assigned mapping exposes a selected reference."""
+
+        if self.is_assigned and len(self.candidate_refs) == 1:
+            return self.candidate_refs[0]
+        return None
 
     @property
     def is_assigned(self) -> bool:
@@ -147,6 +188,7 @@ class ReconstructionBatch:
     associations: tuple[SourceSpwAssociationKey, ...]
     row_reconstructions: tuple[RowReconstruction, ...]
     support_mappings: tuple[SupportMapping, ...]
+    frequency_support_evidence: tuple[RowFrequencySupportEvidence, ...]
     obs_id_width_contract: ObsIdWidthContract
     reconstruction_version: str
 
