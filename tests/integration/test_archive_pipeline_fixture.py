@@ -79,6 +79,47 @@ def test_raw_snapshot_and_derived_evidence_remain_consistent():
             prepared.raw_row["frequency"] = 999.0
 
 
+@pytest.mark.parametrize("auxiliary_unit", ["deg", "arcsec", None, "unexpected-unit"])
+def test_auxiliary_and_extension_metadata_survive_without_interpretation(auxiliary_unit):
+    original = _complete_query_result()
+    auxiliary = {
+        "s_resolution": 12.0, "s_fov": None,
+        "t_min": 60000.0, "t_max": 60001.0,
+        "band_list": b" 3 ", "pol_states": " /XX/YY/ ",
+        "future_extension": " untouched ",
+    }
+    rows = tuple(dict(row) | auxiliary for row in original.rows)
+    extra_metadata = tuple(
+        replace(field, unit=auxiliary_unit, description="raw auxiliary descriptor")
+        for field in _field_metadata(tuple(auxiliary))
+    )
+    executor = FakeTapExecutor([
+        TapResponse(
+            rows=({"total_matches": len(rows)},),
+            declared_columns=("total_matches",),
+            field_metadata=_field_metadata(("total_matches",)), query_status_raw="OK",
+        ),
+        TapResponse(
+            rows=rows, declared_columns=tuple(rows[0]),
+            field_metadata=original.field_metadata + extra_metadata, query_status_raw="OK",
+        ),
+    ])
+    result = ArchiveClient("https://example.invalid/tap", executor=executor).search(
+        ArchiveQuerySpec(ra_deg=201.365, dec_deg=-43.019, radius_deg=0.006)
+    )
+    pipeline = run_archive_pipeline(result)
+    assert result.is_complete and pipeline.comparison_units_safe
+    assert pipeline.query_result.field_metadata[-7:] == extra_metadata
+    assert all(item.returned for item in result.provenance.projection.optional_columns)
+    for prepared in pipeline.prepared_rows:
+        for name, value in auxiliary.items():
+            assert prepared.raw_row[name] == value
+        assert prepared.comparison_evidence.angular_resolution.quantity.raw_value == (
+            prepared.raw_row["spatial_resolution"]
+        )
+        assert prepared.comparison_evidence.angular_resolution.quantity.source_unit == "arcsec"
+
+
 def _field_metadata(
     columns: tuple[str, ...],
     *,
