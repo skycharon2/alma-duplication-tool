@@ -1,6 +1,8 @@
-# Proposed observation input API v1
+# Proposed observation input API
 
-Implementation baseline: `59c6f0d`; implements the request-side subset of
+Request model version: **1**. Validation report version: **3**.
+
+Implements the request-side subset of
 [design 0.3](duplication_rule_inputs.md). No candidate search, policy verdict,
 candidate-side readiness or changes to ingestion adapters are included.
 
@@ -14,8 +16,8 @@ report = validate_proposed_observation(request_input, search_options_input)
 
 Data structures live in `domain/proposed_observation.py`; a single entry module
 organizes shape parsing, normalization, reference validation and the report.
-Existing Archive/Queue models, special missing-value handling, strict pipeline
-gates and normalizers remain unchanged. No additional runtime dependency is added.
+Archive/Queue ingestion and source-specific normalization are separate from this
+entry point. Request-side validation does not determine candidate usability.
 
 Any ERROR produces `request=None`, `search_options=None`, and BLOCKED. The report
 retains detached raw input and all diagnostics. A valid partial request is
@@ -85,6 +87,10 @@ All supplied quantities are finite and positive before and after conversion.
 Units are explicit and case-sensitive. Missing quantities are omitted or None;
 an object with an absent/blank numeric value is malformed, not a missing object.
 No channel-spacing/resolution/noise-bandwidth substitution is performed.
+Numeric parsing rejects nonzero inputs that underflow to floating-point zero.
+Decimal degree coordinates are range-checked before float rounding can hide a
+violation. Exact signed zero is valid. Already rounded Python floats cannot
+recover lost precision; decimal strings preserve the original numeric evidence.
 
 ## Roles, partial coverage and association
 
@@ -98,6 +104,13 @@ approval. USABLE scalar width alone does not locate coverage, so no interval is
 inferred. Bounds may record declared usable coverage but remain unvalidated.
 Representative-window membership is checked only for comparable, nominal
 intervals. Other interval semantics retain unresolved membership evidence.
+
+For independently declared centers and nominal bounds, explicit equal frequency
+references require `lower <= center <= upper`; the center need not be the
+midpoint. Usable coverage does not impose this constraint. Missing references
+produce `MISSING_EVIDENCE` on `PROPOSED`; known differing kinds or frames produce
+`INCOMPATIBLE_REFERENCE` on `METHOD`, requiring conversion before direct
+comparison. Both reasons can coexist and neither blocks spatial search.
 
 No continuum qualifying count or line-match conclusion is computed here.
 Enumeration completeness does not block search. Incomplete line lists explicitly
@@ -113,6 +126,12 @@ misinterpreting a reference RMS as an already-converted value. DIRECT_DECLARATIO
 does not require noise width or contributor list. Conversion retains the reference
 RMS and reports absent bandwidths/method; it produces no converted RMS.
 
+LINE requests report a request-side missing-RMS notice for each listed window
+without a WINDOW-scoped LINE sensitivity containing an RMS value. This does not
+block spatial search or imply an exhaustive negative result. Association alone
+does not establish RMS comparability; basis/context checks remain necessary and
+RMS values are never copied between windows.
+
 Sensitivity context accepts stokes_basis, polarization_basis, beam_context,
 weighting_context, smoothing, spectral_averaging, velocity_convention and method.
 Array context accepts description/origin. These are opaque, immutable provenance,
@@ -125,7 +144,7 @@ requested observing parameters. Sensitivity basis uses the four RMS basis labels
 UNKNOWN is retained with a notice that the filter cannot be silently applied.
 Predicate context (frequency_reference, reference_frequency,
 bandwidth_used_for_sensitivity, origin) is retained as opaque provenance. No
-predicate is translated to ArchiveQuerySpec or executed by this PR. Future query
+predicate is translated to ArchiveQuerySpec or executed by this API. Future query
 planning must validate context and report which filters were actually applied.
 
 ## Offline demonstration and tests
@@ -142,28 +161,3 @@ mutation isolation, bad values, intervals, references, partial RMS, unsupported
 units versus missing methods, modes and one-sided predicates. Integration tests
 exercise the wire example, raw-input revalidation and invalid-output suppression.
 CASE1/CASE2 retrieval and coherent candidate pairing belong to subsequent work.
-
-# Validation follow-up (version 3)
-
-The request schema and conversion version remain unchanged. Validation reports
-now carry `validation_version = "3"`:
-
-- Independently supplied SPW centers must lie within their nominal bounds when
-  all three frequency references are explicit and equal. Endpoints are allowed;
-  the center need not equal the midpoint. Usable coverage does not impose this
-  constraint. Unknown reference information produces `MISSING_EVIDENCE` on the
-  `PROPOSED` side. Differing known kinds or frames produce a `METHOD` capability
-  diagnostic (`INCOMPATIBLE_REFERENCE`): conversion is needed before direct
-  comparison, not necessarily impossible. These checks are independent: unknown
-  information does not hide differences already established by known values.
-  Both diagnostics can coexist and neither blocks spatial search. Version 3
-  replaces version 2's combined diagnostic; no frequency conversion is assumed.
-- LINE requests report missing RMS for each listed window without a WINDOW-scoped
-  LINE sensitivity containing an RMS value. These are request-side MISSING
-  notices and do not block spatial search or imply an exhaustive negative result.
-  An associated RMS still needs its own basis/context checks; association alone
-  does not establish comparability. RMS values are never copied between windows.
-- Numeric parsing rejects nonzero values that underflow to zero. Decimal degree
-  coordinates are also range-checked before float rounding can hide a violation.
-  Exact signed zero remains valid. Already rounded Python floats cannot reveal
-  lost input precision; supply decimal strings to preserve that evidence.
