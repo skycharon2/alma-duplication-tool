@@ -5,6 +5,112 @@ import pytest
 from alma_duplicate.request_validation import validate_proposed_observation
 
 
+@pytest.mark.parametrize(
+    "center,kind,frame,valid,unverified",
+    [
+        (105, "NOMINAL", "TOPOCENTRIC", False, False),
+        (100.5, "NOMINAL", "TOPOCENTRIC", True, False),
+        (99, "NOMINAL", "TOPOCENTRIC", True, False),
+        (101, "NOMINAL", "TOPOCENTRIC", True, False),
+        (105, "USABLE", "TOPOCENTRIC", True, False),
+        (105, "NOMINAL", "UNKNOWN", True, True),
+        (105, "NOMINAL", "LSRK", True, True),
+    ],
+)
+def test_independent_nominal_center_membership(center, kind, frame, valid, unverified):
+    raw = request()
+    raw["spectral_windows"] = [
+        {
+            "window_id": "w1",
+            "representation": "BOUNDS",
+            "bandwidth_kind": kind,
+            "lower": frequency(99),
+            "upper": frequency(101),
+            "center": frequency(center, frame=frame),
+        }
+    ]
+    result = validate_proposed_observation(raw, options())
+    assert result.is_valid is valid
+    assert result.can_search is valid
+    assert any(i.code == "INCOMPATIBLE_REFERENCE" for i in result.issues) is unverified
+    if valid:
+        assert result.request.spectral_windows[0].center.quantity.value == center
+        assert result.request.spectral_windows[0].interval.midpoint_ghz == 100
+    else:
+        assert result.request is None and result.search_options is None
+        assert any(
+            i.code == "INVALID_ASSOCIATION" and i.path.endswith(".center")
+            for i in result.errors
+        )
+
+
+@pytest.mark.parametrize("rms_present", [True, False])
+def test_line_rms_missing_is_reported_per_window(rms_present):
+    raw = request()
+    raw.update(intents=["LINE"], setup_complete=True)
+    raw["spectral_windows"] = [
+        window(
+            window_id=identifier,
+            correlator_mode="FDM",
+            spectral_resolution=quantity(1, "MHz"),
+        )
+        for identifier in ("w1", "w2")
+    ]
+    sensitivity = {
+        "sensitivity_id": "r1",
+        "purpose": "LINE",
+        "scope": "WINDOW",
+        "window_ids": ["w1"],
+        "basis": "NATIVE_CHANNEL",
+        "bandwidth_used_for_sensitivity": quantity(1, "MHz"),
+        "bandwidth_meaning": "EFFECTIVE_CHANNEL",
+    }
+    if rms_present:
+        sensitivity["rms"] = quantity(1, "mJy/beam")
+    raw["sensitivities"] = [sensitivity]
+    result = validate_proposed_observation(raw, options())
+    assert result.is_valid and result.can_search
+    missing = [i for i in result.issues if i.path.endswith("].sensitivities")]
+    assert len(missing) == (1 if rms_present else 2)
+    assert any("w2" in i.message for i in missing)
+    assert all(
+        i.category == "MISSING" and i.side == "PROPOSED" and i.rule_id == "LINE-RMS"
+        for i in missing
+    )
+    assert result.request.sensitivities[0].window_ids == ("w1",)
+    assert result.validation_version == "2"
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("ra", "-1e-999"),
+        ("ra", "1e-999"),
+        ("dec", "90.00000000000000000001"),
+        ("dec", "-90.00000000000000000001"),
+    ],
+)
+def test_decimal_coordinate_errors_do_not_disappear_during_float_conversion(
+    field, value
+):
+    raw = request()
+    raw["position"][field] = value
+    result = validate_proposed_observation(raw, options())
+    assert not result.is_valid and not result.can_search
+    assert result.request is None and result.search_options is None
+    assert result.raw_input["position"][field] == value
+    assert any(i.path == "request.position." + field for i in result.errors)
+
+
+@pytest.mark.parametrize("value", ["-0", "-0.0", "0e-999", "180"])
+def test_exact_zero_and_normal_coordinates_remain_valid(value):
+    raw = request()
+    raw["position"]["ra"] = value
+    result = validate_proposed_observation(raw, options())
+    assert result.is_valid and result.can_search
+    assert result.request.position.ra_deg == float(value)
+
+
 def quantity(value, unit):
     return {"value": value, "unit": unit}
 
