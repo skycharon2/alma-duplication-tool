@@ -1,20 +1,20 @@
 # Duplication rule inputs and evidence contract
 
-Design version: 0.3. Reviewed: 2026-09-07. Incremental revision of design 0.2.
+Design version: 0.3. Implementation coverage is specified separately below.
 
-Implementation update: the [request validation API](proposed_observation_api.md)
-implements a bounded request-side subset. The condition/adapter specifications
-below remain design targets where not explicitly covered by that API; this
-document's original PR scope does not imply a rule engine has been delivered.
+The [offline request validation API](proposed_observation_api.md) implements
+the documented request-side subset. Comparison-context construction from existing
+ingestion outputs and duplication-rule evaluation remain planned. An accepted
+request does not establish that candidate evidence is comparable or that a
+duplication condition can be evaluated.
 
 Project goal: a user describes a proposed observation; the system independently
 searches Archive and Queue, checks applicable duplication conditions within a
 coherent observation context, and displays conclusions, evidence and reasons
 why a condition cannot be assessed. Project IDs, Member UIDs and known duplicate
 labels are results or developer-test references, never required user inputs.
-Status: **proposed input contract**, not an implemented request API or rule engine.
-This deliverable defines the next model and its acceptance cases. It changes no
-ingestion, reconstruction, policy decision, or live-query behavior.
+This document specifies evidence requirements and design acceptance cases.
+The API document is the reference for currently executable request behavior.
 
 Scope: one fixed target, single pointing, one proposed setup, multiple windows.
 The user supplies proposed observations; adapters supply candidate evidence.
@@ -46,10 +46,9 @@ explicit decisions in section 7 before executable assessment.
 
 Project-plan alignment: the user's review of `Project_Plan_9_02.pdf` identifies
 sections 5.4, 5.6 and 6 as covering conditional inputs, validation and phased
-scope. This revision incorporates that supplied review. The PDF was not found
-among accessible files in this editing session, so its wording/page numbering
-is not independently verified. This is an access limitation, not a claim that
-the project lacks a plan. The original `Internship__Duplication_Check_Tool (1).pdf`,
+scope. This alignment is based on the supplied review; independent verification
+of the plan's wording and page references is pending. The original
+`Internship__Duplication_Check_Tool (1).pdf`,
 Nordic ARC node, August 2026, section 4 (printed page 2), was read directly for
 the CASE parameters in section 8.
 
@@ -95,7 +94,10 @@ coherent evidence from the same candidate context, as defined in section 6.
 | LINE-COVERAGE: line; A/spectral | Requested SPW center, FDM evidence and frequency reference; width not generally required | Associated candidate FDM interval/reference with authoritative mode evidence; selected TAP projection lacks that mode | Associated SPW interval/reference and validated FDM evidence; no approved automatic mode derivation | Compare requested center with candidate coverage, not whole-window containment | Missing request width alone does not block center coverage; absent candidate interval or mode does |
 | LINE-RMS: line; A/spectral | Window-linked RMS with independent bandwidth used for sensitivity, spectral resolution and optional smoothing evidence | `sensitivity_10kms`, `spectral_resolution`, parsed component sensitivity/resolution | `Req.Sensitivity`, `Ref.Frequency`, `Ref.Freq.Width`; same-window resolution | Preserve spacing/resolution/noise width separately; Q4/Q5 common-resolution RMS method still required | Missing noise width is not supplied by resolution; broad search remains possible |
 
-## 3. Proposed request fields (future model)
+## 3. Request evidence design and implemented subset
+
+Consult the [API wire format](proposed_observation_api.md#wire-format) for
+accepted fields. Requirements here also cover future comparison operations.
 
 All names in this section are planned fields, not existing Python exports.
 Every supplied quantity retains exact raw value/unit text, canonical value/unit,
@@ -406,19 +408,20 @@ User-facing case search inputs:
 
 Developer reference results, not query requirements or user request fields:
 
-| Case | Expected project | Source-stated entries | Formal verdict |
-| --- | --- | --- | --- |
-| CASE1 | 2021.A.00028.S | 1 | Unverified |
-| CASE2 | 2018.1.00294.S | 2 | Unverified |
+| Case | Reported project | Source-stated entries | Reported Member UID(s) | Formal verdict |
+| --- | --- | --- | --- | --- |
+| CASE1 | 2021.A.00028.S | 1 | `uid://A001/X2df9/X1b` | Unverified |
+| CASE2 | 2018.1.00294.S | 2 | `uid://A001/X133d/X9c3`, `uid://A001/X133d/X9c5` | Unverified |
 
 The user's latest report review interprets these two RMS filters as continuum
 RMS filters. Record that as case-specific supplied interpretation, not a claim
 that the original task PDF labels the basis or that every request uses continuum
-RMS. The report itself was not available for independent inspection here; its
-precise version/page and candidate-field mapping still need pinning. Never use
+RMS. Member UIDs above are supplied report-review records, not independently
+verified retrieval fixtures. The report filename/version/page and candidate-field
+mapping remain to be pinned. Never use
 expected project IDs as search constraints to make a positive test pass.
 
-Still unresolved: exact Member UID(s), entry grouping/count semantics, pinned
+Still unresolved: independent verification of reported Member UIDs, entry grouping/count semantics, pinned
 fixture, coordinate/frequency reference and search radius/tolerance, sensitivity
 basis and its candidate-field mapping, and formal duplicate/non-duplicate labels.
 Do not interpret stated entries as raw TAP rows or Member count without confirmation.
@@ -426,9 +429,13 @@ Known parameters are stored now; these unknowns do not justify discarding them.
 
 ## 9. Delivery boundary
 
-This PR delivers this contract and a static form sketch. Next PR implements the
-fixed-target request model/validator and IN-01 through IN-11 plus IN-13 through
-IN-27 as applicable (round-trip means the future request representation, not a
-new snapshot storage feature).
-The following PR implements coherent adapters and candidate search (IN-12 and
-confirmed CASE fixtures). Formal verdict rules and full HTML follow separately.
+The offline request model and validator are implemented as documented in the
+[API](proposed_observation_api.md). The cases above mix request validation with
+future comparison acceptance criteria; their presence does not claim all are
+implemented tests. Comparison-context construction will reuse existing ingestion
+outputs. Candidate search, verified CASE fixtures, formal rules and HTML remain
+planned. Request round-trip validation does not restore historical Python objects.
+
+Current spectral mapping uses an overall parse-result validity gate, not
+independent frequency and RMS usability. See the
+[implemented mapping boundary](data_model.md#spectral-mapping-boundary).

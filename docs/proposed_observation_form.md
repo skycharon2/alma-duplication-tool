@@ -1,7 +1,7 @@
 # Proposed-observation form sketch
 
-Design only, version 0.3; no HTML or executable request model in this PR.
-Subsequent implementation: [offline request API](proposed_observation_api.md).
+Form design version 0.3; the browser form is not implemented.
+The [offline request API](proposed_observation_api.md) is implemented.
 The form remains a design sketch; the API does not implement candidate results.
 Goal: describe a proposed observation, retrieve Archive/Queue candidates and
 explain applicable conditions using coherent evidence. Users do not supply
