@@ -261,23 +261,28 @@ The catalogue contains all 73 live fields exactly once.
 | Product metadata | 305,618 cube and 136,889 image rows; all current science rows level 2. Axis/size availability is uneven. | Row-level product description only; physical file granularity unresolved. |
 | Determinism | Reconstruction hashes matched for seeds 0, 1, 7, 42, and 2026. | Reconstruction and mapping must not depend on TAP row order. |
 
-## Required status values
+## Implemented status values
 
-| Concern | Minimum states |
-|---|---|
-| Query | `COMPLETE`, `OVERFLOW`, `COUNT_MISMATCH`, `ERROR` |
-| `obs_id` confidence | `PARSED_COMPLETE`, `PARSED_AT_HISTORICAL_TRUNCATION_BOUNDARY`, `FAILED_AT_HISTORICAL_TRUNCATION_BOUNDARY`, `FAILED_OTHER` |
-| `obs_id` width metadata | `BOUNDED_VARIABLE`, `FIXED`, `UNBOUNDED`, `MISSING`, `INVALID`, `INCOMPATIBLE_DATATYPE` |
-| `obs_id` live width conformance | `NOT_EVALUABLE`, `WITHIN_UNBOUNDED`, `BELOW_REPORTED_MAXIMUM`, `AT_REPORTED_MAXIMUM`, `ABOVE_REPORTED_MAXIMUM_SCHEMA_DRIFT` |
-| Support family | `BRACKET`, `BRACE`, `MISSING`, `BLANK`, `UNKNOWN` |
-| Support parse | `PARSED`, `PARTIAL`, `FAILED`, `AMBIGUOUS` |
-| STC-S family | `CIRCLE`, `POLYGON`, `UNION`, `MISSING`, `BLANK`, `UNKNOWN` |
-| Reconstruction | `LINKED`, `UNLINKED_PARSE_FAILURE`, `UNLINKED_AMBIGUOUS`, `TRUNCATION_RISK` |
-| Missing normalization | `PRESENT`, `MASKED`, `NULL`, `BLANK_NORMALIZED`, `SENTINEL_3000_DATE` |
-| Project classification | Known current raw values plus explicit unknown-value preservation; never coerce an unknown value into a current class |
+This is the documentation index for the following Archive enum vocabularies.
+Code definitions are authoritative; other documents should link here instead of
+maintaining duplicate complete lists.
 
-Status vocabularies and parser versions belong in code constants and tests,
-not ad-hoc strings distributed across notebooks.
+| Concern / Python enum | Implemented values | Code reference |
+| --- | --- | --- |
+| `ArchiveQueryStatus` | `COMPLETE`, `OVERFLOW`, `COUNT_MISMATCH`, `ERROR` | [Source](../src/alma_duplicate/clients/archive_contract.py) |
+| `ObsIdConfidence` | `PARSED_COMPLETE`, `PARSED_AT_HISTORICAL_TRUNCATION_BOUNDARY`, `FAILED_AT_HISTORICAL_TRUNCATION_BOUNDARY`, `FAILED_OTHER` | [Source](../src/alma_duplicate/domain/archive.py) |
+| `ObsIdWidthMetadataStatus` | `BOUNDED_VARIABLE`, `FIXED`, `UNBOUNDED`, `MISSING`, `INVALID`, `INCOMPATIBLE_DATATYPE` | [Source](../src/alma_duplicate/domain/archive.py) |
+| `ObsIdWidthStatus` | `NOT_EVALUABLE`, `WITHIN_UNBOUNDED`, `BELOW_REPORTED_MAXIMUM`, `AT_REPORTED_MAXIMUM`, `ABOVE_REPORTED_MAXIMUM_SCHEMA_DRIFT` | [Source](../src/alma_duplicate/domain/archive.py) |
+| `ParseStatus` | `PARSED`, `PARTIAL`, `FAILED` | [Source](../src/alma_duplicate/domain/spectral.py) |
+| `FrequencySupportGrammar` | `BRACKET`, `BRACE`, `MISSING`, `BLANK`, `UNKNOWN` | [Source](../src/alma_duplicate/domain/spectral.py) |
+| `ReconstructionStatus` | `LINKED`, `OBS_ID_UNSAFE`, `MEMBER_UID_MISSING`, `ASDM_UID_MISSING`, `PARSED_MEMBER_MISMATCH` | [Source](../src/alma_duplicate/domain/reconstruction.py) |
+| `SupportMappingStatus` | `ASSIGNED`, `RECONSTRUCTION_UNLINKED`, `ROW_FREQUENCY_MISSING`, `UNSUPPORTED_GRAMMAR`, `SUPPORT_PARSE_UNSAFE`, `NO_USABLE_COMPONENT`, `OUTSIDE_INTERVAL`, `AMBIGUOUS_MULTIPLE_INTERVALS`, `OUTSIDE_REPRESENTATION_TOLERANCE`, `AMBIGUOUS_EQUAL_DISTANCE` | [Source](../src/alma_duplicate/domain/reconstruction.py) |
+| `MissingValueStatus` | `PRESENT`, `MASKED`, `NULL`, `BLANK_NORMALIZED`, `SENTINEL_3000_DATE` | [Source](../src/alma_duplicate/domain/normalization.py) |
+
+Support assignment ambiguity belongs to `SupportMappingStatus`, not `ParseStatus`.
+STC-S families recorded in notebook experiments are not an implemented production
+STC-S enum. Raw project classifications likewise are not a correlator-mode enum.
+Future rule evaluability states are design requirements, not reconstruction states.
 
 ## Not established by the public view
 
