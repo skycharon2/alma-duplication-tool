@@ -228,7 +228,7 @@ def test_complete_result_reconciles_count_and_rows() -> None:
         "query-run-001"
     )
     assert len(result.provenance.query_hash) == 64
-    assert result.provenance.client_version == "6"
+    assert result.provenance.client_version == "7"
     assert result.provenance.frequency_prefilter_status is (
         ArchiveFrequencyPrefilterStatus.NOT_REQUESTED
     )
