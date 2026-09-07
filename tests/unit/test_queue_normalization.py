@@ -166,7 +166,7 @@ def test_cycle13_usable_bandwidth_mapping(
         _quantity(nominal_mhz, "MHz")
     ) == pytest.approx(usable_mhz / 1000.0)
     assert QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION == (
-        "cycle13-portal-plotobs-v1.3.1-v1"
+        "cycle13-portal-plotobs-v1.3.1-v2"
     )
 
 

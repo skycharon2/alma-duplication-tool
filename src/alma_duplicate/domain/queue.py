@@ -58,8 +58,10 @@ class QueueIssueKind(StrEnum):
     REFERENCE_FREQUENCY_OUTSIDE_COVERAGE = (
         "REFERENCE_FREQUENCY_OUTSIDE_COVERAGE"
     )
-    INVALID_FREQUENCY_INTERVAL = (
-        "INVALID_FREQUENCY_INTERVAL"
+    INVALID_FREQUENCY_INTERVAL = "INVALID_FREQUENCY_INTERVAL"
+    USABLE_BANDWIDTH_UNAVAILABLE = "USABLE_BANDWIDTH_UNAVAILABLE"
+    REFERENCE_FREQUENCY_ASSOCIATION_UNVERIFIED = (
+        "REFERENCE_FREQUENCY_ASSOCIATION_UNVERIFIED"
     )
     INCOMPLETE_RECTANGLE_GEOMETRY = (
         "INCOMPLETE_RECTANGLE_GEOMETRY"
@@ -291,7 +293,7 @@ class QueueGroupKey:
 class QueueVelocityContext:
     """Velocity evidence required for Queue-side Doppler conversion."""
 
-    velocity_kms: QueueQuantity
+    velocity_kms: QueueQuantity | None
     frame_raw: str
     convention_raw: str
     is_sky_frequency: bool
@@ -329,7 +331,7 @@ class QueueSpw:
     spectral_resolution_mhz: QueueQuantity
     frequency_derivation: QueueFrequencyDerivation
     nominal_bandwidth_ghz: float
-    usable_bandwidth_ghz: float
+    usable_bandwidth_ghz: float | None
     usable_bandwidth_derivation_version: str
     usable_bandwidth_derivation_kind: (
         QueueUsableBandwidthDerivationKind
@@ -339,59 +341,57 @@ class QueueSpw:
     )
     lower_sky_frequency_ghz: float
     upper_sky_frequency_ghz: float
-    usable_lower_sky_frequency_ghz: float
-    usable_upper_sky_frequency_ghz: float
+    usable_lower_sky_frequency_ghz: float | None
+    usable_upper_sky_frequency_ghz: float | None
 
     def __post_init__(self) -> None:
         if self.number <= 0:
             raise ValueError("SPW number must be positive")
         if not self.usable_bandwidth_derivation_version.strip():
-            raise ValueError(
-                "usable bandwidth derivation version must not be blank"
-            )
+            raise ValueError("usable bandwidth derivation version must not be blank")
 
-        for name, value in (
-            ("nominal_bandwidth_ghz", self.nominal_bandwidth_ghz),
-            ("usable_bandwidth_ghz", self.usable_bandwidth_ghz),
-        ):
-            if not math.isfinite(value) or value <= 0.0:
-                raise ValueError(f"{name} must be finite and positive")
-
-        if self.usable_bandwidth_ghz > self.nominal_bandwidth_ghz:
-            raise ValueError(
-                "usable bandwidth must not exceed nominal bandwidth"
-            )
-
-        for label, lower, upper, width in (
-            (
-                "nominal",
-                self.lower_sky_frequency_ghz,
-                self.upper_sky_frequency_ghz,
-                self.nominal_bandwidth_ghz,
-            ),
-            (
-                "usable",
-                self.usable_lower_sky_frequency_ghz,
-                self.usable_upper_sky_frequency_ghz,
-                self.usable_bandwidth_ghz,
-            ),
-        ):
+        def validate_interval(
+            label: str, lower: float, upper: float, width: float,
+        ) -> None:
+            if not math.isfinite(width) or width <= 0.0:
+                raise ValueError(f"{label} bandwidth must be finite and positive")
             if (
-                not math.isfinite(lower)
-                or not math.isfinite(upper)
-                or lower <= 0.0
-                or lower >= upper
+                not math.isfinite(lower) or not math.isfinite(upper)
+                or lower <= 0.0 or lower >= upper
             ):
                 raise ValueError(f"{label} frequency interval is invalid")
-            if not math.isclose(
-                upper - lower,
-                width,
-                rel_tol=1e-12,
-                abs_tol=1e-12,
+            if not math.isclose(upper - lower, width, rel_tol=1e-12, abs_tol=1e-12):
+                raise ValueError(f"{label} interval width does not match bandwidth")
+
+        validate_interval(
+            "nominal", self.lower_sky_frequency_ghz,
+            self.upper_sky_frequency_ghz, self.nominal_bandwidth_ghz,
+        )
+        values = (
+            self.usable_bandwidth_ghz,
+            self.usable_lower_sky_frequency_ghz,
+            self.usable_upper_sky_frequency_ghz,
+        )
+        missing = tuple(value is None for value in values)
+        if any(missing):
+            if not all(missing):
+                raise ValueError("usable bandwidth and bounds must be present or absent together")
+            if (
+                self.usable_bandwidth_derivation_kind
+                is not QueueUsableBandwidthDerivationKind.UNRECOGNIZED
             ):
-                raise ValueError(
-                    f"{label} interval width does not match bandwidth"
-                )
+                raise ValueError("absent usable coverage requires UNRECOGNIZED derivation")
+            return
+        if (
+            self.usable_bandwidth_derivation_kind
+            is QueueUsableBandwidthDerivationKind.UNRECOGNIZED
+        ):
+            raise ValueError("UNRECOGNIZED derivation cannot provide usable coverage")
+        width, lower, upper = values
+        assert width is not None and lower is not None and upper is not None
+        if width > self.nominal_bandwidth_ghz:
+            raise ValueError("usable bandwidth must not exceed nominal bandwidth")
+        validate_interval("usable", lower, upper, width)
 
     @property
     def sky_bandwidth_ghz(self) -> float:

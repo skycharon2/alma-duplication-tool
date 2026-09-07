@@ -119,7 +119,7 @@ def test_sparse_source_spw_associations_are_preserved() -> None:
     assert (
         result.reconstruction_version
         == RECONSTRUCTION_VERSION
-        == "3"
+        == "4"
     )
     assert result.linked_row_count == 11
     assert result.unlinked_row_count == 0

@@ -602,7 +602,7 @@ must not be interpreted as a Doppler-derived quantity.
 Scientific coverage also carries a separately derived usable width. The
 finite mapping is reproduced from `getUsableBandwidth()` in the portal-
 provided `plotobs_cycle13.py` v1.3.1 script and is versioned as
-`cycle13-portal-plotobs-v1.3.1-v1`. The portal describes that script as
+`cycle13-portal-plotobs-v1.3.1-v2`. The portal describes that script as
 user-contributed, distributed as-is, and not an official supported ALMA
 product. It is therefore traceable derived evidence, not yet an authoritative
 project policy:
@@ -621,7 +621,19 @@ Usable bounds are centred on the same derived sky frequency. They are not
 Doppler-scaled. Nominal inputs are matched with the script's `1e-4 MHz`
 tolerance. Values already equal to a usable width are recognized with its
 `0.1 MHz` tolerance. Each result records `NOMINAL_MAPPED`, `ALREADY_USABLE`, or
-`UNRECOGNIZED`; unrecognized values still fail closed in typed row ingestion.
+`UNRECOGNIZED`. Recognition of an already-usable value preserves its source
+width; it does not round upward to the table value. Unknown mappings retain
+the typed row and nominal interval, emit `USABLE_BANDWIDTH_UNAVAILABLE`, and
+set all three usable width/bound fields to `None`. Consumers must check for
+missing usable coverage before performing arithmetic or formal comparison.
+
+`Is Sky Freq? = True` permits missing, unused velocity/frame/convention
+fields. Rest-frequency conversion still requires these fields; malformed
+supplied numeric values remain errors. A reference frequency numerically
+outside derived sky coverage emits
+`REFERENCE_FREQUENCY_ASSOCIATION_UNVERIFIED` as a warning because its reference
+has not been established. Successful reconstruction does not establish
+cross-source comparability or a formal duplication decision.
 
 Every successfully derived SPW currently carries
 `PENDING_ARRAY_PROCESSOR_CONFIRMATION`. The mapping must not become an
@@ -644,9 +656,9 @@ snapshot's historical reference-frequency consistency check. In the pinned
 snapshot, all 3,199 regular rows place `Ref.Frequency` inside both at least one
 nominal interval and at least one derived usable interval.
 
-The reference-frequency consistency gate permits a numerical boundary
-tolerance of `1e-12 GHz` and requires `Ref.Frequency` to lie inside at least one
-derived interval for a regular row. The pinned snapshot passed for all 3,199
+The reference-frequency diagnostic uses a numerical boundary tolerance of
+`1e-12 GHz`. Values outside every derived nominal interval produce a warning;
+they do not exclude the row while the reference remains unverified. The pinned snapshot passed for all 3,199
 regular rows. The SPS row's reference frequency also lies inside its declared
 scan range.
 
