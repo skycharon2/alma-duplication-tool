@@ -1,0 +1,63 @@
+{
+  "request": {
+    "target_kind": "FIXED",
+    "geometry": "SINGLE_POINTING",
+    "target_name": "Offline example, not a confirmed duplication case",
+    "position": {
+      "ra": "12:00:00",
+      "dec": "-00:30:00",
+      "ra_format": "HMS",
+      "dec_format": "DMS",
+      "frame": "ICRS"
+    },
+    "setup_id": "setup-1",
+    "setup_complete": false,
+    "intents": ["CONTINUUM", "LINE"],
+    "angular_resolution": {"value": 500, "unit": "mas"},
+    "representative_frequency": {
+      "value": 100.5, "unit": "GHz", "kind": "SKY", "frame": "UNKNOWN",
+      "origin": {"kind": "USER_DECLARED", "raw_label": "Sky frequency"}
+    },
+    "spectral_windows": [
+      {
+        "window_id": "w1",
+        "representation": "PARTIAL",
+        "center": {"value": 100, "unit": "GHz", "kind": "SKY", "frame": "UNKNOWN"},
+        "channel_spacing": {"value": 122, "unit": "kHz"},
+        "spectral_resolution": {"value": 244, "unit": "kHz"},
+        "correlator_mode": "UNKNOWN"
+      }
+    ],
+    "sensitivities": [
+      {
+        "sensitivity_id": "continuum-rms",
+        "purpose": "CONTINUUM",
+        "scope": "SETUP",
+        "setup_id": "setup-1",
+        "basis": "AGGREGATE",
+        "aggregate_path": "DIRECT_DECLARATION",
+        "rms": {"value": 0.001, "unit": "Jy/beam"}
+      },
+      {
+        "sensitivity_id": "line-rms",
+        "purpose": "LINE",
+        "scope": "WINDOW",
+        "window_ids": ["w1"],
+        "basis": "NATIVE_CHANNEL",
+        "rms": {"value": 2, "unit": "mJy/beam"},
+        "bandwidth_used_for_sensitivity": {"value": 325, "unit": "kHz"},
+        "bandwidth_meaning": "EFFECTIVE_CHANNEL",
+        "bandwidth_origin": {"kind": "USER_DECLARED"},
+        "context": {"stokes_basis": "I"}
+      }
+    ]
+  },
+  "search_options": {
+    "radius": {"value": 30, "unit": "arcsec"},
+    "sources": ["ARCHIVE", "QUEUE"],
+    "result_limit": 100,
+    "predicates": [
+      {"field": "angular_resolution", "operator": "<", "quantity": {"value": 0.5, "unit": "arcsec"}}
+    ]
+  }
+}
