@@ -13,10 +13,10 @@ from alma_duplicate.domain.queue import (
     QueueVelocityContext,
 )
 
-QUEUE_FREQUENCY_DERIVATION_VERSION = "2"
+QUEUE_FREQUENCY_DERIVATION_VERSION = "3"
 QUEUE_UNIT_NORMALIZATION_VERSION = "1"
 QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION = (
-    "cycle13-portal-plotobs-v1.3.1-v1"
+    "cycle13-portal-plotobs-v1.3.1-v2"
 )
 SPEED_OF_LIGHT_KMS = 299792.458
 QUEUE_NOMINAL_BANDWIDTH_TOLERANCE_MHZ = 1e-4
@@ -110,6 +110,8 @@ def derive_sky_frequency(
             "source frequency must be finite and positive"
         )
 
+    if type(velocity.is_sky_frequency) is not bool:
+        raise QueueFrequencyDerivationError("sky/rest flag must be explicitly Boolean")
     if velocity.is_sky_frequency:
         factor = 1.0
         kind = (
@@ -117,6 +119,10 @@ def derive_sky_frequency(
             .DECLARED_SKY_FREQUENCY
         )
     else:
+        if velocity.velocity_kms is None:
+            raise QueueFrequencyDerivationError("rest-frequency conversion requires velocity")
+        if not math.isfinite(velocity.velocity_kms.value):
+            raise QueueFrequencyDerivationError("source velocity must be finite")
         factor, kind = _doppler_factor(
             velocity.velocity_kms.value,
             velocity.convention_raw,
@@ -188,7 +194,8 @@ def derive_usable_bandwidth(
         ):
             return QueueUsableBandwidthDerivation(
                 input_bandwidth_mhz=nominal_mhz,
-                usable_bandwidth_ghz=usable_mhz / 1000.0,
+                # Equal-width mappings must not increase a rounded source width.
+                usable_bandwidth_ghz=min(usable_mhz, nominal_mhz) / 1000.0,
                 kind=(
                     QueueUsableBandwidthDerivationKind.NOMINAL_MAPPED
                 ),
@@ -203,7 +210,8 @@ def derive_usable_bandwidth(
         ):
             return QueueUsableBandwidthDerivation(
                 input_bandwidth_mhz=nominal_mhz,
-                usable_bandwidth_ghz=usable_mhz / 1000.0,
+                # Recognition does not authorize snapping the source value.
+                usable_bandwidth_ghz=nominal_mhz / 1000.0,
                 kind=(
                     QueueUsableBandwidthDerivationKind.ALREADY_USABLE
                 ),
@@ -256,7 +264,10 @@ def centred_frequency_interval(
 
     lower = centre_ghz - bandwidth_ghz / 2.0
     upper = centre_ghz + bandwidth_ghz / 2.0
-    if lower <= 0.0 or lower >= upper:
+    if (
+        not math.isfinite(lower) or not math.isfinite(upper)
+        or lower <= 0.0 or lower >= upper
+    ):
         raise QueueFrequencyDerivationError(
             "derived frequency interval is invalid"
         )

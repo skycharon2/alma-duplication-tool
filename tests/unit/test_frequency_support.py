@@ -106,7 +106,7 @@ def test_bracket_parser_remains_backward_compatible() -> None:
         BRACKET_EXAMPLE
     )
 
-    assert result.parser_version == "2"
+    assert result.parser_version == "3"
     assert (
         result.grammar_family
         is FrequencySupportGrammar.BRACKET
@@ -135,7 +135,7 @@ def test_canonical_brace_value_is_parsed() -> None:
         BRACE_EXAMPLE
     )
 
-    assert result.parser_version == "2"
+    assert result.parser_version == "3"
     assert (
         result.grammar_family
         is FrequencySupportGrammar.BRACE

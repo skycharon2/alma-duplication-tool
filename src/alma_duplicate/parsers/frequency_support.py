@@ -19,7 +19,7 @@ from alma_duplicate.domain.spectral import (
     SensitivityEntry,
     ValidationIssue,
 )
-PARSER_VERSION = "2"
+PARSER_VERSION = "3"
 
 NUMBER_PATTERN = r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?"
 BRACKET_COMPONENT_PATTERN = re.compile(r"\[([^\[\]]*)\]")
@@ -113,6 +113,51 @@ def _unit_is_convertible(unit_text: str, target: u.UnitBase) -> bool:
     except (TypeError, ValueError, u.UnitConversionError):
         return False
     return True
+
+
+def _positive_quantity_issue(
+    value: float,
+    unit_text: str,
+    target_unit: u.UnitBase,
+    *,
+    code: str,
+    component_index: int,
+    token: str,
+) -> ValidationIssue | None:
+    """Validate source and converted numbers; units have separate diagnostics."""
+    if not math.isfinite(value) or value <= 0.0:
+        return _issue(
+            code, "Value must be finite and strictly positive.",
+            component_index, token,
+        )
+    try:
+        factor = float(u.Unit(unit_text).to(target_unit))
+    except (TypeError, ValueError, u.UnitConversionError):
+        return None
+    canonical = value * factor
+    if not math.isfinite(canonical) or canonical <= 0.0:
+        return _issue(
+            code, "Unit conversion produced a non-finite or nonpositive value.",
+            component_index, token,
+        )
+    return None
+
+
+def _sensitivity_numeric_issues(
+    entries: list[SensitivityEntry],
+    component_index: int,
+) -> list[ValidationIssue]:
+    issues = []
+    for entry in entries:
+        issue = _positive_quantity_issue(
+            entry.value, entry.unit, u.mJy / u.beam,
+            code="sensitivity_value_invalid",
+            component_index=component_index, token=entry.raw_token,
+        )
+        if issue is not None:
+            issues.append(issue)
+    return issues
+
 
 def _parse_quantity(
     token: str,
@@ -343,6 +388,27 @@ def parse_frequency_support_component(
             )
         )
 
+    if interval is not None:
+        for endpoint in (interval.low, interval.high):
+            issue = _positive_quantity_issue(
+                endpoint, interval.unit, u.GHz,
+                code="frequency_value_invalid",
+                component_index=component_index, token=interval.raw_token,
+            )
+            if issue is not None:
+                validation_issues.append(issue)
+    if resolution is not None:
+        issue = _positive_quantity_issue(
+            resolution.value, resolution.unit, u.MHz,
+            code="resolution_value_invalid",
+            component_index=component_index, token=resolution.raw_token,
+        )
+        if issue is not None:
+            validation_issues.append(issue)
+    validation_issues.extend(
+        _sensitivity_numeric_issues(sensitivities, component_index)
+    )
+
     if interval is None:
         parse_status = ParseStatus.FAILED
     elif parse_issues:
@@ -562,6 +628,22 @@ def _parse_brace_component(
                 " ".join(unknown_tokens),
             )
         )
+
+    for quantity, target_unit, code in (
+        (displayed_center, u.GHz, "brace_center_value_invalid"),
+        (brace_token_2, u.MHz, "brace_token_2_value_invalid"),
+    ):
+        if quantity is None:
+            continue
+        issue = _positive_quantity_issue(
+            quantity.value, quantity.unit, target_unit,
+            code=code, component_index=component_index, token=quantity.raw_token,
+        )
+        if issue is not None:
+            validation_issues.append(issue)
+    validation_issues.extend(
+        _sensitivity_numeric_issues(sensitivities, component_index)
+    )
 
     if displayed_center is None:
         parse_status = ParseStatus.FAILED
