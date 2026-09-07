@@ -2,6 +2,38 @@
 
 ## Status and scope
 
+This document combines implemented reconstruction contracts with explicitly
+conceptual ER diagrams and dated exploration evidence. A concept appearing in
+a diagram is not proof of a corresponding runtime object. Future comparison
+requirements are maintained in the [rule-input contract](duplication_rule_inputs.md).
+
+| Concept | Implementation | Status |
+| --- | --- | --- |
+| Persisted exact Queue source | [`StoredQueueSource`](../src/alma_duplicate/storage/queue_snapshots.py) | Implemented |
+| Persisted historical parse summary | [`StoredQueueRun`](../src/alma_duplicate/storage/queue_snapshots.py) | Implemented; summary, not full historical parse object |
+| Source publication, verification and reparse | [`QueueSnapshotStore`](../src/alma_duplicate/storage/queue_snapshots.py) | Implemented |
+| Snapshot metadata in a parse result | [`QueueSnapshot`](../src/alma_duplicate/domain/queue.py) | Implemented; distinct from a stored source record |
+| Parameter-combination association actually present in a source CSV row | [`QueueRowAssociation`](../src/alma_duplicate/domain/queue.py) | Implemented; planned observations, not evidence of execution |
+| Raw-row and parser-scoped spectral reference | [`SupportComponentRef`](../src/alma_duplicate/domain/reconstruction.py) | Implemented; reference identity alone does not establish scientific comparability |
+| Proposed observation | [`ProposedObservationRequest`](../src/alma_duplicate/domain/proposed_observation.py) | Implemented; model version 1 |
+| Cross-source comparison context | No implementation | Planned |
+
+### Spectral mapping boundary
+
+Raw spectral evidence and diagnostics are retained independently of successful
+identity reconstruction. Current [`_map_support`](../src/alma_duplicate/reconstruction.py)
+requires an overall valid `FrequencySupportParseResult` before component mapping.
+A component validation failure can therefore make the row's support mapping
+unavailable; this is not a claim that every scientific quantity in that row is
+invalid. Independent frequency-coverage and sensitivity usability remains a
+comparison-layer design requirement. Unknown Queue usable bandwidth may be
+retained as `None`; successful reconstruction does not establish comparability.
+
+Implemented Archive status vocabularies are maintained in the
+[dictionary status table](archive_data_dictionary.md#implemented-status-values).
+
+### Archive implementation scope
+
 Production selection is projection v1 / schema v3 / client v7: 24 required
 core columns plus up to 6 schema-confirmed optional auxiliary columns. The
 73-field dictionary is a historical reference, not full production ingestion.
