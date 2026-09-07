@@ -28,7 +28,7 @@ from alma_duplicate.domain.archive_evidence import (
 )
 
 
-ARCHIVE_COMPARISON_CONTRACT_VERSION = "2"
+ARCHIVE_COMPARISON_CONTRACT_VERSION = "3"
 
 
 @dataclass(frozen=True, slots=True)
@@ -299,7 +299,7 @@ def _quantity(
 
     try:
         numeric = float(raw_value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, ArithmeticError):
         numeric = math.nan
 
     if (
@@ -317,19 +317,33 @@ def _quantity(
             status=ArchiveQuantityStatus.INVALID_VALUE,
             unit_conformance=validation.unit_conformance,
             provenance=provenance,
+            invalid_reason="source value is non-finite, non-numeric or outside the physical range",
         )
 
     assert validation.conversion_factor is not None
+    invalid_reason = None
+    try:
+        canonical = numeric * validation.conversion_factor
+    except ArithmeticError:
+        canonical = math.nan
+        invalid_reason = "canonical conversion raised an arithmetic error"
+    if not math.isfinite(canonical):
+        invalid_reason = invalid_reason or "canonical conversion produced a non-finite value"
+    elif (
+        validation.spec.minimum_value is not None
+        and canonical <= validation.spec.minimum_value
+    ):
+        invalid_reason = "canonical value is outside the physical range (including underflow to zero)"
     return ArchiveQuantity(
         raw_value=raw_value,
         source_unit=metadata.unit,
-        canonical_value=(
-            numeric * validation.conversion_factor
-        ),
+        canonical_value=canonical if invalid_reason is None else None,
         canonical_unit=validation.spec.canonical_unit,
-        status=ArchiveQuantityStatus.AVAILABLE,
+        status=(ArchiveQuantityStatus.AVAILABLE if invalid_reason is None
+                else ArchiveQuantityStatus.INVALID_VALUE),
         unit_conformance=validation.unit_conformance,
         provenance=provenance,
+        invalid_reason=invalid_reason,
     )
 
 
@@ -349,6 +363,7 @@ def _issue_for_quantity(
         message=(
             f"{quantity.provenance.source_field} is "
             f"{quantity.status.value}"
+            + (f": {quantity.invalid_reason}" if quantity.invalid_reason else "")
         ),
         source_field=quantity.provenance.source_field,
     )
@@ -394,10 +409,17 @@ def build_archive_comparison_evidence(
     if centre.is_available and bandwidth.is_available:
         assert centre.canonical_value is not None
         assert bandwidth.canonical_value is not None
-        half_bandwidth = bandwidth.canonical_value / 2.0
-        candidate_lower = centre.canonical_value - half_bandwidth
-        candidate_upper = centre.canonical_value + half_bandwidth
-        if 0.0 < candidate_lower < candidate_upper:
+        try:
+            half_bandwidth = bandwidth.canonical_value / 2.0
+            candidate_lower = centre.canonical_value - half_bandwidth
+            candidate_upper = centre.canonical_value + half_bandwidth
+        except ArithmeticError:
+            candidate_lower = candidate_upper = math.nan
+        if (
+            math.isfinite(candidate_lower)
+            and math.isfinite(candidate_upper)
+            and 0.0 < candidate_lower < candidate_upper
+        ):
             lower_ghz = candidate_lower
             upper_ghz = candidate_upper
         else:
@@ -409,7 +431,7 @@ def build_archive_comparison_evidence(
                     ),
                     message=(
                         "frequency and bandwidth do not define a "
-                        "strictly positive interval"
+                        "finite, strictly positive interval with distinct endpoints"
                     ),
                     source_field="frequency,bandwidth",
                 ),
