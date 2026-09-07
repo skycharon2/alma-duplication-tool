@@ -12,7 +12,7 @@ from alma_duplicate.parsers.queue_csv import (
     parse_queue_csv_bytes,
 )
 
-QUEUE_CSV_CLIENT_VERSION = "1"
+QUEUE_CSV_CLIENT_VERSION = "2"
 
 
 class QueueCsvReadError(OSError):
@@ -27,10 +27,14 @@ class QueueCsvClient:
         source_url: str = DEFAULT_QUEUE_SOURCE_URL,
         *,
         clock: Callable[[], datetime] | None = None,
+        source_url_kind: str | None = None,
     ) -> None:
         if not source_url.strip():
             raise ValueError("source_url must not be blank")
         self._source_url = source_url
+        if source_url_kind not in {None, "SOURCE_PAGE", "DOWNLOAD_URL", "UNSPECIFIED"}:
+            raise ValueError("unsupported source_url_kind")
+        self._source_url_kind = source_url_kind
         self._clock = clock or (
             lambda: datetime.now(UTC)
         )
@@ -44,13 +48,17 @@ class QueueCsvClient:
         raw_bytes: bytes,
         *,
         captured_at: datetime | None = None,
+        retrieved_at: datetime | None = None,
     ) -> QueueCsvParseResult:
         """Parse bytes already obtained by a caller."""
 
         return parse_queue_csv_bytes(
             raw_bytes,
             source_url=self._source_url,
-            captured_at=captured_at or self._clock(),
+            captured_at=captured_at,
+            retrieved_at=retrieved_at,
+            parsed_at=self._clock(),
+            source_url_kind=self._source_url_kind,
         )
 
     def load(
@@ -58,6 +66,7 @@ class QueueCsvClient:
         path: str | Path,
         *,
         captured_at: datetime | None = None,
+        retrieved_at: datetime | None = None,
     ) -> QueueCsvParseResult:
         """Read one local snapshot without altering its bytes."""
 
@@ -72,4 +81,5 @@ class QueueCsvClient:
         return self.parse_bytes(
             raw_bytes,
             captured_at=captured_at,
+            retrieved_at=retrieved_at,
         )

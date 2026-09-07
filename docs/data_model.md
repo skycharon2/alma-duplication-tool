@@ -894,7 +894,7 @@ identity.
 
 | Queue object | Ownership and safety rule |
 |---|---|
-| `QueueSnapshot` | Owns source URL, checksum, capture time, description, dictionary, operational header, secondary header, schema version, and parser version |
+| `QueueSnapshot` | Owns source URL and role, checksum, nullable retrieval time, parse time, source-as-of date/status, uninterpreted legacy captured_at, description, dictionary, operational header, secondary header, schema/parser/provenance versions |
 | `RawQueueRow` | Owns the exact 79 raw strings, physical line range, source ordinal, and content fingerprint; identical content on different lines remains distinct |
 | `QueueRowInput` | Typed projection of one valid raw row; never replaces the raw row |
 | `QueueSpatialComponent` | Factored coordinates, offsets, mosaic classification, rectangle geometry, coordinate system, and `1e-6 arcsec` classification tolerance |
