@@ -24,10 +24,13 @@ The next phase is the shared Archive--Queue comparison model. Formal
 duplication rules, known-case assessment, automated Queue snapshot retrieval,
 and the browser interface are not yet implemented.
 
-The next request-model implementation is specified by the proposed
+The request-model design is specified by the proposed
 [rule inputs and evidence contract](docs/duplication_rule_inputs.md) and
 [conditional form sketch](docs/proposed_observation_form.md). These are design
-documents, not implemented request APIs or a duplication rule engine.
+documents. The [offline request validation API](docs/proposed_observation_api.md)
+now implements a bounded request-side subset, including valid partial requests
+and independent search options. Candidate search and duplication rules are not
+implemented by that API.
 
 ### Archive pipeline
 
