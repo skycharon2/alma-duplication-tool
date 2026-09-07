@@ -101,7 +101,12 @@ accepts explicit parsed_at for deterministic testing/replay; otherwise it uses
 the current UTC time. Re-reading the same bytes with the same supplied retrieval
 provenance preserves checksum, source date, raw rows and metadata; only parsed_at
 changes. With no supplied retrieval time it stays None on every read. The client
-does not retain retrieval metadata between instances or write a manifest yet.
+does not itself retain retrieval metadata between instances or write a manifest.
+`QueueSnapshotStore` provides explicit disk persistence separately: source bytes
+and acquisition facts are published before parsing; each reparse writes a new
+summary. Historical reads do not invoke the parser. See
+[Queue snapshot storage](queue_snapshot_store.md) for the versioned format,
+integrity checks, and limits of historical summaries.
 Schema, quantity normalization and reconstruction algorithms are unchanged.
 
 Notebook 05's existing mtime display is a historical local-file observation,
