@@ -5,6 +5,7 @@ The wire input is a string-keyed mapping with JSON-like scalar/list values.
 """
 
 from collections.abc import Mapping
+from decimal import Decimal, InvalidOperation
 import math
 import re
 from types import MappingProxyType
@@ -159,6 +160,14 @@ class _Validator:
         if not math.isfinite(result):
             self.error("INVALID_NUMBER", path, "Number must be finite.")
             return None
+        try:
+            exact = Decimal(value.strip() if type(value) is str else value)
+        except InvalidOperation:
+            self.error("INVALID_NUMBER", path, "Invalid decimal number.")
+            return None
+        if result == 0 and exact != 0:
+            self.error("NUMERIC_UNDERFLOW", path, "Nonzero input underflows to zero.")
+            return None
         return result
 
     def quantity(self, value, path, family, velocity=False):
@@ -241,7 +250,20 @@ class _Validator:
 
         def angle(raw, fmt, field, maximum):
             if fmt == "DEG":
-                return self.number(raw, field)
+                number = self.number(raw, field)
+                if number is not None:
+                    exact = Decimal(raw.strip() if type(raw) is str else raw)
+                    valid = (
+                        (0 <= exact < 360) if maximum == 24 else (-90 <= exact <= 90)
+                    )
+                    if not valid:
+                        self.error(
+                            "INVALID_COORDINATE",
+                            field,
+                            "Original coordinate outside allowed range.",
+                        )
+                        return None
+                return number
             if fmt not in {"HMS", "DMS"}:
                 return None
             match = (
@@ -396,6 +418,30 @@ class _Validator:
                 )
             else:
                 interval = RequestInterval(lo, hi, midpoint, span, kind, origin)
+        if center and lower and upper and kind == "NOMINAL":
+            references = {(f.kind, f.frame) for f in (center, lower, upper)}
+            compatible = len(references) == 1 and all(
+                f.kind != "UNKNOWN" and f.frame != "UNKNOWN"
+                for f in (center, lower, upper)
+            )
+            if not compatible:
+                self.capability(
+                    path + ".center",
+                    "Nominal center membership cannot be verified with unknown or incompatible frequency references.",
+                    "LINE-COVERAGE",
+                    "INCOMPATIBLE_REFERENCE",
+                )
+            elif (
+                interval
+                and not interval.lower_ghz
+                <= center.quantity.value
+                <= interval.upper_ghz
+            ):
+                self.error(
+                    "INVALID_ASSOCIATION",
+                    path + ".center",
+                    "SPW center outside its declared nominal interval.",
+                )
         return ProposedWindow(
             identifier,
             representation,
@@ -877,6 +923,18 @@ def validate_proposed_observation(
                         p + ".correlator_mode",
                         "Mode evidence is unknown.",
                         "LINE-COVERAGE",
+                    )
+                if not any(
+                    s.purpose == "LINE"
+                    and s.scope == "WINDOW"
+                    and window.window_id in s.window_ids
+                    and s.rms is not None
+                    for s in sensitivities
+                ):
+                    v.missing(
+                        p + ".sensitivities",
+                        f"Window {window.window_id} has no associated line sensitivity.",
+                        "LINE-RMS",
                     )
             if complete is not True:
                 v.missing(
