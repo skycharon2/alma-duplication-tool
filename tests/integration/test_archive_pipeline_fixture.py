@@ -52,6 +52,33 @@ FIXTURE_PATH = (
 )
 
 
+def test_raw_snapshot_and_derived_evidence_remain_consistent():
+    original = _complete_query_result()
+    source = dict(original.rows[0])
+    result = replace(original, rows=(source, source))
+    pipeline = run_archive_pipeline(result)
+    before_frequency = source["frequency"]
+    before_support = source["frequency_support"]
+    source["frequency"] = 999.0
+    source["frequency_support"] = "changed"
+    source.clear()
+    assert len(pipeline.prepared_rows) == 2
+    assert len({row.raw_row_id for row in pipeline.prepared_rows}) == 2
+    evidence_by_row = {
+        item.raw_row_id: item
+        for item in pipeline.reconstruction.frequency_support_evidence
+    }
+    for index, prepared in enumerate(pipeline.prepared_rows):
+        assert prepared.raw_row is result.rows[index]
+        assert prepared.raw_row["frequency"] == before_frequency
+        assert prepared.raw_row["frequency_support"] == before_support
+        assert prepared.comparison_evidence.frequency.centre.raw_value == before_frequency
+        assert prepared.comparison_evidence.frequency.centre.canonical_value == before_frequency
+        assert evidence_by_row[prepared.raw_row_id].parse_result.raw_value == before_support
+        with pytest.raises(TypeError):
+            prepared.raw_row["frequency"] = 999.0
+
+
 def _field_metadata(
     columns: tuple[str, ...],
     *,

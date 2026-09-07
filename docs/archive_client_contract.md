@@ -1,5 +1,34 @@
 # Archive TAP Client Completeness and Field-Metadata Contract
 
+## Raw row snapshot boundary (client version 6)
+
+Both `TapResponse` and `ArchiveQueryResult` copy every input row into an
+independent read-only mapping and store the rows in a tuple. This applies to
+direct construction, fake executors, the PyVO executor, and diagnostic rows in
+`OVERFLOW`, `COUNT_MISMATCH` and `ERROR` results. Incomplete results remain
+ineligible for reconstruction. Column insertion order and duplicate row
+positions are preserved; equal rows are not deduplicated. The adapter retains
+the query-result snapshot as `prepared.raw_row`, so its normalized and parsed
+evidence cannot be invalidated by later changes to the caller's dictionary.
+
+The supported cell contract is scalar: exact Python `None`, `bool`, `int`,
+`float`, `complex`, `str`, `bytes`; built-in NumPy numeric, boolean, string,
+datetime and timedelta scalars; and the canonical `numpy.ma.masked` missing
+sentinel. Values retain their original scalar type, dtype, whitespace, bytes,
+NaN and missing semantics. This boundary does not validate scientific values.
+
+Lists, dictionaries, sets, bytearrays, ndarrays (including zero-dimensional
+and masked arrays), structured NumPy void values and arbitrary object cells
+are explicitly unsupported. Construction raises `TypeError` identifying the
+row, column and type. The PyVO executor translates this into its existing
+`RESPONSE_FORMAT_ERROR`; it does not silently drop or coerce the cell. Array
+support would require a separate immutable representation contract.
+
+This is an in-memory snapshot of the selected columns, not disk persistence
+or a guarantee that all Archive metadata columns were queried. Parser,
+reconstruction and adapter algorithms are unchanged; the client provenance
+version is incremented from 5 to 6.
+
 ## Purpose
 
 The Archive client retrieves candidate evidence from the ALMA Science Archive

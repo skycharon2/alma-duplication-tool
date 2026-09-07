@@ -8,6 +8,8 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Protocol, TypeAlias
 
+from alma_duplicate.clients.archive_snapshot import snapshot_archive_rows
+
 ParameterScalar: TypeAlias = str | int | float | bool | None
 NormalizedParameters: TypeAlias = tuple[
     tuple[str, ParameterScalar],
@@ -165,6 +167,7 @@ class TapResponse:
     warnings: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "rows", snapshot_archive_rows(self.rows))
         metadata_columns = tuple(
             field.name
             for field in self.field_metadata
@@ -203,6 +206,7 @@ class ArchiveQueryResult:
     error_message: str | None = None
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "rows", snapshot_archive_rows(self.rows))
         if (
             self.status is ArchiveQueryStatus.ERROR
             and self.error_kind is None
