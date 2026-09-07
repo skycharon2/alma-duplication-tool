@@ -31,6 +31,7 @@ from alma_duplicate.clients.archive_contract import (
     TapResponse,
 )
 from alma_duplicate.clients.archive_queries import (
+    ARCHIVE_OPTIONAL_COLUMNS,
     ARCHIVE_ANGULAR_RESOLUTION_QUERY_UNITS,
     ARCHIVE_FREQUENCY_QUERY_UNITS,
     ARCHIVE_QUERY_UNIT_CONTRACT_VERSION,
@@ -45,7 +46,9 @@ from alma_duplicate.clients.archive_queries import (
     requested_query_unit_contract,
 )
 
-ARCHIVE_CLIENT_VERSION = "6"
+from alma_duplicate.clients.archive_projection import plan_archive_projection
+
+ARCHIVE_CLIENT_VERSION = "7"
 DEFAULT_MAXREC = 10_000
 
 
@@ -660,9 +663,54 @@ class ArchiveClient:
     def search(
         self,
         spec: ArchiveQuerySpec,
+        *,
+        optional_columns: tuple[str, ...] = ARCHIVE_OPTIONAL_COLUMNS,
+    ) -> ArchiveQueryResult:
+        """Resolve optional evidence, then execute the unchanged core search."""
+
+        started_at = self._clock()
+        projection = plan_archive_projection(self._executor, optional_columns)
+        result = self._search(spec, projection.selected_columns, started_at)
+        has_response = result.provenance.retrieved_count is not None
+        returned = {field.name for field in result.field_metadata}
+        projection = replace(
+            projection,
+            optional_columns=tuple(
+                replace(
+                    item,
+                    returned=(
+                        item.column_name in returned if has_response else None
+                    ),
+                )
+                for item in projection.optional_columns
+            ),
+        )
+        warnings = projection.warnings + tuple(
+            f"Selected optional column missing from response: {item.column_name}"
+            for item in projection.optional_columns
+            if (
+                item.column_name in projection.selected_columns
+                and item.returned is False
+            )
+        )
+        provenance = replace(
+            result.provenance,
+            projection=projection,
+            warnings=result.provenance.warnings + warnings,
+            query_hash=sha256(
+                (result.provenance.query_hash + "\0" + repr(projection))
+                .encode("utf-8")
+            ).hexdigest(),
+        )
+        return replace(result, provenance=provenance)
+
+    def _search(
+        self,
+        spec: ArchiveQuerySpec,
+        columns: tuple[str, ...],
+        started_at: datetime,
     ) -> ArchiveQueryResult:
         query_run_id = self._run_id_factory()
-        started_at = self._clock()
         prefilter_plan = self._plan_query_arithmetic(spec)
         count_adql = build_count_adql(
             prefilter_plan.effective_spec,
@@ -675,6 +723,7 @@ class ArchiveClient:
         )
         retrieval_adql = build_retrieval_adql(
             prefilter_plan.effective_spec,
+            columns=columns,
             frequency_units_verified=(
                 prefilter_plan.frequency_units_verified
             ),

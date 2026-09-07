@@ -2,8 +2,9 @@
 
 ## Purpose
 
-Implementation contract for ingesting the 73 columns in the public ALMA
-`ivoa.obscore` TAP view into Archive Reconstruction Model v0.4. It consolidates
+Reference dictionary for 73 historically surveyed columns in the public ALMA
+`ivoa.obscore` TAP view. Production uses the projection below, not all 73
+columns. It consolidates
 evidence from Notebooks 01 through 04c and records:
 
 - the service type and unit;
@@ -14,6 +15,56 @@ evidence from Notebooks 01 through 04c and records:
 It is not the official internal ALMA database schema. Raw TAP values always
 remain authoritative evidence; normalized and derived values are versioned
 projections.
+
+## Production projection v1 (schema 3, client 7)
+
+Core fields are always queried and required in response FIELD metadata, even
+for zero-row results. Missing core fields trigger a schema error. Required
+column presence does not imply non-NULL cells: existing parsers and quantity
+validators retain missing/invalid states. Optional fields are queried only
+after schema confirmation and are not required for core completeness.
+All returned values and FIELD descriptors remain raw evidence alongside the
+existing projections below.
+
+| Field | Purpose | Query / required | Existing projection |
+|---|---|---|---|
+| `proposal_id` | Project identity | Core / yes | Metadata normalization |
+| `obs_publisher_did` | Publisher/project cross-check | Core / yes | Metadata normalization |
+| `group_ous_uid` | Group identity | Core / yes | Metadata normalization |
+| `member_ous_uid` | Member association | Core / yes | Reconstruction text input |
+| `asdm_uid` | Execution identity | Core / yes | Reconstruction text input |
+| `obs_id` | Identifier grammar and association | Core / yes | Versioned identifier parser |
+| `target_name` | Source label | Core / yes | Raw only |
+| `s_ra` | Position evidence | Core / yes | Raw only |
+| `s_dec` | Position evidence | Core / yes | Raw only |
+| `s_region` | Footprint and spatial search | Core / yes | Raw; server predicate |
+| `frequency` | Frequency centre | Core / yes | Unit-validated quantity |
+| `bandwidth` | Coverage | Core / yes | Unit-validated quantity |
+| `em_xel` | Channel count | Core / yes | Raw; no mode inference |
+| `frequency_support` | Full spectral description | Core / yes | Complete spectral parse evidence |
+| `spectral_resolution` | Spectral comparison | Core / yes | Unit-validated quantity |
+| `spatial_resolution` | Angular comparison | Core / yes | Unit-validated quantity |
+| `sensitivity_10kms` | Line sensitivity estimate | Core / yes | Unit-validated quantity |
+| `cont_sensitivity_bandwidth` | Continuum sensitivity estimate | Core / yes | Unit-validated quantity |
+| `antenna_arrays` | Array description | Core / yes | Raw only |
+| `is_mosaic` | Observation context | Core / yes | Flag normalization |
+| `science_observation` | Science context | Core / yes | Flag normalization; server predicate |
+| `qa2_passed` | QA context | Core / yes | Flag normalization |
+| `obs_release_date` | Release provenance | Core / yes | Timestamp normalization |
+| `lastModified` | Modification provenance | Core / yes | Timestamp normalization |
+| `s_resolution` | Independent resolution cross-check | Optional / no | Raw; never replaces spatial_resolution |
+| `s_fov` | Field of view | Optional / no | Raw only |
+| `t_min` | Observation start bound | Optional / no | Raw; no date conversion |
+| `t_max` | Observation end bound | Optional / no | Raw; no date conversion |
+| `band_list` | Band description | Optional / no | Raw only |
+| `pol_states` | Polarization description | Optional / no | Raw; no mode inference |
+
+Optional absence is recorded as NOT_REQUESTED, NOT_IN_SCHEMA, or
+SCHEMA_UNAVAILABLE; selected-but-unreturned is SELECTED with returned=False.
+A returned NULL remains an actual cell. No absent column is filled with None.
+Projection decisions survive zero-row and incomplete results on provenance.
+Unknown returned scalar columns and their descriptors remain unnormalized.
+Mutable array cells remain outside the immutable raw-row contract.
 
 ## Evidence snapshots
 

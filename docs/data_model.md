@@ -2,6 +2,14 @@
 
 ## Status and scope
 
+Production selection is projection v1 / schema v3 / client v7: 24 required
+core columns plus up to 6 schema-confirmed optional auxiliary columns. The
+73-field dictionary is a historical reference, not full production ingestion.
+`ArchiveQueryProvenance.projection` preserves the actual planned selection and
+optional absence reasons independently of raw NULL/masked cells. Auxiliary
+fields remain raw source evidence, not new validated comparison quantities.
+See the field inventory and client contract for missing-field behavior.
+
 Archive raw-row immutability is enforced at both `TapResponse` and
 `ArchiveQueryResult` construction (client version 6). Each row is independently
 copied and exposed as a read-only mapping inside a tuple, including diagnostic

@@ -8,7 +8,7 @@ import pytest
 
 from alma_duplicate.clients import (
     ARCHIVE_SCHEMA_VERSION,
-    ARCHIVE_SELECTED_COLUMNS,
+    REQUIRED_ARCHIVE_COLUMNS,
     ArchiveAngularResolutionPrefilterStatus,
     ArchiveClient,
     ArchiveFrequencyPrefilterStatus,
@@ -91,10 +91,11 @@ def test_live_archive_tap_contract(
     assert result.error_kind is None
     assert result.error_message is None
     assert result.missing_columns == ()
-    assert tuple(
-        field.name
-        for field in result.field_metadata
-    ) == ARCHIVE_SELECTED_COLUMNS
+    returned_names = {field.name for field in result.field_metadata}
+    assert REQUIRED_ARCHIVE_COLUMNS.issubset(returned_names)
+    assert provenance.projection is not None
+    for item in provenance.projection.optional_columns:
+        assert item.returned == (item.column_name in returned_names)
     assert all(
         field.datatype.strip()
         for field in result.field_metadata

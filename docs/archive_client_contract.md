@@ -157,6 +157,51 @@ false for every non-complete result.
 
 ## Schema contract
 
+Client version 7 uses schema version 3 and projection version 1. The desired
+`ARCHIVE_SELECTED_COLUMNS` contains 30 names: 24 `ARCHIVE_CORE_COLUMNS` and
+6 `ARCHIVE_OPTIONAL_COLUMNS`. `REQUIRED_ARCHIVE_COLUMNS` contains only the
+24 core names, preserving the previous strict core contract. The new columns
+are `s_resolution`, `s_fov`, `t_min`, `t_max`, `band_list`, and `pol_states`:
+raw auxiliary evidence without new typed conversions. See the per-field
+inventory in `archive_data_dictionary.md`.
+
+Before science queries, the client probes `TAP_SCHEMA.columns` for requested
+optional names with `MAXREC = requested count + 1` (7 by default). Only names
+verified present enter retrieval ADQL. Probe failure, OVERFLOW, unknown status,
+invalid names or duplicates disable optional selection and retain a diagnostic;
+they do not establish absence. Arithmetic preflight remains independent. COUNT
+and retrieval share the same effective WHERE clause. Passing
+`search(spec, optional_columns=())` requests core fields only and skips the
+probe. The pure `build_retrieval_adql` helper defaults to core columns; callers
+adding optional names must resolve them first.
+
+`result.provenance.projection` records the version, planned columns, probe
+ADQL/status/raw rows/error/warnings, and each optional field decision:
+
+| Decision | Meaning |
+|---|---|
+| `SELECTED` | Probe verified the field; retrieval ADQL includes it |
+| `NOT_REQUESTED` | Caller disabled the field |
+| `NOT_IN_SCHEMA` | A complete valid probe did not report the field |
+| `SCHEMA_UNAVAILABLE` | Probe could not establish a reliable schema |
+
+Each decision also has `returned`: True if retrieval FIELD metadata includes
+the column, False if a response omitted it, or None if retrieval did not yield
+a response. Selected-but-unreturned optional fields add warnings without
+invalidating the core result. Unexpected returned columns do not change the
+selection decision; their raw cells and FIELD metadata remain preserved.
+Missing required columns remain `SCHEMA_DRIFT`, including zero-row results.
+Core query rejection retains the existing structured query-error path.
+
+No placeholder cells are inserted. Returned NULL/masked values differ from
+absent row keys and unrequested columns. FIELD presence does not imply a
+non-NULL cell. Auxiliary units are preserved without conversion;
+`s_resolution` never substitutes for `spatial_resolution`. Legacy/direct
+results default to `projection=None`, meaning unrecorded selection history.
+All result statuses retain projection evidence, whose representation also
+contributes to the query hash. Run timing includes the projection probe;
+no additional retry is introduced.
+
 `ARCHIVE_SCHEMA_VERSION` versions the retrieval projection and required-column
 set. Schema validation uses `TapResponse.declared_columns`, not keys from the
 first data row. This permits a zero-row table to prove that it still satisfies

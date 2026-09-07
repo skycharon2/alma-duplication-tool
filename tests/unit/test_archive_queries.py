@@ -5,6 +5,7 @@ import math
 import pytest
 
 from alma_duplicate.clients.archive_queries import (
+    ARCHIVE_CORE_COLUMNS,
     ARCHIVE_ANGULAR_RESOLUTION_QUERY_UNITS,
     ARCHIVE_FREQUENCY_QUERY_UNITS,
     ARCHIVE_SELECTED_COLUMNS,
@@ -57,7 +58,7 @@ def test_retrieval_uses_explicit_projection() -> None:
     query = build_retrieval_adql(_spec())
 
     assert "SELECT *" not in query.upper()
-    for column in ARCHIVE_SELECTED_COLUMNS:
+    for column in ARCHIVE_CORE_COLUMNS:
         assert column in query
     assert "em_xel" in ARCHIVE_SELECTED_COLUMNS
 

@@ -12,7 +12,8 @@ from alma_duplicate.clients.archive_contract import (
 
 ARCHIVE_TABLE = "ivoa.obscore"
 COUNT_ALIAS = "total_matches"
-ARCHIVE_SCHEMA_VERSION = "2"
+ARCHIVE_SCHEMA_VERSION = "3"
+ARCHIVE_PROJECTION_VERSION = "1"
 ARCHIVE_QUERY_UNIT_CONTRACT_VERSION = "2"
 
 ARCHIVE_FREQUENCY_QUERY_UNITS = (
@@ -28,7 +29,7 @@ ARCHIVE_QUERY_ARITHMETIC_UNITS = (
 )
 
 # Explicit projection used by normalization and v0.4 reconstruction.
-ARCHIVE_SELECTED_COLUMNS = (
+ARCHIVE_CORE_COLUMNS = (
     "proposal_id",
     "obs_publisher_did",
     "group_ous_uid",
@@ -55,9 +56,12 @@ ARCHIVE_SELECTED_COLUMNS = (
     "lastModified",
 )
 
-REQUIRED_ARCHIVE_COLUMNS = frozenset(
-    ARCHIVE_SELECTED_COLUMNS
+ARCHIVE_OPTIONAL_COLUMNS = (
+    "s_resolution", "s_fov", "t_min", "t_max", "band_list", "pol_states",
 )
+# Desired projection; production resolves optional names before emitting ADQL.
+ARCHIVE_SELECTED_COLUMNS = ARCHIVE_CORE_COLUMNS + ARCHIVE_OPTIONAL_COLUMNS
+REQUIRED_ARCHIVE_COLUMNS = frozenset(ARCHIVE_CORE_COLUMNS)
 
 
 @dataclass(frozen=True, slots=True)
@@ -327,11 +331,11 @@ def build_count_adql(
 def build_retrieval_adql(
     spec: ArchiveQuerySpec,
     *,
-    columns: tuple[str, ...] = ARCHIVE_SELECTED_COLUMNS,
+    columns: tuple[str, ...] = ARCHIVE_CORE_COLUMNS,
     frequency_units_verified: bool = False,
     angular_resolution_units_verified: bool = False,
 ) -> str:
-    """Build retrieval ADQL with an explicit projection."""
+    """Build ADQL; optional columns require an explicitly resolved projection."""
 
     if not columns:
         raise ValueError(
