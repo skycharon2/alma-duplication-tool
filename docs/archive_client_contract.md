@@ -259,10 +259,23 @@ dimensionally incompatible units fail closed for the affected quantity. The
 adapter never treats a bare float as GHz, Hz, kHz, arcsec, or mJy/beam merely
 because of its column name.
 
-All six physical quantities must also be finite and strictly greater than
-zero. Frequency coverage is exposed only when its converted bounds satisfy
+Comparison contract version 3 validates all six physical quantities both
+before and after conversion. Canonical values must be finite and strictly
+greater than zero. Overflow, underflow to zero and arithmetic failures produce
+`INVALID_VALUE` with `canonical_value=None`; raw value, source unit, unit
+conformance and provenance remain intact. `ArchiveQuantity.invalid_reason`
+and the corresponding VALUE_INVALID diagnostic describe the failure stage.
+Finite positive subnormal values are not rejected solely for being small.
+`unit_safe` still describes unit metadata, not availability of every value.
+
+Frequency coverage is exposed only when both converted bounds are finite and satisfy
 `0 < lower_ghz < upper_ghz`; otherwise the quantities and an explicit invalid-
 interval issue are retained, but the interval is unavailable.
+
+Endpoint overflow or rounding that collapses the endpoints also leaves both
+bounds unset and emits FREQUENCY_INTERVAL_INVALID. Individually valid centre
+and bandwidth quantities are preserved. This does not alter query selection,
+Queue conversion, frame interpretation, or duplication decisions.
 
 ### Correlator-mode evidence boundary
 

@@ -99,6 +99,7 @@ class ArchiveQuantity:
     status: ArchiveQuantityStatus
     unit_conformance: ArchiveUnitConformance
     provenance: ArchiveEvidenceProvenance
+    invalid_reason: str | None = None
 
     @property
     def is_available(self) -> bool:

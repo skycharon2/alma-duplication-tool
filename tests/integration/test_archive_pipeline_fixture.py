@@ -79,6 +79,27 @@ def test_raw_snapshot_and_derived_evidence_remain_consistent():
             prepared.raw_row["frequency"] = 999.0
 
 
+def test_pipeline_retains_raw_value_when_canonical_conversion_overflows():
+    original = _complete_query_result()
+    result = replace(
+        original,
+        rows=(dict(original.rows[0]) | {"spatial_resolution": 1e308},),
+        field_metadata=tuple(
+            replace(field, unit="deg") if field.name == "spatial_resolution" else field
+            for field in original.field_metadata
+        ),
+    )
+    pipeline = run_archive_pipeline(result)
+    prepared = pipeline.prepared_rows[0]
+    quantity = prepared.comparison_evidence.angular_resolution.quantity
+    assert prepared.raw_row["spatial_resolution"] == 1e308
+    assert quantity.raw_value == 1e308 and quantity.source_unit == "deg"
+    assert quantity.canonical_value is None
+    assert not quantity.is_available
+    assert quantity.invalid_reason
+    assert len(pipeline.reconstruction.frequency_support_evidence) == 1
+
+
 @pytest.mark.parametrize("auxiliary_unit", ["deg", "arcsec", None, "unexpected-unit"])
 def test_auxiliary_and_extension_metadata_survive_without_interpretation(auxiliary_unit):
     original = _complete_query_result()
