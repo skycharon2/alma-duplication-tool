@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from enum import StrEnum
 from typing import TypeAlias
 
@@ -197,6 +197,14 @@ class QueueSnapshot:
     dictionary_entries: tuple[QueueDictionaryEntry, ...]
     schema_version: str
     parser_version: str
+    # Legacy captured_at above is retained verbatim, never reinterpreted.
+    retrieved_at: datetime | None = None
+    parsed_at: datetime | None = None
+    source_as_of: date | None = None
+    source_as_of_raw: str | None = None
+    source_as_of_status: str = "NOT_PARSED"
+    source_url_kind: str = "UNSPECIFIED"
+    provenance_version: str = "2"
 
     def __post_init__(self) -> None:
         if not self.source_url.strip():
@@ -205,6 +213,18 @@ class QueueSnapshot:
             raise ValueError("snapshot_sha256 must contain 64 hex chars")
         if self.byte_length < 0:
             raise ValueError("byte_length must not be negative")
+        for name in ("retrieved_at", "parsed_at"):
+            value = getattr(self, name)
+            if value is not None and (
+                not isinstance(value, datetime) or value.utcoffset() is None
+            ):
+                raise ValueError(f"{name} must be a timezone-aware datetime")
+        if self.source_url_kind not in {"SOURCE_PAGE", "DOWNLOAD_URL", "UNSPECIFIED"}:
+            raise ValueError("unsupported source_url_kind")
+
+    @property
+    def legacy_capture_status(self) -> str:
+        return "LEGACY_UNINTERPRETED" if self.captured_at is not None else "NOT_PROVIDED"
 
 
 @dataclass(frozen=True, slots=True)
