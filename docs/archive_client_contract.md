@@ -301,6 +301,36 @@ The raw mapping is not overwritten by normalized or parsed values. Input row
 order is preserved in `prepared_rows`; reconstruction remains canonical under
 shuffled reconstruction inputs.
 
+### Complete frequency-support evidence
+
+Adapter version 7 preserves the original spectral string or bytes, including
+whitespace, before reconstruction. Non-text missing values use the existing
+missing-value normalization. Reconstruction version 3 parses frequency support
+exactly once per row, independently of identifier linkage. The spectral parser
+algorithm remains version 2.
+
+`pipeline.reconstruction.frequency_support_evidence` contains one
+`RowFrequencySupportEvidence` per raw row, including unlinked rows. Its
+`parse_result` is the full `FrequencySupportParseResult`: all components,
+tokens, original units, sensitivity bases, polarization, unknown tokens,
+parse issues and validation issues are retained. Missing and blank values
+retain their grammar family and failed parse result. Partial results remain
+visible but do not become safe mapping inputs.
+
+Mapping consumes this saved result. Each `candidate_refs` entry identifies a
+component by `(raw_row_id, parser_version, component_index)`. Bracket ambiguity
+retains every containing interval; brace ambiguity retains every equally near
+component. Outside-tolerance brace candidates remain diagnostic references.
+Only an `ASSIGNED` mapping exposes `component_ref` and `component_index`;
+unassigned mappings never silently select their first candidate.
+`RowFrequencySupportEvidence.resolve()` rejects another row or parser version
+and resolves a valid reference to the saved component. References are scoped
+to the query-run row identity, not globally reusable SPW identifiers.
+
+This output change does not establish ASDM association or duplication-policy
+eligibility. Existing consumers that read a diagnostic `component_index` from
+an unassigned mapping must instead inspect `candidate_refs` and mapping status.
+
 ## Test boundary
 
 Ordinary unit and integration tests are offline:
