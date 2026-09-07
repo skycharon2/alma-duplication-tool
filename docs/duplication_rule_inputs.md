@@ -2,6 +2,11 @@
 
 Design version: 0.3. Reviewed: 2026-09-07. Incremental revision of design 0.2.
 
+Implementation update: the [request validation API](proposed_observation_api.md)
+implements a bounded request-side subset. The condition/adapter specifications
+below remain design targets where not explicitly covered by that API; this
+document's original PR scope does not imply a rule engine has been delivered.
+
 Project goal: a user describes a proposed observation; the system independently
 searches Archive and Queue, checks applicable duplication conditions within a
 coherent observation context, and displays conclusions, evidence and reasons
