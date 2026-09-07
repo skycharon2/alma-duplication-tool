@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+import numpy as np
 from astropy import units as u
 
 from alma_duplicate.clients.archive_contract import (
@@ -28,7 +29,7 @@ from alma_duplicate.domain.archive_evidence import (
 )
 
 
-ARCHIVE_COMPARISON_CONTRACT_VERSION = "3"
+ARCHIVE_COMPARISON_CONTRACT_VERSION = "4"
 
 
 @dataclass(frozen=True, slots=True)
@@ -298,6 +299,8 @@ def _quantity(
         )
 
     try:
+        if isinstance(raw_value, (bool, np.bool_)):
+            raise TypeError("Boolean is not a scientific quantity")
         numeric = float(raw_value)
     except (TypeError, ValueError, ArithmeticError):
         numeric = math.nan

@@ -35,7 +35,7 @@ from alma_duplicate.parsers.frequency_support import (
 )
 from alma_duplicate.parsers.obs_id import parse_obs_id
 
-RECONSTRUCTION_VERSION = "3"
+RECONSTRUCTION_VERSION = "4"
 
 # 04b showed that direct frequency comparisons require an
 # explicit numerical tolerance.
@@ -171,15 +171,17 @@ def _quantity_to_value(
     target_unit: u.UnitBase,
 ) -> float | None:
     try:
-        return (
-            value * u.Unit(unit_text)
-        ).to_value(target_unit)
+        converted = float((value * u.Unit(unit_text)).to_value(target_unit))
     except (
         TypeError,
         ValueError,
+        ArithmeticError,
         u.UnitConversionError,
     ):
         return None
+    if not math.isfinite(converted) or converted <= 0.0:
+        return None
+    return converted
 
 
 def _map_bracket_support(

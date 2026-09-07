@@ -62,7 +62,7 @@ from alma_duplicate.queue_normalization import (
 
 from alma_duplicate.parsers.queue_provenance import parse_source_as_of
 
-QUEUE_CSV_PARSER_VERSION = "2"
+QUEUE_CSV_PARSER_VERSION = "3"
 DEFAULT_QUEUE_SOURCE_URL = (
     "https://almascience.eso.org/proposing/duplications"
 )
@@ -589,21 +589,22 @@ class _RowParser:
                 raw_value=mosaic_raw,
             )
 
-        velocity_quantity = self.quantity("Velocity")
-        velocity_frame = self.text("Vel. Frame")
-        velocity_convention = self.text(
-            "Vel. Convention"
-        ).upper()
-        if velocity_convention not in {
-            "RADIO", "OPTICAL", "RELATIVISTIC"
-        }:
-            self._issue(
-                QueueIssueKind.UNSUPPORTED_CATEGORY,
-                "unsupported velocity convention",
-                column="Vel. Convention",
-                raw_value=velocity_convention,
-            )
         is_sky_frequency = self.boolean("Is Sky Freq?")
+        needs_doppler = is_sky_frequency is False
+        velocity_quantity = self.quantity("Velocity", required=needs_doppler)
+        if needs_doppler:
+            velocity_frame = self.text("Vel. Frame")
+            velocity_convention = self.text("Vel. Convention").upper()
+            if velocity_convention not in {"RADIO", "OPTICAL", "RELATIVISTIC"}:
+                self._issue(
+                    QueueIssueKind.UNSUPPORTED_CATEGORY,
+                    "unsupported velocity convention",
+                    column="Vel. Convention", raw_value=velocity_convention,
+                )
+        else:
+            # Unused conversion metadata remains provenance, not a prerequisite.
+            velocity_frame = self.raw_row.value("Vel. Frame").strip()
+            velocity_convention = self.raw_row.value("Vel. Convention").strip().upper()
 
         reference_frequency = self.quantity(
             "Ref.Frequency",
@@ -645,7 +646,6 @@ class _RowParser:
                 dec,
                 long_offset,
                 lat_offset,
-                velocity_quantity,
                 is_sky_frequency,
                 reference_frequency,
                 reference_width,
@@ -727,10 +727,14 @@ class _RowParser:
             ):
                 self._issue(
                     QueueIssueKind
-                    .REFERENCE_FREQUENCY_OUTSIDE_COVERAGE,
-                    "Ref.Frequency is outside all derived SPW intervals",
+                    .REFERENCE_FREQUENCY_ASSOCIATION_UNVERIFIED,
+                    (
+                        "Ref.Frequency is numerically outside nominal sky intervals; "
+                        "its reference is unverified, so the association is unresolved."
+                    ),
                     column="Ref.Frequency",
                     raw_value=reference_frequency.raw_text,
+                    severity=QueueIssueSeverity.WARNING,
                 )
             spectral = RegularSpwEvidence(
                 spws=tuple(regular_spws),
@@ -837,27 +841,12 @@ class _RowParser:
                 usable_bandwidth = (
                     usable_derivation.usable_bandwidth_ghz
                 )
-                if usable_bandwidth is None:
-                    raise QueueFrequencyDerivationError(
-                        "UNRECOGNIZED Queue SPW bandwidth has no "
-                        "portal-script usable-width mapping: "
-                        f"{bandwidth.value!r} MHz"
+                usable_lower = usable_upper = None
+                if usable_bandwidth is not None:
+                    usable_lower, usable_upper = centred_frequency_interval(
+                        derivation.sky_frequency_ghz, usable_bandwidth,
                     )
-                usable_lower, usable_upper = centred_frequency_interval(
-                    derivation.sky_frequency_ghz,
-                    usable_bandwidth,
-                )
-            except QueueFrequencyDerivationError as exc:
-                self._issue(
-                    QueueIssueKind.INVALID_FREQUENCY_INTERVAL,
-                    str(exc),
-                    slot_number=columns.number,
-                )
-                continue
-
-            populated_numbers.append(columns.number)
-            parsed.append(
-                QueueSpw(
+                spw = QueueSpw(
                     number=columns.number,
                     frequency_ghz=frequency,
                     bandwidth_mhz=bandwidth,
@@ -880,7 +869,21 @@ class _RowParser:
                     usable_lower_sky_frequency_ghz=usable_lower,
                     usable_upper_sky_frequency_ghz=usable_upper,
                 )
-            )
+            except (ValueError, ArithmeticError) as exc:
+                self._issue(
+                    QueueIssueKind.INVALID_FREQUENCY_INTERVAL,
+                    str(exc), slot_number=columns.number,
+                )
+                continue
+            if usable_bandwidth is None:
+                self._issue(
+                    QueueIssueKind.USABLE_BANDWIDTH_UNAVAILABLE,
+                    "No usable-bandwidth mapping; source width and nominal coverage retained.",
+                    column=columns.bandwidth, slot_number=columns.number,
+                    raw_value=bandwidth.raw_text, severity=QueueIssueSeverity.WARNING,
+                )
+            populated_numbers.append(columns.number)
+            parsed.append(spw)
 
         if populated_numbers:
             expected = list(
@@ -960,12 +963,16 @@ class _RowParser:
         ):
             self._issue(
                 QueueIssueKind
-                .REFERENCE_FREQUENCY_OUTSIDE_COVERAGE,
-                "Ref.Frequency is outside the derived SPS range",
+                .REFERENCE_FREQUENCY_ASSOCIATION_UNVERIFIED,
+                (
+                    "Ref.Frequency is numerically outside the derived SPS range; "
+                    "its reference is unverified, so the association is unresolved."
+                ),
                 column="Ref.Frequency",
                 raw_value=(
                     sensitivity.reference_frequency_ghz.raw_text
                 ),
+                severity=QueueIssueSeverity.WARNING,
             )
 
         return SpectralScanEvidence(

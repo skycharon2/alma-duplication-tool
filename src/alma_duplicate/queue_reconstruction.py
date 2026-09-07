@@ -89,7 +89,7 @@ def _sensitivity_payload(spectral: QueueSpectralEvidence) -> list[str]:
 def _velocity_payload(spectral: QueueSpectralEvidence) -> list[object]:
     velocity = spectral.velocity
     return [
-        velocity.velocity_kms.raw_text,
+        _raw_quantity(velocity.velocity_kms),
         velocity.frame_raw,
         velocity.convention_raw,
         velocity.is_sky_frequency,

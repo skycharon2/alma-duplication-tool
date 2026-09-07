@@ -21,7 +21,7 @@ from alma_duplicate.clients import (
 
 
 def test_archive_client_public_exports() -> None:
-    assert ARCHIVE_COMPARISON_CONTRACT_VERSION == "3"
+    assert ARCHIVE_COMPARISON_CONTRACT_VERSION == "4"
     assert ArchiveClient.__name__ == "ArchiveClient"
     assert ArchiveFieldContractValidation.__name__ == (
         "ArchiveFieldContractValidation"

@@ -86,7 +86,7 @@ def test_direct_parser_has_explicit_deterministic_parse_time():
     first = parse_queue_csv_bytes(raw, parsed_at=FIRST, retrieved_at=RETRIEVED)
     second = parse_queue_csv_bytes(raw, parsed_at=FIRST, retrieved_at=RETRIEVED)
     assert first == second
-    assert first.snapshot.parser_version == "2"
+    assert first.snapshot.parser_version == "3"
     assert first.snapshot.provenance_version == "2"
     assert first.snapshot.source_url_kind == "SOURCE_PAGE"
     assert first.snapshot.legacy_capture_status == "NOT_PROVIDED"

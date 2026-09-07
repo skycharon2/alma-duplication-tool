@@ -239,15 +239,16 @@ def test_regular_and_sps_evidence_cannot_share_a_row() -> None:
     }
 
 
-def test_reference_frequency_must_lie_in_derived_coverage() -> None:
+def test_unverified_reference_outside_coverage_is_a_warning() -> None:
     records = _records()
     columns = _indices(records)
     records[41][columns["Ref.Frequency"]] = "1.0"
 
     result = parse_queue_csv_bytes(_render(records))
 
-    assert result.status is QueueParseStatus.ERROR
-    assert QueueIssueKind.REFERENCE_FREQUENCY_OUTSIDE_COVERAGE in {
+    assert result.status is QueueParseStatus.COMPLETE_WITH_WARNINGS
+    assert result.can_reconstruct
+    assert QueueIssueKind.REFERENCE_FREQUENCY_ASSOCIATION_UNVERIFIED in {
         issue.kind for issue in result.issues
     }
 

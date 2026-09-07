@@ -324,7 +324,7 @@ def test_complete_fixture_runs_full_pipeline() -> None:
     assert (
         pipeline.reconstruction.reconstruction_version
         == RECONSTRUCTION_VERSION
-        == "3"
+        == "4"
     )
     assert pipeline.reconstruction.linked_row_count == 4
     assert pipeline.reconstruction.unlinked_row_count == 1
