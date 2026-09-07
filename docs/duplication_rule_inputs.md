@@ -1,6 +1,12 @@
 # Duplication rule inputs and evidence contract
 
-Design version: 0.2. Reviewed: 2026-09-07. Revises the document delivered in `03057a1`.
+Design version: 0.3. Reviewed: 2026-09-07. Incremental revision of design 0.2.
+
+Project goal: a user describes a proposed observation; the system independently
+searches Archive and Queue, checks applicable duplication conditions within a
+coherent observation context, and displays conclusions, evidence and reasons
+why a condition cannot be assessed. Project IDs, Member UIDs and known duplicate
+labels are results or developer-test references, never required user inputs.
 Status: **proposed input contract**, not an implemented request API or rule engine.
 This deliverable defines the next model and its acceptance cases. It changes no
 ingestion, reconstruction, policy decision, or live-query behavior.
@@ -80,8 +86,8 @@ coherent evidence from the same candidate context, as defined in section 6.
 | ANGULAR: applicable candidate comparison; A/resolution | Positive angular resolution with `REQUESTED_VALUE` meaning | `spatial_resolution` canonical evidence; optional `s_resolution` stays separate | `Req. Ang. Res.` | Convert supported units, preserve requested-versus-estimated semantics; policy comparison after context validation | Missing request or candidate quantity blocks this rule, not spatial retrieval |
 | CONT-SETUP: continuum applicability; A/spectral definition | Distinct `window_id`s, per-window bandwidth kind and setup completeness | Not a substitute for proposed setup | Not a substitute for proposed setup | Count qualified proposed windows; nominal/usable interpretation pending Q2; unknown widths yield unresolved applicability when evidence cannot settle it | Intent label alone never activates rule; no imputed width or mode |
 | CONT-FREQ: continuum; A/spectral | Independent setup representative frequency, optional representative-window link and reference/origin | `frequency`, full parsed support, canonical interval | `Ref.Frequency`, SPW frequencies, `Is Sky Freq?`, velocity evidence | Q3 selects comparison role and compatible reference; no automatic center/RMS fallback or overlap-only prefilter | Broad spatial retrieval permitted; frequency assessment unavailable |
-| CONT-RMS: continuum; A/spectral | RMS, aggregate basis, reference frequency, contributing window IDs and effective reference bandwidth | `cont_sensitivity_bandwidth`, parsed component sensitivities with their bases | `Req.Sensitivity` plus `Ref.Frequency` and `Ref.Freq.Width` | Preserve candidate estimate/request distinction; compatible bases and approved directional comparison needed (Q4/Q5) | Missing candidate basis is candidate-side, not an extra form requirement |
-| LINE-COVERAGE: line; A/spectral | Per-window center, bandwidth/bounds, FDM evidence and frame | Full support components and assignments; no authoritative FDM field in selected TAP projection | Same-number SPW frequency/bandwidth/resolution evidence; no approved mode derivation | Compare center with candidate interval only when frames and both modes established | Unknown mode means unavailable line rule; continue broad retrieval; never infer from `em_xel` or bandwidth |
+| CONT-RMS: continuum; A/spectral | Direct aggregate RMS with declared basis/setup scope, or reference RMS with conversion inputs | `cont_sensitivity_bandwidth`, parsed component sensitivities with their bases | `Req.Sensitivity` plus `Ref.Frequency` and `Ref.Freq.Width` | Direct declaration does not require a bandwidth conversion; conversion requires reference/target bandwidths and approved Q4/Q5 method; applicability/frequency remain separate | Missing metadata limits affected operations, not request storage; candidate gaps remain candidate-side |
+| LINE-COVERAGE: line; A/spectral | Requested SPW center, FDM evidence and frequency reference; width not generally required | Associated candidate FDM interval/reference with authoritative mode evidence; selected TAP projection lacks that mode | Associated SPW interval/reference and validated FDM evidence; no approved automatic mode derivation | Compare requested center with candidate coverage, not whole-window containment | Missing request width alone does not block center coverage; absent candidate interval or mode does |
 | LINE-RMS: line; A/spectral | Window-linked RMS with independent bandwidth used for sensitivity, spectral resolution and optional smoothing evidence | `sensitivity_10kms`, `spectral_resolution`, parsed component sensitivity/resolution | `Req.Sensitivity`, `Ref.Frequency`, `Ref.Freq.Width`; same-window resolution | Preserve spacing/resolution/noise width separately; Q4/Q5 common-resolution RMS method still required | Missing noise width is not supplied by resolution; broad search remains possible |
 
 ## 3. Proposed request fields (future model)
@@ -103,7 +109,7 @@ supplied values rather than dropping them to make a request searchable.
 | All windows listed? / `setup_complete` | Explicit Boolean | Only means the list contains all actual windows; parameter completeness is tracked independently |
 | Representative frequency / `representative_frequency` | Independent setup-level frequency record | Optional for search; not filled from window center or RMS reference frequency |
 | Representative window / `representative_window_id` | Optional stable window reference | If supplied, must refer to an existing window; membership validation is conditional on comparable frequencies and known bounds |
-| Spectral windows / `spectral_windows[]` | Stable unique `window_id` within one `setup_id` | One or more for a spectrally described request; zero allowed only as a spatial-only draft |
+| Spectral windows / `spectral_windows[]` | Stable unique `window_id` within one `setup_id` | Empty lists allowed for partial scientific requests; preserve setup frequency, angular resolution and aggregate RMS independently; no invented windows |
 | Frequency input / window `representation` | CENTER_BANDWIDTH, BOUNDS or PARTIAL | GHz/MHz/Hz converted to GHz; PARTIAL permits known center and missing width or a single known bound; no interval until sufficient inputs exist |
 | Window width kind / `bandwidth_kind` | NOMINAL, USABLE, UNKNOWN | Preserve meaning; UNKNOWN allowed for search, formal qualification conditional on Q2 |
 | Window mode / `correlator_mode` | FDM, TDM, UNKNOWN plus declared source | Optional; do not populate from intent/channel count/window width |
@@ -119,9 +125,16 @@ must not have nonzero remaining components. Equivalent valid inputs normalize
 consistently, e.g. RA `12:00:00` hourangle and `180` deg.
 
 For complete CENTER_BANDWIDTH derive `lower=center-width/2`, `upper=center+width/2`.
-For complete BOUNDS derive center and width using overflow-safe arithmetic.
-Require finite `0 < lower < upper`, positive width and center inside the interval
-when an interval can be established. PARTIAL retains a known center with absent
+For complete BOUNDS derive `interval_midpoint` and `interval_span` using
+overflow-safe arithmetic, preserving the input interval kind and derivation
+version. These are not automatically `requested_spw_center` or nominal bandwidth.
+Using a midpoint as SPW center requires explicit, validated evidence that this
+interval is centered on that SPW; cropped usable coverage supplies no such proof.
+An independently declared center may accompany coverage bounds as a separate
+role, not a second interval representation. Check their relationship only when
+its declared semantics justify the check; do not require equality to midpoint.
+Require finite `0 < lower < upper` and positive span when an interval can be
+established. PARTIAL retains a known center with absent
 width and `coverage_interval=None`; a known bound alone also remains partial.
 Every supplied value is validated, including in incomplete windows. Negative
 widths and reversed bounds are INVALID, not partial. No missing value is zero.
@@ -164,8 +177,17 @@ otherwise record unresolved validation rather than declaring an invalid number.
 
 ### Sensitivity association
 
-Each entry has `sensitivity_id`, `purpose`, `window_ids`, `value`, `unit`,
-`basis`, `reference_frequency`, and independent `bandwidth_used_for_sensitivity`.
+Each entry has identity, value/unit, purpose, basis and scope. The model also
+stores optional `reference_frequency`, `bandwidth_used_for_sensitivity` and
+context evidence when supplied. A storage field is not automatically required
+for submission or for every calculation. Missing optional metadata remains
+missing; malformed supplied values remain invalid.
+
+Scope is SETUP (linked `setup_id`, optional contributing `window_ids`) or WINDOW
+(linked window). Partial line entries may retain unresolved scope explicitly;
+they remain unavailable for matched-window assessment until resolved. Supplied
+dangling references are invalid. Aggregate entries may target the whole setup
+even when its window list is empty or incomplete.
 Basis values planned: AGGREGATE, NATIVE_CHANNEL, SMOOTHED, UNKNOWN.
 
 `bandwidth_used_for_sensitivity` stores value/unit, meaning
@@ -179,8 +201,17 @@ Optional `stokes_basis`, `polarization_basis`, `beam_context` (axes/PA/units) an
 `weighting_context` preserve comparison context. Absence is explicit and may block
 assessment; these are not unconditional search requirements.
 
-- AGGREGATE links all contributing distinct windows and an explicit effective
-  bandwidth; do not silently sum overlapping windows or nominal widths.
+- AGGREGATE has two distinct paths. DIRECT_DECLARATION stores the supplied
+  aggregate continuum RMS, explicit aggregate basis and setup scope; contributing
+  window IDs and effective aggregate bandwidth may be incomplete. Do not demand
+  conversion inputs merely to preserve or directly compare a declared RMS when
+  its relevant semantics and comparison method are established. Continuum setup
+  qualification, frequency and other conditions are checked independently.
+  CONVERT_FROM_REFERENCE preserves the reference RMS unchanged and requires its
+  noise bandwidth, target aggregate bandwidth, applicability evidence and an
+  approved conversion method before emitting a derived aggregate RMS. Missing
+  conversion inputs do not invalidate the stored reference measurement. Never
+  silently sum nominal widths, count overlapping bands twice or assume a noise law.
 - NATIVE_CHANNEL links exactly one window and independently stores the bandwidth
   used for its RMS. Window spectral resolution remains separate evidence needed
   for resolution matching; it cannot supply effective noise bandwidth.
@@ -189,7 +220,7 @@ assessment; these are not unconditional search requirements.
   Store velocity widths in km/s with convention/reference frequency when supplied;
   frequency conversion and noise scaling remain unavailable pending Q3/Q4.
 - UNKNOWN allows a valid draft and search but produces a field-specific readiness
-  reason. Dangling/duplicate window references are invalid input.
+  reason. Dangling/duplicate supplied window references are invalid input.
 - Kelvin and plain Jy/mJy without beam semantics are unsupported *user* units
   in the first model. This does not authorize relabelling Queue's existing mJy evidence.
 
@@ -227,6 +258,35 @@ completeness; a negative result must not imply absence of duplications globally.
 Continuum retrieval cannot reuse an interval-overlap-only line prefilter without
 a demonstrated recall argument. Use bounded spatial retrieval while unresolved.
 
+### Condition completeness and result explanation
+
+`setup_complete` concerns enumeration, not a blanket readiness gate. Given an
+established bandwidth interpretation, two distinct qualifying listed windows
+establish continuum setup qualification even if more windows are unlisted.
+Conversely, fewer qualifying windows do not establish failure when unlisted or
+unknown-width windows could change the answer. Record unresolved applicability.
+For the existential line branch, a demonstrated matching window pair can support
+that condition; no matches among an incomplete list cannot exclude all possible
+line matches. Coverage and RMS must be satisfied by the same eligible pair.
+Track request enumeration, per-field completeness, per-source retrieval
+completeness and method availability separately.
+
+For each condition store readiness independently of outcome. Planned outcomes:
+SATISFIED, NOT_SATISFIED, UNDETERMINED, NOT_APPLICABLE. Only an approved applicable
+method with sufficient evidence can issue a threshold result. Unsupported or
+unavailable computation yields UNDETERMINED, never NOT_SATISFIED. A numerical
+estimate carries approximation/method status and cannot automatically become
+approved evidence for a formal threshold. Satisfaction of one condition is not
+a duplicate verdict; future aggregation must preserve AND/OR scope and unknowns.
+
+The future result must expose candidate/source IDs, matched source/execution/SPW
+or Queue association, condition results, raw and canonical values/units, evidence
+references, method/version/approval status and reasons/approximations. Include
+independent Archive/Queue retrieval outcomes, search predicates, caps and
+completeness. Failure of one source does not erase the other's returned evidence;
+it marks the overall search incomplete. No-candidate results are scoped to the
+executed search, not proof of non-duplication.
+
 ## 5. Deferred modes
 
 | Mode | First-model behavior | Needed later |
@@ -258,6 +318,16 @@ Queue `Req.Sensitivity` is mJy, linked to `Ref.Frequency` and `Ref.Freq.Width`.
 Its beam meaning and relation to Archive estimated RMS are unresolved; retain
 them as different evidence types. Full `frequency_support` parse results do not
 by themselves establish authoritative mode, frame or sensitivity equivalence.
+
+For LINE-RMS, select sensitivity attached to the actual matched candidate SPW
+first, with its basis/reference and source context. Row-level `sensitivity_10kms`
+is usable only when its representative-window relationship to that matched SPW
+is confirmed; row co-location alone is not that confirmation. Queue reference
+RMS used across SPWs must carry the explicit applicability method or assumption,
+including approval status. An unapproved assumption is explanatory only.
+Never choose the best RMS from another window, execution or source to complete
+a coverage match. Return multiple coherent pair alternatives with individual
+readiness rather than mixing their most favorable quantities.
 
 ## 7. Scientific decision register
 
@@ -303,6 +373,15 @@ These are planned tests, not tests executed by this documentation change.
 | IN-16 | Nominal or UNKNOWN width; usable width without placement evidence | No promotion to validated usable coverage; no invented edges |
 | IN-17 | Invalid/ambiguous/incompatible/unresolved candidate evidence | Distinct machine-readable reasons, unchanged user validity |
 | IN-18 | OT Sky label, unknown frame; REST representative value | Preserve origin/reference; spatial search only until compatible transformation exists |
+| IN-19 | Direct aggregate RMS/setup scope, absent bandwidth or contributor list | Valid partial request; no forced conversion; other conditions independently assessed |
+| IN-20 | Reference RMS with absent target/reference bandwidth or unapproved method | Reference retained; no derived aggregate RMS; precise conversion reasons |
+| IN-21 | FDM center/reference known, requested width absent; valid candidate FDM interval | Center-coverage condition may be evaluated without request width; RMS still independent |
+| IN-22 | Cropped usable bounds | Midpoint/span preserved; no automatic SPW-center evidence |
+| IN-23 | No listed windows, but representative frequency, angular resolution and aggregate RMS supplied | Retain all scientific inputs; bounded search possible; unresolved setup qualification |
+| IN-24 | Two qualified distinct windows, list incomplete | Setup qualification established under confirmed width semantics; no enumeration veto |
+| IN-25 | No line match among incomplete window list | UNDETERMINED overall line branch; cannot issue exhaustive negative |
+| IN-26 | Coverage on W1, better RMS only on W2 or unlinked row scalar | No combined passing result; matched-pair sensitivity unavailable |
+| IN-27 | Approximate result with unapproved method | Estimate shown separately; no formal threshold outcome |
 | CASE1 | Original task parameters below | Positive retrieval expectation, not a confirmed duplicate |
 | CASE2 | Original task parameters below | Same, independently scoped |
 
@@ -313,10 +392,26 @@ and units preserved. These belong to case search conditions, not exact proposed
 observation values. The frequency is a source-specified point query; no matching
 tolerance or frame is supplied.
 
-| Case | RA (HMS) | Dec (DMS) | Frequency | Angular filter | Spectral filter | Sensitivity filter | Project | Stated entries |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| CASE1 | 18:33:39.920 | -21:03:39.900 | 290.420 GHz | < 0.5 arcsec | < 1500 kHz | < 0.02 mJy/beam | 2021.A.00028.S | 1 |
-| CASE2 | 00:47:33.064 | -25:17:18.280 | 690.0 GHz | < 1 arcsec | < 4000 kHz | < 1 mJy/beam | 2018.1.00294.S | 2 |
+User-facing case search inputs:
+
+| Case | RA (HMS) | Dec (DMS) | Frequency | Angular filter | Spectral filter | RMS filter |
+| --- | --- | --- | --- | --- | --- | --- |
+| CASE1 | 18:33:39.920 | -21:03:39.900 | 290.420 GHz | < 0.5 arcsec | < 1500 kHz | < 0.02 mJy/beam |
+| CASE2 | 00:47:33.064 | -25:17:18.280 | 690.0 GHz | < 1 arcsec | < 4000 kHz | < 1 mJy/beam |
+
+Developer reference results, not query requirements or user request fields:
+
+| Case | Expected project | Source-stated entries | Formal verdict |
+| --- | --- | --- | --- |
+| CASE1 | 2021.A.00028.S | 1 | Unverified |
+| CASE2 | 2018.1.00294.S | 2 | Unverified |
+
+The user's latest report review interprets these two RMS filters as continuum
+RMS filters. Record that as case-specific supplied interpretation, not a claim
+that the original task PDF labels the basis or that every request uses continuum
+RMS. The report itself was not available for independent inspection here; its
+precise version/page and candidate-field mapping still need pinning. Never use
+expected project IDs as search constraints to make a positive test pass.
 
 Still unresolved: exact Member UID(s), entry grouping/count semantics, pinned
 fixture, coordinate/frequency reference and search radius/tolerance, sensitivity
@@ -328,7 +423,7 @@ Known parameters are stored now; these unknowns do not justify discarding them.
 
 This PR delivers this contract and a static form sketch. Next PR implements the
 fixed-target request model/validator and IN-01 through IN-11 plus IN-13 through
-IN-18 as applicable (round-trip means the future request representation, not a
+IN-27 as applicable (round-trip means the future request representation, not a
 new snapshot storage feature).
 The following PR implements coherent adapters and candidate search (IN-12 and
 confirmed CASE fixtures). Formal verdict rules and full HTML follow separately.
