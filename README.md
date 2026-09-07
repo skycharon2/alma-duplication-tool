@@ -69,6 +69,8 @@ The Queue implementation includes:
 - spatial, mosaic, rectangle, request, array, and polarization evidence;
 - reference-frequency coverage validation;
 - preservation of exact duplicate rows as distinct source associations;
+- append-only local source snapshots and separate historical parse summaries
+  ([storage contract and usage](docs/queue_snapshot_store.md));
 - factorization into spatial, spectral, and request components while retaining
   every observed row association;
 - a small offline CSV integration fixture; and

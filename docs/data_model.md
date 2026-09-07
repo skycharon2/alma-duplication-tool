@@ -52,6 +52,15 @@ spatial-spectral-request associations. It does not retain the complete source
 byte content inside `QueueSnapshot`, infer missing Cartesian relationships, or
 apply policy decisions.
 
+`QueueSnapshotStore` persists exact CSV bytes and acquisition facts separately
+from parse-run summaries. Each acquisition has its own ID even for identical
+bytes; each parse run links the source checksum and source-manifest checksum.
+Source reads do not parse, and run reads return the historical summary without
+recomputing it. `parsed_at`, parser versions and interpreted source dates belong
+to the run. The existing in-memory `QueueSnapshot` remains compatible. See
+[Queue snapshot storage](queue_snapshot_store.md); full historical Python parse
+objects and Archive disk serialization are outside this format.
+
 ## Evidence summary
 
 | Question | Current evidence | Model consequence |
