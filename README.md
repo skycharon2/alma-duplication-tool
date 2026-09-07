@@ -56,7 +56,7 @@ The Queue implementation includes:
 
 - a versioned 79-column ingestion contract;
 - fingerprinting of the exact source bytes with SHA-256 and byte length, plus
-  capture time, embedded dictionary, secondary header, and physical row
+  separate retrieval/parse times and source date, embedded dictionary, secondary header, and physical row
   identity;
 - explicit field aliases, units, datatypes, and schema-drift checks;
 - 16 same-number SPW triples, without Cartesian reconstruction;

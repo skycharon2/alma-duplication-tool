@@ -55,6 +55,60 @@ Those operations belong to later shared-comparison and policy layers.
 
 ## Evidence snapshot
 
+### Runtime provenance v2 (client 2, parser 2)
+
+Queue file reads do not establish when bytes were downloaded. The production
+client records the following separate facts on every result, including decode
+and layout errors:
+
+| Field | Contract |
+|---|---|
+| `retrieved_at` | Caller-supplied actual retrieval time; unknown stays None |
+| `parsed_at` | Start of this parse invocation; client clock, or explicit parser argument |
+| `source_as_of` | Date parsed only from an explicit supported source-description declaration |
+| `source_as_of_raw` | Uninterpreted date clause(s); full description also retained |
+| `source_as_of_status` | PARSED, MISSING, INVALID, UNRECOGNIZED, AMBIGUOUS; NOT_PARSED for unprocessed direct snapshots |
+| `snapshot_sha256` | SHA-256 of exact input bytes, independent of all timestamps |
+| `source_url` | Caller-provided source location, preserved verbatim |
+| `source_url_kind` | SOURCE_PAGE, DOWNLOAD_URL, or UNSPECIFIED |
+| `captured_at` | Legacy field retained verbatim with unknown time semantics |
+| `legacy_capture_status` | LEGACY_UNINTERPRETED when captured_at is provided; otherwise NOT_PROVIDED |
+| `provenance_version` | 2 |
+
+The default known duplications URL is labelled SOURCE_PAGE. Custom URLs are
+UNSPECIFIED unless explicitly labelled; a `.csv` suffix is not evidence of
+the URL's role. New retrieval/parse timestamps require timezone-aware datetime
+values and retain the supplied timezone. No time is derived from a filename,
+file mtime, checksum or source date. The historical exploration's retrieval
+date below is not injected into runtime results and has no invented time of day.
+
+Source dates support `as of YYYY Month D` with full English month names and
+`as of YYYY-MM-DD`, terminated by a period or line end. Calendar-invalid dates
+stay INVALID, unsupported declarations UNRECOGNIZED, absent declarations MISSING,
+and multiple declarations AMBIGUOUS. These are provenance diagnostics and do
+not weaken or replace the existing CSV completeness gates.
+
+Compatibility: `captured_at=` remains accepted by the client and parser, but
+is never defaulted from the clock or automatically copied to `retrieved_at`.
+Old client versions sometimes populated it at parse time. Migrating a known
+download timestamp requires independent confirmation and explicit `retrieved_at=`.
+Legacy values, including naive datetimes, remain uninterpreted. When both old
+and new parameters are provided, they remain separate facts.
+
+`QueueCsvClient.load(path, retrieved_at=known_time)` and `parse_bytes` always
+record a fresh parsed_at from the client clock. The source-neutral parser
+accepts explicit parsed_at for deterministic testing/replay; otherwise it uses
+the current UTC time. Re-reading the same bytes with the same supplied retrieval
+provenance preserves checksum, source date, raw rows and metadata; only parsed_at
+changes. With no supplied retrieval time it stays None on every read. The client
+does not retain retrieval metadata between instances or write a manifest yet.
+Schema, quantity normalization and reconstruction algorithms are unchanged.
+
+Notebook 05's existing mtime display is a historical local-file observation,
+not a source of runtime retrieved_at. Its historical outputs are not rewritten.
+
+### Historical reference
+
 The v1 contract is based on the public file inspected in Notebook 05.
 
 | Property | Observed value |
@@ -921,7 +975,8 @@ unit interpretation, or population rules change. Algorithm versions change
 when the implementation changes without redefining the source schema.
 
 Every newly downloaded cycle or replacement snapshot must record a checksum,
-capture time, source description, field dictionary, operational header,
+retrieval time when known, separate parse time, source description and date,
+field dictionary, operational header,
 secondary header, and validation result. New evidence may extend this
 contract, but it must not retroactively change the preserved interpretation of
 an earlier snapshot without an explicit migration.
