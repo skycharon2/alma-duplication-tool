@@ -720,6 +720,14 @@ Malformed values remain parse failures regardless of their length.
 
 ### `ROW_RECONSTRUCTION`
 
+Reconstruction v3 additionally returns `frequency_support_evidence`, a
+canonical tuple keyed by raw row ID. Each entry stores the complete spectral
+parser result independently of whether the row can be linked. Mapping reuses
+that object; it never triggers a second parse. Component references carry raw
+row ID, parser version and component index. All ambiguous candidates remain
+available, while only assigned mappings expose a selected component. The
+existing parser v2 grammar and scientific semantics are unchanged.
+
 Versioned reconstruction attempt for a raw row. An attempt may remain
 unlinked from any Source-SPW association when parsing is unsafe; later parser
 versions can create additional attempts without mutating earlier evidence.
