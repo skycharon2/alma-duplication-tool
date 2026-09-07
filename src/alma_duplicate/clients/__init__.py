@@ -16,6 +16,9 @@ from .archive_client import (
     PyvoTapExecutor,
 )
 from .archive_contract import (
+    ArchiveOptionalColumnEvidence,
+    ArchiveOptionalColumnStatus,
+    ArchiveProjectionEvidence,
     ArchiveAngularResolutionPrefilterStatus,
     ArchiveFrequencyPrefilterStatus,
     ArchiveQueryColumnUnit,
@@ -41,6 +44,9 @@ from .archive_identifier_contract import (
     build_archive_obs_id_width_contract,
 )
 from .archive_queries import (
+    ARCHIVE_CORE_COLUMNS,
+    ARCHIVE_OPTIONAL_COLUMNS,
+    ARCHIVE_PROJECTION_VERSION,
     ARCHIVE_ANGULAR_RESOLUTION_QUERY_UNITS,
     ARCHIVE_FREQUENCY_QUERY_UNITS,
     ARCHIVE_QUERY_ARITHMETIC_UNITS,
@@ -85,6 +91,12 @@ from .queue_csv_contract import (
 )
 
 __all__ = [
+    "ARCHIVE_CORE_COLUMNS",
+    "ARCHIVE_OPTIONAL_COLUMNS",
+    "ARCHIVE_PROJECTION_VERSION",
+    "ArchiveOptionalColumnEvidence",
+    "ArchiveOptionalColumnStatus",
+    "ArchiveProjectionEvidence",
     "ADAPTER_VERSION",
     "ARCHIVE_ANGULAR_RESOLUTION_QUERY_UNITS",
     "ARCHIVE_CLIENT_VERSION",

@@ -2,6 +2,14 @@
 
 ## Purpose
 
+Projection v1 requests 24 core columns and up to 6 optional auxiliary columns.
+The client first probes optional names in TAP_SCHEMA; actual column count can
+therefore range from 24 to 30 (unexpected returned scalar extensions are also
+preserved). The smoke test requires core columns and checks optional `returned`
+flags against FIELD metadata rather than asserting a fixed 30-column schema.
+Probe unavailability falls back to core selection and must remain visible in
+`provenance.projection`; it is not evidence that the service lacks those fields.
+
 The live smoke test verifies that the production Archive client can currently
 communicate with the ALMA TAP service, receive the declared retrieval schema,
 preserve its ordered VOTable field descriptors, and produce complete query

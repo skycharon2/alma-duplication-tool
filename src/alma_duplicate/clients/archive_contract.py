@@ -27,6 +27,38 @@ class ArchiveQueryStatus(StrEnum):
     ERROR = "ERROR"
 
 
+class ArchiveOptionalColumnStatus(StrEnum):
+    """Why an auxiliary column was or was not included in retrieval ADQL."""
+
+    SELECTED = "SELECTED"
+    NOT_REQUESTED = "NOT_REQUESTED"
+    NOT_IN_SCHEMA = "NOT_IN_SCHEMA"
+    SCHEMA_UNAVAILABLE = "SCHEMA_UNAVAILABLE"
+
+
+@dataclass(frozen=True, slots=True)
+class ArchiveOptionalColumnEvidence:
+    column_name: str
+    status: ArchiveOptionalColumnStatus
+    # None means retrieval did not produce a response to inspect.
+    returned: bool | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ArchiveProjectionEvidence:
+    version: str
+    selected_columns: tuple[str, ...]
+    optional_columns: tuple[ArchiveOptionalColumnEvidence, ...]
+    probe_adql: str | None
+    probe_status_raw: str | None
+    probe_rows: tuple[RawArchiveRow, ...] = ()
+    probe_error: str | None = None
+    warnings: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "probe_rows", snapshot_archive_rows(self.probe_rows))
+
+
 class ArchiveQueryErrorKind(StrEnum):
     """Structured reason for an Archive query error."""
 
@@ -133,6 +165,8 @@ class ArchiveQueryProvenance:
     query_unit_contract_version: str = "2"
     query_unit_metadata: tuple[ArchiveQueryColumnUnit, ...] = ()
     warnings: tuple[str, ...] = ()
+    # None for legacy/direct results whose projection was not recorded.
+    projection: ArchiveProjectionEvidence | None = None
 
     def __post_init__(self) -> None:
         if not self.query_run_id.strip():
