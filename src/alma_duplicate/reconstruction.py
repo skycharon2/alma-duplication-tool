@@ -16,6 +16,8 @@ from alma_duplicate.domain.reconstruction import (
     ReconstructionBatch,
     ReconstructionStatus,
     RowReconstruction,
+    RowFrequencySupportEvidence,
+    SupportComponentRef,
     SourceExecutionKey,
     SourceSpwAssociationKey,
     SupportMapping,
@@ -25,6 +27,7 @@ from alma_duplicate.domain.reconstruction import (
 from alma_duplicate.domain.spectral import (
     FrequencySupportComponent,
     FrequencySupportGrammar,
+    FrequencySupportParseResult,
     ParseStatus,
 )
 from alma_duplicate.parsers.frequency_support import (
@@ -32,7 +35,7 @@ from alma_duplicate.parsers.frequency_support import (
 )
 from alma_duplicate.parsers.obs_id import parse_obs_id
 
-RECONSTRUCTION_VERSION = "2"
+RECONSTRUCTION_VERSION = "3"
 
 # 04b showed that direct frequency comparisons require an
 # explicit numerical tolerance.
@@ -188,6 +191,7 @@ def _map_bracket_support(
         ...,
     ],
     frequency_ghz: float,
+    parser_version: str,
 ) -> SupportMapping:
     usable_components: list[
         tuple[int, float, float]
@@ -293,9 +297,13 @@ def _map_bracket_support(
             .BRACKET_INTERVAL_CONTAINMENT
         ),
         status=status,
-        component_index=chosen_index,
+        component_index=chosen_index if len(candidates) == 1 else None,
         candidate_count=len(candidates),
         frequency_difference_mhz=None,
+        candidate_refs=tuple(
+            SupportComponentRef(row.raw_row_id, parser_version, index)
+            for index in sorted(candidates)
+        ),
     )
 
 
@@ -335,6 +343,7 @@ def _map_brace_support(
         ...,
     ],
     frequency_ghz: float,
+    parser_version: str,
 ) -> SupportMapping:
     usable_components = [
         evidence
@@ -428,21 +437,28 @@ def _map_brace_support(
             .BRACE_NEAREST_CENTRE
         ),
         status=status,
-        component_index=chosen_index,
+        component_index=(
+            chosen_index if status is SupportMappingStatus.ASSIGNED else None
+        ),
         candidate_count=len(nearest),
         frequency_difference_mhz=chosen_difference,
+        candidate_refs=tuple(
+            SupportComponentRef(row.raw_row_id, parser_version, index)
+            for index, _, _ in nearest
+        ),
     )
 
 
 def _map_support(
     row: ArchiveRowInput,
     reconstruction: RowReconstruction,
+    support_result: FrequencySupportParseResult,
 ) -> SupportMapping:
     if not reconstruction.is_linked:
         return SupportMapping(
             raw_row_id=row.raw_row_id,
             association_key=None,
-            grammar_family=None,
+            grammar_family=support_result.grammar_family,
             method=None,
             status=(
                 SupportMappingStatus
@@ -452,10 +468,6 @@ def _map_support(
             candidate_count=0,
             frequency_difference_mhz=None,
         )
-
-    support_result = parse_frequency_support(
-        row.frequency_support
-    )
 
     if support_result.grammar_family not in {
         FrequencySupportGrammar.BRACKET,
@@ -531,6 +543,7 @@ def _map_support(
             reconstruction=reconstruction,
             components=support_result.components,
             frequency_ghz=frequency_ghz,
+            parser_version=support_result.parser_version,
         )
 
     return _map_brace_support(
@@ -538,6 +551,7 @@ def _map_support(
         reconstruction=reconstruction,
         components=support_result.components,
         frequency_ghz=frequency_ghz,
+        parser_version=support_result.parser_version,
     )
 
 
@@ -592,7 +606,14 @@ def reconstruct_archive_rows(
         SourceSpwAssociationKey
     ] = set()
 
+    frequency_support_evidence: list[RowFrequencySupportEvidence] = []
+
     for row in ordered_rows:
+        spectral_evidence = RowFrequencySupportEvidence(
+            raw_row_id=row.raw_row_id,
+            parse_result=parse_frequency_support(row.frequency_support),
+        )
+        frequency_support_evidence.append(spectral_evidence)
         reconstruction = _reconstruct_row(
             row,
             effective_width_contract,
@@ -600,6 +621,7 @@ def reconstruct_archive_rows(
         mapping = _map_support(
             row,
             reconstruction,
+            spectral_evidence.parse_result,
         )
 
         row_reconstructions.append(
@@ -621,5 +643,6 @@ def reconstruct_archive_rows(
             support_mappings
         ),
         obs_id_width_contract=effective_width_contract,
+        frequency_support_evidence=tuple(frequency_support_evidence),
         reconstruction_version=RECONSTRUCTION_VERSION,
     )
