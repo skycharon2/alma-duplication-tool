@@ -142,3 +142,22 @@ mutation isolation, bad values, intervals, references, partial RMS, unsupported
 units versus missing methods, modes and one-sided predicates. Integration tests
 exercise the wire example, raw-input revalidation and invalid-output suppression.
 CASE1/CASE2 retrieval and coherent candidate pairing belong to subsequent work.
+# Validation follow-up (version 2)
+
+The request schema and conversion version remain unchanged. Validation reports
+now carry `validation_version = "2"`:
+
+- Independently supplied SPW centers must lie within their nominal bounds when
+  all three frequency references are explicit and equal. Endpoints are allowed;
+  the center need not equal the midpoint. Usable coverage does not impose this
+  constraint. Unknown or differing references retain a capability diagnostic
+  (`INCOMPATIBLE_REFERENCE`); no frequency conversion is assumed.
+- LINE requests report missing RMS for each listed window without a WINDOW-scoped
+  LINE sensitivity containing an RMS value. These are request-side MISSING
+  notices and do not block spatial search or imply an exhaustive negative result.
+  An associated RMS still needs its own basis/context checks; association alone
+  does not establish comparability. RMS values are never copied between windows.
+- Numeric parsing rejects nonzero values that underflow to zero. Decimal degree
+  coordinates are also range-checked before float rounding can hide a violation.
+  Exact signed zero remains valid. Already rounded Python floats cannot reveal
+  lost input precision; supply decimal strings to preserve that evidence.
