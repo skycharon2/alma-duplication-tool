@@ -24,7 +24,7 @@ FIXTURE_PATH = (
 )
 
 
-def test_client_records_capture_provenance() -> None:
+def test_client_records_parse_time_without_inventing_retrieval() -> None:
     captured_at = datetime(
         2026,
         9,
@@ -44,7 +44,9 @@ def test_client_records_capture_provenance() -> None:
     assert result.snapshot.source_url == (
         "https://example.invalid/queue.csv"
     )
-    assert result.snapshot.captured_at == captured_at
+    assert result.snapshot.parsed_at == captured_at
+    assert result.snapshot.captured_at is None
+    assert result.snapshot.retrieved_at is None
     assert result.snapshot.byte_length == FIXTURE_PATH.stat().st_size
 
 

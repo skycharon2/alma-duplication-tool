@@ -7,8 +7,8 @@ import io
 import json
 import math
 from collections import Counter
-from dataclasses import dataclass
-from datetime import datetime
+from dataclasses import dataclass, replace
+from datetime import UTC, datetime
 from hashlib import sha256
 
 from alma_duplicate.domain.queue import (
@@ -60,7 +60,9 @@ from alma_duplicate.queue_normalization import (
     derived_sky_interval,
 )
 
-QUEUE_CSV_PARSER_VERSION = "1"
+from alma_duplicate.parsers.queue_provenance import parse_source_as_of
+
+QUEUE_CSV_PARSER_VERSION = "2"
 DEFAULT_QUEUE_SOURCE_URL = (
     "https://almascience.eso.org/proposing/duplications"
 )
@@ -980,6 +982,45 @@ class _RowParser:
 
 
 def parse_queue_csv_bytes(
+    raw_bytes: bytes,
+    *,
+    source_url: str = DEFAULT_QUEUE_SOURCE_URL,
+    captured_at: datetime | None = None,
+    retrieved_at: datetime | None = None,
+    parsed_at: datetime | None = None,
+    source_url_kind: str | None = None,
+) -> QueueCsvParseResult:
+    """Parse exact bytes; capture provenance without inventing retrieval time.
+
+    captured_at is a legacy uninterpreted value, never an alias for retrieved_at.
+    Supply parsed_at for deterministic replay; the file client supplies its clock.
+    """
+    parse_time = parsed_at if parsed_at is not None else datetime.now(UTC)
+    result = _parse_queue_csv_bytes(
+        raw_bytes, source_url=source_url, captured_at=captured_at,
+    )
+    source_date, source_raw, date_status = parse_source_as_of(
+        result.snapshot.description_raw
+    )
+    return replace(
+        result,
+        snapshot=replace(
+            result.snapshot,
+            retrieved_at=retrieved_at,
+            parsed_at=parse_time,
+            source_as_of=source_date,
+            source_as_of_raw=source_raw,
+            source_as_of_status=date_status,
+            source_url_kind=(
+                source_url_kind if source_url_kind is not None
+                else "SOURCE_PAGE" if source_url == DEFAULT_QUEUE_SOURCE_URL
+                else "UNSPECIFIED"
+            ),
+        ),
+    )
+
+
+def _parse_queue_csv_bytes(
     raw_bytes: bytes,
     *,
     source_url: str = DEFAULT_QUEUE_SOURCE_URL,
