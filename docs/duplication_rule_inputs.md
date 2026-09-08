@@ -3,8 +3,9 @@
 Design version: 0.3. Implementation coverage is specified separately below.
 
 The [offline request validation API](proposed_observation_api.md) implements
-the documented request-side subset. Comparison-context construction from existing
-ingestion outputs and duplication-rule evaluation remain planned. An accepted
+the documented request-side subset. [Offline comparison-context construction](comparison_contexts.md)
+reuses existing ingestion outputs; candidate search and duplication-rule evaluation
+remain planned. An accepted
 request does not establish that candidate evidence is comparable or that a
 duplication condition can be evaluated.
 
@@ -449,8 +450,8 @@ are retained independently of these outstanding checks.
 The offline request model and validator are implemented as documented in the
 [API](proposed_observation_api.md). The cases above mix request validation with
 future comparison acceptance criteria; their presence does not claim all are
-implemented tests. Comparison-context construction will reuse existing ingestion
-outputs. Candidate search, verified CASE fixtures, formal rules and HTML remain
+implemented tests. [Comparison-context construction](comparison_contexts.md) now
+reuses existing ingestion outputs with conservative evidence states. Candidate search, verified CASE fixtures, formal rules and HTML remain
 planned. Request round-trip validation does not restore historical Python objects.
 
 Current spectral mapping uses an overall parse-result validity gate, not
