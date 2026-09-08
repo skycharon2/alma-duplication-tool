@@ -16,7 +16,7 @@ requirements are maintained in the [rule-input contract](duplication_rule_inputs
 | Parameter-combination association actually present in a source CSV row | [`QueueRowAssociation`](../src/alma_duplicate/domain/queue.py) | Implemented; planned observations, not evidence of execution |
 | Raw-row and parser-scoped spectral reference | [`SupportComponentRef`](../src/alma_duplicate/domain/reconstruction.py) | Implemented; reference identity alone does not establish scientific comparability |
 | Proposed observation | [`ProposedObservationRequest`](../src/alma_duplicate/domain/proposed_observation.py) | Implemented; model version 1 |
-| Cross-source comparison context | No implementation | Planned |
+| Row-scoped comparison context | [`ComparisonContext`](../src/alma_duplicate/domain/comparison.py) | Implemented; [offline construction](comparison_contexts.md), no matching or policy evaluation |
 
 ### Spectral mapping boundary
 

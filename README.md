@@ -14,7 +14,7 @@ with ALMA reviewers.
 | Queue parsing and reconstruction | Implemented |
 | Local Queue source storage and independent parse summaries | Implemented |
 | Offline proposed-observation validation | Implemented |
-| Comparison-context construction from existing ingestion outputs | Planned |
+| Comparison-context construction from existing ingestion outputs | Implemented (offline, row-scoped; no matching) |
 | Request-driven candidate search across Archive and Queue | Planned |
 | Formal duplication assessment | Planned |
 | Browser interface | Planned |
@@ -100,6 +100,7 @@ treated as a permanent capability claim.
 | [Queue contract](docs/queue_csv_contract.md) | CSV schema, units, parsing and reconstruction |
 | [Queue storage](docs/queue_snapshot_store.md) | Immutable source records and independent parse summaries |
 | [Request API](docs/proposed_observation_api.md) | Executable input format, validation and request-side readiness |
+| [Comparison contexts](docs/comparison_contexts.md) | Offline construction, evidence references, limitations and independent source states |
 | [Rule inputs](docs/duplication_rule_inputs.md) | Evidence requirements and planned assessment behavior |
 | [Form sketch](docs/proposed_observation_form.md) | Planned conditional browser interaction |
 | [Live smoke guide](docs/live_archive_smoke.md) | Optional service validation |
@@ -107,8 +108,8 @@ treated as a permanent capability claim.
 Production code is in [src/alma_duplicate](src/alma_duplicate/), with automated
 checks in [tests](tests/). [Notebooks](notebooks/) retain dated exploration
 evidence; their outputs do not establish current production capabilities.
-The next implementation step builds comparison contexts from existing source
-outputs, then validates candidate retrieval with CASE fixtures. Reported CASE
+Offline comparison contexts now retain existing source outputs. The next step
+adds spatial adaptation and request-driven search, then validates retrieval with CASE fixtures. Reported CASE
 candidates are not confirmed duplicate/non-duplicate labels.
 
 ## License
