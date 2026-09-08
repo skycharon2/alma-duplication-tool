@@ -44,13 +44,19 @@ Do not infer a symmetric RMS ratio, HPBW radius convention, representative
 continuum frequency or smoothing algorithm from this paraphrase. These need the
 explicit decisions in section 7 before executable assessment.
 
-Project-plan alignment: the user's review of `Project_Plan_9_02.pdf` identifies
-sections 5.4, 5.6 and 6 as covering conditional inputs, validation and phased
-scope. This alignment is based on the supplied review; independent verification
-of the plan's wording and page references is pending. The original
-`Internship__Duplication_Check_Tool (1).pdf`,
-Nordic ARC node, August 2026, section 4 (printed page 2), was read directly for
-the CASE parameters in section 8.
+Project design source: `Project_Plan_9_07.pdf`, sections 5.4–5.6, covers
+comparison contexts, evidence provenance and evaluability. The project review
+records these sections as checked against the PDF. Its abstract's statement
+that the request API is not implemented is historical and is due for correction
+in the next plan revision; current runtime behavior is documented in the
+[request API](proposed_observation_api.md).
+
+The original `Internship__Duplication_Check_Tool (1).pdf`, Nordic ARC node,
+August 2026, section 4 (printed page 2), supplies the CASE search parameters.
+`Weekly_Progress_Report.pdf` supplies the later candidate and interpretation
+records identified in section 8. These document references record the supplied
+project review's verification; they do not assert a new PDF inspection or an
+independent query rerun as part of this documentation change.
 
 Additional verified sources:
 
@@ -415,19 +421,28 @@ Developer reference results, not query requirements or user request fields:
 | CASE1 | 2021.A.00028.S | 1 | `uid://A001/X2df9/X1b` | Unverified |
 | CASE2 | 2018.1.00294.S | 2 | `uid://A001/X133d/X9c3`, `uid://A001/X133d/X9c5` | Unverified |
 
-The user's latest report review interprets these two RMS filters as continuum
-RMS filters. Record that as case-specific supplied interpretation, not a claim
-that the original task PDF labels the basis or that every request uses continuum
-RMS. Member UIDs above are supplied report-review records, not independently
-verified retrieval fixtures. The report filename/version/page and candidate-field
-mapping remain to be pinned. Never use
-expected project IDs as search constraints to make a positive test pass.
+Report evidence register (page references recorded in the project review):
 
-Still unresolved: independent verification of reported Member UIDs, entry grouping/count semantics, pinned
-fixture, coordinate/frequency reference and search radius/tolerance, sensitivity
-basis and its candidate-field mapping, and formal duplicate/non-duplicate labels.
-Do not interpret stated entries as raw TAP rows or Member count without confirmation.
-Known parameters are stored now; these unknowns do not justify discarding them.
+| Source | Location | Recorded evidence | Verification boundary |
+| --- | --- | --- | --- |
+| `Weekly_Progress_Report.pdf` | Page 5 | Candidate Member UIDs listed above | Report contents checked in the project review; independent retrieval reproduction pending |
+| `Weekly_Progress_Report.pdf` | Pages 6–7 | Display grouping and continuum RMS interpretation for CASE1/CASE2 | Case-specific report interpretation; executable grouping and candidate-field mapping still need fixtures |
+| `Weekly_Progress_Report.pdf` | Page 14 | Sky/rest handling and reference-frame limitations | Recorded method discussion, not blanket approval of reference-frame conversion or RMS comparison |
+
+The continuum RMS interpretation applies to these two case filters. It does
+not establish that the original internship task labels the basis, or that every
+user sensitivity is continuum RMS. Reported answers and working assumptions
+are evidence records, not approved calculation methods or formal duplication
+labels. Never use expected project IDs or Member UIDs as search constraints to
+make a positive retrieval test pass.
+
+Independent retrieval reproduction, a pinned source fixture and executable
+grouping/count assertions remain pending. Preserve the report's display grouping;
+do not silently reinterpret its entry count as raw TAP rows or unique Members.
+Coordinate/frequency reference, search radius/tolerance and the candidate-field
+mapping for the RMS filter still need explicit implementation evidence.
+Formal duplicate/non-duplicate labels remain unverified. Known report records
+are retained independently of these outstanding checks.
 
 ## 9. Delivery boundary
 
