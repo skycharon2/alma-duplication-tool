@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+from dataclasses import replace
+
+import pytest
 
 from alma_duplicate.domain.queue import QueueGroupKey
 from alma_duplicate.parsers.queue_csv import parse_queue_csv_bytes
@@ -18,6 +21,23 @@ def _batch():
     result = parse_queue_csv_bytes(FIXTURE_PATH.read_bytes())
     assert result.can_reconstruct
     return result, reconstruct_queue_rows(result.row_inputs)
+
+
+def test_repeated_raw_row_identity_is_rejected_before_factorization():
+    result, _ = _batch()
+    row = result.row_inputs[0]
+    for rows in ([row, row], iter([row, replace(row)])):
+        with pytest.raises(ValueError, match="raw-row IDs must be unique"):
+            reconstruct_queue_rows(rows)
+
+
+def test_empty_batch_and_unique_generator_are_supported():
+    result, _ = _batch()
+    empty = reconstruct_queue_rows(iter(()))
+    assert empty.associations == ()
+    batch = reconstruct_queue_rows(iter(result.row_inputs))
+    assert len(batch.associations) == 13
+    assert batch.reconstruction_version == "2"
 
 
 def test_reconstruction_retains_one_association_per_source_row() -> None:

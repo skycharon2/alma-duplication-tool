@@ -22,7 +22,7 @@ from alma_duplicate.domain.queue import (
     SpectralScanEvidence,
 )
 
-QUEUE_RECONSTRUCTION_VERSION = "1"
+QUEUE_RECONSTRUCTION_VERSION = "2"
 QUEUE_SPATIAL_SIGNATURE_VERSION = "1"
 QUEUE_SPECTRAL_SIGNATURE_VERSION = "1"
 QUEUE_REQUEST_SIGNATURE_VERSION = "1"
@@ -175,6 +175,9 @@ def reconstruct_queue_rows(
     """Factor components while retaining source-observed links only."""
 
     inputs = tuple(rows)
+    row_ids = [row.raw_row.row_id for row in inputs]
+    if len(set(row_ids)) != len(row_ids):
+        raise ValueError("Queue raw-row IDs must be unique within a reconstruction batch")
     spatial_evidence: dict[
         str,
         tuple[QueueGroupKey, QueueSpatialEvidence],
