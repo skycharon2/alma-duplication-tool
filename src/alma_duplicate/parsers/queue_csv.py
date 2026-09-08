@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+from decimal import Decimal, InvalidOperation
 import io
 import json
 import math
@@ -62,7 +63,7 @@ from alma_duplicate.queue_normalization import (
 
 from alma_duplicate.parsers.queue_provenance import parse_source_as_of
 
-QUEUE_CSV_PARSER_VERSION = "3"
+QUEUE_CSV_PARSER_VERSION = "4"
 DEFAULT_QUEUE_SOURCE_URL = (
     "https://almascience.eso.org/proposing/duplications"
 )
@@ -428,8 +429,9 @@ class _RowParser:
             return None
 
         try:
+            exact = Decimal(stripped)
             value = float(stripped)
-        except ValueError:
+        except (ValueError, InvalidOperation, OverflowError):
             self._issue(
                 QueueIssueKind.INVALID_NUMERIC_VALUE,
                 f"field {column!r} is not numeric",
@@ -438,10 +440,18 @@ class _RowParser:
             )
             return None
 
-        if not math.isfinite(value):
+        if not exact.is_finite() or not math.isfinite(value):
             self._issue(
                 QueueIssueKind.INVALID_NUMERIC_VALUE,
                 f"field {column!r} is not finite",
+                column=column,
+                raw_value=raw,
+            )
+            return None
+        if value == 0.0 and exact != 0:
+            self._issue(
+                QueueIssueKind.INVALID_NUMERIC_VALUE,
+                f"field {column!r}: nonzero input underflows to floating-point zero",
                 column=column,
                 raw_value=raw,
             )
@@ -658,14 +668,14 @@ class _RowParser:
         ):
             return None
 
-        if not 0.0 <= ra.value < 360.0:
+        if not 0 <= Decimal(ra.raw_text.strip()) < 360:
             self._issue(
                 QueueIssueKind.INVALID_NUMERIC_VALUE,
                 "RA must be in the interval [0, 360) deg",
                 column="RA",
                 raw_value=ra.raw_text,
             )
-        if not -90.0 <= dec.value <= 90.0:
+        if not -90 <= Decimal(dec.raw_text.strip()) <= 90:
             self._issue(
                 QueueIssueKind.INVALID_NUMERIC_VALUE,
                 "Dec must be in the interval [-90, 90] deg",
