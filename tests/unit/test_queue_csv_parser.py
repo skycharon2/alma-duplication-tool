@@ -49,6 +49,38 @@ def _parse_fixture():
     return parse_queue_csv_bytes(FIXTURE_PATH.read_bytes())
 
 
+@pytest.mark.parametrize("column,value", [
+    ("Velocity", "1e-999"), ("Velocity", "-1e-999"),
+    ("Dec", "90.00000000000000001"),
+    ("Dec", "-90.00000000000000001"),
+    ("RA", "-1e-999"), ("RA", "360.00000000000000001"),
+])
+def test_original_numeric_boundary_errors_are_retained(column, value):
+    records = _records()
+    records[41][_indices(records)[column]] = value
+    result = parse_queue_csv_bytes(_render(records))
+    assert not result.can_reconstruct
+    assert result.status is QueueParseStatus.ERROR
+    assert len(result.raw_rows) == 13
+    assert result.raw_rows[0].value(column) == value
+    assert any(i.kind is QueueIssueKind.INVALID_NUMERIC_VALUE and
+               i.column == column and i.raw_value == value for i in result.issues)
+    assert result.snapshot.parser_version == "4"
+
+
+@pytest.mark.parametrize("column,value", [
+    ("Velocity", "0"), ("Velocity", "-0"), ("Velocity", "0e-999"),
+    ("RA", "-0"), ("Dec", "90"), ("Dec", "-90"),
+    ("RA", "359.999"), ("Velocity", "-1.25"),
+])
+def test_legal_zero_and_coordinate_boundaries_remain_accepted(column, value):
+    records = _records()
+    records[41][_indices(records)[column]] = value
+    result = parse_queue_csv_bytes(_render(records))
+    assert result.can_reconstruct
+    assert len(result.row_inputs) == 13
+
+
 def test_fixture_preserves_layout_metadata_and_raw_rows() -> None:
     result = _parse_fixture()
 

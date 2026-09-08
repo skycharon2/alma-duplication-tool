@@ -55,7 +55,22 @@ Those operations belong to later shared-comparison and policy layers.
 
 ## Evidence snapshot
 
-### Runtime provenance v2 (client 2, parser 2)
+### Runtime provenance (client 2, parser 4)
+
+Parser 4 checks original decimal numeric text before accepting values that
+would underflow to floating-point zero. RA/Dec ranges are checked using the
+original decimal value, so rounding cannot hide an out-of-range coordinate.
+Exact zero (including signed zero) remains valid for fields that allow zero,
+such as velocity and offsets. Existing blank/required-field rules are unchanged.
+Failures retain the raw row, text and `INVALID_NUMERIC_VALUE` diagnostic and
+follow the existing incomplete-result gate; this does not introduce partial
+snapshot reconstruction.
+
+Queue reconstruction version 2 rejects duplicate `QueueRawRowId` values at its
+public entry point before factorization, including iterable inputs. Equal
+content with different source-row IDs remains distinct. Component signature
+versions are unchanged. Stored historical parser/reconstruction versions are
+provenance and must not be rewritten.
 
 Queue file reads do not establish when bytes were downloaded. The production
 client records the following separate facts on every result, including decode
@@ -833,12 +848,16 @@ PARTIAL_SPS_RECORD
 MIXED_REGULAR_AND_SPS
 MISSING_SPECTRAL_REPRESENTATION
 CONFLICTING_UNIT_DECLARATION
-REFERENCE_FREQUENCY_OUTSIDE_COVERAGE
+REFERENCE_FREQUENCY_ASSOCIATION_UNVERIFIED
 SCHEMA_DRIFT
 ```
 
 Each issue preserves severity, message, snapshot identity, optional raw-row
 identity, column or slot, raw value, and contract/parser version.
+
+`REFERENCE_FREQUENCY_OUTSIDE_COVERAGE` remains a compatibility enum name;
+the current parser emits `REFERENCE_FREQUENCY_ASSOCIATION_UNVERIFIED` warnings
+for reference associations it cannot verify. This is not a confirmed exclusion.
 
 Raw rows and available diagnostics may be retained for an `ERROR` result, but
 the result is not complete and cannot support candidate absence or enter the
