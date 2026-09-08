@@ -55,16 +55,19 @@ Those operations belong to later shared-comparison and policy layers.
 
 ## Evidence snapshot
 
-### Runtime provenance (client 2, parser 4)
+### Runtime provenance (client 2, parser 5)
 
 Current version constants are maintained in
 [`queue_csv_client.py`](../src/alma_duplicate/clients/queue_csv_client.py),
 [`queue_csv.py`](../src/alma_duplicate/parsers/queue_csv.py) and
 [`queue_reconstruction.py`](../src/alma_duplicate/queue_reconstruction.py).
 
-Parser 4 checks original decimal numeric text before accepting values that
+Parser 5 checks original decimal numeric text before accepting values that
 would underflow to floating-point zero. RA/Dec ranges are checked using the
 original decimal value, so rounding cannot hide an out-of-range coordinate.
+RA also requires its canonical float to remain in `[0, 360)` degrees: a valid
+decimal just below 360 that rounds to `360.0` is rejected, not wrapped to zero
+or clamped. This additional check is the parser 5 behavior change.
 Exact zero (including signed zero) remains valid for fields that allow zero,
 such as velocity and offsets. Existing blank/required-field rules are unchanged.
 Failures retain the raw row, text and `INVALID_NUMERIC_VALUE` diagnostic and
