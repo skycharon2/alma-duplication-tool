@@ -99,7 +99,9 @@ coherent evidence from the same candidate context, as defined in section 6.
 Consult the [API wire format](proposed_observation_api.md#wire-format) for
 accepted fields. Requirements here also cover future comparison operations.
 
-All names in this section are planned fields, not existing Python exports.
+Names in this section describe evidence roles. Some are implemented by the
+[request API](proposed_observation_api.md#wire-format); others specify future
+comparison requirements. They are not all Python export names.
 Every supplied quantity retains exact raw value/unit text, canonical value/unit,
 conversion version and diagnostics. Preserve entered strings including blanks;
 blank optional fields become explicit missing evidence, not zero. Reject invalid
