@@ -65,7 +65,7 @@ def test_original_numeric_boundary_errors_are_retained(column, value):
     assert result.raw_rows[0].value(column) == value
     assert any(i.kind is QueueIssueKind.INVALID_NUMERIC_VALUE and
                i.column == column and i.raw_value == value for i in result.issues)
-    assert result.snapshot.parser_version == "4"
+    assert result.snapshot.parser_version == "5"
 
 
 @pytest.mark.parametrize("column,value", [
@@ -381,3 +381,43 @@ def test_row_width_mismatch_blocks_reconstruction() -> None:
     assert QueueIssueKind.ROW_WIDTH_MISMATCH in {
         issue.kind for issue in result.issues
     }
+
+
+def test_ra_rounding_to_excluded_upper_boundary_is_rejected() -> None:
+    from decimal import Decimal
+
+    value = "359.99999999999999999"
+    assert Decimal(value) < 360
+    assert float(value) == 360.0
+    records = _records()
+    records[41][_indices(records)["RA"]] = value
+
+    result = parse_queue_csv_bytes(_render(records))
+
+    assert result.status is QueueParseStatus.ERROR
+    assert not result.can_reconstruct
+    assert len(result.raw_rows) == 13
+    assert len(result.row_inputs) == 12
+    assert result.raw_rows[0].value("RA") == value
+    assert any(
+        issue.kind is QueueIssueKind.INVALID_NUMERIC_VALUE
+        and issue.column == "RA"
+        and issue.raw_value == value
+        and issue.row_id == result.raw_rows[0].row_id
+        for issue in result.issues
+    )
+
+
+@pytest.mark.parametrize("value", ["0", "-0", "359.99999999999994"])
+def test_canonical_ra_inside_range_remains_accepted(value: str) -> None:
+    records = _records()
+    records[41][_indices(records)["RA"]] = value
+
+    result = parse_queue_csv_bytes(_render(records))
+
+    assert result.can_reconstruct
+    assert len(result.row_inputs) == 13
+    ra = result.row_inputs[0].spatial.ra_deg
+    assert 0 <= ra.value < 360
+    assert ra.value == float(value)
+    assert ra.raw_text == value
