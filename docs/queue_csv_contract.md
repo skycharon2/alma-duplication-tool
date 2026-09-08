@@ -860,8 +860,16 @@ REFERENCE_FREQUENCY_ASSOCIATION_UNVERIFIED
 SCHEMA_DRIFT
 ```
 
-Each issue preserves severity, message, snapshot identity, optional raw-row
-identity, column or slot, raw value, and contract/parser version.
+[`QueueParseIssue`](../src/alma_duplicate/domain/queue.py) records diagnostic
+kind, severity and message, with optional `row_id`, `column`, `slot_number`
+and `raw_value`. Issues that do not refer to a particular row may have no
+`row_id`.
+
+Snapshot identity and parser/schema versions come from the containing
+`QueueCsvParseResult` and its `snapshot`; they are not fields of each issue.
+When exporting an issue independently, retain a reference to that containing
+result/source record so its provenance remains recoverable. A standalone issue
+must not be treated as a complete snapshot provenance record.
 
 `REFERENCE_FREQUENCY_OUTSIDE_COVERAGE` remains a compatibility enum name;
 the current parser emits `REFERENCE_FREQUENCY_ASSOCIATION_UNVERIFIED` warnings
