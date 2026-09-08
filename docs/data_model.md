@@ -70,13 +70,13 @@ Notebook 04c closed the current semantic-review phase using a
 counterexamples supersede earlier sample statements wherever they conflict;
 counts from different capture times are never combined as one snapshot.
 
-The production Archive client v2 implements query construction,
+The production Archive client implements query construction,
 COUNT/retrieval reconciliation, query-status handling, schema-name checks,
 query provenance, an incomplete-result pipeline gate, and ordered retrieval
 field-metadata preservation (`name`, datatype, arraysize, unit, UCD, utype,
 xtype, and description), including valid zero-row responses.
 
-The production Queue CSV v1 implementation fingerprints the exact byte
+The production Queue CSV implementation fingerprints the exact byte
 snapshot with SHA-256 and byte length, and preserves its embedded dictionary,
 mixed secondary-header row, all 79 raw operational values, source-line
 identity, both unit representations, typed row evidence, and observed
@@ -93,7 +93,11 @@ to the run. The existing in-memory `QueueSnapshot` remains compatible. See
 [Queue snapshot storage](queue_snapshot_store.md); full historical Python parse
 objects and Archive disk serialization are outside this format.
 
-## Evidence summary
+## Historical exploration evidence summary
+
+The observations below describe the named notebook populations and capture
+dates. Their counts are historical evidence, not a current live census or proof
+that each experimental derivation is implemented in production.
 
 | Question | Current evidence | Model consequence |
 |---|---|---|
@@ -521,7 +525,11 @@ multiple raw rows supporting one association, and multiple SPWs mapping to
 one support component. It does not assert that multiple physical products or
 files have been proven.
 
-## Entity definitions
+## Conceptual entity definitions and implementation notes
+
+Uppercase entity names below are conceptual scopes, not a list of Python classes.
+The object mapping in Status and scope identifies implemented types. Field-level
+production support is specified in the field inventory below.
 
 ### `PROJECT`
 
@@ -840,29 +848,49 @@ and Solar-system targets require dedicated logic.
 - A Polygon necessarily means mosaic, or a mosaic necessarily uses one
   geometry family.
 
-## Field ownership used by implementation
+## Field projection, representation and conceptual ownership
 
-| Field/value | Model scope | Engineering treatment |
-|---|---|---|
-| `proposal_id`, `obs_publisher_did` | Project | Preserve raw; validate current one-to-one mapping |
-| top-level `type` | Optional Project classification | Preserve raw and unknown values; validate against proposal suffix only as diagnostic evidence; never use as observation mode |
-| `group_ous_uid` | Optional Group OUS | Normalize blank to missing; retain raw |
-| `member_ous_uid` | Member OUS | Primary dataset grouping identifier |
-| `asdm_uid` | ASDM execution | Retain in Source-Execution scope |
-| Source parsed from `obs_id` | Source Context/Alias | Store parse confidence and raw label |
-| `s_ra`, `s_dec`, `s_fov`, `s_region`, `is_mosaic` | Spatial Footprint at Source-Execution scope | Preserve raw STC-S and geometry family |
-| `frequency_support` | Source-Execution Context | Grammar-dispatched, raw-preserving parser |
-| `antenna_arrays`, `t_min`, `t_max` | Source-Execution Context | Preserve raw execution evidence |
-| `cont_sensitivity_bandwidth` | Source-Execution Context | Estimated aggregate continuum evidence; not achieved product RMS |
-| Parsed SPW, `frequency`, `bandwidth` | Source-SPW Association/raw row | Preserve exact values and units |
-| `spectral_resolution`, `sensitivity_10kms` | Source-SPW Association/raw row | SPW-sensitive evidence; sensitivity is an estimate at nominal 10 km/s, not achieved product RMS |
-| Parsed support component | Frequency-Support Component | Versioned derived metadata |
-| `s_resolution`, `spatial_resolution` | Separate Source-Execution/raw evidence | Use `spatial_resolution` for initial Archive candidate retrieval; retain `s_resolution` as a cross-check; never merge or impose equality |
-| `qa2_passed` | Raw QA evidence / later policy | Normalize known values but do not apply as an implicit client filter |
-| `em_xel` | Raw Archive row diagnostic metadata | Preserve the public TAP value without producing Archive UI type or formal FDM/TDM evidence |
-| `em_min`, `em_max`, `em_resolution`, `velocity_resolution` | Cross-check/derived evidence | Tolerance-aware validation only |
-| Axis and access metadata | Optional row/product metadata | Never required for core reconstruction |
-| Duplication result | Policy layer | Not part of this model |
+Projection is defined by [archive_queries.py](../src/alma_duplicate/clients/archive_queries.py).
+CORE means selected and required; OPTIONAL means queried only when requested
+and confirmed by schema. NOT SELECTED means absent from the default production
+projection, even if documented by historical exploration. Unexpected returned
+scalar columns can remain in raw evidence without receiving typed semantics.
+
+Typed below means a dedicated normalized/derived representation exists, not that
+the value is present, valid, associated unambiguously or ready for comparison.
+
+| Field/value | Current projection | Current representation | Scope and limits |
+| --- | --- | --- | --- |
+| `proposal_id`, `obs_publisher_did` | CORE | Raw + normalized identifier/mapping evidence | Project grouping; no universal physical-product identity |
+| `type` | NOT SELECTED | No dedicated production projection | Historical project classification; not observing mode |
+| `group_ous_uid`, `member_ous_uid`, `asdm_uid`, `obs_id` | CORE | Raw + normalized/parsed identifiers | Observed reconstruction keys; grouping does not authorize mixing evidence |
+| `target_name`, source parsed from `obs_id` | CORE / derived | Raw label + reconstruction evidence | Source context, not globally resolved physical target |
+| `s_ra`, `s_dec`, `s_region` | CORE | Raw only for spatial comparison | No production geometry-family parser or complete typed spatial adapter |
+| `is_mosaic` | CORE | Raw + normalized Boolean | Source declaration; not a reconstructed pointing list |
+| `s_fov` | OPTIONAL | Raw only | Auxiliary coverage evidence; not a verified beam or footprint |
+| `antenna_arrays` | CORE | Raw only | No automatic complete array/geometry interpretation |
+| `t_min`, `t_max` | OPTIONAL | Raw only | Auxiliary time evidence; retained within originating row |
+| `frequency_support` | CORE | Raw + full versioned parse result | Includes component intervals, diagnostics and independent RMS entries |
+| `frequency`, `bandwidth` | CORE | Raw + typed canonical evidence and derived row interval | Row/SPW association subject to mapping; not independently verified usable coverage |
+| `spectral_resolution` | CORE | Raw + typed canonical evidence | Does not substitute for channel spacing or effective noise bandwidth |
+| `sensitivity_10kms` | CORE | Raw + typed estimated sensitivity | Representative-window association must be established before use for a matched SPW; row co-location is insufficient |
+| `cont_sensitivity_bandwidth` | CORE | Raw + typed estimated continuum sensitivity | Preserve aggregate basis; not achieved image RMS |
+| Parsed support component | Derived | Parser object + row/parser-scoped reference | Component evidence is separate from row scalars; current whole-result mapping gate still applies |
+| `spatial_resolution` | CORE | Raw + typed canonical evidence | Initial angular-resolution prefilter; not a measured restoring beam |
+| `s_resolution` | OPTIONAL | Raw only | Independent cross-check; never alias to spatial_resolution |
+| `band_list`, `pol_states` | OPTIONAL | Raw only | Auxiliary source metadata, not validated comparison context |
+| `qa2_passed`, `science_observation` | CORE | Raw + normalized Boolean | Query policy is explicit; QA2 is not an implicit filter |
+| `obs_release_date`, `lastModified` | CORE | Raw + normalized timestamps | Sentinel/missing handling remains source-specific |
+| `em_xel` | CORE | Raw only | No production classifier; SPW granularity must be established before future classification |
+| `em_min`, `em_max`, `em_resolution`, `velocity_resolution` | NOT SELECTED | Historical cross-check evidence | Notebook checks are not production validation of these fields |
+| Other axis/access metadata | NOT SELECTED | No dedicated projection | Conceptual row/product metadata; do not claim routine retrieval |
+| Duplication result | Not a source field | Planned | Comparison/policy layer, not reconstruction output |
+
+For exact conversion and preparation behavior see
+[archive_field_contract.py](../src/alma_duplicate/clients/archive_field_contract.py)
+and [archive_adapter.py](../src/alma_duplicate/clients/archive_adapter.py).
+Unlinked or ambiguous evidence is retained; conceptual ownership never supplies
+a missing representative-window association.
 
 ## Numerical and normalization rules
 
@@ -883,7 +911,8 @@ and Solar-system targets require dedicated logic.
 
 ## Evidence levels
 
-The implementation and documentation use four evidence levels:
+The following labels organize historical research evidence in this document;
+they are not a shared runtime enum or a comparison-readiness scale:
 
 1. `SERVICE_DEFINED`: field names, types, units, and descriptions from the
    live TAP schema.
