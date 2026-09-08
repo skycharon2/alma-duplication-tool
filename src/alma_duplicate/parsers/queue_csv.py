@@ -63,7 +63,7 @@ from alma_duplicate.queue_normalization import (
 
 from alma_duplicate.parsers.queue_provenance import parse_source_as_of
 
-QUEUE_CSV_PARSER_VERSION = "4"
+QUEUE_CSV_PARSER_VERSION = "5"
 DEFAULT_QUEUE_SOURCE_URL = (
     "https://almascience.eso.org/proposing/duplications"
 )
@@ -668,10 +668,10 @@ class _RowParser:
         ):
             return None
 
-        if not 0 <= Decimal(ra.raw_text.strip()) < 360:
+        if not (0 <= Decimal(ra.raw_text.strip()) < 360 and 0 <= ra.value < 360):
             self._issue(
                 QueueIssueKind.INVALID_NUMERIC_VALUE,
-                "RA must be in the interval [0, 360) deg",
+                "RA original and canonical values must be in the interval [0, 360) deg",
                 column="RA",
                 raw_value=ra.raw_text,
             )
