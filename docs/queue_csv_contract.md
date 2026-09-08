@@ -57,6 +57,11 @@ Those operations belong to later shared-comparison and policy layers.
 
 ### Runtime provenance (client 2, parser 4)
 
+Current version constants are maintained in
+[`queue_csv_client.py`](../src/alma_duplicate/clients/queue_csv_client.py),
+[`queue_csv.py`](../src/alma_duplicate/parsers/queue_csv.py) and
+[`queue_reconstruction.py`](../src/alma_duplicate/queue_reconstruction.py).
+
 Parser 4 checks original decimal numeric text before accepting values that
 would underflow to floating-point zero. RA/Dec ranges are checked using the
 original decimal value, so rounding cannot hide an out-of-range coordinate.
@@ -858,6 +863,8 @@ identity, column or slot, raw value, and contract/parser version.
 `REFERENCE_FREQUENCY_OUTSIDE_COVERAGE` remains a compatibility enum name;
 the current parser emits `REFERENCE_FREQUENCY_ASSOCIATION_UNVERIFIED` warnings
 for reference associations it cannot verify. This is not a confirmed exclusion.
+The list above is a diagnostic overview, not an exhaustive enum copy; see
+[`QueueIssueKind`](../src/alma_duplicate/domain/queue.py) for the complete vocabulary.
 
 Raw rows and available diagnostics may be retained for an `ERROR` result, but
 the result is not complete and cannot support candidate absence or enter the
