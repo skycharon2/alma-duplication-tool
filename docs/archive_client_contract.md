@@ -1,6 +1,22 @@
 # Archive TAP Client Completeness and Field-Metadata Contract
 
-## Raw row snapshot boundary (client version 6)
+## Purpose
+
+The Archive client retrieves candidate evidence from the ALMA Science Archive
+without applying duplication-policy decisions. It converts one spatial search
+into a traceable COUNT-and-retrieval run, verifies that the response is usable,
+and permits normalization and reconstruction only when completeness is proven.
+
+An incomplete or technically invalid Archive response must never support a
+negative duplication conclusion. A complete response whose scientific units
+cannot be validated may still support structural reconstruction, but its
+affected values cannot enter scientific comparison.
+
+Current entry point: `ArchiveClient.search(ArchiveQuerySpec)`. Client version
+**7**, required-column schema version **3**, and projection version **1** are
+independent provenance fields; see the projection section below.
+
+## Raw row snapshot boundary
 
 Both `TapResponse` and `ArchiveQueryResult` copy every input row into an
 independent read-only mapping and store the rows in a tuple. This applies to
@@ -25,21 +41,8 @@ row, column and type. The PyVO executor translates this into its existing
 support would require a separate immutable representation contract.
 
 This is an in-memory snapshot of the selected columns, not disk persistence
-or a guarantee that all Archive metadata columns were queried. Parser,
-reconstruction and adapter algorithms are unchanged; the client provenance
-version is incremented from 5 to 6.
-
-## Purpose
-
-The Archive client retrieves candidate evidence from the ALMA Science Archive
-without applying duplication-policy decisions. It converts one spatial search
-into a traceable COUNT-and-retrieval run, verifies that the response is usable,
-and permits normalization and reconstruction only when completeness is proven.
-
-An incomplete or technically invalid Archive response must never support a
-negative duplication conclusion. A complete response whose scientific units
-cannot be validated may still support structural reconstruction, but its
-affected values cannot enter scientific comparison.
+or a guarantee that all Archive metadata columns were queried. This snapshot
+boundary was introduced in client version 6 and is retained in client version 7; it is independent of parser and reconstruction versions.
 
 ## Scope
 
@@ -202,8 +205,8 @@ All result statuses retain projection evidence, whose representation also
 contributes to the query hash. Run timing includes the projection probe;
 no additional retry is introduced.
 
-`ARCHIVE_SCHEMA_VERSION` versions the retrieval projection and required-column
-set. Schema validation uses `TapResponse.declared_columns`, not keys from the
+`ARCHIVE_SCHEMA_VERSION` versions the required-column contract;
+`ARCHIVE_PROJECTION_VERSION` versions the projection specification. Schema validation uses `TapResponse.declared_columns`, not keys from the
 first data row. This permits a zero-row table to prove that it still satisfies
 the expected schema.
 

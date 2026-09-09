@@ -75,7 +75,10 @@ propagates, leaves the source intact, and does not fabricate a successful run.
 
 ## Example
 
-Run from the repository root with the project environment active:
+Run from the repository root with the project environment active. This example
+uses the committed 13-row regression fixture, not a complete or current queue
+export. It creates source and run records on disk under the git-ignored
+`data/cache/queue-snapshots` directory. Repeating it creates new records:
 
 ```bash
 python - <<'PY'
@@ -85,8 +88,8 @@ from alma_duplicate.storage import QueueSnapshotStore
 root = Path("data/cache/queue-snapshots")
 store = QueueSnapshotStore(root)
 source = store.save_source(
-    Path("data/raw/projects_in_queue_cycle13_20260901.csv").read_bytes(),
-    source_note="Controlled local file; retrieval time unknown",
+    Path("tests/fixtures/queue/queue_pipeline_v1.csv").read_bytes(),
+    source_note="Committed regression fixture; incomplete queue; retrieval time unknown",
 )
 # The source is already published even if parsing now fails.
 run, result = store.reparse(source.source_id)
@@ -103,6 +106,12 @@ assert reopened.read_run(run.run_id) == run
 print("Historical source and summary verified")
 PY
 ```
+
+For an optional full-snapshot run, replace the fixture path with a controlled
+local CSV and record its actual provenance in `source_note`, `source_url` and
+`retrieved_at` where known. Full operational snapshots are not committed; the
+example filename is not evidence of a retrieval time. See the
+[fixture scope](../tests/fixtures/queue/README.md).
 
 Retain the printed IDs to reopen specific records later. Calling `reparse`
 again creates a new run and fresh parse time; it does not overwrite the old run.
