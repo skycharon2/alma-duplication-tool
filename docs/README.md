@@ -18,15 +18,35 @@ For candidate-search service development:
 For formal-rule development:
 
 1. [Rule inputs](duplication_rule_inputs.md): required evidence, open Q1–Q7 decisions and acceptance coverage.
-2. [Data model](data_model.md): current object index, associations and invariants; the ERDs are explicitly conceptual.
+2. [Data model](data_model.md): current object index, associations and invariants; links lead separately to conceptual ERDs and historical evidence.
 3. [Archive dictionary](archive_data_dictionary.md) and [Queue contract](queue_csv_contract.md): source-field semantics and limitations.
 4. Return to the rule-input decision register and acceptance cases before implementing an affected policy method.
 
 [Live Archive smoke instructions](live_archive_smoke.md) describe opt-in source
 verification. The [form design](proposed_observation_form.md) is future interface
-design; the request API owns the accepted backend format. Historical statistics
-and conceptual diagrams still live in their original documents pending structural
-cleanup; they are not current population counts or Python class definitions.
+design; the request API owns the accepted backend format. Historical statistics now live in the [snapshot register](evidence/exploration_snapshots.md);
+original ERDs and conceptual entities live in the [design document](design/conceptual_data_model.md).
+They are not current population counts or Python class definitions.
+
+## Document responsibilities
+
+Each contract owns its complete specification; other documents link to it rather
+than redefining fields, formulas or behavior. Read historical evidence only when
+its justification or sample limits are needed.
+
+| Question | Authoritative project document |
+| --- | --- |
+| Which request fields/units are accepted and how are they validated? | [Request API](proposed_observation_api.md) |
+| Which current objects/keys/associations must be preserved? | [Data model](data_model.md) |
+| How are source contexts built and their evidence/provenance exposed? | [Comparison contexts](comparison_contexts.md) |
+| How are plans bound and supported individual predicates evaluated? | [Search/spatial](search_plan_spatial.md) |
+| How does TAP querying, projection and completeness behave? | [Archive client](archive_client_contract.md) |
+| What do Archive fields/statuses mean and which are selected? | [Archive dictionary](archive_data_dictionary.md) |
+| How are CSV layout, units, nominal/usable frequencies and failures handled? | [Queue contract](queue_csv_contract.md) |
+| How are exact Queue sources and historical summaries stored? | [Queue storage](queue_snapshot_store.md) |
+| What evidence/scientific decisions/acceptance cases do formal rules need? | [Rule inputs](duplication_rule_inputs.md) |
+| Where are original conceptual entities and ERDs? | [Conceptual design](design/conceptual_data_model.md) |
+| What was measured, when, on which sample and with what limitations? | [Snapshot evidence](evidence/exploration_snapshots.md) |
 
 ## Current capabilities and status meanings
 

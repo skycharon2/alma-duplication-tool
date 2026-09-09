@@ -93,26 +93,18 @@ treated as a permanent capability claim.
 
 ## Documentation
 
-| Document | Responsibility |
-| --- | --- |
-| [Archive client](docs/archive_client_contract.md) | Query completeness, projection, provenance and pipeline gates |
-| [Archive dictionary](docs/archive_data_dictionary.md) | Fields, limitations and implemented status vocabularies |
-| [Data model](docs/data_model.md) | Implemented objects/invariants, labeled concepts and historical evidence |
-| [Queue contract](docs/queue_csv_contract.md) | CSV schema, units, parsing and reconstruction |
-| [Queue storage](docs/queue_snapshot_store.md) | Immutable source records and independent parse summaries |
-| [Request API](docs/proposed_observation_api.md) | Executable input format, validation and request-side readiness |
-| [Comparison contexts](docs/comparison_contexts.md) | Offline construction, evidence references, limitations and independent source states |
-| [Search plans and spatial evidence](docs/search_plan_spatial.md) | Planned predicates, query binding, limited geometry and individual checks |
-| [Rule inputs](docs/duplication_rule_inputs.md) | Evidence requirements and planned assessment behavior |
-| [Form sketch](docs/proposed_observation_form.md) | Planned conditional browser interaction |
-| [Live smoke guide](docs/live_archive_smoke.md) | Optional service validation |
+Start with the [documentation guide](docs/README.md) for candidate-search and
+formal-rule reading paths, document responsibilities and status meanings.
+The [current data model](docs/data_model.md) describes implemented objects and
+invariants. Original [conceptual ERDs](docs/design/conceptual_data_model.md) and
+[historical snapshots](docs/evidence/exploration_snapshots.md) have separate homes.
 
 Production code is in [src/alma_duplicate](src/alma_duplicate/), with automated
 checks in [tests](tests/). [Notebooks](notebooks/) retain dated exploration
 evidence; their outputs do not establish current production capabilities.
-Offline comparison contexts now retain existing source outputs. Offline search planning and limited spatial adaptation are available. The next
-step orchestrates request-driven search, then validates retrieval with CASE fixtures. Reported CASE
-candidates are not confirmed duplicate/non-duplicate labels.
+The [next-delivery checklist](docs/README.md#next-delivery) coordinates service
+integration using the existing request, comparison and search/spatial objects.
+Reported CASE candidates are not confirmed duplicate/non-duplicate labels.
 
 ## License
 
