@@ -55,6 +55,8 @@ Those operations belong to later shared-comparison and policy layers.
 
 ## Evidence snapshot
 
+This section defines runtime provenance. Historical populations are linked below.
+
 ### Runtime provenance (client 2, parser 5)
 
 Current version constants are maintained in
@@ -67,7 +69,7 @@ would underflow to floating-point zero. RA/Dec ranges are checked using the
 original decimal value, so rounding cannot hide an out-of-range coordinate.
 RA also requires its canonical float to remain in `[0, 360)` degrees: a valid
 decimal just below 360 that rounds to `360.0` is rejected, not wrapped to zero
-or clamped. This additional check is the parser 5 behavior change.
+or clamped.
 Exact zero (including signed zero) remains valid for fields that allow zero,
 such as velocity and offsets. Existing blank/required-field rules are unchanged.
 Failures retain the raw row, text and `INVALID_NUMERIC_VALUE` diagnostic and
@@ -76,9 +78,8 @@ snapshot reconstruction.
 
 Queue reconstruction version 2 rejects duplicate `QueueRawRowId` values at its
 public entry point before factorization, including iterable inputs. Equal
-content with different source-row IDs remains distinct. Component signature
-versions are unchanged. Stored historical parser/reconstruction versions are
-provenance and must not be rewritten.
+content with different source-row IDs remains distinct. Stored historical
+parser/reconstruction versions are provenance and must not be rewritten.
 
 Queue file reads do not establish when bytes were downloaded. The production
 client records the following separate facts on every result, including decode
@@ -130,53 +131,23 @@ and acquisition facts are published before parsing; each reparse writes a new
 summary. Historical reads do not invoke the parser. See
 [Queue snapshot storage](queue_snapshot_store.md) for the versioned format,
 integrity checks, and limits of historical summaries.
-Schema, quantity normalization and reconstruction algorithms are unchanged.
 
 Notebook 05's existing mtime display is a historical local-file observation,
 not a source of runtime retrieved_at. Its historical outputs are not rewritten.
 
 ### Historical reference
 
-The v1 contract is based on the public file inspected in Notebook 05.
-
-| Property | Observed value |
-|---|---:|
-| Source page | `https://almascience.eso.org/proposing/duplications` |
-| Retrieval date used by the exploration | 2026-09-01 |
-| Source-provided queue date in the description | 2026-03-03 |
-| SHA-256 | `8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5` |
-| Physical CSV records | 3,241 |
-| Embedded dictionary entries | 35 |
-| Operational columns | 79 |
-| Data rows | 3,200 |
-| Unique exact row-content fingerprints | 3,135 |
-| Rows participating in exact-content duplicates | 75 |
-| Excess duplicate copies | 65 |
-
-The retrieval date, source-provided queue date, and checksum describe different
-facts and must not be substituted for one another. Counts in this section are
-regression evidence for the pinned snapshot, not permanent ALMA-wide
-cardinality constraints.
-
-A compatible future snapshot may contain different projects, row counts, SPW
-occupancy, and category values. It must receive a new checksum and capture
-provenance and must pass the same schema and consistency gates before entering
-reconstruction.
+Notebook 05's source dates, checksum, sample counts and duplicate statistics are
+maintained in the [pinned snapshot register](evidence/exploration_snapshots.md#queue-pinned-snapshot).
+Compatible new snapshots may change populations; they still need their own
+provenance and the same ingestion gates.
 
 ## Physical file layout
 
-The pinned snapshot has the following physical layout:
-
-| Physical line | Meaning |
-|---:|---|
-| 1 | Source description |
-| 2 | Blank separator |
-| 3 | Embedded-dictionary header: `Column Heading,Units,Description` |
-| 4–38 | 35 embedded-dictionary entries |
-| 39 | Blank separator |
-| 40 | 79-column operational header |
-| 41 | Mixed secondary header/unit row |
-| 42–3241 | 3,200 operational data rows |
+The file contains source description, embedded dictionary, operational header,
+secondary header/unit row and data records. Their recorded line numbers are
+[historical layout evidence](evidence/exploration_snapshots.md#queue-physical-line-layout),
+not fixed offsets in the parser contract.
 
 The parser must identify sections by structural anchors and then validate their
 positions. It must not assume that an arbitrary future file always begins its
@@ -320,24 +291,8 @@ string similarity.
 
 ### SPS bandwidth decision
 
-The pinned snapshot contains one spectral-scan row:
-
-| Field | Value |
-|---|---:|
-| Project | `2025.1.00299.S` |
-| Target | `HBC_687` |
-| Band | `ALMA_RB_06` |
-| Start frequency | 261.5 GHz |
-| End frequency | 268.7 GHz |
-| Raw SPS bandwidth | 1000.0 |
-| SPS spectral resolution | 0.000564453125 MHz |
-| Sensitivity reference frequency | 265.141 GHz |
-| Sensitivity reference width | 0.565 MHz |
-
-Interpreting the raw bandwidth as 1,000 GHz is inconsistent with the 7.2-GHz
-scan range and Band 6 context. Interpreting it as 1,000 MHz is numerically and
-scientifically plausible and agrees with the embedded dictionary description,
-which defines it as the bandwidth of each scan window.
+The [pinned SPS example and numerical reasoning](evidence/exploration_snapshots.md#queue-sps-bandwidth-evidence)
+support the schema-specific MHz interpretation below.
 
 For the pinned schema, the parser therefore uses MHz as the normalized unit
 while retaining:
@@ -468,18 +423,9 @@ Populated slots are retained with their source numbers. If a future row
 contains slots 1, 2, and 4 while slot 3 is blank, the parser must preserve
 1, 2, and 4 and report `NONCONTIGUOUS_SPW_SLOTS`; it must not renumber slot 4.
 
-The pinned snapshot provides the following evidence:
-
-| Property | Observed value |
-|---|---:|
-| Reserved slots | 16 |
-| Highest populated slot | 7 |
-| Rows with partial triples | 0 |
-| Rows with non-contiguous populated slots | 0 |
-| Long-form regular-SPW records | 16,216 |
-
-Slots 8–16 are valid reserved schema fields even though they are empty in the
-pinned snapshot.
+Historical slot occupancy is recorded in the
+[SPW snapshot](evidence/exploration_snapshots.md#queue-spw-occupancy). All reserved
+slots remain valid schema fields regardless of the pinned sample occupancy.
 
 ## Spectral-scan representation
 
@@ -498,9 +444,8 @@ or:
 SPS fields populated and all regular SPW fields blank
 ```
 
-The pinned snapshot contains 3,199 regular rows and one complete SPS row. No
-row contains both representations, neither representation, or a partial SPS
-record.
+See [historical representation counts](evidence/exploration_snapshots.md#queue-spectral-representation-counts)
+for the pinned file; these are not required population counts.
 
 The SPS range is not expanded into synthetic ordinary SPWs. The CSV does not
 provide the individual scan-window centres, number, spacing, or overlap
@@ -508,7 +453,7 @@ required to reconstruct those windows authoritatively. The normalized model
 therefore uses a tagged union such as:
 
 ```text
-QueueSpectralSetup = RegularSpwSetup | SpectralScanSetup
+QueueSpectralSetup.evidence: RegularSpwEvidence | SpectralScanEvidence
 ```
 
 and records spectral-scan window expansion as unavailable.
@@ -536,19 +481,10 @@ offsets and mosaic geometry. This tolerance determines whether a value is
 effectively zero for classification; it does not round, replace, or hash the
 raw value.
 
-Pinned-snapshot evidence at this tolerance includes:
+The [spatial census](evidence/exploration_snapshots.md#queue-spatial-census) records
+the historical evidence at this tolerance.
 
-- 2,940 rows labelled `Custom`;
-- 140 rows labelled `Rectangle`;
-- 120 rows with a blank mosaic label;
-- 420 repeated custom-mosaic centre rows;
-- 2,520 repeated custom-mosaic offset rows;
-- 231 custom-mosaic project–target–band groups;
-- exactly one centre and six offset spatial components in every custom group;
-- rectangle extents on all 140 rectangle rows; and
-- nine blank-labelled rows with meaningful nonzero offsets.
-
-Consequently:
+The ingestion interpretation is:
 
 - `Mosaic` is categorical, not boolean;
 - blank `Mosaic` does not prove that all offsets or geometry are zero;
@@ -674,16 +610,11 @@ form:
 > usable coverage be represented separately for the 12-m/7-m correlator and
 > the TP spectrometer?
 
-Nominal bounds remain available for conservative discovery and the pinned
-snapshot's historical reference-frequency consistency check. In the pinned
-snapshot, all 3,199 regular rows place `Ref.Frequency` inside both at least one
-nominal interval and at least one derived usable interval.
-
-The reference-frequency diagnostic uses a numerical boundary tolerance of
-`1e-12 GHz`. Values outside every derived nominal interval produce a warning;
-they do not exclude the row while the reference remains unverified. The pinned snapshot passed for all 3,199
-regular rows. The SPS row's reference frequency also lies inside its declared
-scan range.
+Nominal bounds remain available for conservative discovery. The reference-frequency
+diagnostic uses a numerical boundary tolerance of `1e-12 GHz`. Values outside
+every derived nominal interval produce a warning; they do not exclude the row
+while its reference remains unverified. Historical results are recorded in the
+[reference-frequency check](evidence/exploration_snapshots.md#queue-reference-frequency-consistency).
 
 This is an internal Queue consistency check. It does not prove that the derived
 frequency is already in the same reference frame as an Archive candidate.
@@ -700,22 +631,11 @@ Ref.Freq.Width [MHz]
 Req.Sensitivity [mJy]
 ```
 
-All 3,200 pinned-snapshot rows contain positive values for all three fields.
-The values vary within some project–target–band groups and therefore belong to
-the spectral/setup side of reconstruction rather than to target identity.
-
-`Ref.Freq.Width` is an independent request value. In the 3,199 regular rows:
-
-- 29 match the derived aggregate non-overlapping bandwidth;
-- three match a source SPW spectral resolution; and
-- 3,167 are other or user-defined reference widths.
-
-The parser must not recompute this field from SPW bandwidth or resolution.
-
-For the SPS row, the 0.565-MHz reference width is approximately 1,001 times the
-native scan resolution and 0.000565 of the 1,000-MHz per-window bandwidth. Its
-requested 2.5-mJy sensitivity is therefore tied to the separate reference
-width, not to a native spectral element or a complete scan window.
+The sensitivity triple belongs to spectral/setup evidence, not target identity.
+`Ref.Freq.Width` remains an independent request value: the parser must not
+recompute it from SPW bandwidth or resolution. The
+[reference-width census and SPS example](evidence/exploration_snapshots.md#queue-requested-sensitivity-evidence)
+preserve the numerical evidence supporting this distinction.
 
 Requested Queue sensitivity and estimated Archive sensitivity must remain
 separate evidence types until the rule layer defines an approved smoothing and
@@ -723,82 +643,17 @@ unit-comparison method.
 
 ## Reconstruction and observed associations
 
-The Queue CSV is a flattened export. Repeated spatial and spectral signatures
-are factored into reusable components, but source-row associations remain the
-only authoritative links between them.
-
-```mermaid
-erDiagram
-    QUEUE_SNAPSHOT ||--o{ RAW_QUEUE_ROW : contains
-    RAW_QUEUE_ROW ||--|| QUEUE_ROW_ASSOCIATION : records
-    QUEUE_SPATIAL_COMPONENT ||--o{ QUEUE_ROW_ASSOCIATION : spatial_side
-    QUEUE_SPECTRAL_SETUP ||--o{ QUEUE_ROW_ASSOCIATION : spectral_side
-    QUEUE_REQUEST_CONTEXT ||--o{ QUEUE_ROW_ASSOCIATION : request_side
-```
-
-One accepted raw row produces exactly one `QueueRowAssociation` linking:
-
-```text
-one RawQueueRow
-one QueueSpatialComponent
-one QueueSpectralSetup
-one QueueRequestContext
-```
-
-The analytical group key used in Notebook 05 is:
-
-```text
-(Project Code, Target Name, Band)
-```
-
-It is a reconstruction scope, not an official ALMA Science Goal or Scheduling
-Block identifier.
-
-It is also not a candidate identity. Scientific comparison must start from a
-`QueueRowAssociation` (or evidence reached through that association), so
-position, spectral setup, angular resolution, and requested sensitivity still
-come from one real CSV row.
-
-Within 419 pinned-snapshot groups:
-
-- 417 groups' observed spatial–spectral pairs happen to fill the local
-  Cartesian product;
-- `2025.1.00539.S / M33 / ALMA_RB_06` has five spatial and five spectral
-  signatures but only five observed pairs rather than 25; and
-- `2025.1.00576.L / NGC_0253 / ALMA_RB_06` has two spatial and two spectral
-  signatures but only two observed pairs rather than four.
-
-The production reconstruction must therefore never generate:
-
-```text
-all spatial components × all spectral setups
-```
-
-even when that shortcut reproduces most current groups. It stores only pairs
-observed on raw source rows.
-
-Five pinned-snapshot groups also contain repeated identical exports. Their
-raw-row multiplicity and source-line provenance remain evidence and are not
-discarded during component deduplication.
+Only complete ingestion enters reconstruction. The [current data model](data_model.md#queue-row-associations)
+owns Queue component identities, row associations and cardinality invariants.
+A context uses a real `QueueRowAssociation`; factored components are never
+combined into unobserved pairs. [Historical counterexamples](evidence/exploration_snapshots.md#queue-sparse-associations)
+remain available independently of the current object contract.
 
 ## Component signatures
 
-Component signatures are internal, deterministic, versioned identifiers. They
-are not ALMA identifiers.
-
-A spatial signature includes its group scope and exact raw spatial values. A
-spectral signature includes its group scope, velocity context, sky/rest flag,
-the complete regular-SPW collection or SPS record, and the requested
-sensitivity triple. A request-context signature includes requested angular
-resolution, requested LAS, array flags, and polarization.
-
-Raw strings are used for identity signatures. Normalized floating-point values
-are used for scientific calculations but must not become identity merely after
-rounding. Each signature records its algorithm version.
-
-Input row order may not change the set of reconstructed component signatures
-or the multiset of logical associations. Raw-row IDs still reflect physical
-line provenance and therefore remain row-specific.
+The [signature contract](data_model.md#component-signatures) defines exact-raw-value
+identity and order independence. Unit conversion below never changes identity
+by rounding normalized values.
 
 ## Missing and categorical values
 
@@ -983,23 +838,8 @@ The central sparse-association test must demonstrate that two spatial and two
 spectral components represented by two source rows produce two associations,
 not four.
 
-The full pinned snapshot remains a local acceptance test. Its expected
-regression checks include:
-
-```text
-raw_rows = 3200
-operational_columns = 79
-regular_rows = 3199
-sps_rows = 1
-long_spw_records = 16216
-row_associations = 3200
-partial_spw_triples = 0
-noncontiguous_spw_rows = 0
-reference_frequency_failures = 0
-project_target_band_groups = 419
-sparse_or_paired_groups = 2
-groups_with_exact_export_multiplicity = 5
-```
+Expected counts for the optional acceptance fixture are recorded with its
+[historical snapshot](evidence/exploration_snapshots.md#queue-full-snapshot-regression-expectations).
 
 The complete public snapshot does not need to become the only CI fixture. Its
 checksum and counts are snapshot-specific and will change when ALMA publishes

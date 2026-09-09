@@ -107,72 +107,25 @@ coherent evidence from the same candidate context, as defined in section 6.
 
 ## 3. Request evidence design and implemented subset
 
-Consult the [API wire format](proposed_observation_api.md#wire-format) for
-accepted fields. Requirements here also cover future comparison operations.
+The [request API](proposed_observation_api.md#wire-format) owns accepted fields,
+units, shapes, normalization, interval arithmetic and input validation. This
+section owns the evidence semantics needed by future rules; its role names are
+not additional accepted wire fields or new Python export names.
 
-Names in this section describe evidence roles. Some are implemented by the
-[request API](proposed_observation_api.md#wire-format); others specify future
-comparison requirements. They are not all Python export names.
-Every supplied quantity retains exact raw value/unit text, canonical value/unit,
-conversion version and diagnostics. Preserve entered strings including blanks;
-blank optional fields become explicit missing evidence, not zero. Reject invalid
-supplied values rather than dropping them to make a request searchable.
+Three distinctions must survive input normalization and candidate adaptation:
 
-| UI label / field | First-version format and units | Conditional requirement / semantics |
-| --- | --- | --- |
-| Target type / `target_kind` | FIXED, MOVING, SUN | Explicit selection; FIXED supported for search |
-| Geometry / `geometry` | SINGLE_POINTING, MOSAIC | Explicit selection; single pointing supported |
-| Target name / `target_name` | Original text | Optional display/provenance for fixed target; no online resolver dependency |
-| Coordinates / `position` | Frame ICRS explicitly shown; RA decimal deg or HMS hourangle; Dec decimal deg or signed DMS | Required for fixed search; canonical degrees, `0 <= RA < 360`, `-90 <= Dec <= 90`; reject out-of-range raw input, do not silently wrap |
-| Purpose / `intents[]` | CONTINUUM, LINE; multiple allowed | Describes intent, not proof of branch applicability |
-| Angular resolution / `angular_resolution` | arcsec or mas, canonical arcsec, positive | Optional for broad search; needed for resolution rule; `meaning=REQUESTED_VALUE`, never a search upper limit |
-| All windows listed? / `setup_complete` | Explicit Boolean | Only means the list contains all actual windows; parameter completeness is tracked independently |
-| Representative frequency / `representative_frequency` | Independent setup-level frequency record | Optional for search; not filled from window center or RMS reference frequency |
-| Representative window / `representative_window_id` | Optional stable window reference | If supplied, must refer to an existing window; membership validation is conditional on comparable frequencies and known bounds |
-| Spectral windows / `spectral_windows[]` | Stable unique `window_id` within one `setup_id` | Empty lists allowed for partial scientific requests; preserve setup frequency, angular resolution and aggregate RMS independently; no invented windows |
-| Frequency input / window `representation` | CENTER_BANDWIDTH, BOUNDS or PARTIAL | GHz/MHz/Hz converted to GHz; PARTIAL permits known center and missing width or a single known bound; no interval until sufficient inputs exist |
-| Window width kind / `bandwidth_kind` | NOMINAL, USABLE, UNKNOWN | Preserve meaning; UNKNOWN allowed for search, formal qualification conditional on Q2 |
-| Window mode / `correlator_mode` | FDM, TDM, UNKNOWN plus declared source | Optional; do not populate from intent/channel count/window width |
-| Spectral resolution / window `spectral_resolution` | Hz/kHz/MHz to MHz; explicitly resolution, not spacing | Optional for search; positive if supplied; missing blocks relevant line rules |
-| Frequency reference / `frequency_reference` | Record defined below, used for each frequency role | Capture sky/rest/unknown and frame separately; no implicit conversion |
-| Channel spacing / window `channel_spacing` | Hz/kHz/MHz to MHz | Optional, independent from resolution and noise bandwidth |
-| RMS / `sensitivities[]` | Jy/beam or mJy/beam to mJy/beam, positive | Separate entries for continuum and line scopes; never copy one into every window |
-| Observing array / `array_context` | Explicit supplied array information or UNKNOWN | No inferred dish diameter; needed only where an approved derivation uses it |
+- A listed setup may be complete in enumeration but incomplete in parameters.
+  Missing window width does not alone block line-center coverage; it cannot
+  create a coverage interval.
+- A midpoint/span derived from bounds does not establish a requested SPW center
+  or nominal bandwidth. Cropped usable bounds are not proof of centered coverage.
+- Nominal intervals, usable coverage and aggregate noise bandwidth have different
+  meanings. A scalar usable width without placement evidence cannot supply edges;
+  arithmetic or supplied bounds are not automatic scientific validation.
 
-Coordinate parser must validate sexagesimal components and preserve Dec sign,
-including negative-zero degrees. HMS minutes/seconds must be below 60; pole Dec
-must not have nonzero remaining components. Equivalent valid inputs normalize
-consistently, e.g. RA `12:00:00` hourangle and `180` deg.
-
-For complete CENTER_BANDWIDTH derive `lower=center-width/2`, `upper=center+width/2`.
-For complete BOUNDS derive `interval_midpoint` and `interval_span` using
-overflow-safe arithmetic, preserving the input interval kind and derivation
-version. These are not automatically `requested_spw_center` or nominal bandwidth.
-Using a midpoint as SPW center requires explicit, validated evidence that this
-interval is centered on that SPW; cropped usable coverage supplies no such proof.
-An independently declared center may accompany coverage bounds as a separate
-role, not a second interval representation. Check their relationship only when
-its declared semantics justify the check; do not require equality to midpoint.
-Require finite `0 < lower < upper` and positive span when an interval can be
-established. PARTIAL retains a known center with absent
-width and `coverage_interval=None`; a known bound alone also remains partial.
-Every supplied value is validated, including in incomplete windows. Negative
-widths and reversed bounds are INVALID, not partial. No missing value is zero.
-Dual center/width and bounds representations are rejected rather than silently
-chosen. A full list of windows may still have incomplete parameters.
-
-An interval has `kind=NOMINAL/USABLE/UNKNOWN`, origin and validation evidence.
-NOMINAL arithmetic produces a nominal interval only. UNKNOWN arithmetic stays
-unverified. A scalar usable width alone does not establish its placement around
-the center: preserve the width but require explicit bounds or an evidenced
-placement method before creating usable coverage. Explicit usable bounds retain
-their declared origin; no automatic promotion to validated scientific coverage.
-Keep `nominal_interval`, `usable_coverage` and sensitivity aggregate bandwidth
-separate. Neither arithmetic interval nor aggregate noise bandwidth guarantees
-uninterrupted usable frequency coverage.
-Boolean values, NaN, infinities, conversion overflow/underflow to zero and rounded
-collapsed intervals are invalid. No tolerance may turn the strict continuum
-bandwidth boundary into an inclusive boundary.
+The strict continuum bandwidth boundary remains a policy requirement; numerical
+input tolerances cannot turn it into an inclusive threshold. Q2 defines the
+accepted bandwidth interpretation for future qualification.
 
 ### Frequency roles and reference provenance
 
@@ -184,44 +137,25 @@ another. Representative frequency exists independently of sensitivity entries.
 Q3 selects the role for formal continuum comparison; multiple RMS entries must
 not cause arbitrary selection. No equality-to-center constraint is imposed.
 
-`frequency_reference` records `kind=SKY/REST/UNKNOWN` and
-`frame=TOPOCENTRIC/BARYCENTRIC/LSRK/LSRD/HELIOCENTRIC/UNKNOWN`, plus the raw label.
-These are storage enums, not a declaration that frame transformations exist.
-Unrecognized imported labels are retained with UNKNOWN and a diagnostic.
-An OT value labelled Sky is recorded as OT_COPIED/SKY with its actual supplied
-frame or UNKNOWN, not guessed to be execution-time topocentric. OT source-rest
-representative values remain REST. REST/unknown values may be saved and searched
-spatially; automated conversion/comparison is unavailable in the first model.
-Window membership is checked only with sufficient compatible references/bounds;
-otherwise record unresolved validation rather than declaring an invalid number.
+Frequency kind/frame and origin fields use the [API representation](proposed_observation_api.md#wire-format).
+These preserve declarations; they do not implement frame transformations. An OT
+Sky label cannot establish execution-time topocentric frequency. REST and unknown
+references may support spatial discovery, but require Q3 before automated
+frequency comparison. Unknown and known-incompatible references remain different.
 
 ### Sensitivity association
 
-Each entry has identity, value/unit, purpose, basis and scope. The model also
-stores optional `reference_frequency`, `bandwidth_used_for_sensitivity` and
-context evidence when supplied. A storage field is not automatically required
-for submission or for every calculation. Missing optional metadata remains
-missing; malformed supplied values remain invalid.
+The [API sensitivity representation](proposed_observation_api.md#roles-partial-coverage-and-association)
+owns request fields, accepted bases, scope validation and missing-value behavior.
+For rules, sensitivity must retain its setup/window association, reference,
+noise-bandwidth meaning, units and provenance. Unresolved line scope blocks
+matched-window assessment without invalidating otherwise valid evidence.
 
-Scope is SETUP (linked `setup_id`, optional contributing `window_ids`) or WINDOW
-(linked window). Partial line entries may retain unresolved scope explicitly;
-they remain unavailable for matched-window assessment until resolved. Supplied
-dangling references are invalid. Aggregate entries may target the whole setup
-even when its window list is empty or incomplete.
-Implemented request basis values: AGGREGATE, NATIVE_CHANNEL, SMOOTHED, UNKNOWN.
-The accepted wire fields are defined by the [request API](proposed_observation_api.md#wire-format);
-additional evidence roles below remain design requirements where absent there.
-
-`bandwidth_used_for_sensitivity` stores value/unit, meaning
-EFFECTIVE_CHANNEL/AGGREGATE/USER_DEFINED/UNKNOWN, origin (including original OT
-option label where applicable), and validation status. Canonical frequency width
-is MHz. Missing bandwidth never falls back to resolution or spacing. A velocity
-width declaration retains its unit/reference/convention; no frequency conversion
-is implicit. Optional `smoothing` and `spectral_averaging` records preserve method,
-factor/kernel and origin when known, without deriving missing noise bandwidth.
-Optional `stokes_basis`, `polarization_basis`, `beam_context` (axes/PA/units) and
-`weighting_context` preserve comparison context. Absence is explicit and may block
-assessment; these are not unconditional search requirements.
+Bandwidth used for sensitivity must not fall back to channel spacing or spectral
+resolution. Velocity widths need their own reference and convention; conversion
+is not implicit. Smoothing/averaging, Stokes, polarization, beam and weighting
+context may block a specific comparison, but are not unconditional search inputs.
+These are evidence requirements, not extra top-level wire fields.
 
 - AGGREGATE has two distinct paths. DIRECT_DECLARATION stores the supplied
   aggregate continuum RMS, explicit aggregate basis and setup scope; contributing
@@ -248,29 +182,20 @@ assessment; these are not unconditional search requirements.
 
 ## 4. SearchOptions and readiness
 
-`SearchOptions` is implemented in the [request domain](../src/alma_duplicate/domain/proposed_observation.py)
-and validated by the [request API](proposed_observation_api.md). It retains an
-explicit `radius` in arcsec/arcmin/deg, sources, result limit and optional
-candidate-filter predicates with their operators. A search-ready request needs
-`0 < radius <= 180 deg`, a fixed single-pointing ICRS position and at least one
-selected source. The radius is not HPBW, source size or angular resolution.
-A valid draft may omit search prerequisites and remain BLOCKED.
+`SearchOptions` validation and `SearchReadiness` are owned by the
+[request API](proposed_observation_api.md#entry-point-and-result); `is_valid` is a
+Boolean, not a VALID/INVALID enum. [Search planning](search_plan_spatial.md)
+retains explicit predicates and limits separately from observation parameters.
+The [status guide](README.md#current-capabilities-and-status-meanings) separates
+request readiness, source completeness, query binding and individual selection.
+None establishes rule readiness or a duplicate verdict.
 
-[Offline planning](search_plan_spatial.md) consumes these validated options;
-individual spatial and angular predicate checks exist. End-to-end orchestration,
-result-limit enforcement and an execution/completeness report remain unimplemented.
-
-| State axis | Implementation status / representation | Meaning |
-| --- | --- | --- |
-| Input validity | Implemented `RequestValidationResult.is_valid` Boolean | True when no ERROR issues exist; optional missing evidence may remain. There is no `VALID`/`INVALID` enum. |
-| Search readiness | Implemented `SearchReadiness`: READY / BLOCKED / UNSUPPORTED / NOT_APPLICABLE | Spatial prerequisites and supported request category only; not execution or scientific evaluability |
-| Rule readiness, per rule and candidate | Planned EVALUABLE / UNAVAILABLE / UNSUPPORTED / NOT_APPLICABLE | Requires coherent evidence on both sides and an approved method; no such rule-readiness enum or evaluator is implemented |
-
-These axes do not change ingestion `ParseStatus`. Existing request issues have
-category, code, path, message, optional rule ID and side PROPOSED/METHOD; they do
-not emit CANDIDATE-side conclusions. Comparison contexts expose independent
-numeric/unit/association/reference/method evidence states, not rule readiness.
-See the [context evidence contract](comparison_contexts.md#evidence-and-states).
+Per-rule/per-candidate readiness remains planned: EVALUABLE, UNAVAILABLE,
+UNSUPPORTED and NOT_APPLICABLE require coherent evidence and an approved method.
+These are design names, not an implemented enum and not changes to ParseStatus.
+Request issues expose PROPOSED/METHOD sides; the comparison layer has independent
+[evidence dimensions](comparison_contexts.md#evidence-and-states), not a formal
+CANDIDATE-side readiness evaluator.
 
 The future per-rule reason contract additionally needs candidate context/window
 identity and decision references. Planned reason categories include
@@ -334,22 +259,12 @@ executed search, not proof of non-duplication.
 
 ### Current context-construction guarantees
 
-The [comparison builders](comparison_contexts.md) implement source-preserving
-row/component association over existing ingestion results. They do not perform
-request-driven retrieval or formal assessment.
-
-Archive: retain query provenance, completeness/projection decisions, raw-row ID,
-actual source/execution/SPW association and frequency-support component reference
-(row + parser version + index). Retain unassigned/ambiguous alternatives; do not
-select a convenient one to make a rule evaluable. `s_resolution` and
-`spatial_resolution` remain separate. Optional NULL and non-retrieved fields
-retain different statuses.
-
-Queue: retain a real `QueueRowAssociation`, its raw-row identity and snapshot
-checksum. Acquisition and parse-run IDs currently remain `None`, even when the
-caller obtained the parse result through `QueueSnapshotStore`; the builder has
-no store-record binding API. Do not combine independently factorized
-request/spatial/spectral components unless that association actually exists.
+The [comparison contract](comparison_contexts.md#context-identity-and-association)
+owns implemented row/component membership, alternatives and evidence states.
+Its [provenance section](comparison_contexts.md#provenance) defines reference
+fields: Queue acquisition/run IDs currently remain `None`, including for parse
+results obtained through the snapshot store. The builders preserve source
+contexts without retrieving candidates or assessing rules.
 
 ### Remaining persistence and assessment requirements
 
@@ -497,13 +412,8 @@ are retained independently of these outstanding checks.
 
 ## 9. Delivery boundary
 
-The offline request model and validator are implemented as documented in the
-[API](proposed_observation_api.md). The cases above mix request validation with
-future comparison acceptance criteria; their presence does not claim all are
-implemented tests. [Comparison-context construction](comparison_contexts.md) now
-reuses existing ingestion outputs with conservative evidence states. Candidate search, verified CASE fixtures, formal rules and HTML remain
-planned. Request round-trip validation does not restore historical Python objects.
-
-Current spectral mapping uses an overall parse-result validity gate, not
-independent frequency and RMS usability. See the
-[implemented mapping boundary](data_model.md#spectral-mapping-boundary).
+The [documentation entry](README.md#next-delivery) owns the next service delivery.
+This contract owns scientific decisions and acceptance requirements; Q1–Q7 block
+only the affected formal methods. Current mapping limitations remain in the
+[data model](data_model.md#spectral-mapping-boundary). A valid request, an available
+context or a passed structural test does not establish a duplication verdict.
