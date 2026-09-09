@@ -71,9 +71,12 @@ row/setup evidence with UNKNOWN per-SPW association; no value is copied to every
 window. Unknown usable bandwidth remains MISSING without discarding nominal
 coverage or the row. Missing RMS never becomes a frequency mismatch.
 
-Archive spatial fields remain raw evidence with a spatial-adapter limitation.
-Queue geometry is retained as supplied; comparison geometry methods and SPS
-expansion are not implemented. No single `comparison_ready` Boolean is exposed.
+Within context construction, Archive spatial fields remain raw evidence and
+Queue geometry is retained as supplied. The independent [spatial adapter and
+individual selectors](search_plan_spatial.md#spatial-evidence) normalize supported
+centers and parse limited `CIRCLE ICRS` footprints without changing this payload.
+Formal comparison geometry methods and SPS expansion are not implemented.
+No single `comparison_ready` Boolean is exposed.
 
 ## Provenance
 
@@ -121,5 +124,8 @@ Queue observed combinations, missing RMS, broken associations, incomplete
 sources and invalid requests using existing local fixtures. These are structural
 tests, not CASE1/CASE2 retrieval verification or approved policy calculations.
 
-Next implement spatial adaptation and request-driven search planning. CASE
-retrieval fixtures and formal rule evaluation remain separate deliveries.
+Offline search planning and limited spatial adaptation are implemented; see the
+[search-plan and spatial-evidence contract](search_plan_spatial.md). The
+[next delivery](README.md#next-delivery) connects Archive execution and Queue
+local selection to an explicit execution and completeness report. CASE retrieval
+verification and formal duplication assessment remain separate work.

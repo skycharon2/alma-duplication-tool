@@ -6,7 +6,8 @@ The form remains a design sketch; the API does not implement candidate results.
 Goal: describe a proposed observation, retrieve Archive/Queue candidates and
 explain applicable conditions using coherent evidence. Users do not supply
 expected project IDs, Member UIDs or duplicate labels.
-Normative field/readiness specification: [input contract](duplication_rule_inputs.md).
+Accepted backend fields and request readiness: [request API](proposed_observation_api.md).
+Future rule evidence and scientific decisions: [input contract](duplication_rule_inputs.md).
 The tables below are the reviewable low-fidelity layout, in display order.
 
 ## Panel 1 — Target and scope
@@ -20,7 +21,9 @@ The tables below are the reviewable low-fidelity layout, in display order.
 | RA, Dec | Empty fields; Dec format degrees or signed DMS | Frame shown as ICRS; no name lookup or frame guess |
 | Search radius | Value + arcsec/arcmin/deg | First-screen search control, visibly separate from observation values; not HPBW |
 
-Users can proceed with position and search radius alone. Panels below progressively
+For the supported fixed single-pointing ICRS request, users can proceed with
+position, search radius and at least one selected source; the form supplies
+the required internal setup identity. Panels below progressively
 add observation evidence; they do not block broad search when optional facts are
 unknown. Keep search radius in SearchOptions despite its early visual placement.
 

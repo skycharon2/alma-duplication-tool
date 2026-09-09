@@ -37,7 +37,7 @@ existing projections below.
 | `target_name` | Source label | Core / yes | Raw only |
 | `s_ra` | Position evidence | Core / yes | Raw only |
 | `s_dec` | Position evidence | Core / yes | Raw only |
-| `s_region` | Footprint and spatial search | Core / yes | Raw; server predicate |
+| `s_region` | Footprint and spatial search | Core / yes | Raw ingestion; server predicate; separate limited [spatial parser](search_plan_spatial.md#spatial-evidence) |
 | `frequency` | Frequency centre | Core / yes | Unit-validated quantity |
 | `bandwidth` | Coverage | Core / yes | Unit-validated quantity |
 | `em_xel` | Channel count | Core / yes | Raw; no mode inference |
@@ -99,7 +99,7 @@ be combined as if they describe one immutable snapshot.
 
 ## Implementation boundary
 
-The production Archive client v5/schema v2 preserves row values, selected column names,
+The production Archive client v7/schema v3 (projection v1) preserves row values, selected column names,
 query status, warnings, COUNT/retrieval reconciliation, query provenance, and
 the ordered retrieval VOTable field descriptors. For every projected field,
 the runtime contract retains `name`, `datatype`, `arraysize`, `unit`, `ucd`,
@@ -281,7 +281,11 @@ maintaining duplicate complete lists.
 
 Support assignment ambiguity belongs to `SupportMappingStatus`, not `ParseStatus`.
 STC-S families recorded in notebook experiments are not an implemented production
-STC-S enum. Raw project classifications likewise are not a correlator-mode enum.
+STC-S enum. This does not exclude the implemented `SpatialStatus` availability
+enum or limited `CIRCLE ICRS` parsing in the independent
+[spatial layer](search_plan_spatial.md#spatial-evidence). `SpatialStatus` describes
+evidence availability, not STC-S families or a duplication outcome. Raw project
+classifications likewise are not a correlator-mode enum.
 Future rule evaluability states are design requirements, not reconstruction states.
 
 ## Not established by the public view
