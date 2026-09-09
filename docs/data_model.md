@@ -1,4 +1,6 @@
-# Internal Archive and Queue Reconstruction Model v0.6
+# Internal Archive and Queue Reconstruction Model
+
+Document revision: 0.6. Runtime component versions are identified separately below.
 
 ## Status and scope
 
@@ -17,6 +19,25 @@ requirements are maintained in the [rule-input contract](duplication_rule_inputs
 | Raw-row and parser-scoped spectral reference | [`SupportComponentRef`](../src/alma_duplicate/domain/reconstruction.py) | Implemented; reference identity alone does not establish scientific comparability |
 | Proposed observation | [`ProposedObservationRequest`](../src/alma_duplicate/domain/proposed_observation.py) | Implemented; model version 1 |
 | Row-scoped comparison context | [`ComparisonContext`](../src/alma_duplicate/domain/comparison.py) | Implemented; [offline construction](comparison_contexts.md), no matching or policy evaluation |
+
+### Search and spatial objects
+
+These implemented objects consume the existing request and comparison contexts;
+they do not replace source reconstruction or implement formal policy methods.
+
+| Object | Definition | Current responsibility |
+| --- | --- | --- |
+| `SearchOptions`, `RequestValidationResult` | [Request domain](../src/alma_duplicate/domain/proposed_observation.py) | Explicit search scope and predicates; input validity and search readiness |
+| `SearchPlan`, `SourceSearchPlan` | [Search domain](../src/alma_duplicate/domain/search.py) | Offline source-specific operations; execution remains `NOT_EXECUTED` |
+| `QueryPlanBinding` | [Search domain](../src/alma_duplicate/domain/search.py) | Recorded Archive query agreement with the plan, independent of completeness |
+| `SpatialEvidence`, `SpatialStatus` | [Spatial domain](../src/alma_duplicate/domain/spatial.py) | Source-bound center and footprint with separate availability states |
+| `PositionInterpretation` | [Spatial domain](../src/alma_duplicate/domain/spatial.py) | Explicit context-scoped frame/target interpretation and decision reference |
+| `SpatialSelection` | [Spatial domain](../src/alma_duplicate/domain/spatial.py) | Individual selection result; assessment remains `NOT_EVALUATED` |
+
+Construction and supported operations are specified in the
+[search/spatial contract](search_plan_spatial.md). The conceptual ERDs below
+are broader than these Python objects; in particular they do not establish a
+general STC-S parser, automatic array classification or primary-beam policy.
 
 ### Spectral mapping boundary
 
@@ -43,7 +64,7 @@ fields remain raw source evidence, not new validated comparison quantities.
 See the field inventory and client contract for missing-field behavior.
 
 Archive raw-row immutability is enforced at both `TapResponse` and
-`ArchiveQueryResult` construction (client version 6). Each row is independently
+`ArchiveQueryResult` construction (introduced in client version 6, retained in version 7). Each row is independently
 copied and exposed as a read-only mapping inside a tuple, including diagnostic
 rows. Supported immutable scalars and the canonical NumPy masked sentinel
 retain their types and missing semantics; mutable cell containers and arrays
@@ -104,7 +125,7 @@ that each experimental derivation is implemented in production.
 | Live schema | 73 columns; schema SHA-256 `2cb2009067ab50f1727454ccb57cb1280c81ad4bfa3a10a9c2df2f0de7044c15` | Classify all fields and detect future schema drift |
 | Science-target population | 442,507 rows on 2026-08-25 and 443,211 rows at `2026-08-31T12:27:55.081125+00:00` | Treat all counts as time-specific snapshots and preserve capture provenance |
 | Query completeness | COUNT/retrieve reconciliation, valid empty result, and intentional `OVERFLOW` verified | Never infer absence from an incomplete response |
-| Retrieval field metadata | PyVO exposes VOTable `FIELD` descriptors independently of result rows; the v2 runtime contract preserves them in projection order | Carry units and semantic descriptors with the same query result, including valid empty results |
+| Retrieval field metadata | PyVO exposes VOTable `FIELD` descriptors independently of result rows; the current client preserves them in projection order | Carry units and semantic descriptors with the same query result, including valid empty results |
 | Comparison-field units | Live units for frequency, bandwidth, spectral/spatial resolution, and two sensitivity estimates are checked at runtime | Convert only compatible units; preserve missing/incompatible status rather than assuming units from names |
 | Query arithmetic units | Frequency ADQL assumes `frequency=GHz`, `bandwidth=Hz`; angular ADQL assumes `spatial_resolution=arcsec` | Verify exact `TAP_SCHEMA` units for each requested numeric prefilter, disable unsafe filters independently, retain original bounds in provenance, and keep NULL evidence rows for local non-evaluability |
 | Archive frequency frame | Public documentation identifies sky frequency but not a comparison-ready TAP reference frame | Derive typed Archive coverage but keep cross-source frame alignment unavailable |
@@ -116,7 +137,7 @@ that each experimental derivation is implemented in production.
 | Frequency-support grammar | 442,452 bracket rows, 55 brace rows, no missing/blank/unknown top-level family | Dispatch by grammar family and preserve unknown fallback |
 | Brace population | Complete 55/55-row census; all structures and mappings valid | Support brace grammar in production; retain token-2 semantic ambiguity |
 | Repeated source across ASDM | Spatially verified `3C279`/`3c279` case across two ASDMs | Keep footprint, time, antenna, support, and resolution at Source-Execution scope |
-| STC-S family | 194,500 CIRCLE, 245,655 POLYGON, 2,352 UNION; no missing/blank/unknown | Support three current top-level families; retain raw geometry |
+| STC-S family | 194,500 CIRCLE, 245,655 POLYGON, 2,352 UNION; no missing/blank/unknown | Retain all raw geometry; current local parsing supports only `CIRCLE ICRS`; POLYGON/UNION support remains deferred |
 | Product population | 305,618 cube and 136,889 image rows, all `calib_level=2` | Treat product metadata as row evidence; physical file granularity remains unresolved |
 | Spatial resolution | 41,365 of 442,507 rows had `s_resolution != spatial_resolution` | Preserve the two fields separately |
 | Primary angular-resolution evidence | Service definitions differ; official ALMA query examples use `spatial_resolution` | Use `spatial_resolution` for initial Archive candidate retrieval, preserve `s_resolution` as a cross-check, and treat neither as a measured FITS restoring beam |
@@ -509,7 +530,7 @@ erDiagram
     }
 ```
 
-This is the central engineering distinction in v0.4:
+This is the central conceptual identity distinction:
 
 - `SOURCE_SPW_ASSOCIATION` represents an observed logical association;
 - `RAW_ARCHIVE_ROW` preserves one returned TAP row;
@@ -552,8 +573,8 @@ Top-level TAP `type` is optional Project-classification evidence. In the
 `proposal_id` suffix, with current values `S`, `L`, `T`, `V`, `SV`, `E`, `P`,
 and `CAL`. The model treats this as an open value set and preserves unknown
 future values. It is unrelated to `science_observation = 'T'` and must never
-be used as an FDM/TDM label. The production v2 retrieval projection does not
-need this field for reconstruction.
+be used as an FDM/TDM label. The current production projection does not select this field; reconstruction
+does not require it.
 
 ### `GROUP_OUS`
 
@@ -726,7 +747,7 @@ expected count, retrieved count, `QUERY_STATUS`, warnings, completeness, and
 query hash. A response with `OVERFLOW`, a count mismatch, or an execution error
 must never support a negative duplication conclusion.
 
-The v2 client preserves the selected column-name schema and an ordered
+The current Archive client preserves the selected column-name schema and an ordered
 retrieval field-metadata snapshot containing name, datatype, arraysize, unit,
 UCD, utype, xtype, and description. It retains descriptors even when the
 retrieval contains zero rows and links them to the same query result and
@@ -739,14 +760,15 @@ preserves all original TAP values, masks, units, identifiers, result order,
 and a content hash. It is linked to the exact `ARCHIVE_QUERY_RUN` that
 retrieved it. Parsing never overwrites this entity.
 
-Service-unit and field-description evidence now remains available through the
-v2 runtime result and therefore through `ArchivePipelineBatch.query_result`.
+Service-unit and field-description evidence remains available through the
+current `ArchiveQueryResult` and therefore through `ArchivePipelineBatch.query_result`.
 Normalization and parsing do not overwrite descriptor text. Durable storage
 must later serialize the tuple without changing its order or optional `None`
-values. The v0.6 Archive adapter validates the six comparison-facing units,
+values. The Archive ingestion adapter validates the six comparison-facing units,
 converts compatible source units into canonical values, and preserves
-missing/incompatible states. The future shared Archive/Queue adapter must use
-this typed projection rather than recasting raw row values. Archive
+missing/incompatible states. The implemented [comparison-context builders](comparison_contexts.md) retain
+this typed evidence rather than recasting raw row values. Formal cross-source
+comparison remains unimplemented. Archive
 reconstruction already consumes the canonical typed `frequency` value, so a
 compatible TAP unit change cannot split comparison evidence from
 frequency-support mapping. Comparison quantities must be finite and strictly
@@ -865,7 +887,7 @@ the value is present, valid, associated unambiguously or ready for comparison.
 | `type` | NOT SELECTED | No dedicated production projection | Historical project classification; not observing mode |
 | `group_ous_uid`, `member_ous_uid`, `asdm_uid`, `obs_id` | CORE | Raw + normalized/parsed identifiers | Observed reconstruction keys; grouping does not authorize mixing evidence |
 | `target_name`, source parsed from `obs_id` | CORE / derived | Raw label + reconstruction evidence | Source context, not globally resolved physical target |
-| `s_ra`, `s_dec`, `s_region` | CORE | Raw only for spatial comparison | No production geometry-family parser or complete typed spatial adapter |
+| `s_ra`, `s_dec`, `s_region` | CORE | Raw in ingestion/context payload; separately adapted by [spatial](search_plan_spatial.md#spatial-evidence) | Unit-checked center normalization and limited `CIRCLE ICRS` parsing implemented; no general STC-S family parser or formal beam-coverage method |
 | `is_mosaic` | CORE | Raw + normalized Boolean | Source declaration; not a reconstructed pointing list |
 | `s_fov` | OPTIONAL | Raw only | Auxiliary coverage evidence; not a verified beam or footprint |
 | `antenna_arrays` | CORE | Raw only | No automatic complete array/geometry interpretation |
@@ -1016,12 +1038,12 @@ project-target-band groups, two sparse groups, and 65 excess exact copies.
 
 ## Explicitly deferred work
 
-The following items do not block Archive-model v0.4:
+The following items remain outside the current reconstruction contract:
 
 - physical product/file granularity hidden by identifier-width limits;
 - future and unobserved `frequency_support` grammars;
 - brace token-2 semantic discrimination;
-- full-population local STC-S parsing if local geometry is later required;
+- general local STC-S parsing beyond the implemented limited `CIRCLE ICRS` grammar;
 - physical-target alias resolution;
 - individual mosaic pointing reconstruction;
 - moving and Solar-system target handling;

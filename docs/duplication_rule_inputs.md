@@ -4,8 +4,9 @@ Design version: 0.3. Implementation coverage is specified separately below.
 
 The [offline request validation API](proposed_observation_api.md) implements
 the documented request-side subset. [Offline comparison-context construction](comparison_contexts.md)
-reuses existing ingestion outputs; candidate search and duplication-rule evaluation
-remain planned. An accepted
+reuses existing ingestion outputs. [Offline search planning and limited spatial
+adaptation](search_plan_spatial.md) are also implemented; orchestrated candidate
+search and duplication-rule evaluation remain planned. An accepted
 request does not establish that candidate evidence is comparable or that a
 duplication condition can be evaluated.
 
@@ -48,16 +49,19 @@ explicit decisions in section 7 before executable assessment.
 Project design source: `Project_Plan_9_07.pdf`, sections 5.4–5.6, covers
 comparison contexts, evidence provenance and evaluability. The project review
 records these sections as checked against the PDF. Its abstract's statement
-that the request API is not implemented is historical and is due for correction
-in the next plan revision; current runtime behavior is documented in the
-[request API](proposed_observation_api.md).
+that the request API is not implemented is historical. The supplied
+`Project_Plan_9_10.pdf` also carries a September 7, 2026 internal update date and
+retains that earlier implementation status. Use those plans for architectural
+intent, and the [request API](proposed_observation_api.md),
+[comparison contract](comparison_contexts.md) and [search/spatial contract](search_plan_spatial.md)
+for current executable behavior.
 
 The original `Internship__Duplication_Check_Tool (1).pdf`, Nordic ARC node,
 August 2026, section 4 (printed page 2), supplies the CASE search parameters.
 `Weekly_Progress_Report.pdf` supplies the later candidate and interpretation
 records identified in section 8. These document references record the supplied
 project review's verification; they do not assert a new PDF inspection or an
-independent query rerun as part of this documentation change.
+independent reproduction of the reported retrieval results.
 
 Additional verified sources:
 
@@ -204,7 +208,9 @@ Scope is SETUP (linked `setup_id`, optional contributing `window_ids`) or WINDOW
 they remain unavailable for matched-window assessment until resolved. Supplied
 dangling references are invalid. Aggregate entries may target the whole setup
 even when its window list is empty or incomplete.
-Basis values planned: AGGREGATE, NATIVE_CHANNEL, SMOOTHED, UNKNOWN.
+Implemented request basis values: AGGREGATE, NATIVE_CHANNEL, SMOOTHED, UNKNOWN.
+The accepted wire fields are defined by the [request API](proposed_observation_api.md#wire-format);
+additional evidence roles below remain design requirements where absent there.
 
 `bandwidth_used_for_sensitivity` stores value/unit, meaning
 EFFECTIVE_CHANNEL/AGGREGATE/USER_DEFINED/UNKNOWN, origin (including original OT
@@ -242,30 +248,39 @@ assessment; these are not unconditional search requirements.
 
 ## 4. SearchOptions and readiness
 
-`SearchOptions` is a separate future object: explicit `radius` in arcsec/arcmin/deg,
-source selection, result limit and optional candidate-filter predicates with
-operators. Require a finite positive radius for bounded spatial retrieval.
-It is not HPBW, source size, pointing coverage or angular resolution.
-No hidden numerical default is specified by this contract.
+`SearchOptions` is implemented in the [request domain](../src/alma_duplicate/domain/proposed_observation.py)
+and validated by the [request API](proposed_observation_api.md). It retains an
+explicit `radius` in arcsec/arcmin/deg, sources, result limit and optional
+candidate-filter predicates with their operators. A search-ready request needs
+`0 < radius <= 180 deg`, a fixed single-pointing ICRS position and at least one
+selected source. The radius is not HPBW, source size or angular resolution.
+A valid draft may omit search prerequisites and remain BLOCKED.
 
-| State axis | Planned values | Meaning |
+[Offline planning](search_plan_spatial.md) consumes these validated options;
+individual spatial and angular predicate checks exist. End-to-end orchestration,
+result-limit enforcement and an execution/completeness report remain unimplemented.
+
+| State axis | Implementation status / representation | Meaning |
 | --- | --- | --- |
-| Input validity | VALID / INVALID | Supplied values and cross-field references satisfy the contract; optional missing evidence is allowed |
-| Search readiness | READY / BLOCKED / UNSUPPORTED / NOT_APPLICABLE | Fixed ICRS pointing plus valid search radius can be searched even without spectra/RMS; invalid data blocks; unsupported geometry stays explicit; Sun is separate |
-| Rule readiness, per rule and candidate | EVALUABLE / UNAVAILABLE / UNSUPPORTED / NOT_APPLICABLE | Full proposed and coherent candidate evidence plus approved method required; UNAVAILABLE carries precise reason codes |
+| Input validity | Implemented `RequestValidationResult.is_valid` Boolean | True when no ERROR issues exist; optional missing evidence may remain. There is no `VALID`/`INVALID` enum. |
+| Search readiness | Implemented `SearchReadiness`: READY / BLOCKED / UNSUPPORTED / NOT_APPLICABLE | Spatial prerequisites and supported request category only; not execution or scientific evaluability |
+| Rule readiness, per rule and candidate | Planned EVALUABLE / UNAVAILABLE / UNSUPPORTED / NOT_APPLICABLE | Requires coherent evidence on both sides and an approved method; no such rule-readiness enum or evaluator is implemented |
 
-These are proposed status names, not changes to existing `ParseStatus` enums.
-Readiness is not a duplicate verdict. Each reason carries rule ID, side
-(PROPOSED/CANDIDATE/METHOD), field path, context/window ID, message and decision
-reference. All missing reasons must remain available; one boolean is insufficient.
+These axes do not change ingestion `ParseStatus`. Existing request issues have
+category, code, path, message, optional rule ID and side PROPOSED/METHOD; they do
+not emit CANDIDATE-side conclusions. Comparison contexts expose independent
+numeric/unit/association/reference/method evidence states, not rule readiness.
+See the [context evidence contract](comparison_contexts.md#evidence-and-states).
 
-Reason codes: MISSING_EVIDENCE, INVALID_EVIDENCE, AMBIGUOUS_ASSOCIATION,
+The future per-rule reason contract additionally needs candidate context/window
+identity and decision references. Planned reason categories include
+MISSING_EVIDENCE, INVALID_EVIDENCE, AMBIGUOUS_ASSOCIATION,
 INCOMPATIBLE_REFERENCE, INCOMPATIBLE_UNIT, UNRESOLVED_SEMANTICS and
-METHOD_NOT_IMPLEMENTED. Multiple reasons may coexist; do not compress invalid
-or ambiguous evidence into missing evidence. A bad supplied request is INVALID;
-a bad candidate quantity leaves request validity intact and blocks only its
-affected rules. UNKNOWN reference is missing/uncertain evidence, not proof of a
-known incompatibility. Valid but unconfirmed meaning is UNRESOLVED_SEMANTICS.
+METHOD_NOT_IMPLEMENTED. This is not a claim that all these are current request
+issue codes or attributes. Preserve simultaneous reasons. Bad supplied input
+makes `is_valid=False`; a bad candidate quantity cannot invalidate the request.
+UNKNOWN reference is uncertain evidence, not proof of known incompatibility.
+Readiness is never a duplicate verdict.
 
 Candidate upper bounds such as angular resolution `<0.5 arcsec` retain their
 operator inside SearchOptions. They are not a requested value of 0.5 arcsec.
@@ -315,7 +330,13 @@ executed search, not proof of non-duplication.
 | Kelvin | Reject unsupported input unit with explanation | Frequency, beam axes/shape, approved conversion |
 | Rest-frequency evidence / SPS expansion | Preserve declared values; unsupported conversion/expansion | Explicit frame/velocity/setup methods |
 
-## 6. Candidate-side obligations for the next adapter task
+## 6. Candidate-side guarantees and remaining obligations
+
+### Current context-construction guarantees
+
+The [comparison builders](comparison_contexts.md) implement source-preserving
+row/component association over existing ingestion results. They do not perform
+request-driven retrieval or formal assessment.
 
 Archive: retain query provenance, completeness/projection decisions, raw-row ID,
 actual source/execution/SPW association and frequency-support component reference
@@ -324,11 +345,19 @@ select a convenient one to make a rule evaluable. `s_resolution` and
 `spatial_resolution` remain separate. Optional NULL and non-retrieved fields
 retain different statuses.
 
-Queue: use a real `QueueRowAssociation`, its raw-row identity, snapshot checksum,
-source acquisition ID, and parse-run ID. Do not combine independently factorized
+Queue: retain a real `QueueRowAssociation`, its raw-row identity and snapshot
+checksum. Acquisition and parse-run IDs currently remain `None`, even when the
+caller obtained the parse result through `QueueSnapshotStore`; the builder has
+no store-record binding API. Do not combine independently factorized
 request/spatial/spectral components unless that association actually exists.
-The stored historical summary cannot reconstruct a full context; explicitly
-reparse the validated source and reference the new run when needed.
+
+### Remaining persistence and assessment requirements
+
+A future store-aware caller/adapter must explicitly bind acquisition and parse-run
+records to their resulting contexts, without inventing IDs from checksums. Today
+callers retain those records separately. A stored historical summary cannot
+reconstruct a full context: explicitly reparse the validated source to obtain
+current in-memory evidence, retaining the new run separately until binding exists.
 
 Queue `Req.Sensitivity` is mJy, linked to `Ref.Frequency` and `Ref.Freq.Width`.
 Its beam meaning and relation to Archive estimated RMS are unresolved; retain
@@ -365,41 +394,62 @@ confirmation does not imply that an application algorithm has been approved.
 These block affected assessments, not implementation of valid requests or broad
 candidate retrieval.
 
-## 8. Acceptance specifications for the next implementation
+## 8. Acceptance specifications and implementation coverage
 
-These are planned tests, not tests executed by this documentation change.
+The table distinguishes existing executable behavior from remaining acceptance
+requirements. Test references identify existing assertions, not complete policy
+acceptance. `-a`/`-b` split an original mixed case into its implemented boundary
+and remaining work; the original IN/CASE identity is retained. No existing test
+is renamed. Future rule and CASE results are not implied by passing input tests.
 
-| Test ID | Input / case | Expected result |
-| --- | --- | --- |
-| IN-01 | 180 deg versus 12:00:00 HMS; 0.5 arcsec versus 500 mas | Same canonical coordinates/resolution; distinct raw input preserved |
-| IN-02 | 100 GHz versus 100000 MHz; 0.001 Jy/beam versus 1 mJy/beam | Same canonical values, scope and unit provenance |
-| IN-03 | RA outside domain, pole with extra arcseconds, invalid HMS, Boolean, NaN, infinity | INVALID with precise field paths |
-| IN-04 | Conflicting/dual representations, reversed/nonpositive or collapsed bounds, arithmetic overflow | INVALID; no silently chosen representation |
-| IN-05 | Multiple window IDs, duplicate ID, dangling sensitivity association | Valid independent windows; reject invalid references |
-| IN-06 | Complete setup with two qualified widths, widths exactly at boundary, missing width, incomplete setup | Satisfied / not satisfied / unresolved applicability as evidence permits; intent never decides; apply Q2 explicitly |
-| IN-07 | Valid position/radius, no RMS or unknown mode/basis | Search READY; relevant rules list missing evidence; no assumed values |
-| IN-08 | Complete user RMS but candidate Queue beam basis absent | CANDIDATE-side reason, not another required user field |
-| IN-09 | Search angular upper limit versus requested angular value | Separate objects/operators; neither overwrites the other |
-| IN-10 | Mixed intent, aggregate and window sensitivity entries | Preserve separate scope; do not force mutually exclusive branches |
-| IN-11 | Mosaic/moving/Sun/Kelvin | Explicit statuses or unsupported unit; no fixed-target fallback |
-| IN-12 | Candidate fields from different executions or Queue associations | Context rejected; never synthesize evidence |
-| IN-13 | Spacing 0.122, resolution 0.244, RMS effective bandwidth 0.325 MHz (B) | Normalize and round-trip all three independently; clearing one never fills it from another |
-| IN-14 | Representative frequency differs from center; no sensitivity or multiple RMS reference frequencies | Preserve independent roles; no automatic comparison-frequency choice |
-| IN-15 | Known center, absent width, all windows listed | Valid partial evidence, no coverage interval; search possible; parameter completeness remains false |
-| IN-16 | Nominal or UNKNOWN width; usable width without placement evidence | No promotion to validated usable coverage; no invented edges |
-| IN-17 | Invalid/ambiguous/incompatible/unresolved candidate evidence | Distinct machine-readable reasons, unchanged user validity |
-| IN-18 | OT Sky label, unknown frame; REST representative value | Preserve origin/reference; spatial search only until compatible transformation exists |
-| IN-19 | Direct aggregate RMS/setup scope, absent bandwidth or contributor list | Valid partial request; no forced conversion; other conditions independently assessed |
-| IN-20 | Reference RMS with absent target/reference bandwidth or unapproved method | Reference retained; no derived aggregate RMS; precise conversion reasons |
-| IN-21 | FDM center/reference known, requested width absent; valid candidate FDM interval | Center-coverage condition may be evaluated without request width; RMS still independent |
-| IN-22 | Cropped usable bounds | Midpoint/span preserved; no automatic SPW-center evidence |
-| IN-23 | No listed windows, but representative frequency, angular resolution and aggregate RMS supplied | Retain all scientific inputs; bounded search possible; unresolved setup qualification |
-| IN-24 | Two qualified distinct windows, list incomplete | Setup qualification established under confirmed width semantics; no enumeration veto |
-| IN-25 | No line match among incomplete window list | UNDETERMINED overall line branch; cannot issue exhaustive negative |
-| IN-26 | Coverage on W1, better RMS only on W2 or unlinked row scalar | No combined passing result; matched-pair sensitivity unavailable |
-| IN-27 | Approximate result with unapproved method | Estimate shown separately; no formal threshold outcome |
-| CASE1 | Original task parameters below | Positive retrieval expectation, not a confirmed duplicate |
-| CASE2 | Original task parameters below | Same, independently scoped |
+Test references: [R](../tests/unit/test_proposed_observation.py) = request tests;
+[C](../tests/integration/test_comparison_contexts.py) = context tests;
+[S](../tests/integration/test_search_plan_spatial.py) = search/spatial tests.
+A test name below is within its indicated file.
+
+| Test ID | Input / case | Expected result | Implementation status | Corresponding tests | Remaining work |
+| --- | --- | --- | --- | --- | --- |
+| IN-01 | 180 deg versus 12:00:00 HMS; 0.5 arcsec versus 500 mas | Same canonical coordinates/resolution; distinct raw input preserved | Implemented at input/context boundary | R: `test_units_coordinates_and_raw_input_are_independent` | Formal assessment remains separate. |
+| IN-02 | 100 GHz versus 100000 MHz; 0.001 Jy/beam versus 1 mJy/beam | Same canonical values, scope and unit provenance | Implemented at input/context boundary | R: `test_units_coordinates_and_raw_input_are_independent` | Formal assessment remains separate. |
+| IN-03 | RA outside domain, pole with extra arcseconds, invalid HMS, Boolean, NaN, infinity | `is_valid=False` with precise field paths | Implemented at input/context boundary | R: `test_bad_coordinates_rejected`, `test_invalid_quantity_never_produces_request` | Formal assessment remains separate. |
+| IN-04 | Conflicting/dual representations, reversed/nonpositive or collapsed bounds, arithmetic overflow | `is_valid=False`; no silently chosen representation | Implemented at input/context boundary | R: `test_invalid_window_arithmetic`, `test_bad_associations`, `test_canonical_overflow_and_underflow` | Formal assessment remains separate. |
+| IN-05 | Multiple window IDs, duplicate ID, dangling sensitivity association | Valid independent windows; reject invalid references | Implemented at input/context boundary | R: `test_bad_associations`, `test_line_rms_missing_is_reported_per_window` | Formal assessment remains separate. |
+| IN-06 | Complete setup with two qualified widths, widths exactly at boundary, missing width, incomplete setup | Satisfied / not satisfied / unresolved applicability as evidence permits; intent never decides; apply Q2 explicitly | Planned | No completed acceptance test claimed | Resolve Q2 width semantics; implement strict setup qualification and boundary cases. |
+| IN-07-a | Valid position/radius, no RMS or unknown mode/basis | Implemented subset: Request search readiness and proposed-side missing evidence are implemented. | Implemented subset | R: `test_missing_requested_width_not_a_line_center_requirement`, `test_line_rms_missing_is_reported_per_window` | See IN-07-b. |
+| IN-07-b | Same case; remaining acceptance | Search READY; relevant rules list missing evidence; no assumed values | Planned remainder | No full acceptance test claimed | candidate-specific rule readiness remains planned. |
+| IN-08 | Complete user RMS but candidate Queue beam basis absent | CANDIDATE-side reason, not another required user field | Planned | No completed acceptance test claimed | Implement candidate-side beam/basis readiness without adding user-input requirements. |
+| IN-09 | Search angular upper limit versus requested angular value | Separate objects/operators; neither overwrites the other | Implemented at input/context boundary | R: `test_search_predicates_keep_operator_and_do_not_fill_request`; S: `test_plan_preserves_single_sided_filter_and_no_observation_parameter_filters` | Formal assessment remains separate. |
+| IN-10-a | Mixed intent, aggregate and window sensitivity entries | Implemented subset: Separate aggregate and window records are covered individually. | Implemented subset | R: `test_direct_aggregate_without_windows_or_noise_width_is_valid`, `test_three_widths_and_optional_smoothing_context_never_fill_each_other` | See IN-10-b. |
+| IN-10-b | Same case; remaining acceptance | Preserve separate scope; do not force mutually exclusive branches | Planned remainder | No full acceptance test claimed | combined mixed-intent acceptance and formal branch aggregation remain to be verified. |
+| IN-11-a | Mosaic/moving/Sun/Kelvin | Implemented subset: Request UNSUPPORTED/NOT_APPLICABLE and unit errors are implemented. | Implemented subset | R: `test_unsupported_modes_preserved`, `test_unit_unsupported_vs_method_unimplemented` | See IN-11-b. |
+| IN-11-b | Same case; remaining acceptance | Explicit statuses or unsupported unit; no fixed-target fallback | Planned remainder | No full acceptance test claimed | formal assessment and UI explanation remain planned. |
+| IN-12 | Candidate fields from different executions or Queue associations | Reject broken row/component references and preserve coherent source contexts; do not synthesize cross-execution or Queue combinations. | Implemented at input/context boundary | C: `test_tampered_queue_association_fails_instead_of_creating_combination`, `test_selected_component_does_not_borrow_another_windows_rms` | Formal assessment remains separate. |
+| IN-13-a | Spacing 0.122, resolution 0.244, RMS effective bandwidth 0.325 MHz (B) | Implemented subset: Normalization and independent missing-field retention are tested. | Implemented subset | R: `test_three_widths_and_optional_smoothing_context_never_fill_each_other` | See IN-13-b. |
+| IN-13-b | Same case; remaining acceptance | Normalize and round-trip all three independently; clearing one never fills it from another | Planned remainder | No full acceptance test claimed | full round-trip acceptance and approved noise calculations are not established by the cited test. |
+| IN-14-a | Representative frequency differs from center; no sensitivity or multiple RMS reference frequencies | Implemented subset: Independent roles are preserved. | Implemented subset | R: `test_representative_roles_and_no_usable_midpoint_assumption`, `test_direct_aggregate_without_windows_or_noise_width_is_valid` | See IN-14-b. |
+| IN-14-b | Same case; remaining acceptance | Preserve independent roles; no automatic comparison-frequency choice | Planned remainder | No full acceptance test claimed | multi-RMS selection acceptance and Q3 formal comparison-frequency choice remain planned. |
+| IN-15 | Known center, absent width, all windows listed | Valid partial evidence, no coverage interval; bounded search can be READY despite absent width. No separate parameter-completeness Boolean is exposed. | Implemented at input/context boundary | R: `test_missing_requested_width_not_a_line_center_requirement` | Formal assessment remains separate. |
+| IN-16 | Nominal or UNKNOWN width; usable width without placement evidence | No promotion to validated usable coverage; no invented edges | Implemented at input/context boundary | R: `test_interval_kind_is_not_promoted` | Formal assessment remains separate. |
+| IN-17-a | Invalid/ambiguous/incompatible/unresolved candidate evidence | Implemented subset: Context diagnostics and separate evidence dimensions are implemented. | Implemented subset | C: `test_bad_other_component_keeps_conservative_mapping_gate_and_raw_evidence`, `test_archive_unit_failure_does_not_erase_context_or_claim_comparability` | See IN-17-b. |
+| IN-17-b | Same case; remaining acceptance | Distinct machine-readable reasons, unchanged user validity | Planned remainder | No full acceptance test claimed | complete per-rule candidate reason taxonomy remains planned. |
+| IN-18-a | OT Sky label, unknown frame; REST representative value | Implemented subset: REST/unknown or differing references are retained. | Implemented subset | R: `test_unit_unsupported_vs_method_unimplemented`, `test_nominal_membership_preserves_missing_and_known_reference_differences` | See IN-18-b. |
+| IN-18-b | Same case; remaining acceptance | Preserve origin/reference; spatial search only until compatible transformation exists | Planned remainder | No full acceptance test claimed | OT-origin end-to-end acceptance and compatible transformations remain unverified/unimplemented. |
+| IN-19-a | Direct aggregate RMS/setup scope, absent bandwidth or contributor list | Implemented subset: Partial direct aggregate input is accepted without forced conversion. | Implemented subset | R: `test_direct_aggregate_without_windows_or_noise_width_is_valid` | See IN-19-b. |
+| IN-19-b | Same case; remaining acceptance | Valid partial request; no forced conversion; other conditions independently assessed | Planned remainder | No full acceptance test claimed | independent formal condition assessment remains planned. |
+| IN-20-a | Reference RMS with absent target/reference bandwidth or unapproved method | Implemented subset: Reference retention and missing/capability issues are implemented. | Implemented subset | R: `test_reference_aggregate_does_not_manufacture_converted_rms` | See IN-20-b. |
+| IN-20-b | Same case; remaining acceptance | Reference retained; no derived aggregate RMS; precise conversion reasons | Planned remainder | No full acceptance test claimed | approved conversion and candidate-aware reason completeness remain planned. |
+| IN-21-a | FDM center/reference known, requested width absent; valid candidate FDM interval | Implemented subset: Request center is retained without width and without a request-side LINE-COVERAGE missing issue. | Implemented subset | R: `test_missing_requested_width_not_a_line_center_requirement` | See IN-21-b. |
+| IN-21-b | Same case; remaining acceptance | Center-coverage condition may be evaluated without request width; RMS still independent | Planned remainder | No full acceptance test claimed | actual candidate FDM coverage/RMS assessment remains planned. |
+| IN-22 | Cropped usable bounds | Midpoint/span preserved; no automatic SPW-center evidence | Implemented at input/context boundary | R: `test_bounds_midpoint_is_not_spw_center` | Formal assessment remains separate. |
+| IN-23-a | No listed windows, but representative frequency, angular resolution and aggregate RMS supplied | Implemented subset: Empty-window request storage and bounded-search readiness are covered. | Implemented subset | R: `test_direct_aggregate_without_windows_or_noise_width_is_valid`, `test_search_predicates_keep_operator_and_do_not_fill_request` | See IN-23-b. |
+| IN-23-b | Same case; remaining acceptance | Retain all scientific inputs; bounded search possible; unresolved setup qualification | Planned remainder | No full acceptance test claimed | the combined three-field acceptance fixture and formal setup qualification remain outstanding. |
+| IN-24 | Two qualified distinct windows, list incomplete | Setup qualification established under confirmed width semantics; no enumeration veto | Planned | No completed acceptance test claimed | Resolve Q2; test qualification with incomplete enumeration. |
+| IN-25 | No line match among incomplete window list | UNDETERMINED overall line branch; cannot issue exhaustive negative | Planned | No completed acceptance test claimed | Implement incomplete-list line aggregation without an exhaustive negative. |
+| IN-26-a | Coverage on W1, better RMS only on W2 or unlinked row scalar | Implemented subset: Context construction preserves SPW/row RMS association. | Implemented subset | C: `test_selected_component_does_not_borrow_another_windows_rms`, `test_queue_preserves_only_observed_combinations_and_no_per_spw_rms_copy` | See IN-26-b. |
+| IN-26-b | Same case; remaining acceptance | No combined passing result; matched-pair sensitivity unavailable | Planned remainder | No full acceptance test claimed | formal matched-pair outcomes remain planned. |
+| IN-27 | Approximate result with unapproved method | Estimate shown separately; no formal threshold outcome | Planned | No completed acceptance test claimed | Implement method approval status and separation of estimates from formal outcomes. |
+| CASE1 | Original task parameters below | Positive retrieval expectation, not a confirmed duplicate | Planned retrieval acceptance | No pinned end-to-end retrieval test | Confirm grouping, Member UIDs and filters; execute and pin retrieval evidence. Formal verdict remains unverified. |
+| CASE2 | Original task parameters below | Same, independently scoped | Planned retrieval acceptance | No pinned end-to-end retrieval test | Confirm grouping, Member UIDs and filters; execute and pin retrieval evidence. Formal verdict remains unverified. |
 
 ### Recorded CASE inputs
 
