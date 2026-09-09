@@ -928,7 +928,7 @@ explicitly in the rule contract.
 
 ## Production pipeline boundary
 
-The intended v1 flow is:
+The implemented ingestion/reconstruction flow is:
 
 ```text
 source bytes (read transiently and fingerprinted)
@@ -946,9 +946,10 @@ Normalization and reconstruction may run only when the full ingestion result
 is complete. The raw snapshot, raw rows, unit evidence, issues, and derivation
 provenance remain reachable from the final batch.
 
-Queue reconstruction remains separate from Archive reconstruction. A shared
-comparison model may consume both completed batches later; neither source is
-forced into the other's raw schema during ingestion.
+Queue reconstruction remains separate from Archive reconstruction. The implemented
+[comparison builders](comparison_contexts.md) consume completed source batches
+without forcing either source into the other's raw schema. They construct
+unfiltered contexts, not candidate-search or formal-assessment results.
 
 The v1 implementation is split across these source-independent boundaries:
 

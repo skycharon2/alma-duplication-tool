@@ -134,7 +134,6 @@ centers/footprints, Queue interpretation, unsupported geometries, poles and
 wraparound. They use synthetic/local fixtures, not independently verified CASE
 retrieval or approved duplicate labels.
 
-Next connect Archive client execution and Queue local selection to comparison
-contexts in a service with an actual execution/completeness report. Keep
-SearchOptions predicates distinct from formal criteria and retain skipped or
-unevaluated evidence in that report.
+The [next-delivery checklist](README.md#next-delivery) covers service integration
+and execution/completeness reporting. This module supplies plans and individual
+checks; SearchOptions predicates remain distinct from formal criteria.
