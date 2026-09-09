@@ -26,38 +26,38 @@ after schema confirmation and are not required for core completeness.
 All returned values and FIELD descriptors remain raw evidence alongside the
 existing projections below.
 
-| Field | Purpose | Query / required | Existing projection |
-|---|---|---|---|
-| `proposal_id` | Project identity | Core / yes | Metadata normalization |
-| `obs_publisher_did` | Publisher/project cross-check | Core / yes | Metadata normalization |
-| `group_ous_uid` | Group identity | Core / yes | Metadata normalization |
-| `member_ous_uid` | Member association | Core / yes | Reconstruction text input |
-| `asdm_uid` | Execution identity | Core / yes | Reconstruction text input |
-| `obs_id` | Identifier grammar and association | Core / yes | Versioned identifier parser |
-| `target_name` | Source label | Core / yes | Raw only |
-| `s_ra` | Position evidence | Core / yes | Raw only |
-| `s_dec` | Position evidence | Core / yes | Raw only |
-| `s_region` | Footprint and spatial search | Core / yes | Raw ingestion; server predicate; separate limited [spatial parser](search_plan_spatial.md#spatial-evidence) |
-| `frequency` | Frequency centre | Core / yes | Unit-validated quantity |
-| `bandwidth` | Coverage | Core / yes | Unit-validated quantity |
-| `em_xel` | Channel count | Core / yes | Raw; no mode inference |
-| `frequency_support` | Full spectral description | Core / yes | Complete spectral parse evidence |
-| `spectral_resolution` | Spectral comparison | Core / yes | Unit-validated quantity |
-| `spatial_resolution` | Angular comparison | Core / yes | Unit-validated quantity |
-| `sensitivity_10kms` | Line sensitivity estimate | Core / yes | Unit-validated quantity |
-| `cont_sensitivity_bandwidth` | Continuum sensitivity estimate | Core / yes | Unit-validated quantity |
-| `antenna_arrays` | Array description | Core / yes | Raw only |
-| `is_mosaic` | Observation context | Core / yes | Flag normalization |
-| `science_observation` | Science context | Core / yes | Flag normalization; server predicate |
-| `qa2_passed` | QA context | Core / yes | Flag normalization |
-| `obs_release_date` | Release provenance | Core / yes | Timestamp normalization |
-| `lastModified` | Modification provenance | Core / yes | Timestamp normalization |
-| `s_resolution` | Independent resolution cross-check | Optional / no | Raw; never replaces spatial_resolution |
-| `s_fov` | Field of view | Optional / no | Raw only |
-| `t_min` | Observation start bound | Optional / no | Raw; no date conversion |
-| `t_max` | Observation end bound | Optional / no | Raw; no date conversion |
-| `band_list` | Band description | Optional / no | Raw only |
-| `pol_states` | Polarization description | Optional / no | Raw; no mode inference |
+| Field | Purpose | Query / required | Existing projection | Scope and limits |
+| --- | --- | --- | --- | --- |
+| `proposal_id` | Project identity | Core / yes | Metadata normalization | Project grouping; no universal physical-product identity |
+| `obs_publisher_did` | Publisher/project cross-check | Core / yes | Metadata normalization | Project grouping; no universal physical-product identity |
+| `group_ous_uid` | Group identity | Core / yes | Metadata normalization | Observed reconstruction keys; grouping does not authorize mixing evidence |
+| `member_ous_uid` | Member association | Core / yes | Reconstruction text input | Observed reconstruction keys; grouping does not authorize mixing evidence |
+| `asdm_uid` | Execution identity | Core / yes | Reconstruction text input | Observed reconstruction keys; grouping does not authorize mixing evidence |
+| `obs_id` | Identifier grammar and association | Core / yes | Versioned identifier parser | Observed reconstruction keys; grouping does not authorize mixing evidence |
+| `target_name` | Source label | Core / yes | Raw only | Source context, not globally resolved physical target |
+| `s_ra` | Position evidence | Core / yes | Raw ingestion; independent unit-checked spatial normalization | Unit-checked center normalization and limited `CIRCLE ICRS` parsing implemented; no general STC-S family parser or formal beam-coverage method |
+| `s_dec` | Position evidence | Core / yes | Raw ingestion; independent unit-checked spatial normalization | Unit-checked center normalization and limited `CIRCLE ICRS` parsing implemented; no general STC-S family parser or formal beam-coverage method |
+| `s_region` | Footprint and spatial search | Core / yes | Raw ingestion; server predicate; separate limited [spatial parser](search_plan_spatial.md#spatial-evidence) | Unit-checked center normalization and limited `CIRCLE ICRS` parsing implemented; no general STC-S family parser or formal beam-coverage method |
+| `frequency` | Frequency centre | Core / yes | Unit-validated quantity | Row/SPW association subject to mapping; not independently verified usable coverage |
+| `bandwidth` | Coverage | Core / yes | Unit-validated quantity | Row/SPW association subject to mapping; not independently verified usable coverage |
+| `em_xel` | Channel count | Core / yes | Raw; no mode inference | No production classifier; SPW granularity must be established before future classification |
+| `frequency_support` | Full spectral description | Core / yes | Complete spectral parse evidence | Includes component intervals, diagnostics and independent RMS entries |
+| `spectral_resolution` | Spectral comparison | Core / yes | Unit-validated quantity | Does not substitute for channel spacing or effective noise bandwidth |
+| `spatial_resolution` | Angular comparison | Core / yes | Unit-validated quantity | Initial angular-resolution prefilter; not a measured restoring beam |
+| `sensitivity_10kms` | Line sensitivity estimate | Core / yes | Unit-validated quantity | Representative-window association must be established before use for a matched SPW; row co-location is insufficient |
+| `cont_sensitivity_bandwidth` | Continuum sensitivity estimate | Core / yes | Unit-validated quantity | Preserve aggregate basis; not achieved image RMS |
+| `antenna_arrays` | Array description | Core / yes | Raw only | No automatic complete array/geometry interpretation |
+| `is_mosaic` | Observation context | Core / yes | Flag normalization | Source declaration; not a reconstructed pointing list |
+| `science_observation` | Science context | Core / yes | Flag normalization; server predicate | Query policy is explicit; QA2 is not an implicit filter |
+| `qa2_passed` | QA context | Core / yes | Flag normalization | Query policy is explicit; QA2 is not an implicit filter |
+| `obs_release_date` | Release provenance | Core / yes | Timestamp normalization | Sentinel/missing handling remains source-specific |
+| `lastModified` | Modification provenance | Core / yes | Timestamp normalization | Sentinel/missing handling remains source-specific |
+| `s_resolution` | Independent resolution cross-check | Optional / no | Raw; never replaces spatial_resolution | Independent cross-check; never alias to spatial_resolution |
+| `s_fov` | Field of view | Optional / no | Raw only | Auxiliary coverage evidence; not a verified beam or footprint |
+| `t_min` | Observation start bound | Optional / no | Raw; no date conversion | Auxiliary time evidence; retained within originating row |
+| `t_max` | Observation end bound | Optional / no | Raw; no date conversion | Auxiliary time evidence; retained within originating row |
+| `band_list` | Band description | Optional / no | Raw only | Auxiliary source metadata, not validated comparison context |
+| `pol_states` | Polarization description | Optional / no | Raw; no mode inference | Auxiliary source metadata, not validated comparison context |
 
 Optional absence is recorded as NOT_REQUESTED, NOT_IN_SCHEMA, or
 SCHEMA_UNAVAILABLE; selected-but-unreturned is SELECTED with returned=False.
@@ -66,36 +66,39 @@ Projection decisions survive zero-row and incomplete results on provenance.
 Unknown returned scalar columns and their descriptors remain unnormalized.
 Mutable array cells remain outside the immutable raw-row contract.
 
+## Field projection, representation and conceptual ownership
+
+The single projection inventory above owns selection and representation for all
+core/optional fields. It incorporates the former data-model field table.
+“Typed” means a dedicated normalized representation exists, not that a value is
+present, valid, unambiguously associated or ready for comparison. Unknown returned
+scalar fields may remain raw without receiving typed semantics.
+
+| Additional field/value | Current treatment |
+| --- | --- |
+| `type` | Not selected; historical project classification, not observing mode |
+| Source parsed from `obs_id` | Derived source candidate; not a globally resolved physical target |
+| Parsed support component | Full parser evidence plus row/parser-scoped reference; only safe unique mapping selects a component |
+| `em_min`, `em_max`, `em_resolution`, `velocity_resolution` | Not selected; historical cross-checks do not establish production validation |
+| Other axis/access metadata | Not selected by default; conceptual product ownership does not imply routine retrieval or physical-file identity |
+| Duplication result | Planned policy-layer output, not a source field or reconstruction result |
+
+Selection is defined by [archive_queries.py](../src/alma_duplicate/clients/archive_queries.py).
+Exact quantity conversion and preparation are defined by
+[archive_field_contract.py](../src/alma_duplicate/clients/archive_field_contract.py)
+and [archive_adapter.py](../src/alma_duplicate/clients/archive_adapter.py).
+Archive bandwidth and parsed-support width remain separate. Unlinked/ambiguous
+evidence remains available; conceptual ownership never supplies a missing
+representative-window relationship.
+
 ## Evidence snapshots
 
-The structural census was captured on 2026-08-25. Notebook 04c added a
-semantic-closure snapshot captured at
-`2026-08-31T12:27:55.081125+00:00`.
-
-A read-only mode-closure investigation on 2026-09-02 examined 443,335 current
-science-observation rows. `em_xel` was never NULL, ranged up to 8192, and had a
-clear observed gap between 128 and 240. A matched Archive UI/TAP example
-returned channel counts `1920, 128, 1920, 1920` from both the UI's `chaNum`
-property and public TAP `em_xel`. Later review identified valid observing
-configurations for which channel count does not uniquely determine TDM/FDM.
-The production pipeline therefore preserves `em_xel` only as raw metadata and
-does not reproduce the UI classification or derive correlator mode from it.
-
-| Evidence | 2026-08-25 structural snapshot | 2026-08-31 semantic snapshot |
-|---|---:|---:|
-| Live `ivoa.obscore` columns | 73 | 73 |
-| Schema SHA-256 | `2cb2009067ab50f1727454ccb57cb1280c81ad4bfa3a10a9c2df2f0de7044c15` | Not recomputed |
-| Science-target rows | 442,507 | 443,211 |
-| Proposal IDs / publisher DIDs | 5,611 / 5,611 | Not recounted |
-| Distinct proposal / top-level `type` pairs | Not counted | 5,614 |
-| Frequency-support bracket / brace rows | 442,452 / 55 | Not recounted |
-| Standard `continuum` / `line` / `FDM` / `TDM` tokens in `frequency_support` | Not counted | 0 / 0 / 0 / 0 |
-| STC-S CIRCLE / POLYGON / UNION rows | 194,500 / 245,655 / 2,352 | Not recounted |
-| Cube / image rows | 305,618 / 136,889 | Not recounted |
-
-The increase from 442,507 to 443,211 science-target rows demonstrates that
-Archive populations are dynamic. Counts from different capture times must not
-be combined as if they describe one immutable snapshot.
+The [capture register](evidence/exploration_snapshots.md#archive-capture-register),
+[exploration summary](evidence/exploration_snapshots.md#archive-exploration-summary)
+and [cross-field experiments](evidence/exploration_snapshots.md#archive-cross-field-experiments)
+retain dates, populations, schema checksum, samples and their limits. They are
+historical evidence, not a current census. Production preserves raw `em_xel`
+without inferring Archive UI classification or correlator mode.
 
 ## Implementation boundary
 
@@ -238,28 +241,33 @@ The catalogue contains all 73 live fields exactly once.
 
 ## Cross-field constraints
 
-| Area | Closure evidence | Engineering rule |
-|---|---|---|
-| Query completeness | A deliberately limited result returned `OVERFLOW`; valid zero-row responses returned complete `OK`. | Require expected/retrieved reconciliation and status inspection. `OK` text alone is insufficient. |
-| Publisher DID | All 442,507 rows matched `ADS/JAO.ALMA#<proposal_id>`; 5,611 IDs mapped one-to-one and 442,501 rows repeated a DID. | Treat as Project alternate ID, never row/product key. Revalidate on ingest. |
-| `obs_id` parsing | 441,866 parsed below 64 chars; 275 parsed at the historical 64-character boundary with risk; 366 failed there due truncation. A later mosaic response returned seven syntactically complete 65-character values while its VOTable FIELD reported `arraysize="64*"`. | Preserve and interpret the response datatype/`arraysize` once per query. Store live width conformance independently from historical boundary evidence. Complete grammar above a reported maximum retains schema-drift evidence and may proceed to Member UID validation; exact historical-boundary and malformed values remain unsafe. Missing, invalid, or unbounded metadata is not coerced to 64. |
-| Candidate keys | `obs_id`: 496 duplicate rows in 134 groups. Parsed `(Member, ASDM, Source, SPW)`: 114 rows in 42 duplicate groups, all width-risk affected. | Use surrogate row keys. Do not claim product multiplicity from collisions. |
-| Source-SPW cardinality | Expanded sample: 39 complete grids and one sparse Moon association. | Persist explicit observed associations; no Cartesian reconstruction. |
-| Support grammar | Archive-wide top-level partition: 442,452 bracket, 55 brace, zero missing/blank/unknown. | Grammar dispatch plus unknown fallback. Top-level census does not prove every bracket interior. |
-| Brace mapping | Complete 55-row population: 52 components across 13 Source-Execution contexts; all rows mapped. One context had 7 SPWs to 4 components; three components received 2 SPWs. | `SPW_SUPPORT_MAP` is many-to-many-capable. Count equality is not proof of one-to-one mapping. |
-| Brace token 2 | All brace rows had `em_xel=1`; token 2 matched both bandwidth and spectral resolution after conversion. | Preserve raw and normalized token; status remains semantically ambiguous. |
-| Execution ownership | Verified `3C279`/`3c279` across two ASDMs, maximum separation 0.000547 arcsec; footprint, support, resolution, antenna, time, and sensitivity differed. | Keep these values at Source-Execution scope, not pure Source scope. |
-| STC-S | Archive-wide families: 194,500 CIRCLE, 245,655 POLYGON, 2,352 UNION; zero missing/unknown. Strict parsing tested 40 examples per family. | Support current families and raw fallback. Do not claim Archive-wide interior validation. |
-| Resolution fields | `s_resolution != spatial_resolution` in 41,365 of 442,507 rows. | Separate storage and comparison; never alias. |
-| Primary angular-resolution evidence | The service definitions differ, and the official ALMA spatial-resolution query examples use `spatial_resolution`. | Use `spatial_resolution` for initial Archive candidate retrieval; retain `s_resolution` as an independent cross-check. Neither field is a measured FITS restoring beam. |
-| Top-level `type` | On 2026-08-31, all 5,614 distinct proposal/type pairs matched the terminal `proposal_id` suffix; observed values were `S`, `L`, `T`, `V`, `SV`, `E`, `P`, and `CAL`. | Treat as proposal/project classification with an unknown-value fallback. It is unrelated to `science_observation = 'T'` and must not be interpreted as FDM/TDM. |
-| Frequency-Support mode representation | TAP has no direct FDM/TDM string and the 2026-08-31 raw-string census found none of the standard tokens. Although Archive UI channel counts matched public TAP `em_xel` in a sampled case, channel count is not a unique discriminator across valid correlator configurations. | Preserve raw `em_xel` only. Do not classify it as UI `continuum`/`line` in production and never derive formal mode from `em_xel`, top-level `type`, bandwidth, or spectral resolution. Mode remains unavailable until supported configuration evidence is obtained and reliably associated with the candidate SPW. |
-| Sensitivity basis | TAP metadata defines `cont_sensitivity_bandwidth` and `sensitivity_10kms` as estimates with documented limitations. | Preserve them as distinct estimated evidence. Do not represent either as achieved QA2 image-product RMS. |
-| Query-arithmetic units | The frequency overlap predicate requires `frequency=GHz`, `bandwidth=Hz`; the angular predicate requires `spatial_resolution=arcsec`. | Probe the request-specific fields in `TAP_SCHEMA.columns`, gate frequency and angular filters independently, retain requested bounds and fallback status in provenance, and preserve NULL-valued rows for local non-evaluability. |
-| QA2 boundary | Observational metadata can be available after QA0 while later processing or QA2 remains incomplete. | Preserve `qa2_passed` as evidence; do not add `qa2_passed = 'T'` as an implicit client filter. |
-| Wavelength/frequency bounds | Five exact floating-point sample failures were all within 1 Hz; maximum boundary difference was about `2.84e-5 Hz`. | Explicit unit conversion and declared tolerance; no direct float equality. |
-| Product metadata | 305,618 cube and 136,889 image rows; all current science rows level 2. Axis/size availability is uneven. | Row-level product description only; physical file granularity unresolved. |
-| Determinism | Reconstruction hashes matched for seeds 0, 1, 7, 42, and 2026. | Reconstruction and mapping must not depend on TAP row order. |
+Current engineering rules below are separated from the
+[recorded experiments](evidence/exploration_snapshots.md#archive-cross-field-experiments).
+Historical counts establish counterexamples and evidence scope, not permanent
+population constraints.
+
+| Area | Engineering rule |
+| --- | --- |
+| Query completeness | Require expected/retrieved reconciliation and status inspection. `OK` text alone is insufficient. |
+| Publisher DID | Treat as Project alternate ID, never row/product key. Revalidate on ingest. |
+| `obs_id` parsing | Preserve and interpret the response datatype/`arraysize` once per query. Store live width conformance independently from historical boundary evidence. Complete grammar above a reported maximum retains schema-drift evidence and may proceed to Member UID validation; exact historical-boundary and malformed values remain unsafe. Missing, invalid, or unbounded metadata is not coerced to 64. |
+| Candidate keys | Use surrogate row keys. Do not claim product multiplicity from collisions. |
+| Source-SPW cardinality | Persist explicit observed associations; no Cartesian reconstruction. |
+| Support grammar | Grammar dispatch plus unknown fallback. Top-level census does not prove every bracket interior. |
+| Brace mapping | `SPW_SUPPORT_MAP` is many-to-many-capable. Count equality is not proof of one-to-one mapping. |
+| Brace token 2 | Preserve raw and normalized token; status remains semantically ambiguous. |
+| Execution ownership | Keep these values at Source-Execution scope, not pure Source scope. |
+| STC-S | Retain raw syntax and unsupported states. The independent spatial layer supports only limited `CIRCLE ICRS`; sampled POLYGON/UNION parsing is not production support. |
+| Resolution fields | Separate storage and comparison; never alias. |
+| Primary angular-resolution evidence | Use `spatial_resolution` for initial Archive candidate retrieval; retain `s_resolution` as an independent cross-check. Neither field is a measured FITS restoring beam. |
+| Top-level `type` | Treat as proposal/project classification with an unknown-value fallback. It is unrelated to `science_observation = 'T'` and must not be interpreted as FDM/TDM. |
+| Frequency-Support mode representation | Preserve raw `em_xel` only. Do not classify it as UI `continuum`/`line` in production and never derive formal mode from `em_xel`, top-level `type`, bandwidth, or spectral resolution. Mode remains unavailable until supported configuration evidence is obtained and reliably associated with the candidate SPW. |
+| Sensitivity basis | Preserve them as distinct estimated evidence. Do not represent either as achieved QA2 image-product RMS. |
+| Query-arithmetic units | Probe the request-specific fields in `TAP_SCHEMA.columns`, gate frequency and angular filters independently, retain requested bounds and fallback status in provenance, and preserve NULL-valued rows for local non-evaluability. |
+| QA2 boundary | Preserve `qa2_passed` as evidence; do not add `qa2_passed = 'T'` as an implicit client filter. |
+| Wavelength/frequency bounds | Explicit unit conversion and declared tolerance; no direct float equality. |
+| Product metadata | Row-level product description only; physical file granularity unresolved. |
+| Determinism | Reconstruction and mapping must not depend on TAP row order. |
 
 ## Implemented status values
 

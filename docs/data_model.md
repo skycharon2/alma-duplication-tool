@@ -1,1075 +1,289 @@
-# Internal Archive and Queue Reconstruction Model
+# Current Archive–Queue data model
 
-Document revision: 0.6. Runtime component versions are identified separately below.
+Document revision: 0.7. This revision reorganizes documentation; it does not
+change a runtime schema, parser, adapter or model version.
 
 ## Status and scope
 
-This document combines implemented reconstruction contracts with explicitly
-conceptual ER diagrams and dated exploration evidence. A concept appearing in
-a diagram is not proof of a corresponding runtime object. Future comparison
-requirements are maintained in the [rule-input contract](duplication_rule_inputs.md).
+This document owns the implemented Python object relationships, identities,
+cardinalities and invariants used between ingestion, comparison construction and
+search/spatial adaptation. The [documentation guide](README.md) defines reading
+paths and the next delivery. Formal evidence requirements and open scientific
+decisions belong to the [rule-input contract](duplication_rule_inputs.md).
 
-| Concept | Implementation | Status |
+The [conceptual design](design/conceptual_data_model.md) preserves the original
+ERDs and entity descriptions; uppercase entities there are not Python classes.
+The [snapshot register](evidence/exploration_snapshots.md) preserves dated
+notebook evidence. Neither describes ALMA's internal database schema.
+
+## Current object index
+
+Links identify definition files. Objects listed together share the same layer;
+none implies that an approved comparison method or a persistence schema exists.
+
+| Layer | Python objects and definitions | Responsibility |
 | --- | --- | --- |
-| Persisted exact Queue source | [`StoredQueueSource`](../src/alma_duplicate/storage/queue_snapshots.py) | Implemented |
-| Persisted historical parse summary | [`StoredQueueRun`](../src/alma_duplicate/storage/queue_snapshots.py) | Implemented; summary, not full historical parse object |
-| Source publication, verification and reparse | [`QueueSnapshotStore`](../src/alma_duplicate/storage/queue_snapshots.py) | Implemented |
-| Snapshot metadata in a parse result | [`QueueSnapshot`](../src/alma_duplicate/domain/queue.py) | Implemented; distinct from a stored source record |
-| Parameter-combination association actually present in a source CSV row | [`QueueRowAssociation`](../src/alma_duplicate/domain/queue.py) | Implemented; planned observations, not evidence of execution |
-| Raw-row and parser-scoped spectral reference | [`SupportComponentRef`](../src/alma_duplicate/domain/reconstruction.py) | Implemented; reference identity alone does not establish scientific comparability |
-| Proposed observation | [`ProposedObservationRequest`](../src/alma_duplicate/domain/proposed_observation.py) | Implemented; model version 1 |
-| Row-scoped comparison context | [`ComparisonContext`](../src/alma_duplicate/domain/comparison.py) | Implemented; [offline construction](comparison_contexts.md), no matching or policy evaluation |
+| Archive query | [`ArchiveQuerySpec`](../src/alma_duplicate/clients/archive_queries.py); [`ArchiveQueryResult`, `ArchiveQueryProvenance`, `TapResponse`](../src/alma_duplicate/clients/archive_contract.py) | Explicit query and projection, ordered raw rows/FIELD metadata and run completeness |
+| Archive preparation | [`PreparedArchiveRow`, `ArchivePipelineBatch`](../src/alma_duplicate/clients/archive_adapter.py); [`ArchiveComparisonEvidence`](../src/alma_duplicate/domain/archive_evidence.py) | Raw row, normalization, typed quantities, reconstruction inputs and source result |
+| Archive reconstruction | [`SourceExecutionKey`, `SourceSpwAssociationKey`, `RowReconstruction`, `ReconstructionBatch`](../src/alma_duplicate/domain/reconstruction.py) | Observed identities and row-level linkage attempts |
+| Support evidence | [`RowFrequencySupportEvidence`, `SupportComponentRef`, `SupportMapping`](../src/alma_duplicate/domain/reconstruction.py) | Saved full parse result and row/parser-scoped component mapping |
+| Queue ingestion | [`QueueSnapshot`, `QueueRawRowId`, `RawQueueRow`, `QueueRowInput`, `QueueCsvParseResult`](../src/alma_duplicate/domain/queue.py) | File provenance, raw strings, source-line identity and typed source rows |
+| Queue reconstruction | [`QueueGroupKey`, `QueueSpatialComponent`, `QueueSpectralSetup`, `QueueRequestContext`, `QueueRowAssociation`, `QueueFactorizationSummary`, `QueueReconstructionBatch`, `QueuePipelineBatch`](../src/alma_duplicate/domain/queue.py) | Factored components connected only through actual source rows |
+| Queue persistence | [`StoredQueueSource`, `StoredQueueRun`, `QueueSnapshotStore`](../src/alma_duplicate/storage/queue_snapshots.py) | Exact source bytes/acquisition facts and independent historical parse summaries |
+| Request | [`ProposedObservationRequest`, `SearchOptions`, `RequestValidationResult`](../src/alma_duplicate/domain/proposed_observation.py) | Validated proposed evidence, explicit search controls and request readiness |
+| Comparison | [`ComparisonContext`, `ArchiveContextEvidence`, `QueueContextEvidence`, `EvidenceReference`, `EvidenceItem`, `ComparisonSourceResult`, `ComparisonPreparation`](../src/alma_duplicate/domain/comparison.py) | Unfiltered source contexts, evidence dimensions and retained source results |
+| Planning | [`SearchPlan`, `SourceSearchPlan`, `PlannedPredicate`, `QueryPlanBinding`, `ScalarSelection`](../src/alma_duplicate/domain/search.py) | Offline operations, query binding and individual scalar predicate results |
+| Spatial | [`SpatialEvidence`, `SpatialStatus`, `PositionInterpretation`, `SkyPosition`, `CircleFootprint`, `SpatialSelection`](../src/alma_duplicate/domain/spatial.py) | Source-bound center/footprint, explicit interpretation and individual spatial checks |
 
-### Search and spatial objects
+## Archive identities and associations
 
-These implemented objects consume the existing request and comparison contexts;
-they do not replace source reconstruction or implement formal policy methods.
+### Raw row and source result
 
-| Object | Definition | Current responsibility |
+`ArchivePipelineBatch` retains its `ArchiveQueryResult`, field/identifier
+contracts, prepared rows and `ReconstructionBatch`. Every `PreparedArchiveRow`
+retains the raw row, normalized metadata, reconstruction input and typed
+comparison evidence. The adapter's raw-row ID is the query-run ID followed by
+its zero-based result index formatted with at least eight digits. Equal rows
+remain separate; the identifier is scoped to a query run, not a physical file.
+
+`proposal_id`, `obs_publisher_did`, Member and ASDM identifiers retain their
+source semantics. No public Archive field is a universal row primary key.
+The publisher DID is project evidence, not row/product identity. Member OUS is
+an outer grouping scope; it cannot authorize combining observations.
+
+Raw rows are copied into read-only mappings by the client. Incomplete query
+results cannot enter the normal reconstruction pipeline. Exact scalar types,
+FIELD metadata, projection/version behavior, unit gates and zero-row handling
+are owned by the [Archive client contract](archive_client_contract.md).
+The [dictionary](archive_data_dictionary.md#production-projection-v1-schema-3-client-7)
+owns selected fields and their representation; the historical full catalogue
+is not a claim that every field is retrieved.
+
+### Reconstruction keys
+
+| Key / result | Identity or cardinality | Meaning |
 | --- | --- | --- |
-| `SearchOptions`, `RequestValidationResult` | [Request domain](../src/alma_duplicate/domain/proposed_observation.py) | Explicit search scope and predicates; input validity and search readiness |
-| `SearchPlan`, `SourceSearchPlan` | [Search domain](../src/alma_duplicate/domain/search.py) | Offline source-specific operations; execution remains `NOT_EXECUTED` |
-| `QueryPlanBinding` | [Search domain](../src/alma_duplicate/domain/search.py) | Recorded Archive query agreement with the plan, independent of completeness |
-| `SpatialEvidence`, `SpatialStatus` | [Spatial domain](../src/alma_duplicate/domain/spatial.py) | Source-bound center and footprint with separate availability states |
-| `PositionInterpretation` | [Spatial domain](../src/alma_duplicate/domain/spatial.py) | Explicit context-scoped frame/target interpretation and decision reference |
-| `SpatialSelection` | [Spatial domain](../src/alma_duplicate/domain/spatial.py) | Individual selection result; assessment remains `NOT_EVALUATED` |
+| `SourceExecutionKey` | `(member_ous_uid, asdm_uid, source_name)` | Parsed source within one Member/execution; no physical-target alias resolution |
+| `SourceSpwAssociationKey` | `context` plus `spw_token`, `spw_index` | One observed source/execution/SPW association |
+| `RowReconstruction` | One result per input raw row | A linked association or an explicit unsafe/missing/mismatch result |
+| `ReconstructionBatch.associations` | Unique observed keys, variable length | May be sparse; no source × SPW grid is generated |
+| Rows supporting an association | Multiple allowed | Neither deduplication nor proof of distinct physical products |
 
-Construction and supported operations are specified in the
-[search/spatial contract](search_plan_spatial.md). The conceptual ERDs below
-are broader than these Python objects; in particular they do not establish a
-general STC-S parser, automatic array classification or primary-beam policy.
+Unsafe `obs_id`, missing required identity or parsed Member mismatch leaves a
+row unlinked with reasons. Identifier grammar, live VOTable width conformance
+and the historical truncation boundary are separate evidence dimensions; see
+[identifier behavior](archive_client_contract.md) and
+[status values](archive_data_dictionary.md#implemented-status-values).
+Source/execution metadata remains reachable through its originating row;
+there is no automatic collapse into one representative footprint or RMS.
 
 ### Spectral mapping boundary
 
-Raw spectral evidence and diagnostics are retained independently of successful
-identity reconstruction. Current [`_map_support`](../src/alma_duplicate/reconstruction.py)
-requires an overall valid `FrequencySupportParseResult` before component mapping.
-A component validation failure can therefore make the row's support mapping
-unavailable; this is not a claim that every scientific quantity in that row is
-invalid. Independent frequency-coverage and sensitivity usability remains a
-comparison-layer design requirement. Unknown Queue usable bandwidth may be
-retained as `None`; successful reconstruction does not establish comparability.
-
-Implemented Archive status vocabularies are maintained in the
-[dictionary status table](archive_data_dictionary.md#implemented-status-values).
-
-### Archive implementation scope
-
-Production selection is projection v1 / schema v3 / client v7: 24 required
-core columns plus up to 6 schema-confirmed optional auxiliary columns. The
-73-field dictionary is a historical reference, not full production ingestion.
-`ArchiveQueryProvenance.projection` preserves the actual planned selection and
-optional absence reasons independently of raw NULL/masked cells. Auxiliary
-fields remain raw source evidence, not new validated comparison quantities.
-See the field inventory and client contract for missing-field behavior.
-
-Archive raw-row immutability is enforced at both `TapResponse` and
-`ArchiveQueryResult` construction (introduced in client version 6, retained in version 7). Each row is independently
-copied and exposed as a read-only mapping inside a tuple, including diagnostic
-rows. Supported immutable scalars and the canonical NumPy masked sentinel
-retain their types and missing semantics; mutable cell containers and arrays
-are rejected explicitly. See the Archive client contract for the exact type
-scope. Duplicate rows retain separate positions and adapter row identities.
-The adapter shares the query-result snapshot rather than the caller's mutable
-dictionary. This runtime protection does not provide persistent storage.
-
-This document defines the evidence-based internal representation of both the
-current public ALMA `ivoa.obscore` TAP view and the current-cycle Queue CSV.
-The Archive component follows Notebooks 01, 02, 02b, 03, 04, 04b, and 04c;
-the Queue component follows Notebook 05 and its versioned ingestion contract.
-
-It is not the official internal ALMA database schema. It is an application
-model for preserving Archive evidence, reconstructing relationships needed by
-the duplication-checking tool, and isolating later comparison policy from raw
-metadata.
-
-Notebook 04b closed the Archive-structure exploration phase using a
-2026-08-25 snapshot with 442,507 science-target rows and 73 live columns.
-Notebook 04c closed the current semantic-review phase using a
-2026-08-31 snapshot with 443,211 science-target rows and the same 73-column
-`ivoa.obscore` schema. Later Archive-wide censuses and explicit
-counterexamples supersede earlier sample statements wherever they conflict;
-counts from different capture times are never combined as one snapshot.
-
-The production Archive client implements query construction,
-COUNT/retrieval reconciliation, query-status handling, schema-name checks,
-query provenance, an incomplete-result pipeline gate, and ordered retrieval
-field-metadata preservation (`name`, datatype, arraysize, unit, UCD, utype,
-xtype, and description), including valid zero-row responses.
-
-The production Queue CSV implementation fingerprints the exact byte
-snapshot with SHA-256 and byte length, and preserves its embedded dictionary,
-mixed secondary-header row, all 79 raw operational values, source-line
-identity, both unit representations, typed row evidence, and observed
-spatial-spectral-request associations. It does not retain the complete source
-byte content inside `QueueSnapshot`, infer missing Cartesian relationships, or
-apply policy decisions.
-
-`QueueSnapshotStore` persists exact CSV bytes and acquisition facts separately
-from parse-run summaries. Each acquisition has its own ID even for identical
-bytes; each parse run links the source checksum and source-manifest checksum.
-Source reads do not parse, and run reads return the historical summary without
-recomputing it. `parsed_at`, parser versions and interpreted source dates belong
-to the run. The existing in-memory `QueueSnapshot` remains compatible. See
-[Queue snapshot storage](queue_snapshot_store.md); full historical Python parse
-objects and Archive disk serialization are outside this format.
-
-## Historical exploration evidence summary
-
-The observations below describe the named notebook populations and capture
-dates. Their counts are historical evidence, not a current live census or proof
-that each experimental derivation is implemented in production.
-
-| Question | Current evidence | Model consequence |
-|---|---|---|
-| Live schema | 73 columns; schema SHA-256 `2cb2009067ab50f1727454ccb57cb1280c81ad4bfa3a10a9c2df2f0de7044c15` | Classify all fields and detect future schema drift |
-| Science-target population | 442,507 rows on 2026-08-25 and 443,211 rows at `2026-08-31T12:27:55.081125+00:00` | Treat all counts as time-specific snapshots and preserve capture provenance |
-| Query completeness | COUNT/retrieve reconciliation, valid empty result, and intentional `OVERFLOW` verified | Never infer absence from an incomplete response |
-| Retrieval field metadata | PyVO exposes VOTable `FIELD` descriptors independently of result rows; the current client preserves them in projection order | Carry units and semantic descriptors with the same query result, including valid empty results |
-| Comparison-field units | Live units for frequency, bandwidth, spectral/spatial resolution, and two sensitivity estimates are checked at runtime | Convert only compatible units; preserve missing/incompatible status rather than assuming units from names |
-| Query arithmetic units | Frequency ADQL assumes `frequency=GHz`, `bandwidth=Hz`; angular ADQL assumes `spatial_resolution=arcsec` | Verify exact `TAP_SCHEMA` units for each requested numeric prefilter, disable unsafe filters independently, retain original bounds in provenance, and keep NULL evidence rows for local non-evaluability |
-| Archive frequency frame | Public documentation identifies sky frequency but not a comparison-ready TAP reference frame | Derive typed Archive coverage but keep cross-source frame alignment unavailable |
-| `obs_publisher_did` | 5,611 proposal IDs and 5,611 publisher DIDs; exact `ADS/JAO.ALMA#<proposal_id>` mapping with no exception | Project-level external identifier, not a row or product key |
-| `obs_id` | 442,141 parsed; 366 width-truncated failures; 275 additional parseable values at the historically observed 64-character truncation boundary; a later live mosaic response returned seven complete 65-character values while that response reported `arraysize="64*"` | Preserve raw value; evaluate grammar, live VOTable width conformance, and historical truncation evidence independently; never use as an Archive-wide key |
-| Row identity | 134 duplicate `obs_id` groups; 42 duplicate parsed Source-Execution-SPW groups, all affected by identifier-width risk | Use internal surrogate row identifiers |
-| Source-SPW cardinality | 39 complete grids and one explicit sparse association in the expanded census | Store observed associations; never synthesize a Cartesian grid |
-| Support mapping | One context mapped 7 SPW rows to 4 support components | Allow many SPWs to map to one support component |
-| Frequency-support grammar | 442,452 bracket rows, 55 brace rows, no missing/blank/unknown top-level family | Dispatch by grammar family and preserve unknown fallback |
-| Brace population | Complete 55/55-row census; all structures and mappings valid | Support brace grammar in production; retain token-2 semantic ambiguity |
-| Repeated source across ASDM | Spatially verified `3C279`/`3c279` case across two ASDMs | Keep footprint, time, antenna, support, and resolution at Source-Execution scope |
-| STC-S family | 194,500 CIRCLE, 245,655 POLYGON, 2,352 UNION; no missing/blank/unknown | Retain all raw geometry; current local parsing supports only `CIRCLE ICRS`; POLYGON/UNION support remains deferred |
-| Product population | 305,618 cube and 136,889 image rows, all `calib_level=2` | Treat product metadata as row evidence; physical file granularity remains unresolved |
-| Spatial resolution | 41,365 of 442,507 rows had `s_resolution != spatial_resolution` | Preserve the two fields separately |
-| Primary angular-resolution evidence | Service definitions differ; official ALMA query examples use `spatial_resolution` | Use `spatial_resolution` for initial Archive candidate retrieval, preserve `s_resolution` as a cross-check, and treat neither as a measured FITS restoring beam |
-| Top-level `type` | Eight values were observed on 2026-08-31; all 5,614 distinct proposal/type pairs matched the terminal `proposal_id` suffix | Model as optional proposal/project classification with an unknown-value fallback; do not confuse `type = 'T'` with `science_observation = 'T'` |
-| Frequency-Support mode | TAP has no direct policy-grade FDM/TDM field; public `em_xel` is a channel count and valid configurations overlap across modes | Preserve raw `em_xel` only; do not derive Archive UI type or correlator mode from channel count; leave formal mode unavailable until configuration-backed evidence is implemented and reliably associated |
-| Sensitivity semantics | TAP metadata defines continuum and nominal 10 km/s sensitivity as estimates with documented limitations | Store separate estimated-evidence concepts; never label them achieved QA2 product RMS |
-| QA2 boundary | Archive metadata may be available after QA0 while processing or QA2 remains incomplete | Keep `qa2_passed` as evidence and leave inclusion/exclusion to explicit policy |
-| Reconstruction determinism | Five shuffle seeds produced identical reconstructions | Require order-independent production reconstruction |
-
-## Modeling principles
-
-1. Preserve complete raw TAP rows, units, masks, identifiers, and query
-   provenance before parsing.
-2. Use internal surrogate identifiers. No current Archive field is accepted as
-   an Archive-row primary key.
-3. Separate Project, Member OUS, ASDM execution, source identity,
-   Source-Execution context, logical SPW, and raw Archive row.
-4. Store only observed Source-Execution-SPW associations. Never generate
-   absent rows through a Cartesian product.
-5. Separate raw, parsed, normalized, and policy-level values.
-6. Attach parse status, validation status, algorithm version, and uncertainty
-   to every derived value.
-7. Preserve both representations when Archive fields are related but not
-   interchangeable.
-8. Keep duplication thresholds and decisions outside the Archive
-   reconstruction layer.
-9. Distinguish service-exposed values from Web display semantics and formal
-   policy evidence. Preserve TAP `em_xel` as raw metadata, but do not reproduce
-   a UI classification or derive TDM/FDM from channel count.
-10. Treat sensitivity and angular-resolution summaries as Archive evidence,
-    not achieved FITS-product measurements.
-11. Keep analytical Queue grouping separate from row-level comparison
-    identity; only `QueueRowAssociation` preserves an observed combination.
-
-## Entity-relationship model
-
-The diagrams below describe one conceptual model. The first diagram gives the
-complete cardinality overview. The following diagrams repeat selected
-relationships and add implementation attributes so that the model remains
-readable in Markdown. Attribute types are logical types, not final SQL DDL.
-
-### Complete relationship overview
-
-```mermaid
-erDiagram
-    PROJECT ||--o{ GROUP_OUS : defines
-    PROJECT ||--o{ MEMBER_OUS : includes
-    GROUP_OUS o|--o{ MEMBER_OUS : groups
-
-    MEMBER_OUS ||--o{ ASDM_EXECUTION : associates
-    MEMBER_OUS ||--o{ SOURCE_CONTEXT : contains
-    MEMBER_OUS ||--o{ LOGICAL_SPW : defines
-
-    SOURCE_CONTEXT ||--o{ SOURCE_ALIAS : preserves
-    SOURCE_CONTEXT ||--o{ SOURCE_EXEC_CONTEXT : participates_in
-    ASDM_EXECUTION ||--o{ SOURCE_EXEC_CONTEXT : scopes
-    SOURCE_EXEC_CONTEXT ||--o{ SPATIAL_FOOTPRINT : has
-
-    SOURCE_EXEC_CONTEXT ||--o{ SOURCE_SPW_ASSOCIATION : observes
-    LOGICAL_SPW ||--o{ SOURCE_SPW_ASSOCIATION : indexes
-
-    SOURCE_EXEC_CONTEXT ||--o{ FREQUENCY_SUPPORT_SIGNATURE : describes
-    FREQUENCY_SUPPORT_SIGNATURE ||--o{ FREQUENCY_SUPPORT_COMPONENT : contains
-    SOURCE_SPW_ASSOCIATION ||--o{ SPW_SUPPORT_MAP : mapped_by
-    FREQUENCY_SUPPORT_COMPONENT ||--o{ SPW_SUPPORT_MAP : receives
-
-    ARCHIVE_QUERY_RUN ||--o{ RAW_ARCHIVE_ROW : retrieves
-    RAW_ARCHIVE_ROW ||--o{ ROW_RECONSTRUCTION : reconstructed_by
-    SOURCE_SPW_ASSOCIATION o|--o{ ROW_RECONSTRUCTION : may_receive
-    RAW_ARCHIVE_ROW ||--o| ROW_PRODUCT_METADATA : projects
-    SOURCE_SPW_ASSOCIATION ||--o{ OBSERVATION_MODE_EVIDENCE : evaluated_by
-
-    PHYSICAL_TARGET o|--o{ SOURCE_CONTEXT : may_unify
-```
-
-Cardinality notation:
-
-| Marker | Meaning |
-|---|---|
-| `||` | exactly one |
-| `o|` | zero or one |
-| `|{` | one or many |
-| `o{` | zero or many |
-
-The marker next to an entity states how many instances of that entity may be
-related to one instance at the opposite end.
-
-### Project, dataset, and raw-query provenance
-
-```mermaid
-erDiagram
-    PROJECT ||--o{ GROUP_OUS : defines
-    PROJECT ||--o{ MEMBER_OUS : includes
-    GROUP_OUS o|--o{ MEMBER_OUS : groups
-    MEMBER_OUS ||--o{ ASDM_EXECUTION : associates
-    ARCHIVE_QUERY_RUN ||--o{ RAW_ARCHIVE_ROW : retrieves
-    RAW_ARCHIVE_ROW ||--o| ROW_PRODUCT_METADATA : projects
-
-    PROJECT {
-        string project_id PK
-        string proposal_id UK
-        string obs_publisher_did UK
-        string publisher_mapping_status
-        string proposal_type_raw
-        string proposal_type_status
-    }
-
-    GROUP_OUS {
-        string group_ous_id PK
-        string group_ous_uid UK
-        string project_id FK
-        boolean normalized_from_blank
-    }
-
-    MEMBER_OUS {
-        string member_id PK
-        string member_ous_uid UK
-        string project_id FK
-        string group_ous_id FK
-    }
-
-    ASDM_EXECUTION {
-        string execution_id PK
-        string asdm_uid
-        string member_id FK
-        string execution_identity_status
-    }
-
-    ARCHIVE_QUERY_RUN {
-        string query_run_id PK
-        string tap_endpoint
-        string adql_text
-        string adql_sha256
-        datetime started_at_utc
-        datetime finished_at_utc
-        int maxrec
-        int expected_rows
-        int retrieved_rows
-        string query_status
-        boolean complete
-    }
-
-    RAW_ARCHIVE_ROW {
-        string raw_row_id PK
-        string query_run_id FK
-        int result_ordinal
-        string raw_row_sha256
-        string obs_id_raw
-        string obs_publisher_did_raw
-        string raw_values
-        string raw_masks
-        string raw_units
-    }
-
-    ROW_PRODUCT_METADATA {
-        string row_product_metadata_id PK
-        string raw_row_id FK
-        string dataproduct_type
-        int calib_level
-        int em_xel
-        int pol_xel
-        int s_xel1
-        int s_xel2
-        int t_xel
-        string access_format_raw
-        int access_estsize_raw
-        string physical_product_status
-    }
-```
-
-`ROW_PRODUCT_METADATA` is a normalized projection of optional ObsCore fields,
-not a claim that a physical product or downloadable file has been identified.
-`PROJECT` uniqueness constraints apply to the current normalized snapshot;
-the raw values still remain in `RAW_ARCHIVE_ROW` and are revalidated on ingest.
-
-### Source, execution, alias, and footprint context
-
-```mermaid
-erDiagram
-    MEMBER_OUS ||--o{ SOURCE_CONTEXT : contains
-    MEMBER_OUS ||--o{ ASDM_EXECUTION : associates
-    SOURCE_CONTEXT ||--o{ SOURCE_ALIAS : preserves
-    SOURCE_CONTEXT ||--o{ SOURCE_EXEC_CONTEXT : participates_in
-    ASDM_EXECUTION ||--o{ SOURCE_EXEC_CONTEXT : scopes
-    SOURCE_EXEC_CONTEXT ||--o{ SPATIAL_FOOTPRINT : has
-    PHYSICAL_TARGET o|--o{ SOURCE_CONTEXT : may_unify
-
-    MEMBER_OUS {
-        string member_id PK
-        string member_ous_uid UK
-        string project_id FK
-    }
-
-    ASDM_EXECUTION {
-        string execution_id PK
-        string asdm_uid
-        string member_id FK
-        string execution_identity_status
-    }
-
-    SOURCE_CONTEXT {
-        string source_context_id PK
-        string member_id FK
-        string normalized_source_candidate
-        string normalization_method
-        string source_identity_status
-    }
-
-    SOURCE_ALIAS {
-        string source_alias_id PK
-        string source_context_id FK
-        string raw_source_label
-        string target_name_raw
-        string alias_origin
-        string normalization_version
-    }
-
-    SOURCE_EXEC_CONTEXT {
-        string context_id PK
-        string source_context_id FK
-        string execution_id FK
-        string antenna_arrays_raw
-        float t_min_mjd
-        float t_max_mjd
-        boolean is_mosaic_raw
-        string band_list_raw
-        float s_resolution_arcsec
-        float spatial_resolution_arcsec
-        float estimated_cont_sensitivity_mjy_beam
-        string context_validation_status
-    }
-
-    SPATIAL_FOOTPRINT {
-        string footprint_id PK
-        string context_id FK
-        float s_ra_deg
-        float s_dec_deg
-        float s_fov_deg
-        string s_region_raw
-        string geometry_family
-        string coordinate_frame
-        string normalized_geometry_hash
-        string parse_status
-        string parser_version
-    }
-
-    PHYSICAL_TARGET {
-        string physical_target_id PK
-        string normalized_identity
-        string identity_method
-        string identity_status
-    }
-```
-
-The repeated-source counterexample requires `SPATIAL_FOOTPRINT` and the other
-varying fields to hang from `SOURCE_EXEC_CONTEXT`, not directly from
-`SOURCE_CONTEXT`. `PHYSICAL_TARGET` remains optional and must not collapse raw
-aliases or execution evidence.
-
-### Spectral structure, support parsing, and row reconstruction
-
-```mermaid
-erDiagram
-    MEMBER_OUS ||--o{ LOGICAL_SPW : defines
-    SOURCE_EXEC_CONTEXT ||--o{ SOURCE_SPW_ASSOCIATION : observes
-    LOGICAL_SPW ||--o{ SOURCE_SPW_ASSOCIATION : indexes
-
-    SOURCE_EXEC_CONTEXT ||--o{ FREQUENCY_SUPPORT_SIGNATURE : describes
-    FREQUENCY_SUPPORT_SIGNATURE ||--o{ FREQUENCY_SUPPORT_COMPONENT : contains
-    SOURCE_SPW_ASSOCIATION ||--o{ SPW_SUPPORT_MAP : mapped_by
-    FREQUENCY_SUPPORT_COMPONENT ||--o{ SPW_SUPPORT_MAP : receives
-
-    RAW_ARCHIVE_ROW ||--o{ ROW_RECONSTRUCTION : reconstructed_by
-    SOURCE_SPW_ASSOCIATION o|--o{ ROW_RECONSTRUCTION : may_receive
-    SOURCE_SPW_ASSOCIATION ||--o{ OBSERVATION_MODE_EVIDENCE : evaluated_by
-
-    MEMBER_OUS {
-        string member_id PK
-        string member_ous_uid UK
-        string project_id FK
-    }
-
-    SOURCE_EXEC_CONTEXT {
-        string context_id PK
-        string source_context_id FK
-        string execution_id FK
-        string context_validation_status
-    }
-
-    LOGICAL_SPW {
-        string logical_spw_id PK
-        string member_id FK
-        string spw_identifier_raw
-        int spw_identifier_int
-        string derivation_source
-        string parse_confidence
-    }
-
-    SOURCE_SPW_ASSOCIATION {
-        string association_id PK
-        string context_id FK
-        string logical_spw_id FK
-        float exact_frequency_ghz
-        float archive_bandwidth_hz
-        float spectral_resolution_khz
-        float estimated_line_sensitivity_10kms
-        string pol_states_raw
-        string association_status
-    }
-
-    FREQUENCY_SUPPORT_SIGNATURE {
-        string support_signature_id PK
-        string context_id FK
-        string raw_support_text
-        string grammar_family
-        string exact_signature_hash
-        string geometry_signature_hash
-        string sensitivity_signature_hash
-        int component_count
-        string parse_status
-        string parser_version
-    }
-
-    FREQUENCY_SUPPORT_COMPONENT {
-        string support_component_id PK
-        string support_signature_id FK
-        int component_index
-        string grammar_family
-        string raw_component_text
-        float frequency_low_ghz
-        float frequency_high_ghz
-        float displayed_center_ghz
-        float interval_width_ghz
-        float parsed_resolution_khz
-        float brace_token_2_khz
-        float representation_tolerance_mhz
-        float sensitivity_10kms_mjy_beam
-        float sensitivity_native_mjy_beam
-        string polarization_products
-        string token_2_semantic_status
-        string validation_status
-    }
-
-    SPW_SUPPORT_MAP {
-        string mapping_id PK
-        string association_id FK
-        string support_component_id FK
-        string mapping_method
-        float center_difference_mhz
-        float bandwidth_difference_mhz
-        float representation_tolerance_mhz
-        boolean center_inside_interval
-        int candidate_count
-        string mapping_status
-        string mapping_version
-    }
-
-    RAW_ARCHIVE_ROW {
-        string raw_row_id PK
-        string query_run_id FK
-        string obs_id_raw
-        string raw_row_sha256
-    }
-
-    ROW_RECONSTRUCTION {
-        string reconstruction_id PK
-        string raw_row_id FK
-        string association_id FK
-        string parsed_member_uid
-        string parsed_source_label
-        string parsed_spw_token
-        int obs_id_length
-        string obs_id_parse_status
-        string truncation_risk
-        string reconstruction_status
-        string reconstruction_version
-    }
-
-    OBSERVATION_MODE_EVIDENCE {
-        string evidence_id PK
-        string association_id FK
-        float archive_bandwidth_hz
-        float parsed_support_width_hz
-        float archive_resolution_khz
-        float parsed_resolution_khz
-        float archive_velocity_summary_mps
-        float derived_velocity_resolution_mps
-        string evidence_status
-        string evidence_version
-    }
-```
-
-This is the central conceptual identity distinction:
-
-- `SOURCE_SPW_ASSOCIATION` represents an observed logical association;
-- `RAW_ARCHIVE_ROW` preserves one returned TAP row;
-- `ROW_RECONSTRUCTION` records whether and how that row supports an
-  association;
-- `SPW_SUPPORT_MAP` maps the association to parsed support components; and
-- `OBSERVATION_MODE_EVIDENCE` stores versioned spectral cross-checks without
-  inferring correlator mode from channel count.
-
-This separation permits parse failures, historical 64-character identifier
-truncation, live response-schema drift, sparse Source-SPW associations,
-multiple raw rows supporting one association, and multiple SPWs mapping to
-one support component. It does not assert that multiple physical products or
-files have been proven.
-
-## Conceptual entity definitions and implementation notes
-
-Uppercase entity names below are conceptual scopes, not a list of Python classes.
-The object mapping in Status and scope identifies implemented types. Field-level
-production support is specified in the field inventory below.
-
-### `PROJECT`
-
-Represents the proposal/project scope exposed by the Archive.
-
-Required attributes:
-
-- internal `project_id`;
-- raw `proposal_id`;
-- raw `obs_publisher_did`;
-- publisher/proposal mapping status.
-
-In the closure snapshot, `proposal_id` and `obs_publisher_did` formed a
-one-to-one mapping, and every publisher DID equalled
-`ADS/JAO.ALMA#<proposal_id>`. The publisher DID is an alternate external
-Project identifier, not a product or row identifier.
-
-Top-level TAP `type` is optional Project-classification evidence. In the
-2026-08-31 census, all 5,614 distinct proposal/type pairs matched the terminal
-`proposal_id` suffix, with current values `S`, `L`, `T`, `V`, `SV`, `E`, `P`,
-and `CAL`. The model treats this as an open value set and preserves unknown
-future values. It is unrelated to `science_observation = 'T'` and must never
-be used as an FDM/TDM label. The current production projection does not select this field; reconstruction
-does not require it.
-
-### `GROUP_OUS`
-
-Optional grouping entity. Blank `group_ous_uid` values are normalized to
-missing in the reconstructed model while the raw blank remains in
-`RAW_ARCHIVE_ROW`.
-
-### `MEMBER_OUS`
-
-Outer independently processable dataset container identified by
-`member_ous_uid`. A Member may contain multiple sources, SPWs, ASDM
-associations, footprints, mosaic states, and support signatures. A Member is
-not one observation, execution, product, or Archive row.
-
-### `ASDM_EXECUTION`
-
-Preserves `asdm_uid` and execution-related provenance. One Member may
-associate with multiple ASDMs. The model does not claim that the public view
-exposes the complete official execution schema.
-
-### `SOURCE_CONTEXT` and `SOURCE_ALIAS`
-
-`SOURCE_CONTEXT` is an internal source identity within a Member. It preserves
-raw labels without claiming global physical-target identity. A provisional
-reconstruction key is:
-
-```text
-(member_ous_uid, normalized source candidate)
-```
-
-`SOURCE_ALIAS` preserves every raw spelling and normalization method. Source
-normalization alone is insufficient for physical identity; coordinates and
-execution context must also be considered.
-
-### `SOURCE_EXEC_CONTEXT`
-
-Conservative context defined by:
-
-```text
-(member_ous_uid, asdm_uid, source_context_id)
-```
-
-It owns metadata demonstrated to vary for the same normalized source across
-ASDMs, including:
-
-- footprint and representative coordinates;
-- time bounds;
-- antenna configuration;
-- raw frequency-support signature;
-- mosaic state;
-- separate `s_resolution` and `spatial_resolution` evidence; and
-- estimated aggregate continuum-sensitivity evidence.
-
-`spatial_resolution` is the primary Archive field for initial angular-
-resolution candidate retrieval. `s_resolution` remains an independent
-ObsCore cross-check. Neither value is modeled as a measured FITS restoring
-beam.
-
-### `SPATIAL_FOOTPRINT`
-
-Execution-scoped spatial evidence containing:
-
-- raw `s_region`;
-- `s_ra`, `s_dec`, and `s_fov`;
-- geometry family and coordinate frame;
-- raw mosaic state;
-- parser/validation status;
-- footprint hash when derived.
-
-Current top-level STC-S families are CIRCLE, POLYGON, and UNION, all observed
-with ICRS in structural samples. ObsCore exposes aggregate footprints; it does
-not demonstrate individual mosaic pointing identities.
-
-### `LOGICAL_SPW`
-
-Parsed SPW candidate scoped to a Member. SPW collections are variable length.
-The raw token, parsing confidence, live-width status, and derivation method
-are required. Historical evidence shows truncation at 64 characters, while
-the current response VOTable independently reports the field datatype and
-`arraysize`. These values must not be collapsed into one constant: a future
-response may report `128*`, `*`, omit the descriptor, or provide invalid
-metadata.
-
-### `SOURCE_SPW_ASSOCIATION`
-
-Explicit bridge between one Source-Execution context and one Logical SPW
-candidate. It replaces the earlier assumption that Archive rows always form a
-complete Source × SPW grid.
-
-It may contain comparison-relevant row evidence such as:
-
-- exact frequency;
-- Archive bandwidth;
-- spectral resolution;
-- estimated nominal 10 km/s line sensitivity;
-- polarization evidence;
-- reconstruction confidence.
-
-No missing association may be synthesized from Member-level SPW inventory.
-
-### `FREQUENCY_SUPPORT_SIGNATURE`
-
-Preserves one complete raw `frequency_support` string at Source-Execution
-scope, with:
-
-- top-level grammar family;
-- exact raw-string hash;
-- optional spectral-geometry and sensitivity hashes;
-- component count;
-- parse and validation status;
-- parser version.
-
-### `FREQUENCY_SUPPORT_COMPONENT`
-
-Polymorphic parsed component. Common fields include raw component text,
-component index, sensitivity values, polarization products, and validation
-status.
-
-Bracket-specific fields:
-
-- lower and upper frequency;
-- interval centre and width;
-- parsed resolution.
-
-Brace-specific fields:
-
-- displayed centre frequency;
-- representation tolerance derived from decimal precision;
-- raw token 2 and normalized kHz value;
-- token-2 semantic status.
-
-For the complete current brace population, token 2 was numerically equal to
-both spectral resolution and total bandwidth after unit conversion because
-`em_xel=1`. Its semantic status therefore remains
-`AMBIGUOUS_BANDWIDTH_VS_RESOLUTION_NUMERICAL_DEGENERACY`.
-
-### `SPW_SUPPORT_MAP`
-
-Versioned derived mapping between a Source-SPW association and a support
-component. Attributes include:
-
-- mapping method;
-- centre and bandwidth differences;
-- representation tolerance;
-- containment candidates;
-- ambiguity and validation status.
-
-The relationship is not one-to-one. One support component may receive multiple
-SPW mappings.
-
-### `OBSERVATION_MODE_EVIDENCE`
-
-Versioned comparison evidence attached to a Source-SPW association. It keeps
-Archive values and parser-derived values side by side, including bandwidth,
-spectral resolution, and velocity-resolution cross-checks. It is not an
-identity entity and currently contains no formal correlator-mode evidence.
-
-Public TAP `em_xel` remains on its raw row as an uninterpreted channel count.
-Production does not convert that value into Archive UI `CONTINUUM`/`LINE` or
-TDM/FDM. Formal mode remains unavailable until configuration-backed evidence
-can be interpreted for the relevant processor and reliably associated with
-the candidate SPW. No mode may be inferred solely from top-level `type`,
-channel count, bandwidth, or resolution, and production does not depend on
-the undocumented Archive Elasticsearch endpoint.
-
-### `ARCHIVE_QUERY_RUN`
-
-Records endpoint, ADQL, normalized parameters, start/end time, MAXREC,
-expected count, retrieved count, `QUERY_STATUS`, warnings, completeness, and
-query hash. A response with `OVERFLOW`, a count mismatch, or an execution error
-must never support a negative duplication conclusion.
-
-The current Archive client preserves the selected column-name schema and an ordered
-retrieval field-metadata snapshot containing name, datatype, arraysize, unit,
-UCD, utype, xtype, and description. It retains descriptors even when the
-retrieval contains zero rows and links them to the same query result and
-capture provenance. Descriptor names must match declared columns in order.
-
-### `RAW_ARCHIVE_ROW`
-
-Immutable evidence record with an internal surrogate `raw_row_id`. It
-preserves all original TAP values, masks, units, identifiers, result order,
-and a content hash. It is linked to the exact `ARCHIVE_QUERY_RUN` that
-retrieved it. Parsing never overwrites this entity.
-
-Service-unit and field-description evidence remains available through the
-current `ArchiveQueryResult` and therefore through `ArchivePipelineBatch.query_result`.
-Normalization and parsing do not overwrite descriptor text. Durable storage
-must later serialize the tuple without changing its order or optional `None`
-values. The Archive ingestion adapter validates the six comparison-facing units,
-converts compatible source units into canonical values, and preserves
-missing/incompatible states. The implemented [comparison-context builders](comparison_contexts.md) retain
-this typed evidence rather than recasting raw row values. Formal cross-source
-comparison remains unimplemented. Archive
-reconstruction already consumes the canonical typed `frequency` value, so a
-compatible TAP unit change cannot split comparison evidence from
-frequency-support mapping. Comparison quantities must be finite and strictly
-positive, and frequency coverage is unavailable unless its canonical bounds
-satisfy `0 < lower < upper`.
-
-### `ROW_PRODUCT_METADATA`
-
-Optional normalized projection of row-level ObsCore product metadata such as
-`dataproduct_type`, `calib_level`, axis sizes, access format, and estimated
-size. It exists to make optional fields queryable without naming the row a
-physical product. The current public view does not expose a reliable file or
-product identifier, and entirely NULL fields remain valid values in the raw
-row.
-
-Recommended `obs_id` confidence states:
-
-```text
-PARSED_COMPLETE
-PARSED_AT_HISTORICAL_TRUNCATION_BOUNDARY
-FAILED_AT_HISTORICAL_TRUNCATION_BOUNDARY
-FAILED_OTHER
-```
-
-The response FIELD descriptor is interpreted independently as
-`BOUNDED_VARIABLE`, `FIXED`, `UNBOUNDED`, `MISSING`, `INVALID`, or
-`INCOMPATIBLE_DATATYPE`. Width conformance is then stored as
-`NOT_EVALUABLE`, `WITHIN_UNBOUNDED`, `BELOW_REPORTED_MAXIMUM`,
-`AT_REPORTED_MAXIMUM`, or `ABOVE_REPORTED_MAXIMUM_SCHEMA_DRIFT`.
-
-For VOTable character fields, `N*` is treated as variable length with a
-reported maximum of `N`, while `*` is unbounded. Missing or unusable live
-metadata is never replaced with 64. The historical 64-character boundary is
-retained separately and remains unsafe even if a later response reports a
-larger maximum. Conversely, complete grammar above a reported maximum may
-proceed to cross-field reconstruction while retaining schema-drift evidence.
-Malformed values remain parse failures regardless of their length.
-
-### `ROW_RECONSTRUCTION`
-
-Reconstruction v3 additionally returns `frequency_support_evidence`, a
-canonical tuple keyed by raw row ID. Each entry stores the complete spectral
-parser result independently of whether the row can be linked. Mapping reuses
-that object; it never triggers a second parse. Component references carry raw
-row ID, parser version and component index. All ambiguous candidates remain
-available, while only assigned mappings expose a selected component. The
-existing parser v2 grammar and scientific semantics are unchanged.
-
-Versioned reconstruction attempt for a raw row. An attempt may remain
-unlinked from any Source-SPW association when parsing is unsafe; later parser
-versions can create additional attempts without mutating earlier evidence.
-Multiple raw rows may link to one association without claiming that physical
-product multiplicity has been resolved. Reconstruction diagnostics include:
-
-- raw `obs_id` length;
-- parsed Member, source, and SPW candidates;
-- parse status and issue codes;
-- raw VOTable datatype/`arraysize`, their interpretation and source;
-- live reported-maximum relation, historical truncation risk, and
-  schema-drift status;
-- reconstruction algorithm version and confidence.
-
-### `PHYSICAL_TARGET`
-
-Optional future application entity for alias resolution. It must never replace
-raw source labels, coordinates, footprints, or execution provenance. Moving
-and Solar-system targets require dedicated logic.
-
-## Key and cardinality rules
-
-### Enforced application rules
-
-- Every raw Archive row has an internal surrogate key.
-- Every derived entity records its source row(s), algorithm version, and
-  status.
-- Member, Source-Execution, and Source-SPW collections are variable length.
-- Source-SPW associations are explicit and may be sparse.
-- Support-component mappings may be many-to-one from SPWs to components.
-- Raw values survive parse and validation failures.
-
-### Forbidden assumptions
-
-- `obs_id` is Archive-wide unique.
-- `obs_publisher_did` identifies a row, product, Member, ASDM, source, SPW, or
-  file.
-- Archive rows equal `sources × member SPWs`.
-- Support-component order is an official SPW identifier.
-- One support component maps to at most one SPW.
-- `s_resolution` and `spatial_resolution` are aliases.
-- top-level TAP `type` is an observation-mode or FDM/TDM field.
-- FDM/TDM can be inferred authoritatively from bandwidth or spectral
-  resolution alone.
-- FDM/TDM can be inferred authoritatively from `em_xel` channel count alone.
-- one FDM/TDM value applies to every SPW in a Member OUS.
-- Archive sensitivity summaries are achieved QA2 image-product RMS values.
-- `spatial_resolution` is a measured FITS restoring beam.
-- `qa2_passed = 'T'` is an ingestion-layer requirement.
-- One ObsCore row equals one physical downloadable file.
-- A Polygon necessarily means mosaic, or a mosaic necessarily uses one
-  geometry family.
-
-## Field projection, representation and conceptual ownership
-
-Projection is defined by [archive_queries.py](../src/alma_duplicate/clients/archive_queries.py).
-CORE means selected and required; OPTIONAL means queried only when requested
-and confirmed by schema. NOT SELECTED means absent from the default production
-projection, even if documented by historical exploration. Unexpected returned
-scalar columns can remain in raw evidence without receiving typed semantics.
-
-Typed below means a dedicated normalized/derived representation exists, not that
-the value is present, valid, associated unambiguously or ready for comparison.
-
-| Field/value | Current projection | Current representation | Scope and limits |
-| --- | --- | --- | --- |
-| `proposal_id`, `obs_publisher_did` | CORE | Raw + normalized identifier/mapping evidence | Project grouping; no universal physical-product identity |
-| `type` | NOT SELECTED | No dedicated production projection | Historical project classification; not observing mode |
-| `group_ous_uid`, `member_ous_uid`, `asdm_uid`, `obs_id` | CORE | Raw + normalized/parsed identifiers | Observed reconstruction keys; grouping does not authorize mixing evidence |
-| `target_name`, source parsed from `obs_id` | CORE / derived | Raw label + reconstruction evidence | Source context, not globally resolved physical target |
-| `s_ra`, `s_dec`, `s_region` | CORE | Raw in ingestion/context payload; separately adapted by [spatial](search_plan_spatial.md#spatial-evidence) | Unit-checked center normalization and limited `CIRCLE ICRS` parsing implemented; no general STC-S family parser or formal beam-coverage method |
-| `is_mosaic` | CORE | Raw + normalized Boolean | Source declaration; not a reconstructed pointing list |
-| `s_fov` | OPTIONAL | Raw only | Auxiliary coverage evidence; not a verified beam or footprint |
-| `antenna_arrays` | CORE | Raw only | No automatic complete array/geometry interpretation |
-| `t_min`, `t_max` | OPTIONAL | Raw only | Auxiliary time evidence; retained within originating row |
-| `frequency_support` | CORE | Raw + full versioned parse result | Includes component intervals, diagnostics and independent RMS entries |
-| `frequency`, `bandwidth` | CORE | Raw + typed canonical evidence and derived row interval | Row/SPW association subject to mapping; not independently verified usable coverage |
-| `spectral_resolution` | CORE | Raw + typed canonical evidence | Does not substitute for channel spacing or effective noise bandwidth |
-| `sensitivity_10kms` | CORE | Raw + typed estimated sensitivity | Representative-window association must be established before use for a matched SPW; row co-location is insufficient |
-| `cont_sensitivity_bandwidth` | CORE | Raw + typed estimated continuum sensitivity | Preserve aggregate basis; not achieved image RMS |
-| Parsed support component | Derived | Parser object + row/parser-scoped reference | Component evidence is separate from row scalars; current whole-result mapping gate still applies |
-| `spatial_resolution` | CORE | Raw + typed canonical evidence | Initial angular-resolution prefilter; not a measured restoring beam |
-| `s_resolution` | OPTIONAL | Raw only | Independent cross-check; never alias to spatial_resolution |
-| `band_list`, `pol_states` | OPTIONAL | Raw only | Auxiliary source metadata, not validated comparison context |
-| `qa2_passed`, `science_observation` | CORE | Raw + normalized Boolean | Query policy is explicit; QA2 is not an implicit filter |
-| `obs_release_date`, `lastModified` | CORE | Raw + normalized timestamps | Sentinel/missing handling remains source-specific |
-| `em_xel` | CORE | Raw only | No production classifier; SPW granularity must be established before future classification |
-| `em_min`, `em_max`, `em_resolution`, `velocity_resolution` | NOT SELECTED | Historical cross-check evidence | Notebook checks are not production validation of these fields |
-| Other axis/access metadata | NOT SELECTED | No dedicated projection | Conceptual row/product metadata; do not claim routine retrieval |
-| Duplication result | Not a source field | Planned | Comparison/policy layer, not reconstruction output |
-
-For exact conversion and preparation behavior see
-[archive_field_contract.py](../src/alma_duplicate/clients/archive_field_contract.py)
-and [archive_adapter.py](../src/alma_duplicate/clients/archive_adapter.py).
-Unlinked or ambiguous evidence is retained; conceptual ownership never supplies
-a missing representative-window association.
-
-## Numerical and normalization rules
-
-- Compare frequencies only after explicit unit conversion.
-- Use an explicit tolerance for wavelength/frequency boundary conversions;
-  direct binary floating-point equality is not a quality test.
-- Preserve Archive bandwidth and parsed support width separately.
-- Preserve `s_resolution` and `spatial_resolution` separately.
-- Preserve line, native-resolution, and aggregate continuum sensitivities as
-  distinct estimated-evidence concepts; do not label them achieved QA2 RMS.
-- Treat `spatial_resolution` as approximate Archive angular-resolution
-  evidence and `s_resolution` as a separate cross-check; neither is a measured
-  FITS restoring beam.
-- Normalize blank optional identifiers to missing while retaining raw values.
-- Treat `3000-01-01` release dates as an observed sentinel state, not a real
-  release date.
-- Make reconstruction deterministic under input-row shuffling.
-
-## Evidence levels
-
-The following labels organize historical research evidence in this document;
-they are not a shared runtime enum or a comparison-readiness scale:
-
-1. `SERVICE_DEFINED`: field names, types, units, and descriptions from the
-   live TAP schema.
-2. `ARCHIVE_WIDE_CENSUS`: complete current-snapshot row counts or mappings.
-3. `COMPLETE_CURRENT_POPULATION`: complete validation of a bounded current
-   population, such as all 55 brace rows.
-4. `SAMPLE_SUPPORTED` or `COUNTEREXAMPLE`: purposive evidence. A
-   counterexample is sufficient to reject a universal constraint but not to
-   estimate prevalence.
-
-## Archive production implementation contract
-
-1. Ingest raw rows before reconstruction.
-2. Count and retrieve with completeness reconciliation.
-3. Reject negative conclusions from incomplete queries.
-4. Use surrogate identifiers and preserve every Archive identifier.
-5. Dispatch `frequency_support` by grammar family and retain unknown fallback.
-6. Store only observed Source-SPW associations.
-7. Attach footprint and execution metadata to Source-Execution context.
-8. Version parsers, unit conversions, mappings, normalization, and policy.
-9. Surface parse, width conformance, truncation, ambiguity, and mapping
-   statuses to callers.
-10. Keep candidate retrieval, reconstruction, and duplication assessment as
-    separate layers.
-11. Keep Project classification, science-row role, and observation mode as
-    separate concepts.
-12. Preserve QA2 state as evidence; apply any QA2 inclusion rule only in an
-    explicit, versioned policy layer.
-13. Preserve ordered TAP field metadata with each retrieval result and use
-    explicit, tested adapters for any unit conversion.
-
-Required automated tests include malformed identifiers, 63/64/65-character
-boundaries, bracket and brace parsing, sparse associations, many-to-one
-support mapping, masked values, sentinel dates, numerical tolerance, TAP
-overflow, valid empty results, schema drift, and shuffle invariance.
-
-## Queue reconstruction extension v1
-
-The Queue source has no stable Science Goal, Scheduling Block, or spectral
-setup identifier in the public CSV. Its reconstruction keys are therefore
-versioned internal signatures scoped by:
-
-```text
-(Project Code, Target Name, Band)
-```
-
-That scope is an analytical grouping key, not a claim of official ALMA entity
-identity.
-
-| Queue object | Ownership and safety rule |
-|---|---|
-| `QueueSnapshot` | Owns source URL and role, checksum, nullable retrieval time, parse time, source-as-of date/status, uninterpreted legacy captured_at, description, dictionary, operational header, secondary header, schema/parser/provenance versions |
-| `RawQueueRow` | Owns the exact 79 raw strings, physical line range, source ordinal, and content fingerprint; identical content on different lines remains distinct |
-| `QueueRowInput` | Typed projection of one valid raw row; never replaces the raw row |
-| `QueueSpatialComponent` | Factored coordinates, offsets, mosaic classification, rectangle geometry, coordinate system, and `1e-6 arcsec` classification tolerance |
-| `QueueSpectralSetup` | Tagged union of complete numbered SPWs or one SPS range, including velocity context, requested sensitivity basis, raw/canonical units, nominal bandwidth, portal-script-derived usable-bandwidth evidence, derivation kind, pending processor-scope status, and frequency-derivation provenance |
-| `QueueRequestContext` | Requested angular resolution, LAS, arrays, and polarization |
-| `QueueRowAssociation` | The one spatial-spectral-request relationship actually observed in one source row |
-| `QueueFactorizationSummary` | Reports observed versus potential spatial-spectral pairs without creating the missing pairs |
-
-The 48 numbered SPW columns are physically ordered as 16 frequencies, then
-16 bandwidths, then 16 resolutions. They are logically reconstructed only as
-same-number triples:
-
-```text
-SPW N = Freq SPW N
-      + Bandwidth SPW N
-      + Spec.Res. SPW N
-```
-
-A partial triple is an ingestion error. Empty higher slots remain empty; a
-non-contiguous population is preserved with a warning rather than silently
-renumbered.
-
-Queue quantities retain `raw_text`, `raw_value`, embedded-dictionary unit,
-secondary-header unit, canonical value/unit, and a unit-interpretation status.
-This is essential for `SPS Bandwidth`, whose current dictionary declares MHz
-while the secondary header says GHz. The pinned data support a versioned MHz
-interpretation, but both source declarations remain reachable.
-
-Regular SPW frequencies are converted to Queue-side sky intervals using the
-declared sky/rest flag and RADIO, OPTICAL, or RELATIVISTIC velocity convention.
-The conversion version and raw velocity frame remain attached. This validates
-Queue-internal coverage only; Archive/Queue frame alignment remains a later
-comparison concern.
-
-Production Queue reconstruction enforces these cardinality rules:
-
-1. each complete input row yields exactly one observed association;
-2. exact exported duplicates yield distinct associations with distinct source
-   row identities;
-3. spatial, spectral, and request entities may be factored only after the row
-   association has been recorded;
-4. absent spatial-spectral combinations are never synthesized; and
-5. an incomplete parse cannot enter reconstruction.
-
-The reduced CI fixture covers regular SPWs, SPS, custom and rectangle mosaics,
-exact duplicates, and both known sparse groups. A separate opt-in acceptance
-test validates the pinned 3,200-row snapshot, including 16,216 SPWs, 419
-project-target-band groups, two sparse groups, and 65 excess exact copies.
-
-## Explicitly deferred work
-
-The following items remain outside the current reconstruction contract:
-
-- physical product/file granularity hidden by identifier-width limits;
-- future and unobserved `frequency_support` grammars;
-- brace token-2 semantic discrimination;
-- general local STC-S parsing beyond the implemented limited `CIRCLE ICRS` grammar;
-- physical-target alias resolution;
-- individual mosaic pointing reconstruction;
-- moving and Solar-system target handling;
-- supported configuration-backed per-SPW correlator-mode evidence for the
-  Appendix A FDM-specific duplication criterion;
-- durable serialization of TAP field-metadata snapshots beyond the runtime
-  query result;
-- achieved image-product sensitivity and measured FITS restoring-beam
-  evidence;
-- primary-beam and spectral-smoothing policy;
-- frequency, sensitivity, and spatial duplication thresholds;
-- known-duplicate end-to-end validation.
-
-These belong to parser tests, later notebooks, or the policy layer. Archive
-structure exploration should remain closed unless a production failure exposes
-a new grammar or cardinality counterexample.
-
-## Semantic-source references
-
-- [Cycle 13 ALMA Science Archive Manual](https://almascience.eso.org/documents-and-tools/cycle13/science-archive-manual)
-- [ALMA query by spatial resolution](https://almascience.eso.org/alma-data/archive/archive-notebooks/nb5_ALMA_Query_by_spatial_resolution.html)
-- [ALMA query by sensitivity](https://almascience.eso.org/alma-data/archive/archive-notebooks/nb7_ALMA_Query_by_sensitivity.html)
-- [ALMA data resources](https://almascience.eso.org/alma-data)
-- [ALMA processing resources](https://almascience.eso.org/processing)
-
-These sources establish scientific semantics for the documented Archive
-interface. They do not create fields that the current `ivoa.obscore`
-representation does not expose, and they do not replace captured TAP values
-as ingestion evidence.
+Each `RowFrequencySupportEvidence` stores the complete parse result independently
+of identifier linkage. Reconstruction reuses that result for mapping. A
+`SupportComponentRef` consists of `(raw_row_id, parser_version, component_index)`;
+it is not a globally meaningful SPW identifier.
+
+The current `_map_support` in [reconstruction.py](../src/alma_duplicate/reconstruction.py)
+requires the whole parse result to be valid. A failed component can therefore
+block row mapping without proving that every independent row quantity is invalid.
+Ambiguous candidates remain in `candidate_refs`; only an assigned, unique
+reference selects a component. `resolve()` rejects another row or parser version.
+Several SPWs may map to one support component; component order is not an official
+SPW number. Independent frequency/RMS evaluability is a future comparison-method
+requirement, not a change to this implemented validity gate.
+
+## Queue row associations
+
+A complete `QueueCsvParseResult` supplies `QueueRowInput` records to reconstruction.
+`QueuePipelineBatch` retains that parse result and its `QueueReconstructionBatch`.
+An incomplete parse cannot enter normal reconstruction; raw diagnostics remain
+in the source result. Parser/layout/unit requirements belong to the
+[Queue contract](queue_csv_contract.md).
+
+`QueueRawRowId` preserves snapshot and source-line identity. Equal content on
+different lines remains distinct, while duplicate raw-row IDs are rejected at
+the reconstruction entry point. The group key `(Project Code, Target Name, Band)`
+is an internal analytical scope, not an official Science Goal, Scheduling Block
+or candidate identity.
+
+| Object | Owned relationship/evidence |
+| --- | --- |
+| `QueueSnapshot` | Source provenance, dictionary/header metadata and versions; not persisted source bytes |
+| `RawQueueRow` | Raw operational strings, physical line range, ordinal and content fingerprint |
+| `QueueRowInput` | Typed spatial, spectral and request evidence tied to its raw row |
+| `QueueSpatialComponent` | Group-scoped spatial signature, evidence and contributing raw-row IDs |
+| `QueueSpectralSetup` | Group-scoped spectral signature, evidence and contributing raw-row IDs |
+| `QueueRequestContext` | Group-scoped requested resolution/LAS/array/polarization evidence and source rows |
+| `QueueRowAssociation` | Raw-row ID, group key and exactly one ID for each of the three component types |
+| `QueueFactorizationSummary` | Observed/potential pair counts and repeated associations; creates no missing pair |
+
+Every accepted input row yields exactly one association. Component factorization
+must preserve this membership, including exported duplicate rows. Scientific
+comparison starts with an association, not independent component inventories.
+The [sparse-group evidence](evidence/exploration_snapshots.md#queue-sparse-associations)
+explains why a Cartesian product is unsafe.
+
+`QueueSpectralSetup.evidence` is `RegularSpwEvidence | SpectralScanEvidence`.
+Regular windows retain source slot numbers and independent nominal/usable
+coverage evidence. SPS is not expanded into invented windows. The
+[regular/SPS parsing rules](queue_csv_contract.md#regular-spw-representation) and
+[frequency derivation contract](queue_csv_contract.md#frequency-and-velocity-normalization)
+own the formulas, tolerances and units; this object index does not redefine them.
+
+### Component signatures
+
+Component signatures are internal, deterministic, versioned identifiers. They
+are not ALMA identifiers.
+
+A spatial signature includes its group scope and exact raw spatial values. A
+spectral signature includes its group scope, velocity context, sky/rest flag,
+the complete regular-SPW collection or SPS record, and the requested
+sensitivity triple. A request-context signature includes requested angular
+resolution, requested LAS, array flags, and polarization.
+
+Raw strings are used for identity signatures. Normalized floating-point values
+are used for scientific calculations but must not become identity merely after
+rounding. Each signature records its algorithm version.
+
+Input row order may not change the set of reconstructed component signatures
+or the multiset of logical associations. Raw-row IDs still reflect physical
+line provenance and therefore remain row-specific.
+
+### Persistence boundary
+
+`StoredQueueSource` and `StoredQueueRun` are separate from the in-memory
+`QueueSnapshot` and full parse result. Source records preserve bytes/acquisition
+facts; run records preserve historical summaries. Reading a run does not restore
+historical Python evidence objects. Explicit reparse returns current evidence
+and creates a new run. The [storage contract](queue_snapshot_store.md) owns
+publication, integrity, versions and runnable examples.
+
+## Comparison references and evidence
+
+`ComparisonPreparation` retains request validation and separate Archive/Queue
+source results. Each `ComparisonSourceResult` retains the original source
+record plus its contexts/status. Payloads reference source-specific objects
+rather than copying them into a second scalar schema:
+
+- `ArchiveContextEvidence`: prepared row, reconstruction result, support mapping,
+  full support evidence and optional selected component.
+- `QueueContextEvidence`: typed source row and its real association.
+
+Archive rows with the same association remain alternative contexts. Per-window
+RMS is not borrowed from another window or inferred from a colocated row scalar;
+Queue reference RMS is not copied into every SPW. The
+[comparison contract](comparison_contexts.md) owns exact builder behavior,
+evidence dimensions, provenance and independent source-failure handling.
+
+`EvidenceReference.source_record_id` is an Archive query-run ID or Queue checksum.
+It is not a Queue acquisition identity. Acquisition and parse-run IDs currently
+remain `None`; callers keep storage records separately until explicit binding
+exists. These are in-memory views, not a historical deserialization format.
+
+## Search and spatial use of contexts
+
+`SearchPlan` holds the validation and source-specific operations, including
+skipped predicates and a retained result limit. `QueryPlanBinding` checks an
+Archive query record against the plan; it does not replace source completeness.
+`SpatialEvidence` references the original context and source result, with
+separate center and footprint states. `PositionInterpretation` binds explicit
+frame/target interpretation to one context and a decision reference.
+
+The [search/spatial contract](search_plan_spatial.md) owns limited `CIRCLE ICRS`
+parsing, supported center units, Queue interpretation, unsupported geometry,
+individual angular/spatial predicates and numerical boundary handling. Planning
+and individual checks do not orchestrate a complete search or implement a
+primary-beam policy. Status meanings and the next service delivery are centralized
+in the [documentation guide](README.md#current-capabilities-and-status-meanings).
+
+## Invariants across layers
+
+1. Preserve raw source values, unit declarations, missing states, diagnostics and
+   provenance; normalization never overwrites evidence.
+2. Keep query/file completeness separate from request validity, query binding,
+   selection and formal evaluability. Technical failure is not non-duplication.
+3. Use observed row/component associations only. Do not synthesize missing pairs,
+   combine unrelated source/execution/SPW evidence or choose favorable alternatives.
+4. Keep row identities distinct from analytical grouping, exported content
+   fingerprints, source acquisitions and physical downloadable products.
+5. Keep independent frequency roles, nominal/usable coverage, spacing/resolution/
+   noise bandwidth and RMS scope separate. Unit conversion alone does not prove
+   cross-source reference or sensitivity compatibility.
+6. Preserve `s_resolution` separately from `spatial_resolution`; neither is a
+   measured FITS restoring beam. Archive sensitivity summaries are estimated
+   metadata, not achieved QA2 image RMS.
+7. Keep project classification, science-row role, QA2 state and correlator mode
+   separate. No mode follows from `type`, `em_xel`, bandwidth or resolution alone;
+   no single mode is assigned to every Member SPW. QA2 is not an implicit gate.
+8. Preserve raw geometry and unsupported states. A polygon does not prove mosaic
+   membership, a mosaic need not have one geometry family, and a valid region
+   does not establish individual pointing identities or an approved beam method.
+9. Keep derivation/signature versions with evidence. Determinism concerns logical
+   associations; raw row identity retains query/source-line provenance.
+10. Never turn missing, ambiguous, unsupported or unevaluated evidence into silent
+    candidate exclusion or a negative formal conclusion.
+
+Numeric conversions, sentinel handling and projection details are owned by the
+[Archive client/dictionary](archive_data_dictionary.md#cross-field-constraints)
+and [Queue contract](queue_csv_contract.md). Formal thresholds remain in the
+[rule design](duplication_rule_inputs.md), outside ingestion/reconstruction.
+
+## Design, evidence and deferred work
+
+- [Conceptual ERDs and entity descriptions](design/conceptual_data_model.md): original design scopes and rationale.
+- [Historical exploration evidence](evidence/exploration_snapshots.md): capture dates, sample populations, counterexamples and limits.
+- [Rule-input decision register](duplication_rule_inputs.md#7-scientific-decision-register): unresolved formal scientific methods.
+- [Next delivery](README.md#next-delivery): candidate service integration using these existing objects.
+
+General STC-S/pointing reconstruction, physical-target alias resolution,
+configuration-backed mode evidence, brace token-2 discrimination, physical-file
+identity and durable Archive evidence serialization remain outside this runtime
+model. New grammars or cardinality counterexamples can motivate targeted source
+work; historical structure exploration is not a prerequisite to redoing this model.
+
+## Previous section links
+
+Existing deep links remain available below. Each points to the single current
+owner or the moved design/evidence section; the old body is not duplicated.
+
+| Previous section | Current location |
+| --- | --- |
+| <a id="search-and-spatial-objects"></a>Search and spatial objects | [Read section](#search-and-spatial-use-of-contexts) |
+| <a id="archive-implementation-scope"></a>Archive implementation scope | [Read section](#archive-identities-and-associations) |
+| <a id="historical-exploration-evidence-summary"></a>Historical exploration evidence summary | [Read section](evidence/exploration_snapshots.md#archive-exploration-summary) |
+| <a id="modeling-principles"></a>Modeling principles | [Read section](#invariants-across-layers) |
+| <a id="entity-relationship-model"></a>Entity-relationship model | [Read section](design/conceptual_data_model.md#entity-relationship-model) |
+| <a id="complete-relationship-overview"></a>Complete relationship overview | [Read section](design/conceptual_data_model.md#complete-relationship-overview) |
+| <a id="project-dataset-and-raw-query-provenance"></a>Project, dataset, and raw-query provenance | [Read section](design/conceptual_data_model.md#project-dataset-and-raw-query-provenance) |
+| <a id="source-execution-alias-and-footprint-context"></a>Source, execution, alias, and footprint context | [Read section](design/conceptual_data_model.md#source-execution-alias-and-footprint-context) |
+| <a id="spectral-structure-support-parsing-and-row-reconstruction"></a>Spectral structure, support parsing, and row reconstruction | [Read section](design/conceptual_data_model.md#spectral-structure-support-parsing-and-row-reconstruction) |
+| <a id="conceptual-entity-definitions-and-implementation-notes"></a>Conceptual entity definitions and implementation notes | [Read section](design/conceptual_data_model.md#conceptual-entity-definitions-and-implementation-notes) |
+| <a id="project"></a>`PROJECT` | [Read section](design/conceptual_data_model.md#project) |
+| <a id="group_ous"></a>`GROUP_OUS` | [Read section](design/conceptual_data_model.md#group_ous) |
+| <a id="member_ous"></a>`MEMBER_OUS` | [Read section](design/conceptual_data_model.md#member_ous) |
+| <a id="asdm_execution"></a>`ASDM_EXECUTION` | [Read section](design/conceptual_data_model.md#asdm_execution) |
+| <a id="source_context-and-source_alias"></a>`SOURCE_CONTEXT` and `SOURCE_ALIAS` | [Read section](design/conceptual_data_model.md#source_context-and-source_alias) |
+| <a id="source_exec_context"></a>`SOURCE_EXEC_CONTEXT` | [Read section](design/conceptual_data_model.md#source_exec_context) |
+| <a id="spatial_footprint"></a>`SPATIAL_FOOTPRINT` | [Read section](design/conceptual_data_model.md#spatial_footprint) |
+| <a id="logical_spw"></a>`LOGICAL_SPW` | [Read section](design/conceptual_data_model.md#logical_spw) |
+| <a id="source_spw_association"></a>`SOURCE_SPW_ASSOCIATION` | [Read section](design/conceptual_data_model.md#source_spw_association) |
+| <a id="frequency_support_signature"></a>`FREQUENCY_SUPPORT_SIGNATURE` | [Read section](design/conceptual_data_model.md#frequency_support_signature) |
+| <a id="frequency_support_component"></a>`FREQUENCY_SUPPORT_COMPONENT` | [Read section](design/conceptual_data_model.md#frequency_support_component) |
+| <a id="spw_support_map"></a>`SPW_SUPPORT_MAP` | [Read section](design/conceptual_data_model.md#spw_support_map) |
+| <a id="observation_mode_evidence"></a>`OBSERVATION_MODE_EVIDENCE` | [Read section](design/conceptual_data_model.md#observation_mode_evidence) |
+| <a id="archive_query_run"></a>`ARCHIVE_QUERY_RUN` | [Read section](design/conceptual_data_model.md#archive_query_run) |
+| <a id="raw_archive_row"></a>`RAW_ARCHIVE_ROW` | [Read section](design/conceptual_data_model.md#raw_archive_row) |
+| <a id="row_product_metadata"></a>`ROW_PRODUCT_METADATA` | [Read section](design/conceptual_data_model.md#row_product_metadata) |
+| <a id="row_reconstruction"></a>`ROW_RECONSTRUCTION` | [Read section](design/conceptual_data_model.md#row_reconstruction) |
+| <a id="physical_target"></a>`PHYSICAL_TARGET` | [Read section](design/conceptual_data_model.md#physical_target) |
+| <a id="key-and-cardinality-rules"></a>Key and cardinality rules | [Read section](#invariants-across-layers) |
+| <a id="enforced-application-rules"></a>Enforced application rules | [Read section](#invariants-across-layers) |
+| <a id="forbidden-assumptions"></a>Forbidden assumptions | [Read section](#invariants-across-layers) |
+| <a id="field-projection-representation-and-conceptual-ownership"></a>Field projection, representation and conceptual ownership | [Read section](archive_data_dictionary.md#field-projection-representation-and-conceptual-ownership) |
+| <a id="numerical-and-normalization-rules"></a>Numerical and normalization rules | [Read section](archive_data_dictionary.md#cross-field-constraints) |
+| <a id="evidence-levels"></a>Evidence levels | [Read section](evidence/exploration_snapshots.md#evidence-labels) |
+| <a id="archive-production-implementation-contract"></a>Archive production implementation contract | [Read section](#archive-identities-and-associations) |
+| <a id="queue-reconstruction-extension-v1"></a>Queue reconstruction extension v1 | [Read section](#queue-row-associations) |
+| <a id="explicitly-deferred-work"></a>Explicitly deferred work | [Read section](#design-evidence-and-deferred-work) |
+| <a id="semantic-source-references"></a>Semantic-source references | [Read section](archive_data_dictionary.md#semantic-source-references) |
