@@ -7,7 +7,10 @@ the request API or comparison model are unimplemented are historical.
 
 ## Reading paths
 
-For candidate-search service development:
+For candidate-search use and development:
+
+Start with the [candidate-search service](candidate_search.md) for execution,
+retention, filtering and completeness; the following contracts define its inputs.
 
 1. [Request API](proposed_observation_api.md): accepted wire fields, units and validation.
 2. [Search plans and spatial evidence](search_plan_spatial.md): offline planning, query binding and limited individual selectors.
@@ -39,6 +42,7 @@ its justification or sample limits are needed.
 | Which request fields/units are accepted and how are they validated? | [Request API](proposed_observation_api.md) |
 | Which current objects/keys/associations must be preserved? | [Data model](data_model.md) |
 | How are source contexts built and their evidence/provenance exposed? | [Comparison contexts](comparison_contexts.md) |
+| How are requests executed and candidate/unevaluated rows retained? | [Candidate search](candidate_search.md) |
 | How are plans bound and supported individual predicates evaluated? | [Search/spatial](search_plan_spatial.md) |
 | How does TAP querying, projection and completeness behave? | [Archive client](archive_client_contract.md) |
 | What do Archive fields/statuses mean and which are selected? | [Archive dictionary](archive_data_dictionary.md) |
@@ -53,8 +57,8 @@ its justification or sample limits are needed.
 Implemented: independent Archive/Queue ingestion and reconstruction, local Queue
 source/parse-summary storage, request validation, offline comparison contexts,
 offline search planning, Archive query binding, limited spatial adaptation and
-individual spatial/angular predicate checks. End-to-end candidate-search
-orchestration, formal duplication assessment and the browser form are not implemented.
+individual spatial/angular predicate checks, and candidate-search orchestration.
+Formal duplication assessment and the browser form are not implemented.
 
 | Axis / value | Current meaning | Does not establish |
 | --- | --- | --- |
@@ -65,7 +69,8 @@ orchestration, formal duplication assessment and the browser form are not implem
 | Spatial evidence `AVAILABLE` | The relevant supported evidence is available in `SpatialStatus` | A selection result, general STC-S support or approved beam coverage |
 | Spatial selection `INSIDE` | One supported planned selection condition holds | Formal position criterion or duplication |
 | Individual selection `NOT_EVALUATED` | Evidence, interpretation or method does not permit a definite check | OUTSIDE/NO_MATCH; it cannot justify silent exclusion |
-| Plan `NOT_EXECUTED` | No complete search has been orchestrated | Absence of individual predicate results |
+| Plan `NOT_EXECUTED` | Declarative plan marker; execution is recorded separately by the service | Whether a service run has finished |
+| Service `FINISHED` | Orchestration ended; inspect each source and filter outcome | All sources succeeded, all filters ran or a duplication verdict |
 | Assessment `NOT_EVALUATED` | Formal assessment has not been performed | A negative duplication verdict |
 
 The individual `OUTSIDE` or angular `NO_MATCH` result only concerns its explicit
@@ -75,14 +80,15 @@ behavior belong to the [search/spatial contract](search_plan_spatial.md).
 
 ## Next delivery
 
-Connect the existing `SearchPlan`, Archive client execution, comparison contexts
-and Queue local selection in a candidate-search service. Reuse the current model.
-The service must:
+The [candidate-search service](candidate_search.md) now connects the existing
+plan, Archive execution/binding, comparison contexts and Queue local selection.
+It preserves per-source failures, row/filter records, skipped conditions and
+display-limit omissions. Current geometry and scientific-method limits remain
+explicit; persistent Queue acquisition/run binding remains the caller's task.
 
-- report Archive and Queue execution/completeness independently and verify Archive query binding;
-- retain unevaluated rows, or explicitly report any omitted scope rather than silently treating them as non-matches;
-- record applied, skipped and unevaluated predicates, result limits, truncation and source scope;
-- retain source provenance, including separately held Queue store records until explicit store-record binding exists.
+Next, independently reproduce CASE1/CASE2 retrieval and pin source evidence,
+effective filters and display grouping/count semantics. Extend supported
+spatial and scientific evidence only with focused acceptance tests.
 
 Supervisor CASE1/CASE2 retrieval verification requires confirmed grouping and
 pinned evidence; those cases are not confirmed duplicate labels. Formal rule
