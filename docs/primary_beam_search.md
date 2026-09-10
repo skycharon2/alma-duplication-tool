@@ -101,3 +101,60 @@ It supplies no fabricated interpretations; unevaluated spatial results are
 expected. `--live-archive` is a separate opt-in network operation. Synthetic
 integration tests prove formula inclusion/exclusion and query binding without
 claiming live CASE verification.
+
+## Real-data applicability measurement
+
+Two questions about this strategy's real-data applicability were previously
+unmeasured (see `claude/next_rule_engineering_tasks_2026-09-10.md`): how
+often the exact Archive `12-m`/`7-m` label resolves at all, and what that
+looks like for the two recorded internship-task cases specifically.
+
+[tests/live/test_case_beam_strategy_applicability.py](../tests/live/test_case_beam_strategy_applicability.py)
+runs the formula strategy (no fabricated interpretations) against the real
+Archive rows near CASE1/CASE2 and reports, per row, which reasons
+accompanied the expected `FIXED_TARGET_AND_ICRS_INTERPRETATION_REQUIRED`
+result -- in particular whether the diameter itself resolved. It is a small,
+concrete sample, not a population estimate.
+
+**Result of the 2026-09-10 run**: 0 of 336 CASE1 rows and 0 of 851 CASE2
+rows (both within 10 arcsec of the reported position) resolved a diameter.
+Every observed `antenna_arrays` value in both neighborhoods was either a
+detailed pad:antenna listing (e.g. `A001:DA59 A002:DA49 ...`) or an ACA/TP
+array listing (`J5xx:CMxx`, `T7xx:PMxx`) -- none was the exact string
+`12-m` or `7-m`. `CENTER_UNAVAILABLE` also appeared on every row, which is
+expected: without a supplied `PositionInterpretation`, the local adapter
+correctly declines to treat `s_ra`/`s_dec` as a trusted fixed-ICRS center
+(see "Audit and safety" above). The diameter-resolution result is
+independent of that and is the one to read for this question. This is
+evidence from two local neighborhoods, not a population estimate, but it is
+a concrete zero, not merely "low" -- it is a strong signal to prioritize a
+real `classify_array_type()` parser (pad-prefix based, per
+`claude/next_rule_engineering_tasks_2026-09-10.md`) before this strategy is
+relied on beyond hand-checked cases. Full output (retrieved-row counts, the
+complete `antenna_arrays` label distribution, and the reason-count tables)
+is recorded in `docs/duplication_rule_inputs.md` section 8 and in the raw
+`pytest -s` transcript kept with the project's delivery notes.
+
+[scripts/beam_array_label_census.py](../scripts/beam_array_label_census.py)
+separately measures the Archive-wide share of `science_observation = 'T'`
+rows whose `antenna_arrays` value is exactly `12-m`/`7-m` versus a detailed
+or mixed label, split by `is_mosaic`. It writes a dated report under
+`docs/evidence/`.
+
+**Result of the 2026-09-10 census run**: across the full Archive population
+of 443,998 `science_observation = 'T'` rows (13,058 distinct
+`(antenna_arrays, is_mosaic)` groups; the query did not hit its row cap, so
+this is a complete grouped count, not a truncated sample), **0%** of rows --
+mosaic and non-mosaic alike -- had an `antenna_arrays` value exactly equal
+to `12-m` or `7-m`; every row classified as `OTHER_DETAILED_OR_MIXED`
+(a detailed pad:antenna listing or an ACA/TP-only listing). This confirms
+the CASE1/CASE2 local-neighborhood finding above (0 of 336, 0 of 851)
+generalizes Archive-wide: it is not an artifact of those two coordinates.
+The full report, including sample raw label values per classification
+bucket, is at `docs/evidence/primary_beam_array_label_census_2026-09-10.md`.
+Neither script approves or changes this strategy; both produce measurement
+evidence for a human decision, consistent with the `application-derived`
+label already used for `antenna_arrays` classification. Given a confirmed
+0% Archive-wide match, a real `classify_array_type()` parser is now a
+prerequisite for the Archive side of this strategy to resolve a diameter on
+real rows at all, not an optional refinement.
