@@ -16,12 +16,13 @@ def main():
     parser.add_argument("--live-archive", action="store_true")
     parser.add_argument("--queue-csv", type=Path,
                         default=root / "tests/fixtures/queue/queue_pipeline_v1.csv")
+    parser.add_argument("--beam-decision-ref", help="Opt into coordinate/formula search with a convention reference")
     args = parser.parse_args()
     payload = json.loads((root / "examples/proposed_observation.json").read_text())
     validation = validate_proposed_observation(payload["request"], payload["search_options"])
     client = ArchiveClient("https://almascience.eso.org/tap") if args.live_archive else None
     result = search_candidates(
-        validation, archive_client=client,
+        validation, archive_client=client, beam_decision_ref=args.beam_decision_ref,
         queue_loader=lambda: QueueCsvClient().load(args.queue_csv),
     )
     sources = {}
@@ -39,6 +40,9 @@ def main():
     snapshot = getattr(result.queue.source_record, "snapshot", None)
     print(json.dumps({
         "execution": result.execution,
+        "spatial_operations": [s.spatial_operation for s in result.plan.sources],
+        "retrieval_radius_deg": result.plan.retrieval_radius_deg,
+        "beam_decision_ref": result.plan.beam_decision_ref,
         "assessment": result.assessment,
         "sources": sources,
         "queue_source_as_of": str(snapshot.source_as_of) if snapshot else None,

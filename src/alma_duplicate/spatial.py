@@ -192,6 +192,9 @@ def adapt_spatial(
 
 def evaluate_spatial(plan: SearchPlan, evidence: SpatialEvidence) -> SpatialSelection:
     """Evaluate only the planned spatial predicate, never a full search/criterion."""
+    if plan.beam_decision_ref is not None:
+        from alma_duplicate.primary_beam import evaluate_primary_beam
+        return evaluate_primary_beam(plan, evidence)
     source = plan.for_source(evidence.context.reference.source)
     operation = source.spatial_operation if source else "NOT_SELECTED"
     reasons = list(evidence.reasons)

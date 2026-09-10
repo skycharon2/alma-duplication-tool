@@ -81,7 +81,11 @@ class ArchiveQuerySpec:
     angular_resolution_min_arcsec: float | None = None
     angular_resolution_max_arcsec: float | None = None
 
+    spatial_strategy: str = "REGION"
+
     def __post_init__(self) -> None:
+        if self.spatial_strategy not in {"REGION", "CENTER"}:
+            raise ValueError("Unknown spatial strategy")
         _validate_finite_real("ra_deg", self.ra_deg)
         _validate_finite_real("dec_deg", self.dec_deg)
         _validate_finite_real("radius_deg", self.radius_deg)
@@ -164,6 +168,13 @@ def normalize_query_parameters(
 ) -> NormalizedParameters:
     """Return immutable, canonical query parameters."""
 
+    parameters = _legacy_parameters(spec)
+    if spec.spatial_strategy == "CENTER":
+        return (("spatial_strategy", "CENTER"),) + parameters
+    return parameters
+
+
+def _legacy_parameters(spec):
     return (
         ("ra_deg", float(spec.ra_deg)),
         ("dec_deg", float(spec.dec_deg)),
@@ -261,6 +272,12 @@ def build_where_clause(
             f"{radius_text}))"
         )
     ]
+
+    if spec.spatial_strategy == "CENTER":
+        clauses = [
+            "1 = CONTAINS(POINT('ICRS', s_ra, s_dec), "
+            f"CIRCLE('ICRS', {ra_text}, {dec_text}, {radius_text}))"
+        ]
 
     if spec.science_only:
         clauses.append("science_observation = 'T'")

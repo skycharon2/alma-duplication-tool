@@ -39,6 +39,8 @@ class SearchPlan:
     result_limit: int | None
     version: str = "1"
     execution: str = "NOT_EXECUTED"
+    beam_decision_ref: str | None = None
+    retrieval_radius_deg: float | None = None
 
     def for_source(self, name: str) -> SourceSearchPlan | None:
         return next((s for s in self.sources if s.source == name), None)
