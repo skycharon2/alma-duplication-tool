@@ -45,7 +45,7 @@ def build_search_plan(
             if p.field == "angular_resolution":
                 predicates.append(PlannedPredicate(
                     p.field, A.PLANNED_LOCAL,
-                    "spatial_resolution" if source == "ARCHIVE" else "Req.Ang.Res.",
+                    "spatial_resolution" if source == "ARCHIVE" else "Req. Ang. Res.",
                     p, "CANDIDATE_SCALAR_FILTER_NOT_POLICY_CRITERION",
                 ))
             else:
