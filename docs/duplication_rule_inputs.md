@@ -366,8 +366,8 @@ A test name below is within its indicated file.
 | IN-26-a | Coverage on W1, better RMS only on W2 or unlinked row scalar | Implemented subset: Context construction preserves SPW/row RMS association. | Implemented subset | C: `test_selected_component_does_not_borrow_another_windows_rms`, `test_queue_preserves_only_observed_combinations_and_no_per_spw_rms_copy` | See IN-26-b. |
 | IN-26-b | Same case; remaining acceptance | No combined passing result; matched-pair sensitivity unavailable | Planned remainder | No full acceptance test claimed | formal matched-pair outcomes remain planned. |
 | IN-27 | Approximate result with unapproved method | Estimate shown separately; no formal threshold outcome | Planned | No completed acceptance test claimed | Implement method approval status and separation of estimates from formal outcomes. |
-| CASE1 | Original task parameters below | Positive retrieval expectation, not a confirmed duplicate | Planned retrieval acceptance | No pinned end-to-end retrieval test | Confirm grouping, Member UIDs and filters; execute and pin retrieval evidence. Formal verdict remains unverified. |
-| CASE2 | Original task parameters below | Same, independently scoped | Planned retrieval acceptance | No pinned end-to-end retrieval test | Confirm grouping, Member UIDs and filters; execute and pin retrieval evidence. Formal verdict remains unverified. |
+| CASE1 | Original task parameters below | Positive retrieval expectation, not a confirmed duplicate | Retrieval executed against live Archive TAP: PASSED (weak recall) | [tests/live/test_case_retrieval.py](../tests/live/test_case_retrieval.py) (`--run-live`) | Grouping/count semantics (Q7) and a formal duplication verdict remain open; see "Executed retrieval evidence" below. |
+| CASE2 | Original task parameters below | Same, independently scoped | Retrieval executed against live Archive TAP: PASSED (weak recall) | [tests/live/test_case_retrieval.py](../tests/live/test_case_retrieval.py) (`--run-live`) | Grouping/count semantics (Q7) and a formal duplication verdict remain open; see "Executed retrieval evidence" below. |
 
 ### Recorded CASE inputs
 
@@ -390,6 +390,57 @@ Developer reference results, not query requirements or user request fields:
 | CASE1 | 2021.A.00028.S | 1 | `uid://A001/X2df9/X1b` | Unverified |
 | CASE2 | 2018.1.00294.S | 2 | `uid://A001/X133d/X9c3`, `uid://A001/X133d/X9c5` | Unverified |
 
+### Executed retrieval evidence (2026-09-10 run)
+
+[tests/live/test_case_retrieval.py](../tests/live/test_case_retrieval.py) was
+run with `--run-live` against the live Archive TAP service (developer
+environment; endpoint/date not independently re-verified by this document
+beyond the test run itself). Both cases PASSED: every reported Member UID
+above was present among the retrieved Archive rows within the test's 10
+arcsec engineering search radius. This confirms retrieval recall only, not a
+duplication verdict, grouping, or count -- see the test's module docstring
+for that boundary.
+
+| Case | Retrieved rows | Disposition split | Matched Member UID row(s) | Local spatial-adapter reason on matched rows |
+| --- | ---: | --- | --- | --- |
+| CASE1 | 336 | 200 RETAINED_UNEVALUATED / 136 EXCLUDED / 0 MATCHED_FILTERS | 4 SPW rows for `uid://A001/X2df9/X1b` | `TP_OR_UNRECOGNIZED_ARRAY_UNSUPPORTED` (REGION strategy; local array-type recognition failed, server-reported scope retained as unevaluated, not excluded) |
+| CASE2 | 871 | 323 RETAINED_UNEVALUATED / 548 EXCLUDED / 0 MATCHED_FILTERS | 9+ SPW rows spanning both `uid://A001/X133d/X9c3` and `uid://A001/X133d/X9c5` | `MOSAIC_OR_UNKNOWN_GEOMETRY_UNSUPPORTED` (REGION strategy; candidate appears to be a mosaic, so local region intersection is not attempted) |
+
+Both cases' matched rows also passed the local `angular_resolution` filter
+(`MATCH` against the recorded `< 0.5`/`< 1 arcsec` case filters); the
+`spectral_resolution`/`sensitivity` predicates stayed `SKIPPED` as designed
+(not implemented by this service yet). No `MATCHED_FILTERS` disposition
+occurred for either case's matched rows -- this is expected under the
+current spatial/frequency evaluation gaps, not a defect.
+
+A companion measurement,
+[tests/live/test_case_beam_strategy_applicability.py](../tests/live/test_case_beam_strategy_applicability.py),
+found that in the real Archive rows near both cases, the formula
+primary-beam strategy's exact `12-m`/`7-m` `antenna_arrays` label match
+resolved a diameter for **0 of 336** CASE1 rows and **0 of 851** CASE2 rows
+-- every observed label was a detailed pad:antenna listing or an ACA/TP
+array listing instead. This was originally a small, local-neighborhood
+sample pending Archive-wide confirmation via
+[scripts/beam_array_label_census.py](../scripts/beam_array_label_census.py).
+
+**That census has now been run (2026-09-10) against the full live Archive**:
+across all 443,998 `science_observation = 'T'` rows (13,058 distinct
+`(antenna_arrays, is_mosaic)` groups, no query-cap overflow), **0%** matched
+the exact string `12-m` or `7-m` -- every single row, mosaic and
+non-mosaic alike, classified as `OTHER_DETAILED_OR_MIXED` (a detailed
+pad:antenna listing or an ACA/TP-only listing). The full report, including
+sample raw label values per bucket, is written to
+`docs/evidence/primary_beam_array_label_census_2026-09-10.md`. This
+upgrades the CASE1/CASE2 finding above from "a concrete zero in two local
+neighborhoods" to a **confirmed Archive-wide zero**: the current exact-label
+heuristic in `primary_beam.py` does not resolve a diameter for the Archive
+side of the formula primary-beam strategy on *any* row in the present
+Archive population, not merely a low or unlucky share of it. This makes a
+real `classify_array_type()` parser (see
+`claude/next_rule_engineering_tasks_2026-09-10.md`) a prerequisite --not
+merely a strengthening consideration-- for relying on the Archive side of
+this strategy beyond hand-checked cases with a manually supplied diameter.
+
 Report evidence register (page references recorded in the project review):
 
 | Source | Location | Recorded evidence | Verification boundary |
@@ -405,13 +456,21 @@ are evidence records, not approved calculation methods or formal duplication
 labels. Never use expected project IDs or Member UIDs as search constraints to
 make a positive retrieval test pass.
 
-Independent retrieval reproduction, a pinned source fixture and executable
-grouping/count assertions remain pending. Preserve the report's display grouping;
-do not silently reinterpret its entry count as raw TAP rows or unique Members.
-Coordinate/frequency reference, search radius/tolerance and the candidate-field
-mapping for the RMS filter still need explicit implementation evidence.
-Formal duplicate/non-duplicate labels remain unverified. Known report records
-are retained independently of these outstanding checks.
+A pinned retrieval acceptance test now exists
+([tests/live/test_case_retrieval.py](../tests/live/test_case_retrieval.py)),
+asserting only that each reported Member UID is retrieved (weak recall), with
+the exact case search parameters transcribed above and the engineering search
+radius documented in that file. It has been executed against the live
+service and PASSED for both cases; see "Executed retrieval evidence" above
+for the retrieved-row counts, dispositions and matched-row reasons. A pinned
+grouping/count fixture and executable grouping/count assertions remain
+pending until Q7 (CASE grouping/Member UID recall confirmation) closes.
+Preserve the report's display grouping; do not silently reinterpret its entry
+count as raw TAP rows or unique Members. Coordinate/frequency reference,
+search radius/tolerance and the candidate-field mapping for the RMS filter
+still need explicit implementation evidence. Formal duplicate/non-duplicate
+labels remain unverified. Known report records are retained independently of
+these outstanding checks.
 
 ## 9. Delivery boundary
 
