@@ -57,13 +57,17 @@ def _evaluate_row(
                 outcome = {"INSIDE": "MATCH", "OUTSIDE": "NO_MATCH",
                            "NOT_EVALUATED": "NOT_EVALUATED"}[check.status]
                 reasons = check.reasons
-                if context.reference.source == "ARCHIVE" and check.status == "OUTSIDE":
+                if (plan.beam_decision_ref is None and context.reference.source == "ARCHIVE"
+                        and check.status == "OUTSIDE"):
                     # A bound complete server query reported intersection. Do not
                     # turn disagreeing local interpretation into a definite exclusion.
                     outcome = "NOT_EVALUATED"
                     reasons += ("SERVER_LOCAL_SPATIAL_DISAGREEMENT",)
                 records.append(FilterExecution(index, predicate.name, "LOCAL", outcome,
                                                reasons, spatial=check))
+            elif predicate.name == "retrieval_scope":
+                records.append(FilterExecution(index, predicate.name, "SERVER", "MATCH",
+                                               ("BOUND_QUERY_REPORTED_CENTER_IN_SCOPE",)))
             elif predicate.name == "science_only" and predicate.action == "PLANNED_SERVER":
                 value = context.evidence.prepared.normalized_metadata.science_observation.value
                 records.append(FilterExecution(
@@ -152,6 +156,7 @@ def search_candidates(
     queue_loader: Callable[[], QueueCsvParseResult] | None = None,
     interpretations: Iterable[PositionInterpretation] = (),
     archive_science_only: bool = False,
+    beam_decision_ref: str | None = None,
 ) -> CandidateSearchResult:
     """Execute a bounded plan, retaining all row decisions before display limits.
 
@@ -172,7 +177,8 @@ def search_candidates(
             raise ValueError("Duplicate context interpretation")
         interpretation_map[item.context_id] = item
     # Invalid requests fail before any client is called.
-    plan = build_search_plan(validation, archive_science_only=archive_science_only)
+    plan = build_search_plan(validation, archive_science_only=archive_science_only,
+                             beam_decision_ref=beam_decision_ref)
     started = datetime.now(UTC)
     results = {
         name: _run_source(plan, name, archive_client=archive_client, queue_loader=queue_loader,

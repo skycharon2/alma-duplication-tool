@@ -1,5 +1,13 @@
 # Search plans and minimal spatial adaptation
 
+## Strategy selection
+
+An explicit `beam_decision_ref` enables [coordinate retrieval and formula beam
+selection](primary_beam_search.md). Without it, the existing region strategy
+remains compatible. Region-specific descriptions below apply to that legacy
+strategy; formula search uses centers and separate local beam checks.
+
+
 Version 1 adds offline planning, source-bound spatial evidence and individual
 predicate checks. It does not orchestrate a candidate search, call TAP, impose
 result limits or evaluate duplication. Existing

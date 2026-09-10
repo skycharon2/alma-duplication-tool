@@ -13,6 +13,7 @@ from alma_duplicate.domain.search import (
 
 def build_search_plan(
     validation: RequestValidationResult, *, archive_science_only: bool = False,
+    beam_decision_ref: str | None = None,
 ) -> SearchPlan:
     """Require spatial search readiness; never infer filters from science requests."""
     if (not validation.is_valid or not validation.can_search
@@ -23,10 +24,19 @@ def build_search_plan(
         raise ValueError("Position, radius and selected sources are required")
     if request.position.frame != "ICRS" or options.radius.unit != "deg":
         raise ValueError("Planning requires canonical ICRS position and degree radius")
+    retrieval_radius = options.radius.value
+    if beam_decision_ref is not None:
+        if not isinstance(beam_decision_ref, str) or not beam_decision_ref.strip():
+            raise ValueError("Beam strategy requires an explicit decision reference")
+        from alma_duplicate.primary_beam import requested_beam_frequency, primary_beam_fwhm_deg
+        frequency = requested_beam_frequency(request)
+        if frequency is not None:
+            retrieval_radius = max(retrieval_radius, primary_beam_fwhm_deg(frequency, 7.) / 2 + 1e-10)
     # Also verifies finite coordinates, radius and the explicit science-only choice.
     broad_query = ArchiveQuerySpec(
-        request.position.ra_deg, request.position.dec_deg, options.radius.value,
+        request.position.ra_deg, request.position.dec_deg, min(180., retrieval_radius),
         science_only=archive_science_only,
+        spatial_strategy="CENTER" if beam_decision_ref is not None else "REGION",
     )
     plans = []
     for source in options.sources:
@@ -37,6 +47,11 @@ def build_search_plan(
             "spatial", A.PLANNED_SERVER if source == "ARCHIVE" else A.PLANNED_LOCAL,
             "s_region" if source == "ARCHIVE" else "row.spatial",
         )]
+        if beam_decision_ref is not None:
+            spatial = "FORMULA_PRIMARY_BEAM"
+            predicates = [PlannedPredicate("spatial", A.PLANNED_LOCAL, "s_ra/s_dec" if source == "ARCHIVE" else "row.spatial")]
+            if source == "ARCHIVE":
+                predicates.insert(0, PlannedPredicate("retrieval_scope", A.PLANNED_SERVER, "s_ra/s_dec"))
         if source == "ARCHIVE" and archive_science_only:
             predicates.append(PlannedPredicate(
                 "science_only", A.PLANNED_SERVER, "science_observation",
@@ -61,11 +76,18 @@ def build_search_plan(
              "QUEUE_MOSAIC_OFFSETS_TP_SPS_NOT_SUPPORTED",
              "QUEUE_SCOPE_IS_SUPPLIED_FILE_AND_SOURCE_DATE")
         )
+        if beam_decision_ref is not None:
+            limitations = ("FORMULA_USES_REQUEST_REPRESENTATIVE_FREQUENCY",
+                          "SUPPORTED_FIXED_SINGLE_FIELDS_7M_12M_ONLY",
+                          "UNKNOWN_GEOMETRY_OUTSIDE_RETRIEVAL_SCOPE_NOT_COVERED",
+                          "NOT_A_FORMAL_POSITION_CRITERION")
         plans.append(SourceSearchPlan(
             source, tuple(predicates), spatial, limitations,
             broad_query if source == "ARCHIVE" else None,
         ))
-    return SearchPlan(validation, tuple(plans), options.result_limit)
+    return SearchPlan(validation, tuple(plans), options.result_limit,
+                      version="2" if beam_decision_ref is not None else "1",
+                      beam_decision_ref=beam_decision_ref, retrieval_radius_deg=min(180., retrieval_radius))
 
 
 def bind_archive_query(plan: SearchPlan, result: ArchiveQueryResult) -> QueryPlanBinding:
