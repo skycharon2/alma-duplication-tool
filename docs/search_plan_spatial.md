@@ -15,7 +15,7 @@ radius and selected sources. It retains the validation result and SearchOptions.
 | --- | --- | --- |
 | Spatial scope | Planned server-side `s_region` intersection with an ICRS search circle | Planned local fixed-point cone selection, conditional on spatial evidence |
 | Science-only restriction | Disabled by default; explicit planner argument adds it and records it | Not applicable |
-| Explicit angular-resolution predicate | Planned local scalar check of `spatial_resolution` | Planned local scalar check of `Req.Ang.Res.` |
+| Explicit angular-resolution predicate | Planned local scalar check of `spatial_resolution` | Planned local scalar check of `Req. Ang. Res.` |
 | Frequency predicate | Retained as SKIPPED with unresolved reference/matching semantics | Same |
 | Spectral-resolution predicate | Retained as SKIPPED pending SPW association semantics | Same |
 | Sensitivity predicate | Retained as SKIPPED pending RMS basis/association implementation | Same |
@@ -134,6 +134,7 @@ centers/footprints, Queue interpretation, unsupported geometries, poles and
 wraparound. They use synthetic/local fixtures, not independently verified CASE
 retrieval or approved duplicate labels.
 
-The [next-delivery checklist](README.md#next-delivery) covers service integration
-and execution/completeness reporting. This module supplies plans and individual
-checks; SearchOptions predicates remain distinct from formal criteria.
+The [candidate-search service](candidate_search.md) now orchestrates these plans
+and individual checks and owns execution/completeness reporting. SearchOptions
+predicates remain distinct from formal criteria. The
+[next-delivery checklist](README.md#next-delivery) covers CASE retrieval verification.

@@ -16,7 +16,7 @@ with ALMA reviewers.
 | Offline proposed-observation validation | Implemented |
 | Comparison-context construction from existing ingestion outputs | Implemented (offline, row-scoped; no matching) |
 | Offline search plans and limited spatial evidence adaptation | Implemented; conditional geometry support |
-| Request-driven candidate search across Archive and Queue | Planned |
+| Request-driven candidate search across Archive and Queue | Implemented; conservative retention, explicit source/filter limits |
 | Formal duplication assessment | Planned |
 | Browser interface | Planned |
 
@@ -102,8 +102,9 @@ invariants. Original [conceptual ERDs](docs/design/conceptual_data_model.md) and
 Production code is in [src/alma_duplicate](src/alma_duplicate/), with automated
 checks in [tests](tests/). [Notebooks](notebooks/) retain dated exploration
 evidence; their outputs do not establish current production capabilities.
-The [next-delivery checklist](docs/README.md#next-delivery) coordinates service
-integration using the existing request, comparison and search/spatial objects.
+The [candidate-search service](docs/candidate_search.md) connects existing request,
+comparison and search/spatial objects. The [next-delivery checklist](docs/README.md#next-delivery)
+covers independently verified CASE retrieval.
 Reported CASE candidates are not confirmed duplicate/non-duplicate labels.
 
 ## License
