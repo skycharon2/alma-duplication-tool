@@ -86,6 +86,8 @@ It preserves per-source failures, row/filter records, skipped conditions and
 display-limit omissions. Current geometry and scientific-method limits remain
 explicit; persistent Queue acquisition/run binding remains the caller's task.
 
+Review the [reported scientific feedback](evidence/scientific_feedback.md) and its
+remaining closure requirements; reported oral answers do not enable formal rules.
 Next, independently reproduce CASE1/CASE2 retrieval and pin source evidence,
 effective filters and display grouping/count semantics. Extend supported
 spatial and scientific evidence only with focused acceptance tests.
