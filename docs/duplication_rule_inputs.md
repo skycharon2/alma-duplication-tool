@@ -99,7 +99,7 @@ coherent evidence from the same candidate context, as defined in section 6.
 | TARGET-MOVING: moving; A/location | Explicit moving identity | `target_name` alone does not establish normalized identity | Target label alone does not establish normalized identity | Future identity normalization; no fixed-coordinate fallback | Unsupported search in first model |
 | SOLAR: Sun; A final sentence | Explicit target kind | Candidate matching unnecessary for exemption | Same | `NOT_APPLICABLE` assessment, distinct from unavailable implementation | Never extend exemption to all Solar System objects |
 | ANGULAR: applicable candidate comparison; A/resolution | Positive angular resolution with `REQUESTED_VALUE` meaning | `spatial_resolution` canonical evidence; optional `s_resolution` stays separate | `Req. Ang. Res.` | Convert supported units, preserve requested-versus-estimated semantics; policy comparison after context validation | Missing request or candidate quantity blocks this rule, not spatial retrieval |
-| CONT-SETUP: continuum applicability; A/spectral definition | Distinct `window_id`s, per-window bandwidth kind and setup completeness | Not a substitute for proposed setup | Not a substitute for proposed setup | Count qualified proposed windows; nominal/usable interpretation pending Q2; unknown widths yield unresolved applicability when evidence cannot settle it | Intent label alone never activates rule; no imputed width or mode |
+| CONT-SETUP: continuum applicability; A/spectral definition | Distinct `window_id`s, per-window bandwidth kind and setup completeness | Not a substitute for proposed setup | Not a substitute for proposed setup | Count qualified proposed windows; usable interpretation reported, approval/mapping pending Q2; unknown widths yield unresolved applicability when evidence cannot settle it | Intent label alone never activates rule; no imputed width or mode |
 | CONT-FREQ: continuum; A/spectral | Independent setup representative frequency, optional representative-window link and reference/origin | `frequency`, full parsed support, canonical interval | `Ref.Frequency`, SPW frequencies, `Is Sky Freq?`, velocity evidence | Q3 selects comparison role and compatible reference; no automatic center/RMS fallback or overlap-only prefilter | Broad spatial retrieval permitted; frequency assessment unavailable |
 | CONT-RMS: continuum; A/spectral | Direct aggregate RMS with declared basis/setup scope, or reference RMS with conversion inputs | `cont_sensitivity_bandwidth`, parsed component sensitivities with their bases | `Req.Sensitivity` plus `Ref.Frequency` and `Ref.Freq.Width` | Direct declaration does not require a bandwidth conversion; conversion requires reference/target bandwidths and approved Q4/Q5 method; applicability/frequency remain separate | Missing metadata limits affected operations, not request storage; candidate gaps remain candidate-side |
 | LINE-COVERAGE: line; A/spectral | Requested SPW center, FDM evidence and frequency reference; width not generally required | Associated candidate FDM interval/reference with authoritative mode evidence; selected TAP projection lacks that mode | Associated SPW interval/reference and validated FDM evidence; no approved automatic mode derivation | Compare requested center with candidate coverage, not whole-window containment | Missing request width alone does not block center coverage; absent candidate interval or mode does |
@@ -291,23 +291,26 @@ readiness rather than mixing their most favorable quantities.
 
 ## 7. Scientific decision register
 
-Facts and application decisions are tracked separately. B/O/H facts were checked
-2026-09-07; policy facts retain the Appendix A citation above. Application sign-off
-by supervisor/ARC and executable-method approval are still unset. Documentation
-confirmation does not imply that an application algorithm has been approved.
+Facts, reported feedback and executable-method approval are distinct. The
+[reported oral-feedback record](evidence/scientific_feedback.md) preserves the
+user's paraphrase, missing discussion date/original wording, scope and closure
+requirements. It is not independent written confirmation. Existing B/O/H and
+policy citations retain their earlier provenance; this update does not reverify
+them. No Q1–Q3 method is enabled or marked CLOSED by this change.
 
-| ID | Confirmed fact / source | Remaining application decision and status | Blocks / required closure evidence |
+| ID | Existing fact / source | Current decision status | Remaining closure requirement |
 | --- | --- | --- | --- |
-| Q1 | Full-width FWHM and approximate antenna model (H) | OPEN: mapping to candidate pointing coverage, frequency and Archive regions | Formal position; coverage method and boundary examples |
-| Q2 | Nominal/output/usable widths differ (H); policy has a strict setup-width condition (A) | OPEN: proposed width meaning used in qualification | Affected continuum applicability; explicit field/method mapping |
-| Q3 | Representative frequency is a separate role (O); OT and execution references differ (H) | OPEN: formal comparison role and transformations | Frequency comparison; supported frame/epoch assumptions and examples |
-| Q4 | Spacing, resolution and effective noise width are distinct (B) | OPEN: cross-source RMS, smoothing, polarization and beam compatibility | Sensitivity; approved method and valid domain; separate fields can be implemented now |
-| Q5 | RMS improvement condition is policy text (A) | OPEN: directional truth table and requested/estimated semantics | Formal threshold; equality/worse-RMS examples |
-| Q6 | Current selected TAP projection has no authoritative mode field (code) | OPEN: accepted candidate mode source and granularity | Line assessment; evidence validation, no channel-count inference |
-| Q7 | Original task supplies positive retrieval cases (section 8) | PARTIAL: case parameters recorded; grouping/UIDs/fixtures and special-policy review OPEN | Case acceptance/special verdicts; confirmed expectations and clauses |
+| Q1 | Full-width FWHM and approximate antenna model (H) | PARTIAL: oral feedback reported | Candidate frequency ownership, Archive mapping, geometry/array scope and boundary examples |
+| Q2 | Nominal/output/usable widths differ (H); strict setup-width condition (A) | PARTIAL: usable proposed-window bandwidth reported; written confirmation pending | Approved field mapping and usable-width qualification examples; no blanket Archive conversion |
+| Q3 | Representative frequency is a separate role (O); OT/execution references differ (H) | PARTIAL: center-frequency average reported | Window membership on each side, averaging definition, enumeration completeness, identity and compatible references |
+| Q4 | Spacing, resolution and effective noise width are distinct (B) | OPEN: formula and applicable domain pending | RMS/smoothing method, polarization and beam compatibility |
+| Q5 | RMS improvement condition is policy text (A) | OPEN: not discussed in this feedback | Directional truth table, requested/estimated semantics and equality/worse-RMS examples |
+| Q6 | Selected TAP projection has no authoritative mode field (code) | OPEN: not discussed in this feedback | Accepted mode evidence and granularity; UI classification alone is not authoritative mode |
+| Q7 | Reported retrieval cases are recorded in section 8 | PARTIAL: no new confirmation in this feedback | Independent UID recall, grouping/count semantics, fixtures and special-policy review |
 
-These block affected assessments, not implementation of valid requests or broad
-candidate retrieval.
+These limit affected formal assessments, not valid request storage or candidate
+retrieval. The feedback record provides conditional CONT-SETUP acceptance cases;
+they are design expectations, not completed executable policy tests.
 
 ## 8. Acceptance specifications and implementation coverage
 
