@@ -1,5 +1,13 @@
 # Candidate search service
 
+## Formula spatial strategy
+
+An explicit `beam_decision_ref` enables [coordinate retrieval and formula beam
+selection](primary_beam_search.md). Without it, the existing region strategy
+remains compatible. Region-specific descriptions below apply to that legacy
+strategy; formula search uses centers and separate local beam checks.
+
+
 Service version 1 connects validated requests, existing search plans, Archive
 query execution/binding, Queue loading/selection and comparison contexts.
 It discovers candidates for review; `assessment` remains `NOT_EVALUATED`.
