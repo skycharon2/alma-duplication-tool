@@ -18,6 +18,9 @@ retention, filtering and completeness; the following contracts define its inputs
 4. [Archive client](archive_client_contract.md) and [Queue CSV contract](queue_csv_contract.md): source access, completeness, units and ingestion gates.
 5. [Queue snapshot storage](queue_snapshot_store.md): source acquisition, historical summaries and explicit reparse.
 
+The opt-in [formula beam strategy](primary_beam_search.md) replaces region
+preselection with center-coordinate retrieval and explicit local beam checks.
+
 For formal-rule development:
 
 1. [Rule inputs](duplication_rule_inputs.md): required evidence, open Q1–Q7 decisions and acceptance coverage.

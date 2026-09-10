@@ -35,6 +35,7 @@ class PositionInterpretation:
     frame: str
     target_kind: str
     decision_ref: str
+    antenna_diameter_m: float | None = None
 
     def __post_init__(self):
         if not self.context_id.strip() or not self.decision_ref.strip():
@@ -66,3 +67,7 @@ class SpatialSelection:
     reasons: tuple[str, ...]
     method_version: str = "1"
     assessment: str = "NOT_EVALUATED"
+    beam_frequency_ghz: float | None = None
+    antenna_diameter_m: float | None = None
+    beam_fwhm_deg: float | None = None
+    decision_ref: str | None = None
