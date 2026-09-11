@@ -77,7 +77,9 @@ Units missing from s_ra/s_dec are not borrowed from s_region. The center's frame
 remains UNKNOWN without an explicit interpretation.
 
 The footprint parser supports only `CIRCLE ICRS ra dec radius`, with degree
-coordinates and a finite positive radius up to 180 degrees. It is a deliberately
+coordinates and a finite positive radius up to 180 degrees. Keywords are compared
+case-insensitively because the live ALMA TAP service emits `Circle ICRS ...`
+(verified 2026-09-11); the raw text is not rewritten. It is a deliberately
 limited grammar, not a general STC-S parser. Other syntax, invalid data and missing
 data have different statuses. Raw region text remains accessible through context.
 

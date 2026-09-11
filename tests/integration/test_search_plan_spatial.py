@@ -131,6 +131,38 @@ def test_circle_selection_and_unsupported_regions(region, status):
     assert evaluate_spatial(plan, evidence).status == status
 
 
+@pytest.mark.parametrize("region,status", [
+    # Live ALMA TAP casing (verified 2026-09-11 on uid://A001/X2df9/X1b rows).
+    ("Circle ICRS 0 0 0.01", "INSIDE"),
+    ("circle icrs 0 0 0.01", "INSIDE"),
+    ("Circle ICRS 2 0 0.01", "OUTSIDE"),
+    ("Circle GALACTIC 0 0 1", "NOT_EVALUATED"),
+    ("Polygon ICRS 0 0 1 0 1 1", "NOT_EVALUATED"),
+    ("UNION ( Circle ICRS 0 0 0.01 )", "NOT_EVALUATED"),
+    ("Circle ICRS 0 0", "NOT_EVALUATED"),
+])
+def test_live_service_region_casing_is_accepted_without_rewriting_raw_text(region, status):
+    plan = build_search_plan(validation())
+    source, c = archive(plan, region=region)
+    evidence = adapt_spatial(c, source)
+    assert c.evidence.prepared.raw_row["s_region"] == region
+    assert evaluate_spatial(plan, evidence).status == status
+    if status != "NOT_EVALUATED":
+        assert evidence.footprint_status is S.AVAILABLE
+        assert "REGION_REPRESENTATION_UNSUPPORTED" not in evidence.reasons
+
+
+def test_real_case1_circle_parses_to_its_own_beam_footprint():
+    from alma_duplicate.spatial import _circle
+
+    footprint, status, reasons = _circle("Circle ICRS 278.416416 -21.060936 0.002832")
+    assert status is S.AVAILABLE and reasons == ()
+    assert footprint.center.frame == "ICRS"
+    assert footprint.center.ra_deg == pytest.approx(278.416416)
+    assert footprint.center.dec_deg == pytest.approx(-21.060936)
+    assert footprint.radius_deg == pytest.approx(0.002832)
+
+
 @pytest.mark.parametrize("mosaic,array", [("T", "12-m"), ("F", "TP"), ("F", "unrecognized")])
 def test_mosaic_tp_unknown_array_not_treated_as_simple_circle(mosaic, array):
     plan = build_search_plan(validation())

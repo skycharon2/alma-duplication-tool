@@ -78,11 +78,18 @@ def _archive_center(row, fields, frame):
 
 
 def _circle(value):
+    """Parse the limited ``CIRCLE ICRS ra dec radius`` form.
+
+    Keyword comparison is case-insensitive: the live ALMA TAP service emits
+    ``Circle ICRS ...`` (verified 2026-09-11), while older synthetic fixtures use
+    upper case. Only the keywords are normalized; the raw text is never rewritten.
+    """
     text = _text(value)
     if not text:
         return None, S.MISSING, ("REGION_MISSING",)
     tokens = text.split()
-    if len(tokens) != 5 or tokens[:2] != ["CIRCLE", "ICRS"]:
+    if (len(tokens) != 5 or tokens[0].upper() != "CIRCLE"
+            or tokens[1].upper() != "ICRS"):
         return None, S.UNSUPPORTED, ("REGION_REPRESENTATION_UNSUPPORTED",)
     try:
         ra = _coordinate(tokens[2], "deg", ra=True)
