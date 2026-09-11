@@ -441,6 +441,21 @@ real `classify_array_type()` parser (see
 merely a strengthening consideration-- for relying on the Archive side of
 this strategy beyond hand-checked cases with a manually supplied diameter.
 
+### Entry-count reproduction (2026-09-11)
+
+With the opt-in Archive Query-equivalent filters (frequency point in SPW,
+angular and spectral resolution, AGGREGATE `cont_sensitivity_bandwidth`) and
+(Member OUS, target) grouping, the live rows reduce to exactly the reported
+entries: CASE1 one entry, `uid://A001/X2df9/X1b` / PKS1830-211, matched by all
+filters; CASE2 two entries, `uid://A001/X133d/X9c3` and `X9c5` / NGC253, retained
+because their mosaic geometry is not evaluated. The ALMA Archive Query service
+keys its observation entries the same way (`<member_ous_uid>.source.<target>`;
+2021.A.00028.S has four entries, one science target). This was reproduced from
+live rows outside the test runner; `test_case_entry_count_with_aq_equivalent_filters`
+pins it and must be run with `--run-live`. It supports, but does not close, Q7:
+the grouping still needs the supervisor's confirmation, and the entries remain
+retrieval references, not duplicate labels.
+
 Report evidence register (page references recorded in the project review):
 
 | Source | Location | Recorded evidence | Verification boundary |
