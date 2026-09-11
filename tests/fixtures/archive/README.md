@@ -27,3 +27,17 @@ interprets an ASCII-whitespace-only ECSV field as a masked value; the
 non-breaking space remains a real string while still normalizing to blank via
 `str.strip()`. This preserves the contract distinction between `MASKED` and
 `BLANK_NORMALIZED`.
+
+## Live CASE1 rows
+
+`case1_live_rows_2026-09-11.ecsv` holds ten unmodified rows returned by the live
+ALMA TAP service (`ivoa.obscore`) on 2026-09-11 for the CASE1 cone (10 arcsec
+around 18:33:39.920 -21:03:39.900). The ECSV metadata records the query, the
+336-row size of the full result, the selection rationale, a SHA-256 of the
+transcribed source text, and the live `TAP_SCHEMA` field descriptors used to
+rebuild the scripted TAP response.
+
+It covers real formats absent from the synthetic fixture: `Circle ICRS`
+casing, Pad:Antenna `antenna_arrays` lists (12-m, 7-m ACA, 12-m with a PM
+antenna, mixed 12-m/ACA/TP), a masked Group OUS, and a non-mosaic polygon.
+The reported Member OUS is a retrieval reference, not a duplicate label.
