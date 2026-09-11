@@ -24,9 +24,10 @@ preselection with center-coordinate retrieval and explicit local beam checks.
 For formal-rule development:
 
 1. [Rule inputs](duplication_rule_inputs.md): required evidence, open Q1–Q7 decisions and acceptance coverage.
-2. [Data model](data_model.md): current object index, associations and invariants; links lead separately to conceptual ERDs and historical evidence.
-3. [Archive dictionary](archive_data_dictionary.md) and [Queue contract](queue_csv_contract.md): source-field semantics and limitations.
-4. Return to the rule-input decision register and acceptance cases before implementing an affected policy method.
+2. [Rules](rules.md): the criterion result model and implemented criteria.
+3. [Data model](data_model.md): current object index, associations and invariants; links lead separately to conceptual ERDs and historical evidence.
+4. [Archive dictionary](archive_data_dictionary.md) and [Queue contract](queue_csv_contract.md): source-field semantics and limitations.
+5. Return to the rule-input decision register and acceptance cases before implementing an affected policy method.
 
 [Live Archive smoke instructions](live_archive_smoke.md) describe opt-in source
 verification. The [form design](proposed_observation_form.md) is future interface
