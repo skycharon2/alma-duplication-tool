@@ -174,13 +174,16 @@ def derived_sky_interval(
     return nominal_bandwidth_ghz, lower, upper
 
 
-def derive_usable_bandwidth(
-    source_bandwidth_mhz: QueueQuantity,
-) -> QueueUsableBandwidthDerivation:
-    """Interpret one width using the portal script's finite mapping."""
+def map_nominal_to_usable_mhz(
+    nominal_mhz: float,
+) -> tuple[float | None, QueueUsableBandwidthDerivationKind]:
+    """Source-neutral core of the portal script's finite nominal-to-usable mapping.
 
-    nominal_mhz = source_bandwidth_mhz.value
-    if not math.isfinite(nominal_mhz) or nominal_mhz <= 0.0:
+    Returns the usable width in MHz (None when unrecognized) and how it was
+    obtained. Shared by the Queue adapter and proposal-side rules.
+    """
+    if (isinstance(nominal_mhz, bool) or not isinstance(nominal_mhz, (int, float))
+            or not math.isfinite(nominal_mhz) or nominal_mhz <= 0.0):
         raise QueueFrequencyDerivationError(
             "source bandwidth must be finite and positive"
         )
@@ -192,14 +195,9 @@ def derive_usable_bandwidth(
             abs(nominal_mhz - expected_mhz)
             < QUEUE_NOMINAL_BANDWIDTH_TOLERANCE_MHZ
         ):
-            return QueueUsableBandwidthDerivation(
-                input_bandwidth_mhz=nominal_mhz,
-                # Equal-width mappings must not increase a rounded source width.
-                usable_bandwidth_ghz=min(usable_mhz, nominal_mhz) / 1000.0,
-                kind=(
-                    QueueUsableBandwidthDerivationKind.NOMINAL_MAPPED
-                ),
-            )
+            # Equal-width mappings must not increase a rounded source width.
+            return (min(usable_mhz, nominal_mhz),
+                    QueueUsableBandwidthDerivationKind.NOMINAL_MAPPED)
 
     for usable_mhz in dict.fromkeys(
         _USABLE_BANDWIDTH_MHZ_BY_NOMINAL_MHZ.values()
@@ -208,26 +206,26 @@ def derive_usable_bandwidth(
             abs(nominal_mhz - usable_mhz)
             < QUEUE_ALREADY_USABLE_BANDWIDTH_TOLERANCE_MHZ
         ):
-            return QueueUsableBandwidthDerivation(
-                input_bandwidth_mhz=nominal_mhz,
-                # Recognition does not authorize snapping the source value.
-                usable_bandwidth_ghz=nominal_mhz / 1000.0,
-                kind=(
-                    QueueUsableBandwidthDerivationKind.ALREADY_USABLE
-                ),
-            )
+            # Recognition does not authorize snapping the source value.
+            return nominal_mhz, QueueUsableBandwidthDerivationKind.ALREADY_USABLE
 
     if 1875.0 < nominal_mhz < 2000.0:
-        return QueueUsableBandwidthDerivation(
-            input_bandwidth_mhz=nominal_mhz,
-            usable_bandwidth_ghz=1.875,
-            kind=QueueUsableBandwidthDerivationKind.NOMINAL_MAPPED,
-        )
+        return 1875.0, QueueUsableBandwidthDerivationKind.NOMINAL_MAPPED
 
+    return None, QueueUsableBandwidthDerivationKind.UNRECOGNIZED
+
+
+def derive_usable_bandwidth(
+    source_bandwidth_mhz: QueueQuantity,
+) -> QueueUsableBandwidthDerivation:
+    """Interpret one width using the portal script's finite mapping."""
+
+    nominal_mhz = source_bandwidth_mhz.value
+    usable_mhz, kind = map_nominal_to_usable_mhz(nominal_mhz)
     return QueueUsableBandwidthDerivation(
         input_bandwidth_mhz=nominal_mhz,
-        usable_bandwidth_ghz=None,
-        kind=QueueUsableBandwidthDerivationKind.UNRECOGNIZED,
+        usable_bandwidth_ghz=None if usable_mhz is None else usable_mhz / 1000.0,
+        kind=kind,
     )
 
 
