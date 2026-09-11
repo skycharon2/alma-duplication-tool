@@ -5,8 +5,9 @@ Design version: 0.3. Implementation coverage is specified separately below.
 The [offline request validation API](proposed_observation_api.md) implements
 the documented request-side subset. [Offline comparison-context construction](comparison_contexts.md)
 reuses existing ingestion outputs. [Offline search planning and limited spatial
-adaptation](search_plan_spatial.md) are also implemented; orchestrated candidate
-search and duplication-rule evaluation remain planned. An accepted
+adaptation](search_plan_spatial.md) and [candidate search](candidate_search.md) are
+also implemented. Individual criteria are being added in [rules](rules.md)
+(ANGULAR first, provisional); aggregation into an assessment remains planned. An accepted
 request does not establish that candidate evidence is comparable or that a
 duplication condition can be evaluated.
 
