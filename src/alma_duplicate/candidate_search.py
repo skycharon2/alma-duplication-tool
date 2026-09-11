@@ -17,7 +17,9 @@ from alma_duplicate.domain.proposed_observation import RequestValidationResult
 from alma_duplicate.domain.queue import QueueCsvParseResult
 from alma_duplicate.domain.search import SearchPlan
 from alma_duplicate.domain.spatial import PositionInterpretation
-from alma_duplicate.search_plan import build_search_plan, bind_archive_query, evaluate_angular_filter
+from alma_duplicate.search_plan import (
+    build_search_plan, bind_archive_query, evaluate_angular_filter, evaluate_archive_scalar_filter,
+)
 from alma_duplicate.spatial import adapt_spatial, evaluate_spatial
 
 
@@ -78,6 +80,10 @@ def _evaluate_row(
                 ))
             elif predicate.name == "angular_resolution":
                 check = evaluate_angular_filter(plan, context, index)
+                records.append(FilterExecution(index, predicate.name, "LOCAL", check.status,
+                                               check.reasons, scalar=check))
+            elif predicate.name in {"frequency", "spectral_resolution", "sensitivity"}:
+                check = evaluate_archive_scalar_filter(plan, context, index)
                 records.append(FilterExecution(index, predicate.name, "LOCAL", check.status,
                                                check.reasons, scalar=check))
             else:
@@ -157,6 +163,7 @@ def search_candidates(
     interpretations: Iterable[PositionInterpretation] = (),
     archive_science_only: bool = False,
     beam_decision_ref: str | None = None,
+    aq_equivalent_filters: bool = False,
 ) -> CandidateSearchResult:
     """Execute a bounded plan, retaining all row decisions before display limits.
 
@@ -178,7 +185,8 @@ def search_candidates(
         interpretation_map[item.context_id] = item
     # Invalid requests fail before any client is called.
     plan = build_search_plan(validation, archive_science_only=archive_science_only,
-                             beam_decision_ref=beam_decision_ref)
+                             beam_decision_ref=beam_decision_ref,
+                             aq_equivalent_filters=aq_equivalent_filters)
     started = datetime.now(UTC)
     results = {
         name: _run_source(plan, name, archive_client=archive_client, queue_loader=queue_loader,

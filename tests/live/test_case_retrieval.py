@@ -5,8 +5,11 @@ Independently reproduces the two reported internship-task CASE searches
 the live ALMA Archive TAP service, using search_candidates() -- the same
 orchestration service the tool uses for any real search.
 
-This intentionally tests WEAK RECALL only: "is the reported candidate Member
-UID retrieved at all for this coordinate search". It does NOT assert:
+test_case_reported_member_is_retrieved tests WEAK RECALL only: "is the
+reported candidate Member UID retrieved at all for this coordinate search".
+test_case_entry_count_with_aq_equivalent_filters (added 2026-09-11) opts into
+the AQ-equivalent frequency/resolution/RMS filters and asserts the exact
+visible (Member OUS, target) entries. The weak-recall test does NOT assert:
 
 - an exact candidate count (frequency/RMS/spectral-resolution predicates are
   still SKIPPED by the planner -- see docs/candidate_search.md -- so the
@@ -201,4 +204,66 @@ def test_case_reported_member_is_retrieved(case_id, live_archive_client, record_
 
     # This service never issues a duplication verdict; guard that invariant
     # explicitly so a future change cannot silently turn recall into a label.
+    assert result.assessment == "NOT_EVALUATED"
+
+
+# Expected visible Archive Query entries, (Member OUS, target). Reported by the
+# internship task as "one entry" / "two entries"; reproduced offline on
+# 2026-09-11 from the live rows with the same filter semantics. CASE2 targets
+# are mosaics, so their spatial check stays NOT_EVALUATED (RETAINED).
+EXPECTED_ENTRIES = {
+    "CASE1": ({("uid://A001/X2df9/X1b", "PKS1830-211")}, "MATCHED_FILTERS"),
+    "CASE2": ({("uid://A001/X133d/X9c3", "NGC253"), ("uid://A001/X133d/X9c5", "NGC253")},
+              "RETAINED_UNEVALUATED"),
+}
+
+
+def _build_aq_case_validation(case: dict):
+    frequency = case["representative_frequency"]
+    request = {
+        "target_kind": "FIXED",
+        "geometry": "SINGLE_POINTING",
+        "target_name": f"Reported case search, not a confirmed duplicate ({case['reported_project']})",
+        "position": case["position"],
+        "setup_id": "case-search",
+        "setup_complete": False,
+        "intents": [],
+        "representative_frequency": frequency,
+    }
+    search_options = {
+        "radius": {"value": CASE_SEARCH_RADIUS_ARCSEC, "unit": "arcsec"},
+        "sources": ["ARCHIVE"],
+        "result_limit": 500,
+        "predicates": [
+            {"field": "frequency", "operator": "=",
+             "quantity": {"value": frequency["value"], "unit": frequency["unit"]}},
+            {"field": "angular_resolution", "operator": "<",
+             "quantity": {"value": case["angular_arcsec"], "unit": "arcsec"}},
+            {"field": "spectral_resolution", "operator": "<",
+             "quantity": {"value": case["spectral_khz"], "unit": "kHz"}},
+            {"field": "sensitivity", "operator": "<", "basis": "AGGREGATE",
+             "quantity": {"value": case["rms_mjy_beam"], "unit": "mJy/beam"}},
+        ],
+    }
+    validation = validate_proposed_observation(request, search_options)
+    assert validation.search_readiness is SearchReadiness.READY, validation.issues
+    return validation
+
+
+@pytest.mark.parametrize("case_id", sorted(CASES))
+def test_case_entry_count_with_aq_equivalent_filters(case_id, live_archive_client, record_property):
+    """Exact entry count under opt-in AQ-equivalent filters; still no duplication verdict."""
+    from alma_duplicate.grouping import group_candidates, visible_groups
+
+    case = CASES[case_id]
+    result = search_candidates(_build_aq_case_validation(case), archive_client=live_archive_client,
+                               aq_equivalent_filters=True)
+    assert result.archive.status is S.COMPLETED, result.archive.reasons
+    visible = visible_groups(group_candidates(result))
+    keys = {g.key for g in visible}
+    print(f"\n{case_id} visible entries: {[(g.label, g.disposition.value) for g in visible]}")
+    record_property(f"{case_id}_visible_entries", sorted(" | ".join(k) for k in keys))
+    expected_keys, expected_disposition = EXPECTED_ENTRIES[case_id]
+    assert keys == expected_keys
+    assert all(g.disposition == expected_disposition for g in visible)
     assert result.assessment == "NOT_EVALUATED"
