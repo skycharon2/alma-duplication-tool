@@ -259,3 +259,30 @@ def test_invalid_doppler_domains_are_rejected(
             _quantity(230.0, "GHz"),
             _velocity(velocity, convention),
         )
+
+
+@pytest.mark.parametrize("nominal,usable,kind", [
+    (62.5, 58.6, "NOMINAL_MAPPED"),
+    (1000.0, 937.5, "NOMINAL_MAPPED"),
+    (1875.0, 1875.0, "NOMINAL_MAPPED"),
+    (2000.0, 1875.0, "NOMINAL_MAPPED"),
+    (1950.0, 1875.0, "NOMINAL_MAPPED"),
+    (937.5, 937.5, "ALREADY_USABLE"),
+    (333.0, None, "UNRECOGNIZED"),
+])
+def test_source_neutral_mapping_matches_queue_derivation(nominal, usable, kind):
+    from alma_duplicate.queue_normalization import map_nominal_to_usable_mhz
+
+    mapped, mapped_kind = map_nominal_to_usable_mhz(nominal)
+    assert mapped == usable
+    assert mapped_kind.value == kind
+
+
+@pytest.mark.parametrize("bad", [0.0, -1.0, float("nan"), float("inf"), True])
+def test_source_neutral_mapping_rejects_invalid_widths(bad):
+    from alma_duplicate.queue_normalization import (
+        QueueFrequencyDerivationError, map_nominal_to_usable_mhz,
+    )
+
+    with pytest.raises(QueueFrequencyDerivationError):
+        map_nominal_to_usable_mhz(bad)

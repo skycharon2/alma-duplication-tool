@@ -57,6 +57,8 @@ class CriterionResult:
     reasons: tuple[str, ...]
     missing_side: EvidenceSide | None = None
     decision_refs: tuple[str, ...] = ()
+    # Per-item explanation, e.g. one entry per proposed window.
+    details: tuple[tuple[str, str], ...] = ()
 
     @property
     def is_definite(self) -> bool:

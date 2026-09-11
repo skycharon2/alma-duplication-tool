@@ -17,7 +17,7 @@ with ALMA reviewers.
 | Comparison-context construction from existing ingestion outputs | Implemented (offline, row-scoped; no matching) |
 | Offline search plans and limited spatial evidence adaptation | Implemented; conditional geometry support |
 | Request-driven candidate search across Archive and Queue | Implemented; conservative retention, explicit source/filter limits |
-| Appendix A criteria | ANGULAR implemented (provisional); other criteria and aggregation planned — see [rules](docs/rules.md) |
+| Appendix A criteria | ANGULAR and CONT-SETUP implemented (provisional); other criteria and aggregation planned — see [rules](docs/rules.md) |
 | Browser interface | Planned |
 
 Existing ingestion adapters retain evidence and source associations. Reconstruction
