@@ -2,6 +2,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
+from alma_duplicate.domain.array_classification import ArrayClassification
 from alma_duplicate.domain.comparison import ComparisonContext
 from alma_duplicate.clients.archive_contract import ArchiveQueryResult
 from alma_duplicate.domain.queue import QueueCsvParseResult
@@ -54,7 +55,9 @@ class SpatialEvidence:
     selection_status: SpatialStatus
     reasons: tuple[str, ...]
     interpretation: PositionInterpretation | None = None
-    adapter_version: str = "1"
+    adapter_version: str = "2"
+    # Archive only: application-derived array family used by the local selector.
+    array_classification: ArrayClassification | None = None
 
 
 @dataclass(frozen=True, slots=True)

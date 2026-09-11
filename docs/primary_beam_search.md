@@ -18,7 +18,8 @@ other coordinate-column semantics is not supported by this query convention.
 
 ## Frequency, diameter and scope
 
-The fixed numerical method is `primary_beam_1`:
+The fixed numerical method is `primary_beam_2` (`primary_beam_1` plus the
+`array_family_1` Archive diameter lookup; the beam formula is unchanged):
 
 - FWHM in radians = `1.13 * 299792458 / (frequency_GHz * 1e9 * diameter_m)`.
 - Half-power radius = FWHM / 2. The helper returns full width in degrees.
@@ -28,16 +29,19 @@ The fixed numerical method is `primary_beam_1`:
 - This is an explicit user-frequency approximation for candidate selection. A
   SKY value with unknown frequency frame is allowed under this convention; it
   does not establish cross-source reference compatibility or policy approval.
-- Archive supports exact `12-m` and `7-m` array labels on explicitly non-mosaic
-  rows. Detailed/mixed labels and TP are unresolved/unsupported.
+- Archive diameter comes from `classify_array_type()` (see
+  [search/spatial](search_plan_spatial.md#spatial-evidence)) on explicitly
+  non-mosaic rows: 12 m for a dominant main-array family, 7 m for a dominant
+  ACA family. Total Power, MIXED, missing and unrecognized values stay
+  unresolved/unsupported.
 - Queue requires `PositionInterpretation.antenna_diameter_m` explicitly set to
   7 or 12, with the interpretation's evidence reference. `use_7m` is not taken to
   identify a unique array. Offsets, mosaics, TP and SPS retain existing limits.
 
 Both sources require context-specific ICRS/FIXED position evidence. Missing
 interpretations remain visible; a successful beam calculation alone is not an
-available position check. Archive diameter comes from its exact array label;
-the optional interpretation diameter applies only to Queue.
+available position check. Archive diameter comes from its classified array
+family; the optional interpretation diameter applies only to Queue.
 
 The retrieval radius is the larger of the user's radius and the 7-m half-power
 radius at the selected frequency (plus the existing numerical boundary band),
@@ -155,6 +159,7 @@ bucket, is at `docs/evidence/primary_beam_array_label_census_2026-09-10.md`.
 Neither script approves or changes this strategy; both produce measurement
 evidence for a human decision, consistent with the `application-derived`
 label already used for `antenna_arrays` classification. Given a confirmed
-0% Archive-wide match, a real `classify_array_type()` parser is now a
+0% Archive-wide match, a real `classify_array_type()` parser was a
 prerequisite for the Archive side of this strategy to resolve a diameter on
-real rows at all, not an optional refinement.
+real rows at all. That parser now exists (`array_family_1`, 2026-09-11); the
+measurements above describe the earlier exact-label lookup.
