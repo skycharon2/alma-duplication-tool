@@ -195,3 +195,25 @@ def test_public_selector_dispatches_formula_even_without_region():
     e=adapt_spatial(c,a,interpretation=PositionInterpretation(c.context_id,'ICRS','FIXED','synthetic'))
     assert evaluate_spatial(p,e).status == 'INSIDE'
     assert evaluate_spatial(p,e).operation == 'FORMULA_PRIMARY_BEAM'
+
+
+@pytest.mark.parametrize('array,diameter', [
+    ('A007:DV04 A008:DA52 A011:DV25 A015:DV21', 12.),
+    ('J502:CM02 J503:CM03 N602:CM01 N603:CM09', 7.),
+])
+def test_real_pad_antenna_list_resolves_archive_diameter(array, diameter):
+    result = run_archive(array=array)
+    row = result.archive.rows[0]
+    beam = row.filters[1].spatial
+    assert beam.antenna_diameter_m == diameter
+    assert beam.method_version == 'primary_beam_2'
+    assert row.disposition == 'MATCHED_FILTERS'
+    assert beam.assessment == result.assessment == 'NOT_EVALUATED'
+
+
+def test_total_power_pad_list_keeps_diameter_unresolved():
+    result = run_archive(array='T701:PM04 T702:PM03 T703:PM01 T704:PM02')
+    beam = result.archive.rows[0].filters[1].spatial
+    assert beam.antenna_diameter_m is None
+    assert {'ARRAY_DIAMETER_UNRESOLVED', 'ARRAY_FAMILY_TOTAL_POWER'} <= set(beam.reasons)
+    assert result.archive.rows[0].disposition == 'RETAINED_UNEVALUATED'

@@ -13,6 +13,7 @@ from alma_duplicate.clients.archive_contract import ArchiveQueryResult
 from alma_duplicate.domain.comparison import ArchiveContextEvidence, ComparisonContext, QueueContextEvidence
 from alma_duplicate.domain.queue import QueueCsvParseResult, QueueMosaicKind, SpectralScanEvidence
 from alma_duplicate.domain.search import SearchPlan
+from alma_duplicate.parsers.array_classification import classify_array_type
 from alma_duplicate.domain.spatial import (
     CircleFootprint, PositionInterpretation, SkyPosition, SpatialEvidence,
     SpatialSelection, SpatialStatus as S,
@@ -136,7 +137,7 @@ def adapt_spatial(
         circle, footprint_status, footprint_reasons = _circle(row.get("s_region"))
         reasons += footprint_reasons
         mosaic = payload.prepared.normalized_metadata.is_mosaic.value
-        array = _text(row.get("antenna_arrays"))
+        array = classify_array_type(row.get("antenna_arrays"))
         geometry = "SINGLE_FIELD" if mosaic is False else ("MOSAIC" if mosaic is True else "UNKNOWN")
         if circle and center and center.frame == "ICRS" and _separation(center, circle.center) > 1e-9:
             reasons += ("CENTER_AND_REGION_CENTER_DIFFER",)
@@ -144,13 +145,15 @@ def adapt_spatial(
         if mosaic is not False:
             status = S.UNSUPPORTED
             reasons += ("MOSAIC_OR_UNKNOWN_GEOMETRY_UNSUPPORTED",)
-        elif array not in {"12-m", "7-m"}:
+        elif array.interferometric_diameter_m is None:
+            # Total Power, mixed, missing and unrecognized arrays stay unsupported.
             status = S.UNSUPPORTED
-            reasons += ("TP_OR_UNRECOGNIZED_ARRAY_UNSUPPORTED",)
+            reasons += ("TP_OR_UNRECOGNIZED_ARRAY_UNSUPPORTED", f"ARRAY_FAMILY_{array.family.value}")
         else:
             status = footprint_status
         return SpatialEvidence(context, source_record, center, center_status, circle,
-                               footprint_status, geometry, status, reasons, interpretation)
+                               footprint_status, geometry, status, reasons, interpretation,
+                               array_classification=array)
     if not isinstance(payload, QueueContextEvidence) or not isinstance(source_record, QueueCsvParseResult):
         raise TypeError("Unsupported spatial source")
     row = payload.row

@@ -84,9 +84,17 @@ limited grammar, not a general STC-S parser. Other syntax, invalid data and miss
 data have different statuses. Raw region text remains accessible through context.
 
 Archive local circle-intersection checks are enabled only for explicitly
-non-mosaic rows whose array text is exactly `12-m` or `7-m`. TP, detailed antenna
-lists and other unrecognized array text remain unsupported. This conservative
-first version is not a complete ALMA array classifier. A valid footprint can
+non-mosaic rows whose `antenna_arrays` value classifies as a dominant 12-m main
+array or 7-m ACA family. `classify_array_type()` (method `array_family_1`) reads
+the Pad:Antenna list: antennas on `T` pads are Total Power, `CM` antennas are
+7-m, `DA`/`DV`/`PM` antennas elsewhere are 12-m; the dominant family must hold
+at least 90% of all tokens, otherwise the row is MIXED. On 1,192 live rows
+around CASE1/CASE2 (2026-09-11) every classified row agreed with the ALMA
+Archive Query `array` label. Total Power, MIXED, missing and unrecognized values
+remain unsupported and add an `ARRAY_FAMILY_*` reason. The legacy literal labels
+`12-m`/`7-m`/`TP` are still read. The classification is attached to
+`SpatialEvidence.array_classification` as application-derived evidence; it is
+not an authoritative Archive field. A valid footprint can
 remain usable even if the separate raw center is unavailable. If explicitly
 ICRS centers disagree, both are retained with a reason; the planned region
 predicate uses the footprint, not an invented merged center.
