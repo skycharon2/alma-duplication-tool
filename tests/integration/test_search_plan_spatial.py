@@ -131,6 +131,61 @@ def test_circle_selection_and_unsupported_regions(region, status):
     assert evaluate_spatial(plan, evidence).status == status
 
 
+@pytest.mark.parametrize("region,status", [
+    # Live ALMA TAP casing (verified 2026-09-11 on uid://A001/X2df9/X1b rows).
+    ("Circle ICRS 0 0 0.01", "INSIDE"),
+    ("circle icrs 0 0 0.01", "INSIDE"),
+    ("Circle ICRS 2 0 0.01", "OUTSIDE"),
+    ("Circle GALACTIC 0 0 1", "NOT_EVALUATED"),
+    ("Polygon ICRS 0 0 1 0 1 1", "NOT_EVALUATED"),
+    ("UNION ( Circle ICRS 0 0 0.01 )", "NOT_EVALUATED"),
+    ("Circle ICRS 0 0", "NOT_EVALUATED"),
+])
+def test_live_service_region_casing_is_accepted_without_rewriting_raw_text(region, status):
+    plan = build_search_plan(validation())
+    source, c = archive(plan, region=region)
+    evidence = adapt_spatial(c, source)
+    assert c.evidence.prepared.raw_row["s_region"] == region
+    assert evaluate_spatial(plan, evidence).status == status
+    if status != "NOT_EVALUATED":
+        assert evidence.footprint_status is S.AVAILABLE
+        assert "REGION_REPRESENTATION_UNSUPPORTED" not in evidence.reasons
+
+
+def test_real_case1_circle_parses_to_its_own_beam_footprint():
+    from alma_duplicate.spatial import _circle
+
+    footprint, status, reasons = _circle("Circle ICRS 278.416416 -21.060936 0.002832")
+    assert status is S.AVAILABLE and reasons == ()
+    assert footprint.center.frame == "ICRS"
+    assert footprint.center.ra_deg == pytest.approx(278.416416)
+    assert footprint.center.dec_deg == pytest.approx(-21.060936)
+    assert footprint.radius_deg == pytest.approx(0.002832)
+
+
+REAL_12M = "A007:DV04 A008:DA52 A011:DV25 A015:DV21 A016:DA64 A022:DV02 A023:DA63 A024:DV10"
+REAL_7M = "J502:CM02 J503:CM03 J504:CM12 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06"
+REAL_TP = "T701:PM04 T702:PM03 T703:PM01 T704:PM02"
+
+
+@pytest.mark.parametrize("array,status,family", [
+    (REAL_12M, "INSIDE", "MAIN_ARRAY_12M"),
+    (REAL_7M, "INSIDE", "ACA_7M"),
+    (REAL_TP, "NOT_EVALUATED", "TOTAL_POWER"),
+    (REAL_12M + " J501:CM01 J502:CM02 T701:PM01", "NOT_EVALUATED", "MIXED"),
+])
+def test_real_pad_antenna_lists_enable_only_interferometric_circles(array, status, family):
+    plan = build_search_plan(validation())
+    source, c = archive(plan, region="Circle ICRS 0 0 0.01", array=array)
+    evidence = adapt_spatial(c, source)
+    assert evidence.array_classification.family == family
+    assert evaluate_spatial(plan, evidence).status == status
+    if status == "NOT_EVALUATED":
+        assert "TP_OR_UNRECOGNIZED_ARRAY_UNSUPPORTED" in evidence.reasons
+        assert f"ARRAY_FAMILY_{family}" in evidence.reasons
+    assert c.evidence.prepared.raw_row["antenna_arrays"] == array
+
+
 @pytest.mark.parametrize("mosaic,array", [("T", "12-m"), ("F", "TP"), ("F", "unrecognized")])
 def test_mosaic_tp_unknown_array_not_treated_as_simple_circle(mosaic, array):
     plan = build_search_plan(validation())

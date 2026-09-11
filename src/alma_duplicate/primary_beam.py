@@ -34,8 +34,9 @@ def evaluate_primary_beam(plan, evidence):
     declaration of a unique array. The decision reference records a convention,
     not proof of scientific approval.
     """
-    from alma_duplicate.spatial import _separation, _text
+    from alma_duplicate.spatial import _separation
     from alma_duplicate.search_plan import bind_archive_query
+    from alma_duplicate.parsers.array_classification import classify_array_type
 
     reasons = []
     request = plan.validation.request
@@ -52,10 +53,11 @@ def evaluate_primary_beam(plan, evidence):
         payload = evidence.context.evidence
         if payload.prepared.normalized_metadata.is_mosaic.value is not False:
             reasons.append("MOSAIC_OR_UNKNOWN_GEOMETRY_UNSUPPORTED")
-        array = _text(payload.prepared.raw_row.get("antenna_arrays"))
-        diameter = {"12-m": 12., "7-m": 7.}.get(array)
+        array = evidence.array_classification or classify_array_type(
+            payload.prepared.raw_row.get("antenna_arrays"))
+        diameter = array.interferometric_diameter_m
         if diameter is None:
-            reasons.append("ARRAY_DIAMETER_UNRESOLVED")
+            reasons.extend(("ARRAY_DIAMETER_UNRESOLVED", f"ARRAY_FAMILY_{array.family.value}"))
     else:
         if evidence.selection_status is not SpatialStatus.AVAILABLE:
             reasons.extend(evidence.reasons or ("QUEUE_GEOMETRY_OR_POSITION_UNAVAILABLE",))
@@ -88,6 +90,6 @@ def evaluate_primary_beam(plan, evidence):
     return SpatialSelection(evidence.context.context_id, status, "FORMULA_PRIMARY_BEAM",
                             separation, width / 2 if width else None,
                             tuple(reasons) + ("REQUEST_FREQUENCY_CONVENTION_NOT_POLICY_VERDICT",),
-                            method_version="primary_beam_1", beam_frequency_ghz=frequency,
+                            method_version="primary_beam_2", beam_frequency_ghz=frequency,
                             antenna_diameter_m=diameter, beam_fwhm_deg=width,
                             decision_ref=plan.beam_decision_ref)

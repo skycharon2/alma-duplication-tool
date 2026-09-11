@@ -2,10 +2,11 @@
 
 docs/primary_beam_search.md documents the opt-in FORMULA_PRIMARY_BEAM
 candidate-selection strategy (Q1 partial confirmation: theta_FWHM =
-1.13*lambda/D). Its Archive-side diameter lookup only resolves an EXACT
-`12-m` or `7-m` antenna_arrays label on an explicitly non-mosaic row; every
-other label yields ARRAY_DIAMETER_UNRESOLVED, and a mosaic/unknown-geometry
-row yields MOSAIC_OR_UNKNOWN_GEOMETRY_UNSUPPORTED. How often that happens on
+1.13*lambda/D). Until 2026-09-11 its Archive-side diameter lookup only
+resolved an EXACT `12-m` or `7-m` antenna_arrays label; it now uses
+classify_array_type() (array_family_1) on explicitly non-mosaic rows. TP,
+MIXED and unrecognized values yield ARRAY_DIAMETER_UNRESOLVED, and a
+mosaic/unknown-geometry row yields MOSAIC_OR_UNKNOWN_GEOMETRY_UNSUPPORTED. How often that happens on
 real rows was previously unmeasured (see
 claude/next_rule_engineering_tasks_2026-09-10.md, "阵列类型分类目前完全没做").
 
