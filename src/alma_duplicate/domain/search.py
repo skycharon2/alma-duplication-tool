@@ -41,6 +41,8 @@ class SearchPlan:
     execution: str = "NOT_EXECUTED"
     beam_decision_ref: str | None = None
     retrieval_radius_deg: float | None = None
+    # Opt-in Archive scalar filter semantics, e.g. "AQ_EQUIVALENT_1"; None = skipped.
+    archive_filter_semantics: str | None = None
 
     def for_source(self, name: str) -> SourceSearchPlan | None:
         return next((s for s in self.sources if s.source == name), None)
