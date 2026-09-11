@@ -24,9 +24,9 @@ radius and selected sources. It retains the validation result and SearchOptions.
 | Spatial scope | Planned server-side `s_region` intersection with an ICRS search circle | Planned local fixed-point cone selection, conditional on spatial evidence |
 | Science-only restriction | Disabled by default; explicit planner argument adds it and records it | Not applicable |
 | Explicit angular-resolution predicate | Planned local scalar check of `spatial_resolution` | Planned local scalar check of `Req. Ang. Res.` |
-| Frequency predicate | Retained as SKIPPED with unresolved reference/matching semantics | Same |
-| Spectral-resolution predicate | Retained as SKIPPED pending SPW association semantics | Same |
-| Sensitivity predicate | Retained as SKIPPED pending RMS basis/association implementation | Same |
+| Frequency predicate | SKIPPED by default; opt-in `aq_equivalent_filters` plans a local point-in-SPW check for `=` ([details](candidate_search.md#opt-in-archive-query-equivalent-filters)) | SKIPPED with unresolved reference/matching semantics |
+| Spectral-resolution predicate | SKIPPED by default; opt-in local row check | SKIPPED pending SPW association semantics |
+| Sensitivity predicate | SKIPPED by default; opt-in local `cont_sensitivity_bandwidth` check for basis AGGREGATE | SKIPPED pending RMS basis/association implementation |
 | Result limit | Retained for a future service; not converted to MAXREC | Retained, not applied |
 
 The original single-sided operator is preserved. No synthetic lower/upper bound

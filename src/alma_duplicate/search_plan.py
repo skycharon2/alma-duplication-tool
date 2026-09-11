@@ -11,11 +11,42 @@ from alma_duplicate.domain.search import (
 )
 
 
+AQ_EQUIVALENT_FILTERS = "AQ_EQUIVALENT_1"
+AQ_FILTER_REASON = "AQ_EQUIVALENT_SEARCH_FILTER_NOT_POLICY_CRITERION"
+_AQ_SOURCE_FIELDS = {
+    "frequency": "frequency +/- bandwidth/2",
+    "spectral_resolution": "spectral_resolution",
+    "sensitivity": "cont_sensitivity_bandwidth",
+}
+
+
+def _aq_archive_predicate(p) -> PlannedPredicate:
+    """Plan one opt-in Archive scalar filter with ALMA Archive Query-like meaning.
+
+    frequency "=" means the point lies inside the row's SPW sky-frequency
+    interval; spectral resolution and AGGREGATE sensitivity compare the row
+    scalar with the supplied operator. Anything else stays SKIPPED.
+    """
+    if p.field == "frequency" and p.operator != "=":
+        return PlannedPredicate(p.field, A.SKIPPED, None, p, "FREQUENCY_OPERATOR_UNSUPPORTED")
+    if p.field == "sensitivity" and p.basis != "AGGREGATE":
+        return PlannedPredicate(p.field, A.SKIPPED, None, p, "RMS_BASIS_NOT_AGGREGATE")
+    return PlannedPredicate(p.field, A.PLANNED_LOCAL, _AQ_SOURCE_FIELDS[p.field], p, AQ_FILTER_REASON)
+
+
 def build_search_plan(
     validation: RequestValidationResult, *, archive_science_only: bool = False,
-    beam_decision_ref: str | None = None,
+    beam_decision_ref: str | None = None, aq_equivalent_filters: bool = False,
 ) -> SearchPlan:
-    """Require spatial search readiness; never infer filters from science requests."""
+    """Require spatial search readiness; never infer filters from science requests.
+
+    ``aq_equivalent_filters`` opts the Archive source into local frequency,
+    spectral-resolution and AGGREGATE-sensitivity search filters that mirror the
+    ALMA Archive Query interface. They are candidate filters, not Appendix A
+    criteria; Queue predicates stay SKIPPED.
+    """
+    if not isinstance(aq_equivalent_filters, bool):
+        raise TypeError("aq_equivalent_filters must be a bool")
     if (not validation.is_valid or not validation.can_search
             or validation.request is None or validation.search_options is None):
         raise ValueError("Search planning requires a valid request with search readiness")
@@ -63,6 +94,8 @@ def build_search_plan(
                     "spatial_resolution" if source == "ARCHIVE" else "Req. Ang. Res.",
                     p, "CANDIDATE_SCALAR_FILTER_NOT_POLICY_CRITERION",
                 ))
+            elif aq_equivalent_filters and source == "ARCHIVE":
+                predicates.append(_aq_archive_predicate(p))
             else:
                 reason = {
                     "frequency": "FREQUENCY_REFERENCE_AND_MATCH_SEMANTICS_UNRESOLVED",
@@ -87,7 +120,8 @@ def build_search_plan(
         ))
     return SearchPlan(validation, tuple(plans), options.result_limit,
                       version="2" if beam_decision_ref is not None else "1",
-                      beam_decision_ref=beam_decision_ref, retrieval_radius_deg=min(180., retrieval_radius))
+                      beam_decision_ref=beam_decision_ref, retrieval_radius_deg=min(180., retrieval_radius),
+                      archive_filter_semantics=AQ_EQUIVALENT_FILTERS if aq_equivalent_filters else None)
 
 
 def bind_archive_query(plan: SearchPlan, result: ArchiveQueryResult) -> QueryPlanBinding:
@@ -153,3 +187,70 @@ def evaluate_angular_filter(
     }[requested.operator]
     return ScalarSelection(context.context_id, "MATCH" if matches else "NO_MATCH",
                            value, unit, ("SCALAR_FILTER_ONLY",))
+
+
+_FREQUENCY_EDGE_TOLERANCE_GHZ = 1e-9
+_COMPARE = {
+    "<": lambda v, t: v < t, "<=": lambda v, t: v <= t, "=": lambda v, t: v == t,
+    ">=": lambda v, t: v >= t, ">": lambda v, t: v > t,
+}
+
+
+def _declared_rest_frequency(predicate) -> bool:
+    reference = predicate.context.get("frequency_reference")
+    if hasattr(reference, "get"):
+        reference = reference.get("kind")
+    return isinstance(reference, str) and reference.strip().upper() == "REST"
+
+
+def evaluate_archive_scalar_filter(
+    plan: SearchPlan, context: ComparisonContext, predicate_index: int,
+) -> ScalarSelection:
+    """Evaluate one opt-in AQ-equivalent Archive filter; missing evidence is not NO_MATCH."""
+    import math
+    from alma_duplicate.domain.comparison import ArchiveContextEvidence
+
+    def result(status, value, unit, *reasons):
+        return ScalarSelection(context.context_id, status, value, unit,
+                               (*reasons, AQ_FILTER_REASON), method_version="aq_equivalent_1")
+
+    source = plan.for_source(context.reference.source)
+    if source is None:
+        return result("NOT_EVALUATED", None, None, "SOURCE_NOT_SELECTED")
+    predicate = source.predicates[predicate_index]
+    if (plan.archive_filter_semantics != AQ_EQUIVALENT_FILTERS
+            or predicate.action is not A.PLANNED_LOCAL
+            or predicate.name not in _AQ_SOURCE_FIELDS
+            or not isinstance(context.evidence, ArchiveContextEvidence)):
+        return result("NOT_EVALUATED", None, None, "PREDICATE_NOT_SUPPORTED")
+    requested = predicate.requested
+    assert requested is not None
+    threshold = requested.quantity.value
+    evidence = context.evidence.prepared.comparison_evidence
+    if predicate.name == "frequency":
+        interval = evidence.frequency
+        if _declared_rest_frequency(requested):
+            return result("NOT_EVALUATED", None, "GHz", "REST_FREQUENCY_NOT_COMPARED_WITH_SKY")
+        if requested.quantity.unit != "GHz" or not interval.is_available:
+            return result("NOT_EVALUATED", None, "GHz", "FREQUENCY_INTERVAL_UNAVAILABLE")
+        lower, upper = interval.lower_ghz, interval.upper_ghz
+        if min(abs(threshold - lower), abs(threshold - upper)) <= _FREQUENCY_EDGE_TOLERANCE_GHZ:
+            return result("NOT_EVALUATED", threshold, "GHz", "FREQUENCY_INTERVAL_EDGE_TOLERANCE")
+        inside = lower < threshold < upper
+        return result("MATCH" if inside else "NO_MATCH", threshold, "GHz",
+                      "POINT_INSIDE_ROW_SKY_FREQUENCY_INTERVAL" if inside
+                      else "POINT_OUTSIDE_ROW_SKY_FREQUENCY_INTERVAL")
+    if predicate.name == "spectral_resolution":
+        quantity, factor, expected = evidence.spectral_resolution.quantity, 1e-3, "MHz"
+    else:
+        quantity, factor, expected = evidence.continuum_sensitivity.quantity, 1.0, "mJy/beam"
+    if not quantity.is_available:
+        return result("NOT_EVALUATED", quantity.canonical_value, quantity.canonical_unit,
+                      quantity.status.value)
+    value = quantity.canonical_value
+    if (value is None or isinstance(value, bool) or not math.isfinite(value) or value <= 0
+            or requested.quantity.unit != expected):
+        return result("NOT_EVALUATED", value, quantity.canonical_unit, "QUANTITY_NOT_USABLE")
+    converted = value * factor
+    matches = _COMPARE[requested.operator](converted, threshold)
+    return result("MATCH" if matches else "NO_MATCH", converted, expected, "SCALAR_FILTER_ONLY")

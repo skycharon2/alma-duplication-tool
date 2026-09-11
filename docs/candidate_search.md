@@ -25,6 +25,7 @@ It discovers candidates for review; `assessment` remains `NOT_EVALUATED`.
 | `queue_loader` | Alternative: zero-argument callable returning QueueCsvParseResult, e.g. QueueCsvClient.load with its path bound |
 | `interpretations` | Optional iterable of source-row-scoped PositionInterpretation records |
 | `archive_science_only` | Explicit Archive science-only restriction; defaults to false |
+| `aq_equivalent_filters` | Opt-in Archive frequency, spectral-resolution and AGGREGATE-sensitivity filters; defaults to false (see below) |
 
 Client/result or loader/result pairs are mutually exclusive. Invalid requests and
 duplicate interpretation IDs fail before I/O. No client is created implicitly.
@@ -35,6 +36,26 @@ The Queue loader allows file-read failures to be reported independently of Archi
 It does not authorize downloads, invent retrieval times or require persistence.
 Acquisition/run binding still belongs to the caller; existing source timestamps,
 checksum, metadata and diagnostics stay in the retained parse result.
+
+## Opt-in Archive Query-equivalent filters
+
+`aq_equivalent_filters=True` (plan field `archive_filter_semantics =
+"AQ_EQUIVALENT_1"`) evaluates three Archive predicates locally, in the way the
+ALMA Archive Query interface filters its search results:
+
+| Predicate | Archive evidence | Meaning |
+| --- | --- | --- |
+| `frequency` with `=` | Row sky-frequency interval `frequency +/- bandwidth/2` | The point lies strictly inside this row's SPW; a 1e-9 GHz edge band is NOT_EVALUATED; a declared REST reference is NOT_EVALUATED |
+| `spectral_resolution` | `spectral_resolution` (kHz, compared in MHz) | Supplied operator |
+| `sensitivity` with basis `AGGREGATE` | `cont_sensitivity_bandwidth` (mJy/beam) | Supplied operator |
+
+Other frequency operators and sensitivity bases stay SKIPPED with a reason.
+Missing or unusable values are NOT_EVALUATED, never NO_MATCH. The query text is
+unchanged, and Queue predicates stay SKIPPED. Each result records method
+`aq_equivalent_1` and `AQ_EQUIVALENT_SEARCH_FILTER_NOT_POLICY_CRITERION`: these
+reproduce the supervisor's CASE search filters and are not Appendix A criteria.
+On the pinned live CASE1 rows they leave exactly one row, SPW 29 of
+`uid://A001/X2df9/X1b`, the SPW containing 290.42 GHz.
 
 ## Execution and source outcomes
 
