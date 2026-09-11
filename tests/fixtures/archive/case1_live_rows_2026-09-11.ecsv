@@ -1,0 +1,197 @@
+# %ECSV 1.0
+# ---
+# datatype:
+# - {name: proposal_id, datatype: string}
+# - {name: obs_publisher_did, datatype: string}
+# - {name: group_ous_uid, datatype: string}
+# - {name: member_ous_uid, datatype: string}
+# - {name: asdm_uid, datatype: string}
+# - {name: obs_id, datatype: string}
+# - {name: target_name, datatype: string}
+# - {name: s_ra, unit: deg, datatype: float64}
+# - {name: s_dec, unit: deg, datatype: float64}
+# - {name: s_region, datatype: string}
+# - {name: frequency, unit: GHz, datatype: float64}
+# - {name: bandwidth, unit: Hz, datatype: float64}
+# - {name: em_xel, datatype: int64}
+# - {name: frequency_support, datatype: string}
+# - {name: spectral_resolution, unit: kHz, datatype: float64}
+# - {name: spatial_resolution, unit: arcsec, datatype: float64}
+# - {name: sensitivity_10kms, unit: mJy / beam, datatype: float64}
+# - {name: cont_sensitivity_bandwidth, unit: mJy / beam, datatype: float64}
+# - {name: antenna_arrays, datatype: string}
+# - {name: is_mosaic, datatype: string}
+# - {name: science_observation, datatype: string}
+# - {name: qa2_passed, datatype: string}
+# - {name: obs_release_date, datatype: string}
+# - {name: lastModified, datatype: string}
+# meta: !!omap
+# - {fixture_name: case1_live_rows_2026-09-11}
+# - {fixture_version: '1'}
+# - {source_endpoint: 'https://almascience.eso.org/tap/sync (ivoa.obscore)'}
+# - {retrieved_utc: '2026-09-11'}
+# - {retrieval_adql: 'SELECT <ARCHIVE_CORE_COLUMNS> FROM ivoa.obscore WHERE 1 = INTERSECTS(s_region, CIRCLE(''ICRS'', 278.41633333333334,
+#     -21.061083333333332, 0.002777777777777778))'}
+# - {full_result_rows: 336}
+# - {selection: 'All 4 rows of the reported CASE1 Member OUS plus one row per behaviour: 7-m ACA circle, non-mosaic polygon, 12-m with
+#     PM antenna and frequency outside 290.42 GHz, angular resolution >= 0.5 arcsec, calibrator (science_observation=F), mixed 12-m/ACA/TP
+#     array.'}
+# - {source_tsv_sha256: 1c575fb01ea9c6ec98b649225aaf14bc05be9c1e089a94c6bb51205f4d206a4e}
+# - tap_fields:
+#   - !!omap
+#     - {name: proposal_id}
+#     - {datatype: char}
+#     - {arraysize: 64*}
+#     - {unit: null}
+#     - {ucd: meta.id;obs.proposal}
+#   - !!omap
+#     - {name: obs_publisher_did}
+#     - {datatype: char}
+#     - {arraysize: 33*}
+#     - {unit: null}
+#     - {ucd: meta.ref.ivoid}
+#   - !!omap
+#     - {name: group_ous_uid}
+#     - {datatype: char}
+#     - {arraysize: 64*}
+#     - {unit: null}
+#     - {ucd: null}
+#   - !!omap
+#     - {name: member_ous_uid}
+#     - {datatype: char}
+#     - {arraysize: 64*}
+#     - {unit: null}
+#     - {ucd: null}
+#   - !!omap
+#     - {name: asdm_uid}
+#     - {datatype: char}
+#     - {arraysize: 32*}
+#     - {unit: null}
+#     - {ucd: meta.id}
+#   - !!omap
+#     - {name: obs_id}
+#     - {datatype: char}
+#     - {arraysize: 64*}
+#     - {unit: null}
+#     - {ucd: meta.id}
+#   - !!omap
+#     - {name: target_name}
+#     - {datatype: char}
+#     - {arraysize: 256*}
+#     - {unit: null}
+#     - {ucd: meta.id;src}
+#   - !!omap
+#     - {name: s_ra}
+#     - {datatype: double}
+#     - {arraysize: null}
+#     - {unit: deg}
+#     - {ucd: pos.eq.ra}
+#   - !!omap
+#     - {name: s_dec}
+#     - {datatype: double}
+#     - {arraysize: null}
+#     - {unit: deg}
+#     - {ucd: pos.eq.dec}
+#   - !!omap
+#     - {name: s_region}
+#     - {datatype: char}
+#     - {arraysize: '*'}
+#     - {unit: null}
+#     - {ucd: pos.outline;obs.field}
+#   - !!omap
+#     - {name: frequency}
+#     - {datatype: double}
+#     - {arraysize: null}
+#     - {unit: GHz}
+#     - {ucd: em.freq;obs;meta.main}
+#   - !!omap
+#     - {name: bandwidth}
+#     - {datatype: double}
+#     - {arraysize: null}
+#     - {unit: Hz}
+#     - {ucd: em.freq;instr.bandpass}
+#   - !!omap
+#     - {name: em_xel}
+#     - {datatype: int}
+#     - {arraysize: null}
+#     - {unit: null}
+#     - {ucd: meta.number}
+#   - !!omap
+#     - {name: frequency_support}
+#     - {datatype: char}
+#     - {arraysize: 4000*}
+#     - {unit: GHz}
+#     - {ucd: em.freq;obs;meta.main}
+#   - !!omap
+#     - {name: spectral_resolution}
+#     - {datatype: double}
+#     - {arraysize: null}
+#     - {unit: kHz}
+#     - {ucd: null}
+#   - !!omap
+#     - {name: spatial_resolution}
+#     - {datatype: double}
+#     - {arraysize: null}
+#     - {unit: arcsec}
+#     - {ucd: null}
+#   - !!omap
+#     - {name: sensitivity_10kms}
+#     - {datatype: double}
+#     - {arraysize: null}
+#     - {unit: mJy/beam}
+#     - {ucd: null}
+#   - !!omap
+#     - {name: cont_sensitivity_bandwidth}
+#     - {datatype: double}
+#     - {arraysize: null}
+#     - {unit: mJy/beam}
+#     - {ucd: null}
+#   - !!omap
+#     - {name: antenna_arrays}
+#     - {datatype: char}
+#     - {arraysize: 660*}
+#     - {unit: null}
+#     - {ucd: meta.code.member;instr.setup}
+#   - !!omap
+#     - {name: is_mosaic}
+#     - {datatype: char}
+#     - {arraysize: null}
+#     - {unit: null}
+#     - {ucd: null}
+#   - !!omap
+#     - {name: science_observation}
+#     - {datatype: char}
+#     - {arraysize: null}
+#     - {unit: null}
+#     - {ucd: meta.code.class;obs}
+#   - !!omap
+#     - {name: qa2_passed}
+#     - {datatype: char}
+#     - {arraysize: null}
+#     - {unit: null}
+#     - {ucd: meta.code}
+#   - !!omap
+#     - {name: obs_release_date}
+#     - {datatype: char}
+#     - {arraysize: '*'}
+#     - {unit: null}
+#     - {ucd: time.release}
+#   - !!omap
+#     - {name: lastModified}
+#     - {datatype: char}
+#     - {arraysize: 32*}
+#     - {unit: null}
+#     - {ucd: null}
+# - {note: 'Real rows, not a confirmed duplicate label. Values are unmodified live TAP values.'}
+# schema: astropy-2.0
+proposal_id obs_publisher_did group_ous_uid member_ous_uid asdm_uid obs_id target_name s_ra s_dec s_region frequency bandwidth em_xel frequency_support spectral_resolution spatial_resolution sensitivity_10kms cont_sensitivity_bandwidth antenna_arrays is_mosaic science_observation qa2_passed obs_release_date lastModified
+2021.A.00028.S ADS/JAO.ALMA#2021.A.00028.S uid://A001/X2df9/X1a uid://A001/X2df9/X1b uid://A002/Xfd251c/X7ba5 uid://A001/X2df9/X1b.source.PKS1830-211.spw.25 PKS1830-211 278.41641630749064 -21.06093578855259 "Circle ICRS 278.416416 -21.060936 0.002832" 278.58849826734263 1875000000.0 1920 "[277.65..279.53GHz,1128.91kHz,518.9uJy/beam@10km/s,36.5uJy/beam@native, XX YY] U [279.45..281.33GHz,1128.91kHz,500.6uJy/beam@10km/s,35.4uJy/beam@native, XX YY] U [289.72..291.60GHz,1128.91kHz,494.9uJy/beam@10km/s,35.6uJy/beam@native, XX YY] U [291.52..293.39GHz,1128.91kHz,493.9uJy/beam@10km/s,35.6uJy/beam@native, XX YY]" 1128.90625 0.2293524825457554 0.5188949038627949 0.017882957961035565 "A007:DV04 A008:DA52 A011:DV25 A015:DV21 A016:DA64 A022:DV02 A023:DA63 A024:DV10 A027:DV03 A033:DV01 A035:DA61 A042:DA60 A043:DA55 A044:DA44 A045:DA58 A047:DA42 A048:DV19 A049:DA47 A058:DV12 A060:DV20 A062:DA65 A066:DA62 A068:DA54 A070:DA48 A072:DA53 A073:DA43 A074:DA56 A075:DV09 A076:DA50 A082:DA41 A083:DV22 A086:DV13 A087:DV05 A088:DV11 A089:DV23 A090:DV17 A091:DV14 A092:DV18 A093:DV07 A094:DV16 A096:DA45 A097:DV24 A101:DV15 A104:DA57 A105:DA46 A111:DV08" F T T 2023-03-05T10:25:17.000 2026-07-28T01:24:16.671
+2021.A.00028.S ADS/JAO.ALMA#2021.A.00028.S uid://A001/X2df9/X1a uid://A001/X2df9/X1b uid://A002/Xfd251c/X7ba5 uid://A001/X2df9/X1b.source.PKS1830-211.spw.27 PKS1830-211 278.41641630749064 -21.06093578855259 "Circle ICRS 278.416416 -21.060936 0.002832" 280.38842395607696 1875000000.0 1920 "[277.65..279.53GHz,1128.91kHz,518.9uJy/beam@10km/s,36.5uJy/beam@native, XX YY] U [279.45..281.33GHz,1128.91kHz,500.6uJy/beam@10km/s,35.4uJy/beam@native, XX YY] U [289.72..291.60GHz,1128.91kHz,494.9uJy/beam@10km/s,35.6uJy/beam@native, XX YY] U [291.52..293.39GHz,1128.91kHz,493.9uJy/beam@10km/s,35.6uJy/beam@native, XX YY]" 1128.90625 0.2293524825457554 0.5006080175361323 0.017882957961035565 "A007:DV04 A008:DA52 A011:DV25 A015:DV21 A016:DA64 A022:DV02 A023:DA63 A024:DV10 A027:DV03 A033:DV01 A035:DA61 A042:DA60 A043:DA55 A044:DA44 A045:DA58 A047:DA42 A048:DV19 A049:DA47 A058:DV12 A060:DV20 A062:DA65 A066:DA62 A068:DA54 A070:DA48 A072:DA53 A073:DA43 A074:DA56 A075:DV09 A076:DA50 A082:DA41 A083:DV22 A086:DV13 A087:DV05 A088:DV11 A089:DV23 A090:DV17 A091:DV14 A092:DV18 A093:DV07 A094:DV16 A096:DA45 A097:DV24 A101:DV15 A104:DA57 A105:DA46 A111:DV08" F T T 2023-03-05T10:25:17.000 2026-07-28T01:24:16.671
+2021.A.00028.S ADS/JAO.ALMA#2021.A.00028.S uid://A001/X2df9/X1a uid://A001/X2df9/X1b uid://A002/Xfd251c/X7ba5 uid://A001/X2df9/X1b.source.PKS1830-211.spw.29 PKS1830-211 278.41641630749064 -21.06093578855259 "Circle ICRS 278.416416 -21.060936 0.002832" 290.65799996922254 1875000000.0 1920 "[277.65..279.53GHz,1128.91kHz,518.9uJy/beam@10km/s,36.5uJy/beam@native, XX YY] U [279.45..281.33GHz,1128.91kHz,500.6uJy/beam@10km/s,35.4uJy/beam@native, XX YY] U [289.72..291.60GHz,1128.91kHz,494.9uJy/beam@10km/s,35.6uJy/beam@native, XX YY] U [291.52..293.39GHz,1128.91kHz,493.9uJy/beam@10km/s,35.6uJy/beam@native, XX YY]" 1128.90625 0.2293524825457554 0.49486134757333217 0.017882957961035565 "A007:DV04 A008:DA52 A011:DV25 A015:DV21 A016:DA64 A022:DV02 A023:DA63 A024:DV10 A027:DV03 A033:DV01 A035:DA61 A042:DA60 A043:DA55 A044:DA44 A045:DA58 A047:DA42 A048:DV19 A049:DA47 A058:DV12 A060:DV20 A062:DA65 A066:DA62 A068:DA54 A070:DA48 A072:DA53 A073:DA43 A074:DA56 A075:DV09 A076:DA50 A082:DA41 A083:DV22 A086:DV13 A087:DV05 A088:DV11 A089:DV23 A090:DV17 A091:DV14 A092:DV18 A093:DV07 A094:DV16 A096:DA45 A097:DV24 A101:DV15 A104:DA57 A105:DA46 A111:DV08" F T T 2023-03-05T10:25:17.000 2026-07-28T01:24:16.671
+2021.A.00028.S ADS/JAO.ALMA#2021.A.00028.S uid://A001/X2df9/X1a uid://A001/X2df9/X1b uid://A002/Xfd251c/X7ba5 uid://A001/X2df9/X1b.source.PKS1830-211.spw.31 PKS1830-211 278.41641630749064 -21.06093578855259 "Circle ICRS 278.416416 -21.060936 0.002832" 292.4579256579569 1875000000.0 1920 "[277.65..279.53GHz,1128.91kHz,518.9uJy/beam@10km/s,36.5uJy/beam@native, XX YY] U [279.45..281.33GHz,1128.91kHz,500.6uJy/beam@10km/s,35.4uJy/beam@native, XX YY] U [289.72..291.60GHz,1128.91kHz,494.9uJy/beam@10km/s,35.6uJy/beam@native, XX YY] U [291.52..293.39GHz,1128.91kHz,493.9uJy/beam@10km/s,35.6uJy/beam@native, XX YY]" 1128.90625 0.2293524825457554 0.4939051237917174 0.017882957961035565 "A007:DV04 A008:DA52 A011:DV25 A015:DV21 A016:DA64 A022:DV02 A023:DA63 A024:DV10 A027:DV03 A033:DV01 A035:DA61 A042:DA60 A043:DA55 A044:DA44 A045:DA58 A047:DA42 A048:DV19 A049:DA47 A058:DV12 A060:DV20 A062:DA65 A066:DA62 A068:DA54 A070:DA48 A072:DA53 A073:DA43 A074:DA56 A075:DV09 A076:DA50 A082:DA41 A083:DV22 A086:DV13 A087:DV05 A088:DV11 A089:DV23 A090:DV17 A091:DV14 A092:DV18 A093:DV07 A094:DV16 A096:DA45 A097:DV24 A101:DV15 A104:DA57 A105:DA46 A111:DV08" F T T 2023-03-05T10:25:17.000 2026-07-28T01:24:16.671
+2016.2.00005.S ADS/JAO.ALMA#2016.2.00005.S uid://A001/X1234/X1d7 uid://A001/X1234/X1d8 uid://A002/Xc49eba/X5a7 uid://A001/X1234/X1d8.source.J1833-210B.spw.16 J1833-210B 278.416312499976 -21.06113361111279 "Circle ICRS 278.416312 -21.061134 0.010310" 140.95268989571912 1000000000.0 4096 "[127.49..128.49GHz,488.28kHz,15.4mJy/beam@10km/s,1mJy/beam@native, XX YY] U [129.75..130.75GHz,488.28kHz,14.2mJy/beam@10km/s,933.9uJy/beam@native, XX YY] U [139.09..140.09GHz,488.28kHz,13.6mJy/beam@10km/s,927.2uJy/beam@native, XX YY] U [140.45..141.45GHz,488.28kHz,13.3mJy/beam@10km/s,910.6uJy/beam@native, XX YY]" 488.28125 6.59017020193859 13.280781721061159 0.4713621393953585 "J502:CM02 J503:CM03 J504:CM12 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06" F F T 2018-10-12T15:42:22.000 2026-07-28T01:24:16.671
+2015.1.00075.S ADS/JAO.ALMA#2015.1.00075.S uid://A001/X2fe/X873 uid://A001/X2fe/X874 uid://A002/Xb4f580/X5760 uid://A001/X2fe/X874.source.PKS1830-211.spw.23 PKS1830-211 278.4163330000424 -21.061083000015937 "Polygon ICRS 278.418752 -21.059443 278.419229 -21.060389 278.419299 -21.061433 278.418953 -21.062427 278.418637 -21.062861 278.418090 -21.063340 278.417434 -21.063677 278.416893 -21.063824 278.415773 -21.063824 278.414731 -21.063439 278.413914 -21.062723 278.413437 -21.061777 278.413367 -21.060733 278.413490 -21.060221 278.413809 -21.059588 278.414576 -21.058826 278.415590 -21.058381 278.416145 -21.058299 278.416893 -21.058342 278.417935 -21.058727" 296.7877032777202 2000000000.0 128 "[281.97..282.91GHz,564.45kHz,1.3mJy/beam@10km/s,133.8uJy/beam@native, XX YY] U [284.07..285.01GHz,564.45kHz,1.3mJy/beam@10km/s,134uJy/beam@native, XX YY] U [294.92..295.86GHz,564.45kHz,1.3mJy/beam@10km/s,137.2uJy/beam@native, XX YY] U [295.80..297.78GHz,31250.00kHz,1.4mJy/beam@10km/s,97.1uJy/beam@native, XX YY]" 31250.0 0.15910294581150294 1.380516049228451 0.06078288724448388 "A001:DA59 A002:DA49 A004:DA41 A006:DA61 A007:DV12 A008:DV06 A009:DV18 A010:DV25 A013:DV20 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A054:DV03 A060:DA60 A061:DA62 A064:DV13 A065:DV01 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A072:DV05 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02 A094:DA45 A095:DV25 A096:DA65 A098:DV21 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A108:DA54 A109:DA55 A111:DV05 A112:DA50 A113:DV15 A114:DA52 A115:DA44 A130:DA64 A135:DV19 A136:DV04 T701:PM03 T702:PM02 T703:PM04 T704:PM01" F T T 2018-01-12T00:00:00.000 2026-07-28T01:24:16.671
+2011.0.00405.S ADS/JAO.ALMA#2011.0.00405.S "" uid://A002/X36d874/X7a uid://A002/X3cb0a0/X9e8 uid://A002/X36d874/X7a.source.PKS1830-211.spw.17 PKS1830-211 278.41633 -21.06108 "Circle ICRS 278.416330 -21.061080 0.002793" 282.57323944462553 1875000000.0 3840 "[281.64..283.51GHz,976.56kHz,1.7mJy/beam@10km/s,118.9uJy/beam@native, XX YY] U [283.51..285.39GHz,976.56kHz,1.7mJy/beam@10km/s,119.1uJy/beam@native, XX YY] U [293.63..295.51GHz,976.56kHz,1.7mJy/beam@10km/s,119.8uJy/beam@native, XX YY] U [295.51..297.38GHz,976.56kHz,1.7mJy/beam@10km/s,126.1uJy/beam@native, XX YY]" 976.5625 0.45819350866604663 1.6772264528326741 0.06042934310225634 "A003:DA41 A011:DV12 A025:DV14 A037:PM01 A045:DV11 A046:DV09 A053:DV18 A069:DV16 A071:DV10 A072:DV13 A074:DV15 A075:DA43 A076:DV07 A082:DV05 A137:DV03 A138:DV17" F T T 2013-05-22T07:31:59.000 2026-07-28T01:24:16.671
+2015.1.00075.S ADS/JAO.ALMA#2015.1.00075.S uid://A001/X2fe/X855 uid://A001/X2fe/X856 uid://A002/Xb1586e/X3092 uid://A001/X2fe/X856.source.PKS1830-211.spw.23 PKS1830-211 278.4163329999756 -21.061083000001727 "Circle ICRS 278.416333 -21.061083 0.002790" 296.7877156316529 2000000000.0 128 "[281.97..282.91GHz,564.45kHz,1.6mJy/beam@10km/s,157.8uJy/beam@native, XX YY] U [284.07..285.01GHz,564.45kHz,1.6mJy/beam@10km/s,158uJy/beam@native, XX YY] U [294.92..295.86GHz,564.45kHz,1.5mJy/beam@10km/s,150.1uJy/beam@native, XX YY] U [295.80..297.78GHz,31250.00kHz,1.6mJy/beam@10km/s,115.7uJy/beam@native, XX YY]" 31250.0 0.5937603271755592 1.644286014446633 0.07082507238142233 "A001:DA59 A002:DA49 A004:DA41 A006:DA61 A008:DV08 A009:DV18 A011:DV09 A014:DV22 A015:DV04 A019:DA64 A023:DA51 A027:DV07 A029:DV10 A030:DA65 A031:DV17 A033:DV20 A034:DA46 A036:DV16 A037:DV19 A038:DA50 A042:DV01 A046:DA53 A047:DA55 A048:DV15 A049:DV11 A052:DA47 A060:DA60 A061:DA62 A062:DA56 A063:DA44 A065:DV06 A067:DA42 A068:DA45 A069:DV14 A070:DV21 A071:DA43 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A080:DV23" F T T 2018-01-12T00:00:00.000 2026-07-28T01:24:16.671
+2012.1.00635.S ADS/JAO.ALMA#2012.1.00635.S uid://A002/X7d1738/X41 uid://A002/X7d1738/X42 uid://A002/X7fb89e/Xa06 uid://A002/X7d1738/X42.source.J1833-210.spw.35 J1833-210 278.41600000000005 -21.061466111111113 "Circle ICRS 278.416000 -21.061466 0.002840" 341.59396680467864 2000000000.0 128 "[215.01..216.99GHz,31250.00kHz,2.7mJy/beam@10km/s,161.8uJy/beam@native, XX YY] U [217.01..218.99GHz,31250.00kHz,2.7mJy/beam@10km/s,162uJy/beam@native, XX YY] U [230.96..232.83GHz,976.56kHz,2.6mJy/beam@10km/s,168.4uJy/beam@native, XX YY] U [232.78..234.76GHz,31250.00kHz,2.6mJy/beam@10km/s,163.2uJy/beam@native, XX YY] U [338.62..340.60GHz,31250.00kHz,2.3mJy/beam@10km/s,174.5uJy/beam@native, XX YY] U [340.60..342.59GHz,31250.00kHz,2.9mJy/beam@10km/s,218.1uJy/beam@native, XX YY] U [350.73..352.71GHz,31250.00kHz,2.9mJy/beam@10km/s,219.8uJy/beam@native, XX YY] U [352.66..354.53GHz,976.56kHz,2.9mJy/beam@10km/s,227.3uJy/beam@native, XX YY]" 31250.0 0.4516665765757945 2.8895794598096987 0.06414798674803397 "A006:DV07 A010:DV12 A011:DV22 A015:DV21 A016:DA62 A018:DA60 A021:DA59 A031:DV11 A033:DV18 A034:DV20 A038:DV24 A045:DA50 A046:DA48 A056:DV25 A058:DA46 A062:DV05 A063:DA54 A066:DA43 A067:DV13 A068:DA44 A069:DV16 A071:DV10 A072:DV01 A074:DA47 A075:DA61 A077:DV19 A078:DV04 A080:DA55 A081:DA42 A083:DV14 A085:DA64 A087:DV02 A138:DV17 T701:PM03 T703:PM04" F F T 2015-05-16T14:20:52.000 2026-07-28T01:24:16.671
+2012.1.00635.S ADS/JAO.ALMA#2012.1.00635.S uid://A002/X5d7935/X2fa uid://A002/X5d7935/X2fb uid://A002/X65007d/X76a uid://A002/X5d7935/X2fb.source.J1833-210.spw.17 J1833-210 278.4160000000001 -21.061466111111113 "Circle ICRS 278.416000 -21.061466 0.002840" 216.00104052937132 2000000000.0 128 "[215.00..217.00GHz,31250.00kHz,3.4mJy/beam@10km/s,206uJy/beam@native, XX YY] U [217.00..219.00GHz,31250.00kHz,3.4mJy/beam@10km/s,206.2uJy/beam@native, XX YY] U [230.95..232.84GHz,976.56kHz,3.3mJy/beam@10km/s,214.5uJy/beam@native, XX YY] U [232.77..234.77GHz,31250.00kHz,3.3mJy/beam@10km/s,207.9uJy/beam@native, XX YY] U [338.60..340.60GHz,31250.00kHz,3mJy/beam@10km/s,222.2uJy/beam@native, XX YY] U [340.60..342.60GHz,31250.00kHz,3.1mJy/beam@10km/s,232.3uJy/beam@native, XX YY] U [350.72..352.72GHz,31250.00kHz,3.1mJy/beam@10km/s,234.1uJy/beam@native, XX YY] U [352.65..354.54GHz,976.56kHz,4.6mJy/beam@10km/s,364.8uJy/beam@native, XX YY]" 31250.0 0.16735119948580415 3.4328454626442824 0.07993715775094509 "A001:DA64 A002:DV03 A003:DV12 A004:DV04 A005:DV19 A007:DV23 A010:DV12 A011:DV22 A014:DV01 A015:DV21 A016:DA62 A017:DA51 A020:DV20 A021:DV08 A023:DV08 A024:DV13 A025:DV14 A026:DA47 A028:DA45 A031:DV11 A034:DV20 A035:DA52 A037:DV06 A038:DA53 A038:DV24 A040:DA46 A042:DV15 A043:DA64 A046:DA48 A050:DA42 A054:DA55 A060:DV09 A063:DA54 A064:DA56 A066:DA43 A067:DA46 A068:DA44 A070:DA45 A071:DV10 A072:DV13 A074:DV15 A075:DA43 A076:DA57 A077:DV02 A079:DA41 A080:DV18 A081:DV01 A082:DV05 A087:DA58 A088:DV24 A096:DV07 A106:DV25 A117:DV19 A131:DV24 A137:DV03 A138:DV17 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N605:CM04 N606:CM06 T701:PM03 T702:DA62 T703:PM04 T704:PM01" F F T 2020-10-22T00:00:00.000 2026-07-28T01:24:16.671
