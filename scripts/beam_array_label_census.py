@@ -14,10 +14,7 @@ Every other value (a detailed pad:antenna listing, a mixed/heterogeneous
 array description, a mosaic row, a missing value) yields
 ARRAY_DIAMETER_UNRESOLVED or MOSAIC_OR_UNKNOWN_GEOMETRY_UNSUPPORTED, and the
 row's spatial selection stays NOT_EVALUATED. How large a share of the real
-Archive population that affects has never been measured -- see
-claude/next_rule_engineering_tasks_2026-09-10.md ("阵列类型分类目前完全没做")
-and claude/dev_status_review_2026-09-10.md ("当前精确标签 `12-m`／`7-m` 能覆盖
-多少实际样本，需要测量").
+Archive population that affects had not been measured before this script.
 
 This script measures it directly against the live TAP service (bypassing the
 production ArchiveClient, which is deliberately scoped to bounded
@@ -169,8 +166,8 @@ def render_report(endpoint: str, query: str, rows: list[dict], overflow: bool) -
         "docs/primary_beam_search.md). A low OTHER_DETAILED_OR_MIXED share "
         "supports the current heuristic as a practical default; a high "
         "share is evidence for prioritizing a real `classify_array_type` "
-        "parser (see claude/next_rule_engineering_tasks_2026-09-10.md) "
-        "before relying on this strategy at scale.",
+        "parser before relying on this strategy at scale (since implemented "
+        "as `array_family_1`; see docs/search_plan_spatial.md).",
         "",
     ]
     return "\n".join(lines)

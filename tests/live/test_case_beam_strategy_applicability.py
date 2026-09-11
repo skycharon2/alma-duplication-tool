@@ -7,8 +7,7 @@ resolved an EXACT `12-m` or `7-m` antenna_arrays label; it now uses
 classify_array_type() (array_family_1) on explicitly non-mosaic rows. TP,
 MIXED and unrecognized values yield ARRAY_DIAMETER_UNRESOLVED, and a
 mosaic/unknown-geometry row yields MOSAIC_OR_UNKNOWN_GEOMETRY_UNSUPPORTED. How often that happens on
-real rows was previously unmeasured (see
-claude/next_rule_engineering_tasks_2026-09-10.md, "阵列类型分类目前完全没做").
+real rows was previously unmeasured.
 
 This module measures it for the CASE1/CASE2 coordinate neighborhoods only --
 a small, concrete, real-data sample, not an Archive-wide census (see
