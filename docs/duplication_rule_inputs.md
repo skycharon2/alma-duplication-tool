@@ -436,11 +436,11 @@ upgrades the CASE1/CASE2 finding above from "a concrete zero in two local
 neighborhoods" to a **confirmed Archive-wide zero**: the current exact-label
 heuristic in `primary_beam.py` does not resolve a diameter for the Archive
 side of the formula primary-beam strategy on *any* row in the present
-Archive population, not merely a low or unlucky share of it. This makes a
-real `classify_array_type()` parser (see
-`claude/next_rule_engineering_tasks_2026-09-10.md`) a prerequisite --not
-merely a strengthening consideration-- for relying on the Archive side of
-this strategy beyond hand-checked cases with a manually supplied diameter.
+Archive population, not merely a low or unlucky share of it. This made a
+real `classify_array_type()` parser a prerequisite --not merely a
+strengthening consideration-- for relying on the Archive side of this
+strategy beyond hand-checked cases with a manually supplied diameter. That
+parser now exists; see [search/spatial](search_plan_spatial.md#spatial-evidence).
 
 ### Entry-count reproduction (2026-09-11)
 

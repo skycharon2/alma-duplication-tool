@@ -109,9 +109,9 @@ claiming live CASE verification.
 ## Real-data applicability measurement
 
 Two questions about this strategy's real-data applicability were previously
-unmeasured (see `claude/next_rule_engineering_tasks_2026-09-10.md`): how
-often the exact Archive `12-m`/`7-m` label resolves at all, and what that
-looks like for the two recorded internship-task cases specifically.
+unmeasured: how often the exact Archive `12-m`/`7-m` label resolves at all,
+and what that looks like for the two recorded internship-task cases
+specifically.
 
 [tests/live/test_case_beam_strategy_applicability.py](../tests/live/test_case_beam_strategy_applicability.py)
 runs the formula strategy (no fabricated interpretations) against the real
@@ -132,8 +132,8 @@ correctly declines to treat `s_ra`/`s_dec` as a trusted fixed-ICRS center
 independent of that and is the one to read for this question. This is
 evidence from two local neighborhoods, not a population estimate, but it is
 a concrete zero, not merely "low" -- it is a strong signal to prioritize a
-real `classify_array_type()` parser (pad-prefix based, per
-`claude/next_rule_engineering_tasks_2026-09-10.md`) before this strategy is
+real `classify_array_type()` parser (Pad:Antenna based; see
+[search/spatial](search_plan_spatial.md#spatial-evidence)) before this strategy is
 relied on beyond hand-checked cases. Full output (retrieved-row counts, the
 complete `antenna_arrays` label distribution, and the reason-count tables)
 is recorded in `docs/duplication_rule_inputs.md` section 8 and in the raw
