@@ -46,7 +46,7 @@ existing projections below.
 | `spatial_resolution` | Angular comparison | Core / yes | Unit-validated quantity | Initial angular-resolution prefilter; not a measured restoring beam |
 | `sensitivity_10kms` | Line sensitivity estimate | Core / yes | Unit-validated quantity | Representative-window association must be established before use for a matched SPW; row co-location is insufficient |
 | `cont_sensitivity_bandwidth` | Continuum sensitivity estimate | Core / yes | Unit-validated quantity | Preserve aggregate basis; not achieved image RMS |
-| `antenna_arrays` | Array description | Core / yes | Raw only | No automatic complete array/geometry interpretation |
+| `antenna_arrays` | Array description | Core / yes | Raw; application-derived `classify_array_type()` family for local spatial selection | Heuristic Pad:Antenna majority, not an authoritative array/geometry field |
 | `is_mosaic` | Observation context | Core / yes | Flag normalization | Source declaration; not a reconstructed pointing list |
 | `science_observation` | Science context | Core / yes | Flag normalization; server predicate | Query policy is explicit; QA2 is not an implicit filter |
 | `qa2_passed` | QA context | Core / yes | Flag normalization | Query policy is explicit; QA2 is not an implicit filter |
