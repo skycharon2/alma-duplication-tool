@@ -57,6 +57,24 @@ reproduce the supervisor's CASE search filters and are not Appendix A criteria.
 On the pinned live CASE1 rows they leave exactly one row, SPW 29 of
 `uid://A001/X2df9/X1b`, the SPW containing 290.42 GHz.
 
+## Observation-level presentation groups
+
+`alma_duplicate.grouping.group_candidates(result)` groups every processed row by
+the entry the ALMA Archive Query interface shows: Archive (Member OUS, target
+name) and Queue (project code, target name, band). `visible_groups(groups,
+science_only=False)` keeps groups with at least one non-excluded row. A group's
+disposition is its best row disposition; rows keep their own coherent contexts
+and filter records, values are never merged, and rows with an incomplete key
+stay in singleton groups. Grouping (`observation_group_1`) is presentation, not
+a duplication verdict.
+
+With the opt-in filters, the live CASE rows reduce to the reported entry
+counts: CASE1 to `uid://A001/X2df9/X1b` / PKS1830-211 (MATCHED_FILTERS), and
+CASE2 to the two NGC253 mosaics `uid://A001/X133d/X9c3` and `X9c5`
+(RETAINED_UNEVALUATED, because mosaic geometry is not evaluated). The offline
+test pins CASE1; `tests/live/test_case_retrieval.py` asserts both cases with
+`--run-live`.
+
 ## Execution and source outcomes
 
 Each source has its own SourceSearchExecution and source record:
