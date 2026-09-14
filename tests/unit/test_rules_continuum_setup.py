@@ -2,7 +2,7 @@
 import pytest
 
 from alma_duplicate.request_validation import validate_proposed_observation
-from alma_duplicate.rules import CriterionOutcome as O, EvidenceSide, evaluate_continuum_setup
+from alma_duplicate.rules import CriterionOutcome as O, EvaluationStatus as E, EvidenceSide, evaluate_continuum_setup
 from alma_duplicate.rules.continuum_setup import PORTAL_SCRIPT_V1, qualify_window
 
 
@@ -35,26 +35,27 @@ def request(windows, *, complete=True, intents=("CONTINUUM",)):
     ([window("a", 1800.1, "MHz"), window("b", 1800.1, "MHz", center=102)], True, O.SATISFIED),
     ([window("a", 1800, "MHz"), window("b", 1900, "MHz", center=102)], True, O.NOT_SATISFIED),
     ([window("a", 1.875), window("b", 1.875, center=102)], False, O.SATISFIED),
-    ([window("a", 1.875), window("b", None, center=102)], True, O.INSUFFICIENT_INFORMATION),
-    ([window("a", 0.9375), window("b", 0.9375, center=102)], False, O.INSUFFICIENT_INFORMATION),
+    ([window("a", 1.875), window("b", None, center=102)], True, None),
+    ([window("a", 0.9375), window("b", 0.9375, center=102)], False, None),
     ([window("a", 1.875), window("b", 0.9375, center=102)], True, O.NOT_SATISFIED),
     ([], True, O.NOT_SATISFIED),
-    ([], False, O.INSUFFICIENT_INFORMATION),
+    ([], False, None),
 ])
 def test_prepared_acceptance_table(windows, complete, outcome):
     result = evaluate_continuum_setup(request(windows, complete=complete))
     assert result.outcome is outcome
     assert result.criterion_id == "CONT-SETUP"
     assert result.context_id is None
-    if outcome is O.INSUFFICIENT_INFORMATION:
-        assert result.missing_side is EvidenceSide.PROPOSED
-        assert not result.is_definite
+    if outcome is None:
+        assert result.issue_sides == (EvidenceSide.PROPOSED,)
+        assert result.evaluation is E.INSUFFICIENT_INFORMATION
+        assert not result.has_computed_outcome
 
 
 def test_nominal_widths_are_unresolved_without_an_approved_conversion():
     windows = [window("a", 2.0, kind="NOMINAL"), window("b", 2.0, kind="NOMINAL", center=102)]
     result = evaluate_continuum_setup(request(windows))
-    assert result.outcome is O.INSUFFICIENT_INFORMATION
+    assert result.outcome is None
     assert "WINDOW_WIDTH_UNRESOLVED" in result.reasons
     converted = evaluate_continuum_setup(request(windows), nominal_conversion=PORTAL_SCRIPT_V1)
     assert converted.outcome is O.SATISFIED
@@ -63,16 +64,18 @@ def test_nominal_widths_are_unresolved_without_an_approved_conversion():
 
 
 @pytest.mark.parametrize("kind", ["NOMINAL", "UNKNOWN"])
-def test_narrow_nominal_or_unknown_width_bounds_the_usable_width(kind):
+def test_only_narrow_nominal_width_bounds_the_usable_width(kind):
     windows = [window("a", 1.0, kind=kind), window("b", 0.5, kind=kind, center=102)]
     result = evaluate_continuum_setup(request(windows))
-    assert result.outcome is O.NOT_SATISFIED
+    assert result.outcome is (O.NOT_SATISFIED if kind == "NOMINAL" else None)
+    if kind == "UNKNOWN":
+        return
     assert all(v.startswith("NOT_QUALIFIED:") for _, v in result.details)
 
 
 def test_unknown_kind_wide_window_is_unresolved():
     windows = [window("a", 1.875, kind="UNKNOWN"), window("b", 1.875, kind="UNKNOWN", center=102)]
-    assert evaluate_continuum_setup(request(windows)).outcome is O.INSUFFICIENT_INFORMATION
+    assert evaluate_continuum_setup(request(windows)).outcome is None
 
 
 def test_intents_never_decide():

@@ -6,7 +6,7 @@ import pytest
 from alma_duplicate.candidate_search import search_candidates
 from alma_duplicate.domain.proposed_observation import RequestQuantity
 from alma_duplicate.rules import (
-    CriterionOutcome as O, EvidenceSide, MethodApproval, evaluate_angular_resolution,
+    CriterionOutcome as O, EvaluationStatus as E, EvidenceSide, MethodApproval, evaluate_angular_resolution,
 )
 from alma_duplicate.search_plan import build_search_plan
 from tests.integration.test_case1_live_rows import (
@@ -37,7 +37,7 @@ def test_case1_real_rows_within_and_beyond_factor_two():
     assert matched.candidate.source_field == "spatial_resolution"
     assert matched.candidate.semantics == "ARCHIVE_ESTIMATED_ROBUST_0.5"
     assert matched.approval is MethodApproval.PROVISIONAL
-    assert matched.method_version == "angular_factor_1"
+    assert matched.method_version == "angular_factor_2"
     assert "Appendix A" in matched.policy_ref
     (aca,) = groups["uid://A001/X1234/X1d8"]  # 6.59 arcsec 7-m row
     far = evaluate_angular_resolution(request, aca.context)
@@ -66,17 +66,19 @@ def test_boundary_reason_is_explicit():
 def test_missing_proposed_value_is_insufficient_not_negative():
     request = with_resolution(validation().request, None)
     result = evaluate_angular_resolution(request, archive_context(0.5))
-    assert result.outcome is O.INSUFFICIENT_INFORMATION
-    assert result.missing_side is EvidenceSide.PROPOSED
-    assert not result.is_definite
+    assert result.evaluation is E.INSUFFICIENT_INFORMATION
+    assert result.outcome is None
+    assert result.issue_sides == (EvidenceSide.PROPOSED,)
+    assert not result.has_computed_outcome
 
 
 @pytest.mark.parametrize("candidate", [None, 0.0, -1.0])
 def test_missing_or_invalid_candidate_value_is_insufficient(candidate):
     request = with_resolution(validation().request, 0.5)
     result = evaluate_angular_resolution(request, archive_context(candidate))
-    assert result.outcome is O.INSUFFICIENT_INFORMATION
-    assert result.missing_side is EvidenceSide.CANDIDATE
+    assert result.evaluation is E.INSUFFICIENT_INFORMATION
+    assert result.outcome is None
+    assert result.issue_sides == (EvidenceSide.CANDIDATE,)
 
 
 def test_queue_requested_resolution_is_used_with_its_semantics():

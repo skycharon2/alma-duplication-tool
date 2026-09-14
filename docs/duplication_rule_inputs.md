@@ -7,7 +7,7 @@ the documented request-side subset. [Offline comparison-context construction](co
 reuses existing ingestion outputs. [Offline search planning and limited spatial
 adaptation](search_plan_spatial.md) and [candidate search](candidate_search.md) are
 also implemented. Individual criteria are being added in [rules](rules.md)
-(ANGULAR first, provisional); aggregation into an assessment remains planned. An accepted
+(ANGULAR and CONT-SETUP, both provisional); aggregation into an assessment remains planned. An accepted
 request does not establish that candidate evidence is comparable or that a
 duplication condition can be evaluated.
 
@@ -228,13 +228,13 @@ line matches. Coverage and RMS must be satisfied by the same eligible pair.
 Track request enumeration, per-field completeness, per-source retrieval
 completeness and method availability separately.
 
-For each condition store readiness independently of outcome. Planned outcomes:
-SATISFIED, NOT_SATISFIED, UNDETERMINED, NOT_APPLICABLE. Only an approved applicable
-method with sufficient evidence can issue a threshold result. Unsupported or
-unavailable computation yields UNDETERMINED, never NOT_SATISFIED. A numerical
-estimate carries approximation/method status and cannot automatically become
-approved evidence for a formal threshold. Satisfaction of one condition is not
-a duplicate verdict; future aggregation must preserve AND/OR scope and unknowns.
+For each condition, computation status, condition outcome and method status are
+independent. The implemented [rule-result contract](rules.md) owns their schema
+and migration rules. A provisional method may compute a threshold outcome; that
+outcome is not eligible for formal aggregation. Missing or unusable evidence is
+reported through evaluation status and all affected-side issues, never silently
+converted to NOT_SATISFIED. Satisfaction of one condition is not a duplicate
+verdict; future aggregation must preserve AND/OR scope and unknowns.
 
 The future result must expose candidate/source IDs, matched source/execution/SPW
 or Queue association, condition results, raw and canonical values/units, evidence
@@ -333,7 +333,7 @@ A test name below is within its indicated file.
 | IN-03 | RA outside domain, pole with extra arcseconds, invalid HMS, Boolean, NaN, infinity | `is_valid=False` with precise field paths | Implemented at input/context boundary | R: `test_bad_coordinates_rejected`, `test_invalid_quantity_never_produces_request` | Formal assessment remains separate. |
 | IN-04 | Conflicting/dual representations, reversed/nonpositive or collapsed bounds, arithmetic overflow | `is_valid=False`; no silently chosen representation | Implemented at input/context boundary | R: `test_invalid_window_arithmetic`, `test_bad_associations`, `test_canonical_overflow_and_underflow` | Formal assessment remains separate. |
 | IN-05 | Multiple window IDs, duplicate ID, dangling sensitivity association | Valid independent windows; reject invalid references | Implemented at input/context boundary | R: `test_bad_associations`, `test_line_rms_missing_is_reported_per_window` | Formal assessment remains separate. |
-| IN-06 | Complete setup with two qualified widths, widths exactly at boundary, missing width, incomplete setup | Satisfied / not satisfied / unresolved applicability as evidence permits; intent never decides; apply Q2 explicitly | Implemented, PROVISIONAL (`continuum_setup_1`) | [tests/unit/test_rules_continuum_setup.py](../tests/unit/test_rules_continuum_setup.py): `test_prepared_acceptance_table`, `test_intents_never_decide` | Written Q2 confirmation; approval of any nominal-to-usable conversion. |
+| IN-06 | Complete setup with two qualified widths, widths exactly at boundary, missing width, incomplete setup | Satisfied / not satisfied / unresolved applicability as evidence permits; intent never decides; apply Q2 explicitly | Implemented, PROVISIONAL (`continuum_setup_2`) | [tests/unit/test_rules_continuum_setup.py](../tests/unit/test_rules_continuum_setup.py): `test_prepared_acceptance_table`, `test_intents_never_decide` | Written Q2 confirmation; approval of any nominal-to-usable conversion. |
 | IN-07-a | Valid position/radius, no RMS or unknown mode/basis | Implemented subset: Request search readiness and proposed-side missing evidence are implemented. | Implemented subset | R: `test_missing_requested_width_not_a_line_center_requirement`, `test_line_rms_missing_is_reported_per_window` | See IN-07-b. |
 | IN-07-b | Same case; remaining acceptance | Search READY; relevant rules list missing evidence; no assumed values | Planned remainder | No full acceptance test claimed | candidate-specific rule readiness remains planned. |
 | IN-08 | Complete user RMS but candidate Queue beam basis absent | CANDIDATE-side reason, not another required user field | Planned | No completed acceptance test claimed | Implement candidate-side beam/basis readiness without adding user-input requirements. |
@@ -362,7 +362,7 @@ A test name below is within its indicated file.
 | IN-22 | Cropped usable bounds | Midpoint/span preserved; no automatic SPW-center evidence | Implemented at input/context boundary | R: `test_bounds_midpoint_is_not_spw_center` | Formal assessment remains separate. |
 | IN-23-a | No listed windows, but representative frequency, angular resolution and aggregate RMS supplied | Implemented subset: Empty-window request storage and bounded-search readiness are covered. | Implemented subset | R: `test_direct_aggregate_without_windows_or_noise_width_is_valid`, `test_search_predicates_keep_operator_and_do_not_fill_request` | See IN-23-b. |
 | IN-23-b | Same case; remaining acceptance | Retain all scientific inputs; bounded search possible; unresolved setup qualification | Planned remainder | No full acceptance test claimed | the combined three-field acceptance fixture and formal setup qualification remain outstanding. |
-| IN-24 | Two qualified distinct windows, list incomplete | Setup qualification established under confirmed width semantics; no enumeration veto | Implemented, PROVISIONAL (`continuum_setup_1`) | [tests/unit/test_rules_continuum_setup.py](../tests/unit/test_rules_continuum_setup.py): `test_prepared_acceptance_table` | Written Q2 confirmation. |
+| IN-24 | Two qualified distinct windows, list incomplete | Setup qualification established under confirmed width semantics; no enumeration veto | Implemented, PROVISIONAL (`continuum_setup_2`) | [tests/unit/test_rules_continuum_setup.py](../tests/unit/test_rules_continuum_setup.py): `test_prepared_acceptance_table` | Written Q2 confirmation. |
 | IN-25 | No line match among incomplete window list | UNDETERMINED overall line branch; cannot issue exhaustive negative | Planned | No completed acceptance test claimed | Implement incomplete-list line aggregation without an exhaustive negative. |
 | IN-26-a | Coverage on W1, better RMS only on W2 or unlinked row scalar | Implemented subset: Context construction preserves SPW/row RMS association. | Implemented subset | C: `test_selected_component_does_not_borrow_another_windows_rms`, `test_queue_preserves_only_observed_combinations_and_no_per_spw_rms_copy` | See IN-26-b. |
 | IN-26-b | Same case; remaining acceptance | No combined passing result; matched-pair sensitivity unavailable | Planned remainder | No full acceptance test claimed | formal matched-pair outcomes remain planned. |
