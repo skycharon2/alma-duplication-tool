@@ -292,6 +292,10 @@ readiness rather than mixing their most favorable quantities.
 
 ## 7. Scientific decision register
 
+Follow-up owners, review dates and closure material are tracked in the
+[scientific follow-up checklist](scientific_followup.md). Scientific status
+remains authoritative in this register.
+
 Facts, reported feedback and executable-method approval are distinct. The
 [reported oral-feedback record](evidence/scientific_feedback.md) preserves the
 user's paraphrase, missing discussion date/original wording, scope and closure
