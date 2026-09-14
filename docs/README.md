@@ -5,6 +5,9 @@ The current Python implementation and its tests establish implementation status;
 project plans guide architecture and delivery order. Older plan statements that
 the request API or comparison model are unimplemented are historical.
 
+Read the short [runtime architecture overview](architecture.md) for module
+boundaries and the remaining evaluation connection.
+
 ## Reading paths
 
 For candidate-search use and development:
@@ -62,7 +65,9 @@ Implemented: independent Archive/Queue ingestion and reconstruction, local Queue
 source/parse-summary storage, request validation, offline comparison contexts,
 offline search planning, Archive query binding, limited spatial adaptation and
 individual spatial/angular predicate checks, and candidate-search orchestration.
-Formal duplication assessment and the browser form are not implemented.
+Independent ANGULAR and CONT-SETUP provisional evaluators are also implemented.
+Automatic criterion orchestration, formal duplication aggregation and the browser
+form are not implemented.
 
 | Axis / value | Current meaning | Does not establish |
 | --- | --- | --- |
@@ -92,8 +97,8 @@ explicit; persistent Queue acquisition/run binding remains the caller's task.
 
 Review the [reported scientific feedback](evidence/scientific_feedback.md) and its
 remaining closure requirements; reported oral answers do not enable formal rules.
-Next, independently reproduce CASE1/CASE2 retrieval and pin source evidence,
-effective filters and display grouping/count semantics. Extend supported
+Next, connect per-context evaluation using the [rule-result contract](rules.md),
+pin CASE2 raw evidence, and confirm effective filters and grouping/count semantics. Extend supported
 spatial and scientific evidence only with focused acceptance tests.
 
 Supervisor CASE1/CASE2 retrieval verification requires confirmed grouping and

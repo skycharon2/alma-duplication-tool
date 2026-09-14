@@ -1,7 +1,8 @@
 # Current Archive–Queue data model
 
-Document revision: 0.7. This revision reorganizes documentation; it does not
-change a runtime schema, parser, adapter or model version.
+Document revision: 0.8. The object index includes search, grouping and rule
+results. Rule-result schema 2 is defined in the [rule contract](rules.md);
+source and request schema versions are unchanged.
 
 ## Status and scope
 
@@ -34,6 +35,9 @@ none implies that an approved comparison method or a persistence schema exists.
 | Comparison | [`ComparisonContext`, `ArchiveContextEvidence`, `QueueContextEvidence`, `EvidenceReference`, `EvidenceItem`, `ComparisonSourceResult`, `ComparisonPreparation`](../src/alma_duplicate/domain/comparison.py) | Unfiltered source contexts, evidence dimensions and retained source results |
 | Planning | [`SearchPlan`, `SourceSearchPlan`, `PlannedPredicate`, `QueryPlanBinding`, `ScalarSelection`](../src/alma_duplicate/domain/search.py) | Offline operations, query binding and individual scalar predicate results |
 | Spatial | [`SpatialEvidence`, `SpatialStatus`, `PositionInterpretation`, `SkyPosition`, `CircleFootprint`, `SpatialSelection`](../src/alma_duplicate/domain/spatial.py) | Source-bound center/footprint, explicit interpretation and individual spatial checks |
+| Search execution | [`CandidateSearchResult`, `SourceSearchExecution`, `CandidateRecord`, `FilterExecution`](../src/alma_duplicate/domain/candidate_search.py) | Independent source outcomes, retained contexts, row/filter audit and display omissions |
+| Presentation grouping | [`CandidateGroup`](../src/alma_duplicate/grouping.py) | Organize rows for display; never combine scientific evidence into a synthetic observation |
+| Criterion evaluation | [`CriterionResult`, `CriterionValue`, `CriterionIssue`](../src/alma_duplicate/rules/model.py) | Separate computation, outcome, applicability and approval; retain all affected evidence sides |
 
 ## Archive identities and associations
 

@@ -1,34 +1,79 @@
-# Appendix A criteria
+# Criterion result contract
 
-CONT-SETUP describes whether the continuum condition applies to the proposal;
-its SATISFIED outcome is applicability, not a duplicate.
+The [rules package](../src/alma_duplicate/rules/) contains independent ANGULAR
+and CONT-SETUP functions. Candidate search does not invoke them automatically.
+CONT-SETUP qualifies the proposed setup; it does not compare a candidate or
+produce a duplicate verdict. Both implemented methods remain PROVISIONAL.
 
-Package: [`alma_duplicate.rules`](../src/alma_duplicate/rules/). Each criterion is an
-independent function returning one `CriterionResult` for one proposed request and,
-where the criterion compares observations, one coherent candidate context. No
-function in this package issues an overall duplication verdict; aggregation across
-criteria remains planned.
+## Separate result dimensions (schema 2)
 
-## Result model
+The authoritative definitions are in [model.py](../src/alma_duplicate/rules/model.py).
 
-| Field | Meaning |
+| Field / Python enum | Values and meaning |
 | --- | --- |
-| `criterion_id`, `policy_ref` | Criterion name and the cited Appendix A heading |
-| `method_version`, `approval` | Implemented method and its status (`PROVISIONAL` until written confirmation, then `APPROVED`) |
-| `outcome` | `SATISFIED`, `NOT_SATISFIED`, `INSUFFICIENT_INFORMATION`, `NOT_APPLICABLE`, `NOT_EVALUATED` |
-| `proposed`, `candidate` | Value, unit, source field and semantics on each side |
-| `derived` | Named derived numbers, e.g. the factor |
-| `reasons`, `missing_side`, `decision_refs` | Explanation, the side lacking evidence, and the decision records relied on |
+| `evaluation` / `EvaluationStatus` | EVALUATED, INSUFFICIENT_INFORMATION, NOT_APPLICABLE, NOT_EVALUATED: whether computation produced a condition result, lacks required evidence, is outside method scope, or has not run |
+| `outcome` / `CriterionOutcome` | SATISFIED or NOT_SATISFIED only when EVALUATED; otherwise `None` (JSON null) |
+| `applicability` / `MethodApplicability` | APPLICABLE, UNRESOLVED, NOT_APPLICABLE: whether the implemented method can operate on the supplied evidence within its input scope |
+| `approval` / `MethodApproval` | PROVISIONAL or APPROVED: scientific confirmation status, independent of successful computation |
+| `issues` | All retained `CriterionIssue` records: side, code, path and message; multiple sides may be present |
+| `criterion_id`, `policy_ref`, `method_version`, `numeric_method`, `result_version` | Criterion identity, policy and versioned execution semantics |
+| `context_id`, `proposed`, `candidate` | Context association and values with units, source fields and semantics; retain the original context alongside this result for raw/component references |
+| `derived`, `details`, `reasons`, `decision_refs` | Calculated summaries, per-window/exact-ratio details, explanations and interpretation references |
 
-Missing, invalid or unit-incompatible evidence yields `INSUFFICIENT_INFORMATION`
-with `missing_side`, never `NOT_SATISFIED`.
+Constructors reject contradictory computed-state/outcome combinations. A computed
+outcome requires APPLICABLE. APPROVED requires a decision reference; a reference
+by itself does not confer approval. The two evaluators never upgrade approval.
 
-## Implemented criteria
+`has_computed_outcome` describes calculation only.
+`eligible_for_formal_aggregation` additionally requires APPLICABLE and APPROVED.
+This is a necessary per-criterion gate, not a complete aggregation algorithm:
+future aggregation must still respect coherent contexts, branch scope, other
+criteria and source/search completeness. Formal aggregation is not implemented.
 
-| ID | Policy text (Appendix A) | Method | Status |
-| --- | --- | --- | --- |
-| ANGULAR | "The proposed angular resolution differs by a factor of <=2 from the other observation." | `angular_factor_1`: symmetric factor max/min <= 2, inclusive boundary with a 1e-9 relative band; Archive `spatial_resolution` (estimate), Queue `Req. Ang. Res.` (request) | PROVISIONAL: field mapping from week 1 feedback |
-| CONT-SETUP | "the proposed correlator setup must contain 2 or more windows with a bandwidth > 1.8 GHz" | `continuum_setup_1`, proposal only: USABLE widths compared strictly (1e-9 GHz equality band); NOMINAL/UNKNOWN widths <= 1.8 GHz cannot qualify, wider ones are unresolved unless `nominal_conversion="PORTAL_SCRIPT_V1"` is chosen; two distinct qualifying windows satisfy it even for an incomplete list | PROVISIONAL: Q2 reported feedback; follows the prepared acceptance table |
+Issues preserve evidence limitations, not a universal veto. For example, two
+known qualifying windows establish the existential CONT-SETUP condition even
+when another window is unresolved or enumeration is incomplete. Those issues
+remain visible. A negative result requires complete, resolved enumeration.
 
-Planned next: CONT-FREQ (Q3) and POS-SINGLE (Q1). RMS and line
-criteria wait for Q4-Q6; see the [rule inputs](duplication_rule_inputs.md).
+## Numeric contract and implemented methods
+
+[Numeric helpers](../src/alma_duplicate/rules/numeric.py) compare the exact decimal
+spellings of finite positive **canonical** scalars using rational arithmetic
+(`canonical_decimal_exact_1`). There is no epsilon or threshold snapping.
+This contract neither recovers precision lost during normalization (including
+interval-span construction) nor interprets measurement uncertainty. If a future
+method needs uncertainty bounds, it must define and version them explicitly.
+
+| Criterion | Method version | Behavior |
+| --- | --- | --- |
+| ANGULAR | `angular_factor_2` | Symmetric max/min <= 2, inclusive. Uses Archive `spatial_resolution` estimates or Queue requested angular resolution, canonical arcsec. Missing/invalid/unit-unsafe evidence on both sides is retained. |
+| CONT-SETUP | `continuum_setup_2` | At least two distinct proposed windows with USABLE width strictly > 1.8 GHz. Exactly 1.8 does not qualify; 1.8000000005 does. UNKNOWN width semantics remain unresolved, including narrow widths. |
+
+For ANGULAR, 2.000000001 exceeds the limit. The exact factor is saved in details;
+if its display float overflows, `derived.factor` is null without changing the
+exact condition result.
+
+A NOMINAL width <= 1.8 GHz bounds its usable width and cannot qualify under this
+provisional interpretation. Larger nominal widths require usable evidence or
+explicit `nominal_conversion="PORTAL_SCRIPT_V1"`. This existing opt-in mapping
+is recorded, remains provisional, and is not automatically applied to Archive
+windows. Its source-specific applicability still requires confirmation.
+See the [scientific decision record](evidence/scientific_feedback.md).
+
+## Caller migration from schema 1
+
+This is an intentional rule-result API change; no legacy five-state wrapper is
+provided. Request, ingestion and search-result schemas are unchanged.
+
+| Previous access | Schema 2 replacement |
+| --- | --- |
+| `outcome == INSUFFICIENT_INFORMATION` (or NOT_APPLICABLE / NOT_EVALUATED) | Inspect `evaluation`; `outcome` is null |
+| `missing_side` | Iterate `issues`; `issue_sides` provides a distinct-side summary |
+| `is_definite` for numerical status | `has_computed_outcome` |
+| `is_definite` for formal use | `eligible_for_formal_aggregation`, then the future branch/context/completeness gates |
+| Positional `CriterionResult(...)` | Named arguments with explicit evaluation, applicability and approval |
+
+Historical reports retain their original method/schema versions. New results
+must not be relabelled as old ones. The next delivery is a per-context evaluation
+flow that computes CONT-SETUP once per request and ANGULAR per coherent context,
+retains all issues, and leaves the overall duplication assessment unevaluated.
