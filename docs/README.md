@@ -27,7 +27,7 @@ preselection with center-coordinate retrieval and explicit local beam checks.
 For formal-rule development:
 
 1. [Rule inputs](duplication_rule_inputs.md): required evidence, open Q1–Q7 decisions and acceptance coverage.
-2. [Rules](rules.md): the criterion result model and implemented criteria.
+2. [Rules](rules.md): criterion results, implemented criteria and the explicit post-search evaluation entry point.
 3. [Data model](data_model.md): current object index, associations and invariants; links lead separately to conceptual ERDs and historical evidence.
 4. [Archive dictionary](archive_data_dictionary.md) and [Queue contract](queue_csv_contract.md): source-field semantics and limitations.
 5. Return to the rule-input decision register and acceptance cases before implementing an affected policy method.
@@ -66,8 +66,8 @@ source/parse-summary storage, request validation, offline comparison contexts,
 offline search planning, Archive query binding, limited spatial adaptation and
 individual spatial/angular predicate checks, and candidate-search orchestration.
 Independent ANGULAR and CONT-SETUP provisional evaluators are also implemented.
-Automatic criterion orchestration, formal duplication aggregation and the browser
-form are not implemented.
+An explicit post-search entry point evaluates these rules for retained contexts.
+Formal duplication aggregation and the browser form are not implemented.
 
 | Axis / value | Current meaning | Does not establish |
 | --- | --- | --- |
@@ -97,9 +97,13 @@ explicit; persistent Queue acquisition/run binding remains the caller's task.
 
 Review the [reported scientific feedback](evidence/scientific_feedback.md) and its
 remaining closure requirements; reported oral answers do not enable formal rules.
-Next, connect per-context evaluation using the [rule-result contract](rules.md),
-pin CASE2 raw evidence, and confirm effective filters and grouping/count semantics. Extend supported
+Per-context evaluation is connected through the [rule contract](rules.md).
+Next, pin CASE2 raw evidence and confirm effective filters and grouping/count
+semantics; add further criteria only with their required scientific decisions. Extend supported
 spatial and scientific evidence only with focused acceptance tests.
+
+Run `PYTHONPATH=src python examples/evaluate_candidate_rules.py` for offline
+search followed by provisional criterion evaluation.
 
 Supervisor CASE1/CASE2 retrieval verification requires confirmed grouping and
 pinned evidence; those cases are not confirmed duplicate labels. Formal rule

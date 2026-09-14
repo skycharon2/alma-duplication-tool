@@ -1,7 +1,8 @@
 # Criterion result contract
 
 The [rules package](../src/alma_duplicate/rules/) contains independent ANGULAR
-and CONT-SETUP functions. Candidate search does not invoke them automatically.
+and CONT-SETUP functions. The explicit `evaluate_candidate_search` entry point
+connects them to a finished search; candidate search itself does not invoke them.
 CONT-SETUP qualifies the proposed setup; it does not compare a candidate or
 produce a duplicate verdict. Both implemented methods remain PROVISIONAL.
 
@@ -74,6 +75,64 @@ provided. Request, ingestion and search-result schemas are unchanged.
 | Positional `CriterionResult(...)` | Named arguments with explicit evaluation, applicability and approval |
 
 Historical reports retain their original method/schema versions. New results
-must not be relabelled as old ones. The next delivery is a per-context evaluation
-flow that computes CONT-SETUP once per request and ANGULAR per coherent context,
-retains all issues, and leaves the overall duplication assessment unevaluated.
+must not be relabelled as old ones.
+
+## Explicit evaluation of a finished search
+
+```python
+from alma_duplicate.rules.evaluation import evaluate_candidate_search
+
+report = evaluate_candidate_search(search_result)
+```
+
+The [entry point](../src/alma_duplicate/rules/evaluation.py) accepts a
+`CandidateSearchResult` and takes the request exclusively from
+`search_result.plan.validation.request`. It accepts no replacement request,
+performs no network access, and does not rerun search filters. It expects the
+unchanged result of the search service; its consistency checks do not provide a
+cryptographic binding against manually replaced plan contents.
+
+CONT-SETUP runs once per report, even for zero candidates. ANGULAR runs separately
+for every row in `archive.retained_rows` and `queue.retained_rows`, in that order.
+Both MATCHED_FILTERS and RETAINED_UNEVALUATED are eligible for this attempt.
+EXCLUDED rows remain only in the retained original search audit. Neither a
+negative CONT-SETUP result nor an unresolved spatial filter short-circuits ANGULAR.
+
+Do not iterate only `search_result.candidates`: it may be display-limited.
+Evaluation uses the complete retained source-row lists, preserving display
+omissions in the original result. This does not recover remote truncation or
+expand the executed search scope. Duplicate `(source, context_id)` identities,
+wrong source provenance, inconsistent counts, and unfinished/invalid input are
+rejected. Failed/incomplete sources follow the existing strict no-typed-rows
+contract, while the other source can still contribute candidates.
+
+[Evaluation models](../src/alma_duplicate/rules/evaluation_model.py) store the
+original search result, a tuple of request-level criteria and one
+`ContextEvaluation` per retained candidate. Each context evaluation retains its
+original `CandidateRecord`; context references, alternatives, source dates,
+filter records and scientific values are not flattened or combined. Rule results
+must refer to that candidate's context ID. Programming errors propagate rather
+than being converted to scientific missing-evidence results.
+
+`evaluation_version="1"` versions orchestration; rule-result schema remains 2.
+Report `execution="FINISHED"` means the requested criterion calls completed.
+`assessment="NOT_AGGREGATED"` means no overall duplication decision was made.
+The nested search result keeps its original `assessment="NOT_EVALUATED"`, which
+belongs to the search stage. Every current rule remains PROVISIONAL; no approval
+upgrade or negative duplication conclusion is inferred from source failure,
+empty results, filter exclusion or criterion failure.
+
+The optional `nominal_conversion` argument is forwarded only to CONT-SETUP. Its
+existing explicit, provisional interpretation is unchanged and recorded by that
+rule. This entry point does not infer conversions for candidates.
+
+Run the offline example:
+
+```bash
+PYTHONPATH=src python examples/evaluate_candidate_rules.py
+```
+
+The example uses the repository Queue fixture, does not invent position
+interpretations, and reports Archive as NOT_PROVIDED. Its retained unevaluated
+candidates are not confirmed spatial matches. Regression coverage is in
+[the connection tests](../tests/integration/test_context_rule_evaluation.py).
