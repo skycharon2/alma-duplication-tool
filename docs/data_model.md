@@ -1,6 +1,6 @@
 # Current Archive–Queue data model
 
-Document revision: 0.8. The object index includes search, grouping and rule
+Document revision: 0.9. The object index includes search, grouping and rule
 results. Rule-result schema 2 is defined in the [rule contract](rules.md);
 source and request schema versions are unchanged.
 
@@ -38,6 +38,7 @@ none implies that an approved comparison method or a persistence schema exists.
 | Search execution | [`CandidateSearchResult`, `SourceSearchExecution`, `CandidateRecord`, `FilterExecution`](../src/alma_duplicate/domain/candidate_search.py) | Independent source outcomes, retained contexts, row/filter audit and display omissions |
 | Presentation grouping | [`CandidateGroup`](../src/alma_duplicate/grouping.py) | Organize rows for display; never combine scientific evidence into a synthetic observation |
 | Criterion evaluation | [`CriterionResult`, `CriterionValue`, `CriterionIssue`](../src/alma_duplicate/rules/model.py) | Separate computation, outcome, applicability and approval; retain all affected evidence sides |
+| Evaluation orchestration | [`EvaluationReport`, `ContextEvaluation`](../src/alma_duplicate/rules/evaluation_model.py) | Retain search result, request-level criteria and distinct candidate-level evaluations; no formal aggregation |
 
 ## Archive identities and associations
 

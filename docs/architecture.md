@@ -12,14 +12,15 @@ The [object index](data_model.md) links definitions and the
 | Association | Reconstruction and comparison construction retain row/component or real Queue associations, including alternatives. Member grouping does not authorize mixing them. |
 | Search execution | Candidate search orchestrates source calls, binding, local selectors and independent execution reports; failed or incomplete sources remain visible. |
 | Presentation | Grouping organizes candidate rows for display while retaining their contexts and filter records. |
-| Criteria | ANGULAR and CONT-SETUP are separately callable provisional functions. They do not run automatically from candidate search and do not produce an aggregate verdict. |
+| Criteria | ANGULAR and CONT-SETUP are separately callable provisional functions. An explicit evaluation entry point runs them after search; they do not produce an aggregate verdict. |
 
-The next connection should evaluate CONT-SETUP once for the proposed request,
-and ANGULAR for each coherent candidate context. Store those results alongside
-original contexts and source execution reports. Follow the [rule contract](rules.md)
-for computation, outcome, applicability, approval and multi-side diagnostics.
-A successful search, a display group and an approved criterion are different
-objects with different completeness requirements.
+The [evaluation entry point](../src/alma_duplicate/rules/evaluation.py) takes the
+original plan request, evaluates CONT-SETUP once and ANGULAR for each retained
+context, including candidates hidden by the display limit. It keeps the search
+result and candidate objects intact. The [rule contract](rules.md) specifies
+computation, outcome, applicability, approval and multi-side diagnostics.
+A successful search, a display group and an approved criterion remain different
+objects with different completeness requirements. Formal aggregation is pending.
 
 ## Dependencies and focused follow-up
 
