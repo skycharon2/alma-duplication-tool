@@ -1,0 +1,118 @@
+"""Evaluate a request file and export a provisional criterion report."""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import sys
+
+from alma_duplicate.candidate_search import search_candidates
+from alma_duplicate.clients.queue_csv_client import QueueCsvClient
+from alma_duplicate.reporting import json_value, report_document, write_report
+from alma_duplicate.request_validation import validate_proposed_observation
+from alma_duplicate.rules.evaluation import evaluate_candidate_search
+
+
+def _reject_constant(value):
+    raise ValueError(f"Non-standard JSON constant: {value}")
+
+
+def _unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"Duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def main(argv=None, *, archive_client_factory=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--request", type=Path, required=True)
+    parser.add_argument("--queue-csv", type=Path)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--live-archive", action="store_true")
+    parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--beam-decision-ref")
+    parser.add_argument("--aq-equivalent-filters", action="store_true")
+    args = parser.parse_args(argv)
+
+    try:
+        inputs = [args.request]
+        if args.queue_csv is not None:
+            inputs.append(args.queue_csv)
+        if any(args.output.resolve() == p.resolve() for p in inputs):
+            raise ValueError("Output must not replace an input file")
+        if args.output.exists() and not args.overwrite:
+            raise FileExistsError(
+                "Output exists; select another path or use --overwrite"
+            )
+        raw = args.request.read_bytes()
+        payload = json.loads(
+            raw.decode("utf-8-sig"),
+            parse_constant=_reject_constant,
+            object_pairs_hook=_unique_object,
+        )
+        if not isinstance(payload, dict):
+            raise ValueError("Request file must be a JSON object")
+        if set(payload) != {"request", "search_options"}:
+            raise ValueError(
+                "Expected exactly 'request' and 'search_options'"
+            )
+        validated = validate_proposed_observation(
+            payload["request"], payload["search_options"]
+        )
+        if not validated.is_valid or not validated.can_search:
+            print(json.dumps({
+                "error": "REQUEST_NOT_SEARCH_READY",
+                "issues": json_value(validated.issues),
+                "search_readiness": validated.search_readiness,
+            }, allow_nan=False), file=sys.stderr)
+            return 2
+
+        selected = validated.search_options.sources
+        if args.live_archive and "ARCHIVE" not in selected:
+            raise ValueError("--live-archive requires ARCHIVE selection")
+        if args.queue_csv is not None and "QUEUE" not in selected:
+            raise ValueError("--queue-csv requires QUEUE selection")
+        if args.beam_decision_ref is not None and not args.beam_decision_ref.strip():
+            raise ValueError("--beam-decision-ref must not be blank")
+
+        client = None
+        if args.live_archive:
+            if archive_client_factory is None:
+                from alma_duplicate.clients.archive_client import ArchiveClient
+                archive_client_factory = lambda: ArchiveClient(
+                    "https://almascience.eso.org/tap"
+                )
+            client = archive_client_factory()
+
+        loader = None
+        if args.queue_csv is not None:
+            loader = lambda: QueueCsvClient().load(args.queue_csv)
+        search = search_candidates(
+            validated,
+            archive_client=client,
+            queue_loader=loader,
+            beam_decision_ref=args.beam_decision_ref,
+            aq_equivalent_filters=args.aq_equivalent_filters,
+        )
+        # No position interpretation or nominal conversion is invented.
+        report = evaluate_candidate_search(search)
+        document = report_document(
+            report, input_sha256=hashlib.sha256(raw).hexdigest()
+        )
+        write_report(args.output, document, overwrite=args.overwrite)
+    except (OSError, UnicodeError, ValueError) as exc:
+        print(f"Evaluation failed: {exc}", file=sys.stderr)
+        return 2
+
+    unavailable = any(
+        source.status in {"FAILED", "INCOMPLETE", "NOT_PROVIDED"}
+        for source in (search.archive, search.queue)
+    )
+    print(f"Report written: {args.output}")
+    return 3 if unavailable else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
