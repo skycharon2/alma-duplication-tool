@@ -282,19 +282,22 @@ Queue conversion, frame interpretation, or duplication decisions.
 
 ### Correlator-mode evidence boundary
 
-TAP does not expose a direct, policy-grade FDM/TDM field. The selected
-`em_xel` column is preserved in each raw Archive row, but the production
-adapter does not classify it as `CONTINUUM`/`LINE` and does not map it to
-TDM/FDM. Channel count alone is not a reliable correlator-mode discriminator
-across polarization, online averaging, processor, and historical setup
-variants.
+The Cycle 13 Science Archive Manual documents a per-SPW Frequency Support
+`Type`, where `continuum` and `line` carry TDM/FDM semantics. The selected
+public TAP projection used by this client does not expose that `Type` in the
+parsed `frequency_support` string. The selected `em_xel` column is preserved
+in each raw Archive row, but the production adapter does not classify it as
+`CONTINUUM`/`LINE` or map it to TDM/FDM. Channel count alone is not a reliable
+correlator-mode discriminator across polarization, online averaging, processor,
+and historical setup variants.
 
 Consequently, `PreparedArchiveRow` and `ArchivePipelineBatch` expose no
-channel-count-derived mode evidence. Until a separately validated configuration
-source is implemented and reliably associated with a candidate SPW, formal
-correlator mode remains unavailable to the policy layer. Unavailable mode must
-not satisfy an FDM requirement and must not exclude a candidate. Production
-code does not call the undocumented Archive Elasticsearch endpoint.
+channel-count-derived mode evidence. Until a reproducible machine-readable path
+to the documented per-SPW Type is implemented and reliably associated with the
+exact candidate SPW, formal mode evidence remains unavailable to the policy
+layer. Unavailable mode must not satisfy an FDM requirement and must not exclude
+a candidate. Production code does not call the undocumented Archive Elasticsearch
+endpoint.
 
 ## Query provenance
 

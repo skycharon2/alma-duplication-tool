@@ -60,7 +60,8 @@ provisional interpretation. Larger nominal widths require usable evidence or
 explicit `nominal_conversion="PORTAL_SCRIPT_V1"`. This existing opt-in mapping
 is recorded, remains provisional, and is not automatically applied to Archive
 windows. Its source-specific applicability still requires confirmation.
-See the [scientific decision record](evidence/scientific_feedback.md).
+See the central [scientific decision register](duplication_rule_inputs.md#7-scientific-decision-register);
+historical reported feedback remains preserved in [its evidence record](evidence/scientific_feedback.md).
 
 ## Caller migration from schema 1
 

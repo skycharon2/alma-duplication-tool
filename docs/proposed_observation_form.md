@@ -126,9 +126,10 @@ carry the same distinctions independently of the future web framework.
 
 ## After search — Minimum result explanation
 
-This is the future result contract, not an additional rule-engine implementation
-in this document change. Search candidates remains the first-stage action;
-later assessment fills condition outcomes without changing input semantics.
+This is the future browser presentation contract over the already implemented
+candidate-search and provisional-evaluation backend. Search candidates remains
+the first-stage user action; later formal aggregation can add an overall
+assessment without changing input semantics.
 
 | Result area | Required explanation |
 | --- | --- |

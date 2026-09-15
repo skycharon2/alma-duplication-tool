@@ -224,12 +224,14 @@ The [status guide](README.md#current-capabilities-and-status-meanings) separates
 request readiness, source completeness, query binding and individual selection.
 None establishes rule readiness or a duplicate verdict.
 
-Per-rule/per-candidate readiness remains planned: EVALUABLE, UNAVAILABLE,
-UNSUPPORTED and NOT_APPLICABLE require coherent evidence and an approved method.
-These are design names, not an implemented enum and not changes to ParseStatus.
-Request issues expose PROPOSED/METHOD sides; the comparison layer has independent
-[evidence dimensions](comparison_contexts.md#evidence-and-states), not a formal
-CANDIDATE-side readiness evaluator.
+Per-criterion execution uses the implemented [rule-result contract](rules.md),
+not the earlier design labels EVALUABLE, UNAVAILABLE and UNSUPPORTED. Runtime
+`EvaluationStatus` is EVALUATED, INSUFFICIENT_INFORMATION, NOT_APPLICABLE or
+NOT_EVALUATED; `MethodApplicability` is APPLICABLE, UNRESOLVED or NOT_APPLICABLE,
+while `MethodApproval` remains a separate dimension. These states do not
+establish an aggregate duplicate verdict. Request issues expose PROPOSED/METHOD
+sides; the comparison layer keeps its independent
+[evidence dimensions](comparison_contexts.md#evidence-and-states).
 
 The future per-rule reason contract additionally needs candidate context/window
 identity and decision references. Planned reason categories include
