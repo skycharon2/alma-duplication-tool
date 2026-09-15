@@ -1,0 +1,33 @@
+{
+  "baseline_commit": "de683284089bd5ec02ad6aede53e81fc9874e25e",
+  "validation_environment": "Codex patch-preparation environment; not maintainer local execution.",
+  "offline_pytest": {
+    "passed": 862,
+    "skipped": 10
+  },
+  "new_tests": 20,
+  "live_tests_run": false,
+  "fixture_sha256": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+  "evaluation_version": "2",
+  "evaluation_scope": {
+    "context_scope": "ALL_RETAINED_CONTEXTS; excluded rows remain in sources audit",
+    "total_retained": 13,
+    "shown_candidates": 1,
+    "evaluated_contexts": 13,
+    "display_truncated": true,
+    "unused_interpretation_ids": []
+  },
+  "first_pos_single": {
+    "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:42",
+    "outcome": "SATISFIED",
+    "derived": {
+      "separation_deg": 0.0,
+      "candidate_radius_deg": 0.0023891964682146577,
+      "candidate_frequency_ghz": 338.5,
+      "antenna_diameter_m": 12.0,
+      "boundary_tolerance_deg": 1e-10
+    },
+    "approval": "PROVISIONAL"
+  },
+  "assessment": "NOT_AGGREGATED"
+}

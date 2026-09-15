@@ -70,6 +70,27 @@ def _spatial(evidence):
     }
 
 
+def _filter_summary(source):
+    """Counts derived from audited rows; predicate counts can overlap."""
+    predicates = {}
+    for row in source.rows:
+        for item in row.filters:
+            key = (item.predicate_index, item.name, item.stage)
+            counts = predicates.setdefault(key, {})
+            counts[item.outcome] = counts.get(item.outcome, 0) + 1
+    return {
+        "scope": "PROCESSED_SOURCE_ROWS_ONLY; excludes rows not returned by server",
+        "processed_rows": len(source.rows),
+        "retained_rows": len(source.retained_rows),
+        "excluded_rows": sum(row.disposition == "EXCLUDED" for row in source.rows),
+        "predicate_counts_may_overlap": True,
+        "predicates": [
+            {"predicate_index": key[0], "name": key[1], "stage": key[2], "outcomes": counts}
+            for key, counts in sorted(predicates.items())
+        ],
+    }
+
+
 def _source(source):
     record = source.source_record
     metadata = None
@@ -93,6 +114,7 @@ def _source(source):
     return {
         "status": source.status,
         "input_mode": source.input_mode,
+        "filter_summary": _filter_summary(source),
         "source_metadata": metadata,
         "query_binding": source.query_binding,
         "reasons": source.reasons,
@@ -153,6 +175,7 @@ def report_document(report, *, input_sha256=None):
             for source in (search.archive, search.queue)
         },
         "evaluation_scope": {
+            "context_scope": "ALL_RETAINED_CONTEXTS; excluded rows remain in sources audit",
             "total_retained": search.total_retained,
             "shown_candidates": len(search.candidates),
             "evaluated_contexts": len(report.context_evaluations),

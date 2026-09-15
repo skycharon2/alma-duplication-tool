@@ -118,3 +118,6 @@ citations and Q1–Q7 interpretations remain in the rule-input contract.
 
 - [Queue candidate-beam profile](queue_candidate_beam.md)
 - [Verified ALMA source evidence](evidence/official_sources.md)
+
+- [Queue POS-SINGLE](pos_single.md): provisional candidate coverage criterion,
+  retained-context scope, derived filter summaries and offline replay.

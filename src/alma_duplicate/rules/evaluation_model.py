@@ -23,6 +23,6 @@ class EvaluationReport:
     search_result: CandidateSearchResult
     request_criteria: tuple[CriterionResult, ...]
     context_evaluations: tuple[ContextEvaluation, ...]
-    evaluation_version: str = field(default="1", init=False)
+    evaluation_version: str = field(default="2", init=False)
     execution: Literal["FINISHED"] = field(default="FINISHED", init=False)
     assessment: Literal["NOT_AGGREGATED"] = field(default="NOT_AGGREGATED", init=False)

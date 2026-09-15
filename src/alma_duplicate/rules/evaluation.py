@@ -6,6 +6,7 @@ The request is taken from the original plan; no substitute request is accepted.
 from __future__ import annotations
 
 from alma_duplicate.domain.candidate_search import CandidateSearchResult, SearchSourceStatus
+from alma_duplicate.rules.position_single import evaluate_position_single
 from alma_duplicate.rules.angular import evaluate_angular_resolution
 from alma_duplicate.rules.continuum_setup import evaluate_continuum_setup
 from alma_duplicate.rules.evaluation_model import ContextEvaluation, EvaluationReport
@@ -39,7 +40,7 @@ def _check_search(result: CandidateSearchResult) -> None:
 def evaluate_candidate_search(
     search_result: CandidateSearchResult, *, nominal_conversion: str | None = None,
 ) -> EvaluationReport:
-    """CONT-SETUP once; ANGULAR for each retained context, including hidden rows.
+    """CONT-SETUP once; ANGULAR and POS-SINGLE for each retained context, including hidden rows.
 
 Failed/incomplete sources remain in the original report. Their absence never
 becomes a negative criterion result. All current evaluators remain provisional.
@@ -49,7 +50,8 @@ Programming/contract errors propagate; they are not scientific missing evidence.
     request = search_result.plan.validation.request
     setup = evaluate_continuum_setup(request, nominal_conversion=nominal_conversion)
     contexts = tuple(
-        ContextEvaluation(candidate=row, criteria=(evaluate_angular_resolution(request, row.context),))
+        ContextEvaluation(candidate=row, criteria=(evaluate_angular_resolution(request, row.context),
+            evaluate_position_single(request, row.context, row.spatial_evidence)))
         for source in (search_result.archive, search_result.queue)
         for row in source.retained_rows
     )
