@@ -1,4 +1,4 @@
-# Runtime architecture and next connection
+# Runtime architecture
 
 This is a navigation map of implemented boundaries, not another field schema.
 The [object index](data_model.md) links definitions and the

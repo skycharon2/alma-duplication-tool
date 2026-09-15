@@ -104,9 +104,11 @@ Production code is in [src/alma_duplicate](src/alma_duplicate/), with automated
 checks in [tests](tests/). [Notebooks](notebooks/) retain dated exploration
 evidence; their outputs do not establish current production capabilities.
 The [candidate-search service](docs/candidate_search.md) connects existing request,
-comparison and search/spatial objects. The [next-delivery checklist](docs/README.md#next-delivery)
-covers independently verified CASE retrieval.
-Reported CASE candidates are not confirmed duplicate/non-duplicate labels.
+comparison and search/spatial objects; per-context rule evaluation is documented
+in [rules](docs/rules.md). The [next-delivery checklist](docs/README.md#next-delivery)
+now focuses on scientific closure of the fixed-target single-point continuum path
+and formal aggregation. Existing CASE retrieval evidence remains retrieval evidence:
+reported CASE candidates are not confirmed duplicate/non-duplicate labels.
 
 ## License
 

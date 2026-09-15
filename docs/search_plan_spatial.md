@@ -153,6 +153,8 @@ wraparound. They use synthetic/local fixtures, not independently verified CASE
 retrieval or approved duplicate labels.
 
 The [candidate-search service](candidate_search.md) now orchestrates these plans
-and individual checks and owns execution/completeness reporting. SearchOptions
-predicates remain distinct from formal criteria. The
-[next-delivery checklist](README.md#next-delivery) covers CASE retrieval verification.
+and individual checks and owns execution/completeness reporting. Per-context
+provisional criterion execution is documented separately in [rules](rules.md);
+SearchOptions predicates remain distinct from formal criteria. Current scientific-
+closure priorities, including Archive POS-SINGLE, CONT-FREQ/CONT-RMS and Q8
+aggregation, are centralized in the [next-delivery checklist](README.md#next-delivery).

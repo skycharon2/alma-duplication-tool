@@ -23,7 +23,7 @@ The authoritative definitions are in [model.py](../src/alma_duplicate/rules/mode
 
 Constructors reject contradictory computed-state/outcome combinations. A computed
 outcome requires APPLICABLE. APPROVED requires a decision reference; a reference
-by itself does not confer approval. The two evaluators never upgrade approval.
+by itself does not confer approval. Current evaluators never upgrade approval.
 
 `has_computed_outcome` describes calculation only.
 `eligible_for_formal_aggregation` additionally requires APPLICABLE and APPROVED.

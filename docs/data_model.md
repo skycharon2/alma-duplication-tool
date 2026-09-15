@@ -239,7 +239,7 @@ and [Queue contract](queue_csv_contract.md). Formal thresholds remain in the
 - [Conceptual ERDs and entity descriptions](design/conceptual_data_model.md): original design scopes and rationale.
 - [Historical exploration evidence](evidence/exploration_snapshots.md): capture dates, sample populations, counterexamples and limits.
 - [Rule-input decision register](duplication_rule_inputs.md#7-scientific-decision-register): unresolved formal scientific methods.
-- [Next delivery](README.md#next-delivery): candidate service integration using these existing objects.
+- [Current status and next delivery](README.md#next-delivery): scientific closure priorities now that candidate search and provisional evaluation are connected.
 
 General STC-S/pointing reconstruction, physical-target alias resolution,
 configuration-backed mode evidence, brace token-2 discrimination, physical-file

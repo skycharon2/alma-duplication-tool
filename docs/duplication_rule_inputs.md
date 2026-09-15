@@ -6,8 +6,9 @@ The [offline request validation API](proposed_observation_api.md) implements
 the documented request-side subset. [Offline comparison-context construction](comparison_contexts.md)
 reuses existing ingestion outputs. [Offline search planning and limited spatial
 adaptation](search_plan_spatial.md) and [candidate search](candidate_search.md) are
-also implemented. Individual criteria are being added in [rules](rules.md)
-(ANGULAR and CONT-SETUP, both provisional); aggregation into an assessment remains planned. An accepted
+also implemented. [Rule evaluation](rules.md) currently includes provisional
+ANGULAR, CONT-SETUP and Queue POS-SINGLE criteria; aggregation into an assessment
+remains planned. An accepted
 request does not establish that candidate evidence is comparable or that a
 duplication condition can be evaluated.
 
@@ -86,17 +87,26 @@ Additional verified sources:
   contributed, distributed as-is and unsupported by the ARCs, and the script
   states that its per-window sensitivity ignores system-temperature variation
   between windows.
+- [AQM: Cycle 13 ALMA Science Archive Manual, Doc. 12.15 v1.0, March 2026, Appendix A, checked 2026-09-15](https://almascience.eso.org/alma-data/documents-and-tools/latest/science-archive-manual):
+  the Archive result-table `Frequency Support` dictionary includes a per-SPW
+  `Type`; `continuum` and `line` indicate TDM and FDM, respectively. This settles
+  the documented meaning of that Archive display field. It does not establish
+  that the current public TAP `frequency_support` string selected by this project
+  exposes the `Type`, nor how to bind an auxiliary machine-readable value to the
+  exact candidate SPW. This PDF check is not yet byte-pinned in the repository
+  source manifest.
 - [M: measured here against the pinned NGC6240 Archive fixture](../tests/fixtures/archive/ngc6240/):
   every `frequency_support` bracket component carries five tokens, namely
   frequency range, spectral resolution, 10 km/s sensitivity, native-resolution
   sensitivity and polarization products. No correlator-mode token is present.
 
 These facts justify separate storage fields; they do not by themselves specify
-cross-source comparison algorithms. B/O/H/S/M below refer to these sources.
+cross-source comparison algorithms. B/O/H/S/AQM/M below refer to these sources.
 
 A letter records where a statement comes from, and that origin limits what the
 statement can support. A carries policy thresholds. B, O and H carry instrument
-and tool facts. S is implementation evidence from a tool the observatory
+and tool facts. AQM carries official Archive result-table field semantics. S is
+implementation evidence from a tool the observatory
 publishes but does not support: it can show that a convention exists and can
 never carry scientific approval. M is a measurement on pinned data here, which
 can exclude a proposed evidence path but cannot establish an Archive-wide
@@ -327,7 +337,7 @@ authoritative here.
 Facts, reported feedback and executable-method approval are distinct. The
 [reported oral-feedback record](evidence/scientific_feedback.md) preserves the
 user's paraphrase, missing discussion date/original wording, scope and closure
-requirements. It is not independent written confirmation. Existing B/O/H/S/M and
+requirements. It is not independent written confirmation. Existing B/O/H/S/AQM/M and
 policy citations retain their earlier provenance; this update does not reverify
 them. No method in this table is enabled or marked CLOSED by any entry here.
 
@@ -338,8 +348,8 @@ them. No method in this table is enabled or marked CLOSED by any entry here.
 | Q3 | Representative frequency is a separate role (O); OT/execution references differ (H) | PARTIAL: center-frequency average reported; a later suggestion to use the setup representative frequency instead is not recorded feedback and conflicts with it | Which proposal-side quantity is the comparison frequency, then window membership, averaging definition, enumeration completeness, identity and compatible references |
 | Q4 | Spacing, resolution and effective noise width are distinct (B) | OPEN: formula and applicable domain pending | RMS/smoothing method, polarization and beam compatibility |
 | Q5 | RMS improvement condition is policy text (A) | OPEN: a direction is read here from the policy wording, candidate RMS at most twice the proposed RMS with no lower bound; not confirmed | Confirmation of that direction, of comparing a Queue requested RMS against an Archive estimated sensitivity, and equality and worse-RMS examples |
-| Q6 | Selected TAP projection has no authoritative mode field (code); `frequency_support` components carry no mode token (M) | OPEN: the parsed `frequency_support` component is excluded as a mode source | Accepted mode evidence and granularity from a field present in the queried projection; a displayed interface classification alone is not authoritative mode |
-| Q7 | Reported retrieval cases are recorded in section 8 | PARTIAL: no new confirmation in this feedback | Independent UID recall, grouping/count semantics, fixtures and special-policy review |
+| Q6 | The Archive Manual documents per-SPW Frequency Support `Type`: `continuum` = TDM and `line` = FDM (AQM); the selected public TAP `frequency_support` string has no such token (M) | PARTIAL: the semantic meaning of the Archive result-table Type is documented; the current TAP parse path cannot supply it | Identify a reproducible machine-readable source/path for that Type (or equivalent approved mode evidence), bind it to the exact candidate SPW, and define failure/absence behavior |
+| Q7 | Reported CASE inputs are recorded in section 8; live weak-recall checks retrieve both expected Member UIDs and AQ-equivalent filtering reproduces the reported one/two entry counts | PARTIAL: retrieval recall and entry-count reproduction are implemented evidence, not scientific labels | Supervisor confirmation of the display/assessment grouping unit, any special-policy scope, and whether either CASE has an approved duplicate/non-duplicate label |
 | Q8 | All conditions must hold, with the spectral condition satisfied by either branch (A) | OPEN: the branch structure is transcribed in the plan and not implemented | Unit of assessment when one target carries several setups; agreed evaluation order for the three-valued combination; acceptance cases for a failed branch combined with an unknown branch |
 
 These limit affected formal assessments, not valid request storage or candidate
@@ -403,19 +413,26 @@ derived here.
 Still needed: confirmation of that reading, and whether a Queue requested RMS
 may be compared against an Archive estimated sensitivity.
 
-**Q6 correlator-mode evidence.** Adopted: a parsed `frequency_support` component
-carries five tokens and no correlator mode, so that component is not a mode
-source (M).
-Still needed: which field in the queried projection carries FDM or TDM for a
-specific window. The line branch is defined on FDM windows and cannot be
-evaluated until one is identified.
+**Q6 correlator-mode evidence.** Adopted: the Cycle 13 Science Archive Manual
+defines the Archive result-table Frequency Support `Type` values `continuum` and
+`line` as TDM and FDM, respectively (AQM). The current public TAP
+`frequency_support` string parsed by this project carries five tokens and no
+`Type`, so that specific TAP component is not a mode source (M).
+Still needed: a reproducible machine-readable Archive path that exposes the
+documented Type (or equivalent approved mode evidence) at the correct SPW
+granularity, plus explicit behavior when that evidence is absent or cannot be
+associated. The remaining problem is data access/provenance and SPW association,
+not the documented semantic meaning of the Archive result-table Type.
 
 **Q7 reference retrieval cases.** Adopted: the CASE1 and CASE2 inputs and their
-expected project codes are recorded in section 8, and CASE1 has a pinned
-raw-row fixture.
-Still needed: confirmation of UID recall, grouping and result counts, and
-whether either case carries a confirmed duplicate label rather than positive
-retrieval only.
+expected project codes are recorded in section 8. Live weak-recall tests retrieve
+both expected Member UIDs, CASE1 has a pinned raw-row fixture, and the opt-in
+AQ-equivalent filters plus presentation grouping reproduce the reported one/two
+entry counts.
+Still needed: supervisor confirmation that the display grouping is the intended
+scientific review/assessment unit, any special-policy scope, and whether either
+CASE is an approved duplicate/non-duplicate example rather than retrieval-only
+evidence.
 
 **Q8 aggregation and unit of assessment.** Adopted: Appendix A requires all
 conditions to hold with the spectral condition satisfied by either branch, so
@@ -608,7 +625,7 @@ these outstanding checks.
 ## 9. Delivery boundary
 
 The [documentation entry](README.md#next-delivery) owns the next service delivery.
-This contract owns scientific decisions and acceptance requirements; Q1–Q7 block
+This contract owns scientific decisions and acceptance requirements; Q1–Q8 block
 only the affected formal methods. Current mapping limitations remain in the
 [data model](data_model.md#spectral-mapping-boundary). A valid request, an available
 context or a passed structural test does not establish a duplication verdict.

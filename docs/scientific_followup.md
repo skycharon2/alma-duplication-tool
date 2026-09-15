@@ -10,13 +10,14 @@ meeting dates require agreement; none are inferred from a report or code change.
 | Item | Material needed for closure | Follow-up owner | Scientific reviewer | Next review |
 | --- | --- | --- | --- | --- |
 | ANGULAR mapping | Confirm proposed requested resolution versus Archive spatial_resolution estimate and Queue requested resolution; record scope and boundary examples | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
-| Q1 | Record candidate-frequency ownership, antenna and geometry scope, beam-radius convention and boundary examples | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
+| Q1 | Confirm Archive candidate frequency/array mapping, supported geometry scope, beam-radius boundary behavior and whether excluded rows need criterion evaluation | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
 | Q2 | Confirm usable-width interpretation and the evidence needed to apply a nominal-to-usable mapping to a particular proposed configuration | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
-| Q3 | Define window membership, averaging, identity deduplication, completeness and compatible frequency references on each side | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
-| Q4 | Confirm RMS smoothing formula, effective noise bandwidth, polarization and beam compatibility | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
-| Q5 | Approve the directional RMS truth table, including equality, improvement and worse-sensitivity cases | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
-| Q6 | Identify accepted per-window mode evidence and limits of derived UI classifications | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
-| Q7 | Confirm retrieval and display grouping semantics; pin CASE evidence separately from any scientific duplicate labels | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
+| Q3 | Choose the proposal-side continuum comparison frequency role first; then define participating windows, averaging if applicable, completeness, identity deduplication and compatible references | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
+| Q4 | Decide whether the helper-script square-root scaling may be a named provisional method; define its applicable noise-bandwidth, smoothing, polarization and beam domain | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
+| Q5 | Confirm the directional RMS truth table and whether Queue requested RMS can be compared with Archive estimated sensitivity, including equality and worse-sensitivity cases | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
+| Q6 | Identify a reproducible machine-readable Archive path for the documented Frequency Support `Type` (or equivalent approved mode evidence), bind it to the exact SPW and define missing/association failure behavior | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
+| Q7 | Confirm the scientific display/assessment grouping unit and special-policy scope; keep reproduced retrieval/entry counts separate from any approved duplicate labels | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
+| Q8 | Confirm the unit of one assessment for multiple setups and the three-valued branch/context truth table, including failed-branch plus unknown-branch cases | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
 
 Before changing a method from PROVISIONAL to APPROVED, record:
 
@@ -68,8 +69,12 @@ is single-point. Formal geometry assessment and retrieval recall are distinct.
 [Official-source verification](evidence/official_sources.md) establishes the
 inclusive angular factor-two threshold and strict continuum width threshold.
 These numerical boundaries are not pending questions. Candidate frequency owns
-the Queue beam in the new profile. Remaining issues concern evidence association,
-frame conventions, ambiguous arrays and scientific approval scope.
+the Queue beam in the new profile. The Cycle 13 Science Archive Manual also
+documents Frequency Support `Type`: `continuum` means TDM and `line` means FDM.
+The current public TAP `frequency_support` string used here does not expose that
+Type, so Q6 is now a machine-readable acquisition/provenance and SPW-association
+question rather than an unknown label meaning. Remaining issues concern evidence
+association, frame conventions, ambiguous arrays and scientific approval scope.
 
 The current portal script includes the 1875–2000 MHz interval mapping; it was
 not removed based on older script versions. The operational CSV lacks

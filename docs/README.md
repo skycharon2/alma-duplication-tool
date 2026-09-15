@@ -6,7 +6,7 @@ project plans guide architecture and delivery order. Older plan statements that
 the request API or comparison model are unimplemented are historical.
 
 Read the short [runtime architecture overview](architecture.md) for module
-boundaries and the remaining evaluation connection.
+boundaries and the current evaluation boundary.
 
 ## Reading paths
 
@@ -26,7 +26,7 @@ preselection with center-coordinate retrieval and explicit local beam checks.
 
 For formal-rule development:
 
-1. [Rule inputs](duplication_rule_inputs.md): required evidence, open Q1–Q7 decisions and acceptance coverage.
+1. [Rule inputs](duplication_rule_inputs.md): required evidence, open Q1–Q8 decisions and acceptance coverage.
 2. [Rules](rules.md): criterion results, implemented criteria and the explicit post-search evaluation entry point.
 3. [Data model](data_model.md): current object index, associations and invariants; links lead separately to conceptual ERDs and historical evidence.
 4. [Archive dictionary](archive_data_dictionary.md) and [Queue contract](queue_csv_contract.md): source-field semantics and limitations.
@@ -65,9 +65,10 @@ Implemented: independent Archive/Queue ingestion and reconstruction, local Queue
 source/parse-summary storage, request validation, offline comparison contexts,
 offline search planning, Archive query binding, limited spatial adaptation and
 individual spatial/angular predicate checks, and candidate-search orchestration.
-Independent ANGULAR and CONT-SETUP provisional evaluators are also implemented.
-An explicit post-search entry point evaluates these rules for retained contexts.
-Formal duplication aggregation and the browser form are not implemented.
+ANGULAR, CONT-SETUP and Queue POS-SINGLE provisional evaluators are implemented.
+An explicit post-search entry point evaluates them for every retained context,
+including rows hidden by the presentation limit. Same-request Archive+Queue replay
+is also available. Formal duplication aggregation and the browser form are not implemented.
 
 | Axis / value | Current meaning | Does not establish |
 | --- | --- | --- |
@@ -80,7 +81,8 @@ Formal duplication aggregation and the browser form are not implemented.
 | Individual selection `NOT_EVALUATED` | Evidence, interpretation or method does not permit a definite check | OUTSIDE/NO_MATCH; it cannot justify silent exclusion |
 | Plan `NOT_EXECUTED` | Declarative plan marker; execution is recorded separately by the service | Whether a service run has finished |
 | Service `FINISHED` | Orchestration ended; inspect each source and filter outcome | All sources succeeded, all filters ran or a duplication verdict |
-| Assessment `NOT_EVALUATED` | Formal assessment has not been performed | A negative duplication verdict |
+| Search assessment `NOT_EVALUATED` | Candidate-search stage made no formal assessment | A negative duplication verdict |
+| Evaluation assessment `NOT_AGGREGATED` | Implemented provisional criteria ran, but no overall branch/context verdict was formed | Formal duplication or non-duplication |
 
 The individual `OUTSIDE` or angular `NO_MATCH` result only concerns its explicit
 predicate. Missing/unresolved checks and source completeness must remain visible.
@@ -89,32 +91,36 @@ behavior belong to the [search/spatial contract](search_plan_spatial.md).
 
 ## Next delivery
 
-The [candidate-search service](candidate_search.md) now connects the existing
-plan, Archive execution/binding, comparison contexts and Queue local selection.
-It preserves per-source failures, row/filter records, skipped conditions and
-display-limit omissions. Current geometry and scientific-method limits remain
-explicit; persistent Queue acquisition/run binding remains the caller's task.
+Candidate retrieval and per-context provisional evaluation are connected. The
+next delivery is **scientific closure of the fixed-target single-point continuum
+path**, not another orchestration layer. The implementation sequence is:
 
-Review the [reported scientific feedback](evidence/scientific_feedback.md) and its
-remaining closure requirements; reported oral answers do not enable formal rules.
-Per-context evaluation is connected through the [rule contract](rules.md).
-Next, pin CASE2 raw evidence and confirm effective filters and grouping/count
-semantics; add further criteria only with their required scientific decisions. Extend supported
-spatial and scientific evidence only with focused acceptance tests.
+1. Close the remaining Q1 Archive candidate-side position mapping and boundary
+   semantics needed for an Archive POS-SINGLE method.
+2. Close Q3 and implement CONT-FREQ using one explicitly approved proposal-side
+   frequency role plus compatible candidate reference evidence.
+3. Close Q4/Q5 and implement CONT-RMS with explicit normalization scope and
+   directional factor-two semantics.
+4. Implement Q8 three-valued branch/context aggregation so one coherent context
+   yields a reviewable DUPLICATE / NOT_DUPLICATE / UNDETERMINED-style assessment
+   without converting missing evidence into a negative.
+5. Promote scientifically reviewed acceptance cases only after the method scope,
+   decision reference and boundary examples are recorded.
 
-Run `PYTHONPATH=src python examples/evaluate_candidate_rules.py` for offline
-search followed by provisional criterion evaluation.
+The spectral-line branch remains downstream of Q6: the Cycle 13 Science Archive
+Manual documents the meaning of Frequency Support `Type`, but the current public
+TAP projection used here does not expose that per-window value in the parsed
+`frequency_support` string. Mosaic, moving-target and browser work remain deferred.
 
-Supervisor CASE1/CASE2 retrieval verification requires confirmed grouping and
-pinned evidence; those cases are not confirmed duplicate labels. Formal rule
-assessment is a separate delivery gated by the affected scientific decisions,
-not a reason to redesign or delay the existing request/context building blocks.
+Run `PYTHONPATH=src python examples/evaluate_candidate_rules.py` for the current
+offline provisional evaluation. CASE1/CASE2 retrieval and entry-count evidence are
+useful regression evidence, but the cases are not confirmed duplicate labels.
 
 ALMA requires checking both Archive and queued observations; the
 [official duplication guidance](https://almascience.eso.org/proposing/duplications)
 provides the source entry points and policy references. A candidate is evidence
 for review, not an automatic formal duplication conclusion. Versioned policy
-citations and Q1–Q7 interpretations remain in the rule-input contract.
+citations and Q1–Q8 interpretations remain in the rule-input contract.
 
 - [Queue candidate-beam profile](queue_candidate_beam.md)
 - [Verified ALMA source evidence](evidence/official_sources.md)

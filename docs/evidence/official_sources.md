@@ -1,8 +1,10 @@
-# Verified ALMA sources for Queue candidate selection
+# Verified ALMA source evidence
 
-Checked 2026-09-15. Source URLs, byte counts and SHA-256 values are recorded in
-`official_source_manifest.json`. Source documents were downloaded for inspection;
-the repository stores identifiers and paraphrased findings, not full copies.
+Checked 2026-09-15. Byte-pinned downloaded sources are recorded with URLs, byte
+counts and SHA-256 values in `official_source_manifest.json`; the repository
+stores identifiers and paraphrased findings, not full copies. The Science Archive
+Manual check below is an official-PDF semantic check that has not yet been added
+to that byte-level manifest, and is labelled accordingly.
 
 ## Policy facts
 
@@ -23,6 +25,22 @@ These facts do not require another decision to establish the numerical threshold
 They do not alone specify every exported field mapping, frequency aggregation,
 coordinate convention, or processor-specific bandwidth conversion. A sum of two
 beam radii is not introduced by this implementation.
+
+## Archive Frequency Support Type semantics
+
+[Cycle 13 ALMA Science Archive Manual](https://almascience.eso.org/alma-data/documents-and-tools/latest/science-archive-manual),
+Doc 12.15 v1.0, March 2026, Appendix A, was checked on 2026-09-15. Its
+result-table column description states that `Frequency Support` includes a per-SPW
+`Type`, where `continuum` indicates Time Domain Mode (TDM) and `line` indicates
+Frequency Domain Mode (FDM). This establishes the documented meaning of that
+Archive result-table field.
+
+It does **not** establish that the public TAP projection used by this repository
+exposes the `Type`, nor that a value obtained through another interface can be
+bound safely to the exact reconstructed candidate SPW. The PDF check is not yet
+byte-pinned in `official_source_manifest.json`; Q6 therefore remains open at the
+machine-readable acquisition/provenance and SPW-association boundary, not at the
+semantic meaning of the documented Archive Type.
 
 ## Queue position profile
 
@@ -131,13 +149,15 @@ comma-separated tokens, for example:
     [331.76..333.78GHz,31250.00kHz,2.2mJy/beam@10km/s,160.2uJy/beam@native, XX YY]
 
 These are the frequency range, the spectral resolution, the 10 km/s sensitivity,
-the native-resolution sensitivity and the polarization products. No correlator
-mode appears. A continuum or line type displayed by the archive query interface
-is therefore not obtainable from this field in the queried projection, and Q6
-cannot be closed from `frequency_support` parse results. This measurement
-excludes one proposed evidence path. It does not establish that no other field
-carries mode, and it is taken from one pinned fixture rather than from an
-Archive-wide census.
+the native-resolution sensitivity and the polarization products. No `Type` token
+appears in this TAP string. This does not contradict the Science Archive Manual,
+which documents a per-SPW Frequency Support `Type` in the Archive result table and
+defines `continuum`/`line` as TDM/FDM. Instead, the two observations identify the
+current Q6 boundary: the documented semantic field is not exposed by the parsed
+public-TAP representation used here. This measurement excludes that TAP string as
+a mode source; it does not establish that no other reproducible Archive path can
+supply the documented Type, and it is taken from one pinned fixture rather than
+from an Archive-wide census.
 
 ## Remaining implementation scope
 
@@ -146,6 +166,9 @@ estimated versus Queue requested semantics. No approval status is changed here.
 CONT-SETUP already implements strict >1.8. The example declares usable widths
 explicitly; it does not assert that hypothetical hardware has been validated.
 CONT-FREQ's numeric factor is known, but selection of representative compatible
-frequency evidence remains a separate contract. These are not unknown thresholds.
-POS-SINGLE formal criterion and overall aggregation are not implemented by this
-profile; the executed source filter is visible in the report.
+frequency evidence remains a separate contract. Q6 likewise no longer needs the
+meaning of Archive `Type` to be guessed; it needs a reproducible machine-readable
+path and SPW association for that documented evidence. These are not unknown
+thresholds. Queue POS-SINGLE remains provisional and Archive POS-SINGLE plus
+overall aggregation are not implemented; executed source filters remain visible
+in the report.

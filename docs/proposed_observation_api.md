@@ -144,8 +144,9 @@ requested observing parameters. Sensitivity basis uses the four RMS basis labels
 UNKNOWN is retained with a notice that the filter cannot be silently applied.
 Predicate context (frequency_reference, reference_frequency,
 bandwidth_used_for_sensitivity, origin) is retained as opaque provenance. No
-predicate is translated to ArchiveQuerySpec or executed by this API. Future query
-planning must validate context and report which filters were actually applied.
+predicate is translated to ArchiveQuerySpec or executed by this API. The separate
+search-planning/candidate-search layers validate executable context and report
+which filters were actually applied.
 
 ## Offline demonstration and tests
 
@@ -160,4 +161,7 @@ The unit tests cover coordinates, equivalent units, independent widths/roles,
 mutation isolation, bad values, intervals, references, partial RMS, unsupported
 units versus missing methods, modes and one-sided predicates. Integration tests
 exercise the wire example, raw-input revalidation and invalid-output suppression.
-CASE1/CASE2 retrieval and coherent candidate pairing belong to subsequent work.
+Candidate retrieval, coherent source-context pairing and per-context provisional
+rule evaluation are downstream layers documented in [candidate search](candidate_search.md),
+[comparison contexts](comparison_contexts.md) and [rules](rules.md). This API
+remains request-only and does not inherit those responsibilities.

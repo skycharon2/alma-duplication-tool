@@ -1,5 +1,10 @@
 # Reported scientific feedback and closure requirements
 
+This is a **historical evidence record**. Current decision status is owned by the
+[Q1–Q8 register](../duplication_rule_inputs.md#7-scientific-decision-register);
+later official-source checks or implementation evidence must update that register
+without rewriting what was originally reported here.
+
 ## Evidence status
 
 Record ID: `reported-feedback-q1-q3-01`.
@@ -15,7 +20,7 @@ as questions. That PDF was not independently re-read for this change. Its
 questions are not used as evidence of approval. Keep earlier report observations
 and later reported oral feedback as distinct evidence events.
 
-The [Q1–Q7 register](../duplication_rule_inputs.md#7-scientific-decision-register)
+The [Q1–Q8 register](../duplication_rule_inputs.md#7-scientific-decision-register)
 owns decision status. This record owns the reported feedback, its scope and
 closure checklist. No production method is enabled by this document.
 
@@ -79,15 +84,15 @@ A complete average over the listed windows is not necessarily the intended avera
 over the actual setup. Preserve centers, representative frequency and RMS reference
 frequency as independent roles. Multiple RMS selection is a separate open question.
 
-## Q4–Q7
+## Q4–Q8
 
 Q4 still needs the RMS formula and applicable domain; no automatic noise scaling
-is approved here. Q5–Q7 were not discussed in the supplied feedback. Preserve prior
+is approved here. Q5–Q8 were not discussed in the supplied feedback. Preserve prior
 facts, case records and open items; silence does not close or reopen a decision.
 Mode evidence and Archive UI classification are not interchangeable merely because
 a classification is derived. CASE grouping and formal labels remain unconfirmed.
 
-## Next retrieval evidence delivery
+## Historical retrieval evidence plan
 
 Use the implemented candidate-search service. Capture the validated input, actual
 plan and query, source dates, completeness, all row/filter audits and omitted IDs.
@@ -99,7 +104,9 @@ a broader set, so do not assert exactly one/two candidates until effective filte
 and grouping semantics are fixed. Member grouping is a view retaining context,
 execution and component references, not a merge of the best quantities.
 A failed/incomplete source or an unevaluated filter remains visible in the report.
-This document does not claim a new live query, fixed CASE fixture or duplicate label.
+At the time of this record, no new live query, fixed CASE fixture or duplicate
+label was claimed. Later retrieval/replay evidence is tracked in the current
+contracts and central decision register rather than retroactively inserted here.
 
 ## Updating this record
 
