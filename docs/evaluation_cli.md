@@ -67,6 +67,10 @@ Spatial evidence is exported as row-local geometry, status and interpretation
 references. The source record and full comparison context are not recursively
 embedded in every row; source provenance is stored once per source.
 
+For same-request Archive and Queue replay, use `--archive-replay` with the
+[captured NGC6240 example](dual_source_replay.md). It is mutually exclusive with
+`--live-archive` and never falls back to a network query.
+
 Evaluation version 2 adds provisional `POS-SINGLE` for every retained context.
 The Queue method requires `--queue-candidate-beam`; other contexts report
 insufficient information. See [the method contract](pos_single.md).

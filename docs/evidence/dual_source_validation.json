@@ -1,0 +1,71 @@
+{
+  "baseline_commit": "e1868212aabb30be4178eff3028712d1a840fbca",
+  "validation_environment": "Codex patch-preparation environment; not maintainer local execution.",
+  "offline_pytest": {
+    "passed": 880,
+    "skipped": 10
+  },
+  "new_tests": 18,
+  "live_acquisition": {
+    "executed": true,
+    "entry_point": "examples/capture_ngc6240_archive.py -> production evaluation CLI",
+    "archive_manifest": "tests/fixtures/archive/ngc6240/manifest.json",
+    "archive_manifest_sha256": "59a26d2bba46d4636f0e0d66696d409109d0f20284fadbb9b800138d77246dd4",
+    "queue_scope": "existing real 13-row subset, not full current Queue",
+    "archive_expected_count": 144,
+    "archive_retrieved_count": 144
+  },
+  "offline_replay": {
+    "network_forbidden_in_test": true,
+    "live_replay_scientific_results_equal": true,
+    "source_audit_comparison_exceptions": [
+      "sources.ARCHIVE.replay added",
+      "sources.QUEUE.source_metadata.snapshot.parsed_at differs"
+    ],
+    "evaluation_scope": {
+      "context_scope": "ALL_RETAINED_CONTEXTS; excluded rows remain in sources audit",
+      "total_retained": 157,
+      "shown_candidates": 1,
+      "evaluated_contexts": 157,
+      "display_truncated": true,
+      "unused_interpretation_ids": []
+    },
+    "archive_filter_summary": {
+      "scope": "PROCESSED_SOURCE_ROWS_ONLY; excludes rows not returned by server",
+      "processed_rows": 144,
+      "retained_rows": 144,
+      "excluded_rows": 0,
+      "predicate_counts_may_overlap": true,
+      "predicates": [
+        {
+          "predicate_index": 0,
+          "name": "spatial",
+          "stage": "LOCAL",
+          "outcomes": {
+            "MATCH": 96,
+            "NOT_EVALUATED": 48
+          }
+        }
+      ]
+    },
+    "queue_filter_summary": {
+      "scope": "PROCESSED_SOURCE_ROWS_ONLY; excludes rows not returned by server",
+      "processed_rows": 13,
+      "retained_rows": 13,
+      "excluded_rows": 0,
+      "predicate_counts_may_overlap": true,
+      "predicates": [
+        {
+          "predicate_index": 0,
+          "name": "spatial",
+          "stage": "LOCAL",
+          "outcomes": {
+            "MATCH": 1,
+            "NOT_EVALUATED": 12
+          }
+        }
+      ]
+    }
+  },
+  "assessment": "NOT_AGGREGATED"
+}

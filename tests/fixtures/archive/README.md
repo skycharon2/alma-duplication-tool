@@ -41,3 +41,10 @@ It covers real formats absent from the synthetic fixture: `Circle ICRS`
 casing, Pad:Antenna `antenna_arrays` lists (12-m, 7-m ACA, 12-m with a PM
 antenna, mixed 12-m/ACA/TP), a masked Group OUS, and a non-mosaic polygon.
 The reported Member OUS is a retrieval reference, not a duplicate label.
+
+## NGC6240 complete query capture
+
+`ngc6240/manifest.json` and its three VOTables retain an entire real Archive
+query sequence for the [dual-source replay](../../../docs/dual_source_replay.md).
+All returned rows are preserved, without UID selection. Counts and timestamps
+are in the manifest; CASE1 remains a separate, selected-row fixture.

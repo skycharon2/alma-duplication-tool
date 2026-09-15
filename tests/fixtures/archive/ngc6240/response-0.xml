@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <RESOURCE type="results">
+    <INFO name="QUERY_STATUS" value="OK" />
+    <INFO name="QUERY_TIMESTAMP" value="2026-09-15T10:34:16.582" />
+    <INFO name="QUERY" value="SELECT column_name&#xA;FROM TAP_SCHEMA.columns&#xA;WHERE table_name = 'ivoa.obscore'&#xA;    AND column_name IN ('s_resolution', 's_fov', 't_min', 't_max', 'band_list', 'pol_states')" />
+    <TABLE>
+      <FIELD name="column_name" datatype="char" arraysize="64*">
+        <DESCRIPTION>the column name</DESCRIPTION>
+      </FIELD>
+      <DATA>
+        <TABLEDATA>
+          <TR>
+            <TD>band_list</TD>
+          </TR>
+          <TR>
+            <TD>pol_states</TD>
+          </TR>
+          <TR>
+            <TD>s_fov</TD>
+          </TR>
+          <TR>
+            <TD>s_resolution</TD>
+          </TR>
+          <TR>
+            <TD>t_max</TD>
+          </TR>
+          <TR>
+            <TD>t_min</TD>
+          </TR>
+        </TABLEDATA>
+      </DATA>
+    </TABLE>
+    <INFO name="placeholder" value="ignore" />
+  </RESOURCE>
+</VOTABLE>

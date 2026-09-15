@@ -1,0 +1,78 @@
+{
+  "request": {
+    "target_kind": "FIXED",
+    "geometry": "SINGLE_POINTING",
+    "target_name": "NGC6240-centered proposed test setup (not an observed setup or duplicate label)",
+    "position": {
+      "ra": 253.24541666666667,
+      "dec": 2.4010972222222224,
+      "ra_format": "DEG",
+      "dec_format": "DEG",
+      "frame": "ICRS"
+    },
+    "setup_id": "setup-1",
+    "setup_complete": true,
+    "intents": [
+      "CONTINUUM"
+    ],
+    "angular_resolution": {
+      "value": 500,
+      "unit": "mas"
+    },
+    "representative_frequency": {
+      "value": 338.5,
+      "unit": "GHz",
+      "kind": "SKY",
+      "frame": "UNKNOWN",
+      "origin": {
+        "kind": "USER_DECLARED",
+        "raw_label": "Sky frequency"
+      }
+    },
+    "spectral_windows": [
+      {
+        "window_id": "w1",
+        "representation": "CENTER_BANDWIDTH",
+        "center": {
+          "value": 336.5,
+          "unit": "GHz",
+          "kind": "SKY",
+          "frame": "UNKNOWN"
+        },
+        "bandwidth_kind": "USABLE",
+        "bandwidth": {
+          "value": 1.875,
+          "unit": "GHz"
+        }
+      },
+      {
+        "window_id": "w2",
+        "representation": "CENTER_BANDWIDTH",
+        "center": {
+          "value": 338.5,
+          "unit": "GHz",
+          "kind": "SKY",
+          "frame": "UNKNOWN"
+        },
+        "bandwidth_kind": "USABLE",
+        "bandwidth": {
+          "value": 1.875,
+          "unit": "GHz"
+        }
+      }
+    ],
+    "sensitivities": []
+  },
+  "search_options": {
+    "radius": {
+      "value": 30,
+      "unit": "arcsec"
+    },
+    "sources": [
+      "ARCHIVE",
+      "QUEUE"
+    ],
+    "result_limit": 1,
+    "predicates": []
+  }
+}
