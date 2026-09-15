@@ -42,8 +42,13 @@ merely to make the current examples pass.
 
 ## Integration acceptance and scientific acceptance
 
-Run the [two-source offline example](../examples/evaluate_single_point_offline.py)
-to inspect request-level and candidate-level criteria, source states, filtering,
+Review the [same-request real-source replay and narrow scientific questions](dual_source_replay.md)
+for the current acquisition/replay evidence. It uses a complete Archive query
+response and a fixed real Queue subset; neither source completeness nor method
+approval is inferred beyond that scope.
+
+The older [two-source offline example](../examples/evaluate_single_point_offline.py)
+can still be used to inspect request-level and candidate-level criteria, source states, filtering,
 display omissions and evidence references.
 
 Its inputs and position interpretations are synthetic test fixtures. It is an

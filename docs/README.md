@@ -119,5 +119,6 @@ citations and Q1–Q7 interpretations remain in the rule-input contract.
 - [Queue candidate-beam profile](queue_candidate_beam.md)
 - [Verified ALMA source evidence](evidence/official_sources.md)
 
+- [Real dual-source replay](dual_source_replay.md): fixed NGC6240 request, raw Archive capture and Queue subset.
 - [Queue POS-SINGLE](pos_single.md): provisional candidate coverage criterion,
   retained-context scope, derived filter summaries and offline replay.

@@ -1,0 +1,3 @@
+
+# Preserve captured TAP response bytes and their checksums, including CRLF.
+tests/fixtures/archive/ngc6240/response-*.xml binary

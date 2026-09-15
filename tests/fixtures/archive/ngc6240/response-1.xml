@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <RESOURCE type="results">
+    <INFO name="QUERY_STATUS" value="OK" />
+    <INFO name="QUERY_TIMESTAMP" value="2026-09-15T10:34:30.913" />
+    <INFO name="QUERY" value="SELECT COUNT(*) AS total_matches&#xA;FROM ivoa.obscore&#xA;WHERE 1 = INTERSECTS(s_region, CIRCLE('ICRS', 253.245416666667, 2.40109722222222, 0.00833333333333333))" />
+    <TABLE>
+      <FIELD name="total_matches" datatype="long" />
+      <DATA>
+        <TABLEDATA>
+          <TR>
+            <TD>144</TD>
+          </TR>
+        </TABLEDATA>
+      </DATA>
+    </TABLE>
+    <INFO name="placeholder" value="ignore" />
+  </RESOURCE>
+</VOTABLE>

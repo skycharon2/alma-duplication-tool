@@ -30,7 +30,9 @@ def main(argv=None, *, archive_client_factory=None):
     parser.add_argument("--request", type=Path, required=True)
     parser.add_argument("--queue-csv", type=Path)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--live-archive", action="store_true")
+    archive_input = parser.add_mutually_exclusive_group()
+    archive_input.add_argument("--live-archive", action="store_true")
+    archive_input.add_argument("--archive-replay", type=Path, help="Replay a captured TAP manifest offline")
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--beam-decision-ref")
     parser.add_argument("--queue-candidate-beam", action="store_true",
@@ -42,6 +44,8 @@ def main(argv=None, *, archive_client_factory=None):
         inputs = [args.request]
         if args.queue_csv is not None:
             inputs.append(args.queue_csv)
+        if args.archive_replay is not None:
+            inputs.append(args.archive_replay)
         if any(args.output.resolve() == p.resolve() for p in inputs):
             raise ValueError("Output must not replace an input file")
         if args.output.exists() and not args.overwrite:
@@ -79,7 +83,16 @@ def main(argv=None, *, archive_client_factory=None):
         if args.beam_decision_ref is not None and not args.beam_decision_ref.strip():
             raise ValueError("--beam-decision-ref must not be blank")
 
+        replay_metadata = None
         client = None
+        if args.archive_replay is not None:
+            if "ARCHIVE" not in selected:
+                raise ValueError("--archive-replay requires ARCHIVE selection")
+            from alma_duplicate.clients.archive_replay import RecordedArchiveClient
+            client = RecordedArchiveClient(args.archive_replay)
+            if args.output.resolve() in client.input_paths:
+                raise ValueError("Output must not replace a replay response")
+            replay_metadata = client.metadata
         if args.live_archive:
             if archive_client_factory is None:
                 from alma_duplicate.clients.archive_client import ArchiveClient
@@ -102,7 +115,8 @@ def main(argv=None, *, archive_client_factory=None):
         # No position interpretation or nominal conversion is invented.
         report = evaluate_candidate_search(search)
         document = report_document(
-            report, input_sha256=hashlib.sha256(raw).hexdigest()
+            report, input_sha256=hashlib.sha256(raw).hexdigest(),
+            archive_replay_metadata=replay_metadata
         )
         write_report(args.output, document, overwrite=args.overwrite)
     except (OSError, UnicodeError, ValueError) as exc:

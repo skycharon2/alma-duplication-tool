@@ -138,7 +138,7 @@ def _source(source):
     }
 
 
-def report_document(report, *, input_sha256=None):
+def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
     search = report.search_result
     validation = search.plan.validation
     return json_value({
@@ -171,7 +171,8 @@ def report_document(report, *, input_sha256=None):
                 search.plan.archive_filter_semantics,
         },
         "sources": {
-            source.source: _source(source)
+            source.source: (_source(source) | ({"replay": archive_replay_metadata}
+                if source.source == "ARCHIVE" and archive_replay_metadata is not None else {}))
             for source in (search.archive, search.queue)
         },
         "evaluation_scope": {
