@@ -116,7 +116,7 @@ selection. The caller supplies the sources to prepare.
 `search_execution = NOT_EXECUTED` and `assessment = NOT_EVALUATED` remain explicit,
 including for zero contexts. This API never emits a negative duplication verdict.
 
-## Offline acceptance and next boundary
+## Offline acceptance and downstream boundary
 
 [Connection tests](../tests/integration/test_comparison_contexts.py) verify
 selected-window RMS, conservative unsafe mapping, alternative Archive rows,
@@ -124,8 +124,9 @@ Queue observed combinations, missing RMS, broken associations, incomplete
 sources and invalid requests using existing local fixtures. These are structural
 tests, not CASE1/CASE2 retrieval verification or approved policy calculations.
 
-Offline search planning and limited spatial adaptation are implemented; see the
-[search-plan and spatial-evidence contract](search_plan_spatial.md). The
-[next delivery](README.md#next-delivery) connects Archive execution and Queue
-local selection to an explicit execution and completeness report. CASE retrieval
-verification and formal duplication assessment remain separate work.
+Search planning, candidate-search execution and per-context provisional rule
+evaluation are implemented downstream; see [search/spatial](search_plan_spatial.md),
+[candidate search](candidate_search.md) and [rules](rules.md). This comparison
+contract remains an upstream structural boundary and does not own retrieval,
+policy approval or aggregation. Current scientific-closure priorities are
+centralized in the [documentation guide](README.md#next-delivery).

@@ -57,14 +57,14 @@ Those operations belong to later shared-comparison and policy layers.
 
 This section defines runtime provenance. Historical populations are linked below.
 
-### Runtime provenance (client 2, parser 5)
+### Runtime provenance (client 2, parser 6)
 
 Current version constants are maintained in
 [`queue_csv_client.py`](../src/alma_duplicate/clients/queue_csv_client.py),
 [`queue_csv.py`](../src/alma_duplicate/parsers/queue_csv.py) and
 [`queue_reconstruction.py`](../src/alma_duplicate/queue_reconstruction.py).
 
-Parser 5 checks original decimal numeric text before accepting values that
+Parser 6 retains the parser-5 exact-decimal checks before accepting values that
 would underflow to floating-point zero. RA/Dec ranges are checked using the
 original decimal value, so rounding cannot hide an out-of-range coordinate.
 RA also requires its canonical float to remain in `[0, 360)` degrees: a valid
@@ -74,7 +74,10 @@ Exact zero (including signed zero) remains valid for fields that allow zero,
 such as velocity and offsets. Existing blank/required-field rules are unchanged.
 Failures retain the raw row, text and `INVALID_NUMERIC_VALUE` diagnostic and
 follow the existing incomplete-result gate; this does not introduce partial
-snapshot reconstruction.
+snapshot reconstruction. Parser 6 additionally recognizes the source-documented
+`Mosaic = N/A` literal as `SINGLE_FIELD`, alongside the existing blank-with-zero-
+offset single-field convention. Blank-with-nonzero offsets remains unresolved;
+`Custom` and `Rectangle` remain mosaic evidence.
 
 Queue reconstruction version 2 rejects duplicate `QueueRawRowId` values at its
 public entry point before factorization, including iterable inputs. Equal

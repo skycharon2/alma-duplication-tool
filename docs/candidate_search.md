@@ -193,6 +193,10 @@ The old exact-label applicability counts are preserved as
 [historical evidence](evidence/legacy_array_label_measurement.md), not current
 classifier performance.
 
-Next: connect per-context rule evaluation under the [rule contract](rules.md),
-pin CASE2 raw retrieval evidence, and confirm grouping/count semantics (Q7).
-Display grouping must continue to preserve individual scientific contexts.
+Per-context provisional rule evaluation is now connected under the
+[rule contract](rules.md), and real dual-source replay is documented in
+[dual_source_replay.md]. This contract ends at candidate discovery and filter
+audit: scientific method closure, Q7 grouping confirmation and Q8 formal
+aggregation are owned by the [rule-input register](duplication_rule_inputs.md)
+and the [documentation status guide](README.md#next-delivery). Display grouping
+must continue to preserve individual scientific contexts.
