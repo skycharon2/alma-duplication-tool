@@ -96,6 +96,49 @@ The [OT bandwidth FAQ](https://help.almascience.org/kb/articles/new-default-for-
 addresses per-channel effective noise bandwidth. That quantity and its Hanning
 factor must not be substituted for a window's usable spectral width.
 
+## Helper-script method verification
+
+The Cycle 13 duplication-check helper script was read on 2026-09-15; its
+identifier is in `official_source_manifest.json`. Its page states that it is
+user contributed, distributed as-is and not supported by the ARCs. The lines
+below are recorded as implementation evidence of an existing convention, never
+as an approved method.
+
+- `fwhmPB(freqGHz, diameter)` returns `1.13 c / (freqGHz * 1e9) / diameter` in
+  arcsec, and the plotted candidate beam uses
+  `radius = 0.5 * fwhmPB(freq, diameter)`. The radius is half of a full width,
+  and the frequency and diameter belong to the candidate, not to the proposal.
+- Continuum sensitivity is scaled as
+  `rmsContinuum_mJy = req_sen * np.sqrt(ref_bw / aggregateBandwidth)`.
+- Per-window sensitivity at a spectral resolution is scaled as
+  `rms_resolution_mJy = req_sen * np.sqrt(ref_bw / res)`.
+- `computeAggregateBandwidth` sets overlapping range bounds to zero before
+  summing, so an overlap contributes once.
+
+The script also states that its per-window sensitivity uses the reference
+frequency and reference bandwidth and does not account for system-temperature
+variation between spectral windows. A square-root bandwidth scaling taken from
+here is therefore a named provisional method with a stated domain, and `res` in
+that expression is a spectral resolution rather than the effective noise
+bandwidth that the noise relation requires. Adopting it needs the Q4 and Q5
+register entries, not this file.
+
+## Archive frequency_support token census
+
+Every bracket component in the pinned NGC6240 Archive fixture carries five
+comma-separated tokens, for example:
+
+    [331.76..333.78GHz,31250.00kHz,2.2mJy/beam@10km/s,160.2uJy/beam@native, XX YY]
+
+These are the frequency range, the spectral resolution, the 10 km/s sensitivity,
+the native-resolution sensitivity and the polarization products. No correlator
+mode appears. A continuum or line type displayed by the archive query interface
+is therefore not obtainable from this field in the queried projection, and Q6
+cannot be closed from `frequency_support` parse results. This measurement
+excludes one proposed evidence path. It does not establish that no other field
+carries mode, and it is taken from one pinned fixture rather than from an
+Archive-wide census.
+
 ## Remaining implementation scope
 
 ANGULAR already computes the inclusive factor-two comparison and retains Archive
