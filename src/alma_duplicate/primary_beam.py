@@ -11,6 +11,21 @@ from alma_duplicate.domain.spatial import SpatialSelection, SpatialStatus, SkyPo
 BOUNDARY_TOLERANCE_DEG = 1e-10
 
 
+def at_boundary(separation_deg: float, radius_deg: float) -> bool:
+    """Separation and radius are equal to within the float64 guard band."""
+    return abs(separation_deg - radius_deg) <= BOUNDARY_TOLERANCE_DEG
+
+
+def covers(separation_deg: float, radius_deg: float) -> bool:
+    """The single reading of a position falling within a half-power radius.
+
+    Every selection strategy and the position criterion call this, so whether
+    equality counts as covered stays one decision in one place. Callers exclude
+    the boundary band first; inside it neither answer is evidenced.
+    """
+    return separation_deg < radius_deg
+
+
 def primary_beam_fwhm_deg(frequency_ghz: float, diameter_m: float) -> float:
     """Full width, not radius; fixed coefficient 1.13 and exact SI speed of light."""
     for value in (frequency_ghz, diameter_m):
@@ -88,10 +103,10 @@ def evaluate_primary_beam(plan, evidence):
         width = primary_beam_fwhm_deg(frequency, diameter)
     status = "NOT_EVALUATED"
     if not reasons:
-        if abs(separation - width / 2) <= BOUNDARY_TOLERANCE_DEG:
+        if at_boundary(separation, width / 2):
             reasons.append("SPATIAL_BOUNDARY_TOLERANCE")
         else:
-            status = "INSIDE" if separation < width / 2 else "OUTSIDE"
+            status = "INSIDE" if covers(separation, width / 2) else "OUTSIDE"
     return SpatialSelection(evidence.context.context_id, status, "FORMULA_PRIMARY_BEAM",
                             separation, width / 2 if width is not None else None,
                             tuple(reasons) + ("REQUEST_FREQUENCY_CONVENTION_NOT_POLICY_VERDICT",),
