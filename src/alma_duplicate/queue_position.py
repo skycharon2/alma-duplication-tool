@@ -9,7 +9,7 @@ import math
 
 from alma_duplicate.domain.queue import QueueMosaicKind, RegularSpwEvidence
 from alma_duplicate.domain.spatial import PositionInterpretation, SkyPosition, SpatialSelection, SpatialStatus as S
-from alma_duplicate.primary_beam import primary_beam_fwhm_deg
+from alma_duplicate.primary_beam import BOUNDARY_TOLERANCE_DEG, primary_beam_fwhm_deg
 from alma_duplicate.spatial import adapt_spatial, _separation
 
 PROFILE = "QUEUE_PORTAL_CANDIDATE_1"
@@ -95,9 +95,6 @@ def adapt_queue_position(context, source_record):
         if not row.request.use_tp and isinstance(row.spectral, RegularSpwEvidence):
             evidence = replace(evidence, selection_status=S.AVAILABLE)
     return replace(evidence, reasons=tuple(reasons), adapter_version=PROFILE)
-
-
-BOUNDARY_TOLERANCE_DEG = 1e-10
 
 
 @dataclass(frozen=True)

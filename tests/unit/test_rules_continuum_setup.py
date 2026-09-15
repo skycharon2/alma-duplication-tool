@@ -96,3 +96,36 @@ def test_bounds_representation_uses_its_span():
 def test_unknown_conversion_name_is_rejected():
     with pytest.raises(ValueError):
         evaluate_continuum_setup(request([]), nominal_conversion="GUESS")
+
+
+def bounds(window_id, lower, upper, kind="USABLE"):
+    return {"window_id": window_id, "representation": "BOUNDS", "bandwidth_kind": kind,
+            "lower": {"value": lower, "unit": "GHz", "kind": "SKY", "frame": "UNKNOWN"},
+            "upper": {"value": upper, "unit": "GHz", "kind": "SKY", "frame": "UNKNOWN"}}
+
+
+# Endpoint pairs whose exact decimal difference is the same width. Float
+# subtraction of these pairs straddles the strict threshold in both directions.
+@pytest.mark.parametrize("lower,upper", [
+    (98.6, 100.4), (100.0, 101.8), (102.6, 104.4), (215.0, 216.8),
+])
+def test_threshold_width_from_bounds_matches_the_declared_width(lower, upper):
+    width = upper - lower
+    assert width != 1.8, "endpoints chosen for their float error"
+    derived = request([bounds("a", lower, upper)]).spectral_windows[0]
+    assert derived.interval.span_ghz == 1.8
+    declared = request([window("a", 1.8)]).spectral_windows[0]
+    assert qualify_window(derived) == qualify_window(declared)
+    assert qualify_window(derived)[0] == "NOT_QUALIFIED"
+
+
+def test_width_above_threshold_still_qualifies_from_bounds():
+    derived = request([bounds("a", 98.6, 100.4001)]).spectral_windows[0]
+    assert derived.interval.span_ghz == 1.8001
+    assert qualify_window(derived)[0] == "QUALIFIED"
+
+
+def test_center_bandwidth_interval_spans_its_declared_width():
+    derived = request([window("a", 1.8, kind="NOMINAL", center=99.5)]).spectral_windows[0]
+    assert derived.interval.span_ghz == 1.8
+    assert derived.interval.midpoint_ghz == 99.5

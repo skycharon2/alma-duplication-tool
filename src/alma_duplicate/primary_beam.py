@@ -5,6 +5,11 @@ from numbers import Real
 from alma_duplicate.domain.comparison import ArchiveContextEvidence
 from alma_duplicate.domain.spatial import SpatialSelection, SpatialStatus, SkyPosition
 
+# Numerical band in which a separation equals the half-power radius. Shared by
+# every beam strategy so that one boundary convention cannot drift between them.
+# It is a float64 guard, not the policy reading of "within" the beam.
+BOUNDARY_TOLERANCE_DEG = 1e-10
+
 
 def primary_beam_fwhm_deg(frequency_ghz: float, diameter_m: float) -> float:
     """Full width, not radius; fixed coefficient 1.13 and exact SI speed of light."""
@@ -83,12 +88,12 @@ def evaluate_primary_beam(plan, evidence):
         width = primary_beam_fwhm_deg(frequency, diameter)
     status = "NOT_EVALUATED"
     if not reasons:
-        if abs(separation - width / 2) <= 1e-10:
+        if abs(separation - width / 2) <= BOUNDARY_TOLERANCE_DEG:
             reasons.append("SPATIAL_BOUNDARY_TOLERANCE")
         else:
             status = "INSIDE" if separation < width / 2 else "OUTSIDE"
     return SpatialSelection(evidence.context.context_id, status, "FORMULA_PRIMARY_BEAM",
-                            separation, width / 2 if width else None,
+                            separation, width / 2 if width is not None else None,
                             tuple(reasons) + ("REQUEST_FREQUENCY_CONVENTION_NOT_POLICY_VERDICT",),
                             method_version="primary_beam_2", beam_frequency_ghz=frequency,
                             antenna_diameter_m=diameter, beam_fwhm_deg=width,

@@ -138,6 +138,22 @@ def _source(source):
     }
 
 
+def _exclusions_by_predicate(source):
+    """Rows this source rejected before rule evaluation, per deciding predicate.
+
+    A criterion that reuses a predicate's geometry cannot report a negative for
+    a row that predicate already rejected, so a criterion's outcome
+    distribution is only interpretable next to these counts. A row rejected by
+    several predicates is counted once under each of them.
+    """
+    counts = {}
+    for row in source.rows:
+        for record in row.filters:
+            if record.outcome == "NO_MATCH":
+                counts[record.name] = counts.get(record.name, 0) + 1
+    return dict(sorted(counts.items()))
+
+
 def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
     search = report.search_result
     validation = search.plan.validation
@@ -181,6 +197,10 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
             "shown_candidates": len(search.candidates),
             "evaluated_contexts": len(report.context_evaluations),
             "display_truncated": search.truncated,
+            "excluded_by_predicate": {
+                source.source: _exclusions_by_predicate(source)
+                for source in (search.archive, search.queue)
+            },
             "unused_interpretation_ids":
                 search.unused_interpretation_ids,
         },
