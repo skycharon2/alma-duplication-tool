@@ -136,10 +136,10 @@ as an approved method.
 The script also states that its per-window sensitivity uses the reference
 frequency and reference bandwidth and does not account for system-temperature
 variation between spectral windows. A square-root bandwidth scaling taken from
-here is therefore a named provisional method with a stated domain, and `res` in
-that expression is a spectral resolution rather than the effective noise
-bandwidth that the noise relation requires. Adopting it needs the Q4 and Q5
-register entries, not this file.
+here is therefore a named provisional method with a stated domain. In that
+expression, `res` is spectral resolution; spectral resolution is not automatically
+identical to the effective noise bandwidth required by thermal-noise scaling.
+Adopting the script convention needs the Q4 and Q5 register entries, not this file.
 
 ## Archive frequency_support token census
 

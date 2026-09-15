@@ -59,5 +59,7 @@ keep their meaning. Captured report and validation metadata are in `docs/evidenc
 new runtime reports go to ignored `reports/`. Timestamps vary on rerun; compare
 input hashes, methods, numeric results and scope rather than whole-report bytes.
 
-CASE1/CASE2 retrieval evidence and scientific duplicate labels remain distinct.
-This delivery does not establish CASE2 group counts or any new scientific labels.
+CASE1/CASE2 retrieval and one/two-entry count reproduction exist separately as
+engineering/retrieval evidence. They do not establish that presentation grouping
+is the approved scientific assessment unit and do not establish duplicate or
+non-duplicate labels.

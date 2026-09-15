@@ -27,14 +27,14 @@ radius and selected sources. It retains the validation result and SearchOptions.
 | Frequency predicate | SKIPPED by default; opt-in `aq_equivalent_filters` plans a local point-in-SPW check for `=` ([details](candidate_search.md#opt-in-archive-query-equivalent-filters)) | SKIPPED with unresolved reference/matching semantics |
 | Spectral-resolution predicate | SKIPPED by default; opt-in local row check | SKIPPED pending SPW association semantics |
 | Sensitivity predicate | SKIPPED by default; opt-in local `cont_sensitivity_bandwidth` check for basis AGGREGATE | SKIPPED pending RMS basis/association implementation |
-| Result limit | Retained for a future service; not converted to MAXREC | Retained, not applied |
+| Result limit | Retained for the candidate-search service; not converted to MAXREC | Retained, not applied |
 
 The original single-sided operator is preserved. No synthetic lower/upper bound
 is inserted into `ArchiveQuerySpec`. The generated Archive query is spatial-only
 apart from the explicit science-only option. Requested observing parameters never
 become implicit filters. In particular, continuum is not forced through narrow
-frequency-overlap retrieval. Skipped filters mean a future result is broader than
-the requested filters; they must be visible in its execution report.
+frequency-overlap retrieval. Skipped filters mean the executed search is broader
+than the requested filters; they remain visible in its execution report.
 
 `evaluate_angular_filter(plan, context, predicate_index)` evaluates one listed
 local predicate, including the exact supplied operator. Indices address the
@@ -55,12 +55,12 @@ not selected by the plan yields SOURCE_NOT_SELECTED.
 This is exact current-builder provenance matching, not arbitrary ADQL parsing
 or a proof about a remote server's behavior. Legacy/external equivalent SQL may
 be rejected. MATCHED does not mean COMPLETE: a matching overflow result remains
-incomplete. The future service must check both binding and source status before
-using a result. `evaluate_spatial` enforces Archive binding before a local check.
+incomplete. The candidate-search service checks both binding and source status
+before using a result. `evaluate_spatial` enforces Archive binding before a local check.
 
 A Queue file is not a request-specific query. Its checksum, dates, source URL,
-parser and raw-row identities remain attached to spatial evidence. The future
-service must apply the planned local operation and report file/policy scope;
+parser and raw-row identities remain attached to spatial evidence. The downstream
+candidate-search service applies the planned local operation and reports file/policy scope;
 successful parsing does not prove all planned observations were covered.
 
 ## Spatial evidence
@@ -133,9 +133,9 @@ that individual check.
 The plan still says NOT_EXECUTED because no complete search was orchestrated.
 All individual outputs say `assessment=NOT_EVALUATED`; INSIDE does not mean
 duplicate and OUTSIDE does not establish absence in either archive as a whole.
-The future service must retain unevaluated cases or report their omitted scope,
-record predicates actually executed and any truncation, and show both sources
-independently. A single global success Boolean is insufficient.
+The candidate-search service retains unevaluated cases or reports their omitted
+scope, records predicates actually executed and any truncation, and shows both
+sources independently. A single global success Boolean is insufficient.
 
 ## Offline verification and next step
 

@@ -161,8 +161,10 @@ never produce a negative duplication verdict.
 
 Member OUS grouping is not performed here; candidates are individual contexts.
 Alternatives and observed associations remain intact, with no best-value merging.
-CASE grouping/expected UIDs require a separate reproducible retrieval fixture;
-existing synthetic tests are not CASE verification.
+CASE expected UIDs are acceptance references only and are never search
+constraints. Reproducible CASE retrieval evidence exists separately; it does
+not approve presentation grouping as the scientific assessment unit and does
+not establish duplicate/non-duplicate labels.
 
 ## Running
 
