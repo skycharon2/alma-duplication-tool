@@ -9,7 +9,7 @@ import math
 
 from alma_duplicate.domain.queue import QueueMosaicKind, RegularSpwEvidence
 from alma_duplicate.domain.spatial import PositionInterpretation, SkyPosition, SpatialSelection, SpatialStatus as S
-from alma_duplicate.primary_beam import BOUNDARY_TOLERANCE_DEG, primary_beam_fwhm_deg
+from alma_duplicate.primary_beam import at_boundary, covers, primary_beam_fwhm_deg
 from alma_duplicate.spatial import adapt_spatial, _separation
 
 PROFILE = "QUEUE_PORTAL_CANDIDATE_1"
@@ -128,7 +128,7 @@ def candidate_coverage(request, evidence):
         blockers.append("CENTER_UNAVAILABLE")
     width = primary_beam_fwhm_deg(frequency, diameter) if frequency is not None and diameter is not None else None
     radius = width / 2 if width is not None else None
-    if not blockers and abs(separation - radius) <= BOUNDARY_TOLERANCE_DEG:
+    if not blockers and at_boundary(separation, radius):
         blockers.append("SPATIAL_BOUNDARY_TOLERANCE")
     reasons = tuple(dict.fromkeys(list(evidence.reasons) + blockers +
                                  list(frequency_notes) + list(diameter_notes)))
@@ -142,7 +142,7 @@ def evaluate_queue_candidate_beam(plan, evidence):
     coverage = candidate_coverage(plan.validation.request, evidence)
     status = "NOT_EVALUATED"
     if not coverage.blockers:
-        status = "INSIDE" if coverage.separation_deg < coverage.radius_deg else "OUTSIDE"
+        status = "INSIDE" if covers(coverage.separation_deg, coverage.radius_deg) else "OUTSIDE"
     return SpatialSelection(
         evidence.context.context_id, status, "QUEUE_CANDIDATE_PRIMARY_BEAM",
         coverage.separation_deg, coverage.radius_deg, coverage.reasons,

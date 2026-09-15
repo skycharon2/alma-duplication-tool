@@ -1,8 +1,7 @@
 """Provisional Queue candidate-side single-field coverage; see docs/pos_single.md."""
 from alma_duplicate.domain.spatial import SpatialStatus as S
-from alma_duplicate.queue_position import (
-    candidate_coverage, PROFILE, SOURCE_REF, BOUNDARY_TOLERANCE_DEG,
-)
+from alma_duplicate.primary_beam import BOUNDARY_TOLERANCE_DEG, covers
+from alma_duplicate.queue_position import candidate_coverage, PROFILE, SOURCE_REF
 from alma_duplicate.rules.model import (
     CriterionIssue, EvidenceSide as Side,
     POLICY_DOCUMENT, CriterionResult, CriterionOutcome as O,
@@ -59,7 +58,7 @@ def evaluate_position_single(request, context, spatial_evidence):
                                                  "context.request.use_7m/use_tp", "Array evidence does not resolve diameter"))
     outcome = None
     if evaluated:
-        outcome = O.SATISFIED if coverage.separation_deg < coverage.radius_deg else O.NOT_SATISFIED
+        outcome = O.SATISFIED if covers(coverage.separation_deg, coverage.radius_deg) else O.NOT_SATISFIED
     return CriterionResult(
         criterion_id="POS-SINGLE", policy_ref=f"{POLICY_DOCUMENT}, Position",
         method_version=METHOD_VERSION, approval=MethodApproval.PROVISIONAL,

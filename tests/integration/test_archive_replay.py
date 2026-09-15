@@ -1,5 +1,4 @@
 """Real NGC6240 response replay; never an expected-UID selection fixture."""
-from dataclasses import replace
 from pathlib import Path
 import hashlib
 import json

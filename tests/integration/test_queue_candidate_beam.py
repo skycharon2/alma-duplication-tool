@@ -10,7 +10,6 @@ from astropy import units as u
 
 from alma_duplicate.candidate_search import search_candidates
 from alma_duplicate.cli.evaluate import main
-from alma_duplicate.queue_position import candidate_frequency, candidate_diameter
 from alma_duplicate.queue_normalization import map_nominal_to_usable_mhz
 from alma_duplicate.rules.evaluation import evaluate_candidate_search
 from tests.integration.test_candidate_search import queue_rows
@@ -101,6 +100,42 @@ def test_offsets_preserve_source_and_follow_spherical_transport(frame):
     assert e.context.evidence.row.spatial.long_offset_arcsec.value == 3
     assert 'TANGENT_OFFSETS_SPHERICAL_1' in e.reasons
     assert spatial(r).status == 'INSIDE'
+
+
+def offset_center(changes):
+    evidence = search({'Mosaic':'N/A'} | changes).queue.rows[0].spatial_evidence
+    return SkyCoord(evidence.center.ra_deg*u.deg, evidence.center.dec_deg*u.deg, frame='icrs')
+
+
+def bearing_error(origin, moved, expected_deg):
+    """Signed position-angle error, wrapped so that 0 and 360 are one bearing."""
+    return (origin.position_angle(moved).deg - expected_deg + 180) % 360 - 180
+
+
+# Position angle is measured from north through east, so a length-only check
+# passes even when the two offset components are transported the wrong way.
+@pytest.mark.parametrize('long_offset,lat_offset,arcsec,position_angle', [
+    ('10', '0', 10, 90),
+    ('-10', '0', 10, 270),
+    ('0', '10', 10, 0),
+    ('0', '-10', 10, 180),
+    ('3', '4', 5, 36.86989764584402),
+])
+def test_offset_direction_follows_the_east_north_convention(
+        long_offset, lat_offset, arcsec, position_angle):
+    origin = SkyCoord(10*u.deg, 20*u.deg, frame='icrs')
+    moved = offset_center({'Long Offset': long_offset, 'Lat Offset': lat_offset})
+    assert origin.separation(moved).arcsec == pytest.approx(arcsec, abs=1e-8)
+    assert bearing_error(origin, moved, position_angle) == pytest.approx(0, abs=1e-6)
+
+
+def test_offset_direction_uses_the_declared_galactic_frame():
+    origin = SkyCoord(10*u.deg, 20*u.deg, frame='icrs')
+    moved = offset_center({'Long Offset': '10', 'Lat Offset': '0',
+                           'Mos. Coord.': 'galactic'})
+    assert origin.separation(moved).arcsec == pytest.approx(10, abs=1e-8)
+    # East in the declared offset frame, which is not east in ICRS.
+    assert bearing_error(origin.galactic, moved.galactic, 90) == pytest.approx(0, abs=1e-6)
 
 
 def test_profile_is_opt_in_and_archive_plan_does_not_change():

@@ -220,9 +220,14 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
 
 
 def write_report(path, document, *, overwrite=False):
-    """Publish a complete JSON file; never truncate an existing report."""
+    """Publish a complete JSON file; never truncate an existing report.
+
+    The document must already be JSON-native, as ``report_document`` returns it.
+    Converting again here would let an unconverted evidence object reach a file
+    without passing that boundary, so an unsupported type raises instead.
+    """
     text = json.dumps(
-        json_value(document), indent=2, ensure_ascii=False, allow_nan=False
+        document, indent=2, ensure_ascii=False, allow_nan=False
     ) + "\n"
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
