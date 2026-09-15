@@ -44,6 +44,8 @@ class SearchPlan:
     # Opt-in Archive scalar filter semantics, e.g. "AQ_EQUIVALENT_1"; None = skipped.
     archive_filter_semantics: str | None = None
 
+    queue_candidate_beam: bool = False
+
     def for_source(self, name: str) -> SourceSearchPlan | None:
         return next((s for s in self.sources if s.source == name), None)
 

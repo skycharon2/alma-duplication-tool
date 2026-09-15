@@ -209,6 +209,8 @@ def map_nominal_to_usable_mhz(
             # Recognition does not authorize snapping the source value.
             return nominal_mhz, QueueUsableBandwidthDerivationKind.ALREADY_USABLE
 
+    # Present in the current downloaded Cycle 13 script; verified source hash
+    # and handbook distinction are recorded in docs/evidence/official_sources.md.
     if 1875.0 < nominal_mhz < 2000.0:
         return 1875.0, QueueUsableBandwidthDerivationKind.NOMINAL_MAPPED
 

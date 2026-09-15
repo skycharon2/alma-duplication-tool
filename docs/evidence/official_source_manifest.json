@@ -1,0 +1,38 @@
+{
+  "retrieved_on": "2026-09-15",
+  "sources": [
+    {
+      "url": "https://almascience.eso.org/documents-and-tools/latest/python-script",
+      "byte_length": 117603,
+      "sha256": "eed6c9f557e13ec9bdf1c5cf3fd3b370f6201bb52fd67f7cac1bb39960e40df9"
+    },
+    {
+      "url": "https://almascience.eso.org/documents-and-tools/latest/duplication-check-csv",
+      "byte_length": 1448241,
+      "sha256": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5"
+    },
+    {
+      "url": "https://almascience.nrao.edu/documents-and-tools/cycle13/alma-user-policies",
+      "byte_length": 575477,
+      "sha256": "7df4d4e3de5898874beb42ba192814b578812a6a2d0a566af98375253a241372"
+    },
+    {
+      "url": "https://almascience.eso.org/documents-and-tools/cycle13/alma-technical-handbook",
+      "byte_length": 65893653,
+      "sha256": "4881909132bb20770cc48dfe6bce38a3bb29b2a028a0b320263ddd34c5058c15"
+    }
+  ],
+  "queue_verification": {
+    "description_date": "2026 March 3",
+    "operational_columns": 79,
+    "operational_standAlone_ACA": false,
+    "downloaded_data_rows": 3200,
+    "fixture_rows": 13,
+    "fixture_rows_matched_by_all_raw_fields": 13,
+    "fixture_sha256": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc"
+  },
+  "pdf_inspection": {
+    "policies": "Appendix A printed page 22 / PDF page 24",
+    "handbook": "Doc 13.3 v1.0 March 1 2026; section 5.1.2 p71 and Table 5.2 p78"
+  }
+}

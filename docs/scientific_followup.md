@@ -31,7 +31,8 @@ Before changing a method from PROVISIONAL to APPROVED, record:
 
 Selecting PORTAL_SCRIPT_V1 identifies a source-script mapping; it does not prove
 that an arbitrary proposed setup belongs to its applicable configuration.
-Do not describe the mapping as a universal 15/16 conversion.
+The handbook establishes 15/16 for its FDM sub-band construction, not arbitrary
+bandwidths or processors. Rounded table entries are not exact ratios.
 
 The integrated evaluation defaults to no nominal conversion. A caller-selected
 mapping remains provisional. Before introducing an applicability gate, specify
@@ -56,3 +57,15 @@ all source evidence.
 CASE2 retrieval can be recorded even when candidate geometry is unsupported.
 Do not label its candidate as single-point merely because the proposed request
 is single-point. Formal geometry assessment and retrieval recall are distinct.
+
+## Verified source findings (2026-09-15)
+
+[Official-source verification](evidence/official_sources.md) establishes the
+inclusive angular factor-two threshold and strict continuum width threshold.
+These numerical boundaries are not pending questions. Candidate frequency owns
+the Queue beam in the new profile. Remaining issues concern evidence association,
+frame conventions, ambiguous arrays and scientific approval scope.
+
+The current portal script includes the 1875–2000 MHz interval mapping; it was
+not removed based on older script versions. The operational CSV lacks
+standAlone_ACA, despite including its dictionary definition.

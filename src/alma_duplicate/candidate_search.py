@@ -37,9 +37,13 @@ def _evaluate_row(
     spatial_evidence = None
     spatial_error = None
     try:
-        spatial_evidence = adapt_spatial(
-            context, source_record, interpretation=interpretations.get(context.context_id),
-        )
+        if plan.queue_candidate_beam and context.reference.source == "QUEUE":
+            from alma_duplicate.queue_position import adapt_queue_position
+            spatial_evidence = adapt_queue_position(context, source_record)
+        else:
+            spatial_evidence = adapt_spatial(
+                context, source_record, interpretation=interpretations.get(context.context_id),
+            )
     except Exception as exc:
         # Keep this row and continue evaluating independent evidence.
         spatial_error = (type(exc).__name__, str(exc))
@@ -161,6 +165,7 @@ def search_candidates(
     queue_result: QueueCsvParseResult | None = None,
     queue_loader: Callable[[], QueueCsvParseResult] | None = None,
     interpretations: Iterable[PositionInterpretation] = (),
+    queue_candidate_beam: bool = False,
     archive_science_only: bool = False,
     beam_decision_ref: str | None = None,
     aq_equivalent_filters: bool = False,
@@ -183,10 +188,13 @@ def search_candidates(
         if item.context_id in interpretation_map:
             raise ValueError("Duplicate context interpretation")
         interpretation_map[item.context_id] = item
+    if queue_candidate_beam and interpretation_map:
+        raise ValueError("Queue profile cannot be mixed with external interpretations")
     # Invalid requests fail before any client is called.
     plan = build_search_plan(validation, archive_science_only=archive_science_only,
                              beam_decision_ref=beam_decision_ref,
-                             aq_equivalent_filters=aq_equivalent_filters)
+                             aq_equivalent_filters=aq_equivalent_filters,
+                             queue_candidate_beam=queue_candidate_beam)
     started = datetime.now(UTC)
     results = {
         name: _run_source(plan, name, archive_client=archive_client, queue_loader=queue_loader,

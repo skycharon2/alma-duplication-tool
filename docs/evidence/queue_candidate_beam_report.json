@@ -1,0 +1,5395 @@
+{
+  "report_version": "1",
+  "generated_at": "2026-09-15T09:10:28.506146+00:00",
+  "input_sha256": "e4d5b32bbe5dea8be6685a0b768edd1094f2df558fbfbc2fde5099b5a4e29685",
+  "evaluation_version": "1",
+  "execution": "FINISHED",
+  "assessment": "NOT_AGGREGATED",
+  "search_assessment": "NOT_EVALUATED",
+  "search_service_version": "1",
+  "search_started_at": "2026-09-15T09:10:28.500566+00:00",
+  "search_finished_at": "2026-09-15T09:10:28.505818+00:00",
+  "request": {
+    "raw": {
+      "target_kind": "FIXED",
+      "geometry": "SINGLE_POINTING",
+      "target_name": "NGC6240-centered proposed test setup (not an observed setup or duplicate label)",
+      "position": {
+        "ra": 253.24541666666667,
+        "dec": 2.4010972222222224,
+        "ra_format": "DEG",
+        "dec_format": "DEG",
+        "frame": "ICRS"
+      },
+      "setup_id": "setup-1",
+      "setup_complete": true,
+      "intents": [
+        "CONTINUUM"
+      ],
+      "angular_resolution": {
+        "value": 500,
+        "unit": "mas"
+      },
+      "representative_frequency": {
+        "value": 338.5,
+        "unit": "GHz",
+        "kind": "SKY",
+        "frame": "UNKNOWN",
+        "origin": {
+          "kind": "USER_DECLARED",
+          "raw_label": "Sky frequency"
+        }
+      },
+      "spectral_windows": [
+        {
+          "window_id": "w1",
+          "representation": "CENTER_BANDWIDTH",
+          "center": {
+            "value": 336.5,
+            "unit": "GHz",
+            "kind": "SKY",
+            "frame": "UNKNOWN"
+          },
+          "bandwidth_kind": "USABLE",
+          "bandwidth": {
+            "value": 1.875,
+            "unit": "GHz"
+          }
+        },
+        {
+          "window_id": "w2",
+          "representation": "CENTER_BANDWIDTH",
+          "center": {
+            "value": 338.5,
+            "unit": "GHz",
+            "kind": "SKY",
+            "frame": "UNKNOWN"
+          },
+          "bandwidth_kind": "USABLE",
+          "bandwidth": {
+            "value": 1.875,
+            "unit": "GHz"
+          }
+        }
+      ],
+      "sensitivities": []
+    },
+    "raw_search_options": {
+      "radius": {
+        "value": 30,
+        "unit": "arcsec"
+      },
+      "sources": [
+        "QUEUE"
+      ],
+      "result_limit": 1,
+      "predicates": []
+    },
+    "normalized": {
+      "target_kind": "FIXED",
+      "geometry": "SINGLE_POINTING",
+      "target_name": "NGC6240-centered proposed test setup (not an observed setup or duplicate label)",
+      "position": {
+        "ra_deg": 253.24541666666667,
+        "dec_deg": 2.4010972222222224,
+        "frame": "ICRS",
+        "conversion_version": "1"
+      },
+      "setup_id": "setup-1",
+      "setup_complete": true,
+      "intents": [
+        "CONTINUUM"
+      ],
+      "angular_resolution": {
+        "value": 0.5,
+        "unit": "arcsec",
+        "raw_value": 500,
+        "raw_unit": "mas",
+        "conversion_version": "1"
+      },
+      "representative_frequency": {
+        "quantity": {
+          "value": 338.5,
+          "unit": "GHz",
+          "raw_value": 338.5,
+          "raw_unit": "GHz",
+          "conversion_version": "1"
+        },
+        "kind": "SKY",
+        "frame": "UNKNOWN",
+        "origin": {
+          "kind": "USER_DECLARED",
+          "raw_label": "Sky frequency"
+        }
+      },
+      "representative_window_id": null,
+      "spectral_windows": [
+        {
+          "window_id": "w1",
+          "representation": "CENTER_BANDWIDTH",
+          "center": {
+            "quantity": {
+              "value": 336.5,
+              "unit": "GHz",
+              "raw_value": 336.5,
+              "raw_unit": "GHz",
+              "conversion_version": "1"
+            },
+            "kind": "SKY",
+            "frame": "UNKNOWN",
+            "origin": {}
+          },
+          "bandwidth": {
+            "value": 1.875,
+            "unit": "GHz",
+            "raw_value": 1.875,
+            "raw_unit": "GHz",
+            "conversion_version": "1"
+          },
+          "bandwidth_kind": "USABLE",
+          "lower": null,
+          "upper": null,
+          "interval": null,
+          "correlator_mode": "UNKNOWN",
+          "mode_origin": {},
+          "channel_spacing": null,
+          "spectral_resolution": null
+        },
+        {
+          "window_id": "w2",
+          "representation": "CENTER_BANDWIDTH",
+          "center": {
+            "quantity": {
+              "value": 338.5,
+              "unit": "GHz",
+              "raw_value": 338.5,
+              "raw_unit": "GHz",
+              "conversion_version": "1"
+            },
+            "kind": "SKY",
+            "frame": "UNKNOWN",
+            "origin": {}
+          },
+          "bandwidth": {
+            "value": 1.875,
+            "unit": "GHz",
+            "raw_value": 1.875,
+            "raw_unit": "GHz",
+            "conversion_version": "1"
+          },
+          "bandwidth_kind": "USABLE",
+          "lower": null,
+          "upper": null,
+          "interval": null,
+          "correlator_mode": "UNKNOWN",
+          "mode_origin": {},
+          "channel_spacing": null,
+          "spectral_resolution": null
+        }
+      ],
+      "sensitivities": [],
+      "array_context": {},
+      "raw_input": {
+        "target_kind": "FIXED",
+        "geometry": "SINGLE_POINTING",
+        "target_name": "NGC6240-centered proposed test setup (not an observed setup or duplicate label)",
+        "position": {
+          "ra": 253.24541666666667,
+          "dec": 2.4010972222222224,
+          "ra_format": "DEG",
+          "dec_format": "DEG",
+          "frame": "ICRS"
+        },
+        "setup_id": "setup-1",
+        "setup_complete": true,
+        "intents": [
+          "CONTINUUM"
+        ],
+        "angular_resolution": {
+          "value": 500,
+          "unit": "mas"
+        },
+        "representative_frequency": {
+          "value": 338.5,
+          "unit": "GHz",
+          "kind": "SKY",
+          "frame": "UNKNOWN",
+          "origin": {
+            "kind": "USER_DECLARED",
+            "raw_label": "Sky frequency"
+          }
+        },
+        "spectral_windows": [
+          {
+            "window_id": "w1",
+            "representation": "CENTER_BANDWIDTH",
+            "center": {
+              "value": 336.5,
+              "unit": "GHz",
+              "kind": "SKY",
+              "frame": "UNKNOWN"
+            },
+            "bandwidth_kind": "USABLE",
+            "bandwidth": {
+              "value": 1.875,
+              "unit": "GHz"
+            }
+          },
+          {
+            "window_id": "w2",
+            "representation": "CENTER_BANDWIDTH",
+            "center": {
+              "value": 338.5,
+              "unit": "GHz",
+              "kind": "SKY",
+              "frame": "UNKNOWN"
+            },
+            "bandwidth_kind": "USABLE",
+            "bandwidth": {
+              "value": 1.875,
+              "unit": "GHz"
+            }
+          }
+        ],
+        "sensitivities": []
+      },
+      "model_version": "1"
+    },
+    "search_options": {
+      "radius": {
+        "value": 0.008333333333333333,
+        "unit": "deg",
+        "raw_value": 30,
+        "raw_unit": "arcsec",
+        "conversion_version": "1"
+      },
+      "sources": [
+        "QUEUE"
+      ],
+      "result_limit": 1,
+      "predicates": [],
+      "raw_input": {
+        "radius": {
+          "value": 30,
+          "unit": "arcsec"
+        },
+        "sources": [
+          "QUEUE"
+        ],
+        "result_limit": 1,
+        "predicates": []
+      }
+    },
+    "validation_version": "3",
+    "issues": [
+      {
+        "category": "MISSING",
+        "code": "MISSING_EVIDENCE",
+        "path": "request.representative_frequency",
+        "message": "Frequency reference is not sufficiently specified.",
+        "rule_id": "CONT-FREQ/LINE-COVERAGE",
+        "side": "PROPOSED"
+      },
+      {
+        "category": "MISSING",
+        "code": "MISSING_EVIDENCE",
+        "path": "request.spectral_windows[0].center",
+        "message": "Frequency reference is not sufficiently specified.",
+        "rule_id": "CONT-FREQ/LINE-COVERAGE",
+        "side": "PROPOSED"
+      },
+      {
+        "category": "MISSING",
+        "code": "MISSING_EVIDENCE",
+        "path": "request.spectral_windows[0]",
+        "message": "Usable width has no evidenced placement; coverage is not inferred.",
+        "rule_id": "LINE-COVERAGE",
+        "side": "PROPOSED"
+      },
+      {
+        "category": "MISSING",
+        "code": "MISSING_EVIDENCE",
+        "path": "request.spectral_windows[1].center",
+        "message": "Frequency reference is not sufficiently specified.",
+        "rule_id": "CONT-FREQ/LINE-COVERAGE",
+        "side": "PROPOSED"
+      },
+      {
+        "category": "MISSING",
+        "code": "MISSING_EVIDENCE",
+        "path": "request.spectral_windows[1]",
+        "message": "Usable width has no evidenced placement; coverage is not inferred.",
+        "rule_id": "LINE-COVERAGE",
+        "side": "PROPOSED"
+      },
+      {
+        "category": "CAPABILITY",
+        "code": "UNRESOLVED_SEMANTICS",
+        "path": "request.spectral_windows",
+        "message": "Policy width interpretation is not an implemented qualification method.",
+        "rule_id": "CONT-SETUP",
+        "side": "METHOD"
+      },
+      {
+        "category": "MISSING",
+        "code": "MISSING_EVIDENCE",
+        "path": "request.sensitivities",
+        "message": "No CONTINUUM RMS evidence supplied.",
+        "rule_id": "CONT-RMS",
+        "side": "PROPOSED"
+      }
+    ]
+  },
+  "plan": {
+    "version": "3",
+    "sources": [
+      {
+        "source": "QUEUE",
+        "predicates": [
+          {
+            "name": "spatial",
+            "action": "PLANNED_LOCAL",
+            "source_field": "row.spatial",
+            "requested": null,
+            "reason": null
+          }
+        ],
+        "spatial_operation": "QUEUE_CANDIDATE_PRIMARY_BEAM",
+        "limitations": [
+          "QUEUE_PORTAL_FRAME_CONVENTION",
+          "QUEUE_AMBIGUOUS_ARRAYS_RETAINED",
+          "QUEUE_SCOPE_IS_SUPPLIED_FILE_AND_SOURCE_DATE",
+          "NOT_A_FORMAL_POSITION_CRITERION"
+        ],
+        "archive_query": null
+      }
+    ],
+    "result_limit": 1,
+    "retrieval_radius_deg": 0.008333333333333333,
+    "beam_decision_ref": null,
+    "queue_candidate_beam": true,
+    "archive_filter_semantics": null
+  },
+  "sources": {
+    "ARCHIVE": {
+      "status": "NOT_SELECTED",
+      "input_mode": "NONE",
+      "source_metadata": null,
+      "query_binding": null,
+      "reasons": [],
+      "server_predicate_indices": [],
+      "requested_filters_fully_evaluated": false,
+      "omitted_candidate_ids": [],
+      "rows": []
+    },
+    "QUEUE": {
+      "status": "COMPLETED",
+      "input_mode": "LOADER",
+      "source_metadata": {
+        "status": "COMPLETE_WITH_WARNINGS",
+        "snapshot": {
+          "source_url": "https://almascience.eso.org/proposing/duplications",
+          "snapshot_sha256": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+          "captured_at": null,
+          "byte_length": 10433,
+          "encoding": "utf-8-sig",
+          "description_raw": "This spreadsheet lists the metadata for ongoing observations for Grade A projects that are in the observing queue as of 2026 March 3.",
+          "operational_columns": [
+            "Project Code",
+            "Target Name",
+            "RA",
+            "Dec",
+            "RA_HMS",
+            "Dec_DMS",
+            "Long Offset",
+            "Lat Offset",
+            "Velocity",
+            "Vel. Frame",
+            "Vel. Convention",
+            "Mosaic",
+            "Mos. Length",
+            "Mos. Width",
+            "Mos. PA",
+            "Mos. Spacing",
+            "Mos. Coord.",
+            "Band",
+            "Req. Ang. Res.",
+            "Req. LAS",
+            "Use 7-m?",
+            "Use TP?",
+            "Polarization",
+            "Ref.Frequency",
+            "Ref.Freq.Width",
+            "Req.Sensitivity",
+            "Is Sky Freq?",
+            "SPS Start Freq.",
+            "SPS End Freq.",
+            "SPS Bandwidth",
+            "SPS Spec. Res.",
+            "Freq SPW 1",
+            "Freq SPW 2",
+            "Freq SPW 3",
+            "Freq SPW 4",
+            "Freq SPW 5",
+            "Freq SPW 6",
+            "Freq SPW 7",
+            "Freq SPW 8",
+            "Freq SPW 9",
+            "Freq SPW 10",
+            "Freq SPW 11",
+            "Freq SPW 12",
+            "Freq SPW 13",
+            "Freq SPW 14",
+            "Freq SPW 15",
+            "Freq SPW 16",
+            "Bandwidth SPW 1",
+            "Bandwidth SPW 2",
+            "Bandwidth SPW 3",
+            "Bandwidth SPW 4",
+            "Bandwidth SPW 5",
+            "Bandwidth SPW 6",
+            "Bandwidth SPW 7",
+            "Bandwidth SPW 8",
+            "Bandwidth SPW 9",
+            "Bandwidth SPW 10",
+            "Bandwidth SPW 11",
+            "Bandwidth SPW 12",
+            "Bandwidth SPW 13",
+            "Bandwidth SPW 14",
+            "Bandwidth SPW 15",
+            "Bandwidth SPW 16",
+            "Spec.Res. SPW 1",
+            "Spec.Res. SPW 2",
+            "Spec.Res. SPW 3",
+            "Spec.Res. SPW 4",
+            "Spec.Res. SPW 5",
+            "Spec.Res. SPW 6",
+            "Spec.Res. SPW 7",
+            "Spec.Res. SPW 8",
+            "Spec.Res. SPW 9",
+            "Spec.Res. SPW 10",
+            "Spec.Res. SPW 11",
+            "Spec.Res. SPW 12",
+            "Spec.Res. SPW 13",
+            "Spec.Res. SPW 14",
+            "Spec.Res. SPW 15",
+            "Spec.Res. SPW 16"
+          ],
+          "secondary_header_row": [
+            "",
+            "",
+            "[deg]",
+            "[deg]",
+            "",
+            "",
+            "[arcsec]",
+            "[arcsec]",
+            "[kms/s]",
+            "",
+            "",
+            "",
+            "[arcsec]",
+            "[arcsec]",
+            "[deg]",
+            "[arcsec]",
+            "Ref. Sys.",
+            "",
+            "[arcsec]",
+            "[arcsec]",
+            "",
+            "",
+            "",
+            "[GHz]",
+            "[MHz]",
+            "[mJy]",
+            "",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[MHz]",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[GHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]",
+            "[MHz]"
+          ],
+          "dictionary_entries": [
+            {
+              "physical_start_line": 4,
+              "source_name": "Project Code",
+              "declaration": "string",
+              "description": "ALMA Project code."
+            },
+            {
+              "physical_start_line": 5,
+              "source_name": "Target Name",
+              "declaration": "string",
+              "description": "Name of the science target."
+            },
+            {
+              "physical_start_line": 6,
+              "source_name": "RA",
+              "declaration": "[deg]",
+              "description": "Target right ascension, in decimal degrees (0 for solar system targets)."
+            },
+            {
+              "physical_start_line": 7,
+              "source_name": "Dec",
+              "declaration": "[deg]",
+              "description": "Target declination, in decimal degress (0 for solar system targets)."
+            },
+            {
+              "physical_start_line": 8,
+              "source_name": "RA_HMS",
+              "declaration": "[h:m:s]",
+              "description": "Target right ascension, in Hr,Min,Sec."
+            },
+            {
+              "physical_start_line": 9,
+              "source_name": "Dec_DMS",
+              "declaration": "[d:m:s]",
+              "description": "Target declination, in Deg, Min, Sec."
+            },
+            {
+              "physical_start_line": 10,
+              "source_name": "Long Offset",
+              "declaration": "[\"]",
+              "description": "Right Ascension/galactic-longitude offset in arcsec. Offset is in RA unless Mos.Coord.Ref.Sys is \"galactic\"."
+            },
+            {
+              "physical_start_line": 11,
+              "source_name": "Lat Offset",
+              "declaration": "[\"]",
+              "description": "Declination/galactic-latitude offset in arcsec. Offset is in declination unless Mos.Coord.Ref.Sys is \"galactic\"."
+            },
+            {
+              "physical_start_line": 12,
+              "source_name": "Velocity",
+              "declaration": "[km/s]",
+              "description": "Target velocity"
+            },
+            {
+              "physical_start_line": 13,
+              "source_name": "Vel. Frame",
+              "declaration": "string",
+              "description": "Target velocity reference frame."
+            },
+            {
+              "physical_start_line": 14,
+              "source_name": "Vel. Convention",
+              "declaration": "string",
+              "description": "Velocity convention (radio, optical, or relativistic)."
+            },
+            {
+              "physical_start_line": 15,
+              "source_name": "Mosaic",
+              "declaration": "[boolean]",
+              "description": "Type of mosaic, either Rectangle, Custom, or N/A; N/A implies there is a single pointing for the target."
+            },
+            {
+              "physical_start_line": 16,
+              "source_name": "Mos. Length",
+              "declaration": "[\"]",
+              "description": "If a rectangular mosaic was requested: Length of rectangular area to be mapped as defined in the ALMA Observing Tool (OT)."
+            },
+            {
+              "physical_start_line": 17,
+              "source_name": "Mos. Width",
+              "declaration": "[\"]",
+              "description": "If a rectangular mosaic was requested: Width of rectangular area to be mapped as defined in the ALMA Observing Tool (OT)."
+            },
+            {
+              "physical_start_line": 18,
+              "source_name": "Mos. PA",
+              "declaration": "[deg]",
+              "description": "If a rectangular mosaic was requested: Position Angle of rectangular area to be mapped as defined in the ALMA Observing Tool (OT)."
+            },
+            {
+              "physical_start_line": 19,
+              "source_name": "Mos. Spacing",
+              "declaration": "[\"]",
+              "description": "If a rectangular mosaic was requested: Spacing betweeng pointings."
+            },
+            {
+              "physical_start_line": 20,
+              "source_name": "Mos. Coord. Ref. Sys",
+              "declaration": "string",
+              "description": "If the target is a mosaic, this field gives the coordinate system sed to define the mosaic."
+            },
+            {
+              "physical_start_line": 21,
+              "source_name": "Band",
+              "declaration": "string",
+              "description": "ALMA Observing Band, in format \"ALMA_RB\" followed by Band ID."
+            },
+            {
+              "physical_start_line": 22,
+              "source_name": "Req. Ang. Res.",
+              "declaration": "[\"]",
+              "description": "Requested angular resolution"
+            },
+            {
+              "physical_start_line": 23,
+              "source_name": "Req.LAS",
+              "declaration": "[\"]",
+              "description": "Requested largest angular scale"
+            },
+            {
+              "physical_start_line": 24,
+              "source_name": "Use 7-m?",
+              "declaration": "[boolean]",
+              "description": "Indicates if  observations with ACA 7-m Array are requested."
+            },
+            {
+              "physical_start_line": 25,
+              "source_name": "Use TP?",
+              "declaration": "[boolean]",
+              "description": "Indicates if observations with ACA Total Power Array are requested."
+            },
+            {
+              "physical_start_line": 26,
+              "source_name": "standAlone_ACA",
+              "declaration": "[boolean]",
+              "description": "Indicates if observations are ACA 7-m Array only."
+            },
+            {
+              "physical_start_line": 27,
+              "source_name": "Polarization",
+              "declaration": "[FULL/DOUBLE/SINGLE]",
+              "description": "Polarization products: Full, Dual or Single-X."
+            },
+            {
+              "physical_start_line": 28,
+              "source_name": "Ref.Frequency",
+              "declaration": "[GHz]",
+              "description": "Reference frequency for user-requested sensitivity."
+            },
+            {
+              "physical_start_line": 29,
+              "source_name": "Ref.Freq.Width",
+              "declaration": "[MHz]",
+              "description": "Reference bandwidth for user-requested sensitivity."
+            },
+            {
+              "physical_start_line": 30,
+              "source_name": "Req.Sensitivity",
+              "declaration": "[mJy]",
+              "description": "User-requested sensitivity"
+            },
+            {
+              "physical_start_line": 31,
+              "source_name": "Is Sky Freq?",
+              "declaration": "[boolean]",
+              "description": "Indicates if the frequencies for the spectral scan and spectral windows  are sky frequencies; If False,  the frequencies represent rest frequencies."
+            },
+            {
+              "physical_start_line": 32,
+              "source_name": "SPS Start Freq.",
+              "declaration": "[GHz]",
+              "description": "If the observation is a spectral scan: Start frequency of the spectral scan."
+            },
+            {
+              "physical_start_line": 33,
+              "source_name": "SPS End Freq.",
+              "declaration": "[GHz]",
+              "description": "If the observation is a spectral scan: End frequency of the spectral scan."
+            },
+            {
+              "physical_start_line": 34,
+              "source_name": "SPS Bandwidth",
+              "declaration": "[MHz]",
+              "description": "If the observation is a spectral scan: bandwidth of each window in the spectral scan."
+            },
+            {
+              "physical_start_line": 35,
+              "source_name": "SPS Spec. Res.",
+              "declaration": "[MHz]",
+              "description": "If the observation is a spectral scan: spectral resolution of the spectral scan."
+            },
+            {
+              "physical_start_line": 36,
+              "source_name": "Freq SPW [N]",
+              "declaration": "[GHz]",
+              "description": "Central  frequency in GHz for Spectral Window #N (where N = 1-16)."
+            },
+            {
+              "physical_start_line": 37,
+              "source_name": "Bandwidth SPW [N]",
+              "declaration": "[MHz]",
+              "description": "Bandwidth of spectral window #N (where N= 1-16)."
+            },
+            {
+              "physical_start_line": 38,
+              "source_name": "Spec.Res SPW [N]",
+              "declaration": "[MHz]",
+              "description": "Spectral resolution spectral Window #N (where N = 1-16)."
+            }
+          ],
+          "schema_version": "cycle13-queue-csv-v1",
+          "parser_version": "6",
+          "retrieved_at": null,
+          "parsed_at": "2026-09-15T09:10:28.500622+00:00",
+          "source_as_of": "2026-03-03",
+          "source_as_of_raw": "2026 March 3",
+          "source_as_of_status": "PARSED",
+          "source_url_kind": "SOURCE_PAGE",
+          "provenance_version": "2"
+        },
+        "raw_row_count": 13,
+        "typed_row_count": 13,
+        "issues": [
+          {
+            "kind": "CONFLICTING_UNIT_DECLARATION",
+            "severity": "WARNING",
+            "message": "SPS Bandwidth is declared as MHz in the dictionary and GHz in the secondary header; v1 normalizes the pinned schema as MHz",
+            "row_id": null,
+            "column": "SPS Bandwidth",
+            "slot_number": null,
+            "raw_value": null
+          }
+        ]
+      },
+      "query_binding": null,
+      "reasons": [
+        "QUEUE_PORTAL_FRAME_CONVENTION",
+        "QUEUE_AMBIGUOUS_ARRAYS_RETAINED",
+        "QUEUE_SCOPE_IS_SUPPLIED_FILE_AND_SOURCE_DATE",
+        "NOT_A_FORMAL_POSITION_CRITERION"
+      ],
+      "server_predicate_indices": [],
+      "requested_filters_fully_evaluated": false,
+      "omitted_candidate_ids": [
+        "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:43",
+        "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:44",
+        "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:45",
+        "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:46",
+        "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:47",
+        "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:48",
+        "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:49",
+        "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:50",
+        "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:51",
+        "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:52",
+        "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:53",
+        "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:54"
+      ],
+      "rows": [
+        {
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:42",
+          "reference": {
+            "source": "QUEUE",
+            "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:42",
+            "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+            "parser_version": "6",
+            "reconstruction_version": "2",
+            "adapter_version": "1",
+            "component_index": null,
+            "acquisition_id": null,
+            "parse_run_id": null
+          },
+          "alternative_context_ids": [],
+          "context_reasons": [
+            "PLANNED_OBSERVATION_EVIDENCE",
+            "CRITERIA_NOT_IMPLEMENTED"
+          ],
+          "disposition": "MATCHED_FILTERS",
+          "filters": [
+            {
+              "predicate_index": 0,
+              "name": "spatial",
+              "stage": "LOCAL",
+              "outcome": "MATCH",
+              "reasons": [
+                "MAIN_ARRAY_FROM_NEGATIVE_AUXILIARY_FLAGS",
+                "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+              ],
+              "spatial": {
+                "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:42",
+                "status": "INSIDE",
+                "operation": "QUEUE_CANDIDATE_PRIMARY_BEAM",
+                "separation_deg": 0.0,
+                "threshold_deg": 0.0023891964682146577,
+                "reasons": [
+                  "MAIN_ARRAY_FROM_NEGATIVE_AUXILIARY_FLAGS",
+                  "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+                ],
+                "method_version": "QUEUE_PORTAL_CANDIDATE_1",
+                "assessment": "NOT_EVALUATED",
+                "beam_frequency_ghz": 338.5,
+                "antenna_diameter_m": 12.0,
+                "beam_fwhm_deg": 0.004778392936429315,
+                "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+                "beam_frequency_source": "Ref.Frequency",
+                "antenna_diameter_source": "Use 7-m?=False;Use TP?=False"
+              },
+              "scalar": null
+            }
+          ],
+          "spatial_evidence": {
+            "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:42",
+            "center": {
+              "ra_deg": 253.24541666666667,
+              "dec_deg": 2.4010972222222224,
+              "frame": "ICRS"
+            },
+            "center_status": "AVAILABLE",
+            "footprint": null,
+            "footprint_status": "MISSING",
+            "geometry": "SINGLE_FIELD",
+            "selection_status": "AVAILABLE",
+            "reasons": [
+              "OFFSETS_WITHIN_SOURCE_ZERO_TOLERANCE",
+              "MAIN_ARRAY_FROM_NEGATIVE_AUXILIARY_FLAGS",
+              "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME"
+            ],
+            "interpretation": {
+              "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:42",
+              "frame": "ICRS",
+              "target_kind": "FIXED",
+              "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+              "antenna_diameter_m": 12.0
+            },
+            "adapter_version": "QUEUE_PORTAL_CANDIDATE_1",
+            "array_classification": null
+          }
+        },
+        {
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:43",
+          "reference": {
+            "source": "QUEUE",
+            "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:43",
+            "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+            "parser_version": "6",
+            "reconstruction_version": "2",
+            "adapter_version": "1",
+            "component_index": null,
+            "acquisition_id": null,
+            "parse_run_id": null
+          },
+          "alternative_context_ids": [],
+          "context_reasons": [
+            "PLANNED_OBSERVATION_EVIDENCE",
+            "CRITERIA_NOT_IMPLEMENTED"
+          ],
+          "disposition": "RETAINED_UNEVALUATED",
+          "filters": [
+            {
+              "predicate_index": 0,
+              "name": "spatial",
+              "stage": "LOCAL",
+              "outcome": "NOT_EVALUATED",
+              "reasons": [
+                "SPS_SELECTION_UNSUPPORTED",
+                "MAIN_ARRAY_FROM_NEGATIVE_AUXILIARY_FLAGS",
+                "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+              ],
+              "spatial": {
+                "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:43",
+                "status": "NOT_EVALUATED",
+                "operation": "QUEUE_CANDIDATE_PRIMARY_BEAM",
+                "separation_deg": 39.42848135250306,
+                "threshold_deg": 0.003050237437780885,
+                "reasons": [
+                  "SPS_SELECTION_UNSUPPORTED",
+                  "MAIN_ARRAY_FROM_NEGATIVE_AUXILIARY_FLAGS",
+                  "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                  "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+                ],
+                "method_version": "QUEUE_PORTAL_CANDIDATE_1",
+                "assessment": "NOT_EVALUATED",
+                "beam_frequency_ghz": 265.141,
+                "antenna_diameter_m": 12.0,
+                "beam_fwhm_deg": 0.00610047487556177,
+                "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+                "beam_frequency_source": "Ref.Frequency",
+                "antenna_diameter_source": "Use 7-m?=False;Use TP?=False"
+              },
+              "scalar": null
+            }
+          ],
+          "spatial_evidence": {
+            "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:43",
+            "center": {
+              "ra_deg": 292.25364198214,
+              "dec_deg": 9.64523950728,
+              "frame": "ICRS"
+            },
+            "center_status": "AVAILABLE",
+            "footprint": null,
+            "footprint_status": "MISSING",
+            "geometry": "SINGLE_FIELD",
+            "selection_status": "UNSUPPORTED",
+            "reasons": [
+              "SPS_SELECTION_UNSUPPORTED",
+              "MAIN_ARRAY_FROM_NEGATIVE_AUXILIARY_FLAGS",
+              "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME"
+            ],
+            "interpretation": {
+              "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:43",
+              "frame": "ICRS",
+              "target_kind": "FIXED",
+              "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+              "antenna_diameter_m": 12.0
+            },
+            "adapter_version": "QUEUE_PORTAL_CANDIDATE_1",
+            "array_classification": null
+          }
+        },
+        {
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:44",
+          "reference": {
+            "source": "QUEUE",
+            "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:44",
+            "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+            "parser_version": "6",
+            "reconstruction_version": "2",
+            "adapter_version": "1",
+            "component_index": null,
+            "acquisition_id": null,
+            "parse_run_id": null
+          },
+          "alternative_context_ids": [],
+          "context_reasons": [
+            "PLANNED_OBSERVATION_EVIDENCE",
+            "CRITERIA_NOT_IMPLEMENTED"
+          ],
+          "disposition": "RETAINED_UNEVALUATED",
+          "filters": [
+            {
+              "predicate_index": 0,
+              "name": "spatial",
+              "stage": "LOCAL",
+              "outcome": "NOT_EVALUATED",
+              "reasons": [
+                "QUEUE_GEOMETRY_UNSUPPORTED",
+                "MAIN_ARRAY_FROM_NEGATIVE_AUXILIARY_FLAGS",
+                "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+              ],
+              "spatial": {
+                "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:44",
+                "status": "NOT_EVALUATED",
+                "operation": "QUEUE_CANDIDATE_PRIMARY_BEAM",
+                "separation_deg": 153.10958118083477,
+                "threshold_deg": 0.003508126612953415,
+                "reasons": [
+                  "QUEUE_GEOMETRY_UNSUPPORTED",
+                  "MAIN_ARRAY_FROM_NEGATIVE_AUXILIARY_FLAGS",
+                  "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                  "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+                ],
+                "method_version": "QUEUE_PORTAL_CANDIDATE_1",
+                "assessment": "NOT_EVALUATED",
+                "beam_frequency_ghz": 230.53415504003107,
+                "antenna_diameter_m": 12.0,
+                "beam_fwhm_deg": 0.00701625322590683,
+                "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+                "beam_frequency_source": "Ref.Frequency",
+                "antenna_diameter_source": "Use 7-m?=False;Use TP?=False"
+              },
+              "scalar": null
+            }
+          ],
+          "spatial_evidence": {
+            "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:44",
+            "center": {
+              "ra_deg": 68.90624999999999,
+              "dec_deg": 24.156388888888888,
+              "frame": "ICRS"
+            },
+            "center_status": "AVAILABLE",
+            "footprint": null,
+            "footprint_status": "MISSING",
+            "geometry": "RECTANGULAR_MOSAIC",
+            "selection_status": "UNSUPPORTED",
+            "reasons": [
+              "QUEUE_GEOMETRY_UNSUPPORTED",
+              "MAIN_ARRAY_FROM_NEGATIVE_AUXILIARY_FLAGS",
+              "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME"
+            ],
+            "interpretation": {
+              "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:44",
+              "frame": "ICRS",
+              "target_kind": "FIXED",
+              "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+              "antenna_diameter_m": 12.0
+            },
+            "adapter_version": "QUEUE_PORTAL_CANDIDATE_1",
+            "array_classification": null
+          }
+        },
+        {
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:45",
+          "reference": {
+            "source": "QUEUE",
+            "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:45",
+            "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+            "parser_version": "6",
+            "reconstruction_version": "2",
+            "adapter_version": "1",
+            "component_index": null,
+            "acquisition_id": null,
+            "parse_run_id": null
+          },
+          "alternative_context_ids": [],
+          "context_reasons": [
+            "PLANNED_OBSERVATION_EVIDENCE",
+            "CRITERIA_NOT_IMPLEMENTED"
+          ],
+          "disposition": "RETAINED_UNEVALUATED",
+          "filters": [
+            {
+              "predicate_index": 0,
+              "name": "spatial",
+              "stage": "LOCAL",
+              "outcome": "NOT_EVALUATED",
+              "reasons": [
+                "QUEUE_GEOMETRY_UNSUPPORTED",
+                "OFFSETS_WITHIN_SOURCE_ZERO_TOLERANCE",
+                "TP_GEOMETRY_UNSUPPORTED",
+                "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+              ],
+              "spatial": {
+                "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:45",
+                "status": "NOT_EVALUATED",
+                "operation": "QUEUE_CANDIDATE_PRIMARY_BEAM",
+                "separation_deg": 46.96914496147836,
+                "threshold_deg": null,
+                "reasons": [
+                  "QUEUE_GEOMETRY_UNSUPPORTED",
+                  "OFFSETS_WITHIN_SOURCE_ZERO_TOLERANCE",
+                  "TP_GEOMETRY_UNSUPPORTED",
+                  "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                  "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+                ],
+                "method_version": "QUEUE_PORTAL_CANDIDATE_1",
+                "assessment": "NOT_EVALUATED",
+                "beam_frequency_ghz": 93.18851062107228,
+                "antenna_diameter_m": null,
+                "beam_fwhm_deg": null,
+                "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+                "beam_frequency_source": "Ref.Frequency",
+                "antenna_diameter_source": "Use TP?"
+              },
+              "scalar": null
+            }
+          ],
+          "spatial_evidence": {
+            "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:45",
+            "center": {
+              "ra_deg": 300.162415,
+              "dec_deg": -0.088206,
+              "frame": "ICRS"
+            },
+            "center_status": "AVAILABLE",
+            "footprint": null,
+            "footprint_status": "MISSING",
+            "geometry": "CUSTOM_POINTING",
+            "selection_status": "UNSUPPORTED",
+            "reasons": [
+              "QUEUE_GEOMETRY_UNSUPPORTED",
+              "OFFSETS_WITHIN_SOURCE_ZERO_TOLERANCE",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME"
+            ],
+            "interpretation": {
+              "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:45",
+              "frame": "ICRS",
+              "target_kind": "FIXED",
+              "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+              "antenna_diameter_m": null
+            },
+            "adapter_version": "QUEUE_PORTAL_CANDIDATE_1",
+            "array_classification": null
+          }
+        },
+        {
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:46",
+          "reference": {
+            "source": "QUEUE",
+            "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:46",
+            "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+            "parser_version": "6",
+            "reconstruction_version": "2",
+            "adapter_version": "1",
+            "component_index": null,
+            "acquisition_id": null,
+            "parse_run_id": null
+          },
+          "alternative_context_ids": [],
+          "context_reasons": [
+            "PLANNED_OBSERVATION_EVIDENCE",
+            "CRITERIA_NOT_IMPLEMENTED"
+          ],
+          "disposition": "RETAINED_UNEVALUATED",
+          "filters": [
+            {
+              "predicate_index": 0,
+              "name": "spatial",
+              "stage": "LOCAL",
+              "outcome": "NOT_EVALUATED",
+              "reasons": [
+                "QUEUE_GEOMETRY_UNSUPPORTED",
+                "NONZERO_OFFSETS_NOT_APPLIED",
+                "TP_GEOMETRY_UNSUPPORTED",
+                "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+              ],
+              "spatial": {
+                "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:46",
+                "status": "NOT_EVALUATED",
+                "operation": "QUEUE_CANDIDATE_PRIMARY_BEAM",
+                "separation_deg": 46.96914496147836,
+                "threshold_deg": null,
+                "reasons": [
+                  "QUEUE_GEOMETRY_UNSUPPORTED",
+                  "NONZERO_OFFSETS_NOT_APPLIED",
+                  "TP_GEOMETRY_UNSUPPORTED",
+                  "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                  "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+                ],
+                "method_version": "QUEUE_PORTAL_CANDIDATE_1",
+                "assessment": "NOT_EVALUATED",
+                "beam_frequency_ghz": 93.18851062107228,
+                "antenna_diameter_m": null,
+                "beam_fwhm_deg": null,
+                "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+                "beam_frequency_source": "Ref.Frequency",
+                "antenna_diameter_source": "Use TP?"
+              },
+              "scalar": null
+            }
+          ],
+          "spatial_evidence": {
+            "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:46",
+            "center": {
+              "ra_deg": 300.162415,
+              "dec_deg": -0.088206,
+              "frame": "ICRS"
+            },
+            "center_status": "AVAILABLE",
+            "footprint": null,
+            "footprint_status": "MISSING",
+            "geometry": "CUSTOM_POINTING",
+            "selection_status": "UNSUPPORTED",
+            "reasons": [
+              "QUEUE_GEOMETRY_UNSUPPORTED",
+              "NONZERO_OFFSETS_NOT_APPLIED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME"
+            ],
+            "interpretation": {
+              "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:46",
+              "frame": "ICRS",
+              "target_kind": "FIXED",
+              "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+              "antenna_diameter_m": null
+            },
+            "adapter_version": "QUEUE_PORTAL_CANDIDATE_1",
+            "array_classification": null
+          }
+        },
+        {
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:47",
+          "reference": {
+            "source": "QUEUE",
+            "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:47",
+            "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+            "parser_version": "6",
+            "reconstruction_version": "2",
+            "adapter_version": "1",
+            "component_index": null,
+            "acquisition_id": null,
+            "parse_run_id": null
+          },
+          "alternative_context_ids": [],
+          "context_reasons": [
+            "PLANNED_OBSERVATION_EVIDENCE",
+            "CRITERIA_NOT_IMPLEMENTED"
+          ],
+          "disposition": "RETAINED_UNEVALUATED",
+          "filters": [
+            {
+              "predicate_index": 0,
+              "name": "spatial",
+              "stage": "LOCAL",
+              "outcome": "NOT_EVALUATED",
+              "reasons": [
+                "QUEUE_GEOMETRY_UNSUPPORTED",
+                "TP_GEOMETRY_UNSUPPORTED",
+                "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+              ],
+              "spatial": {
+                "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:47",
+                "status": "NOT_EVALUATED",
+                "operation": "QUEUE_CANDIDATE_PRIMARY_BEAM",
+                "separation_deg": 122.25713999848976,
+                "threshold_deg": null,
+                "reasons": [
+                  "QUEUE_GEOMETRY_UNSUPPORTED",
+                  "TP_GEOMETRY_UNSUPPORTED",
+                  "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                  "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+                ],
+                "method_version": "QUEUE_PORTAL_CANDIDATE_1",
+                "assessment": "NOT_EVALUATED",
+                "beam_frequency_ghz": 230.6764601381581,
+                "antenna_diameter_m": null,
+                "beam_fwhm_deg": null,
+                "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+                "beam_frequency_source": "Ref.Frequency",
+                "antenna_diameter_source": "Use TP?"
+              },
+              "scalar": null
+            }
+          ],
+          "spatial_evidence": {
+            "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:47",
+            "center": {
+              "ra_deg": 23.482131,
+              "dec_deg": 30.672143,
+              "frame": "ICRS"
+            },
+            "center_status": "AVAILABLE",
+            "footprint": null,
+            "footprint_status": "MISSING",
+            "geometry": "RECTANGULAR_MOSAIC",
+            "selection_status": "UNSUPPORTED",
+            "reasons": [
+              "QUEUE_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME"
+            ],
+            "interpretation": {
+              "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:47",
+              "frame": "ICRS",
+              "target_kind": "FIXED",
+              "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+              "antenna_diameter_m": null
+            },
+            "adapter_version": "QUEUE_PORTAL_CANDIDATE_1",
+            "array_classification": null
+          }
+        },
+        {
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:48",
+          "reference": {
+            "source": "QUEUE",
+            "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:48",
+            "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+            "parser_version": "6",
+            "reconstruction_version": "2",
+            "adapter_version": "1",
+            "component_index": null,
+            "acquisition_id": null,
+            "parse_run_id": null
+          },
+          "alternative_context_ids": [],
+          "context_reasons": [
+            "PLANNED_OBSERVATION_EVIDENCE",
+            "CRITERIA_NOT_IMPLEMENTED"
+          ],
+          "disposition": "RETAINED_UNEVALUATED",
+          "filters": [
+            {
+              "predicate_index": 0,
+              "name": "spatial",
+              "stage": "LOCAL",
+              "outcome": "NOT_EVALUATED",
+              "reasons": [
+                "QUEUE_GEOMETRY_UNSUPPORTED",
+                "TP_GEOMETRY_UNSUPPORTED",
+                "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+              ],
+              "spatial": {
+                "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:48",
+                "status": "NOT_EVALUATED",
+                "operation": "QUEUE_CANDIDATE_PRIMARY_BEAM",
+                "separation_deg": 122.25713999848976,
+                "threshold_deg": null,
+                "reasons": [
+                  "QUEUE_GEOMETRY_UNSUPPORTED",
+                  "TP_GEOMETRY_UNSUPPORTED",
+                  "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                  "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+                ],
+                "method_version": "QUEUE_PORTAL_CANDIDATE_1",
+                "assessment": "NOT_EVALUATED",
+                "beam_frequency_ghz": 230.6764601381581,
+                "antenna_diameter_m": null,
+                "beam_fwhm_deg": null,
+                "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+                "beam_frequency_source": "Ref.Frequency",
+                "antenna_diameter_source": "Use TP?"
+              },
+              "scalar": null
+            }
+          ],
+          "spatial_evidence": {
+            "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:48",
+            "center": {
+              "ra_deg": 23.482131,
+              "dec_deg": 30.672143,
+              "frame": "ICRS"
+            },
+            "center_status": "AVAILABLE",
+            "footprint": null,
+            "footprint_status": "MISSING",
+            "geometry": "RECTANGULAR_MOSAIC",
+            "selection_status": "UNSUPPORTED",
+            "reasons": [
+              "QUEUE_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME"
+            ],
+            "interpretation": {
+              "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:48",
+              "frame": "ICRS",
+              "target_kind": "FIXED",
+              "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+              "antenna_diameter_m": null
+            },
+            "adapter_version": "QUEUE_PORTAL_CANDIDATE_1",
+            "array_classification": null
+          }
+        },
+        {
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:49",
+          "reference": {
+            "source": "QUEUE",
+            "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:49",
+            "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+            "parser_version": "6",
+            "reconstruction_version": "2",
+            "adapter_version": "1",
+            "component_index": null,
+            "acquisition_id": null,
+            "parse_run_id": null
+          },
+          "alternative_context_ids": [],
+          "context_reasons": [
+            "PLANNED_OBSERVATION_EVIDENCE",
+            "CRITERIA_NOT_IMPLEMENTED"
+          ],
+          "disposition": "RETAINED_UNEVALUATED",
+          "filters": [
+            {
+              "predicate_index": 0,
+              "name": "spatial",
+              "stage": "LOCAL",
+              "outcome": "NOT_EVALUATED",
+              "reasons": [
+                "QUEUE_GEOMETRY_UNSUPPORTED",
+                "TP_GEOMETRY_UNSUPPORTED",
+                "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+              ],
+              "spatial": {
+                "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:49",
+                "status": "NOT_EVALUATED",
+                "operation": "QUEUE_CANDIDATE_PRIMARY_BEAM",
+                "separation_deg": 122.25388915469728,
+                "threshold_deg": null,
+                "reasons": [
+                  "QUEUE_GEOMETRY_UNSUPPORTED",
+                  "TP_GEOMETRY_UNSUPPORTED",
+                  "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                  "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+                ],
+                "method_version": "QUEUE_PORTAL_CANDIDATE_1",
+                "assessment": "NOT_EVALUATED",
+                "beam_frequency_ghz": 230.6764601381581,
+                "antenna_diameter_m": null,
+                "beam_fwhm_deg": null,
+                "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+                "beam_frequency_source": "Ref.Frequency",
+                "antenna_diameter_source": "Use TP?"
+              },
+              "scalar": null
+            }
+          ],
+          "spatial_evidence": {
+            "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:49",
+            "center": {
+              "ra_deg": 23.536475,
+              "dec_deg": 30.776986944444445,
+              "frame": "ICRS"
+            },
+            "center_status": "AVAILABLE",
+            "footprint": null,
+            "footprint_status": "MISSING",
+            "geometry": "RECTANGULAR_MOSAIC",
+            "selection_status": "UNSUPPORTED",
+            "reasons": [
+              "QUEUE_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME"
+            ],
+            "interpretation": {
+              "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:49",
+              "frame": "ICRS",
+              "target_kind": "FIXED",
+              "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+              "antenna_diameter_m": null
+            },
+            "adapter_version": "QUEUE_PORTAL_CANDIDATE_1",
+            "array_classification": null
+          }
+        },
+        {
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:50",
+          "reference": {
+            "source": "QUEUE",
+            "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:50",
+            "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+            "parser_version": "6",
+            "reconstruction_version": "2",
+            "adapter_version": "1",
+            "component_index": null,
+            "acquisition_id": null,
+            "parse_run_id": null
+          },
+          "alternative_context_ids": [],
+          "context_reasons": [
+            "PLANNED_OBSERVATION_EVIDENCE",
+            "CRITERIA_NOT_IMPLEMENTED"
+          ],
+          "disposition": "RETAINED_UNEVALUATED",
+          "filters": [
+            {
+              "predicate_index": 0,
+              "name": "spatial",
+              "stage": "LOCAL",
+              "outcome": "NOT_EVALUATED",
+              "reasons": [
+                "QUEUE_GEOMETRY_UNSUPPORTED",
+                "TP_GEOMETRY_UNSUPPORTED",
+                "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+              ],
+              "spatial": {
+                "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:50",
+                "status": "NOT_EVALUATED",
+                "operation": "QUEUE_CANDIDATE_PRIMARY_BEAM",
+                "separation_deg": 122.29360375886445,
+                "threshold_deg": null,
+                "reasons": [
+                  "QUEUE_GEOMETRY_UNSUPPORTED",
+                  "TP_GEOMETRY_UNSUPPORTED",
+                  "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                  "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+                ],
+                "method_version": "QUEUE_PORTAL_CANDIDATE_1",
+                "assessment": "NOT_EVALUATED",
+                "beam_frequency_ghz": 230.6764601381581,
+                "antenna_diameter_m": null,
+                "beam_fwhm_deg": null,
+                "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+                "beam_frequency_source": "Ref.Frequency",
+                "antenna_diameter_source": "Use TP?"
+              },
+              "scalar": null
+            }
+          ],
+          "spatial_evidence": {
+            "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:50",
+            "center": {
+              "ra_deg": 23.46752083333333,
+              "dec_deg": 30.561307777777778,
+              "frame": "ICRS"
+            },
+            "center_status": "AVAILABLE",
+            "footprint": null,
+            "footprint_status": "MISSING",
+            "geometry": "RECTANGULAR_MOSAIC",
+            "selection_status": "UNSUPPORTED",
+            "reasons": [
+              "QUEUE_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME"
+            ],
+            "interpretation": {
+              "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:50",
+              "frame": "ICRS",
+              "target_kind": "FIXED",
+              "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+              "antenna_diameter_m": null
+            },
+            "adapter_version": "QUEUE_PORTAL_CANDIDATE_1",
+            "array_classification": null
+          }
+        },
+        {
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:51",
+          "reference": {
+            "source": "QUEUE",
+            "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:51",
+            "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+            "parser_version": "6",
+            "reconstruction_version": "2",
+            "adapter_version": "1",
+            "component_index": null,
+            "acquisition_id": null,
+            "parse_run_id": null
+          },
+          "alternative_context_ids": [],
+          "context_reasons": [
+            "PLANNED_OBSERVATION_EVIDENCE",
+            "CRITERIA_NOT_IMPLEMENTED"
+          ],
+          "disposition": "RETAINED_UNEVALUATED",
+          "filters": [
+            {
+              "predicate_index": 0,
+              "name": "spatial",
+              "stage": "LOCAL",
+              "outcome": "NOT_EVALUATED",
+              "reasons": [
+                "QUEUE_GEOMETRY_UNSUPPORTED",
+                "TP_GEOMETRY_UNSUPPORTED",
+                "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+              ],
+              "spatial": {
+                "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:51",
+                "status": "NOT_EVALUATED",
+                "operation": "QUEUE_CANDIDATE_PRIMARY_BEAM",
+                "separation_deg": 122.2964117015557,
+                "threshold_deg": null,
+                "reasons": [
+                  "QUEUE_GEOMETRY_UNSUPPORTED",
+                  "TP_GEOMETRY_UNSUPPORTED",
+                  "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                  "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+                ],
+                "method_version": "QUEUE_PORTAL_CANDIDATE_1",
+                "assessment": "NOT_EVALUATED",
+                "beam_frequency_ghz": 230.6764601381581,
+                "antenna_diameter_m": null,
+                "beam_fwhm_deg": null,
+                "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+                "beam_frequency_source": "Ref.Frequency",
+                "antenna_diameter_source": "Use TP?"
+              },
+              "scalar": null
+            }
+          ],
+          "spatial_evidence": {
+            "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:51",
+            "center": {
+              "ra_deg": 23.413176666666665,
+              "dec_deg": 30.45646361111111,
+              "frame": "ICRS"
+            },
+            "center_status": "AVAILABLE",
+            "footprint": null,
+            "footprint_status": "MISSING",
+            "geometry": "RECTANGULAR_MOSAIC",
+            "selection_status": "UNSUPPORTED",
+            "reasons": [
+              "QUEUE_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME"
+            ],
+            "interpretation": {
+              "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:51",
+              "frame": "ICRS",
+              "target_kind": "FIXED",
+              "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+              "antenna_diameter_m": null
+            },
+            "adapter_version": "QUEUE_PORTAL_CANDIDATE_1",
+            "array_classification": null
+          }
+        },
+        {
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:52",
+          "reference": {
+            "source": "QUEUE",
+            "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:52",
+            "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+            "parser_version": "6",
+            "reconstruction_version": "2",
+            "adapter_version": "1",
+            "component_index": null,
+            "acquisition_id": null,
+            "parse_run_id": null
+          },
+          "alternative_context_ids": [],
+          "context_reasons": [
+            "PLANNED_OBSERVATION_EVIDENCE",
+            "CRITERIA_NOT_IMPLEMENTED"
+          ],
+          "disposition": "RETAINED_UNEVALUATED",
+          "filters": [
+            {
+              "predicate_index": 0,
+              "name": "spatial",
+              "stage": "LOCAL",
+              "outcome": "NOT_EVALUATED",
+              "reasons": [
+                "QUEUE_GEOMETRY_UNSUPPORTED",
+                "TP_GEOMETRY_UNSUPPORTED",
+                "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+              ],
+              "spatial": {
+                "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:52",
+                "status": "NOT_EVALUATED",
+                "operation": "QUEUE_CANDIDATE_PRIMARY_BEAM",
+                "separation_deg": 122.29897352609281,
+                "threshold_deg": null,
+                "reasons": [
+                  "QUEUE_GEOMETRY_UNSUPPORTED",
+                  "TP_GEOMETRY_UNSUPPORTED",
+                  "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                  "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+                ],
+                "method_version": "QUEUE_PORTAL_CANDIDATE_1",
+                "assessment": "NOT_EVALUATED",
+                "beam_frequency_ghz": 230.6764601381581,
+                "antenna_diameter_m": null,
+                "beam_fwhm_deg": null,
+                "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+                "beam_frequency_source": "Ref.Frequency",
+                "antenna_diameter_source": "Use TP?"
+              },
+              "scalar": null
+            }
+          ],
+          "spatial_evidence": {
+            "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:52",
+            "center": {
+              "ra_deg": 23.3588325,
+              "dec_deg": 30.351619444444445,
+              "frame": "ICRS"
+            },
+            "center_status": "AVAILABLE",
+            "footprint": null,
+            "footprint_status": "MISSING",
+            "geometry": "RECTANGULAR_MOSAIC",
+            "selection_status": "UNSUPPORTED",
+            "reasons": [
+              "QUEUE_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME"
+            ],
+            "interpretation": {
+              "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:52",
+              "frame": "ICRS",
+              "target_kind": "FIXED",
+              "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+              "antenna_diameter_m": null
+            },
+            "adapter_version": "QUEUE_PORTAL_CANDIDATE_1",
+            "array_classification": null
+          }
+        },
+        {
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:53",
+          "reference": {
+            "source": "QUEUE",
+            "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:53",
+            "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+            "parser_version": "6",
+            "reconstruction_version": "2",
+            "adapter_version": "1",
+            "component_index": null,
+            "acquisition_id": null,
+            "parse_run_id": null
+          },
+          "alternative_context_ids": [],
+          "context_reasons": [
+            "PLANNED_OBSERVATION_EVIDENCE",
+            "CRITERIA_NOT_IMPLEMENTED"
+          ],
+          "disposition": "RETAINED_UNEVALUATED",
+          "filters": [
+            {
+              "predicate_index": 0,
+              "name": "spatial",
+              "stage": "LOCAL",
+              "outcome": "NOT_EVALUATED",
+              "reasons": [
+                "QUEUE_GEOMETRY_UNSUPPORTED",
+                "TP_GEOMETRY_UNSUPPORTED",
+                "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+              ],
+              "spatial": {
+                "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:53",
+                "status": "NOT_EVALUATED",
+                "operation": "QUEUE_CANDIDATE_PRIMARY_BEAM",
+                "separation_deg": 116.80296700659686,
+                "threshold_deg": null,
+                "reasons": [
+                  "QUEUE_GEOMETRY_UNSUPPORTED",
+                  "TP_GEOMETRY_UNSUPPORTED",
+                  "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                  "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+                ],
+                "method_version": "QUEUE_PORTAL_CANDIDATE_1",
+                "assessment": "NOT_EVALUATED",
+                "beam_frequency_ghz": 230.33907069918584,
+                "antenna_diameter_m": null,
+                "beam_fwhm_deg": null,
+                "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+                "beam_frequency_source": "Ref.Frequency",
+                "antenna_diameter_source": "Use TP?"
+              },
+              "scalar": null
+            }
+          ],
+          "spatial_evidence": {
+            "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:53",
+            "center": {
+              "ra_deg": 11.888058,
+              "dec_deg": -25.2888,
+              "frame": "ICRS"
+            },
+            "center_status": "AVAILABLE",
+            "footprint": null,
+            "footprint_status": "MISSING",
+            "geometry": "RECTANGULAR_MOSAIC",
+            "selection_status": "UNSUPPORTED",
+            "reasons": [
+              "QUEUE_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME"
+            ],
+            "interpretation": {
+              "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:53",
+              "frame": "ICRS",
+              "target_kind": "FIXED",
+              "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+              "antenna_diameter_m": null
+            },
+            "adapter_version": "QUEUE_PORTAL_CANDIDATE_1",
+            "array_classification": null
+          }
+        },
+        {
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:54",
+          "reference": {
+            "source": "QUEUE",
+            "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:54",
+            "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+            "parser_version": "6",
+            "reconstruction_version": "2",
+            "adapter_version": "1",
+            "component_index": null,
+            "acquisition_id": null,
+            "parse_run_id": null
+          },
+          "alternative_context_ids": [],
+          "context_reasons": [
+            "PLANNED_OBSERVATION_EVIDENCE",
+            "CRITERIA_NOT_IMPLEMENTED"
+          ],
+          "disposition": "RETAINED_UNEVALUATED",
+          "filters": [
+            {
+              "predicate_index": 0,
+              "name": "spatial",
+              "stage": "LOCAL",
+              "outcome": "NOT_EVALUATED",
+              "reasons": [
+                "QUEUE_GEOMETRY_UNSUPPORTED",
+                "TP_GEOMETRY_UNSUPPORTED",
+                "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+              ],
+              "spatial": {
+                "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:54",
+                "status": "NOT_EVALUATED",
+                "operation": "QUEUE_CANDIDATE_PRIMARY_BEAM",
+                "separation_deg": 116.80296700659686,
+                "threshold_deg": null,
+                "reasons": [
+                  "QUEUE_GEOMETRY_UNSUPPORTED",
+                  "TP_GEOMETRY_UNSUPPORTED",
+                  "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME",
+                  "CANDIDATE_BEAM_PROFILE_PROVISIONAL"
+                ],
+                "method_version": "QUEUE_PORTAL_CANDIDATE_1",
+                "assessment": "NOT_EVALUATED",
+                "beam_frequency_ghz": 219.79,
+                "antenna_diameter_m": null,
+                "beam_fwhm_deg": null,
+                "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+                "beam_frequency_source": "Ref.Frequency",
+                "antenna_diameter_source": "Use TP?"
+              },
+              "scalar": null
+            }
+          ],
+          "spatial_evidence": {
+            "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:54",
+            "center": {
+              "ra_deg": 11.888058,
+              "dec_deg": -25.2888,
+              "frame": "ICRS"
+            },
+            "center_status": "AVAILABLE",
+            "footprint": null,
+            "footprint_status": "MISSING",
+            "geometry": "RECTANGULAR_MOSAIC",
+            "selection_status": "UNSUPPORTED",
+            "reasons": [
+              "QUEUE_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "TP_GEOMETRY_UNSUPPORTED",
+              "PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME"
+            ],
+            "interpretation": {
+              "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:54",
+              "frame": "ICRS",
+              "target_kind": "FIXED",
+              "decision_ref": "docs/evidence/official_sources.md#queue-position-profile",
+              "antenna_diameter_m": null
+            },
+            "adapter_version": "QUEUE_PORTAL_CANDIDATE_1",
+            "array_classification": null
+          }
+        }
+      ]
+    }
+  },
+  "evaluation_scope": {
+    "total_retained": 13,
+    "shown_candidates": 1,
+    "evaluated_contexts": 13,
+    "display_truncated": true,
+    "unused_interpretation_ids": []
+  },
+  "request_criteria": [
+    {
+      "criterion_id": "CONT-SETUP",
+      "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Spectral windows (continuum definition)",
+      "method_version": "continuum_setup_2",
+      "approval": "PROVISIONAL",
+      "applicability": "APPLICABLE",
+      "evaluation": "EVALUATED",
+      "outcome": "SATISFIED",
+      "context_id": null,
+      "proposed": null,
+      "candidate": null,
+      "derived": [
+        [
+          "qualifying_windows",
+          2.0
+        ],
+        [
+          "unresolved_windows",
+          0.0
+        ],
+        [
+          "threshold_ghz",
+          1.8
+        ]
+      ],
+      "reasons": [
+        "TWO_OR_MORE_WINDOWS_WIDER_THAN_1.8_GHZ"
+      ],
+      "issues": [],
+      "decision_refs": [
+        "scientific-feedback-Q2:usable-bandwidth-for-1.8-GHz-threshold"
+      ],
+      "details": [
+        [
+          "w1",
+          "QUALIFIED:USABLE_1.875_GHZ"
+        ],
+        [
+          "w2",
+          "QUALIFIED:USABLE_1.875_GHZ"
+        ]
+      ],
+      "result_version": "2",
+      "numeric_method": "canonical_decimal_exact_1",
+      "has_computed_outcome": true,
+      "eligible_for_formal_aggregation": false
+    }
+  ],
+  "context_evaluations": [
+    {
+      "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:42",
+      "reference": {
+        "source": "QUEUE",
+        "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:42",
+        "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+        "parser_version": "6",
+        "reconstruction_version": "2",
+        "adapter_version": "1",
+        "component_index": null,
+        "acquisition_id": null,
+        "parse_run_id": null
+      },
+      "evidence_states": [
+        {
+          "path": "row.spatial",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "GEOMETRY_COMPARISON_NOT_IMPLEMENTED"
+          ]
+        },
+        {
+          "path": "row.request.requested_angular_resolution_arcsec",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.sensitivity",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "UNKNOWN",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "REFERENCE_RMS_NOT_ASSIGNED_TO_EVERY_SPW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[0].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[1].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[2].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[3].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "criterion_id": "ANGULAR",
+          "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Angular Resolution",
+          "method_version": "angular_factor_2",
+          "approval": "PROVISIONAL",
+          "applicability": "APPLICABLE",
+          "evaluation": "EVALUATED",
+          "outcome": "SATISFIED",
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:42",
+          "proposed": {
+            "value": 0.5,
+            "unit": "arcsec",
+            "source_field": "angular_resolution",
+            "semantics": "PROPOSED_REQUESTED"
+          },
+          "candidate": {
+            "value": 0.4,
+            "unit": "arcsec",
+            "source_field": "Req. Ang. Res.",
+            "semantics": "QUEUE_REQUESTED"
+          },
+          "derived": [
+            [
+              "factor",
+              1.25
+            ],
+            [
+              "max_factor",
+              2.0
+            ]
+          ],
+          "reasons": [
+            "FACTOR_WITHIN_LIMIT"
+          ],
+          "issues": [],
+          "decision_refs": [
+            "weekly-report-week1-Q4:spatial_resolution-for-angular-resolution"
+          ],
+          "details": [
+            [
+              "factor_exact",
+              "5/4"
+            ]
+          ],
+          "result_version": "2",
+          "numeric_method": "canonical_decimal_exact_1",
+          "has_computed_outcome": true,
+          "eligible_for_formal_aggregation": false
+        }
+      ]
+    },
+    {
+      "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:43",
+      "reference": {
+        "source": "QUEUE",
+        "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:43",
+        "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+        "parser_version": "6",
+        "reconstruction_version": "2",
+        "adapter_version": "1",
+        "component_index": null,
+        "acquisition_id": null,
+        "parse_run_id": null
+      },
+      "evidence_states": [
+        {
+          "path": "row.spatial",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "GEOMETRY_COMPARISON_NOT_IMPLEMENTED"
+          ]
+        },
+        {
+          "path": "row.request.requested_angular_resolution_arcsec",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.sensitivity",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "UNKNOWN",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "REFERENCE_RMS_NOT_ASSIGNED_TO_EVERY_SPW"
+          ]
+        },
+        {
+          "path": "row.spectral.window_expansion_status",
+          "numeric": "UNAVAILABLE",
+          "unit": "UNKNOWN",
+          "association": "UNKNOWN",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "SPS_EXPANSION_UNAVAILABLE"
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "criterion_id": "ANGULAR",
+          "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Angular Resolution",
+          "method_version": "angular_factor_2",
+          "approval": "PROVISIONAL",
+          "applicability": "APPLICABLE",
+          "evaluation": "EVALUATED",
+          "outcome": "NOT_SATISFIED",
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:43",
+          "proposed": {
+            "value": 0.5,
+            "unit": "arcsec",
+            "source_field": "angular_resolution",
+            "semantics": "PROPOSED_REQUESTED"
+          },
+          "candidate": {
+            "value": 0.15,
+            "unit": "arcsec",
+            "source_field": "Req. Ang. Res.",
+            "semantics": "QUEUE_REQUESTED"
+          },
+          "derived": [
+            [
+              "factor",
+              3.3333333333333335
+            ],
+            [
+              "max_factor",
+              2.0
+            ]
+          ],
+          "reasons": [
+            "FACTOR_EXCEEDS_LIMIT"
+          ],
+          "issues": [],
+          "decision_refs": [
+            "weekly-report-week1-Q4:spatial_resolution-for-angular-resolution"
+          ],
+          "details": [
+            [
+              "factor_exact",
+              "10/3"
+            ]
+          ],
+          "result_version": "2",
+          "numeric_method": "canonical_decimal_exact_1",
+          "has_computed_outcome": true,
+          "eligible_for_formal_aggregation": false
+        }
+      ]
+    },
+    {
+      "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:44",
+      "reference": {
+        "source": "QUEUE",
+        "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:44",
+        "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+        "parser_version": "6",
+        "reconstruction_version": "2",
+        "adapter_version": "1",
+        "component_index": null,
+        "acquisition_id": null,
+        "parse_run_id": null
+      },
+      "evidence_states": [
+        {
+          "path": "row.spatial",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "GEOMETRY_COMPARISON_NOT_IMPLEMENTED"
+          ]
+        },
+        {
+          "path": "row.request.requested_angular_resolution_arcsec",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.sensitivity",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "UNKNOWN",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "REFERENCE_RMS_NOT_ASSIGNED_TO_EVERY_SPW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[0].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[1].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[2].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[3].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[4].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[4].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[4].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[5].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[5].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[5].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[6].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[6].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[6].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "criterion_id": "ANGULAR",
+          "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Angular Resolution",
+          "method_version": "angular_factor_2",
+          "approval": "PROVISIONAL",
+          "applicability": "APPLICABLE",
+          "evaluation": "EVALUATED",
+          "outcome": "NOT_SATISFIED",
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:44",
+          "proposed": {
+            "value": 0.5,
+            "unit": "arcsec",
+            "source_field": "angular_resolution",
+            "semantics": "PROPOSED_REQUESTED"
+          },
+          "candidate": {
+            "value": 1.6,
+            "unit": "arcsec",
+            "source_field": "Req. Ang. Res.",
+            "semantics": "QUEUE_REQUESTED"
+          },
+          "derived": [
+            [
+              "factor",
+              3.2
+            ],
+            [
+              "max_factor",
+              2.0
+            ]
+          ],
+          "reasons": [
+            "FACTOR_EXCEEDS_LIMIT"
+          ],
+          "issues": [],
+          "decision_refs": [
+            "weekly-report-week1-Q4:spatial_resolution-for-angular-resolution"
+          ],
+          "details": [
+            [
+              "factor_exact",
+              "16/5"
+            ]
+          ],
+          "result_version": "2",
+          "numeric_method": "canonical_decimal_exact_1",
+          "has_computed_outcome": true,
+          "eligible_for_formal_aggregation": false
+        }
+      ]
+    },
+    {
+      "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:45",
+      "reference": {
+        "source": "QUEUE",
+        "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:45",
+        "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+        "parser_version": "6",
+        "reconstruction_version": "2",
+        "adapter_version": "1",
+        "component_index": null,
+        "acquisition_id": null,
+        "parse_run_id": null
+      },
+      "evidence_states": [
+        {
+          "path": "row.spatial",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "GEOMETRY_COMPARISON_NOT_IMPLEMENTED"
+          ]
+        },
+        {
+          "path": "row.request.requested_angular_resolution_arcsec",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.sensitivity",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "UNKNOWN",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "REFERENCE_RMS_NOT_ASSIGNED_TO_EVERY_SPW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[0].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[1].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[2].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[3].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "criterion_id": "ANGULAR",
+          "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Angular Resolution",
+          "method_version": "angular_factor_2",
+          "approval": "PROVISIONAL",
+          "applicability": "APPLICABLE",
+          "evaluation": "EVALUATED",
+          "outcome": "NOT_SATISFIED",
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:45",
+          "proposed": {
+            "value": 0.5,
+            "unit": "arcsec",
+            "source_field": "angular_resolution",
+            "semantics": "PROPOSED_REQUESTED"
+          },
+          "candidate": {
+            "value": 2.6,
+            "unit": "arcsec",
+            "source_field": "Req. Ang. Res.",
+            "semantics": "QUEUE_REQUESTED"
+          },
+          "derived": [
+            [
+              "factor",
+              5.2
+            ],
+            [
+              "max_factor",
+              2.0
+            ]
+          ],
+          "reasons": [
+            "FACTOR_EXCEEDS_LIMIT"
+          ],
+          "issues": [],
+          "decision_refs": [
+            "weekly-report-week1-Q4:spatial_resolution-for-angular-resolution"
+          ],
+          "details": [
+            [
+              "factor_exact",
+              "26/5"
+            ]
+          ],
+          "result_version": "2",
+          "numeric_method": "canonical_decimal_exact_1",
+          "has_computed_outcome": true,
+          "eligible_for_formal_aggregation": false
+        }
+      ]
+    },
+    {
+      "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:46",
+      "reference": {
+        "source": "QUEUE",
+        "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:46",
+        "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+        "parser_version": "6",
+        "reconstruction_version": "2",
+        "adapter_version": "1",
+        "component_index": null,
+        "acquisition_id": null,
+        "parse_run_id": null
+      },
+      "evidence_states": [
+        {
+          "path": "row.spatial",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "GEOMETRY_COMPARISON_NOT_IMPLEMENTED"
+          ]
+        },
+        {
+          "path": "row.request.requested_angular_resolution_arcsec",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.sensitivity",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "UNKNOWN",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "REFERENCE_RMS_NOT_ASSIGNED_TO_EVERY_SPW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[0].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[1].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[2].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[3].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "criterion_id": "ANGULAR",
+          "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Angular Resolution",
+          "method_version": "angular_factor_2",
+          "approval": "PROVISIONAL",
+          "applicability": "APPLICABLE",
+          "evaluation": "EVALUATED",
+          "outcome": "NOT_SATISFIED",
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:46",
+          "proposed": {
+            "value": 0.5,
+            "unit": "arcsec",
+            "source_field": "angular_resolution",
+            "semantics": "PROPOSED_REQUESTED"
+          },
+          "candidate": {
+            "value": 2.6,
+            "unit": "arcsec",
+            "source_field": "Req. Ang. Res.",
+            "semantics": "QUEUE_REQUESTED"
+          },
+          "derived": [
+            [
+              "factor",
+              5.2
+            ],
+            [
+              "max_factor",
+              2.0
+            ]
+          ],
+          "reasons": [
+            "FACTOR_EXCEEDS_LIMIT"
+          ],
+          "issues": [],
+          "decision_refs": [
+            "weekly-report-week1-Q4:spatial_resolution-for-angular-resolution"
+          ],
+          "details": [
+            [
+              "factor_exact",
+              "26/5"
+            ]
+          ],
+          "result_version": "2",
+          "numeric_method": "canonical_decimal_exact_1",
+          "has_computed_outcome": true,
+          "eligible_for_formal_aggregation": false
+        }
+      ]
+    },
+    {
+      "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:47",
+      "reference": {
+        "source": "QUEUE",
+        "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:47",
+        "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+        "parser_version": "6",
+        "reconstruction_version": "2",
+        "adapter_version": "1",
+        "component_index": null,
+        "acquisition_id": null,
+        "parse_run_id": null
+      },
+      "evidence_states": [
+        {
+          "path": "row.spatial",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "GEOMETRY_COMPARISON_NOT_IMPLEMENTED"
+          ]
+        },
+        {
+          "path": "row.request.requested_angular_resolution_arcsec",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.sensitivity",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "UNKNOWN",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "REFERENCE_RMS_NOT_ASSIGNED_TO_EVERY_SPW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[0].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[1].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[2].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[3].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[4].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[4].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[4].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[5].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[5].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[5].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[6].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[6].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[6].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "criterion_id": "ANGULAR",
+          "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Angular Resolution",
+          "method_version": "angular_factor_2",
+          "approval": "PROVISIONAL",
+          "applicability": "APPLICABLE",
+          "evaluation": "EVALUATED",
+          "outcome": "NOT_SATISFIED",
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:47",
+          "proposed": {
+            "value": 0.5,
+            "unit": "arcsec",
+            "source_field": "angular_resolution",
+            "semantics": "PROPOSED_REQUESTED"
+          },
+          "candidate": {
+            "value": 6.667811768535553,
+            "unit": "arcsec",
+            "source_field": "Req. Ang. Res.",
+            "semantics": "QUEUE_REQUESTED"
+          },
+          "derived": [
+            [
+              "factor",
+              13.335623537071106
+            ],
+            [
+              "max_factor",
+              2.0
+            ]
+          ],
+          "reasons": [
+            "FACTOR_EXCEEDS_LIMIT"
+          ],
+          "issues": [],
+          "decision_refs": [
+            "weekly-report-week1-Q4:spatial_resolution-for-angular-resolution"
+          ],
+          "details": [
+            [
+              "factor_exact",
+              "6667811768535553/500000000000000"
+            ]
+          ],
+          "result_version": "2",
+          "numeric_method": "canonical_decimal_exact_1",
+          "has_computed_outcome": true,
+          "eligible_for_formal_aggregation": false
+        }
+      ]
+    },
+    {
+      "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:48",
+      "reference": {
+        "source": "QUEUE",
+        "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:48",
+        "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+        "parser_version": "6",
+        "reconstruction_version": "2",
+        "adapter_version": "1",
+        "component_index": null,
+        "acquisition_id": null,
+        "parse_run_id": null
+      },
+      "evidence_states": [
+        {
+          "path": "row.spatial",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "GEOMETRY_COMPARISON_NOT_IMPLEMENTED"
+          ]
+        },
+        {
+          "path": "row.request.requested_angular_resolution_arcsec",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.sensitivity",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "UNKNOWN",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "REFERENCE_RMS_NOT_ASSIGNED_TO_EVERY_SPW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[0].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[1].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[2].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[3].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[4].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[4].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[4].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[5].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[5].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[5].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[6].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[6].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[6].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "criterion_id": "ANGULAR",
+          "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Angular Resolution",
+          "method_version": "angular_factor_2",
+          "approval": "PROVISIONAL",
+          "applicability": "APPLICABLE",
+          "evaluation": "EVALUATED",
+          "outcome": "NOT_SATISFIED",
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:48",
+          "proposed": {
+            "value": 0.5,
+            "unit": "arcsec",
+            "source_field": "angular_resolution",
+            "semantics": "PROPOSED_REQUESTED"
+          },
+          "candidate": {
+            "value": 6.667811768535553,
+            "unit": "arcsec",
+            "source_field": "Req. Ang. Res.",
+            "semantics": "QUEUE_REQUESTED"
+          },
+          "derived": [
+            [
+              "factor",
+              13.335623537071106
+            ],
+            [
+              "max_factor",
+              2.0
+            ]
+          ],
+          "reasons": [
+            "FACTOR_EXCEEDS_LIMIT"
+          ],
+          "issues": [],
+          "decision_refs": [
+            "weekly-report-week1-Q4:spatial_resolution-for-angular-resolution"
+          ],
+          "details": [
+            [
+              "factor_exact",
+              "6667811768535553/500000000000000"
+            ]
+          ],
+          "result_version": "2",
+          "numeric_method": "canonical_decimal_exact_1",
+          "has_computed_outcome": true,
+          "eligible_for_formal_aggregation": false
+        }
+      ]
+    },
+    {
+      "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:49",
+      "reference": {
+        "source": "QUEUE",
+        "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:49",
+        "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+        "parser_version": "6",
+        "reconstruction_version": "2",
+        "adapter_version": "1",
+        "component_index": null,
+        "acquisition_id": null,
+        "parse_run_id": null
+      },
+      "evidence_states": [
+        {
+          "path": "row.spatial",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "GEOMETRY_COMPARISON_NOT_IMPLEMENTED"
+          ]
+        },
+        {
+          "path": "row.request.requested_angular_resolution_arcsec",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.sensitivity",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "UNKNOWN",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "REFERENCE_RMS_NOT_ASSIGNED_TO_EVERY_SPW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[0].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[1].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[2].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[3].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[4].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[4].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[4].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[5].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[5].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[5].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[6].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[6].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[6].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "criterion_id": "ANGULAR",
+          "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Angular Resolution",
+          "method_version": "angular_factor_2",
+          "approval": "PROVISIONAL",
+          "applicability": "APPLICABLE",
+          "evaluation": "EVALUATED",
+          "outcome": "NOT_SATISFIED",
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:49",
+          "proposed": {
+            "value": 0.5,
+            "unit": "arcsec",
+            "source_field": "angular_resolution",
+            "semantics": "PROPOSED_REQUESTED"
+          },
+          "candidate": {
+            "value": 6.672099279603365,
+            "unit": "arcsec",
+            "source_field": "Req. Ang. Res.",
+            "semantics": "QUEUE_REQUESTED"
+          },
+          "derived": [
+            [
+              "factor",
+              13.34419855920673
+            ],
+            [
+              "max_factor",
+              2.0
+            ]
+          ],
+          "reasons": [
+            "FACTOR_EXCEEDS_LIMIT"
+          ],
+          "issues": [],
+          "decision_refs": [
+            "weekly-report-week1-Q4:spatial_resolution-for-angular-resolution"
+          ],
+          "details": [
+            [
+              "factor_exact",
+              "1334419855920673/100000000000000"
+            ]
+          ],
+          "result_version": "2",
+          "numeric_method": "canonical_decimal_exact_1",
+          "has_computed_outcome": true,
+          "eligible_for_formal_aggregation": false
+        }
+      ]
+    },
+    {
+      "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:50",
+      "reference": {
+        "source": "QUEUE",
+        "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:50",
+        "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+        "parser_version": "6",
+        "reconstruction_version": "2",
+        "adapter_version": "1",
+        "component_index": null,
+        "acquisition_id": null,
+        "parse_run_id": null
+      },
+      "evidence_states": [
+        {
+          "path": "row.spatial",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "GEOMETRY_COMPARISON_NOT_IMPLEMENTED"
+          ]
+        },
+        {
+          "path": "row.request.requested_angular_resolution_arcsec",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.sensitivity",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "UNKNOWN",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "REFERENCE_RMS_NOT_ASSIGNED_TO_EVERY_SPW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[0].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[1].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[2].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[3].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[4].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[4].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[4].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[5].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[5].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[5].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[6].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[6].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[6].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "criterion_id": "ANGULAR",
+          "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Angular Resolution",
+          "method_version": "angular_factor_2",
+          "approval": "PROVISIONAL",
+          "applicability": "APPLICABLE",
+          "evaluation": "EVALUATED",
+          "outcome": "NOT_SATISFIED",
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:50",
+          "proposed": {
+            "value": 0.5,
+            "unit": "arcsec",
+            "source_field": "angular_resolution",
+            "semantics": "PROPOSED_REQUESTED"
+          },
+          "candidate": {
+            "value": 6.663279248851187,
+            "unit": "arcsec",
+            "source_field": "Req. Ang. Res.",
+            "semantics": "QUEUE_REQUESTED"
+          },
+          "derived": [
+            [
+              "factor",
+              13.326558497702374
+            ],
+            [
+              "max_factor",
+              2.0
+            ]
+          ],
+          "reasons": [
+            "FACTOR_EXCEEDS_LIMIT"
+          ],
+          "issues": [],
+          "decision_refs": [
+            "weekly-report-week1-Q4:spatial_resolution-for-angular-resolution"
+          ],
+          "details": [
+            [
+              "factor_exact",
+              "6663279248851187/500000000000000"
+            ]
+          ],
+          "result_version": "2",
+          "numeric_method": "canonical_decimal_exact_1",
+          "has_computed_outcome": true,
+          "eligible_for_formal_aggregation": false
+        }
+      ]
+    },
+    {
+      "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:51",
+      "reference": {
+        "source": "QUEUE",
+        "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:51",
+        "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+        "parser_version": "6",
+        "reconstruction_version": "2",
+        "adapter_version": "1",
+        "component_index": null,
+        "acquisition_id": null,
+        "parse_run_id": null
+      },
+      "evidence_states": [
+        {
+          "path": "row.spatial",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "GEOMETRY_COMPARISON_NOT_IMPLEMENTED"
+          ]
+        },
+        {
+          "path": "row.request.requested_angular_resolution_arcsec",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.sensitivity",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "UNKNOWN",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "REFERENCE_RMS_NOT_ASSIGNED_TO_EVERY_SPW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[0].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[1].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[2].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[3].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[4].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[4].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[4].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[5].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[5].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[5].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[6].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[6].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[6].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "criterion_id": "ANGULAR",
+          "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Angular Resolution",
+          "method_version": "angular_factor_2",
+          "approval": "PROVISIONAL",
+          "applicability": "APPLICABLE",
+          "evaluation": "EVALUATED",
+          "outcome": "NOT_SATISFIED",
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:51",
+          "proposed": {
+            "value": 0.5,
+            "unit": "arcsec",
+            "source_field": "angular_resolution",
+            "semantics": "PROPOSED_REQUESTED"
+          },
+          "candidate": {
+            "value": 6.658991728695772,
+            "unit": "arcsec",
+            "source_field": "Req. Ang. Res.",
+            "semantics": "QUEUE_REQUESTED"
+          },
+          "derived": [
+            [
+              "factor",
+              13.317983457391543
+            ],
+            [
+              "max_factor",
+              2.0
+            ]
+          ],
+          "reasons": [
+            "FACTOR_EXCEEDS_LIMIT"
+          ],
+          "issues": [],
+          "decision_refs": [
+            "weekly-report-week1-Q4:spatial_resolution-for-angular-resolution"
+          ],
+          "details": [
+            [
+              "factor_exact",
+              "1664747932173943/125000000000000"
+            ]
+          ],
+          "result_version": "2",
+          "numeric_method": "canonical_decimal_exact_1",
+          "has_computed_outcome": true,
+          "eligible_for_formal_aggregation": false
+        }
+      ]
+    },
+    {
+      "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:52",
+      "reference": {
+        "source": "QUEUE",
+        "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:52",
+        "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+        "parser_version": "6",
+        "reconstruction_version": "2",
+        "adapter_version": "1",
+        "component_index": null,
+        "acquisition_id": null,
+        "parse_run_id": null
+      },
+      "evidence_states": [
+        {
+          "path": "row.spatial",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "GEOMETRY_COMPARISON_NOT_IMPLEMENTED"
+          ]
+        },
+        {
+          "path": "row.request.requested_angular_resolution_arcsec",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.sensitivity",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "UNKNOWN",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "REFERENCE_RMS_NOT_ASSIGNED_TO_EVERY_SPW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[0].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[1].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[2].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[3].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[4].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[4].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[4].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[5].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[5].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[5].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[6].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[6].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[6].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "criterion_id": "ANGULAR",
+          "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Angular Resolution",
+          "method_version": "angular_factor_2",
+          "approval": "PROVISIONAL",
+          "applicability": "APPLICABLE",
+          "evaluation": "EVALUATED",
+          "outcome": "NOT_SATISFIED",
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:52",
+          "proposed": {
+            "value": 0.5,
+            "unit": "arcsec",
+            "source_field": "angular_resolution",
+            "semantics": "PROPOSED_REQUESTED"
+          },
+          "candidate": {
+            "value": 6.654704208540355,
+            "unit": "arcsec",
+            "source_field": "Req. Ang. Res.",
+            "semantics": "QUEUE_REQUESTED"
+          },
+          "derived": [
+            [
+              "factor",
+              13.30940841708071
+            ],
+            [
+              "max_factor",
+              2.0
+            ]
+          ],
+          "reasons": [
+            "FACTOR_EXCEEDS_LIMIT"
+          ],
+          "issues": [],
+          "decision_refs": [
+            "weekly-report-week1-Q4:spatial_resolution-for-angular-resolution"
+          ],
+          "details": [
+            [
+              "factor_exact",
+              "1330940841708071/100000000000000"
+            ]
+          ],
+          "result_version": "2",
+          "numeric_method": "canonical_decimal_exact_1",
+          "has_computed_outcome": true,
+          "eligible_for_formal_aggregation": false
+        }
+      ]
+    },
+    {
+      "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:53",
+      "reference": {
+        "source": "QUEUE",
+        "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:53",
+        "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+        "parser_version": "6",
+        "reconstruction_version": "2",
+        "adapter_version": "1",
+        "component_index": null,
+        "acquisition_id": null,
+        "parse_run_id": null
+      },
+      "evidence_states": [
+        {
+          "path": "row.spatial",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "GEOMETRY_COMPARISON_NOT_IMPLEMENTED"
+          ]
+        },
+        {
+          "path": "row.request.requested_angular_resolution_arcsec",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.sensitivity",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "UNKNOWN",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "REFERENCE_RMS_NOT_ASSIGNED_TO_EVERY_SPW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[0].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[1].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[2].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[3].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "criterion_id": "ANGULAR",
+          "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Angular Resolution",
+          "method_version": "angular_factor_2",
+          "approval": "PROVISIONAL",
+          "applicability": "APPLICABLE",
+          "evaluation": "EVALUATED",
+          "outcome": "SATISFIED",
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:53",
+          "proposed": {
+            "value": 0.5,
+            "unit": "arcsec",
+            "source_field": "angular_resolution",
+            "semantics": "PROPOSED_REQUESTED"
+          },
+          "candidate": {
+            "value": 0.56,
+            "unit": "arcsec",
+            "source_field": "Req. Ang. Res.",
+            "semantics": "QUEUE_REQUESTED"
+          },
+          "derived": [
+            [
+              "factor",
+              1.12
+            ],
+            [
+              "max_factor",
+              2.0
+            ]
+          ],
+          "reasons": [
+            "FACTOR_WITHIN_LIMIT"
+          ],
+          "issues": [],
+          "decision_refs": [
+            "weekly-report-week1-Q4:spatial_resolution-for-angular-resolution"
+          ],
+          "details": [
+            [
+              "factor_exact",
+              "28/25"
+            ]
+          ],
+          "result_version": "2",
+          "numeric_method": "canonical_decimal_exact_1",
+          "has_computed_outcome": true,
+          "eligible_for_formal_aggregation": false
+        }
+      ]
+    },
+    {
+      "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:54",
+      "reference": {
+        "source": "QUEUE",
+        "raw_row_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:54",
+        "source_record_id": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+        "parser_version": "6",
+        "reconstruction_version": "2",
+        "adapter_version": "1",
+        "component_index": null,
+        "acquisition_id": null,
+        "parse_run_id": null
+      },
+      "evidence_states": [
+        {
+          "path": "row.spatial",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "GEOMETRY_COMPARISON_NOT_IMPLEMENTED"
+          ]
+        },
+        {
+          "path": "row.request.requested_angular_resolution_arcsec",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.sensitivity",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "UNKNOWN",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "REFERENCE_RMS_NOT_ASSIGNED_TO_EVERY_SPW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[0].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[0].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[1].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[1].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[2].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[2].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].frequency_derivation",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "CROSS_SOURCE_FRAME_UNVERIFIED"
+          ]
+        },
+        {
+          "path": "row.spectral.spws[3].spectral_resolution_mhz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": []
+        },
+        {
+          "path": "row.spectral.spws[3].usable_bandwidth_ghz",
+          "numeric": "PRESENT",
+          "unit": "PRESENT",
+          "association": "PRESENT",
+          "reference": "UNKNOWN",
+          "method": "NOT_IMPLEMENTED",
+          "reasons": [
+            "USABLE_COVERAGE_APPLICABILITY_REQUIRES_REVIEW"
+          ]
+        }
+      ],
+      "criteria": [
+        {
+          "criterion_id": "ANGULAR",
+          "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Angular Resolution",
+          "method_version": "angular_factor_2",
+          "approval": "PROVISIONAL",
+          "applicability": "APPLICABLE",
+          "evaluation": "EVALUATED",
+          "outcome": "SATISFIED",
+          "context_id": "QUEUE:c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc:54",
+          "proposed": {
+            "value": 0.5,
+            "unit": "arcsec",
+            "source_field": "angular_resolution",
+            "semantics": "PROPOSED_REQUESTED"
+          },
+          "candidate": {
+            "value": 0.56,
+            "unit": "arcsec",
+            "source_field": "Req. Ang. Res.",
+            "semantics": "QUEUE_REQUESTED"
+          },
+          "derived": [
+            [
+              "factor",
+              1.12
+            ],
+            [
+              "max_factor",
+              2.0
+            ]
+          ],
+          "reasons": [
+            "FACTOR_WITHIN_LIMIT"
+          ],
+          "issues": [],
+          "decision_refs": [
+            "weekly-report-week1-Q4:spatial_resolution-for-angular-resolution"
+          ],
+          "details": [
+            [
+              "factor_exact",
+              "28/25"
+            ]
+          ],
+          "result_version": "2",
+          "numeric_method": "canonical_decimal_exact_1",
+          "has_computed_outcome": true,
+          "eligible_for_formal_aggregation": false
+        }
+      ]
+    }
+  ]
+}

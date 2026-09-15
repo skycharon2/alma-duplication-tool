@@ -18,8 +18,12 @@ No Archive network client is created unless --live-archive is supplied.
 A selected source without input is reported as NOT_PROVIDED.
 --beam-decision-ref explicitly selects the existing formula strategy.
 --aq-equivalent-filters enables the existing opt-in filter semantics.
-Neither option approves a scientific method. No position interpretation or
-nominal-to-usable conversion is invented by this CLI.
+Neither option approves a scientific method.
+`--queue-candidate-beam` selects the separately versioned, source-documented Queue
+profile; it cannot be combined with the legacy `--beam-decision-ref` strategy.
+It derives row position/array conventions and candidate-frequency beams without
+a sidecar. It does not select any nominal-to-usable conversion. See the
+[profile contract](queue_candidate_beam.md).
 
 ## Exit codes
 

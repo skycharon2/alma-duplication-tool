@@ -115,3 +115,6 @@ ALMA requires checking both Archive and queued observations; the
 provides the source entry points and policy references. A candidate is evidence
 for review, not an automatic formal duplication conclusion. Versioned policy
 citations and Q1–Q7 interpretations remain in the rule-input contract.
+
+- [Queue candidate-beam profile](queue_candidate_beam.md)
+- [Verified ALMA source evidence](evidence/official_sources.md)
