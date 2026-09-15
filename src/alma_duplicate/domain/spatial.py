@@ -74,3 +74,5 @@ class SpatialSelection:
     antenna_diameter_m: float | None = None
     beam_fwhm_deg: float | None = None
     decision_ref: str | None = None
+    beam_frequency_source: str | None = None
+    antenna_diameter_source: str | None = None

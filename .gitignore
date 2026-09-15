@@ -33,3 +33,6 @@ htmlcov/
 # Local or downloaded data
 data/raw/
 data/cache/
+
+# Temporary CLI reports; curated evidence is in docs/evidence.
+/reports/

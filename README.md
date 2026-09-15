@@ -110,3 +110,20 @@ Reported CASE candidates are not confirmed duplicate/non-duplicate labels.
 ## License
 
 No project license has been selected yet.
+
+## Offline candidate-beam replay
+
+```bash
+python -m alma_duplicate.cli.evaluate \
+  --request examples/single_point/request.json \
+  --queue-csv tests/fixtures/queue/queue_pipeline_v1.csv \
+  --queue-candidate-beam --output reports/candidate-beam.json
+```
+
+The source-documented Queue profile derives the beam from the candidate's
+frequency and supported array evidence. It needs no hand-written sidecar.
+The original `examples/proposed_observation.json` remains the incomplete-input
+example. Read the [profile contract](docs/queue_candidate_beam.md) and
+[verified official sources](docs/evidence/official_sources.md) for scientific
+scope, source-version corrections and unresolved cases. This is a provisional
+Queue-only replay, not a completed duplication verdict.

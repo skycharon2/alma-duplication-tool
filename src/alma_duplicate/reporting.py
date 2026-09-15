@@ -144,6 +144,7 @@ def report_document(report, *, input_sha256=None):
             "result_limit": search.plan.result_limit,
             "retrieval_radius_deg": search.plan.retrieval_radius_deg,
             "beam_decision_ref": search.plan.beam_decision_ref,
+            "queue_candidate_beam": search.plan.queue_candidate_beam,
             "archive_filter_semantics":
                 search.plan.archive_filter_semantics,
         },

@@ -33,6 +33,8 @@ def main(argv=None, *, archive_client_factory=None):
     parser.add_argument("--live-archive", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--beam-decision-ref")
+    parser.add_argument("--queue-candidate-beam", action="store_true",
+                        help="Use the source-documented Queue candidate-frequency beam profile")
     parser.add_argument("--aq-equivalent-filters", action="store_true")
     args = parser.parse_args(argv)
 
@@ -95,6 +97,7 @@ def main(argv=None, *, archive_client_factory=None):
             queue_loader=loader,
             beam_decision_ref=args.beam_decision_ref,
             aq_equivalent_filters=args.aq_equivalent_filters,
+            queue_candidate_beam=args.queue_candidate_beam,
         )
         # No position interpretation or nominal conversion is invented.
         report = evaluate_candidate_search(search)

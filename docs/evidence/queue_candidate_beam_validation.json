@@ -1,0 +1,23 @@
+{
+  "base_commit": "46e69cd09cae7e9a12f4b6ac536d13e1ba79845a",
+  "validation_environment": "Codex patch-preparation environment, not maintainer local execution",
+  "python": "3.12.14",
+  "packages": {
+    "pytest": "9.1.1",
+    "astropy": "8.0.1",
+    "pyvo": "1.9.1",
+    "pandas": "2.2.3",
+    "numpy": "2.3.5"
+  },
+  "baseline": "813 passed, 10 skipped",
+  "revised": "842 passed, 10 skipped",
+  "new_profile_tests": 29,
+  "live_archive_executed": false,
+  "official_queue_download_verified": true,
+  "scientific_acceptance": "NOT_ESTABLISHED",
+  "sha256": {
+    "tests/fixtures/queue/queue_pipeline_v1.csv": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc",
+    "examples/single_point/request.json": "e4d5b32bbe5dea8be6685a0b768edd1094f2df558fbfbc2fde5099b5a4e29685",
+    "docs/evidence/queue_candidate_beam_report.json": "b43eec7b79332c6cfabb6d9da3083b92b76070ef0c58d40bdfaf5360545e59f9"
+  }
+}

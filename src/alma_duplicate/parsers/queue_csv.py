@@ -63,7 +63,7 @@ from alma_duplicate.queue_normalization import (
 
 from alma_duplicate.parsers.queue_provenance import parse_source_as_of
 
-QUEUE_CSV_PARSER_VERSION = "5"
+QUEUE_CSV_PARSER_VERSION = "6"
 DEFAULT_QUEUE_SOURCE_URL = (
     "https://almascience.eso.org/proposing/duplications"
 )
@@ -558,6 +558,8 @@ class _RowParser:
             mosaic_kind = QueueMosaicKind.CUSTOM_POINTING
         elif mosaic_raw == "Rectangle":
             mosaic_kind = QueueMosaicKind.RECTANGULAR_MOSAIC
+        elif mosaic_raw == "N/A":
+            mosaic_kind = QueueMosaicKind.SINGLE_FIELD
         elif not mosaic_raw and offsets_nonzero:
             mosaic_kind = (
                 QueueMosaicKind.UNSPECIFIED_WITH_OFFSET
@@ -618,7 +620,7 @@ class _RowParser:
 
         reference_frequency = self.quantity(
             "Ref.Frequency",
-            positive=True,
+            nonnegative=True,
         )
         reference_width = self.quantity(
             "Ref.Freq.Width",

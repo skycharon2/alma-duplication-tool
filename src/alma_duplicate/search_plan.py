@@ -37,6 +37,7 @@ def _aq_archive_predicate(p) -> PlannedPredicate:
 def build_search_plan(
     validation: RequestValidationResult, *, archive_science_only: bool = False,
     beam_decision_ref: str | None = None, aq_equivalent_filters: bool = False,
+    queue_candidate_beam: bool = False,
 ) -> SearchPlan:
     """Require spatial search readiness; never infer filters from science requests.
 
@@ -50,7 +51,13 @@ def build_search_plan(
     if (not validation.is_valid or not validation.can_search
             or validation.request is None or validation.search_options is None):
         raise ValueError("Search planning requires a valid request with search readiness")
+    if type(queue_candidate_beam) is not bool:
+        raise TypeError("queue_candidate_beam must be bool")
+    if queue_candidate_beam and beam_decision_ref is not None:
+        raise ValueError("Candidate-beam profile cannot be mixed with the legacy request-beam strategy")
     request, options = validation.request, validation.search_options
+    if queue_candidate_beam and "QUEUE" not in options.sources:
+        raise ValueError("Queue candidate-beam profile requires QUEUE selection")
     if request.position is None or options.radius is None or not options.sources:
         raise ValueError("Position, radius and selected sources are required")
     if request.position.frame != "ICRS" or options.radius.unit != "deg":
@@ -114,14 +121,19 @@ def build_search_plan(
                           "SUPPORTED_FIXED_SINGLE_FIELDS_7M_12M_ONLY",
                           "UNKNOWN_GEOMETRY_OUTSIDE_RETRIEVAL_SCOPE_NOT_COVERED",
                           "NOT_A_FORMAL_POSITION_CRITERION")
+        if queue_candidate_beam and source == "QUEUE":
+            spatial = "QUEUE_CANDIDATE_PRIMARY_BEAM"
+            limitations = ("QUEUE_PORTAL_FRAME_CONVENTION", "QUEUE_AMBIGUOUS_ARRAYS_RETAINED",
+                          "QUEUE_SCOPE_IS_SUPPLIED_FILE_AND_SOURCE_DATE", "NOT_A_FORMAL_POSITION_CRITERION")
         plans.append(SourceSearchPlan(
             source, tuple(predicates), spatial, limitations,
             broad_query if source == "ARCHIVE" else None,
         ))
     return SearchPlan(validation, tuple(plans), options.result_limit,
-                      version="2" if beam_decision_ref is not None else "1",
+                      version="3" if queue_candidate_beam else ("2" if beam_decision_ref is not None else "1"),
                       beam_decision_ref=beam_decision_ref, retrieval_radius_deg=min(180., retrieval_radius),
-                      archive_filter_semantics=AQ_EQUIVALENT_FILTERS if aq_equivalent_filters else None)
+                      archive_filter_semantics=AQ_EQUIVALENT_FILTERS if aq_equivalent_filters else None,
+                      queue_candidate_beam=queue_candidate_beam)
 
 
 def bind_archive_query(plan: SearchPlan, result: ArchiveQueryResult) -> QueryPlanBinding:
