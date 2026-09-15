@@ -66,3 +66,9 @@ See [the rule contract](rules.md) and [scientific follow-up](scientific_followup
 Spatial evidence is exported as row-local geometry, status and interpretation
 references. The source record and full comparison context are not recursively
 embedded in every row; source provenance is stored once per source.
+
+Evaluation version 2 adds provisional `POS-SINGLE` for every retained context.
+The Queue method requires `--queue-candidate-beam`; other contexts report
+insufficient information. See [the method contract](pos_single.md).
+Per-source `filter_summary` counts are derived from processed row audits;
+excluded rows remain auditable and server-unreturned rows are outside the count.

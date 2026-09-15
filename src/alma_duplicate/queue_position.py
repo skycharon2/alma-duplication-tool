@@ -4,7 +4,7 @@ The portal script is a reference implementation, not policy approval. In
 particular its blank-frame convention is recorded, never labelled a measured
 ICRS frame. Unknown arrays and ephemeris placeholders are not silently excluded.
 """
-from dataclasses import replace
+from dataclasses import dataclass, replace
 import math
 
 from alma_duplicate.domain.queue import QueueMosaicKind, RegularSpwEvidence
@@ -97,8 +97,23 @@ def adapt_queue_position(context, source_record):
     return replace(evidence, reasons=tuple(reasons), adapter_version=PROFILE)
 
 
-def evaluate_queue_candidate_beam(plan, evidence):
-    """Directional candidate half-FWHM selection; unresolved evidence retains rows."""
+BOUNDARY_TOLERANCE_DEG = 1e-10
+
+
+@dataclass(frozen=True)
+class CandidateCoverage:
+    separation_deg: float | None
+    radius_deg: float | None
+    frequency_ghz: float | None
+    diameter_m: float | None
+    frequency_source: str
+    diameter_source: str
+    blockers: tuple[str, ...]
+    reasons: tuple[str, ...]
+
+
+def candidate_coverage(request, evidence):
+    """Shared numeric evidence, independent of search disposition and labels."""
     row = evidence.context.evidence.row
     frequency, frequency_field, frequency_notes = candidate_frequency(row)
     diameter, diameter_field, diameter_notes = candidate_diameter(row)
@@ -109,24 +124,34 @@ def evaluate_queue_candidate_beam(plan, evidence):
         blockers.extend(frequency_notes)
     if diameter is None:
         blockers.extend(diameter_notes)
-    request = plan.validation.request
     separation = None
     if evidence.center is not None and evidence.center_status is S.AVAILABLE:
         separation = _separation(SkyPosition(request.position.ra_deg, request.position.dec_deg, "ICRS"), evidence.center)
     else:
         blockers.append("CENTER_UNAVAILABLE")
     width = primary_beam_fwhm_deg(frequency, diameter) if frequency is not None and diameter is not None else None
+    radius = width / 2 if width is not None else None
+    if not blockers and abs(separation - radius) <= BOUNDARY_TOLERANCE_DEG:
+        blockers.append("SPATIAL_BOUNDARY_TOLERANCE")
+    reasons = tuple(dict.fromkeys(list(evidence.reasons) + blockers +
+                                 list(frequency_notes) + list(diameter_notes)))
+    return CandidateCoverage(separation, radius, frequency, diameter,
+                             frequency_field, diameter_field, tuple(blockers),
+                             reasons + ("CANDIDATE_BEAM_PROFILE_PROVISIONAL",))
+
+
+def evaluate_queue_candidate_beam(plan, evidence):
+    """Directional candidate half-FWHM selection; unresolved evidence retains rows."""
+    coverage = candidate_coverage(plan.validation.request, evidence)
     status = "NOT_EVALUATED"
-    if not blockers:
-        if abs(separation - width/2) <= 1e-10:
-            blockers.append("SPATIAL_BOUNDARY_TOLERANCE")
-        else:
-            status = "INSIDE" if separation < width/2 else "OUTSIDE"
+    if not coverage.blockers:
+        status = "INSIDE" if coverage.separation_deg < coverage.radius_deg else "OUTSIDE"
     return SpatialSelection(
         evidence.context.context_id, status, "QUEUE_CANDIDATE_PRIMARY_BEAM",
-        separation, width/2 if width else None,
-        tuple(dict.fromkeys(blockers + list(frequency_notes) + list(diameter_notes))) + ("CANDIDATE_BEAM_PROFILE_PROVISIONAL",),
-        method_version=PROFILE, beam_frequency_ghz=frequency, antenna_diameter_m=diameter,
-        beam_fwhm_deg=width, decision_ref=SOURCE_REF,
-        beam_frequency_source=frequency_field, antenna_diameter_source=diameter_field,
+        coverage.separation_deg, coverage.radius_deg, coverage.reasons,
+        method_version=PROFILE, beam_frequency_ghz=coverage.frequency_ghz,
+        antenna_diameter_m=coverage.diameter_m,
+        beam_fwhm_deg=2 * coverage.radius_deg if coverage.radius_deg is not None else None,
+        decision_ref=SOURCE_REF, beam_frequency_source=coverage.frequency_source,
+        antenna_diameter_source=coverage.diameter_source,
     )
