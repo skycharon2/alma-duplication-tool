@@ -81,7 +81,7 @@ def _archive_contexts(batch: ArchivePipelineBatch) -> tuple[ComparisonContext, .
             _quantity("prepared.comparison_evidence.line_sensitivity.quantity", evidence.line_sensitivity.quantity, E.UNKNOWN),
             _quantity("prepared.comparison_evidence.continuum_sensitivity.quantity", evidence.continuum_sensitivity.quantity, E.UNKNOWN),
             EvidenceItem("prepared.raw_row", E.UNKNOWN, E.UNKNOWN, association,
-                         reasons=("SPATIAL_ADAPTER_NOT_IMPLEMENTED",)),
+                         reasons=("SPATIAL_EVIDENCE_ADAPTED_OUTSIDE_CONTEXT_STAGE",)),
             EvidenceItem("selected_component", E.PRESENT if component else E.UNAVAILABLE,
                          E.UNKNOWN, E.PRESENT if component else E.UNAVAILABLE,
                          reasons=(mapping.status.value,)),
@@ -110,7 +110,7 @@ def _archive_contexts(batch: ArchivePipelineBatch) -> tuple[ComparisonContext, .
                 link.status.value, mapping.status.value,
                 "ROW_SCALAR_RMS_SPW_ASSOCIATION_UNVERIFIED",
                 "FREQUENCY_REFERENCE_UNVERIFIED",
-                "CRITERIA_NOT_IMPLEMENTED",
+                "CRITERIA_NOT_EVALUATED_AT_CONTEXT_STAGE",
             ),
         ))
         if link.association_key is not None:
@@ -155,7 +155,7 @@ def _queue_contexts(batch: QueuePipelineBatch) -> tuple[ComparisonContext, ...]:
                 raise ValueError("Queue component is not associated with this source row")
         items = [
             EvidenceItem("row.spatial", E.PRESENT, E.PRESENT, E.PRESENT,
-                         reasons=("GEOMETRY_COMPARISON_NOT_IMPLEMENTED",)),
+                         reasons=("GEOMETRY_COMPARED_OUTSIDE_CONTEXT_STAGE",)),
             EvidenceItem("row.request.requested_angular_resolution_arcsec",
                          E.PRESENT, E.PRESENT, E.PRESENT),
             EvidenceItem("row.spectral.sensitivity", E.PRESENT, E.PRESENT, E.UNKNOWN,
@@ -182,7 +182,7 @@ def _queue_contexts(batch: QueuePipelineBatch) -> tuple[ComparisonContext, ...]:
                               result.snapshot.parser_version, rec.reconstruction_version,
                               batch.adapter_version),
             QueueContextEvidence(row, a), tuple(items),
-            reasons=("PLANNED_OBSERVATION_EVIDENCE", "CRITERIA_NOT_IMPLEMENTED"),
+            reasons=("PLANNED_OBSERVATION_EVIDENCE", "CRITERIA_NOT_EVALUATED_AT_CONTEXT_STAGE"),
         ))
     return tuple(contexts)
 

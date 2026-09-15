@@ -6,6 +6,7 @@ The wire input is a string-keyed mapping with JSON-like scalar/list values.
 
 from collections.abc import Mapping
 from decimal import Decimal, InvalidOperation
+from fractions import Fraction
 import math
 import re
 from types import MappingProxyType
@@ -35,6 +36,26 @@ _UNITS = {
 }
 _FRAMES = {"TOPOCENTRIC", "BARYCENTRIC", "LSRK", "LSRD", "HELIOCENTRIC", "UNKNOWN"}
 _NUMBER = re.compile(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?\Z")
+
+
+def _exact(value: float) -> Fraction:
+    """Decimal spelling of a finite scalar, as in ``rules.numeric``.
+
+    Interval endpoints, span and midpoint are derived in this domain because the
+    rule layer compares exact decimal spellings. Float subtraction here would
+    make one window qualify or not depending on which endpoints spell it, and
+    that loss cannot be recovered after this boundary.
+    """
+    return Fraction(str(value))
+
+
+def _rounded(value: Fraction) -> float:
+    """Round one exact derivation. Out-of-range stays non-finite for the
+    existing validity check instead of raising."""
+    try:
+        return float(value)
+    except OverflowError:
+        return math.inf if value > 0 else -math.inf
 
 
 class _Validator:
@@ -392,10 +413,9 @@ class _Validator:
             else:
                 lo, hi = lower.quantity.value, upper.quantity.value
         elif center and width and kind != "USABLE":
-            lo, hi = (
-                center.quantity.value - width.value / 2,
-                center.quantity.value + width.value / 2,
-            )
+            half = _exact(width.value) / 2
+            exact_center = _exact(center.quantity.value)
+            lo, hi = _rounded(exact_center - half), _rounded(exact_center + half)
             origin = "CENTER_BANDWIDTH"
         elif center and width:
             self.missing(
@@ -404,8 +424,13 @@ class _Validator:
                 "LINE-COVERAGE",
             )
         if lo is not None and hi is not None:
-            span = hi - lo
-            midpoint = lo + span / 2
+            # Exact decimal difference and mean of the stored endpoints, rounded
+            # once. Equivalent representations of one window derive one span.
+            span = midpoint = math.inf
+            if math.isfinite(lo) and math.isfinite(hi):
+                exact_lo, exact_hi = _exact(lo), _exact(hi)
+                span = _rounded(exact_hi - exact_lo)
+                midpoint = _rounded((exact_lo + exact_hi) / 2)
             if (
                 not all(math.isfinite(v) for v in (lo, hi, span, midpoint))
                 or not 0 < lo < hi
