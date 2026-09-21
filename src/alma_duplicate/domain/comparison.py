@@ -15,6 +15,7 @@ from alma_duplicate.domain.reconstruction import (
     RowFrequencySupportEvidence, RowReconstruction, SupportMapping,
 )
 from alma_duplicate.domain.spectral import FrequencySupportComponent
+from alma_duplicate.domain.line_evidence import ArchiveModeEvidence
 
 
 class SourceStatus(StrEnum):
@@ -67,6 +68,7 @@ class ArchiveContextEvidence:
     support_mapping: SupportMapping
     support_evidence: RowFrequencySupportEvidence
     selected_component: FrequencySupportComponent | None
+    mode_evidence: ArchiveModeEvidence | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,7 +86,7 @@ class ComparisonContext:
     # IDs with the same Archive association; retained, never collapsed.
     alternative_context_ids: tuple[str, ...] = ()
     reasons: tuple[str, ...] = ()
-    model_version: str = "1"
+    model_version: str = "2"
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,7 +105,7 @@ class ComparisonPreparation:
     validation: RequestValidationResult
     archive: ComparisonSourceResult
     queue: ComparisonSourceResult
-    construction_version: str = "1"
+    construction_version: str = "2"
     # No predicates or criteria execute in this module.
     search_execution: str = "NOT_EXECUTED"
     assessment: str = "NOT_EVALUATED"

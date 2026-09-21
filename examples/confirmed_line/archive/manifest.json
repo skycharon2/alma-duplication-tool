@@ -1,0 +1,32 @@
+{
+  "replay_version": "1",
+  "endpoint": "https://example.invalid/synthetic-tap",
+  "maxrec": 10000,
+  "query_run_id": "synthetic-guide-B-pairing-v1",
+  "started_at": "2026-09-21T00:00:00+00:00",
+  "finished_at": "2026-09-21T00:00:01+00:00",
+  "responses": [
+    {
+      "adql": "SELECT column_name\nFROM TAP_SCHEMA.columns\nWHERE table_name = 'ivoa.obscore'\n    AND column_name IN ('s_resolution', 's_fov', 't_min', 't_max', 'band_list', 'pol_states')",
+      "maxrec": 7,
+      "file": "response-0.xml",
+      "sha256": "0063e66a349b6ed7cc8931fb90d68c2a091c1e5b0a34ed0d14a1304849d9c99d"
+    },
+    {
+      "adql": "SELECT COUNT(*) AS total_matches\nFROM ivoa.obscore\nWHERE 1 = INTERSECTS(s_region, CIRCLE('ICRS', 201.365, -43.019, 0.00833333333333333))",
+      "maxrec": 1,
+      "file": "response-1.xml",
+      "sha256": "291db54ce57c4f2cbb623368fec56ada80442bafd9d0f3348adde0190e545fd5"
+    },
+    {
+      "adql": "SELECT\n    proposal_id,\n    obs_publisher_did,\n    group_ous_uid,\n    member_ous_uid,\n    asdm_uid,\n    obs_id,\n    target_name,\n    s_ra,\n    s_dec,\n    s_region,\n    frequency,\n    bandwidth,\n    em_xel,\n    frequency_support,\n    spectral_resolution,\n    spatial_resolution,\n    sensitivity_10kms,\n    cont_sensitivity_bandwidth,\n    antenna_arrays,\n    is_mosaic,\n    science_observation,\n    qa2_passed,\n    obs_release_date,\n    lastModified,\n    s_resolution,\n    s_fov,\n    t_min,\n    t_max,\n    band_list,\n    pol_states\nFROM ivoa.obscore\nWHERE 1 = INTERSECTS(s_region, CIRCLE('ICRS', 201.365, -43.019, 0.00833333333333333))",
+      "maxrec": 10000,
+      "file": "response-2.xml",
+      "sha256": "1cd0fff5f282ce3da864b86a89e5204adc5e61a1de809efdc4f6b2c35c80c8ca"
+    }
+  ],
+  "expected_count": 2,
+  "retrieved_count": 2,
+  "status": "COMPLETE",
+  "fixture_kind": "SYNTHETIC_LINE_PAIRING_ACCEPTANCE"
+}

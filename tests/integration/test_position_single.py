@@ -131,7 +131,7 @@ def test_cli_ngc6240_full_retained_scope(tmp_path):
     assert main(['--request',str(REQUEST),'--queue-csv',str(QUEUE),'--queue-candidate-beam',
                  '--output',str(output)]) == 0
     report=json.loads(output.read_text())
-    assert report['evaluation_version'] == '3'
+    assert report['evaluation_version'] == '4'
     scope=report['evaluation_scope']
     assert scope['evaluated_contexts'] == scope['total_retained'] == 13
     assert scope['shown_candidates'] == 1

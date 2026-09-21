@@ -4,8 +4,8 @@ The [rules package](../src/alma_duplicate/rules/) implements the confirmed
 Archive fixed-target, single-point continuum branch: POS-SINGLE, ANGULAR,
 CONT-SETUP, CONT-FREQ and CONT-RMS. `intents` selects execution. Each coherent
 retained context gets a three-valued continuum assessment. Queue methods retain
-their independent provisional status; line has a pairing reference contract but
-no matcher or numerical evaluator. No search-wide absence verdict is produced.
+their independent provisional status; line has a reference-bound pair builder and input/mode preparation but
+no numerical evaluator. No search-wide absence verdict is produced.
 
 ## Separate result dimensions (schema 2)
 
@@ -126,7 +126,7 @@ filter records and scientific values are not flattened or combined. Rule results
 must refer to that candidate's context ID. Programming errors propagate rather
 than being converted to scientific missing-evidence results.
 
-`evaluation_version="3"` versions orchestration; rule-result schema remains 2.
+`evaluation_version="4"` versions orchestration; rule-result schema remains 2.
 Report `execution="FINISHED"` means evaluation completed. In candidate reports,
 `assessment="NOT_AGGREGATED"` means no search-wide decision was made; inspect
 `context_evaluations[].branches` for the implemented continuum results. The

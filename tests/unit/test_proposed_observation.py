@@ -136,7 +136,7 @@ def test_line_rms_missing_is_reported_per_window(rms_present):
         for i in missing
     )
     assert result.request.sensitivities[0].window_ids == ("w1",)
-    assert result.validation_version == "4"
+    assert result.validation_version == "5"
 
 
 @pytest.mark.parametrize(

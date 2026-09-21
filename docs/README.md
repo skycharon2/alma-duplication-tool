@@ -26,11 +26,11 @@ preselection with center-coordinate retrieval and explicit local beam checks.
 
 For formal-rule development:
 
-1. [Rule inputs](duplication_rule_inputs.md): required evidence, open Q1–Q8 decisions and acceptance coverage.
+1. [Rule inputs](duplication_rule_inputs.md): current confirmed scope, separately labelled historical Q1–Q8 discussions and acceptance coverage.
 2. [Rules](rules.md): criterion results, implemented criteria and the explicit post-search evaluation entry point.
 3. [Data model](data_model.md): current object index, associations and invariants; links lead separately to conceptual ERDs and historical evidence.
 4. [Archive dictionary](archive_data_dictionary.md) and [Queue contract](queue_csv_contract.md): source-field semantics and limitations.
-5. Return to the rule-input decision register and acceptance cases before implementing an affected policy method.
+5. Use [line pairing](line_pairing_design.md) and the [remaining PR plan](pr_plan_2026-09-21.md) for implementation; confirmed decisions are inputs, not a new approval gate.
 
 [Live Archive smoke instructions](live_archive_smoke.md) describe opt-in source
 verification. The [form design](proposed_observation_form.md) is future interface
@@ -56,6 +56,8 @@ its justification or sample limits are needed.
 | How are CSV layout, units, nominal/usable frequencies and failures handled? | [Queue contract](queue_csv_contract.md) |
 | How are exact Queue sources and historical summaries stored? | [Queue storage](queue_snapshot_store.md) |
 | What evidence/scientific decisions/acceptance cases do formal rules need? | [Rule inputs](duplication_rule_inputs.md) |
+| What remains to develop, and in which order? | [PR plan](pr_plan_2026-09-21.md) |
+| What is the JSON/report contract? | [CLI/report](evaluation_cli.md) |
 | Where are original conceptual entities and ERDs? | [Conceptual design](design/conceptual_data_model.md) |
 | What was measured, when, on which sample and with what limitations? | [Snapshot evidence](evidence/exploration_snapshots.md) |
 
@@ -91,25 +93,9 @@ behavior belong to the [search/spatial contract](search_plan_spatial.md).
 
 ## Next delivery
 
-Archive continuum input, CLI and report contracts are now connected, including
-aggregate contribution references and Solar exemption without source access.
-See [the closure delivery](continuum_closure.md) for the regressions and versions.
-
-The next increments are:
-
-1. **Line evidence and matching:** add typed source redshift, versioned `em_xel`
-   mode evidence, per-window planned resolution/RMS validation and a pair builder
-   binding each proposed window to one exact Archive support component.
-2. **Line computation and reporting:** FDM, exact coverage, resolution compatibility,
-   the confirmed two-stage RMS calculation and independent pair/branch results.
-   Test guide B, boundaries, unknown evidence and cross-SPW mismatch cases.
-3. **Acceptance and thin interface:** retain synthetic formula cases and real Archive
-   capture replay as separate evidence; display independent selected branches,
-   missing evidence, method versions and source/search completeness.
-
-The confirmed decisions are implementation inputs, not another Q1–Q8 approval
-gate. Mosaic and moving-target numerical evaluation remain deferred. CASE1/CASE2
-retrieval success remains retrieval evidence, not a confirmed duplication label.
+The [remaining PR plan](pr_plan_2026-09-21.md) owns implementation order and gates.
+Continuum delivery records are [initial acceptance](confirmed_continuum.md) and
+[contract closure](continuum_closure.md); neither is another active task list.
 
 ALMA requires checking both Archive and queued observations; the
 [official duplication guidance](https://almascience.eso.org/proposing/duplications)

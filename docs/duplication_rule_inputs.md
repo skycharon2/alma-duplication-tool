@@ -2,15 +2,17 @@
 
 Design version: 0.3. Implementation coverage is specified separately below.
 
-The [offline request validation API](proposed_observation_api.md) implements
-the documented request-side subset. [Offline comparison-context construction](comparison_contexts.md)
-reuses existing ingestion outputs. [Offline search planning and limited spatial
-adaptation](search_plan_spatial.md) and [candidate search](candidate_search.md) are
-also implemented. [Rule evaluation](rules.md) currently includes provisional
-ANGULAR, CONT-SETUP and Queue POS-SINGLE criteria; aggregation into an assessment
-remains planned. An accepted
-request does not establish that candidate evidence is comparable or that a
-duplication condition can be evaluated.
+Current baseline: `61813bd` (merged by PR #71 as `c1785b2`). Archive fixed-target,
+single-point continuum implements five approved conditions and per-context
+three-valued aggregation. Direct usable widths and direct aggregate RMS are
+supported; arbitrary nominal/noise conversions and Queue scientific mappings
+remain separate. Solar has a request-level exemption without source access.
+Line has a reference-bound builder and versioned input/mode preparation; numerical rules are
+tracked in the [sole remaining-work plan](pr_plan_2026-09-21.md).
+
+The [request API](proposed_observation_api.md), [rule contract](rules.md) and
+[CLI/report contract](evaluation_cli.md) own current executable behavior.
+Accepted input alone never establishes candidate comparability or a verdict.
 
 Project goal: a user describes a proposed observation; the system independently
 searches Archive and Queue, checks applicable duplication conditions within a
@@ -45,8 +47,8 @@ Policy paraphrase (all remaining sections are engineering design):
 - Solar observations are exempt.
 
 Do not infer a symmetric RMS ratio, HPBW radius convention, representative
-continuum frequency or smoothing algorithm from this paraphrase. These need the
-explicit decisions in section 7 before executable assessment.
+continuum frequency or smoothing algorithm from this paraphrase. Use the confirmed
+scope in section 7; its historical questions are not a new approval prerequisite.
 
 Project design source: `Project_Plan_9_07.pdf`, sections 5.4–5.6, covers
 comparison contexts, evidence provenance and evaluability. The project review
@@ -208,7 +210,8 @@ These are evidence requirements, not extra top-level wire fields.
 - SMOOTHED links its window, the target frequency or velocity resolution and the
   independent bandwidth used for sensitivity; neither substitutes for the other.
   Store velocity widths in km/s with convention/reference frequency when supplied;
-  frequency conversion and noise scaling remain unavailable pending Q3/Q4.
+  planned-resolution conversion and noise scaling have distinct implementation states;
+  use the current API and rule contracts, not another Q3/Q4 approval gate.
 - UNKNOWN allows a valid draft and search but produces a field-specific readiness
   reason. Dangling/duplicate supplied window references are invalid input.
 - Kelvin and plain Jy/mJy without beam semantics are unsupported *user* units
@@ -269,9 +272,10 @@ and migration rules. A provisional method may compute a threshold outcome; that
 outcome is not eligible for formal aggregation. Missing or unusable evidence is
 reported through evaluation status and all affected-side issues, never silently
 converted to NOT_SATISFIED. Satisfaction of one condition is not a duplicate
-verdict; future aggregation must preserve AND/OR scope and unknowns.
+verdict; implemented continuum aggregation preserves AND scope and unknowns,
+while numerical line aggregation remains a separate implementation task.
 
-The future result must expose candidate/source IDs, matched source/execution/SPW
+The current report exposes candidate/source IDs; line numerical reporting must add matched-pair calculations. Required evidence includes candidate/source IDs, matched source/execution/SPW
 or Queue association, condition results, raw and canonical values/units, evidence
 references, method/version/approval status and reasons/approximations. Include
 independent Archive/Queue retrieval outcomes, search predicates, caps and
@@ -341,8 +345,8 @@ confirmation dated 2026-09-17 and implementation clarifications dated 2026-09-21
 | Q3 | CONFIRMED and implemented | User representative SKY frequency, not window average |
 | Q4 | CONFIRMED for line formula | Implementation scheduled in line PR; no continuum smoothing/correction |
 | Q5 | CONFIRMED and implemented for direct Archive continuum | Candidate estimated aggregate RMS <=2 times proposed RMS; Queue mapping excluded |
-| Q6 | CONFIRMED operational em_xel/UI mapping | Restore versioned association-bound evidence in line PR |
-| Q7 | CONFIRMED coherent context unit | Pair reference model delivered; CASE retrieval is not a scientific label |
+| Q6 | CONFIRMED operational em_xel/UI mapping | Versioned association-bound evidence and unknown/conflict gates implemented |
+| Q7 | CONFIRMED coherent context unit | Pair reference model and builder delivered; CASE retrieval is not a scientific label |
 | Q8 | CONFIRMED; continuum AND implemented | Individual branches; no mixed-setup/search-wide absence verdict |
 
 See [current implementation and CLI acceptance](confirmed_continuum.md) and the
@@ -499,42 +503,42 @@ A test name below is within its indicated file.
 | IN-03 | RA outside domain, pole with extra arcseconds, invalid HMS, Boolean, NaN, infinity | `is_valid=False` with precise field paths | Implemented at input/context boundary | R: `test_bad_coordinates_rejected`, `test_invalid_quantity_never_produces_request` | Formal assessment remains separate. |
 | IN-04 | Conflicting/dual representations, reversed/nonpositive or collapsed bounds, arithmetic overflow | `is_valid=False`; no silently chosen representation | Implemented at input/context boundary | R: `test_invalid_window_arithmetic`, `test_bad_associations`, `test_canonical_overflow_and_underflow` | Formal assessment remains separate. |
 | IN-05 | Multiple window IDs, duplicate ID, dangling sensitivity association | Valid independent windows; reject invalid references | Implemented at input/context boundary | R: `test_bad_associations`, `test_line_rms_missing_is_reported_per_window` | Formal assessment remains separate. |
-| IN-06 | Complete setup with two qualified widths, widths exactly at boundary, missing width, incomplete setup | Satisfied / not satisfied / unresolved applicability as evidence permits; intent never decides; apply Q2 explicitly | Implemented, PROVISIONAL (`continuum_setup_2`) | [tests/unit/test_rules_continuum_setup.py](../tests/unit/test_rules_continuum_setup.py): `test_prepared_acceptance_table`, `test_intents_never_decide` | Written Q2 confirmation; approval of any nominal-to-usable conversion. |
+| IN-06 | Complete setup, strict width boundary, missing/incomplete widths | Approved direct usable-width qualification; explicit nominal mapping remains provisional | Implemented: confirmed `continuum_setup_3`; legacy `_2` retained | [continuum tests](../tests/integration/test_confirmed_continuum.py): `test_nominal_conversion_remains_provisional_and_cannot_make_positive_branch`; [width tests](../tests/unit/test_rules_continuum_setup.py): `test_prepared_acceptance_table` | No further Q2 confirmation for direct usable widths; broader conversions excluded. |
 | IN-07-a | Valid position/radius, no RMS or unknown mode/basis | Implemented subset: Request search readiness and proposed-side missing evidence are implemented. | Implemented subset | R: `test_missing_requested_width_not_a_line_center_requirement`, `test_line_rms_missing_is_reported_per_window` | See IN-07-b. |
-| IN-07-b | Same case; remaining acceptance | Search READY; relevant rules list missing evidence; no assumed values | Planned remainder | No full acceptance test claimed | candidate-specific rule readiness remains planned. |
+| IN-07-b | Valid search with incomplete scientific evidence | Retain criterion reasons; explicit false AND unknown is false within supported branch | Implemented for Archive continuum | [continuum tests](../tests/integration/test_confirmed_continuum.py): `test_false_and_unknown_is_false_but_does_not_claim_search_absence` | Line numerical readiness and Queue mappings remain separate. |
 | IN-08 | Complete user RMS but candidate Queue beam basis absent | CANDIDATE-side reason, not another required user field | Planned | No completed acceptance test claimed | Implement candidate-side beam/basis readiness without adding user-input requirements. |
 | IN-09 | Search angular upper limit versus requested angular value | Separate objects/operators; neither overwrites the other | Implemented at input/context boundary | R: `test_search_predicates_keep_operator_and_do_not_fill_request`; S: `test_plan_preserves_single_sided_filter_and_no_observation_parameter_filters` | Formal assessment remains separate. |
 | IN-10-a | Mixed intent, aggregate and window sensitivity entries | Implemented subset: Separate aggregate and window records are covered individually. | Implemented subset | R: `test_direct_aggregate_without_windows_or_noise_width_is_valid`, `test_three_widths_and_optional_smoothing_context_never_fill_each_other` | See IN-10-b. |
-| IN-10-b | Same case; remaining acceptance | Preserve separate scope; do not force mutually exclusive branches | Planned remainder | No full acceptance test claimed | combined mixed-intent acceptance and formal branch aggregation remain to be verified. |
+| IN-10-b | Mixed intents | Run selected branches separately; LINE remains NOT_IMPLEMENTED | Implemented orchestration, line computation pending | [continuum tests](../tests/integration/test_confirmed_continuum.py): `test_intents_select_branches`; [closure tests](../tests/integration/test_continuum_closure.py): `test_diagnostics_follow_intents_without_hiding_invalid_data` | Implement line rules, not mixed-setup aggregation. |
 | IN-11-a | Mosaic/moving/Sun/Kelvin | Implemented subset: Request UNSUPPORTED/NOT_APPLICABLE and unit errors are implemented. | Implemented subset | R: `test_unsupported_modes_preserved`, `test_unit_unsupported_vs_method_unimplemented` | See IN-11-b. |
-| IN-11-b | Same case; remaining acceptance | Explicit statuses or unsupported unit; no fixed-target fallback | Planned remainder | No full acceptance test claimed | formal assessment and UI explanation remain planned. |
+| IN-11-b | SUN CLI and invalid/unsupported requests | Valid SUN exempts before source access; malformed input still fails | Implemented Solar report v3 | [closure tests](../tests/integration/test_continuum_closure.py): `test_solar_cli_exempts_before_any_source_access`, `test_exemption_never_bypasses_validation` | Mosaic/moving numerical evaluation and UI remain excluded. |
 | IN-12 | Candidate fields from different executions or Queue associations | Reject broken row/component references and preserve coherent source contexts; do not synthesize cross-execution or Queue combinations. | Implemented at input/context boundary | C: `test_tampered_queue_association_fails_instead_of_creating_combination`, `test_selected_component_does_not_borrow_another_windows_rms` | Formal assessment remains separate. |
 | IN-13-a | Spacing 0.122, resolution 0.244, RMS effective bandwidth 0.325 MHz (B) | Implemented subset: Normalization and independent missing-field retention are tested. | Implemented subset | R: `test_three_widths_and_optional_smoothing_context_never_fill_each_other` | See IN-13-b. |
 | IN-13-b | Same case; remaining acceptance | Normalize and round-trip all three independently; clearing one never fills it from another | Planned remainder | No full acceptance test claimed | full round-trip acceptance and approved noise calculations are not established by the cited test. |
 | IN-14-a | Representative frequency differs from center; no sensitivity or multiple RMS reference frequencies | Implemented subset: Independent roles are preserved. | Implemented subset | R: `test_representative_roles_and_no_usable_midpoint_assumption`, `test_direct_aggregate_without_windows_or_noise_width_is_valid` | See IN-14-b. |
-| IN-14-b | Same case; remaining acceptance | Preserve independent roles; no automatic comparison-frequency choice | Planned remainder | No full acceptance test claimed | multi-RMS selection acceptance and Q3 formal comparison-frequency choice remain planned. |
+| IN-14-b | Representative frequency and multiple aggregate declarations | User representative SKY frequency; never mean-window fallback or best RMS choice | Implemented Archive continuum | [continuum tests](../tests/integration/test_confirmed_continuum.py): `test_representative_frequency_never_averages_or_falls_back`, `test_rms_units_no_angular_scaling_and_no_best_declaration` | No new Q3 approval; line uses its own center. |
 | IN-15 | Known center, absent width, all windows listed | Valid partial evidence, no coverage interval; bounded search can be READY despite absent width. No separate parameter-completeness Boolean is exposed. | Implemented at input/context boundary | R: `test_missing_requested_width_not_a_line_center_requirement` | Formal assessment remains separate. |
 | IN-16 | Nominal or UNKNOWN width; usable width without placement evidence | No promotion to validated usable coverage; no invented edges | Implemented at input/context boundary | R: `test_interval_kind_is_not_promoted` | Formal assessment remains separate. |
 | IN-17-a | Invalid/ambiguous/incompatible/unresolved candidate evidence | Implemented subset: Context diagnostics and separate evidence dimensions are implemented. | Implemented subset | C: `test_bad_other_component_keeps_conservative_mapping_gate_and_raw_evidence`, `test_archive_unit_failure_does_not_erase_context_or_claim_comparability` | See IN-17-b. |
-| IN-17-b | Same case; remaining acceptance | Distinct machine-readable reasons, unchanged user validity | Planned remainder | No full acceptance test claimed | complete per-rule candidate reason taxonomy remains planned. |
+| IN-17-b | Candidate-side missing evidence | Preserve reasons without adding user input demands | Implemented Archive continuum; line numerical reasons pending | [continuum tests](../tests/integration/test_confirmed_continuum.py): `test_missing_metadata_does_not_supply_formal_result` | Extend taxonomy with line numerical rules. |
 | IN-18-a | OT Sky label, unknown frame; REST representative value | Implemented subset: REST/unknown or differing references are retained. | Implemented subset | R: `test_unit_unsupported_vs_method_unimplemented`, `test_nominal_membership_preserves_missing_and_known_reference_differences` | See IN-18-b. |
-| IN-18-b | Same case; remaining acceptance | Preserve origin/reference; spatial search only until compatible transformation exists | Planned remainder | No full acceptance test claimed | OT-origin end-to-end acceptance and compatible transformations remain unverified/unimplemented. |
+| IN-18-b | SKY with unknown frame; REST representative frequency | Raw evidence notes stay separate; continuum requires representative SKY kind | Implemented continuum diagnostics | [closure tests](../tests/integration/test_continuum_closure.py): `test_confirmed_example_has_only_raw_evidence_notes`, `test_bounds_width_is_available_but_non_sky_representative_is_missing` | Broader frame transformations remain excluded. |
 | IN-19-a | Direct aggregate RMS/setup scope, absent bandwidth or contributor list | Implemented subset: Partial direct aggregate input is accepted without forced conversion. | Implemented subset | R: `test_direct_aggregate_without_windows_or_noise_width_is_valid` | See IN-19-b. |
-| IN-19-b | Same case; remaining acceptance | Valid partial request; no forced conversion; other conditions independently assessed | Planned remainder | No full acceptance test claimed | independent formal condition assessment remains planned. |
+| IN-19-b | Direct aggregate RMS without conversion bandwidth | Compare the declared setup RMS directly; no invented conversion | Implemented Archive continuum | [closure tests](../tests/integration/test_continuum_closure.py): `test_aggregate_contributors_preserve_cli_branch` | Queue scientific mapping remains independent. |
 | IN-20-a | Reference RMS with absent target/reference bandwidth or unapproved method | Implemented subset: Reference retention and missing/capability issues are implemented. | Implemented subset | R: `test_reference_aggregate_does_not_manufacture_converted_rms` | See IN-20-b. |
 | IN-20-b | Same case; remaining acceptance | Reference retained; no derived aggregate RMS; precise conversion reasons | Planned remainder | No full acceptance test claimed | approved conversion and candidate-aware reason completeness remain planned. |
 | IN-21-a | FDM center/reference known, requested width absent; valid candidate FDM interval | Implemented subset: Request center is retained without width and without a request-side LINE-COVERAGE missing issue. | Implemented subset | R: `test_missing_requested_width_not_a_line_center_requirement` | See IN-21-b. |
 | IN-21-b | Same case; remaining acceptance | Center-coverage condition may be evaluated without request width; RMS still independent | Planned remainder | No full acceptance test claimed | actual candidate FDM coverage/RMS assessment remains planned. |
 | IN-22 | Cropped usable bounds | Midpoint/span preserved; no automatic SPW-center evidence | Implemented at input/context boundary | R: `test_bounds_midpoint_is_not_spw_center` | Formal assessment remains separate. |
 | IN-23-a | No listed windows, but representative frequency, angular resolution and aggregate RMS supplied | Implemented subset: Empty-window request storage and bounded-search readiness are covered. | Implemented subset | R: `test_direct_aggregate_without_windows_or_noise_width_is_valid`, `test_search_predicates_keep_operator_and_do_not_fill_request` | See IN-23-b. |
-| IN-23-b | Same case; remaining acceptance | Retain all scientific inputs; bounded search possible; unresolved setup qualification | Planned remainder | No full acceptance test claimed | the combined three-field acceptance fixture and formal setup qualification remain outstanding. |
-| IN-24 | Two qualified distinct windows, list incomplete | Setup qualification established under confirmed width semantics; no enumeration veto | Implemented, PROVISIONAL (`continuum_setup_2`) | [tests/unit/test_rules_continuum_setup.py](../tests/unit/test_rules_continuum_setup.py): `test_prepared_acceptance_table` | Written Q2 confirmation. |
+| IN-23-b | No windows but independent representative frequency and RMS | Inputs remain valid; setup qualification unresolved | Setup rule implemented; combined empty-window CLI case not claimed | R: `test_direct_aggregate_without_windows_or_noise_width_is_valid`; [width tests](../tests/unit/test_rules_continuum_setup.py): `test_prepared_acceptance_table` | Complete any additional combined-case fixture before claiming that acceptance. |
+| IN-24 | Two usable qualified windows with incomplete list | Existential setup qualification can hold without complete enumeration | Approved direct path via `continuum_setup_3`; legacy `_2` remains provisional | [width tests](../tests/unit/test_rules_continuum_setup.py): `test_prepared_acceptance_table`; [continuum acceptance](../tests/integration/test_confirmed_continuum.py) | No written Q2 prerequisite for direct usable widths; arbitrary conversion excluded. |
 | IN-25 | No line match among incomplete window list | UNDETERMINED overall line branch; cannot issue exhaustive negative | Planned | No completed acceptance test claimed | Implement incomplete-list line aggregation without an exhaustive negative. |
 | IN-26-a | Coverage on W1, better RMS only on W2 or unlinked row scalar | Implemented subset: Context construction preserves SPW/row RMS association. | Implemented subset | C: `test_selected_component_does_not_borrow_another_windows_rms`, `test_queue_preserves_only_observed_combinations_and_no_per_spw_rms_copy` | See IN-26-b. |
 | IN-26-b | Same case; remaining acceptance | No combined passing result; matched-pair sensitivity unavailable | Planned remainder | No full acceptance test claimed | formal matched-pair outcomes remain planned. |
-| IN-27 | Approximate result with unapproved method | Estimate shown separately; no formal threshold outcome | Planned | No completed acceptance test claimed | Implement method approval status and separation of estimates from formal outcomes. |
-| CASE1 | Original task parameters below | Positive retrieval expectation, not a confirmed duplicate | Retrieval executed against live Archive TAP: PASSED (weak recall) | [tests/live/test_case_retrieval.py](../tests/live/test_case_retrieval.py) (`--run-live`) | Grouping/count semantics (Q7) and a formal duplication verdict remain open; see "Executed retrieval evidence" below. |
-| CASE2 | Original task parameters below | Same, independently scoped | Retrieval executed against live Archive TAP: PASSED (weak recall) | [tests/live/test_case_retrieval.py](../tests/live/test_case_retrieval.py) (`--run-live`) | Grouping/count semantics (Q7) and a formal duplication verdict remain open; see "Executed retrieval evidence" below. |
+| IN-27 | Computed result from an unapproved method | Preserve numerical outcome but gate formal aggregation | Implemented | [continuum tests](../tests/integration/test_confirmed_continuum.py): `test_aggregation_gates_unapproved_and_conflicting_evidence` | Apply the same gate when line rules are implemented. |
+| CASE1 | Original task parameters below | Positive retrieval expectation, not a confirmed duplicate | Retrieval executed against live Archive TAP: PASSED (weak recall) | [tests/live/test_case_retrieval.py](../tests/live/test_case_retrieval.py) (`--run-live`) | Historical retrieval only; current coherent-context semantics are confirmed, but no scientific CASE verdict is claimed; see "Executed retrieval evidence" below. |
+| CASE2 | Original task parameters below | Same, independently scoped | Retrieval executed against live Archive TAP: PASSED (weak recall) | [tests/live/test_case_retrieval.py](../tests/live/test_case_retrieval.py) (`--run-live`) | Historical retrieval only; current coherent-context semantics are confirmed, but no scientific CASE verdict is claimed; see "Executed retrieval evidence" below. |
 
 ### Recorded CASE inputs
 

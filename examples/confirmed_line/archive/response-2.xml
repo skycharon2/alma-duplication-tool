@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Produced with astropy.io.votable version 8.0.1
+     http://www.astropy.org/ -->
+<VOTABLE version="1.4" xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ivoa.net/xml/VOTable/v1.3 http://www.ivoa.net/xml/VOTable/VOTable-1.4.xsd">
+ <RESOURCE type="results">
+  <INFO ID="QUERY_STATUS" name="QUERY_STATUS" value="OK"/>
+  <TABLE>
+   <FIELD ID="proposal_id" arraysize="24" datatype="unicodeChar" name="proposal_id"/>
+   <FIELD ID="obs_publisher_did" arraysize="37" datatype="unicodeChar" name="obs_publisher_did"/>
+   <FIELD ID="group_ous_uid" arraysize="25" datatype="unicodeChar" name="group_ous_uid"/>
+   <FIELD ID="member_ous_uid" arraysize="25" datatype="unicodeChar" name="member_ous_uid"/>
+   <FIELD ID="asdm_uid" arraysize="29" datatype="unicodeChar" name="asdm_uid"/>
+   <FIELD ID="obs_id" arraysize="45" datatype="unicodeChar" name="obs_id"/>
+   <FIELD ID="target_name" arraysize="18" datatype="unicodeChar" name="target_name"/>
+   <FIELD ID="s_ra" datatype="double" name="s_ra" ucd="pos.eq.ra" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C1" xtype="adql:DOUBLE">
+    <DESCRIPTION>
+     RA of central coordinates
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="s_dec" datatype="double" name="s_dec" ucd="pos.eq.dec" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C2" xtype="adql:DOUBLE">
+    <DESCRIPTION>
+     DEC of central coordinates
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="s_region" arraysize="34" datatype="unicodeChar" name="s_region"/>
+   <FIELD ID="frequency" datatype="double" name="frequency" ucd="em.freq;obs;meta.main" unit="GHz" utype="obscore:Char.SpectralAxis.Coverage.Location.refval" xtype="adql:DOUBLE">
+    <DESCRIPTION>
+     Observed (tuned) reference frequency on the sky.
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="bandwidth" datatype="double" name="bandwidth" ucd="em.freq;instr.bandpass" unit="Hz" utype="obscore:Char.SpectralAxis.Coverage.Bounds.Extent" xtype="adql:DOUBLE">
+    <DESCRIPTION>
+     Total Bandwidth
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="em_xel" datatype="int" name="em_xel" ucd="meta.number" utype="obscore:Char.SpectralAxis.numBins" xtype="adql:BIGINT">
+    <DESCRIPTION>
+     Number of elements along the spectral axis
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="frequency_support" arraysize="67" datatype="unicodeChar" name="frequency_support"/>
+   <FIELD ID="spectral_resolution" datatype="double" name="spectral_resolution" unit="kHz" xtype="adql:DOUBLE"/>
+   <FIELD ID="spatial_resolution" datatype="double" name="spatial_resolution" unit="arcsec" xtype="adql:DOUBLE">
+    <DESCRIPTION>
+     Average of the maximum and minimum spatial resolution values of
+     all spectral windows
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="sensitivity_10kms" datatype="double" name="sensitivity_10kms" unit="mJy.beam**-1" xtype="adql:DOUBLE">
+    <DESCRIPTION>
+     Estimated noise in an nominal 10km/s bandwidth. Note this is an
+     indication only, it does not include the effects of flagging or
+     Hanning smoothing, and a 10km/s bandwidth may not be achievable
+     with the data as taken.
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="cont_sensitivity_bandwidth" datatype="double" name="cont_sensitivity_bandwidth" unit="mJy.beam**-1" xtype="adql:DOUBLE">
+    <DESCRIPTION>
+     Estimated noise in the aggregated continuum bandwidth. Note this
+     is an indication only, it does not include the effects of
+     flagging or dynamic range limitations.
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="antenna_arrays" arraysize="19" datatype="unicodeChar" name="antenna_arrays"/>
+   <FIELD ID="is_mosaic" arraysize="1" datatype="unicodeChar" name="is_mosaic"/>
+   <FIELD ID="science_observation" arraysize="1" datatype="char" name="science_observation" ucd="meta.code.class;obs" xtype="adql:VARCHAR">
+    <DESCRIPTION>
+     Flag to indicate whether this is a science observation.
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="qa2_passed" arraysize="1" datatype="char" name="qa2_passed" ucd="meta.code" xtype="adql:CHAR">
+    <DESCRIPTION>
+     Quality Assessment 2 status: does the Member / Group OUS fulfil
+     the PI's requirements?
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="obs_release_date" arraysize="*" datatype="char" name="obs_release_date" ucd="time.release" utype="obscore:Curation.releaseDate" xtype="adql:TIMESTAMP">
+    <DESCRIPTION>
+     timestamp of date the data becomes publicly available
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="lastModified" arraysize="32*" datatype="char" name="lastModified" xtype="adql:TIMESTAMP">
+    <DESCRIPTION>
+     Time stamp of last modification of the metadata
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="s_resolution" datatype="double" name="s_resolution" ucd="pos.angResolution" unit="arcsec" utype="obscore:Char.SpatialAxis.Resolution.refval.value" xtype="adql:DOUBLE">
+    <DESCRIPTION>
+     typical spatial resolution
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="s_fov" datatype="double" name="s_fov" ucd="phys.angSize;instr.fov" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Bounds.Extent.diameter" xtype="adql:DOUBLE">
+    <DESCRIPTION>
+     size of the region covered (~diameter of minimum bounding circle)
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="t_min" datatype="double" name="t_min" ucd="time.start;obs.exposure" unit="d" utype="obscore:Char.TimeAxis.Coverage.Bounds.Limits.StartTime" xtype="adql:DOUBLE">
+    <DESCRIPTION>
+     start time of observation (MJD)
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="t_max" datatype="double" name="t_max" ucd="time.end;obs.exposure" unit="d" utype="obscore:Char.TimeAxis.Coverage.Bounds.Limits.StopTime" xtype="adql:DOUBLE">
+    <DESCRIPTION>
+     end time of observation (MJD)
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="band_list" arraysize="30*" datatype="char" name="band_list" xtype="adql:VARCHAR">
+    <DESCRIPTION>
+     Space delimited list of bands
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="pol_states" arraysize="64*" datatype="char" name="pol_states" ucd="meta.code;phys.polarization" utype="obscore:Char.PolarizationAxis.stateList">
+    <DESCRIPTION>
+     polarization states present in the data
+    </DESCRIPTION>
+   </FIELD>
+   <DATA>
+    <TABLEDATA>
+     <TR>
+      <TD>SYNTHETIC.2026.CONFIRMED</TD>
+      <TD>ADS/JAO.ALMA#SYNTHETIC.2026.CONFIRMED</TD>
+      <TD>uid://SYNTHETIC/Xgroup/X0</TD>
+      <TD>uid://SYNTHETIC/Xguide/X0</TD>
+      <TD>uid://SYNTHETIC/Xexecution/X0</TD>
+      <TD>uid://SYNTHETIC/Xguide/X0.source.GuideB.spw.0</TD>
+      <TD>GuideB-in-band</TD>
+      <TD>201.3665</TD>
+      <TD>-43.0185</TD>
+      <TD>Circle ICRS 201.3665 -43.0185 0.01</TD>
+      <TD>225.1</TD>
+      <TD>600000000</TD>
+      <TD>1920</TD>
+      <TD>[224.8..225.4GHz,500kHz,0.4mJy/beam@10km/s,1mJy/beam@native, XX YY]</TD>
+      <TD>500</TD>
+      <TD>0.25</TD>
+      <TD>0.4</TD>
+      <TD>0.15</TD>
+      <TD>A001:DA01 A002:DV02</TD>
+      <TD>F</TD>
+      <TD>T</TD>
+      <TD>T</TD>
+      <TD>2013-09-06T20:22:00.000</TD>
+      <TD>2026-07-28T01:24:16.671</TD>
+      <TD>0.42447128925625915</TD>
+      <TD>0.004763549000010374</TD>
+      <TD>56039.39172</TD>
+      <TD>56124.088095</TD>
+      <TD>7</TD>
+      <TD>/XX/YY/</TD>
+     </TR>
+     <TR>
+      <TD>SYNTHETIC.2026.CONFIRMED</TD>
+      <TD>ADS/JAO.ALMA#SYNTHETIC.2026.CONFIRMED</TD>
+      <TD>uid://SYNTHETIC/Xgroup/X0</TD>
+      <TD>uid://SYNTHETIC/Xguide/X0</TD>
+      <TD>uid://SYNTHETIC/Xexecution/X0</TD>
+      <TD>uid://SYNTHETIC/Xguide/X0.source.GuideB.spw.1</TD>
+      <TD>GuideB-out-of-band</TD>
+      <TD>201.3665</TD>
+      <TD>-43.0185</TD>
+      <TD>Circle ICRS 201.3665 -43.0185 0.01</TD>
+      <TD>240</TD>
+      <TD>2000000000</TD>
+      <TD>128</TD>
+      <TD>[239..241GHz,1000kHz,0.8mJy/beam@10km/s,2mJy/beam@native, XX YY]</TD>
+      <TD>1000</TD>
+      <TD>0.25</TD>
+      <TD>0.8</TD>
+      <TD>0.15</TD>
+      <TD>A001:DA01 A002:DV02</TD>
+      <TD>F</TD>
+      <TD>T</TD>
+      <TD>T</TD>
+      <TD>2013-09-06T20:22:00.000</TD>
+      <TD>2026-07-28T01:24:16.671</TD>
+      <TD>0.42447128925625915</TD>
+      <TD>0.004763549000010374</TD>
+      <TD>56039.39172</TD>
+      <TD>56124.088095</TD>
+      <TD>7</TD>
+      <TD>/XX/YY/</TD>
+     </TR>
+    </TABLEDATA>
+   </DATA>
+  </TABLE>
+ </RESOURCE>
+</VOTABLE>

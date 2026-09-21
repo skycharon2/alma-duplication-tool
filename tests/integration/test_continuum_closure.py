@@ -113,7 +113,7 @@ def test_solar_replay_overwrite_cannot_replace_uninspected_response(tmp_path):
 
 def test_confirmed_example_has_only_raw_evidence_notes(tmp_path):
     code, doc = run_cli(tmp_path, payload(), '--archive-replay', EXAMPLE / 'archive/manifest.json')
-    assert code == 0 and doc['request']['validation_version'] == '4'
+    assert code == 0 and doc['request']['validation_version'] == '5'
     issues = doc['request']['issues']
     assert issues and all(i['category'] == 'EVIDENCE' and i['rule_id'] is None for i in issues)
     assert not any('Policy width interpretation' in i['message'] for i in issues)

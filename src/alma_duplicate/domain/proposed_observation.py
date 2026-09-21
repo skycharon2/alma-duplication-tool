@@ -113,7 +113,8 @@ class ProposedObservationRequest:
     sensitivities: tuple[ProposedSensitivity, ...]
     array_context: Mapping[str, object]
     raw_input: Mapping[str, object]
-    model_version: str = "1"
+    model_version: str = "2"
+    source_redshift: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -142,7 +143,7 @@ class RequestValidationResult:
     search_options: SearchOptions | None
     issues: tuple[RequestIssue, ...]
     search_readiness: SearchReadiness
-    validation_version: str = "4"
+    validation_version: str = "5"
 
     @property
     def errors(self) -> tuple[RequestIssue, ...]:

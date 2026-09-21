@@ -1,6 +1,6 @@
 # Comparison context construction
 
-Version 1 implements offline context construction over existing ingestion
+Version 2 implements offline context construction over existing ingestion
 outputs. It binds a validated request to **unfiltered source contexts**. It does
 not retrieve candidates, execute SearchOptions predicates or assess duplication.
 
@@ -61,7 +61,7 @@ Each item separately reports:
 | unit | Existing canonical unit validation, or UNKNOWN for raw/component units not adapted here |
 | association | Evidence belongs to the row/component, or its matched-SPW association is unverified |
 | reference | UNKNOWN until reference compatibility is evaluated against another operand |
-| method | NOT_IMPLEMENTED for formal comparison methods |
+| method | NOT_IMPLEMENTED for formal comparison methods; PRESENT identifies the implemented mode derivation, not a criterion outcome |
 
 PRESENT is not a criterion pass or a cross-source compatibility result.
 A row scalar `sensitivity_10kms` retains its own availability but has UNKNOWN
@@ -130,3 +130,13 @@ evaluation are implemented downstream; see [search/spatial](search_plan_spatial.
 contract remains an upstream structural boundary and does not own retrieval,
 policy approval or aggregation. Current scientific-closure priorities are
 centralized in the [documentation guide](README.md#next-delivery).
+
+## Association-bound Archive mode evidence
+
+`ArchiveContextEvidence.mode_evidence` is derived from raw em_xel values and FIELD
+metadata across the exact Source-SPW association within the supplied query run.
+All observations/row IDs remain visible. Invalid or conflicting evidence produces
+UNKNOWN; unlinked rows are handled independently. Alternatives are retained, not
+resolved by the mode classifier. [Line pairing](line_pairing_design.md) owns the
+mapping versions and preparation contract. Queue evidence is not given an Archive
+mode mapping. This projection changes no source filters or continuum verdicts.

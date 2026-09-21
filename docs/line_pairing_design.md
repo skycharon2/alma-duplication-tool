@@ -1,8 +1,8 @@
-# Spectral-line pairing: next-increment implementation contract
+# Spectral-line evidence and pairing contract
 
-Status: confirmed scientific inputs; reference model implemented; matcher, request
-redshift extension and line evaluators remain the next PR. Continuum has no mode
-dependency. Do not block it on this work.
+Status: request preparation, association-bound Archive mode evidence and pair
+builder implemented. Numerical FDM/coverage/resolution/RMS criteria and line
+aggregation remain in [PR 3](pr_plan_2026-09-21.md). Continuum has no mode dependency.
 
 ## Pair identity and ownership
 
@@ -22,16 +22,16 @@ not copy independent scalars into a new evidence bag. This prevents attaching a
 better RMS/resolution from another SPW, execution, source, query, or proposal.
 Unassigned mappings and conflicting alternatives cannot make a resolved pair.
 
-The next matcher emits a result for each proposed-window/candidate-context pair,
+The builder emits a result for each proposed-window/candidate-context pair,
 including unresolved attempts with structured reasons. Do not discard out-of-band
 pairs before producing their negative LINE-COVERAGE evidence. Do not call absence
 of pair records a negative result when candidate reconstruction was unresolved.
 
-## Next request changes
+## Implemented request preparation
 
-Add optional `source_redshift` to ProposedObservationRequest and the validator:
-finite real number, reject bool, require z > -1. Preserve it in raw/normalized
-reports; bump request/validation versions. REST centres need z; absent z is
+Optional `source_redshift` is in ProposedObservationRequest and the validator:
+finite numeric input, reject bool, require z > -1. It is preserved in raw/normalized
+reports; request/validation versions are 2/5. REST centres need z; absent z is
 missing evaluability information, not silently z=0. SKY centres remain direct.
 
 Reuse `ProposedWindow.center`, `correlator_mode`, `spectral_resolution` and
@@ -44,9 +44,8 @@ reuse channel spacing as spectral resolution or noise bandwidth.
 
 ## Candidate mode evidence
 
-Restore historical `cf1586a852d1377b3469ba0aae552d698d4f0a1b` as a design reference,
-not a patch to apply blindly. Existing `em_xel` acquisition remains sufficient.
-Create a versioned evidence object attached to the exact Source-SPW association:
+Historical `cf1586a852d1377b3469ba0aae552d698d4f0a1b` was used as a design reference.
+Existing `em_xel` acquisition is reused. The versioned evidence object is attached to the exact Source-SPW association:
 raw count, metadata validity, UI type, operational TDM/FDM, evidence level
 DERIVED, method version, confirmation ref, and failure reasons.
 
@@ -56,7 +55,7 @@ association values yield UNKNOWN. Never fall back to bandwidth, resolution or
 ObsCore `type`. This is the project's approved operational Archive UI mapping,
 not an assertion about every possible physical correlator configuration.
 
-## Rule order within one pair
+## Numerical evaluator requirements (not implemented here)
 
 1. Convert REST centre using nu_sky = nu_rest/(1+z), or retain declared SKY centre.
 2. LINE-FDM: proposed mode FDM and the exact candidate SPW operational mode FDM.
@@ -70,12 +69,42 @@ not an assertion about every possible physical correlator configuration.
 8. Compute sigma_comp = sigma_at_plan * (theta_plan/theta_archive)^2.
 9. LINE-RMS is sigma_comp <= 2*sigma_plan, with ANGULAR remaining a separate rule.
 
-The next pair report will contain `LinePairingReference`, derived nu_sky,
-dv_archive, sigma_at_plan, sigma_comp, all criterion results, and method versions.
-Common position/angular evidence is attached to the same candidate context.
-Use three-valued AND within a pair and OR over coherent eligible pair outcomes;
-failed plus unknown pair remains unknown. Preserve individual pairs. The current
-patch deliberately does not activate multi-pair/mixed-branch aggregation.
+Current outputs contain the reference, proposed sky frequency/planned resolution,
+mode provenance and preparation reasons. Future numerical outputs must add
+candidate resolution and both RMS intermediate values through that same reference.
+Preparation AVAILABLE means required preparation evidence exists, not FDM,
+coverage, resolution compatibility or duplication satisfied. A known TDM or
+out-of-band candidate is still a resolved pair. Pair AND/OR remains unimplemented.
+
+## Implemented builder and report states
+
+`line_pairing.build_line_pairs(request, context)` produces `LinePairBuildResult`
+with one `LinePairAttempt` for every listed window in that single retained context.
+It performs no candidate filtering. References are resolved through the existing
+Source-SPW component, never through Member-level grouping or scalar RMS fallback.
+No LINE intent produces no attempts; a selected empty list produces
+NO_PROPOSED_LINE_WINDOWS. Setup completeness is recorded as proposed enumeration
+only and cannot certify source/search completeness. Queue and non-single-field
+candidates return UNSUPPORTED attempts. Multiple candidate alternatives remain
+unresolved even when their channel counts happen to agree.
+
+| Field | Meaning |
+| --- | --- |
+| association_status | RESOLVED with reference, UNRESOLVED without one, or UNSUPPORTED |
+| evidence_status | AVAILABLE or INCOMPLETE; no policy outcome |
+| proposed | Derived center/resolution, sensitivity ID, source field names and reasons |
+| candidate_mode | Raw counts/types and row IDs, metadata validation, association, mapping versions and confirmation reference |
+| assessment | Always NOT_EVALUATED for the builder |
+
+Mode derivation accepts positive Python/NumPy integers with one scalar integer
+FIELD descriptor (`short`, `int`, `long`; arraysize absent/1; dimensionless unit).
+Float/text/Boolean cells are invalid, even if they spell an integer. Masked raw
+count is represented as null plus MASKED_COUNT and its raw type. Invalid scalar
+representations unsupported by JSON use diagnostic text plus raw type; original
+source rows remain in the context. Missing/invalid counts or different counts in
+one association make its mode UNKNOWN, including differing counts that both map
+to FDM. Unlinked rows are never pooled. Across runs, executions or SPWs, no group
+is merged. The approved operational mapping is distinct from native mode telemetry.
 
 ## Pinned guide B acceptance specification
 
@@ -85,7 +114,20 @@ mode count 1920; sigma10=0.40 mJy/beam; plan dv=20 km/s and RMS=.30 mJy/beam;
 theta_plan=.30 arcsec and theta_archive=.25 arcsec. Expected sigma_at_plan is
 0.282842712474619 and sigma_comp is 0.4072935059634514 mJy/beam.
 
-This is a specification for the next PR, not an executable line request in the
-current CLI schema and not a claimed passing line evaluator. Acceptance must add
-coverage endpoints, z boundaries, SKY-without-z, coarser-resolution blocking,
-missing/conflicting modes, multiple windows, mixed intents and crossed-SPW traps.
+The input is now executable at `examples/confirmed_line/request.json`. Its
+synthetic replay has one guide-B candidate and one out-of-band TDM candidate in
+the same execution but a different SPW. Both remain explicit pairing attempts;
+LINE status is still NOT_IMPLEMENTED. The old numeric specification's final
+RMS/branch values remain targets for PR 3, not passing results of this builder.
+
+```bash
+python -m alma_duplicate.cli.evaluate \
+  --request examples/confirmed_line/request.json \
+  --archive-replay examples/confirmed_line/archive/manifest.json \
+  --output reports/line-pairing.json
+```
+
+Expected: 2 retained/evaluated contexts, 1 shown; both associations RESOLVED;
+mode FDM then TDM; proposed sky frequency 225.134765625 GHz and planned
+resolution 20 km/s. No LINE-* criterion or RMS correction is computed.
+Regression owner: `tests/integration/test_line_preparation.py`.

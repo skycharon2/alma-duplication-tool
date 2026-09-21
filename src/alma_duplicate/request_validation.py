@@ -12,6 +12,8 @@ import math
 import re
 from types import MappingProxyType
 
+from alma_duplicate.proposed_line import prepare_line_window
+
 from alma_duplicate.domain.proposed_observation import (
     CandidatePredicate,
     ProposedObservationRequest,
@@ -376,7 +378,7 @@ class _Validator:
             obj.get("channel_spacing"), path + ".channel_spacing", "width"
         )
         resolution = self.quantity(
-            obj.get("spectral_resolution"), path + ".spectral_resolution", "width"
+            obj.get("spectral_resolution"), path + ".spectral_resolution", "width", velocity=True
         )
         interval = None
         lo = hi = None
@@ -652,10 +654,10 @@ class _Validator:
             self.missing(path + ".basis", "RMS basis is unknown.", rms_rule)
         if basis in {"NATIVE_CHANNEL", "SMOOTHED"}:
             if not bandwidth:
-                self.missing(
+                self.issue(
+                    "EVIDENCE", "NOISE_BANDWIDTH_UNSPECIFIED",
                     path + ".bandwidth_used_for_sensitivity",
-                    "Noise bandwidth is missing; resolution is not a substitute.",
-                    "LINE-RMS",
+                    "Noise bandwidth retained independently of planned resolution; no noise conversion is performed.",
                 )
             elif meaning == "UNKNOWN":
                 self.missing(
@@ -667,6 +669,7 @@ class _Validator:
                 len(ids) == 1
                 and ids[0] in windows
                 and not windows[ids[0]].spectral_resolution
+                and smoothing is None
             ):
                 self.missing(
                     path + ".window_ids",
@@ -690,7 +693,9 @@ class _Validator:
                 "CONT-RMS",
             )
         if basis == "SMOOTHED":
-            if smoothing is None:
+            if smoothing is None and not any(
+                windows[wid].spectral_resolution is not None for wid in ids if wid in windows
+            ):
                 self.missing(
                     path + ".smoothing_resolution",
                     "Smoothed resolution is absent.",
@@ -840,6 +845,7 @@ def validate_proposed_observation(
             "spectral_windows",
             "sensitivities",
             "array_context",
+            "source_redshift",
         },
     )
     kind = v.enum(
@@ -848,6 +854,11 @@ def validate_proposed_observation(
     geometry = v.enum(
         obj.get("geometry"), "request.geometry", {"SINGLE_POINTING", "MOSAIC"}
     )
+    redshift = None
+    if obj.get("source_redshift") is not None:
+        redshift = v.number(obj["source_redshift"], "request.source_redshift")
+        if redshift is not None and redshift <= -1:
+            v.error("INVALID_REDSHIFT", "request.source_redshift", "Require z > -1.")
     name = v.text(obj.get("target_name"), "request.target_name")
     position = v.position(obj.get("position"))
     setup = v.text(obj.get("setup_id"), "request.setup_id", True)
@@ -958,6 +969,11 @@ def validate_proposed_observation(
                         "A coverage midpoint is not a requested SPW center.",
                         "LINE-COVERAGE",
                     )
+                planned = prepare_line_window(window, sensitivities, redshift)
+                for reason in planned.reasons:
+                    v.issue("MISSING", reason, p, "Line preparation: " + reason,
+                            "LINE-COVERAGE" if "FREQUENCY" in reason or "REDSHIFT" in reason
+                            or reason == "LINE_CENTER_REQUIRED" else "LINE-RMS")
                 if window.correlator_mode == "UNKNOWN":
                     v.missing(
                         p + ".correlator_mode",
@@ -1045,6 +1061,7 @@ def validate_proposed_observation(
         sensitivities,
         MappingProxyType(dict(array)),
         raw,
+        source_redshift=redshift,
     )
     if kind == "SUN":
         readiness = SearchReadiness.NOT_APPLICABLE

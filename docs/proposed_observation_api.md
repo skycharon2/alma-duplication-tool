@@ -1,6 +1,6 @@
 # Proposed observation input API
 
-Request model version: **1**. Validation report version: **4**.
+Request model version: **2**. Validation report version: **5**.
 
 Implements the request-side subset of
 [design 0.3](duplication_rule_inputs.md). No candidate search, policy verdict,
@@ -59,7 +59,7 @@ Empty windows may coexist with independent frequency, angular resolution and RMS
 
 | Object | Accepted fields |
 | --- | --- |
-| Request | target_kind, geometry, target_name, position, setup_id, setup_complete, intents, angular_resolution, representative_frequency, representative_window_id, spectral_windows, sensitivities, array_context |
+| Request | target_kind, geometry, target_name, position, setup_id, setup_complete, intents, angular_resolution, representative_frequency, representative_window_id, spectral_windows, sensitivities, array_context, source_redshift |
 | Position | ra, dec, ra_format (DEG/HMS), dec_format (DEG/DMS), frame (explicit ICRS) |
 | Quantity | value, unit; supported units below |
 | Frequency | value, unit, kind (SKY/REST/UNKNOWN), frame, origin |
@@ -86,7 +86,7 @@ OT_COPIED never implies a frame. UNKNOWN defaults describe absent evidence only.
 | Angular resolution | mas, arcsec | arcsec |
 | Search radius | arcsec, arcmin, deg | deg; at most 180 |
 | RMS | Jy/beam, mJy/beam | mJy/beam |
-| Optional noise/smoothing velocity width | m/s, km/s | km/s; no frequency or noise conversion |
+| Spectral resolution and optional noise/smoothing velocity width | m/s, km/s | km/s; no frequency or noise conversion |
 
 All supplied quantities are finite and positive before and after conversion.
 Units are explicit and case-sensitive. Missing quantities are omitted or None;
@@ -173,3 +173,32 @@ Candidate retrieval, coherent source-context pairing and per-context provisional
 rule evaluation are downstream layers documented in [candidate search](candidate_search.md),
 [comparison contexts](comparison_contexts.md) and [rules](rules.md). This API
 remains request-only and does not inherit those responsibilities.
+
+## Line preparation (request model 2)
+
+Optional `source_redshift` uses the same finite numeric input convention as other
+request numbers (including decimal numeric text); Boolean and z <= -1 are errors,
+even if LINE is not selected. Omitted/None stays missing, never zero. It is
+preserved in raw and normalized reports. REST centers need z for
+`nu_sky = nu_rest / (1+z)`; SKY centers are used directly. No frame transformation
+or continuum representative-frequency fallback is performed.
+
+Each listed line window must resolve exactly one LINE / WINDOW sensitivity to
+prepare its RMS association. Multiple declarations produce an unresolved reason;
+the validator does not pick the lowest RMS. A missing RMS is a preparation gap,
+not a negative outcome. `spectral_resolution` now accepts m/s or km/s as well as
+frequency units; `channel_spacing` remains a distinct frequency-width field.
+The requested resolution can come from the linked sensitivity's existing
+`smoothing_resolution` or the window's `spectral_resolution`. One is sufficient;
+if both are supplied they must agree after conversion. Frequency widths are
+interpreted at the derived sky center: `dv = 299792.458 * dnu_MHz/(1000*nu_GHz)`.
+No rest-frame width transformation is invented. Quantities describe the planned
+observed resolution; REST applies to the line center.
+
+The preparation compares exact decimal spellings of canonical scalars, with no
+epsilon; derived report values are finite floats. Disagreeing resolutions produce
+CONFLICTING_PLANNED_RESOLUTIONS and no selected value. Unrepresentable derived
+values remain null with a reason. Missing redshift, resolution, mode or RMS is
+reported separately from malformed input; bounded spatial search can still run.
+Noise bandwidth and channel spacing never replace spectral resolution. Existing
+smoothing/conversion notices do not imply line numerical evaluation has run.

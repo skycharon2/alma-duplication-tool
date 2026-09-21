@@ -3,7 +3,7 @@
 
 Document revision: 0.9. The object index includes search, grouping and rule
 results. Rule-result schema 2 is defined in the [rule contract](rules.md);
-source and request schema versions are unchanged.
+request model 2 and context model/construction 2 include line preparation inputs and mode evidence.
 
 ## Status and scope
 
@@ -39,6 +39,7 @@ none implies that an approved comparison method or a persistence schema exists.
 | Search execution | [`CandidateSearchResult`, `SourceSearchExecution`, `CandidateRecord`, `FilterExecution`](../src/alma_duplicate/domain/candidate_search.py) | Independent source outcomes, retained contexts, row/filter audit and display omissions |
 | Presentation grouping | [`CandidateGroup`](../src/alma_duplicate/grouping.py) | Organize rows for display; never combine scientific evidence into a synthetic observation |
 | Criterion evaluation | [`CriterionResult`, `CriterionValue`, `CriterionIssue`](../src/alma_duplicate/rules/model.py) | Separate computation, outcome, applicability and approval; retain all affected evidence sides |
+| Line preparation | [`ArchiveModeEvidence`, `ProposedLineEvidence`](../src/alma_duplicate/domain/line_evidence.py); [`LinePairBuildResult`, `LinePairAttempt`](../src/alma_duplicate/domain/line_pairing.py) | Derived metadata and coherent pairing attempts, no numerical line verdict |
 | Evaluation orchestration | [`EvaluationReport`, `ContextEvaluation`](../src/alma_duplicate/rules/evaluation_model.py) | Retain search result and independent continuum branch assessments per context; SolarExemptionReport represents request-level exemption without search |
 
 ## Archive identities and associations
