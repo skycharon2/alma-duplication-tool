@@ -1,5 +1,5 @@
 {
-  "status": "NUMERICAL_RULE_TARGET_PAIRING_INPUT_IMPLEMENTED_SEPARATELY",
+  "status": "IMPLEMENTED_SYNTHETIC_NUMERICAL_ACCEPTANCE",
   "source": "confirmed guide example B",
   "proposed": {
     "rest_frequency_ghz": 230.538,

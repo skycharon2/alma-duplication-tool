@@ -67,7 +67,8 @@ CONT-SETUP result. Archive spatial audit: 96 MATCH and 48 NOT_EVALUATED; Queue:
 negative-case tests separately exercise excluded-row audit retention; zero
 exclusions here do not demonstrate an exclusion event.
 
-Current expected output at `61813bd` / merge `c1785b2`:
+Current expected continuum distribution, established at `61813bd` / merge `c1785b2`
+and preserved by the Archive line increment based on `3b6105b`:
 
 | Result | Archive (144 contexts) | Queue (13 contexts) |
 | --- | --- | --- |

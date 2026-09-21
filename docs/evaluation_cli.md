@@ -44,7 +44,7 @@ Existing outputs require --overwrite. Report publication uses a temporary file
 in the destination directory and an atomic no-clobber link or replacement.
 The output must not replace either input file.
 
-## Report version 3
+## Report version 4
 
 The JSON contains the raw and normalized request, validation issues, input-byte
 SHA256, source plans, actual Archive query provenance, Queue snapshot provenance,
@@ -52,9 +52,9 @@ all row filtering records, display omissions, request-level criteria and all
 retained context evaluations. Missing acquisition/run IDs remain missing.
 
 Candidate reports have `report_kind=CANDIDATE_EVALUATION`; assessment remains
-NOT_AGGREGATED and search assessment remains NOT_EVALUATED. Continuum results
-are in `context_evaluations[].branches`. Rule result schema 2, evaluation version 4
-and method versions are independent. Request validation is now version 5:
+NOT_AGGREGATED and search assessment remains NOT_EVALUATED. Continuum and LINE results
+are in `context_evaluations[].branches`. Rule result schema 2, evaluation version 5
+and method versions are independent. Request validation is now version 6:
 ERROR invalidates input; MISSING describes selected-branch/search requirements;
 CAPABILITY describes relevant unavailable methods; EVIDENCE preserves raw input
 limitations and unselected-branch notes without asserting a selected rule failed.
@@ -71,7 +71,7 @@ remain active. For Solar only, combining --archive-replay with --overwrite is
 rejected: replay response paths cannot be protected without opening the manifest.
 Use a new output path and omit --overwrite in that combination.
 
-Consumers of version 3 must switch on report_kind before accessing plan/source
+Consumers of versions 3 and 4 must switch on report_kind before accessing plan/source
 query fields. Historical reports are not rewritten.
 
 Non-finite scalars use an explicit object such as {"non_finite": "nan"} rather
@@ -99,15 +99,39 @@ POS-SINGLE method requires `--queue-candidate-beam`. See [the method contract](p
 Per-source `filter_summary` counts are derived from processed row audits;
 excluded rows remain auditable and server-unreturned rows are outside the count.
 
-## Line preparation export (evaluation version 4)
+## Line pair export (report 4 / evaluation 5)
 
-Report envelope version 3 is retained with an additive `line_pairing` field on
-each context. It is null when LINE is not selected; otherwise it serializes the
-[builder contract](line_pairing_design.md): attempts, reference-bound mode evidence,
-proposed sky frequency and planned resolution, and unresolved reasons. The LINE
-branch still reports NOT_IMPLEMENTED and UNKNOWN. Do not turn RESOLVED or AVAILABLE
-preparation status into a positive line criterion. All retained contexts are
-prepared even when hidden by the display limit. Source failures produce no
-fabricated pairs. Solar remains a separate report with no source access.
-Request model 2 / validation 5 and context model/construction 2 identify the new
-inputs and mode evidence; historical report files retain their original versions.
+`context_evaluations[].line_pairing` retains the unchanged preparation-only
+[builder contract](line_pairing_design.md). Its `assessment=NOT_EVALUATED` describes
+the builder, not the subsequent line evaluation. RESOLVED and AVAILABLE remain
+association/evidence states, never scientific success.
+
+`context_evaluations[].line_pairs` is an ordered list matching the builder's
+attempts. It is empty when LINE is not selected or no windows are listed. Each item has:
+
+- `attempt`: proposed window, candidate context, full Source-SPW/component reference,
+  prepared sky frequency/resolution, mode evidence and preparation reasons.
+- `criteria`: POS-SINGLE, ANGULAR and four LINE results, each with approval,
+  applicability, outcome, issues, method version, confirmation references and
+  `eligible_for_formal_aggregation`.
+- `truth`, `status`, `reasons`, `scope`, `method_version`, `decision_refs`:
+  the coherent pair's three-valued AND result.
+
+LINE-RMS `derived` contains `archive_resolution_kms`, `planned_resolution_kms`,
+`sigma_10kms_mjy_beam`, `theta_plan_arcsec`, `theta_archive_arcsec`,
+`sigma_at_plan_mjy_beam`, `sigma_comp_mjy_beam`, `sigma_requested_mjy_beam` and
+`max_factor`. Blocked calculations remain null with explicit reasons.
+LINE-COVERAGE records the sky center and exact component endpoints in GHz.
+The [rules contract](rules.md#confirmed-archive-line-evaluation) owns formula and
+numeric semantics; the JSON encodes `derived` and `details` as key/value arrays.
+
+The LINE entry in `branches` is the context-local OR of whole pairs. It reports
+CRITERIA_MET, CRITERIA_NOT_MET or INDETERMINATE. Incomplete proposed enumeration
+adds an unknown alternative; it does not certify source/search completeness.
+Continuum remains a separate branch. All retained contexts are assessed despite
+display truncation; source failures produce no fabricated pair or absence verdict.
+Solar remains a separate report with no source access.
+
+Request model 2, validation 6 and context model/construction 2 identify input and
+evidence semantics. Report versions 1–3 and evaluation versions through 4 retain
+their historical meanings; consumers should explicitly support report version 4.

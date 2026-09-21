@@ -143,7 +143,7 @@ class RequestValidationResult:
     search_options: SearchOptions | None
     issues: tuple[RequestIssue, ...]
     search_readiness: SearchReadiness
-    validation_version: str = "5"
+    validation_version: str = "6"
 
     @property
     def errors(self) -> tuple[RequestIssue, ...]:

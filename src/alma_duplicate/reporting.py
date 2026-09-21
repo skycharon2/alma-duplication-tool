@@ -171,7 +171,7 @@ def _request_document(validation):
 def _solar_document(report, input_sha256):
     validation = report.validation
     return json_value({
-        "report_version": "3", "report_kind": "SOLAR_EXEMPTION",
+        "report_version": "4", "report_kind": "SOLAR_EXEMPTION",
         "generated_at": datetime.now(UTC), "input_sha256": input_sha256,
         "evaluation_version": report.evaluation_version,
         "execution": report.execution, "assessment": report.assessment,
@@ -197,7 +197,7 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
     search = report.search_result
     validation = search.plan.validation
     return json_value({
-        "report_version": "3",
+        "report_version": "4",
         "report_kind": "CANDIDATE_EVALUATION",
         "search_execution": search.execution,
         "generated_at": datetime.now(UTC),
@@ -249,6 +249,8 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
                 "criteria": [_criterion(r) for r in item.criteria],
                 "branches": item.branches,
                 "line_pairing": item.line_pairing,
+                "line_pairs": [json_value(pair) | {"criteria": [_criterion(r) for r in pair.criteria]}
+                               for pair in item.line_pairs],
             }
             for item in report.context_evaluations
         ],
