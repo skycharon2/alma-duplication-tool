@@ -34,61 +34,13 @@ candidate survives retrieval and receives a formal negative position result.
 The exact request, response bytes, units, ADQL and response SHA-256 values are
 versioned. Fixture identity is `SYNTHETIC_NUMERIC_ACCEPTANCE`, not a live capture.
 
-Run the existing real-source replay independently:
+The [dual-source replay](dual_source_replay.md) owns the separate real-capture
+command, expected counts and mapping limitations.
 
-```bash
-python -m alma_duplicate.cli.evaluate \
-  --request examples/dual_source/request.json \
-  --archive-replay tests/fixtures/archive/ngc6240/manifest.json \
-  --queue-csv tests/fixtures/queue/queue_pipeline_v1.csv \
-  --queue-candidate-beam \
-  --output reports/ngc6240-confirmed-rules.json
-```
+## Contract ownership
 
-That request deliberately has no aggregate RMS; no positive continuum branch is
-expected. Its real Archive positions/frequencies now exercise the new mappings.
-This command is offline and does not verify current TAP availability.
-
-## Report contract
-
-Current exports use report version 3; see [closure changes](continuum_closure.md)
-for request diagnostics, contribution references and the Solar report variant.
-
-The initial increment used JSON `report_version=2`, `evaluation_version=3` to add
-`context_evaluations[].branches`. Each branch contains its scope, required
-criterion IDs, three-valued truth, status, reasons, version and confirmation ref.
-The request-level setup result is referenced by criterion ID and not recomputed
-for every row. Individual criteria preserve input values, units and semantics.
-The continuum RMS diagnostic is candidate/proposed, not symmetric.
-
-- An approved false conjunct makes the supported continuum branch false even
-  with another unknown criterion. Provisional outcomes enter as UNKNOWN.
-- Conflicting alternatives and unlinked Archive associations block a formal
-  branch verdict; no most-favourable row is selected.
-- Unsupported sources/geometries/ambiguous diameters remain INDETERMINATE.
-- LINE intent currently yields `NOT_IMPLEMENTED`/UNKNOWN. Both intents give
-  separate branch records. There is no mixed-branch verdict.
-- Top-level `assessment=NOT_AGGREGATED` intentionally remains a search-wide
-  boundary. A branch false never means the whole observation is non-duplicated.
-
-Source metadata, failed/incomplete source states, query binding, retrieval radius,
-filter exclusions and hidden candidate IDs remain visible. Excluded rows stay
-in the source audit; they are not represented as evaluated criterion negatives.
-Footprint query completeness applies only to the supplied footprint query. This
-increment does not assert every candidate-side primary beam is contained in its
-published footprint, nor reinterpret request-frequency formula retrieval as
-complete coverage for the new candidate-frequency rule. Use the ordinary
-footprint strategy for this acceptance and inspect the report's search scope.
-
-## Validation commands
-
-```bash
-python -m pytest -q tests/integration/test_confirmed_continuum.py
-python -m pytest -q
-```
-
-Regression coverage includes the guide positive, 1.3 and 2 inclusive thresholds,
-strict setup-width legacy tests, distinct representative frequency versus SPW
-mean, missing/incompatible units, ambiguous array majority, mosaic, RA wrap,
-position boundary, conflicting evidence, source failures, display limits, exact
-replay matching, and cross-SPW pairing reference rejection.
+This is the numeric acceptance record for the initial `4122f81` / PR #70 delivery.
+The [CLI/report contract](evaluation_cli.md) owns current report schema and
+migration details; [rules](rules.md) owns criteria and aggregation semantics.
+[Contract closure](continuum_closure.md) records the subsequent `61813bd` fixes.
+The [PR plan](pr_plan_2026-09-21.md) is the sole remaining-work list.

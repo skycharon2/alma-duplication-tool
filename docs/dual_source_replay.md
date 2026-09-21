@@ -67,12 +67,23 @@ CONT-SETUP result. Archive spatial audit: 96 MATCH and 48 NOT_EVALUATED; Queue:
 negative-case tests separately exercise excluded-row audit retention; zero
 exclusions here do not demonstrate an exclusion event.
 
-All 144 Archive POS-SINGLE results have no outcome. Queue has one satisfied
-POS-SINGLE (NGC6240; radius 8.60110728557 arcsec) and 12 unresolved results.
-ANGULAR can produce numeric outcomes for both sources but remains provisional;
-its source fields have different semantics. Assessment stays NOT_AGGREGATED.
-Counts are pinned evidence observations, never loader selection criteria. A
-future live query can legitimately return different counts.
+Current expected output at `61813bd` / merge `c1785b2`:
+
+| Result | Archive (144 contexts) | Queue (13 contexts) |
+| --- | --- | --- |
+| POS-SINGLE | 96 SATISFIED, 48 without outcome | 1 SATISFIED, 12 without outcome |
+| Continuum branch | 91 CRITERIA_NOT_MET, 53 INDETERMINATE | 13 INDETERMINATE |
+
+Thus the combined distribution is 91 not met and 66 indeterminate. This request
+has no aggregate RMS: all CONT-RMS results lack an outcome. Explicit failures of
+other approved criteria explain the 91 false AND branches. Archive ANGULAR uses
+the approved scoped method; Queue retains its provisional method. The report
+schema is owned by [evaluation_cli.md](evaluation_cli.md). Top-level
+NOT_AGGREGATED does not erase the per-context continuum results.
+
+Historical output at `6b48b3b` had all 144 Archive POS-SINGLE results unresolved;
+it is superseded by the current expectation above. Counts are fixture observations,
+not query filters or expected populations for future live acquisitions.
 
 ## Separate live acquisition
 
@@ -86,15 +97,14 @@ report into a new directory. It will not overwrite existing evidence. Inspect
 status/counts before accepting a new capture. The ordinary offline pytest suite
 does not invoke this script; network and replay records remain separate.
 
-## Narrow scientific review material (not sent or approved)
+## Scope of the evidence
 
-| Method | Concrete evidence for review | Remaining scope question |
-| --- | --- | --- |
-| Queue POS-SINGLE | NGC6240 Ref.Frequency 338.5 GHz, derived 12 m, separation 0, radius 8.60110728557 arcsec; [contract](pos_single.md) | Applicability of field/array inference, frame/offset convention, zero-reference fallback and boundary guard |
-| ANGULAR | Same requested 0.5 arcsec compared with Archive spatial_resolution estimates and Queue requested values; per-context values in report | Which observation/configuration ranges permit this comparison? |
-| Q2 | Same two explicitly USABLE 1.875 GHz proposed windows; CLI does not enable nominal conversion | What configuration evidence licenses nominal-to-usable conversion when usable widths are absent? |
-
-Known policy thresholds are not reopened. The input's usable widths are explicit
-hypothetical declarations, not derived from the Queue's nominal widths. Written
-confirmation must identify applicable scope, method version and decision
-reference; changing an approval field alone cannot close these questions.
+The Archive position/angular and direct continuum workflow is confirmed in the
+[decision record](evidence/supervisor_confirmation_2026-09-17.md#confirmed-2026-09-21).
+Queue field/array inference, frame/offset conventions and RMS comparison retain
+their independent limitations. Explicit USABLE widths in this request are
+hypothetical declarations, not inferred from Queue nominal widths. Arbitrary
+nominal conversion is not enabled. This real capture exercises data mapping;
+[synthetic acceptance](confirmed_continuum.md) separately exercises numerical
+positive cases. Neither is a live-service availability test or a reviewed real
+duplication label.
