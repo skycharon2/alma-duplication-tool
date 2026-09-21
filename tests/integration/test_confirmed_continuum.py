@@ -44,7 +44,7 @@ def test_guide_A_cli_full_pipeline(tmp_path,monkeypatch):
     assert main(['--request',str(EXAMPLE/'request.json'),'--archive-replay',
                  str(EXAMPLE/'archive/manifest.json'),'--output',str(out)])==0
     d=json.loads(out.read_text())
-    assert d['report_version']=='3' and d['evaluation_version']=='4'
+    assert d['report_version']=='4' and d['evaluation_version']=='5'
     assert d['assessment']=='NOT_AGGREGATED'
     assert d['evaluation_scope']['total_retained']==d['evaluation_scope']['evaluated_contexts']==4
     assert d['evaluation_scope']['shown_candidates']==1
@@ -151,7 +151,7 @@ def test_intents_select_branches(intents,expected):
     assert [b.branch for b in report.context_evaluations[0].branches]==expected
     assert bool(report.request_criteria)==('CONTINUUM' in intents)
     for b in report.context_evaluations[0].branches:
-        if b.branch=='LINE':assert b.status=='NOT_IMPLEMENTED' and b.truth is T.UNKNOWN
+        if b.branch=='LINE':assert b.status=='INDETERMINATE' and b.truth is T.UNKNOWN
 
 def test_line_pair_references_reject_cross_spw_and_other_sources():
     from alma_duplicate.domain.line_pairing import LinePairingReference

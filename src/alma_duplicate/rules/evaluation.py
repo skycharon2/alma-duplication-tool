@@ -6,14 +6,14 @@ The request is taken from the original plan; no substitute request is accepted.
 from __future__ import annotations
 
 from alma_duplicate.domain.candidate_search import CandidateSearchResult, SearchSourceStatus
-from alma_duplicate.line_pairing import build_line_pairs
+from alma_duplicate.rules.line import evaluate_line
 from alma_duplicate.rules.position_single import evaluate_position_single
 from alma_duplicate.rules.angular import evaluate_angular_resolution
 from alma_duplicate.rules.continuum_setup import evaluate_continuum_setup
 from alma_duplicate.rules.evaluation_model import ContextEvaluation, EvaluationReport
 from alma_duplicate.rules.confirmed import approve_angular, approve_setup, archive_scope
 from alma_duplicate.rules.continuum import evaluate_continuum_frequency, evaluate_continuum_rms
-from alma_duplicate.rules.aggregation import aggregate_continuum, BranchAssessment, Truth
+from alma_duplicate.rules.aggregation import aggregate_continuum
 
 
 def _check_search(result: CandidateSearchResult) -> None:
@@ -73,12 +73,11 @@ Programming/contract errors propagate; they are not scientific missing evidence.
                     not {"UNIQUE_INTERFEROMETRIC_DIAMETER_REQUIRED",
                          "CONFLICTING_POSITION_INTERPRETATION"}.intersection(criteria[1].reasons))
                 branches.append(aggregate_continuum(context, (setup, *criteria), supported=supported))
+            pairing, pairs = None, ()
             if "LINE" in request.intents:
-                branches.append(BranchAssessment("LINE", context.context_id, "NOT_IMPLEMENTED", Truth.UNKNOWN,
-                    ("POS-SINGLE", "ANGULAR", "LINE-FDM", "LINE-COVERAGE", "LINE-RESOLUTION-COMPATIBILITY", "LINE-RMS"),
-                    ("LINE_RULES_NOT_IMPLEMENTED",)))
+                pairing, pairs, branch = evaluate_line(request, context, tuple(criteria[:2]))
+                branches.append(branch)
             contexts.append(ContextEvaluation(candidate=row, criteria=tuple(criteria), branches=tuple(branches),
-                                              line_pairing=build_line_pairs(request, context)
-                                              if "LINE" in request.intents else None))
+                                              line_pairing=pairing, line_pairs=pairs))
     return EvaluationReport(search_result=search_result, request_criteria=() if setup is None else (setup,),
                             context_evaluations=tuple(contexts))

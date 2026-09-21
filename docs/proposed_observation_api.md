@@ -1,6 +1,6 @@
 # Proposed observation input API
 
-Request model version: **2**. Validation report version: **5**.
+Request model version: **2**. Validation report version: **6**.
 
 Implements the request-side subset of
 [design 0.3](duplication_rule_inputs.md). No candidate search, policy verdict,
@@ -33,7 +33,7 @@ Issues have category ERROR/MISSING/CAPABILITY/EVIDENCE, code, path, message,
 optional rule ID and side PROPOSED/METHOD. No CANDIDATE-side claims are emitted.
 ERROR covers malformed supplied input even for an unselected branch. MISSING
 covers selected-branch/search prerequisites; CAPABILITY identifies relevant
-unimplemented methods (including the selected line evaluator). EVIDENCE preserves
+unimplemented methods such as aggregate noise-bandwidth conversion. EVIDENCE preserves
 raw provenance limitations and unselected-branch notes, with no active rule ID.
 REST frequencies and unknown frames remain raw evidence notes; selected continuum
 requires a representative SKY kind. UNKNOWN frame alone does not contradict the
@@ -200,5 +200,7 @@ epsilon; derived report values are finite floats. Disagreeing resolutions produc
 CONFLICTING_PLANNED_RESOLUTIONS and no selected value. Unrepresentable derived
 values remain null with a reason. Missing redshift, resolution, mode or RMS is
 reported separately from malformed input; bounded spatial search can still run.
-Noise bandwidth and channel spacing never replace spectral resolution. Existing
-smoothing/conversion notices do not imply line numerical evaluation has run.
+Noise bandwidth and channel spacing never replace spectral resolution. Validation version 6 removes obsolete line-evaluator/smoothing capability warnings.
+An optional velocity noise bandwidth is retained as EVIDENCE, not used as the
+planned resolution. Actual candidate-dependent computation belongs to the
+[rule evaluator](rules.md#confirmed-archive-line-evaluation), not validation.

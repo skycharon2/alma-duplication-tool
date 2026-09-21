@@ -113,7 +113,7 @@ def test_solar_replay_overwrite_cannot_replace_uninspected_response(tmp_path):
 
 def test_confirmed_example_has_only_raw_evidence_notes(tmp_path):
     code, doc = run_cli(tmp_path, payload(), '--archive-replay', EXAMPLE / 'archive/manifest.json')
-    assert code == 0 and doc['request']['validation_version'] == '5'
+    assert code == 0 and doc['request']['validation_version'] == '6'
     issues = doc['request']['issues']
     assert issues and all(i['category'] == 'EVIDENCE' and i['rule_id'] is None for i in issues)
     assert not any('Policy width interpretation' in i['message'] for i in issues)
@@ -128,7 +128,7 @@ def test_diagnostics_follow_intents_without_hiding_invalid_data(intents):
     validation = validate_proposed_observation(p['request'], p['search_options'])
     active = [i for i in validation.issues if i.category != 'EVIDENCE']
     assert any(i.rule_id == 'CONT-RMS' for i in active) == ('CONTINUUM' in intents)
-    assert any(i.rule_id == 'LINE' and i.category == 'CAPABILITY' for i in active) == ('LINE' in intents)
+    assert not any(i.rule_id == 'LINE' and i.category == 'CAPABILITY' for i in active)
     assert all(not (i.rule_id or '').startswith('LINE') for i in active) if 'LINE' not in intents else True
     p['request']['sensitivities'][0]['window_ids'] = ['invalid']
     assert not validate_proposed_observation(p['request'], p['search_options']).is_valid

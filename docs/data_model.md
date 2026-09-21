@@ -3,7 +3,7 @@
 
 Document revision: 0.9. The object index includes search, grouping and rule
 results. Rule-result schema 2 is defined in the [rule contract](rules.md);
-request model 2 and context model/construction 2 include line preparation inputs and mode evidence.
+request model 2 and context model/construction 2 include line preparation inputs and mode evidence. Evaluation 5 adds reference-bound numerical pair results.
 
 ## Status and scope
 
@@ -39,6 +39,7 @@ none implies that an approved comparison method or a persistence schema exists.
 | Search execution | [`CandidateSearchResult`, `SourceSearchExecution`, `CandidateRecord`, `FilterExecution`](../src/alma_duplicate/domain/candidate_search.py) | Independent source outcomes, retained contexts, row/filter audit and display omissions |
 | Presentation grouping | [`CandidateGroup`](../src/alma_duplicate/grouping.py) | Organize rows for display; never combine scientific evidence into a synthetic observation |
 | Criterion evaluation | [`CriterionResult`, `CriterionValue`, `CriterionIssue`](../src/alma_duplicate/rules/model.py) | Separate computation, outcome, applicability and approval; retain all affected evidence sides |
+| Line evaluation | [`LinePairEvaluation`](../src/alma_duplicate/rules/line.py) | One preparation attempt, six coherent conditions, gated pair truth, status, reasons and method identity; context LINE is OR of whole pairs |
 | Line preparation | [`ArchiveModeEvidence`, `ProposedLineEvidence`](../src/alma_duplicate/domain/line_evidence.py); [`LinePairBuildResult`, `LinePairAttempt`](../src/alma_duplicate/domain/line_pairing.py) | Derived metadata and coherent pairing attempts, no numerical line verdict |
 | Evaluation orchestration | [`EvaluationReport`, `ContextEvaluation`](../src/alma_duplicate/rules/evaluation_model.py) | Retain search result and independent continuum branch assessments per context; SolarExemptionReport represents request-level exemption without search |
 
@@ -241,7 +242,7 @@ and [Queue contract](queue_csv_contract.md). Formal thresholds remain in the
 - [Conceptual ERDs and entity descriptions](design/conceptual_data_model.md): original design scopes and rationale.
 - [Historical exploration evidence](evidence/exploration_snapshots.md): capture dates, sample populations, counterexamples and limits.
 - [Rule-input decision register](duplication_rule_inputs.md#7-scientific-decision-register): unresolved formal scientific methods.
-- [Current status and next delivery](README.md#next-delivery): line evidence, pairing and computation after Archive continuum closure.
+- [Current status and next delivery](README.md#next-delivery): remaining interface and real-case review after Archive continuum and line evaluation.
 
 General STC-S/pointing reconstruction, physical-target alias resolution,
 machine-readable per-SPW mode acquisition/association, brace token-2 discrimination,

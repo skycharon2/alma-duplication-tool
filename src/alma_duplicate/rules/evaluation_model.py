@@ -9,6 +9,7 @@ from alma_duplicate.rules.model import CriterionResult
 from alma_duplicate.domain.proposed_observation import RequestValidationResult
 from alma_duplicate.rules.aggregation import BranchAssessment
 from alma_duplicate.domain.line_pairing import LinePairBuildResult
+from alma_duplicate.rules.line import LinePairEvaluation
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -17,8 +18,13 @@ class ContextEvaluation:
     criteria: tuple[CriterionResult, ...]
     branches: tuple[BranchAssessment, ...] = ()
     line_pairing: LinePairBuildResult | None = None
+    line_pairs: tuple[LinePairEvaluation, ...] = ()
 
     def __post_init__(self):
+        if ((self.line_pairing is None and self.line_pairs) or
+                (self.line_pairing is not None and
+                 tuple(p.attempt for p in self.line_pairs) != self.line_pairing.attempts)):
+            raise ValueError("Line evaluations must match the prepared attempts in order")
         if self.line_pairing is not None and self.line_pairing.candidate_context_id != self.candidate.context.context_id:
             raise ValueError("Line pairing belongs to another candidate context")
         if any(b.context_id != self.candidate.context.context_id for b in self.branches):
@@ -32,7 +38,7 @@ class EvaluationReport:
     search_result: CandidateSearchResult
     request_criteria: tuple[CriterionResult, ...]
     context_evaluations: tuple[ContextEvaluation, ...]
-    evaluation_version: str = field(default="4", init=False)
+    evaluation_version: str = field(default="5", init=False)
     execution: Literal["FINISHED"] = field(default="FINISHED", init=False)
     assessment: Literal["NOT_AGGREGATED"] = field(default="NOT_AGGREGATED", init=False)
 
@@ -41,7 +47,7 @@ class EvaluationReport:
 class SolarExemptionReport:
     """Request-level exemption: no candidate search or source coverage claim."""
     validation: "RequestValidationResult"
-    evaluation_version: str = field(default="4", init=False)
+    evaluation_version: str = field(default="5", init=False)
     execution: Literal["FINISHED"] = field(default="FINISHED", init=False)
     assessment: Literal["NOT_APPLICABLE"] = field(default="NOT_APPLICABLE", init=False)
 

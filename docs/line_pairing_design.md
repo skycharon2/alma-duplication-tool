@@ -2,7 +2,7 @@
 
 Status: request preparation, association-bound Archive mode evidence and pair
 builder implemented. Numerical FDM/coverage/resolution/RMS criteria and line
-aggregation remain in [PR 3](pr_plan_2026-09-21.md). Continuum has no mode dependency.
+aggregation are implemented in [PR 3](pr_plan_2026-09-21.md). Continuum has no mode dependency.
 
 ## Pair identity and ownership
 
@@ -31,7 +31,7 @@ of pair records a negative result when candidate reconstruction was unresolved.
 
 Optional `source_redshift` is in ProposedObservationRequest and the validator:
 finite numeric input, reject bool, require z > -1. It is preserved in raw/normalized
-reports; request/validation versions are 2/5. REST centres need z; absent z is
+reports; request/validation versions are 2/6. REST centres need z; absent z is
 missing evaluability information, not silently z=0. SKY centres remain direct.
 
 Reuse `ProposedWindow.center`, `correlator_mode`, `spectral_resolution` and
@@ -55,26 +55,19 @@ association values yield UNKNOWN. Never fall back to bandwidth, resolution or
 ObsCore `type`. This is the project's approved operational Archive UI mapping,
 not an assertion about every possible physical correlator configuration.
 
-## Numerical evaluator requirements (not implemented here)
+## Numerical evaluator integration
 
-1. Convert REST centre using nu_sky = nu_rest/(1+z), or retain declared SKY centre.
-2. LINE-FDM: proposed mode FDM and the exact candidate SPW operational mode FDM.
-3. LINE-COVERAGE: exact selected component interval includes nu_sky, endpoints inclusive.
-4. LINE-RESOLUTION-COMPATIBILITY: c * delta_nu / nu_sky <= planned delta_v.
-5. If coarser, LINE-RMS is blocked with ARCHIVE_RESOLUTION_COARSER_THAN_PLANNED;
-   it receives no computed pass/fail or fabricated finer resolution.
-6. Take the selected component's @10km/s estimate. Do not borrow a row scalar
-   unless its association is established explicitly.
-7. Compute sigma_at_plan = sigma10 * sqrt(10/dv_plan).
-8. Compute sigma_comp = sigma_at_plan * (theta_plan/theta_archive)^2.
-9. LINE-RMS is sigma_comp <= 2*sigma_plan, with ANGULAR remaining a separate rule.
+[`rules/line.py`](../src/alma_duplicate/rules/line.py) builds preparation once,
+resolves each reference and computes the four line criteria from that component.
+The [rules contract](rules.md#confirmed-archive-line-evaluation) owns formulas,
+method versions, dependency blocking and pair/context aggregation. The
+[report contract](evaluation_cli.md#line-pair-export-report-4--evaluation-5) owns
+the serialized pair results and intermediate units.
 
-Current outputs contain the reference, proposed sky frequency/planned resolution,
-mode provenance and preparation reasons. Future numerical outputs must add
-candidate resolution and both RMS intermediate values through that same reference.
-Preparation AVAILABLE means required preparation evidence exists, not FDM,
-coverage, resolution compatibility or duplication satisfied. A known TDM or
-out-of-band candidate is still a resolved pair. Pair AND/OR remains unimplemented.
+Preparation AVAILABLE means required evidence exists, not that FDM, coverage,
+resolution compatibility or duplication is satisfied. Known TDM and out-of-band
+candidates remain resolved attempts. Preparation is preserved alongside results;
+no numerical rule silently reclassifies or drops those attempts.
 
 ## Implemented builder and report states
 
@@ -117,17 +110,19 @@ theta_plan=.30 arcsec and theta_archive=.25 arcsec. Expected sigma_at_plan is
 The input is now executable at `examples/confirmed_line/request.json`. Its
 synthetic replay has one guide-B candidate and one out-of-band TDM candidate in
 the same execution but a different SPW. Both remain explicit pairing attempts;
-LINE status is still NOT_IMPLEMENTED. The old numeric specification's final
-RMS/branch values remain targets for PR 3, not passing results of this builder.
+the evaluator now returns CRITERIA_MET then CRITERIA_NOT_MET. The numerical
+specification is executable acceptance, separate from the builder's readiness states.
 
 ```bash
 python -m alma_duplicate.cli.evaluate \
   --request examples/confirmed_line/request.json \
   --archive-replay examples/confirmed_line/archive/manifest.json \
-  --output reports/line-pairing.json
+  --output reports/line-evaluation.json
 ```
 
 Expected: 2 retained/evaluated contexts, 1 shown; both associations RESOLVED;
 mode FDM then TDM; proposed sky frequency 225.134765625 GHz and planned
-resolution 20 km/s. No LINE-* criterion or RMS correction is computed.
-Regression owner: `tests/integration/test_line_preparation.py`.
+resolution 20 km/s. The first pair has six satisfied conditions and the two RMS
+values above. The second pair fails FDM and coverage. Both are evaluated despite
+one shown candidate. Numerical regression owner: `tests/integration/test_line_evaluation.py`;
+preparation regression owner: `tests/integration/test_line_preparation.py`.

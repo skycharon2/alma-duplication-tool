@@ -234,7 +234,7 @@ def test_distinct_spws_and_executions_do_not_pool_mode_counts():
         assert all(len(c.evidence.mode_evidence.observations) == 1 for c in contexts)
 
 
-def test_cli_guide_b_prepares_both_pairs_without_coverage_filter_or_line_verdict(
+def test_cli_guide_b_prepares_both_pairs_and_evaluates_line_without_filtering_pairs(
     tmp_path, monkeypatch
 ):
     import requests
@@ -257,7 +257,7 @@ def test_cli_guide_b_prepares_both_pairs_without_coverage_filter_or_line_verdict
         == 0
     )
     doc = json.loads(out.read_text())
-    assert doc["evaluation_version"] == "4"
+    assert doc["evaluation_version"] == "5"
     assert doc["request"]["normalized"]["model_version"] == "2"
     assert doc["evaluation_scope"]["shown_candidates"] == 1
     assert doc["evaluation_scope"]["evaluated_contexts"] == 2
@@ -269,7 +269,7 @@ def test_cli_guide_b_prepares_both_pairs_without_coverage_filter_or_line_verdict
         assert a["candidate_mode"]["operational_mode"] == mode
         assert a["proposed"]["sky_frequency_ghz"] == 225.134765625
         assert a["proposed"]["planned_resolution_kms"] == 20
-        assert row["branches"][0]["status"] == "NOT_IMPLEMENTED"
+        assert row["branches"][0]["status"] == ("CRITERIA_MET" if mode == "FDM" else "CRITERIA_NOT_MET")
     assert doc["assessment"] == "NOT_AGGREGATED"
 
 
@@ -377,7 +377,7 @@ def test_mixed_intents_keep_pair_preparation_and_branches_separate():
     for c in r.context_evaluations:
         assert c.line_pairing is not None
         assert [b.branch for b in c.branches] == ["CONTINUUM", "LINE"]
-        assert c.branches[1].status == "NOT_IMPLEMENTED"
+        assert c.branches[1].status == ("CRITERIA_MET" if c.line_pairing.attempts[0].candidate_mode.operational_mode == "FDM" else "CRITERIA_NOT_MET")
 
 
 def test_pair_result_enforces_context_and_window_identity():

@@ -70,7 +70,7 @@ individual spatial/angular predicate checks, and candidate-search orchestration.
 Archive continuum has five approved conditions and per-context three-valued branch aggregation. Queue methods retain their provisional status.
 An explicit post-search entry point evaluates them for every retained context,
 including rows hidden by the presentation limit. Same-request Archive+Queue replay
-is also available. Line computation and the browser form are not implemented; search-wide absence claims are intentionally not provided.
+is also available. Archive line computation and pair/context assessments are implemented. The browser form is not implemented; search-wide absence claims are intentionally not provided.
 
 | Axis / value | Current meaning | Does not establish |
 | --- | --- | --- |
@@ -84,7 +84,7 @@ is also available. Line computation and the browser form are not implemented; se
 | Plan `NOT_EXECUTED` | Declarative plan marker; execution is recorded separately by the service | Whether a service run has finished |
 | Service `FINISHED` | Orchestration ended; inspect each source and filter outcome | All sources succeeded, all filters ran or a duplication verdict |
 | Search assessment `NOT_EVALUATED` | Candidate-search stage made no formal assessment | A negative duplication verdict |
-| Evaluation assessment `NOT_AGGREGATED` | No search-wide verdict; inspect context branches for continuum results | Formal duplication or non-duplication |
+| Evaluation assessment `NOT_AGGREGATED` | No search-wide verdict; inspect context branches for independent continuum/LINE results | Formal duplication or non-duplication |
 
 The individual `OUTSIDE` or angular `NO_MATCH` result only concerns its explicit
 predicate. Missing/unresolved checks and source completeness must remain visible.

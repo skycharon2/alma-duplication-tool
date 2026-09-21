@@ -4,8 +4,8 @@ The [rules package](../src/alma_duplicate/rules/) implements the confirmed
 Archive fixed-target, single-point continuum branch: POS-SINGLE, ANGULAR,
 CONT-SETUP, CONT-FREQ and CONT-RMS. `intents` selects execution. Each coherent
 retained context gets a three-valued continuum assessment. Queue methods retain
-their independent provisional status; line has a reference-bound pair builder and input/mode preparation but
-no numerical evaluator. No search-wide absence verdict is produced.
+their independent provisional status. Archive LINE implements reference-bound
+FDM, coverage, resolution compatibility and RMS criteria, pair AND and context-local pair OR. No search-wide absence verdict is produced.
 
 ## Separate result dimensions (schema 2)
 
@@ -29,7 +29,7 @@ by itself does not confer approval. Confirmed wrappers select new approved metho
 `has_computed_outcome` describes calculation only.
 `eligible_for_formal_aggregation` additionally requires APPLICABLE and APPROVED.
 This is a necessary per-criterion gate, not a complete aggregation algorithm:
-the implemented continuum aggregator also checks coherent contexts and branch scope.
+both implemented branch aggregators also check coherent contexts and branch scope.
 It returns CRITERIA_MET, CRITERIA_NOT_MET or INDETERMINATE. Search completeness
 remains separate; a branch result does not establish a search-wide conclusion.
 
@@ -71,6 +71,56 @@ is recorded, remains provisional, and is not automatically applied to Archive
 windows. Its source-specific applicability still requires confirmation.
 See the central [scientific decision register](duplication_rule_inputs.md#7-scientific-decision-register);
 historical reported feedback remains preserved in [its evidence record](evidence/scientific_feedback.md).
+
+## Confirmed Archive line evaluation
+
+[`rules/line.py`](../src/alma_duplicate/rules/line.py) consumes the existing
+[preparation and reference contract](line_pairing_design.md) once per context.
+Every numerical value comes from `reference.resolve(request, context)` and its
+selected support component. No row-level sensitivity or resolution fallback is
+used; Queue mappings and mosaic/moving/TP remain outside this approved workflow.
+
+| Criterion | Method version | Inclusive condition / dependency |
+| --- | --- | --- |
+| LINE-FDM | `archive_line_fdm_1` | Both proposed mode and associated Archive operational mode are FDM; a known TDM is false; otherwise absent mode is unknown |
+| LINE-COVERAGE | `archive_line_coverage_1` | Exact component interval contains the prepared sky center, including both endpoints; no row frequency/bandwidth approximation |
+| LINE-RESOLUTION-COMPATIBILITY | `archive_line_resolution_compatibility_1` | `299792.458 * dnu_archive_GHz / nu_sky_GHz <= dv_plan_kms` |
+| LINE-RMS | `archive_line_rms_1` | Compatible resolution, same-component @10km/s estimate, associated requested RMS and both angular resolutions are required |
+
+LINE-RMS computes `sigma_at_plan = sigma10 * sqrt(10 / dv_plan_kms)`, then
+`sigma_comp = sigma_at_plan * (theta_plan / theta_archive)^2`, and checks
+`sigma_comp <= 2 * sigma_requested`. RMS is in mJy/beam and angles in arcsec.
+ANGULAR remains a separate condition. Coarse Archive resolution makes the
+resolution condition false but leaves LINE-RMS without an outcome or either
+computed RMS, with `ARCHIVE_RESOLUTION_COARSER_THAN_PLANNED`.
+Missing resolution similarly blocks RMS; missing RMS does not erase coverage.
+
+The numeric method `canonical_decimal_unit_scale_squared_rms_1` uses rational
+arithmetic over the decimal spellings of validated values and explicit unit
+conversion scales. It compares the squared RMS ratio to 4 exactly, without an
+epsilon. Square roots are calculated with a local 40-digit Decimal context for
+display only. This does not recover precision lost in parsing or prior request
+preparation, and performs no new frame transformation. Exact squared quantities
+are retained in details. A display value outside finite nonzero float range is
+null with `NUMERIC_DISPLAY_UNREPRESENTABLE`; the exact comparison remains valid.
+
+`LinePairEvaluation` retains the complete attempt/reference and six criteria:
+POS-SINGLE, ANGULAR and the four line conditions. `archive_line_pair_and_1`
+combines only eligible approved results within that one pair. A definite false
+AND unknown is false. Unapproved results supply unknown, never a formal true.
+
+`archive_line_context_or_1` ORs **whole pair results** within one coherent context:
+true OR unknown is true; false OR unknown is unknown. Different pairs cannot
+contribute different passing conditions. If proposed enumeration is incomplete,
+add an unknown alternative: a demonstrated positive remains positive, but all
+listed failures cannot establish a negative. An empty list is unknown even if
+marked complete. Unlinked/conflicting or unsupported contexts remain unknown.
+No OR across candidate contexts, sources or mixed intents is provided.
+
+All new methods use the existing [confirmation](evidence/supervisor_confirmation_2026-09-17.md#confirmed-2026-09-21).
+Numerical acceptance is in [line tests](../tests/integration/test_line_evaluation.py);
+preparation regressions remain in [preparation tests](../tests/integration/test_line_preparation.py).
+A context result does not establish retrieval completeness or a reviewed real-case label.
 
 ## Caller migration from schema 1
 
@@ -126,12 +176,12 @@ filter records and scientific values are not flattened or combined. Rule results
 must refer to that candidate's context ID. Programming errors propagate rather
 than being converted to scientific missing-evidence results.
 
-`evaluation_version="4"` versions orchestration; rule-result schema remains 2.
+`evaluation_version="5"` versions orchestration; rule-result schema remains 2.
 Report `execution="FINISHED"` means evaluation completed. In candidate reports,
 `assessment="NOT_AGGREGATED"` means no search-wide decision was made; inspect
-`context_evaluations[].branches` for the implemented continuum results. The
-nested search assessment stays NOT_EVALUATED. LINE returns NOT_IMPLEMENTED.
-An approved explicit failure can make a supported continuum AND branch false
+`context_evaluations[].branches` for independent continuum and LINE results. The
+nested search assessment stays NOT_EVALUATED. LINE pair results are in `line_pairs`.
+An approved explicit failure can make a supported continuum branch or line pair false
 even when another condition is unknown. Unapproved results do not supply formal
 truth. Empty results, source failure and filter exclusion never imply absence.
 

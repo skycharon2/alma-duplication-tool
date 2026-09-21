@@ -701,14 +701,10 @@ class _Validator:
                     "Smoothed resolution is absent.",
                     "LINE-RMS",
                 )
-            self.capability(
-                path, "Automatic sensitivity smoothing is not implemented.", "LINE-RMS"
-            )
-        if any(q and q.unit == "km/s" for q in (bandwidth, smoothing)):
-            self.capability(
-                path,
-                "Velocity width preserved; noise/frequency conversion is not implemented.",
-                "LINE-RMS",
+        if bandwidth is not None and bandwidth.unit == "km/s":
+            self.issue(
+                "EVIDENCE", "NOISE_BANDWIDTH_NOT_USED_BY_DIRECT_LINE_METHOD", path,
+                "Noise bandwidth is preserved; the confirmed line method uses planned resolution and component @10km/s RMS.",
             )
         return ProposedSensitivity(
             identifier,
@@ -1028,8 +1024,6 @@ def validate_proposed_observation(
         selected_rules.update({"CONT-FREQ", "CONT-RMS", "CONT-SETUP"})
     if "LINE" in intents:
         selected_rules.update({"LINE-COVERAGE", "LINE-RMS"})
-        if kind == "FIXED" and geometry == "SINGLE_POINTING":
-            v.capability("request.intents", "Line evaluation is not implemented.", "LINE")
         selected_rules.add("LINE")
 
     def is_unselected(issue):

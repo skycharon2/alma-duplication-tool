@@ -10,8 +10,8 @@ meeting dates require agreement; none are inferred from a report or code change.
 | Task | Current action | Scope |
 | --- | --- | --- |
 | Archive continuum | Implemented; inspect pinned CLI numerical and real-source replay results | Confirmed fixed, single-pointing scope |
-| Line request/pairing | Add redshift, planned resolution binding and accepted em_xel mode derivation | Engineering PR2; no new scientific prerequisite |
-| Line rules | Implement confirmed coverage, resolution and RMS workflow | Engineering PR3 |
+| Line request/pairing | Completed in PR #72: redshift, planned resolution binding and association-bound em_xel evidence; see [pairing contract](line_pairing_design.md) | Confirmed Archive preparation |
+| Line rules | Implemented confirmed numerical pair rules; review numerical acceptance and independent real-case labels | Engineering PR3; see [rules](rules.md#confirmed-archive-line-evaluation) |
 | Queue science mappings | Keep current provisional results; define source-specific mapping in later increment | Not covered by Archive confirmation |
 | Nominal bandwidth conversion | Preserve explicit provisional portal option; no arbitrary automatic mapping | Outside direct usable-width path |
 | Broader geometry/mixed setup | Separate later milestones | Mosaic, moving, TP and mixed setups excluded |
