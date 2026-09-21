@@ -18,7 +18,7 @@ class SearchReadiness(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class RequestIssue:
-    category: str  # ERROR, MISSING, CAPABILITY
+    category: str  # ERROR, MISSING, CAPABILITY, EVIDENCE
     code: str
     path: str
     message: str
@@ -142,7 +142,7 @@ class RequestValidationResult:
     search_options: SearchOptions | None
     issues: tuple[RequestIssue, ...]
     search_readiness: SearchReadiness
-    validation_version: str = "3"
+    validation_version: str = "4"
 
     @property
     def errors(self) -> tuple[RequestIssue, ...]:

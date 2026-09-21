@@ -35,7 +35,7 @@ def _candidate(context, name):
     return value, issues
 
 
-def _result(criterion, context, proposed, candidate, issues, ratio=None, limit=None):
+def _result(criterion, context, proposed, candidate, issues, ratio=None, limit=None, details=()):
     outcome = None if issues else (O.SATISFIED if ratio <= positive_canonical(limit) else O.NOT_SATISFIED)
     try:
         numeric = None if ratio is None else float(ratio)
@@ -45,7 +45,7 @@ def _result(criterion, context, proposed, candidate, issues, ratio=None, limit=N
         numeric = None
     return CriterionResult(
         criterion_id=criterion, policy_ref=f"{POLICY_DOCUMENT}, Spectral windows",
-        method_version=f"archive_{criterion.lower().replace('-', '_')}_1",
+        method_version=("archive_cont_rms_2" if criterion == "CONT-RMS" else "archive_cont_freq_1"),
         approval=MethodApproval.APPROVED,
         applicability=A.UNRESOLVED if issues else A.APPLICABLE,
         evaluation=E.INSUFFICIENT_INFORMATION if issues else E.EVALUATED,
@@ -53,7 +53,7 @@ def _result(criterion, context, proposed, candidate, issues, ratio=None, limit=N
         issues=tuple(issues), reasons=tuple(i.code for i in issues) if issues else
         ("WITHIN_INCLUSIVE_LIMIT" if outcome is O.SATISFIED else "EXCEEDS_LIMIT",),
         derived=(("factor", numeric), ("max_factor", limit)),
-        details=() if ratio is None else (("factor_exact", str(ratio)),),
+        details=details + (() if ratio is None else (("factor_exact", str(ratio)),)),
         decision_refs=(DECISION_REF,),
     )
 
@@ -86,9 +86,15 @@ def evaluate_continuum_rms(request, context):
     else:
         s = declarations[0]
         if (s.scope != "SETUP" or s.setup_id != request.setup_id or s.basis != "AGGREGATE"
-                or s.aggregate_path != "DIRECT_DECLARATION" or s.window_ids):
+                or s.aggregate_path != "DIRECT_DECLARATION"):
             issues.append(CriterionIssue(S.PROPOSED, "DIRECT_SETUP_AGGREGATE_RMS_REQUIRED",
                                          "request.sensitivities", "No channel/bandwidth conversion in this method"))
+        known_ids = {w.window_id for w in request.spectral_windows}
+        if (len(set(s.window_ids)) != len(s.window_ids)
+                or not set(s.window_ids) <= known_ids):
+            issues.append(CriterionIssue(S.PROPOSED, "INVALID_CONTRIBUTING_WINDOW_REFERENCE",
+                                         "request.sensitivities.window_ids",
+                                         "Contributing windows must be unique references within this setup"))
         if s.rms is not None:
             proposed = CriterionValue(s.rms.value, s.rms.unit, s.sensitivity_id,
                                       "PROPOSED_REQUESTED_AGGREGATE_RMS")
@@ -98,4 +104,6 @@ def evaluate_continuum_rms(request, context):
         if issue:
             issues.append(issue)
     ratio = None if issues else positive_canonical(candidate.value) / positive_canonical(proposed.value)
-    return _result("CONT-RMS", context, proposed, candidate, issues, ratio, 2.0)
+    return _result("CONT-RMS", context, proposed, candidate, issues, ratio, 2.0,
+                   tuple(("contributing_window_id", wid) for wid in declarations[0].window_ids)
+                   if len(declarations) == 1 else ())

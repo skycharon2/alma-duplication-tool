@@ -1,6 +1,5 @@
 # Evaluation CLI and JSON report
 
-**2026-09-21 update:** [Confirmed Archive continuum implementation](confirmed_continuum.md) adds candidate-side position, continuum frequency/RMS and branch assessments. Report/evaluation versions are 2/3. Queue methods retain their previous status; line pairing references are implemented, line rules are the next increment. Older provisional descriptions below apply to historical methods unless superseded by this update.
 
 
 Run from an installed development checkout:
@@ -32,7 +31,7 @@ a sidecar. It does not select any nominal-to-usable conversion. See the
 
 | Code | Meaning                                                                        |
 | ---- | ------------------------------------------------------------------------------ |
-| 0    | Report written; selected sources completed. Scientific limitations may remain. |
+| 0    | Report written; selected sources completed, or valid Solar request exempted. |
 | 2    | Invalid invocation/input, execution value error or report write failure.       |
 | 3    | Report written; at least one selected source is missing, failed or incomplete. |
 
@@ -45,15 +44,35 @@ Existing outputs require --overwrite. Report publication uses a temporary file
 in the destination directory and an atomic no-clobber link or replacement.
 The output must not replace either input file.
 
-## Report version 1
+## Report version 3
 
 The JSON contains the raw and normalized request, validation issues, input-byte
 SHA256, source plans, actual Archive query provenance, Queue snapshot provenance,
 all row filtering records, display omissions, request-level criteria and all
 retained context evaluations. Missing acquisition/run IDs remain missing.
 
-assessment remains NOT_AGGREGATED. The nested search-stage assessment remains
-NOT_EVALUATED. Criterion result and method versions are retained independently.
+Candidate reports have `report_kind=CANDIDATE_EVALUATION`; assessment remains
+NOT_AGGREGATED and search assessment remains NOT_EVALUATED. Continuum results
+are in `context_evaluations[].branches`. Rule result schema 2, evaluation version 3
+and method versions are independent. Request validation is now version 4:
+ERROR invalidates input; MISSING describes selected-branch/search requirements;
+CAPABILITY describes relevant unavailable methods; EVIDENCE preserves raw input
+limitations and unselected-branch notes without asserting a selected rule failed.
+UI consumers should show EVIDENCE separately from blocking/missing-input notices.
+
+Valid `target_kind=SUN` produces `report_kind=SOLAR_EXEMPTION` and
+`assessment=NOT_APPLICABLE`, with reason SOLAR_EXEMPT and a versioned confirmation
+reference. Search is NOT_EXECUTED, plan and search timestamps are null, sources
+are NOT_QUERIED and context counts are zero. These zeros are not a completed empty
+search. Neither position, radius nor selected sources is required for exemption;
+supplied malformed fields still fail validation. Source flags are ignored without
+opening files or creating clients. Input/output equality and no-clobber checks
+remain active. For Solar only, combining --archive-replay with --overwrite is
+rejected: replay response paths cannot be protected without opening the manifest.
+Use a new output path and omit --overwrite in that combination.
+
+Consumers of version 3 must switch on report_kind before accessing plan/source
+query fields. Historical reports are not rewritten.
 
 Non-finite scalars use an explicit object such as {"non_finite": "nan"} rather
 than invalid JSON numeric tokens or silent null substitution. Existing evidence
@@ -74,8 +93,8 @@ For same-request Archive and Queue replay, use `--archive-replay` with the
 [captured NGC6240 example](dual_source_replay.md). It is mutually exclusive with
 `--live-archive` and never falls back to a network query.
 
-Evaluation version 2 adds provisional `POS-SINGLE` for every retained context.
-The Queue method requires `--queue-candidate-beam`; other contexts report
-insufficient information. See [the method contract](pos_single.md).
+Evaluation version 3 selects branches by intent and adds the confirmed Archive
+continuum methods and context aggregation. The separate provisional Queue
+POS-SINGLE method requires `--queue-candidate-beam`. See [the method contract](pos_single.md).
 Per-source `filter_summary` counts are derived from processed row audits;
 excluded rows remain auditable and server-unreturned rows are outside the count.

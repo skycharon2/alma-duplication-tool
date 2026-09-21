@@ -1,6 +1,6 @@
 # Proposed observation input API
 
-Request model version: **1**. Validation report version: **3**.
+Request model version: **1**. Validation report version: **4**.
 
 Implements the request-side subset of
 [design 0.3](duplication_rule_inputs.md). No candidate search, policy verdict,
@@ -26,13 +26,18 @@ until its spatial prerequisites exist. READY means fixed single-pointing ICRS
 position, explicit valid radius and at least one selected source. It does not
 mean every predicate is executable, a query was performed or a rule is satisfied.
 MOVING/MOSAIC return UNSUPPORTED without degrading into fixed single pointing;
-SUN returns NOT_APPLICABLE when no input errors exist.
+SUN returns NOT_APPLICABLE when no input errors exist. Radius and source selection
+are not required for SUN; the CLI exports exemption without data-source access.
 
-Issues have category ERROR/MISSING/CAPABILITY, code, path, message, optional
-rule ID and side PROPOSED/METHOD. No CANDIDATE-side claims are emitted. A rest
-frequency is valid preserved evidence with a conversion limitation; an unsupported
-RMS unit such as K is an input error. Method notices are restricted to supplied
-rest/velocity/smoothing/conversion inputs and requested continuum applicability.
+Issues have category ERROR/MISSING/CAPABILITY/EVIDENCE, code, path, message,
+optional rule ID and side PROPOSED/METHOD. No CANDIDATE-side claims are emitted.
+ERROR covers malformed supplied input even for an unselected branch. MISSING
+covers selected-branch/search prerequisites; CAPABILITY identifies relevant
+unimplemented methods (including the selected line evaluator). EVIDENCE preserves
+raw provenance limitations and unselected-branch notes, with no active rule ID.
+REST frequencies and unknown frames remain raw evidence notes; selected continuum
+requires a representative SKY kind. UNKNOWN frame alone does not contradict the
+confirmed CONT-FREQ comparison. Unsupported RMS units such as K remain errors.
 There are no EVALUABLE or duplicate flags in this API.
 
 ## Wire format
@@ -114,8 +119,10 @@ comparison. Both reasons can coexist and neither blocks spatial search.
 
 No continuum qualifying count or line-match conclusion is computed here.
 Enumeration completeness does not block search. Incomplete line lists explicitly
-cannot support exhaustive negatives. Width interpretation remains a METHOD
-limitation; this is not a demand that the user populate more fields.
+cannot support exhaustive negatives. Width qualification is implemented in the
+rule layer; validation no longer emits an unconditional unimplemented-method
+warning. A derived BOUNDS interval is available width evidence, whose semantics
+are still interpreted by CONT-SETUP.
 
 Sensitivity basis is AGGREGATE/NATIVE_CHANNEL/SMOOTHED/UNKNOWN. Scope is
 SETUP/WINDOW/UNRESOLVED. WINDOW requires one existing ID; SETUP requires the actual
@@ -123,7 +130,8 @@ setup ID and is used for continuum, with optional contributor IDs. Missing scope
 is preserved as UNRESOLVED; dangling IDs or incompatible scope/basis are errors.
 AGGREGATE requires DIRECT_DECLARATION or CONVERT_FROM_REFERENCE to prevent
 misinterpreting a reference RMS as an already-converted value. DIRECT_DECLARATION
-does not require noise width or contributor list. Conversion retains the reference
+does not require noise width or contributor list. When contributors are supplied,
+unique valid subset or complete-window references are accepted by CONT-RMS. Conversion retains the reference
 RMS and reports absent bandwidths/method; it produces no converted RMS.
 
 LINE requests report a request-side missing-RMS notice for each listed window

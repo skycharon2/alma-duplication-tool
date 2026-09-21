@@ -10,6 +10,7 @@ from alma_duplicate.clients.queue_csv_client import QueueCsvClient
 from alma_duplicate.reporting import json_value, report_document, write_report
 from alma_duplicate.request_validation import validate_proposed_observation
 from alma_duplicate.rules.evaluation import evaluate_candidate_search
+from alma_duplicate.rules.evaluation_model import SolarExemptionReport
 
 
 def _reject_constant(value):
@@ -67,6 +68,18 @@ def main(argv=None, *, archive_client_factory=None):
         validated = validate_proposed_observation(
             payload["request"], payload["search_options"]
         )
+        if validated.is_valid and validated.request.target_kind == "SUN":
+            # No client, replay manifest or Queue file is opened for an exempt request.
+            # Without reading a replay manifest, its referenced response paths are unknown.
+            if args.overwrite and args.archive_replay is not None:
+                raise ValueError("Solar exemption with --archive-replay requires a new output (no --overwrite)")
+            document = report_document(
+                SolarExemptionReport(validation=validated),
+                input_sha256=hashlib.sha256(raw).hexdigest(),
+            )
+            write_report(args.output, document, overwrite=args.overwrite)
+            print(f"Solar exemption report written: {args.output}")
+            return 0
         if not validated.is_valid or not validated.can_search:
             print(json.dumps({
                 "error": "REQUEST_NOT_SEARCH_READY",

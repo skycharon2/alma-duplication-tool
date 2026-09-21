@@ -44,7 +44,7 @@ def test_guide_A_cli_full_pipeline(tmp_path,monkeypatch):
     assert main(['--request',str(EXAMPLE/'request.json'),'--archive-replay',
                  str(EXAMPLE/'archive/manifest.json'),'--output',str(out)])==0
     d=json.loads(out.read_text())
-    assert d['report_version']=='2' and d['evaluation_version']=='3'
+    assert d['report_version']=='3' and d['evaluation_version']=='3'
     assert d['assessment']=='NOT_AGGREGATED'
     assert d['evaluation_scope']['total_retained']==d['evaluation_scope']['evaluated_contexts']==4
     assert d['evaluation_scope']['shown_candidates']==1

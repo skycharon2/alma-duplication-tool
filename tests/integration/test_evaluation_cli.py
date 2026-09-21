@@ -118,7 +118,7 @@ def test_module_runs_from_another_working_directory(tmp_path):
         "--output", str(output),
     ], cwd=tmp_path, env=env, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
-    assert json.loads(output.read_text())["report_version"] == "2"
+    assert json.loads(output.read_text())["report_version"] == "3"
 
 
 def test_spatial_report_does_not_repeat_whole_source_records():

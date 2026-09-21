@@ -1,6 +1,5 @@
 # Runtime architecture
 
-**2026-09-21 update:** [Confirmed Archive continuum implementation](confirmed_continuum.md) adds candidate-side position, continuum frequency/RMS and branch assessments. Report/evaluation versions are 2/3. Queue methods retain their previous status; line pairing references are implemented, line rules are the next increment. Older provisional descriptions below apply to historical methods unless superseded by this update.
 
 
 This is a navigation map of implemented boundaries, not another field schema.
@@ -15,15 +14,18 @@ The [object index](data_model.md) links definitions and the
 | Association | Reconstruction and comparison construction retain row/component or real Queue associations, including alternatives. Member grouping does not authorize mixing them. |
 | Search execution | Candidate search orchestrates source calls, binding, local selectors and independent execution reports; failed or incomplete sources remain visible. |
 | Presentation | Grouping organizes candidate rows for display while retaining their contexts and filter records. |
-| Criteria | ANGULAR, CONT-SETUP and [Queue POS-SINGLE](pos_single.md) are separately callable provisional functions. An explicit evaluation entry point runs them after search; they do not produce an aggregate verdict. |
+| Criteria | Five approved Archive continuum conditions feed per-context branch aggregation. Queue retains independent provisional methods; line references exist but numerical evaluation is pending. |
 
 The [evaluation entry point](../src/alma_duplicate/rules/evaluation.py) takes the
-original plan request, evaluates CONT-SETUP once and ANGULAR plus POS-SINGLE for each retained
-context, including candidates hidden by the display limit. It keeps the search
+original plan request and selects branches by intents. For CONTINUUM it evaluates
+CONT-SETUP once and four candidate conditions for every retained context, including
+candidates hidden by the display limit. It keeps the search
 result and candidate objects intact. The [rule contract](rules.md) specifies
 computation, outcome, applicability, approval and multi-side diagnostics.
 A successful search, a display group and an approved criterion remain different
-objects with different completeness requirements. Formal aggregation is pending.
+objects with different completeness requirements. Continuum context aggregation is implemented; search-wide conclusions are not.
+Valid SUN requests exit through a typed request-level exemption before search;
+no source clients or replay loaders are invoked.
 
 ## Dependencies and focused follow-up
 
@@ -35,8 +37,8 @@ minimum/maximum compatibility matrix; changing bounds needs separate validation.
 No Web framework is selected by this change.
 
 ANGULAR and CONT-SETUP share exact canonical-scalar arithmetic. POS-SINGLE
-uses the versioned spherical floating-point calculation and boundary guard
-documented in [its contract](pos_single.md).
+uses spherical floating-point geometry: Archive has an inclusive <= boundary;
+legacy Queue preserves the boundary behavior documented in [its contract](pos_single.md).
 Other dependency work is explicitly deferred: move scalar execution out of
 planning, extract common spherical helpers from spatial/beam code, and isolate
 the source-scoped bandwidth mapping currently imported from Queue normalization.

@@ -1,0 +1,11 @@
+{
+  "request": {
+    "target_kind": "SUN",
+    "geometry": "SINGLE_POINTING",
+    "setup_id": "solar",
+    "intents": [
+      "CONTINUUM"
+    ]
+  },
+  "search_options": {}
+}
