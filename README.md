@@ -1,5 +1,8 @@
 # ALMA Duplication Check Tool
 
+**2026-09-21 update:** [Confirmed Archive continuum implementation](docs/confirmed_continuum.md) adds candidate-side position, continuum frequency/RMS and branch assessments. Report/evaluation versions are 2/3. Queue methods retain their previous status; line pairing references are implemented, line rules are the next increment. Older provisional descriptions below apply to historical methods unless superseded by this update.
+
+
 A decision-support tool for discovering existing or planned ALMA observations
 and explaining potential duplication. The intended workflow accepts a proposed
 observation, retrieves Archive and Queue candidates, and evaluates applicable

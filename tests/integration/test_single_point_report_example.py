@@ -31,7 +31,7 @@ def test_serializable_report_preserves_provenance_and_provisional_boundary():
         assert item.candidate.context.reference.source_record_id
         assert item.criteria[0].criterion_id == "ANGULAR"
         assert item.criteria[0].context_id == item.candidate.context.context_id
-        assert not item.criteria[0].eligible_for_formal_aggregation
+        assert item.criteria[0].eligible_for_formal_aggregation == (item.candidate.context.reference.source == "ARCHIVE")
     for item in decoded["context_evaluations"]:
         assert item["reference"]["source"] in {"ARCHIVE", "QUEUE"}
-        assert item["criteria"][0]["approval"] == "PROVISIONAL"
+        assert item["criteria"][0]["approval"] == ("APPROVED" if item["reference"]["source"] == "ARCHIVE" else "PROVISIONAL")

@@ -10,6 +10,9 @@ from alma_duplicate.rules.position_single import evaluate_position_single
 from alma_duplicate.rules.angular import evaluate_angular_resolution
 from alma_duplicate.rules.continuum_setup import evaluate_continuum_setup
 from alma_duplicate.rules.evaluation_model import ContextEvaluation, EvaluationReport
+from alma_duplicate.rules.confirmed import approve_angular, approve_setup, archive_scope
+from alma_duplicate.rules.continuum import evaluate_continuum_frequency, evaluate_continuum_rms
+from alma_duplicate.rules.aggregation import aggregate_continuum, BranchAssessment, Truth
 
 
 def _check_search(result: CandidateSearchResult) -> None:
@@ -40,20 +43,39 @@ def _check_search(result: CandidateSearchResult) -> None:
 def evaluate_candidate_search(
     search_result: CandidateSearchResult, *, nominal_conversion: str | None = None,
 ) -> EvaluationReport:
-    """CONT-SETUP once; ANGULAR and POS-SINGLE for each retained context, including hidden rows.
+    """Evaluate selected branches for every retained context, including hidden rows.
 
 Failed/incomplete sources remain in the original report. Their absence never
-becomes a negative criterion result. All current evaluators remain provisional.
+becomes a negative criterion result. Queue mappings retain their original approval.
 Programming/contract errors propagate; they are not scientific missing evidence.
 """
     _check_search(search_result)
     request = search_result.plan.validation.request
-    setup = evaluate_continuum_setup(request, nominal_conversion=nominal_conversion)
-    contexts = tuple(
-        ContextEvaluation(candidate=row, criteria=(evaluate_angular_resolution(request, row.context),
-            evaluate_position_single(request, row.context, row.spatial_evidence)))
-        for source in (search_result.archive, search_result.queue)
-        for row in source.retained_rows
-    )
-    return EvaluationReport(search_result=search_result, request_criteria=(setup,),
-                            context_evaluations=contexts)
+
+    continuum = "CONTINUUM" in request.intents
+    setup = (approve_setup(evaluate_continuum_setup(request, nominal_conversion=nominal_conversion),
+                           nominal_conversion=nominal_conversion) if continuum else None)
+    contexts = []
+    for source in (search_result.archive, search_result.queue):
+        for row in source.retained_rows:
+            context = row.context
+            criteria = []
+            branches = []
+            if request.intents:
+                criteria.extend((approve_angular(evaluate_angular_resolution(request, context), request, context),
+                                 evaluate_position_single(request, context, row.spatial_evidence)))
+            if continuum:
+                criteria.extend((evaluate_continuum_frequency(request, context),
+                                 evaluate_continuum_rms(request, context)))
+                supported = (archive_scope(request, context) and
+                    context.evidence.prepared.normalized_metadata.is_mosaic.value is False and
+                    not {"UNIQUE_INTERFEROMETRIC_DIAMETER_REQUIRED",
+                         "CONFLICTING_POSITION_INTERPRETATION"}.intersection(criteria[1].reasons))
+                branches.append(aggregate_continuum(context, (setup, *criteria), supported=supported))
+            if "LINE" in request.intents:
+                branches.append(BranchAssessment("LINE", context.context_id, "NOT_IMPLEMENTED", Truth.UNKNOWN,
+                    ("POS-SINGLE", "ANGULAR", "LINE-FDM", "LINE-COVERAGE", "LINE-RESOLUTION-COMPATIBILITY", "LINE-RMS"),
+                    ("LINE_RULES_NOT_IMPLEMENTED",)))
+            contexts.append(ContextEvaluation(candidate=row, criteria=tuple(criteria), branches=tuple(branches)))
+    return EvaluationReport(search_result=search_result, request_criteria=() if setup is None else (setup,),
+                            context_evaluations=tuple(contexts))

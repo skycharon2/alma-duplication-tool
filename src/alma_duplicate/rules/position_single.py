@@ -1,4 +1,4 @@
-"""Provisional Queue candidate-side single-field coverage; see docs/pos_single.md."""
+"""Dispatch confirmed Archive and provisional Queue single-field position methods."""
 from alma_duplicate.domain.spatial import SpatialStatus as S
 from alma_duplicate.primary_beam import BOUNDARY_TOLERANCE_DEG, covers
 from alma_duplicate.queue_position import candidate_coverage, PROFILE, SOURCE_REF
@@ -13,6 +13,9 @@ METHOD_VERSION = "queue_pos_single_1"
 
 def evaluate_position_single(request, context, spatial_evidence):
     """Consume typed position evidence, never search filter outcomes or raw CSV."""
+    if context.reference.source == "ARCHIVE":
+        from alma_duplicate.rules.archive_position import evaluate_archive_position
+        return evaluate_archive_position(request, context, spatial_evidence)
     reasons = ()
     coverage = None
     if request.target_kind != "FIXED" or request.geometry != "SINGLE_POINTING" or request.position is None:

@@ -35,7 +35,7 @@ def test_both_sources_keep_candidate_identity_filters_and_provenance():
         assert evaluation.candidate is candidate
         assert evaluation.criteria[0].context_id == candidate.context.context_id
         assert evaluation.criteria[0].criterion_id == 'ANGULAR'
-        assert not evaluation.criteria[0].eligible_for_formal_aggregation
+        assert evaluation.criteria[0].eligible_for_formal_aggregation == (candidate.context.reference.source == 'ARCHIVE')
     assert report.assessment == 'NOT_AGGREGATED'
     assert search.assessment == 'NOT_EVALUATED'
 

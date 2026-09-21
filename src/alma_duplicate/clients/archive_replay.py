@@ -45,7 +45,9 @@ class RecordedArchiveClient:
                 raise ValueError(f'Archive replay checksum mismatch: {name}')
             self._responses.append((entry, data))
         self.metadata = {
-            'mode': 'OFFLINE_REPLAY', 'manifest_sha256': hashlib.sha256(raw).hexdigest(),
+            'mode': 'OFFLINE_REPLAY',
+            'fixture_kind': manifest.get('fixture_kind', 'CAPTURED_TAP_RESPONSE'),
+            'manifest_sha256': hashlib.sha256(raw).hexdigest(),
             'capture_started_at': manifest['started_at'],
             'capture_finished_at': manifest['finished_at'],
             'response_sha256': [entry['sha256'] for entry, _ in self._responses],

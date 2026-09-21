@@ -7,19 +7,20 @@ replace the register or approve a method.
 Owners and dates below are deliberately unassigned. Proposed assignments and
 meeting dates require agreement; none are inferred from a report or code change.
 
-| Item | Material needed for closure | Follow-up owner | Scientific reviewer | Next review |
-| --- | --- | --- | --- | --- |
-| ANGULAR mapping | Confirm proposed requested resolution versus Archive spatial_resolution estimate and Queue requested resolution; record scope and boundary examples | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
-| Q1 | Confirm Archive candidate frequency/array mapping, supported geometry scope, beam-radius boundary behavior and whether excluded rows need criterion evaluation | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
-| Q2 | Confirm usable-width interpretation and the evidence needed to apply a nominal-to-usable mapping to a particular proposed configuration | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
-| Q3 | Choose the proposal-side continuum comparison frequency role first; then define participating windows, averaging if applicable, completeness, identity deduplication and compatible references | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
-| Q4 | Decide whether the helper-script square-root scaling may be a named provisional method; define its applicable noise-bandwidth, smoothing, polarization and beam domain | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
-| Q5 | Confirm the directional RMS truth table and whether Queue requested RMS can be compared with Archive estimated sensitivity, including equality and worse-sensitivity cases | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
-| Q6 | Identify a reproducible machine-readable Archive path for the documented Frequency Support `Type` (or equivalent approved mode evidence), bind it to the exact SPW and define missing/association failure behavior | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
-| Q7 | Confirm the scientific display/assessment grouping unit and special-policy scope; keep reproduced retrieval/entry counts separate from any approved duplicate labels | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
-| Q8 | Confirm the unit of one assessment for multiple setups and the three-valued branch/context truth table, including failed-branch plus unknown-branch cases | UNASSIGNED | UNASSIGNED | UNSCHEDULED |
+| Task | Current action | Scope |
+| --- | --- | --- |
+| Archive continuum | Implemented; inspect pinned CLI numerical and real-source replay results | Confirmed fixed, single-pointing scope |
+| Line request/pairing | Add redshift, planned resolution binding and accepted em_xel mode derivation | Engineering PR2; no new scientific prerequisite |
+| Line rules | Implement confirmed coverage, resolution and RMS workflow | Engineering PR3 |
+| Queue science mappings | Keep current provisional results; define source-specific mapping in later increment | Not covered by Archive confirmation |
+| Nominal bandwidth conversion | Preserve explicit provisional portal option; no arbitrary automatic mapping | Outside direct usable-width path |
+| Broader geometry/mixed setup | Separate later milestones | Mosaic, moving, TP and mixed setups excluded |
 
-Before changing a method from PROVISIONAL to APPROVED, record:
+The current source of approval is the
+[2026-09-21 confirmation](evidence/supervisor_confirmation_2026-09-17.md).
+The old Q1–Q8 confirmation checklist is superseded for that scope.
+
+For future methods outside the recorded confirmation, record:
 
 1. The answer, source, date and identifiable decision reference.
 2. Applicable configurations and explicitly excluded cases.

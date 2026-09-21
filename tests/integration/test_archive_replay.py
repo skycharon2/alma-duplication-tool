@@ -46,7 +46,10 @@ def test_real_dual_source_cli_no_network(tmp_path,monkeypatch):
     archive=[c for c in contexts if c['reference']['source']=='ARCHIVE']
     queue=[c for c in contexts if c['reference']['source']=='QUEUE']
     assert len(archive) == 144 and len(queue) == 13
-    assert all(c['criteria'][1]['outcome'] is None and c['criteria'][1]['issues'] for c in archive)
+    assert any(c['criteria'][1]['outcome'] is not None for c in archive)
+    assert all(c['criteria'][1]['method_version'] == 'archive_pos_single_1' for c in archive)
+    assert all(c['criteria'][3]['outcome'] is None for c in archive)  # no proposed RMS
+    assert all(c['branches'][0]['status'] != 'CRITERIA_MET' for c in archive)
     assert queue[0]['criteria'][1]['outcome'] == 'SATISFIED'
     assert a['filter_summary']['predicates'][0]['outcomes']=={'MATCH':96,'NOT_EVALUATED':48}
     assert q['filter_summary']['predicates'][0]['outcomes']=={'MATCH':1,'NOT_EVALUATED':12}
