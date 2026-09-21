@@ -1,0 +1,2157 @@
+{
+  "catalog_version": "1",
+  "cases": [
+    {
+      "case_id": "guide-a",
+      "evidence_kind": "SYNTHETIC_NUMERICAL",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "../confirmed_continuum/request.json",
+          "sha256": "47a3b5fe24d4da1739b20f79d60ed0fd9d231d613ef76f6879f260268a5ce78a"
+        },
+        "archive_replay": {
+          "path": "../confirmed_continuum/archive/manifest.json",
+          "sha256": "25de8fb10fd23aca46576710aa8bccc991acb903a1d4284f77c8dff12011aa4e"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_values.md",
+          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+        }
+      },
+      "queue_candidate_beam": false,
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent reference ledger: Guide A arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent reference ledger: Guide A arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 4,
+          "reference": "Independent reference ledger: Guide A arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 4,
+          "reference": "Independent reference ledger: Guide A arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide A arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent reference ledger: Guide A arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-confirmed-guide-A-v1:00000000",
+          "reference": "Independent reference ledger: Guide A arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent reference ledger: Guide A arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent reference ledger: Guide A arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "INDETERMINATE",
+          "reference": "Independent reference ledger: Guide A arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent reference ledger: Guide A arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "component_index"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide A arithmetic"
+        }
+      ]
+    },
+    {
+      "case_id": "guide-b",
+      "evidence_kind": "SYNTHETIC_NUMERICAL",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "../confirmed_line/request.json",
+          "sha256": "788913adcf820eece71324f755d9d7036b2e8874d934f7a9efe071558cf7f3b2"
+        },
+        "archive_replay": {
+          "path": "../confirmed_line/archive/manifest.json",
+          "sha256": "8d8f7d1294df4e5c0a97f3a723f0a76055eae35ee261a1bd95c72d8f1cc93156"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_values.md",
+          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+        }
+      },
+      "queue_candidate_beam": false,
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 2,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 2,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-guide-B-pairing-v1:00000000",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_association"
+          ],
+          "equals": {
+            "context": {
+              "member_ous_uid": "uid://SYNTHETIC/Xguide/X0",
+              "asdm_uid": "uid://SYNTHETIC/Xexecution/X0",
+              "source_name": "GuideB"
+            },
+            "spw_token": "0",
+            "spw_index": 0
+          },
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_component",
+            "component_index"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            0,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            1,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            5,
+            1
+          ],
+          "equals": 0.282842712474619,
+          "reference": "Independent reference ledger: Guide B arithmetic",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            6,
+            1
+          ],
+          "equals": 0.4072935059634514,
+          "reference": "Independent reference ledger: Guide B arithmetic",
+          "absolute_tolerance": 1e-13
+        }
+      ]
+    },
+    {
+      "case_id": "missing-line-rms",
+      "evidence_kind": "SYNTHETIC_NUMERICAL",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/missing-line-rms.json",
+          "sha256": "1fad6b389c47648c68a7562a6a72bccfd8b9e5e63bfc1e8194b472da7f9629be"
+        },
+        "archive_replay": {
+          "path": "../confirmed_line/archive/manifest.json",
+          "sha256": "8d8f7d1294df4e5c0a97f3a723f0a76055eae35ee261a1bd95c72d8f1cc93156"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_values.md",
+          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+        }
+      },
+      "queue_candidate_beam": false,
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 2,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 2,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-guide-B-pairing-v1:00000000",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "INDETERMINATE",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_association"
+          ],
+          "equals": {
+            "context": {
+              "member_ous_uid": "uid://SYNTHETIC/Xguide/X0",
+              "asdm_uid": "uid://SYNTHETIC/Xexecution/X0",
+              "source_name": "GuideB"
+            },
+            "spw_token": "0",
+            "spw_index": 0
+          },
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_component",
+            "component_index"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": null,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        }
+      ]
+    },
+    {
+      "case_id": "coarse-line-resolution",
+      "evidence_kind": "SYNTHETIC_NUMERICAL",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/coarse-line-resolution.json",
+          "sha256": "7abb2ccabd3a475a7560f9219cc6f6dcc2c05ffd3bf0f9360f8a4c3f447f3329"
+        },
+        "archive_replay": {
+          "path": "../confirmed_line/archive/manifest.json",
+          "sha256": "8d8f7d1294df4e5c0a97f3a723f0a76055eae35ee261a1bd95c72d8f1cc93156"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_values.md",
+          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+        }
+      },
+      "queue_candidate_beam": false,
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 2,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 2,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-guide-B-pairing-v1:00000000",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_association"
+          ],
+          "equals": {
+            "context": {
+              "member_ous_uid": "uid://SYNTHETIC/Xguide/X0",
+              "asdm_uid": "uid://SYNTHETIC/Xexecution/X0",
+              "source_name": "GuideB"
+            },
+            "spw_token": "0",
+            "spw_index": 0
+          },
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_component",
+            "component_index"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": null,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            5,
+            1
+          ],
+          "equals": null,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "reasons"
+          ],
+          "equals": [
+            "ARCHIVE_RESOLUTION_COARSER_THAN_PLANNED"
+          ],
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        }
+      ]
+    },
+    {
+      "case_id": "multiple-line-windows",
+      "evidence_kind": "SYNTHETIC_NUMERICAL",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/multiple-line-windows.json",
+          "sha256": "4fadc38367c35bc5a2c79798ee3e79e8a0498a9c1379382ffac35c4b996efe35"
+        },
+        "archive_replay": {
+          "path": "../confirmed_line/archive/manifest.json",
+          "sha256": "8d8f7d1294df4e5c0a97f3a723f0a76055eae35ee261a1bd95c72d8f1cc93156"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_values.md",
+          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+        }
+      },
+      "queue_candidate_beam": false,
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 2,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 2,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-guide-B-pairing-v1:00000000",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_association"
+          ],
+          "equals": {
+            "context": {
+              "member_ous_uid": "uid://SYNTHETIC/Xguide/X0",
+              "asdm_uid": "uid://SYNTHETIC/Xexecution/X0",
+              "source_name": "GuideB"
+            },
+            "spw_token": "0",
+            "spw_index": 0
+          },
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_component",
+            "component_index"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            0,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            1,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            5,
+            1
+          ],
+          "equals": 0.282842712474619,
+          "reference": "Independent reference ledger: Guide B arithmetic",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            6,
+            1
+          ],
+          "equals": 0.4072935059634514,
+          "reference": "Independent reference ledger: Guide B arithmetic",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            1,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            1,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            1,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        }
+      ]
+    },
+    {
+      "case_id": "mixed-intents",
+      "evidence_kind": "SYNTHETIC_NUMERICAL",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/mixed-intents.json",
+          "sha256": "864e26200ebd5594d2b493f35474113b9672514efd08a8b440a6243288198917"
+        },
+        "archive_replay": {
+          "path": "../confirmed_line/archive/manifest.json",
+          "sha256": "8d8f7d1294df4e5c0a97f3a723f0a76055eae35ee261a1bd95c72d8f1cc93156"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_values.md",
+          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+        }
+      },
+      "queue_candidate_beam": false,
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 2,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 2,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-guide-B-pairing-v1:00000000",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            1,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            1,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_association"
+          ],
+          "equals": {
+            "context": {
+              "member_ous_uid": "uid://SYNTHETIC/Xguide/X0",
+              "asdm_uid": "uid://SYNTHETIC/Xexecution/X0",
+              "source_name": "GuideB"
+            },
+            "spw_token": "0",
+            "spw_index": 0
+          },
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_component",
+            "component_index"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            0,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            1,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            5,
+            1
+          ],
+          "equals": 0.282842712474619,
+          "reference": "Independent reference ledger: Guide B arithmetic",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            6,
+            1
+          ],
+          "equals": 0.4072935059634514,
+          "reference": "Independent reference ledger: Guide B arithmetic",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            1,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            1,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            1,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        }
+      ]
+    },
+    {
+      "case_id": "ngc6240-line-diagnostic",
+      "evidence_kind": "HYBRID_DIAGNOSTIC",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/ngc6240-line-diagnostic.json",
+          "sha256": "e7a82007a5983e227b4edf52130acef9fb90b95f4108828e6ba25c7a26152797"
+        },
+        "archive_replay": {
+          "path": "../../tests/fixtures/archive/ngc6240/manifest.json",
+          "sha256": "59a26d2bba46d4636f0e0d66696d409109d0f20284fadbb9b800138d77246dd4"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_values.md",
+          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+        },
+        "queue_csv": {
+          "path": "../../tests/fixtures/queue/queue_pipeline_v1.csv",
+          "sha256": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc"
+        }
+      },
+      "queue_candidate_beam": true,
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 157,
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 157,
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "inspection",
+            "branch_counts"
+          ],
+          "equals": [
+            {
+              "source": "ARCHIVE",
+              "branch": "LINE",
+              "status": "CRITERIA_NOT_MET",
+              "count": 96
+            },
+            {
+              "source": "ARCHIVE",
+              "branch": "LINE",
+              "status": "INDETERMINATE",
+              "count": 48
+            },
+            {
+              "source": "QUEUE",
+              "branch": "LINE",
+              "status": "INDETERMINATE",
+              "count": 13
+            }
+          ],
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "request",
+            "normalized",
+            "angular_resolution",
+            "value"
+          ],
+          "equals": 0.5,
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            8,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_association"
+          ],
+          "equals": {
+            "context": {
+              "member_ous_uid": "uid://A001/X5a3/X18c",
+              "asdm_uid": "uid://A002/Xb4da9a/X69a",
+              "source_name": "ngc6240"
+            },
+            "spw_token": "25",
+            "spw_index": 25
+          },
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            8,
+            "reference",
+            "component_index"
+          ],
+          "equals": 2,
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            8,
+            "line_pairs",
+            0,
+            "criteria",
+            0,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            8,
+            "line_pairs",
+            0,
+            "criteria",
+            1,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            8,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            8,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            8,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            8,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            8,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            0,
+            1
+          ],
+          "equals": 2.5813058341768045,
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope",
+          "absolute_tolerance": 1e-12
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            8,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            5,
+            1
+          ],
+          "equals": 0.9899494936611665,
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope",
+          "absolute_tolerance": 1e-12
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            8,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            6,
+            1
+          ],
+          "equals": 1.0310278394309027,
+          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope",
+          "absolute_tolerance": 1e-12
+        }
+      ]
+    },
+    {
+      "case_id": "source-not-provided",
+      "evidence_kind": "SOURCE_FAILURE_ENGINEERING",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/source-not-provided.json",
+          "sha256": "074e6f1721f1d4cfceb11d676a4cbc6e314d81621d140ae509c58820b7a1437c"
+        },
+        "archive_replay": {
+          "path": "../confirmed_line/archive/manifest.json",
+          "sha256": "8d8f7d1294df4e5c0a97f3a723f0a76055eae35ee261a1bd95c72d8f1cc93156"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_values.md",
+          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+        }
+      },
+      "queue_candidate_beam": false,
+      "expected_exit_code": 3,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 2,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 2,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-guide-B-pairing-v1:00000000",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_association"
+          ],
+          "equals": {
+            "context": {
+              "member_ous_uid": "uid://SYNTHETIC/Xguide/X0",
+              "asdm_uid": "uid://SYNTHETIC/Xexecution/X0",
+              "source_name": "GuideB"
+            },
+            "spw_token": "0",
+            "spw_index": 0
+          },
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_component",
+            "component_index"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            0,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            1,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            5,
+            1
+          ],
+          "equals": 0.282842712474619,
+          "reference": "Independent reference ledger: Guide B arithmetic",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            6,
+            1
+          ],
+          "equals": 0.4072935059634514,
+          "reference": "Independent reference ledger: Guide B arithmetic",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "status"
+          ],
+          "equals": "NOT_PROVIDED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        }
+      ]
+    },
+    {
+      "case_id": "ngc6240-continuum",
+      "evidence_kind": "REAL_CAPTURE_ENGINEERING",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "../dual_source/request.json",
+          "sha256": "e49edf2971bf24b0a51fd2ff0cd5f475f3117a023ea5e67d79b9774b82b24740"
+        },
+        "archive_replay": {
+          "path": "../../tests/fixtures/archive/ngc6240/manifest.json",
+          "sha256": "59a26d2bba46d4636f0e0d66696d409109d0f20284fadbb9b800138d77246dd4"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_values.md",
+          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+        },
+        "queue_csv": {
+          "path": "../../tests/fixtures/queue/queue_pipeline_v1.csv",
+          "sha256": "c2cd0b053362a6b5af280de86ba49837bda4a3d5c20e8a1b474457546be8c2bc"
+        }
+      },
+      "queue_candidate_beam": true,
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 157,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 157,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "inspection",
+            "branch_counts"
+          ],
+          "equals": [
+            {
+              "source": "ARCHIVE",
+              "branch": "CONTINUUM",
+              "status": "CRITERIA_NOT_MET",
+              "count": 91
+            },
+            {
+              "source": "ARCHIVE",
+              "branch": "CONTINUUM",
+              "status": "INDETERMINATE",
+              "count": 53
+            },
+            {
+              "source": "QUEUE",
+              "branch": "CONTINUUM",
+              "status": "INDETERMINATE",
+              "count": 13
+            }
+          ],
+          "reference": "PR #73 engineering regression, not a scientific label"
+        },
+        {
+          "path": [
+            "report",
+            "request",
+            "normalized",
+            "angular_resolution",
+            "value"
+          ],
+          "equals": 0.5,
+          "reference": "Independent reference ledger: Guide B arithmetic"
+        }
+      ]
+    }
+  ]
+}

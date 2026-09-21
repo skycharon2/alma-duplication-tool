@@ -1,13 +1,13 @@
 # Proposed-observation form sketch
 
-Form design version 0.3; the browser form is not implemented.
+Form design version 0.4; the browser form is not implemented.
 The [offline request API](proposed_observation_api.md) is implemented.
-The form remains a design sketch; the API does not implement candidate results.
+The form remains a design sketch over the implemented report v4 / evaluation v5 backend.
 Goal: describe a proposed observation, retrieve Archive/Queue candidates and
 explain applicable conditions using coherent evidence. Users do not supply
 expected project IDs, Member UIDs or duplicate labels.
 Accepted backend fields and request readiness: [request API](proposed_observation_api.md).
-Future rule evidence and scientific decisions: [input contract](duplication_rule_inputs.md).
+Current rule evidence and scientific decisions: [input contract](duplication_rule_inputs.md).
 The tables below are the reviewable low-fidelity layout, in display order.
 
 ## Panel 1 — Target and scope
@@ -39,6 +39,7 @@ with a specific reason; Sun displays assessment not applicable.
 | Requested angular resolution | Value + arcsec/mas | Optional for broad search; never labelled as a maximum candidate resolution |
 | Array information | Unknown / explicit information | Expand only if supplied; no automatic diameter |
 | Have you listed all spectral windows? | Explicit yes/no | List completeness only; some listed windows may still lack parameters |
+| Source redshift | Optional finite z > -1 | Required to evaluate a LINE REST center; SKY centers do not need it; missing z does not block bounded search |
 | Representative frequency | Optional value/unit, Sky/rest/Not sure, optional window label | Independent from center and RMS reference frequency; detailed frame/origin folded away |
 
 ### Repeatable spectral-window card
@@ -50,7 +51,7 @@ with a specific reason; Sun displays assessment not applicable.
 | Frequency/width | Values + GHz/MHz/Hz; Nominal / Usable / Not sure next to width | Meaning visible at entry; derived intervals labelled nominal/usable/unverified |
 | Frequency reference | Sky / Rest / Not sure beside frequency | Detailed frame/origin collapsible; no guessed execution reference |
 | Correlator mode | FDM / TDM / Unknown | No automatic mode derived from purpose or channel count |
-| Spectral resolution | Value + Hz/kHz/MHz | Label explicitly excludes channel spacing |
+| Spectral resolution | Value + frequency units or m/s/km/s | Planned observed resolution; label explicitly excludes channel spacing; frequency widths convert at the prepared sky center |
 | Advanced channel spacing | Optional value + unit | Independent of both spectral resolution and RMS bandwidth |
 | Footer | Add window | No copying sensitivity implicitly |
 
@@ -66,8 +67,8 @@ with a specific reason; Sun displays assessment not applicable.
 | Aggregate continuum RMS help | RMS declared for the combined continuum measurement of this setup, not per-channel RMS |
 | Aggregate path | Already have aggregate RMS / Convert a reference RMS; conversion controls expand only for the latter |
 | Bandwidth used for this RMS | Independent value/unit and meaning; optional source label such as OT RepWindowEffectiveChannelWidth |
-| Smoothed spectral resolution | Separate optional control when smoothed; never fills the RMS bandwidth |
-| Velocity width | If supplied: km/s, convention/reference context; comparison pending approved conversion |
+| Smoothed spectral resolution | Planned resolution attached to this window/RMS; accept frequency or m/s/km/s units; never fills the RMS bandwidth |
+| Velocity resolution help | The confirmed line path accepts planned m/s/km/s directly; frequency resolution converts around the derived sky center. Both supplied resolution fields must agree. A noise bandwidth is a separate quantity. |
 
 Native basis identifies the window; it does not copy its resolution into the RMS
 bandwidth. Advanced optional details include smoothing/averaging, Stokes,
@@ -95,7 +96,7 @@ Visually separate from proposed-observation controls.
 | Sources | Archive / controlled Queue snapshot |
 | Optional candidate constraints | Operator + value + unit, for example angular resolution `< 0.5 arcsec` |
 | Sensitivity constraint | Explicit basis (e.g. continuum aggregate or specified channel width), operator, value/unit and applicable context; no unlabeled universal sensitivity filter |
-| Result limit | Retrieval cap; reaching it requires explicit completeness reporting |
+| Display limit (`result_limit`) | Limits shown candidates only. All retained contexts are still evaluated; backend retrieval completeness is separate. |
 
 Do not prefill observation parameters from example search constraints. Queue
 selection shows snapshot date (with its date meaning) and status; unknown dates
@@ -111,10 +112,10 @@ silently mapped to a convenient candidate scalar; report the effective filters.
 | --- | --- |
 | Input validity | Inputs valid / Correct the indicated field |
 | Search readiness | Ready for bounded candidate search |
-| Assessment readiness | Line sensitivity comparison unavailable: Window 1 lacks the bandwidth used for its RMS |
+| Assessment readiness | Line sensitivity comparison unavailable: Window 1 lacks its planned resolution or associated requested RMS |
 | Candidate-side evidence | Will be checked per returned candidate; request validity is not a duplicate verdict |
 | Search scope | Display radius, sources and restrictive predicates explicitly |
-| Action | Search candidates; enabled only when search readiness permits |
+| Action | Search candidates when search-ready; for a valid SUN request, generate the exemption report without searching |
 
 Example partial draft: valid ICRS target and radius, line intent, W1 with unknown
 mode and sensitivity basis. Show search enabled plus separate missing reasons
@@ -127,18 +128,17 @@ carry the same distinctions independently of the future web framework.
 ## After search — Minimum result explanation
 
 This is the future browser presentation contract over the already implemented
-candidate-search and provisional-evaluation backend. Search candidates remains
-the first-stage user action; later formal aggregation can add an overall
-assessment without changing input semantics.
+Archive continuum and line backend. Candidate evaluation and search completeness
+remain separate; the UI does not synthesize an overall duplication verdict.
 
 | Result area | Required explanation |
 | --- | --- |
 | Candidate | Source (Archive/Queue), project/Member where available and stable source record identifiers |
 | Matched context | Actual source/execution/SPW pair or Queue association; alternatives stay separate |
-| Conditions | Position, angular resolution, frequency and RMS: readiness plus separate satisfied/not satisfied/undetermined/not applicable outcome |
+| Conditions | Independent continuum/LINE branches. Expand each line pair to see POS-SINGLE, ANGULAR, FDM, coverage, resolution compatibility and RMS; keep null outcomes distinct from failures. |
 | Evidence details | Original value/unit, canonical value/unit, source reference, method/version and approval status |
 | Gaps/estimates | Which input, candidate or method is unavailable; approximation assumptions visible and not automatically approved for threshold use |
-| Search scope | Radius, effective filters, caps, separate Archive/Queue completion and incomplete-source explanations |
+| Search scope | Radius, effective filters, separate Archive/Queue status and retained/shown/evaluated counts; display truncation is not acquisition truncation |
 
 Example: frequency coverage is satisfied for Window 1, but RMS cannot be assessed
 because the available scalar belongs to an unconfirmed representative window.
@@ -156,4 +156,7 @@ conditions remain undetermined.
 - Are missing optional fields different from invalid supplied values?
 - Do the IN-* cases in the contract cover each conditional control?
 
-This sketch has not undergone user usability testing or scientific sign-off.
+The formulas and scoped methods already have confirmation references. This form
+sketch has not undergone user usability testing; its presentation is not a new
+scientific approval gate. [The thin-interface contract](thin_interface_contract.md)
+owns result labels, report paths, export semantics and the first UI acceptance gate.
