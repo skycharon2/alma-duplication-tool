@@ -14,7 +14,7 @@ The [object index](data_model.md) links definitions and the
 | Association | Reconstruction and comparison construction retain row/component or real Queue associations, including alternatives. Member grouping does not authorize mixing them. |
 | Search execution | Candidate search orchestrates source calls, binding, local selectors and independent execution reports; failed or incomplete sources remain visible. |
 | Presentation | Grouping organizes candidate rows for display while retaining their contexts and filter records. |
-| Criteria | Five approved Archive continuum conditions feed per-context branch aggregation. Queue retains independent provisional methods; line references exist but numerical evaluation is pending. |
+| Criteria | Five approved Archive continuum conditions feed per-context branch aggregation. Queue retains independent provisional methods; line input/mode evidence and pair building are implemented; numerical line evaluation is pending. |
 
 The [evaluation entry point](../src/alma_duplicate/rules/evaluation.py) takes the
 original plan request and selects branches by intents. For CONTINUUM it evaluates

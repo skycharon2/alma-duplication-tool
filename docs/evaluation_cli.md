@@ -53,8 +53,8 @@ retained context evaluations. Missing acquisition/run IDs remain missing.
 
 Candidate reports have `report_kind=CANDIDATE_EVALUATION`; assessment remains
 NOT_AGGREGATED and search assessment remains NOT_EVALUATED. Continuum results
-are in `context_evaluations[].branches`. Rule result schema 2, evaluation version 3
-and method versions are independent. Request validation is now version 4:
+are in `context_evaluations[].branches`. Rule result schema 2, evaluation version 4
+and method versions are independent. Request validation is now version 5:
 ERROR invalidates input; MISSING describes selected-branch/search requirements;
 CAPABILITY describes relevant unavailable methods; EVIDENCE preserves raw input
 limitations and unselected-branch notes without asserting a selected rule failed.
@@ -98,3 +98,16 @@ continuum methods and context aggregation. The separate provisional Queue
 POS-SINGLE method requires `--queue-candidate-beam`. See [the method contract](pos_single.md).
 Per-source `filter_summary` counts are derived from processed row audits;
 excluded rows remain auditable and server-unreturned rows are outside the count.
+
+## Line preparation export (evaluation version 4)
+
+Report envelope version 3 is retained with an additive `line_pairing` field on
+each context. It is null when LINE is not selected; otherwise it serializes the
+[builder contract](line_pairing_design.md): attempts, reference-bound mode evidence,
+proposed sky frequency and planned resolution, and unresolved reasons. The LINE
+branch still reports NOT_IMPLEMENTED and UNKNOWN. Do not turn RESOLVED or AVAILABLE
+preparation status into a positive line criterion. All retained contexts are
+prepared even when hidden by the display limit. Source failures produce no
+fabricated pairs. Solar remains a separate report with no source access.
+Request model 2 / validation 5 and context model/construction 2 identify the new
+inputs and mode evidence; historical report files retain their original versions.

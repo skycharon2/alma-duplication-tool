@@ -6,6 +6,7 @@ The request is taken from the original plan; no substitute request is accepted.
 from __future__ import annotations
 
 from alma_duplicate.domain.candidate_search import CandidateSearchResult, SearchSourceStatus
+from alma_duplicate.line_pairing import build_line_pairs
 from alma_duplicate.rules.position_single import evaluate_position_single
 from alma_duplicate.rules.angular import evaluate_angular_resolution
 from alma_duplicate.rules.continuum_setup import evaluate_continuum_setup
@@ -76,6 +77,8 @@ Programming/contract errors propagate; they are not scientific missing evidence.
                 branches.append(BranchAssessment("LINE", context.context_id, "NOT_IMPLEMENTED", Truth.UNKNOWN,
                     ("POS-SINGLE", "ANGULAR", "LINE-FDM", "LINE-COVERAGE", "LINE-RESOLUTION-COMPATIBILITY", "LINE-RMS"),
                     ("LINE_RULES_NOT_IMPLEMENTED",)))
-            contexts.append(ContextEvaluation(candidate=row, criteria=tuple(criteria), branches=tuple(branches)))
+            contexts.append(ContextEvaluation(candidate=row, criteria=tuple(criteria), branches=tuple(branches),
+                                              line_pairing=build_line_pairs(request, context)
+                                              if "LINE" in request.intents else None))
     return EvaluationReport(search_result=search_result, request_criteria=() if setup is None else (setup,),
                             context_evaluations=tuple(contexts))

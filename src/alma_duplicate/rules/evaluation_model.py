@@ -8,6 +8,7 @@ from alma_duplicate.domain.candidate_search import CandidateRecord, CandidateSea
 from alma_duplicate.rules.model import CriterionResult
 from alma_duplicate.domain.proposed_observation import RequestValidationResult
 from alma_duplicate.rules.aggregation import BranchAssessment
+from alma_duplicate.domain.line_pairing import LinePairBuildResult
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -15,8 +16,11 @@ class ContextEvaluation:
     candidate: CandidateRecord
     criteria: tuple[CriterionResult, ...]
     branches: tuple[BranchAssessment, ...] = ()
+    line_pairing: LinePairBuildResult | None = None
 
     def __post_init__(self):
+        if self.line_pairing is not None and self.line_pairing.candidate_context_id != self.candidate.context.context_id:
+            raise ValueError("Line pairing belongs to another candidate context")
         if any(b.context_id != self.candidate.context.context_id for b in self.branches):
             raise ValueError("Branch belongs to a different candidate context")
         if any(r.context_id != self.candidate.context.context_id for r in self.criteria):
@@ -28,7 +32,7 @@ class EvaluationReport:
     search_result: CandidateSearchResult
     request_criteria: tuple[CriterionResult, ...]
     context_evaluations: tuple[ContextEvaluation, ...]
-    evaluation_version: str = field(default="3", init=False)
+    evaluation_version: str = field(default="4", init=False)
     execution: Literal["FINISHED"] = field(default="FINISHED", init=False)
     assessment: Literal["NOT_AGGREGATED"] = field(default="NOT_AGGREGATED", init=False)
 
@@ -37,7 +41,7 @@ class EvaluationReport:
 class SolarExemptionReport:
     """Request-level exemption: no candidate search or source coverage claim."""
     validation: "RequestValidationResult"
-    evaluation_version: str = field(default="3", init=False)
+    evaluation_version: str = field(default="4", init=False)
     execution: Literal["FINISHED"] = field(default="FINISHED", init=False)
     assessment: Literal["NOT_APPLICABLE"] = field(default="NOT_APPLICABLE", init=False)
 

@@ -7,6 +7,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import replace
 
+from alma_duplicate.clients.archive_mode import derive_archive_mode
 from alma_duplicate.clients.archive_adapter import ArchivePipelineBatch, run_archive_pipeline
 from alma_duplicate.clients.archive_contract import ArchiveQueryResult, ArchiveQueryStatus
 from alma_duplicate.clients.queue_csv_adapter import run_queue_pipeline
@@ -57,6 +58,18 @@ def _archive_contexts(batch: ArchivePipelineBatch) -> tuple[ComparisonContext, .
     }
     if rows.keys() != expected:
         raise ValueError("Archive contexts do not cover the supplied query rows")
+    mode_rows = defaultdict(list)
+    for row_id, prepared in rows.items():
+        association = links[row_id].association_key
+        # Unlinked rows have no shared association; never pool them under None.
+        mode_rows[association if association is not None else row_id].append(
+            (row_id, prepared.raw_row.get("em_xel")))
+    modes = {
+        key: derive_archive_mode(batch.query_result.provenance.query_run_id,
+                                 links[observations[0][0]].association_key,
+                                 observations, batch.query_result.field_metadata)
+        for key, observations in mode_rows.items()
+    }
     contexts = []
     groups = defaultdict(list)
     for row_id, prepared in rows.items():
@@ -71,6 +84,7 @@ def _archive_contexts(batch: ArchivePipelineBatch) -> tuple[ComparisonContext, .
         # Preserve the existing whole-support safety gate.
         if mapping.component_ref is not None and parsed.parse_result.is_valid:
             component = parsed.resolve(mapping.component_ref)
+        mode = modes[link.association_key if link.association_key is not None else row_id]
         association = E.PRESENT if link.is_linked else E.UNAVAILABLE
         evidence = prepared.comparison_evidence
         items = [
@@ -86,6 +100,9 @@ def _archive_contexts(batch: ArchivePipelineBatch) -> tuple[ComparisonContext, .
                          E.UNKNOWN, E.PRESENT if component else E.UNAVAILABLE,
                          reasons=(mapping.status.value,)),
         ]
+        items.append(EvidenceItem("mode_evidence", E.PRESENT if mode.status == "AVAILABLE" else E.UNKNOWN,
+                                  E.PRESENT if mode.metadata_status == "VERIFIED_INTEGER_SCALAR" else E.UNAVAILABLE,
+                                  association, method=E.PRESENT, reasons=mode.reasons))
         if component:
             items.extend((
                 EvidenceItem("selected_component.frequency_interval",
@@ -104,7 +121,7 @@ def _archive_contexts(batch: ArchivePipelineBatch) -> tuple[ComparisonContext, .
             EvidenceReference("ARCHIVE", row_id, batch.query_result.provenance.query_run_id,
                               parsed.parse_result.parser_version, rec.reconstruction_version,
                               batch.adapter_version, component.component_index if component else None),
-            ArchiveContextEvidence(prepared, link, mapping, parsed, component),
+            ArchiveContextEvidence(prepared, link, mapping, parsed, component, mode),
             tuple(items),
             reasons=(
                 link.status.value, mapping.status.value,

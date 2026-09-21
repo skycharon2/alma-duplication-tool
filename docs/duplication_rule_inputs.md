@@ -7,7 +7,7 @@ single-point continuum implements five approved conditions and per-context
 three-valued aggregation. Direct usable widths and direct aggregate RMS are
 supported; arbitrary nominal/noise conversions and Queue scientific mappings
 remain separate. Solar has a request-level exemption without source access.
-Line has a reference contract; evidence construction and numerical rules are
+Line has a reference-bound builder and versioned input/mode preparation; numerical rules are
 tracked in the [sole remaining-work plan](pr_plan_2026-09-21.md).
 
 The [request API](proposed_observation_api.md), [rule contract](rules.md) and
@@ -345,8 +345,8 @@ confirmation dated 2026-09-17 and implementation clarifications dated 2026-09-21
 | Q3 | CONFIRMED and implemented | User representative SKY frequency, not window average |
 | Q4 | CONFIRMED for line formula | Implementation scheduled in line PR; no continuum smoothing/correction |
 | Q5 | CONFIRMED and implemented for direct Archive continuum | Candidate estimated aggregate RMS <=2 times proposed RMS; Queue mapping excluded |
-| Q6 | CONFIRMED operational em_xel/UI mapping | Restore versioned association-bound evidence in line PR |
-| Q7 | CONFIRMED coherent context unit | Pair reference model delivered; CASE retrieval is not a scientific label |
+| Q6 | CONFIRMED operational em_xel/UI mapping | Versioned association-bound evidence and unknown/conflict gates implemented |
+| Q7 | CONFIRMED coherent context unit | Pair reference model and builder delivered; CASE retrieval is not a scientific label |
 | Q8 | CONFIRMED; continuum AND implemented | Individual branches; no mixed-setup/search-wide absence verdict |
 
 See [current implementation and CLI acceptance](confirmed_continuum.md) and the

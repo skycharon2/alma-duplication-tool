@@ -248,6 +248,7 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
                 "evidence_states": item.candidate.context.items,
                 "criteria": [_criterion(r) for r in item.criteria],
                 "branches": item.branches,
+                "line_pairing": item.line_pairing,
             }
             for item in report.context_evaluations
         ],
