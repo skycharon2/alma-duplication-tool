@@ -104,14 +104,14 @@ def test_galactic_offset_against_cartesian_reference():
     assert center.dec_deg == pytest.approx(expected_dec, abs=1e-7)
 
 
-def test_archive_and_unselected_profile_have_no_position_outcome():
+def test_archive_confirmed_position_and_queue_unselected_profile():
     v = validation(ra=10,dec=20)
     a,_ = archive(build_search_plan(v),s_ra=10.,s_dec=20.)
     result = search_candidates(v,archive_result=a,queue_result=queue_rows({'RA':'10','Dec':'20'}))
     rules = [c.criteria[1] for c in evaluate_candidate_search(result).context_evaluations]
     assert len(rules) == 2
-    assert all(r.outcome is None for r in rules)
-    assert rules[0].reasons == ('POS_SINGLE_SOURCE_UNSUPPORTED',)
+    assert rules[0].outcome == 'SATISFIED'
+    assert rules[1].outcome is None
     assert rules[1].reasons == ('QUEUE_CANDIDATE_POSITION_PROFILE_REQUIRED',)
 
 
@@ -131,12 +131,12 @@ def test_cli_ngc6240_full_retained_scope(tmp_path):
     assert main(['--request',str(REQUEST),'--queue-csv',str(QUEUE),'--queue-candidate-beam',
                  '--output',str(output)]) == 0
     report=json.loads(output.read_text())
-    assert report['evaluation_version'] == '2'
+    assert report['evaluation_version'] == '3'
     scope=report['evaluation_scope']
     assert scope['evaluated_contexts'] == scope['total_retained'] == 13
     assert scope['shown_candidates'] == 1
     assert len(report['request_criteria']) == 1
-    assert all([r['criterion_id'] for r in c['criteria']] == ['ANGULAR','POS-SINGLE']
+    assert all([r['criterion_id'] for r in c['criteria']] == ['ANGULAR','POS-SINGLE','CONT-FREQ','CONT-RMS']
                for c in report['context_evaluations'])
     rule=report['context_evaluations'][0]['criteria'][1]
     assert rule['outcome'] == 'SATISFIED'

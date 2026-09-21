@@ -158,7 +158,7 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
     search = report.search_result
     validation = search.plan.validation
     return json_value({
-        "report_version": "1",
+        "report_version": "2",
         "generated_at": datetime.now(UTC),
         "input_sha256": input_sha256,
         "evaluation_version": report.evaluation_version,
@@ -213,6 +213,7 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
                 "reference": item.candidate.context.reference,
                 "evidence_states": item.candidate.context.items,
                 "criteria": [_criterion(r) for r in item.criteria],
+                "branches": item.branches,
             }
             for item in report.context_evaluations
         ],

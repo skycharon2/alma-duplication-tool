@@ -1,5 +1,8 @@
 # Evaluation CLI and JSON report
 
+**2026-09-21 update:** [Confirmed Archive continuum implementation](confirmed_continuum.md) adds candidate-side position, continuum frequency/RMS and branch assessments. Report/evaluation versions are 2/3. Queue methods retain their previous status; line pairing references are implemented, line rules are the next increment. Older provisional descriptions below apply to historical methods unless superseded by this update.
+
+
 Run from an installed development checkout:
 
 ```bash

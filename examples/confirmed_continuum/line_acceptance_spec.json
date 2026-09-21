@@ -1,0 +1,28 @@
+{
+  "status": "NEXT_PR_ACCEPTANCE_SPEC_NOT_CURRENT_CLI_INPUT",
+  "source": "confirmed guide example B",
+  "proposed": {
+    "rest_frequency_ghz": 230.538,
+    "source_redshift": 0.024,
+    "planned_velocity_resolution_kms": 20,
+    "rms_mjy_beam": 0.3,
+    "angular_resolution_arcsec": 0.3,
+    "correlator_mode": "FDM"
+  },
+  "candidate": {
+    "frequency_interval_ghz": [
+      224.8,
+      225.4
+    ],
+    "spectral_resolution_khz": 500,
+    "sensitivity_10kms_mjy_beam": 0.4,
+    "angular_resolution_arcsec": 0.25,
+    "em_xel": 1920
+  },
+  "expected": {
+    "sky_frequency_ghz": 225.134765625,
+    "sigma_at_plan_mjy_beam": 0.282842712474619,
+    "sigma_comp_mjy_beam": 0.4072935059634514,
+    "branch": "CRITERIA_MET"
+  }
+}

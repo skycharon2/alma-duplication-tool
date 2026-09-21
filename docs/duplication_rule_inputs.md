@@ -327,6 +327,36 @@ readiness rather than mixing their most favorable quantities.
 
 ## 7. Scientific decision register
 
+### Current confirmed scope (2026-09-21)
+
+The [confirmation record](evidence/supervisor_confirmation_2026-09-17.md#confirmed-2026-09-21)
+supersedes the historical Q1–Q8 open/partial statements below for the fixed-target,
+single-pointing Archive workflow. The project developer supplied supervisor
+confirmation dated 2026-09-17 and implementation clarifications dated 2026-09-21.
+
+| Item | Current status | Implementation boundary |
+| --- | --- | --- |
+| ANGULAR/Q1 | CONFIRMED and implemented | Archive estimated angular resolution; candidate frequency and unique diameter; inclusive candidate beam |
+| Q2 | CONFIRMED for direct usable widths | No arbitrary nominal conversion; optional portal mapping remains provisional |
+| Q3 | CONFIRMED and implemented | User representative SKY frequency, not window average |
+| Q4 | CONFIRMED for line formula | Implementation scheduled in line PR; no continuum smoothing/correction |
+| Q5 | CONFIRMED and implemented for direct Archive continuum | Candidate estimated aggregate RMS <=2 times proposed RMS; Queue mapping excluded |
+| Q6 | CONFIRMED operational em_xel/UI mapping | Restore versioned association-bound evidence in line PR |
+| Q7 | CONFIRMED coherent context unit | Pair reference model delivered; CASE retrieval is not a scientific label |
+| Q8 | CONFIRMED; continuum AND implemented | Individual branches; no mixed-setup/search-wide absence verdict |
+
+See [current implementation and CLI acceptance](confirmed_continuum.md) and the
+[PR plan](pr_plan_2026-09-21.md). These items are coding/acceptance tasks, not
+questions to resubmit before implementing the confirmed workflow.
+
+### Historical register through 2026-09-15 (superseded within the scope above)
+
+The following is retained only to interpret old reports and earlier decisions.
+Its OPEN/PARTIAL/provisional wording is historical, not the current development
+gate. Queue, mosaic, generic bandwidth conversion and broader scope remain
+outside the new approval.
+
+
 Each entry below records what has been adopted and what is still missing, so
 that settled interpretations are usable and the remaining question is the only
 thing that has to be asked. Every entry is prepared by the project developer;

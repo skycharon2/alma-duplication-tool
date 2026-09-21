@@ -1,4 +1,4 @@
-"""Evaluate a request file and export a provisional criterion report."""
+"""Evaluate a request file and export scoped criterion and branch results."""
 import argparse
 import hashlib
 import json
@@ -112,7 +112,8 @@ def main(argv=None, *, archive_client_factory=None):
             aq_equivalent_filters=args.aq_equivalent_filters,
             queue_candidate_beam=args.queue_candidate_beam,
         )
-        # No position interpretation or nominal conversion is invented.
+        # Archive fixed-celestial interpretation is versioned in its criterion.
+        # No Queue interpretation or nominal conversion is invented.
         report = evaluate_candidate_search(search)
         document = report_document(
             report, input_sha256=hashlib.sha256(raw).hexdigest(),
