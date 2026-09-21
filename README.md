@@ -134,3 +134,16 @@ example. Read the [profile contract](docs/queue_candidate_beam.md) and
 [verified official sources](docs/evidence/official_sources.md) for scientific
 scope, source-version corrections and unresolved cases. This is a provisional
 Queue-only replay, not a completed duplication verdict.
+
+## Reproducible acceptance before the interface
+
+```bash
+python -m alma_duplicate.cli.acceptance \
+  --catalog examples/acceptance/catalog.json \
+  --output-dir reports/acceptance-run-1
+```
+
+Use a new output directory. The nine offline cases save report v4, comparison
+results and gap summaries. A passing replay does not confer human scientific
+review. See [case provenance and references](docs/acceptance_cases.md) and the
+[thin-interface contract](docs/thin_interface_contract.md).
