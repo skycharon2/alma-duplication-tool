@@ -11,6 +11,8 @@ from pathlib import Path
 import tempfile
 
 from alma_duplicate.clients.archive_contract import ArchiveQueryResult
+from alma_duplicate.rules.evaluation_model import SolarExemptionReport
+from alma_duplicate.rules.confirmed import DECISION_REF
 
 
 def json_value(value):
@@ -154,11 +156,50 @@ def _exclusions_by_predicate(source):
     return dict(sorted(counts.items()))
 
 
+def _request_document(validation):
+    return {
+        "raw": validation.raw_input,
+        "raw_search_options": validation.raw_search_options,
+        "normalized": validation.request,
+        "search_options": validation.search_options,
+        "validation_version": validation.validation_version,
+        "search_readiness": validation.search_readiness,
+        "issues": validation.issues,
+    }
+
+
+def _solar_document(report, input_sha256):
+    validation = report.validation
+    return json_value({
+        "report_version": "3", "report_kind": "SOLAR_EXEMPTION",
+        "generated_at": datetime.now(UTC), "input_sha256": input_sha256,
+        "evaluation_version": report.evaluation_version,
+        "execution": report.execution, "assessment": report.assessment,
+        "request": _request_document(validation),
+        "exemption": {"reason": "SOLAR_EXEMPT", "method_version": "solar_exemption_1",
+                      "approval": "APPROVED", "decision_refs": [DECISION_REF]},
+        "search_execution": "NOT_EXECUTED", "search_assessment": "NOT_APPLICABLE",
+        "search_service_version": None, "search_started_at": None, "search_finished_at": None,
+        "plan": None,
+        "sources": {name: {"status": "NOT_QUERIED", "reasons": ["SOLAR_EXEMPT"],
+                           "selected": name in validation.search_options.sources, "rows": []}
+                    for name in ("ARCHIVE", "QUEUE")},
+        "evaluation_scope": {"context_scope": "REQUEST_EXEMPTION_ONLY",
+                             "total_retained": 0, "shown_candidates": 0,
+                             "evaluated_contexts": 0, "display_truncated": False},
+        "request_criteria": [], "context_evaluations": [],
+    })
+
+
 def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
+    if isinstance(report, SolarExemptionReport):
+        return _solar_document(report, input_sha256)
     search = report.search_result
     validation = search.plan.validation
     return json_value({
-        "report_version": "2",
+        "report_version": "3",
+        "report_kind": "CANDIDATE_EVALUATION",
+        "search_execution": search.execution,
         "generated_at": datetime.now(UTC),
         "input_sha256": input_sha256,
         "evaluation_version": report.evaluation_version,
@@ -168,14 +209,7 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
         "search_service_version": search.service_version,
         "search_started_at": search.started_at,
         "search_finished_at": search.finished_at,
-        "request": {
-            "raw": validation.raw_input,
-            "raw_search_options": validation.raw_search_options,
-            "normalized": validation.request,
-            "search_options": validation.search_options,
-            "validation_version": validation.validation_version,
-            "issues": validation.issues,
-        },
+        "request": _request_document(validation),
         "plan": {
             "version": search.plan.version,
             "sources": search.plan.sources,

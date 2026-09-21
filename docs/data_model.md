@@ -1,7 +1,5 @@
 # Current Archive–Queue data model
 
-**2026-09-21 update:** [Confirmed Archive continuum implementation](confirmed_continuum.md) adds candidate-side position, continuum frequency/RMS and branch assessments. Report/evaluation versions are 2/3. Queue methods retain their previous status; line pairing references are implemented, line rules are the next increment. Older provisional descriptions below apply to historical methods unless superseded by this update.
-
 
 Document revision: 0.9. The object index includes search, grouping and rule
 results. Rule-result schema 2 is defined in the [rule contract](rules.md);
@@ -41,7 +39,7 @@ none implies that an approved comparison method or a persistence schema exists.
 | Search execution | [`CandidateSearchResult`, `SourceSearchExecution`, `CandidateRecord`, `FilterExecution`](../src/alma_duplicate/domain/candidate_search.py) | Independent source outcomes, retained contexts, row/filter audit and display omissions |
 | Presentation grouping | [`CandidateGroup`](../src/alma_duplicate/grouping.py) | Organize rows for display; never combine scientific evidence into a synthetic observation |
 | Criterion evaluation | [`CriterionResult`, `CriterionValue`, `CriterionIssue`](../src/alma_duplicate/rules/model.py) | Separate computation, outcome, applicability and approval; retain all affected evidence sides |
-| Evaluation orchestration | [`EvaluationReport`, `ContextEvaluation`](../src/alma_duplicate/rules/evaluation_model.py) | Retain search result, request-level criteria and distinct candidate-level evaluations; no formal aggregation |
+| Evaluation orchestration | [`EvaluationReport`, `ContextEvaluation`](../src/alma_duplicate/rules/evaluation_model.py) | Retain search result and independent continuum branch assessments per context; SolarExemptionReport represents request-level exemption without search |
 
 ## Archive identities and associations
 
@@ -242,7 +240,7 @@ and [Queue contract](queue_csv_contract.md). Formal thresholds remain in the
 - [Conceptual ERDs and entity descriptions](design/conceptual_data_model.md): original design scopes and rationale.
 - [Historical exploration evidence](evidence/exploration_snapshots.md): capture dates, sample populations, counterexamples and limits.
 - [Rule-input decision register](duplication_rule_inputs.md#7-scientific-decision-register): unresolved formal scientific methods.
-- [Current status and next delivery](README.md#next-delivery): scientific closure priorities now that candidate search and provisional evaluation are connected.
+- [Current status and next delivery](README.md#next-delivery): line evidence, pairing and computation after Archive continuum closure.
 
 General STC-S/pointing reconstruction, physical-target alias resolution,
 machine-readable per-SPW mode acquisition/association, brace token-2 discrimination,

@@ -102,7 +102,13 @@
         "rms": {
           "value": 0.1,
           "unit": "mJy/beam"
-        }
+        },
+        "window_ids": [
+          "w0",
+          "w1",
+          "w2",
+          "w3"
+        ]
       }
     ]
   },

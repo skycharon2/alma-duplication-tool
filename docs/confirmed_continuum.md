@@ -51,7 +51,10 @@ This command is offline and does not verify current TAP availability.
 
 ## Report contract
 
-JSON `report_version=2`, `evaluation_version=3` add
+Current exports use report version 3; see [closure changes](continuum_closure.md)
+for request diagnostics, contribution references and the Solar report variant.
+
+The initial increment used JSON `report_version=2`, `evaluation_version=3` to add
 `context_evaluations[].branches`. Each branch contains its scope, required
 criterion IDs, three-valued truth, status, reasons, version and confirmation ref.
 The request-level setup result is referenced by criterion ID and not recomputed

@@ -6,6 +6,7 @@ The wire input is a string-keyed mapping with JSON-like scalar/list values.
 
 from collections.abc import Mapping
 from decimal import Decimal, InvalidOperation
+from dataclasses import replace
 from fractions import Fraction
 import math
 import re
@@ -246,16 +247,11 @@ class _Validator:
         frame = self.enum(obj.get("frame"), path + ".frame", _FRAMES, "UNKNOWN")
         origin = self.origin(obj.get("origin"), path + ".origin")
         if kind == "REST":
-            self.capability(
-                path,
-                "Rest-frequency conversion is not implemented; spatial search remains possible.",
-            )
+            self.issue("EVIDENCE", "REST_FREQUENCY_RETAINED", path,
+                       "REST frequency retained without conversion.")
         elif kind == "UNKNOWN" or frame == "UNKNOWN":
-            self.missing(
-                path,
-                "Frequency reference is not sufficiently specified.",
-                "CONT-FREQ/LINE-COVERAGE",
-            )
+            self.issue("EVIDENCE", "FREQUENCY_REFERENCE_UNSPECIFIED", path,
+                       "Frequency kind or frame is unspecified; retained as supplied.")
         return RequestFrequency(q, kind, frame, origin) if q else None
 
     def position(self, value):
@@ -645,14 +641,15 @@ class _Validator:
             },
         )
         # Context is opaque provenance, not validated numerical comparison evidence.
+        rms_rule = "CONT-RMS" if purpose == "CONTINUUM" else "LINE-RMS"
         if not rms:
-            self.missing(path + ".rms", "RMS is absent.", "CONT-RMS/LINE-RMS")
+            self.missing(path + ".rms", "RMS is absent.", rms_rule)
         if scope == "UNRESOLVED":
             self.missing(
-                path + ".scope", "RMS scope is unresolved.", "CONT-RMS/LINE-RMS"
+                path + ".scope", "RMS scope is unresolved.", rms_rule
             )
         if basis == "UNKNOWN":
-            self.missing(path + ".basis", "RMS basis is unknown.", "CONT-RMS/LINE-RMS")
+            self.missing(path + ".basis", "RMS basis is unknown.", rms_rule)
         if basis in {"NATIVE_CHANNEL", "SMOOTHED"}:
             if not bandwidth:
                 self.missing(
@@ -933,11 +930,11 @@ def validate_proposed_observation(
     options = v.search(raw_options)
     if kind == "FIXED" and position is None:
         v.missing("request.position", "Position is needed for fixed-target search.")
-    if options.radius is None:
+    if kind != "SUN" and options.radius is None:
         v.missing(
             "search_options.radius", "Explicit radius is needed for bounded search."
         )
-    if not options.sources:
+    if kind != "SUN" and not options.sources:
         v.missing("search_options.sources", "Select at least one source.")
     if kind == "FIXED" and geometry == "SINGLE_POINTING":
         if angle is None:
@@ -992,18 +989,16 @@ def validate_proposed_observation(
                     "No independent setup frequency supplied.",
                     "CONT-FREQ",
                 )
-            if not windows or any(w.bandwidth is None for w in windows):
+            if representative is not None and representative.kind != "SKY":
+                v.missing("request.representative_frequency.kind",
+                          "Continuum comparison requires the user representative SKY frequency.",
+                          "CONT-FREQ")
+            if not windows or any(w.bandwidth is None and w.interval is None for w in windows):
                 v.missing(
                     "request.spectral_windows",
                     "Width evidence for setup qualification is incomplete.",
                     "CONT-SETUP",
                 )
-            v.capability(
-                "request.spectral_windows",
-                "Policy width interpretation is not an implemented qualification method.",
-                "CONT-SETUP",
-                "UNRESOLVED_SEMANTICS",
-            )
         for intent in intents:
             if not any(s.purpose == intent for s in sensitivities):
                 v.missing(
@@ -1011,6 +1006,25 @@ def validate_proposed_observation(
                     f"No {intent} RMS evidence supplied.",
                     "CONT-RMS" if intent == "CONTINUUM" else "LINE-RMS",
                 )
+    # Raw provenance is retained, but is not a missing input for an unselected branch.
+    selected_rules = {"ANGULAR"} if intents else set()
+    if "CONTINUUM" in intents:
+        selected_rules.update({"CONT-FREQ", "CONT-RMS", "CONT-SETUP"})
+    if "LINE" in intents:
+        selected_rules.update({"LINE-COVERAGE", "LINE-RMS"})
+        if kind == "FIXED" and geometry == "SINGLE_POINTING":
+            v.capability("request.intents", "Line evaluation is not implemented.", "LINE")
+        selected_rules.add("LINE")
+
+    def is_unselected(issue):
+        match = re.match(r"request\.sensitivities\[(\d+)\]", issue.path)
+        if match and sensitivities[int(match[1])].purpose not in intents:
+            return True
+        return bool(issue.rule_id and issue.rule_id not in selected_rules)
+
+    v.issues = [replace(i, category="EVIDENCE", rule_id=None)
+                if i.category != "ERROR" and (kind == "SUN" or is_unselected(i)) else i
+                for i in v.issues]
     errors = any(i.category == "ERROR" for i in v.issues)
     if errors:
         return RequestValidationResult(

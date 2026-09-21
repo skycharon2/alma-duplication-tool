@@ -45,8 +45,8 @@ def test_nominal_membership_preserves_missing_and_known_reference_differences(
         i for i in result.issues if "nominal center membership" in i.message.lower()
     ]
     assert {(i.code, i.category, i.side) for i in membership} == (
-        ({("MISSING_EVIDENCE", "MISSING", "PROPOSED")} if missing else set())
-        | ({("INCOMPATIBLE_REFERENCE", "CAPABILITY", "METHOD")} if differing else set())
+        ({("MISSING_EVIDENCE", "EVIDENCE", "PROPOSED")} if missing else set())
+        | ({("INCOMPATIBLE_REFERENCE", "EVIDENCE", "METHOD")} if differing else set())
     )
     assert all(i.path == "request.spectral_windows[0].center" for i in membership)
     assert not any(i.code == "INVALID_ASSOCIATION" for i in result.issues)
@@ -136,7 +136,7 @@ def test_line_rms_missing_is_reported_per_window(rms_present):
         for i in missing
     )
     assert result.request.sensitivities[0].window_ids == ("w1",)
-    assert result.validation_version == "3"
+    assert result.validation_version == "4"
 
 
 @pytest.mark.parametrize(
@@ -366,6 +366,7 @@ def test_direct_aggregate_without_windows_or_noise_width_is_valid():
 
 def test_reference_aggregate_does_not_manufacture_converted_rms():
     raw = request()
+    raw["intents"] = ["CONTINUUM"]
     raw["sensitivities"] = [aggregate(aggregate_path="CONVERT_FROM_REFERENCE")]
     result = validate_proposed_observation(raw, options())
     assert result.can_search
@@ -457,7 +458,7 @@ def test_unit_unsupported_vs_method_unimplemented():
     raw = request()
     raw["representative_frequency"] = frequency(kind="REST", frame="UNKNOWN")
     result = validate_proposed_observation(raw, options())
-    assert result.can_search and any(i.category == "CAPABILITY" for i in result.issues)
+    assert result.can_search and any(i.code == "REST_FREQUENCY_RETAINED" for i in result.issues)
     raw["sensitivities"] = [aggregate(rms=quantity(1, "K"))]
     result = validate_proposed_observation(raw, options())
     assert not result.is_valid and any(

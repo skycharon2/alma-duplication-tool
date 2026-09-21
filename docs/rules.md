@@ -1,10 +1,11 @@
 # Criterion result contract
 
-The [rules package](../src/alma_duplicate/rules/) contains independent ANGULAR, CONT-SETUP
-and [Queue POS-SINGLE](pos_single.md) functions. The explicit `evaluate_candidate_search` entry point
-connects them to a finished search; candidate search itself does not invoke them.
-CONT-SETUP qualifies the proposed setup; it does not compare a candidate or
-produce a duplicate verdict. All implemented methods remain PROVISIONAL.
+The [rules package](../src/alma_duplicate/rules/) implements the confirmed
+Archive fixed-target, single-point continuum branch: POS-SINGLE, ANGULAR,
+CONT-SETUP, CONT-FREQ and CONT-RMS. `intents` selects execution. Each coherent
+retained context gets a three-valued continuum assessment. Queue methods retain
+their independent provisional status; line has a pairing reference contract but
+no matcher or numerical evaluator. No search-wide absence verdict is produced.
 
 ## Separate result dimensions (schema 2)
 
@@ -23,13 +24,14 @@ The authoritative definitions are in [model.py](../src/alma_duplicate/rules/mode
 
 Constructors reject contradictory computed-state/outcome combinations. A computed
 outcome requires APPLICABLE. APPROVED requires a decision reference; a reference
-by itself does not confer approval. Current evaluators never upgrade approval.
+by itself does not confer approval. Confirmed wrappers select new approved method versions with the confirmation reference; legacy results are not relabelled.
 
 `has_computed_outcome` describes calculation only.
 `eligible_for_formal_aggregation` additionally requires APPLICABLE and APPROVED.
 This is a necessary per-criterion gate, not a complete aggregation algorithm:
-future aggregation must still respect coherent contexts, branch scope, other
-criteria and source/search completeness. Formal aggregation is not implemented.
+the implemented continuum aggregator also checks coherent contexts and branch scope.
+It returns CRITERIA_MET, CRITERIA_NOT_MET or INDETERMINATE. Search completeness
+remains separate; a branch result does not establish a search-wide conclusion.
 
 Issues preserve evidence limitations, not a universal veto. For example, two
 known qualifying windows establish the existential CONT-SETUP condition even
@@ -47,9 +49,16 @@ method needs uncertainty bounds, it must define and version them explicitly.
 
 | Criterion | Method version | Behavior |
 | --- | --- | --- |
-| ANGULAR | `angular_factor_2` | Symmetric max/min <= 2, inclusive. Uses Archive `spatial_resolution` estimates or Queue requested angular resolution, canonical arcsec. Missing/invalid/unit-unsafe evidence on both sides is retained. |
+| ANGULAR | `archive_angular_factor_3` (approved Archive); `angular_factor_2` (legacy) | Symmetric max/min <= 2, inclusive. Uses Archive `spatial_resolution` estimates or Queue requested angular resolution, canonical arcsec. Missing/invalid/unit-unsafe evidence on both sides is retained. |
 | POS-SINGLE | `queue_pos_single_1` | [Queue candidate-side coverage](pos_single.md); structured issues identify proposed, candidate or method limitations. |
-| CONT-SETUP | `continuum_setup_2` | At least two distinct proposed windows with USABLE width strictly > 1.8 GHz. Exactly 1.8 does not qualify; 1.8000000005 does. UNKNOWN width semantics remain unresolved, including narrow widths. |
+| CONT-SETUP | `continuum_setup_3` (approved without nominal conversion); `continuum_setup_2` (legacy) | At least two distinct proposed windows with USABLE width strictly > 1.8 GHz. Exactly 1.8 does not qualify; 1.8000000005 does. UNKNOWN width semantics remain unresolved, including narrow widths. |
+| Archive POS-SINGLE | `archive_pos_single_1` | Candidate `frequency`, unambiguous interferometric diameter, spherical separation <= half-power radius; inclusive float64 boundary. |
+| CONT-FREQ | `archive_cont_freq_1` | User representative SKY frequency versus Archive `frequency`: symmetric factor <= 1.3. No SPW-mean fallback. |
+| CONT-RMS | `archive_cont_rms_2` | One direct setup aggregate RMS: Archive estimate <= 2 × proposal RMS. Optional contributing IDs must uniquely reference this setup's windows; subsets are allowed. No bandwidth or angular scaling. |
+
+Version 2 of CONT-RMS accepts legal contribution references and records them in
+`details`; version 1 remains the identity of historical reports. Rule-result
+schema remains 2. Solar CLI exemption uses `solar_exemption_1` without candidates.
 
 For ANGULAR, 2.000000001 exceeds the limit. The exact factor is saved in details;
 if its display float overflows, `derived.factor` is null without changing the
@@ -73,7 +82,7 @@ provided. Request, ingestion and search-result schemas are unchanged.
 | `outcome == INSUFFICIENT_INFORMATION` (or NOT_APPLICABLE / NOT_EVALUATED) | Inspect `evaluation`; `outcome` is null |
 | `missing_side` | Iterate `issues`; `issue_sides` provides a distinct-side summary |
 | `is_definite` for numerical status | `has_computed_outcome` |
-| `is_definite` for formal use | `eligible_for_formal_aggregation`, then the future branch/context/completeness gates |
+| `is_definite` for formal use | `eligible_for_formal_aggregation`, then the implemented branch/context gates and separate search completeness |
 | Positional `CriterionResult(...)` | Named arguments with explicit evaluation, applicability and approval |
 
 Historical reports retain their original method/schema versions. New results
@@ -94,8 +103,9 @@ performs no network access, and does not rerun search filters. It expects the
 unchanged result of the search service; its consistency checks do not provide a
 cryptographic binding against manually replaced plan contents.
 
-CONT-SETUP runs once per report, even for zero candidates. ANGULAR and POS-SINGLE run separately
-for every row in `archive.retained_rows` and `queue.retained_rows`, in that order.
+CONT-SETUP runs once when CONTINUUM is selected, even for zero candidates.
+ANGULAR and POS-SINGLE run when a branch is selected; CONT-FREQ and CONT-RMS
+run for CONTINUUM. All retained Archive and Queue contexts are visited.
 Both MATCHED_FILTERS and RETAINED_UNEVALUATED are eligible for this attempt.
 EXCLUDED rows remain only in the retained original search audit. Neither a
 negative CONT-SETUP result nor an unresolved spatial filter short-circuits candidate criteria.
@@ -116,13 +126,14 @@ filter records and scientific values are not flattened or combined. Rule results
 must refer to that candidate's context ID. Programming errors propagate rather
 than being converted to scientific missing-evidence results.
 
-`evaluation_version="2"` versions orchestration; rule-result schema remains 2.
-Report `execution="FINISHED"` means the requested criterion calls completed.
-`assessment="NOT_AGGREGATED"` means no overall duplication decision was made.
-The nested search result keeps its original `assessment="NOT_EVALUATED"`, which
-belongs to the search stage. Every current rule remains PROVISIONAL; no approval
-upgrade or negative duplication conclusion is inferred from source failure,
-empty results, filter exclusion or criterion failure.
+`evaluation_version="3"` versions orchestration; rule-result schema remains 2.
+Report `execution="FINISHED"` means evaluation completed. In candidate reports,
+`assessment="NOT_AGGREGATED"` means no search-wide decision was made; inspect
+`context_evaluations[].branches` for the implemented continuum results. The
+nested search assessment stays NOT_EVALUATED. LINE returns NOT_IMPLEMENTED.
+An approved explicit failure can make a supported continuum AND branch false
+even when another condition is unknown. Unapproved results do not supply formal
+truth. Empty results, source failure and filter exclusion never imply absence.
 
 The optional `nominal_conversion` argument is forwarded only to CONT-SETUP. Its
 existing explicit, provisional interpretation is unchanged and recorded by that

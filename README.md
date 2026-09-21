@@ -1,6 +1,5 @@
 # ALMA Duplication Check Tool
 
-**2026-09-21 update:** [Confirmed Archive continuum implementation](docs/confirmed_continuum.md) adds candidate-side position, continuum frequency/RMS and branch assessments. Report/evaluation versions are 2/3. Queue methods retain their previous status; line pairing references are implemented, line rules are the next increment. Older provisional descriptions below apply to historical methods unless superseded by this update.
 
 
 A decision-support tool for discovering existing or planned ALMA observations
@@ -20,7 +19,7 @@ with ALMA reviewers.
 | Comparison-context construction from existing ingestion outputs | Implemented (offline, row-scoped; no matching) |
 | Offline search plans and limited spatial evidence adaptation | Implemented; conditional geometry support |
 | Request-driven candidate search across Archive and Queue | Implemented; conservative retention, explicit source/filter limits |
-| Appendix A criteria | ANGULAR, CONT-SETUP and [Queue POS-SINGLE](docs/pos_single.md) implemented (provisional); aggregation planned — see [rules](docs/rules.md) |
+| Appendix A criteria | Archive fixed single-point continuum: approved POS-SINGLE, ANGULAR, CONT-SETUP, CONT-FREQ, CONT-RMS and per-context branch aggregation; Queue retains provisional methods; line references only — see [rules](docs/rules.md) |
 | Same-request real-source replay | [NGC6240 Archive + Queue fixture](docs/dual_source_replay.md); offline replay with captured TAP responses |
 | Browser interface | Planned |
 
@@ -109,8 +108,10 @@ evidence; their outputs do not establish current production capabilities.
 The [candidate-search service](docs/candidate_search.md) connects existing request,
 comparison and search/spatial objects; per-context rule evaluation is documented
 in [rules](docs/rules.md). The [next-delivery checklist](docs/README.md#next-delivery)
-now focuses on scientific closure of the fixed-target single-point continuum path
-and formal aggregation. Existing CASE retrieval evidence remains retrieval evidence:
+now focuses on spectral-line evidence, pairing and numerical evaluation.
+Archive continuum branch aggregation and input/CLI closure are implemented;
+search-wide absence conclusions are intentionally not provided. Existing CASE
+retrieval evidence remains retrieval evidence:
 reported CASE candidates are not confirmed duplicate/non-duplicate labels.
 
 ## License

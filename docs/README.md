@@ -65,10 +65,10 @@ Implemented: independent Archive/Queue ingestion and reconstruction, local Queue
 source/parse-summary storage, request validation, offline comparison contexts,
 offline search planning, Archive query binding, limited spatial adaptation and
 individual spatial/angular predicate checks, and candidate-search orchestration.
-ANGULAR, CONT-SETUP and Queue POS-SINGLE provisional evaluators are implemented.
+Archive continuum has five approved conditions and per-context three-valued branch aggregation. Queue methods retain their provisional status.
 An explicit post-search entry point evaluates them for every retained context,
 including rows hidden by the presentation limit. Same-request Archive+Queue replay
-is also available. Formal duplication aggregation and the browser form are not implemented.
+is also available. Line computation and the browser form are not implemented; search-wide absence claims are intentionally not provided.
 
 | Axis / value | Current meaning | Does not establish |
 | --- | --- | --- |
@@ -82,7 +82,7 @@ is also available. Formal duplication aggregation and the browser form are not i
 | Plan `NOT_EXECUTED` | Declarative plan marker; execution is recorded separately by the service | Whether a service run has finished |
 | Service `FINISHED` | Orchestration ended; inspect each source and filter outcome | All sources succeeded, all filters ran or a duplication verdict |
 | Search assessment `NOT_EVALUATED` | Candidate-search stage made no formal assessment | A negative duplication verdict |
-| Evaluation assessment `NOT_AGGREGATED` | Implemented provisional criteria ran, but no overall branch/context verdict was formed | Formal duplication or non-duplication |
+| Evaluation assessment `NOT_AGGREGATED` | No search-wide verdict; inspect context branches for continuum results | Formal duplication or non-duplication |
 
 The individual `OUTSIDE` or angular `NO_MATCH` result only concerns its explicit
 predicate. Missing/unresolved checks and source completeness must remain visible.
@@ -91,30 +91,25 @@ behavior belong to the [search/spatial contract](search_plan_spatial.md).
 
 ## Next delivery
 
-Candidate retrieval and per-context provisional evaluation are connected. The
-next delivery is **scientific closure of the fixed-target single-point continuum
-path**, not another orchestration layer. The implementation sequence is:
+Archive continuum input, CLI and report contracts are now connected, including
+aggregate contribution references and Solar exemption without source access.
+See [the closure delivery](continuum_closure.md) for the regressions and versions.
 
-1. Close the remaining Q1 Archive candidate-side position mapping and boundary
-   semantics needed for an Archive POS-SINGLE method.
-2. Close Q3 and implement CONT-FREQ using one explicitly approved proposal-side
-   frequency role plus compatible candidate reference evidence.
-3. Close Q4/Q5 and implement CONT-RMS with explicit normalization scope and
-   directional factor-two semantics.
-4. Implement Q8 three-valued branch/context aggregation so one coherent context
-   yields a reviewable DUPLICATE / NOT_DUPLICATE / UNDETERMINED-style assessment
-   without converting missing evidence into a negative.
-5. Promote scientifically reviewed acceptance cases only after the method scope,
-   decision reference and boundary examples are recorded.
+The next increments are:
 
-The spectral-line branch remains downstream of Q6: the Cycle 13 Science Archive
-Manual documents the meaning of Frequency Support `Type`, but the current public
-TAP projection used here does not expose that per-window value in the parsed
-`frequency_support` string. Mosaic, moving-target and browser work remain deferred.
+1. **Line evidence and matching:** add typed source redshift, versioned `em_xel`
+   mode evidence, per-window planned resolution/RMS validation and a pair builder
+   binding each proposed window to one exact Archive support component.
+2. **Line computation and reporting:** FDM, exact coverage, resolution compatibility,
+   the confirmed two-stage RMS calculation and independent pair/branch results.
+   Test guide B, boundaries, unknown evidence and cross-SPW mismatch cases.
+3. **Acceptance and thin interface:** retain synthetic formula cases and real Archive
+   capture replay as separate evidence; display independent selected branches,
+   missing evidence, method versions and source/search completeness.
 
-Run `PYTHONPATH=src python examples/evaluate_candidate_rules.py` for the current
-offline provisional evaluation. CASE1/CASE2 retrieval and entry-count evidence are
-useful regression evidence, but the cases are not confirmed duplicate labels.
+The confirmed decisions are implementation inputs, not another Q1–Q8 approval
+gate. Mosaic and moving-target numerical evaluation remain deferred. CASE1/CASE2
+retrieval success remains retrieval evidence, not a confirmed duplication label.
 
 ALMA requires checking both Archive and queued observations; the
 [official duplication guidance](https://almascience.eso.org/proposing/duplications)
