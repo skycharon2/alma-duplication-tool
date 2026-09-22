@@ -20,6 +20,7 @@ retention, filtering and completeness; the following contracts define its inputs
 3. [Comparison contexts](comparison_contexts.md): source/row/component identity and evidence states.
 4. [Archive client](archive_client_contract.md) and [Queue CSV contract](queue_csv_contract.md): source access, completeness, units and ingestion gates.
 5. [Queue snapshot storage](queue_snapshot_store.md): source acquisition, historical summaries and explicit reparse.
+6. [Queue mode census](queue_mode_census.md): conditional configuration matching, full-snapshot counts and unresolved source binding.
 
 The opt-in [formula beam strategy](primary_beam_search.md) replaces region
 preselection with center-coordinate retrieval and explicit local beam checks.
