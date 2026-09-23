@@ -31,13 +31,27 @@ For formal-rule development:
 2. [Rules](rules.md): criterion results, implemented criteria and the explicit post-search evaluation entry point.
 3. [Data model](data_model.md): current object index, associations and invariants; links lead separately to conceptual ERDs and historical evidence.
 4. [Archive dictionary](archive_data_dictionary.md) and [Queue contract](queue_csv_contract.md): source-field semantics and limitations.
-5. Use [line pairing](line_pairing_design.md) and the [remaining PR plan](pr_plan_2026-09-21.md) for implementation; confirmed decisions are inputs, not a new approval gate.
+5. Use [line pairing](line_pairing_design.md) and the [remaining PR plan](roadmap.md) for implementation; confirmed decisions are inputs, not a new approval gate.
 
 [Live Archive smoke instructions](live_archive_smoke.md) describe opt-in source
 verification. The [form design](proposed_observation_form.md) is future interface
 design; the request API owns the accepted backend format. Historical statistics now live in the [snapshot register](evidence/exploration_snapshots.md);
 original ERDs and conceptual entities live in the [design document](design/conceptual_data_model.md).
 They are not current population counts or Python class definitions.
+
+## Document classes
+
+| Class | Responsibility | Entry |
+| --- | --- | --- |
+| CURRENT STATUS | What exists, with supported scope | [Status](status.md) |
+| ACTIVE ROADMAP | Remaining order and exit gates | [Roadmap](roadmap.md) |
+| CURRENT CONTRACT | Inputs, results, units and source associations | API, rules and source contracts below |
+| EXPERIMENT | Conditional assumptions and limitations, not formal rules | [Processor experiment](experiments/queue_processor_consensus.md) |
+| DATED EVIDENCE | What was measured/confirmed on a specified sample/date | [Processor measurement](evidence/queue_processor_consensus_2026-09-23.md), evidence records |
+| HISTORY | Preserved deliveries and superseded discussions | [Continuum delivery](history/confirmed_continuum.md), [old questions](history/rule_questions_through_2026-09-15.md) |
+| DESIGN | Future interface or conceptual design | Form sketch and design directory |
+
+The line-pairing document is an implemented contract despite its historical filename.
 
 ## Document responsibilities
 
@@ -57,21 +71,15 @@ its justification or sample limits are needed.
 | How are CSV layout, units, nominal/usable frequencies and failures handled? | [Queue contract](queue_csv_contract.md) |
 | How are exact Queue sources and historical summaries stored? | [Queue storage](queue_snapshot_store.md) |
 | What evidence/scientific decisions/acceptance cases do formal rules need? | [Rule inputs](duplication_rule_inputs.md) |
-| What remains to develop, and in which order? | [PR plan](pr_plan_2026-09-21.md) |
+| What remains to develop, and in which order? | [PR plan](roadmap.md) |
 | What is the JSON/report contract? | [CLI/report](evaluation_cli.md) |
 | Where are original conceptual entities and ERDs? | [Conceptual design](design/conceptual_data_model.md) |
 | What was measured, when, on which sample and with what limitations? | [Snapshot evidence](evidence/exploration_snapshots.md) |
 
 ## Current capabilities and status meanings
 
-Implemented: independent Archive/Queue ingestion and reconstruction, local Queue
-source/parse-summary storage, request validation, offline comparison contexts,
-offline search planning, Archive query binding, limited spatial adaptation and
-individual spatial/angular predicate checks, and candidate-search orchestration.
-Archive continuum has five approved conditions and per-context three-valued branch aggregation. Queue methods retain their provisional status.
-An explicit post-search entry point evaluates them for every retained context,
-including rows hidden by the presentation limit. Same-request Archive+Queue replay
-is also available. Archive line computation and pair/context assessments are implemented. The browser form is not implemented; search-wide absence claims are intentionally not provided.
+The [capability matrix](status.md) is the single current implementation summary.
+The table below defines result meanings, not an additional task list.
 
 | Axis / value | Current meaning | Does not establish |
 | --- | --- | --- |
@@ -92,6 +100,13 @@ predicate. Missing/unresolved checks and source completeness must remain visible
 The full supported grammar, interpretation requirements and numerical boundary
 behavior belong to the [search/spatial contract](search_plan_spatial.md).
 
+## Queue development reading path
+
+1. [Queue CSV contract](queue_csv_contract.md) and [snapshot storage](queue_snapshot_store.md).
+2. [Single-point rule mapping](queue_single_point_mapping.md): source semantics, associations, gaps and tests.
+3. [Census v1](queue_mode_census.md) and [processor experiment](experiments/queue_processor_consensus.md), read as diagnostics rather than formal rule evidence.
+4. [Roadmap](roadmap.md): the single owner of engineering order.
+
 ## Next delivery
 
 The [acceptance catalog](acceptance_cases.md) pins inputs and independently documented
@@ -100,7 +115,7 @@ The [thin-interface contract](thin_interface_contract.md) defines the first UI
 against report v4. No delivered case is falsely labelled as a reviewed real proposal.
 
 
-The [remaining PR plan](pr_plan_2026-09-21.md) owns implementation order and gates.
+The [remaining PR plan](roadmap.md) owns implementation order and gates.
 Continuum delivery records are [initial acceptance](confirmed_continuum.md) and
 [contract closure](continuum_closure.md); neither is another active task list.
 
@@ -117,5 +132,5 @@ citations and Q1–Q8 interpretations remain in the rule-input contract.
 - [Queue POS-SINGLE](pos_single.md): provisional candidate coverage criterion,
   retained-context scope, derived filter summaries and offline replay.
 
-Queue follow-up: [processor-equivalence census](queue_processor_consensus.md)
-extends the historical census experimentally; formal Queue rules are unchanged.
+Queue diagnostic deliveries #75/#76 are complete; formal Queue branch evaluation
+is unfinished. See [status](status.md) and [roadmap](roadmap.md).

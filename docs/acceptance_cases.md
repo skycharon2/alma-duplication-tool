@@ -72,5 +72,5 @@ make a test green. Keep synthetic, hybrid, captured-data engineering and genuine
 proposal evidence distinguishable.
 
 The [thin-interface contract](thin_interface_contract.md) defines display labels
-and explains overlapping gap counts. The [PR plan](pr_plan_2026-09-21.md) owns the
+and explains overlapping gap counts. The [PR plan](roadmap.md) owns the
 remaining UI and case-review work.

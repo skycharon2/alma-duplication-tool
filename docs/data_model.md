@@ -241,13 +241,14 @@ and [Queue contract](queue_csv_contract.md). Formal thresholds remain in the
 
 - [Conceptual ERDs and entity descriptions](design/conceptual_data_model.md): original design scopes and rationale.
 - [Historical exploration evidence](evidence/exploration_snapshots.md): capture dates, sample populations, counterexamples and limits.
-- [Rule-input decision register](duplication_rule_inputs.md#7-scientific-decision-register): unresolved formal scientific methods.
-- [Current status and next delivery](README.md#next-delivery): remaining interface and real-case review after Archive continuum and line evaluation.
+- [Rule-input decision register](duplication_rule_inputs.md#7-scientific-decision-register): current confirmation scope and separately preserved historical questions.
+- [Current capabilities](status.md) and [roadmap](roadmap.md): Queue scoped evaluation, dual-source acceptance and interface delivery.
 
 General STC-S/pointing reconstruction, physical-target alias resolution,
-machine-readable per-SPW mode acquisition/association, brace token-2 discrimination,
+direct acquisition of Archive UI Type/native correlator telemetry, brace token-2 discrimination,
 physical-file identity and durable Archive evidence serialization remain outside this runtime
-model. New grammars or cardinality counterexamples can motivate targeted source
+model. Versioned association-bound Archive operational mode evidence is already
+derived downstream for the confirmed LINE workflow. New grammars or cardinality counterexamples can motivate targeted source
 work; historical structure exploration is not a prerequisite to redoing this model.
 
 ## Previous section links

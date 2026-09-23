@@ -2,7 +2,7 @@
 
 Status: request preparation, association-bound Archive mode evidence and pair
 builder implemented. Numerical FDM/coverage/resolution/RMS criteria and line
-aggregation are implemented in [PR 3](pr_plan_2026-09-21.md). Continuum has no mode dependency.
+aggregation are implemented in [PR 3](roadmap.md). Continuum has no mode dependency.
 
 ## Pair identity and ownership
 
