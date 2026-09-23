@@ -116,3 +116,6 @@ citations and Q1–Q8 interpretations remain in the rule-input contract.
 - [Real dual-source replay](dual_source_replay.md): fixed NGC6240 request, raw Archive capture and Queue subset.
 - [Queue POS-SINGLE](pos_single.md): provisional candidate coverage criterion,
   retained-context scope, derived filter summaries and offline replay.
+
+Queue follow-up: [processor-equivalence census](queue_processor_consensus.md)
+extends the historical census experimentally; formal Queue rules are unchanged.
