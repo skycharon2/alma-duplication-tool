@@ -1,6 +1,9 @@
 # ALMA Archive Data Dictionary
 
-**2026-09-21 update:** [Confirmed Archive continuum implementation](confirmed_continuum.md) adds candidate-side position, continuum frequency/RMS and branch assessments. Report/evaluation versions are 2/3. Queue methods retain their previous status; line pairing references are implemented, line rules are the next increment. Older provisional descriptions below apply to historical methods unless superseded by this update.
+**Current scope:** Archive fixed-target, single-point continuum and LINE evaluation
+are implemented. This dictionary owns source-field semantics, not development
+order or report versions; see [rules](rules.md), [CLI/report](evaluation_cli.md)
+and [capabilities](status.md). Queue mappings retain their separate status.
 
 
 ## Purpose
@@ -43,7 +46,7 @@ existing projections below.
 | `s_region` | Footprint and spatial search | Core / yes | Raw ingestion; server predicate; separate limited [spatial parser](search_plan_spatial.md#spatial-evidence) | Unit-checked center normalization and limited `CIRCLE ICRS` parsing implemented; no general STC-S family parser or formal beam-coverage method |
 | `frequency` | Frequency centre | Core / yes | Unit-validated quantity | Row/SPW association subject to mapping; not independently verified usable coverage |
 | `bandwidth` | Coverage | Core / yes | Unit-validated quantity | Row/SPW association subject to mapping; not independently verified usable coverage |
-| `em_xel` | Channel count | Core / yes | Raw; no mode inference | No production classifier; SPW granularity must be established before future classification |
+| `em_xel` | Channel count | Core / yes | Raw channel-count evidence | Ingestion preserves raw values; downstream comparison derives versioned, association-bound operational mode evidence for the confirmed Archive LINE scope; missing/conflicting evidence stays UNKNOWN |
 | `frequency_support` | Full spectral description | Core / yes | Complete spectral parse evidence | Includes component intervals, diagnostics and independent RMS entries |
 | `spectral_resolution` | Spectral comparison | Core / yes | Unit-validated quantity | Does not substitute for channel spacing or effective noise bandwidth |
 | `spatial_resolution` | Angular comparison | Core / yes | Unit-validated quantity | Initial angular-resolution prefilter; not a measured restoring beam |
@@ -84,7 +87,7 @@ scalar fields may remain raw without receiving typed semantics.
 | Parsed support component | Full parser evidence plus row/parser-scoped reference; only safe unique mapping selects a component |
 | `em_min`, `em_max`, `em_resolution`, `velocity_resolution` | Not selected; historical cross-checks do not establish production validation |
 | Other axis/access metadata | Not selected by default; conceptual product ownership does not imply routine retrieval or physical-file identity |
-| Duplication result | Planned policy-layer output, not a source field or reconstruction result |
+| Duplication result | Produced by rule/evaluation layers, not a source field or reconstruction result |
 
 Selection is defined by [archive_queries.py](../src/alma_duplicate/clients/archive_queries.py).
 Exact quantity conversion and preparation are defined by
@@ -264,7 +267,7 @@ population constraints.
 | Resolution fields | Separate storage and comparison; never alias. |
 | Primary angular-resolution evidence | Use `spatial_resolution` for initial Archive candidate retrieval; retain `s_resolution` as an independent cross-check. Neither field is a measured FITS restoring beam. |
 | Top-level `type` | Treat as proposal/project classification with an unknown-value fallback. It is unrelated to `science_observation = 'T'` and must not be interpreted as FDM/TDM. |
-| Frequency-Support mode representation | Preserve raw `em_xel` only. Do not classify it as UI `continuum`/`line` in production and never derive formal mode from `em_xel`, top-level `type`, bandwidth, or spectral resolution. Mode remains unavailable until supported configuration evidence is obtained and reliably associated with the candidate SPW. |
+| Frequency-Support mode representation | No direct source-native mode or UI Type is exposed by the selected TAP projection. Raw `em_xel` is preserved; downstream comparison builds versioned association-bound operational evidence for the confirmed Archive LINE workflow. It is not native correlator telemetry or a universal channel-count classifier. See [pairing contract](line_pairing_design.md). |
 | Sensitivity basis | Preserve them as distinct estimated evidence. Do not represent either as achieved QA2 image-product RMS. |
 | Query-arithmetic units | Probe the request-specific fields in `TAP_SCHEMA.columns`, gate frequency and angular filters independently, retain requested bounds and fallback status in provenance, and preserve NULL-valued rows for local non-evaluability. |
 | QA2 boundary | Preserve `qa2_passed` as evidence; do not add `qa2_passed = 'T'` as an implicit client filter. |

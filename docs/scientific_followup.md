@@ -1,20 +1,11 @@
-# Scientific follow-up checklist
+<a id="scientific-follow-up-checklist"></a>
 
-The [decision register](duplication_rule_inputs.md#7-scientific-decision-register)
-owns scientific status. This checklist owns follow-up actions only; it does not
-replace the register or approve a method.
+# Scientific review protocol and deferred-scope notes
 
-Owners and dates below are deliberately unassigned. Proposed assignments and
-meeting dates require agreement; none are inferred from a report or code change.
-
-| Task | Current action | Scope |
-| --- | --- | --- |
-| Archive continuum | Implemented; inspect pinned CLI numerical and real-source replay results | Confirmed fixed, single-pointing scope |
-| Line request/pairing | Completed in PR #72: redshift, planned resolution binding and association-bound em_xel evidence; see [pairing contract](line_pairing_design.md) | Confirmed Archive preparation |
-| Line rules | Implemented confirmed numerical pair rules; review numerical acceptance and independent real-case labels | Engineering PR3; see [rules](rules.md#confirmed-archive-line-evaluation) |
-| Queue science mappings | Keep current provisional results; define source-specific mapping in later increment | Not covered by Archive confirmation |
-| Nominal bandwidth conversion | Preserve explicit provisional portal option; no arbitrary automatic mapping | Outside direct usable-width path |
-| Broader geometry/mixed setup | Separate later milestones | Mosaic, moving, TP and mixed setups excluded |
+Scientific status belongs to the [decision register](duplication_rule_inputs.md#7-scientific-decision-register).
+Engineering order belongs to [roadmap](roadmap.md); Queue source gaps and test gates
+belong to the [mapping table](queue_single_point_mapping.md). This document owns
+review procedure and scope boundaries, not another active task list.
 
 The current source of approval is the
 [2026-09-21 confirmation](evidence/supervisor_confirmation_2026-09-17.md).
@@ -74,7 +65,11 @@ the Queue beam in the new profile. The Cycle 13 Science Archive Manual also
 documents Frequency Support `Type`: `continuum` means TDM and `line` means FDM.
 The current public TAP `frequency_support` string used here does not expose that
 Type, so Q6 is now a machine-readable acquisition/provenance and SPW-association
-question rather than an unknown label meaning. Remaining issues concern evidence
+question rather than an unknown label meaning. For the confirmed Archive LINE
+scope, the implemented association-bound em_xel interpretation is documented in
+[line pairing](line_pairing_design.md); direct UI Type acquisition is a distinct
+remaining source path, not a prerequisite to reimplementing that workflow.
+Remaining issues concern evidence
 association, frame conventions, ambiguous arrays and scientific approval scope.
 
 The current portal script includes the 1875–2000 MHz interval mapping; it was

@@ -10,18 +10,11 @@ with ALMA reviewers.
 
 ## Project status
 
-| Capability | Status |
-| --- | --- |
-| Archive query, validation and reconstruction | Implemented |
-| Queue parsing and reconstruction | Implemented |
-| Local Queue source storage and independent parse summaries | Implemented |
-| Offline proposed-observation validation | Implemented |
-| Comparison-context construction from existing ingestion outputs | Implemented (offline, row-scoped; no matching) |
-| Offline search plans and limited spatial evidence adaptation | Implemented; conditional geometry support |
-| Request-driven candidate search across Archive and Queue | Implemented; conservative retention, explicit source/filter limits |
-| Appendix A criteria | Archive fixed single-point continuum: approved POS-SINGLE, ANGULAR, CONT-SETUP, CONT-FREQ, CONT-RMS and per-context branch aggregation; Queue retains provisional methods; line evidence, pair rules and independent LINE branch reporting implemented — see [rules](docs/rules.md) |
-| Same-request real-source replay | [NGC6240 Archive + Queue fixture](docs/dual_source_replay.md); offline replay with captured TAP responses |
-| Browser interface | Planned |
+Archive fixed-target, single-point continuum and LINE evaluation are implemented.
+Queue ingestion/search and conditional mode diagnostics are implemented; complete
+Queue scientific branch evaluation and the browser UI remain unfinished.
+See the [capability matrix](docs/status.md), [documentation guide](docs/README.md)
+and [engineering roadmap](docs/roadmap.md).
 
 Existing ingestion adapters retain evidence and source associations. Reconstruction
 does not establish comparability. Request-side READY indicates spatial search

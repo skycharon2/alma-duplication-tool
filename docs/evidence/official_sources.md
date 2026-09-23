@@ -159,16 +159,13 @@ a mode source; it does not establish that no other reproducible Archive path can
 supply the documented Type, and it is taken from one pinned fixture rather than
 from an Archive-wide census.
 
-## Remaining implementation scope
+<a id="remaining-implementation-scope"></a>
 
-ANGULAR already computes the inclusive factor-two comparison and retains Archive
-estimated versus Queue requested semantics. No approval status is changed here.
-CONT-SETUP already implements strict >1.8. The example declares usable widths
-explicitly; it does not assert that hypothetical hardware has been validated.
-CONT-FREQ's numeric factor is known, but selection of representative compatible
-frequency evidence remains a separate contract. Q6 likewise no longer needs the
-meaning of Archive `Type` to be guessed; it needs a reproducible machine-readable
-path and SPW association for that documented evidence. These are not unknown
-thresholds. Queue POS-SINGLE remains provisional and Archive POS-SINGLE plus
-overall aggregation are not implemented; executed source filters remain visible
-in the report.
+## Implementation boundary
+
+This document owns verified source facts and dated observations, not current
+implementation status. Source documentation alone does not approve application
+methods. Current behavior is specified by [rules](../rules.md),
+[Archive client](../archive_client_contract.md) and [Queue contract](../queue_csv_contract.md).
+[Status](../status.md) distinguishes implemented Archive branch aggregation from
+the intentionally absent search-wide verdict; [roadmap](../roadmap.md) owns tasks.

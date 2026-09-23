@@ -291,13 +291,14 @@ in each raw Archive row, but the production adapter does not classify it as
 correlator-mode discriminator across polarization, online averaging, processor,
 and historical setup variants.
 
-Consequently, `PreparedArchiveRow` and `ArchivePipelineBatch` expose no
-channel-count-derived mode evidence. Until a reproducible machine-readable path
-to the documented per-SPW Type is implemented and reliably associated with the
-exact candidate SPW, formal mode evidence remains unavailable to the policy
-layer. Unavailable mode must not satisfy an FDM requirement and must not exclude
-a candidate. Production code does not call the undocumented Archive Elasticsearch
-endpoint.
+`PreparedArchiveRow` and `ArchivePipelineBatch` preserve raw evidence rather than
+classifying channel counts. Downstream comparison construction derives versioned,
+association-bound operational mode evidence for the confirmed Archive LINE scope;
+see [comparison contexts](comparison_contexts.md) and [pairing](line_pairing_design.md).
+The LINE evaluator consumes that evidence. This does not expose the Archive UI
+Type or turn `em_xel` into source-native FDM/TDM telemetry. Missing/conflicting
+mode evidence cannot satisfy LINE-FDM. Production code does not call the
+undocumented Archive Elasticsearch endpoint.
 
 ## Query provenance
 

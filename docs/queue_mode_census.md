@@ -133,4 +133,4 @@ schema changes are needed: these are separate diagnostic artifacts.
 
 See the [measured snapshot census](evidence/queue_mode_census_2026-09-22.md)
 for counts, ambiguity examples and the single-field limitation. Remaining delivery
-work is owned only by the [PR plan](pr_plan_2026-09-21.md).
+work is owned only by the [PR plan](roadmap.md).
