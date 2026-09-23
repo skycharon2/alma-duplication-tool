@@ -134,3 +134,5 @@ citations and Q1–Q8 interpretations remain in the rule-input contract.
 
 Queue diagnostic deliveries #75/#76 are complete; formal Queue branch evaluation
 is unfinished. See [status](status.md) and [roadmap](roadmap.md).
+
+- [Queue mode evidence adapter](queue_mode_adapter.md): typed row/SPW mode evidence, exact-first reviewed compatibility, and separate single-point applicability.

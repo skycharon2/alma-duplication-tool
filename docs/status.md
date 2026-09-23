@@ -1,6 +1,6 @@
 # Current implementation status
 
-Reviewed baseline: `13c41d5` (PR #76). This is the single capability summary;
+Reviewed baseline: PR #78 plus the scoped Queue mode evidence increment. This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
 
@@ -13,6 +13,7 @@ Reviewed baseline: `13c41d5` (PR #76). This is the single capability summary;
 | Continuum branch | Five conditions and three-valued context branch implemented | Complete formal branch not implemented; Archive frequency/RMS mappings do not transfer |
 | Line branch | Same-pair conditions, intermediate values and context-local aggregation implemented | Formal line pairing/evaluation not implemented |
 | Mode diagnostics | Association-bound operational em_xel interpretation for confirmed LINE scope; not universal telemetry | PR #75 census and PR #76 processor experiment delivered; formal mode UNKNOWN |
+| Derived Queue mode evidence | Existing Archive method unchanged | [Adapter](queue_mode_adapter.md) returns scoped FDM/TDM/UNKNOWN independently of geometry; formal LINE integration remains pending |
 | Acceptance | Pinned numerical and real-capture engineering cases | Ingestion/diagnostic/profile regressions; no complete formal Queue science acceptance |
 | Reviewed real-proposal cases | No reviewed labels claimed by the delivered catalog | No reviewed labels claimed |
 | Browser UI | Not implemented | Not implemented |
@@ -31,7 +32,9 @@ See the [diagnostic contract](queue_mode_census.md),
 The experiment uses conditional user-facing TPS mappings, not independent native
 configuration enumeration. Its formal_mode is UNKNOWN, enumeration_complete is
 false and scientific_closure is NOT_ESTABLISHED. A compatibility-view success
-percentage does not approve the method or establish general single-field coverage.
+percentage does not approve a method or establish general single-field coverage.
+The separate [project decision](evidence/queue_mode_evidence_decision_2026-09-23.md#accepted-scope)
+now accepts a bounded mode adapter; it does not change those historical results.
 
 The [Queue position method record](pos_single.md) retains its original execution-version
 notes for provenance. Current orchestration/report versions belong to

@@ -37,6 +37,11 @@ associations and evidence gaps; this table owns order and exit gates only.
 Queue mode work must resolve applicability and alternative interpretations within
 the supported scope. Exact processor identity is required only where the method
 needs it; exact configuration uniqueness is not the same as mode consensus.
+The [mode evidence adapter](queue_mode_adapter.md) is delivered separately from
+full Queue LINE: exact-first classification and a reviewed N16 allowance are
+source-bound, while geometry/array rule applicability remains independent.
+Integrating mode with coherent coverage/resolution/RMS and pair evaluation is
+still part of QUEUE-LINE. This does not block QUEUE-CONTINUUM.
 The 76 export signatures and 14 all-family TP mapping gaps are tracked in the
 [dated experiment results](evidence/queue_processor_consensus_2026-09-23.md).
 Do not make all-family experimental closure a blanket prerequisite for Queue continuum.
