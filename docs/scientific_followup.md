@@ -58,13 +58,19 @@ is single-point. Formal geometry assessment and retrieval recall are distinct.
 
 ## Verified source findings (2026-09-15)
 
+The following findings record the source investigation on 2026-09-15. The
+association-bound operational mode implementation for the confirmed Archive LINE
+scope has since been delivered. This does not mean direct Archive UI Type/native
+telemetry acquisition is complete. Current Queue-specific gaps belong to the
+[mapping contract](queue_single_point_mapping.md).
+
 [Official-source verification](evidence/official_sources.md) establishes the
 inclusive angular factor-two threshold and strict continuum width threshold.
 These numerical boundaries are not pending questions. Candidate frequency owns
 the Queue beam in the new profile. The Cycle 13 Science Archive Manual also
 documents Frequency Support `Type`: `continuum` means TDM and `line` means FDM.
 The current public TAP `frequency_support` string used here does not expose that
-Type, so Q6 is now a machine-readable acquisition/provenance and SPW-association
+Type; at that time Q6 concerned a machine-readable acquisition/provenance and SPW-association
 question rather than an unknown label meaning. For the confirmed Archive LINE
 scope, the implemented association-bound em_xel interpretation is documented in
 [line pairing](line_pairing_design.md); direct UI Type acquisition is a distinct

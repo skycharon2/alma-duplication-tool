@@ -139,14 +139,16 @@ coherent evidence from the same candidate context, as defined in section 6.
 | CONT-SETUP: continuum applicability; A/spectral definition | Distinct `window_id`s, per-window bandwidth kind and setup completeness | Not a substitute for proposed setup | Not a substitute for proposed setup | Approved direct USABLE-width path; count distinct qualified proposed windows. Explicit nominal conversion stays provisional and does not prove configuration applicability; unknown widths remain unresolved where decisive | Intent label alone never activates rule; no imputed width or mode |
 | CONT-FREQ: continuum; A/spectral | Independent setup representative frequency, optional representative-window link and reference/origin | `frequency`, full parsed support, canonical interval | `Ref.Frequency`, SPW frequencies, `Is Sky Freq?`, velocity evidence | Archive: confirmed proposed representative SKY frequency versus candidate frequency. Queue: comparison-frequency mapping remains separate; beam fallback is not automatic CONT-FREQ evidence | Broad spatial retrieval permitted; frequency assessment unavailable |
 | CONT-RMS: continuum; A/spectral | Direct aggregate RMS with declared basis/setup scope, or reference RMS with conversion inputs | `cont_sensitivity_bandwidth`, parsed component sensitivities with their bases | `Req.Sensitivity` plus `Ref.Frequency` and `Ref.Freq.Width` | Archive: approved direct aggregate RMS comparison. Queue: requested sensitivity basis/setup mapping remains unresolved; no automatic Archive sensitivity or beam-unit substitution | Missing metadata limits affected operations, not request storage; candidate gaps remain candidate-side |
-| LINE-COVERAGE: line; A/spectral | Requested SPW center, FDM evidence and frequency reference; width not generally required | Assigned component interval plus versioned association-bound em_xel mode evidence | Associated SPW interval/reference and validated FDM evidence; no approved automatic mode derivation | Compare requested center with candidate coverage, not whole-window containment | Missing width does not block center coverage; absent interval blocks coverage and absent mode affects the separate FDM rule |
+| LINE-FDM: line; A/spectral | Proposed window correlator-mode evidence | Versioned association-bound operational em_xel interpretation for the exact candidate component | Same-row/SPW mode evidence with supported interpretation; census results remain experimental | Independent condition in the [Archive pair evaluator](line_pairing_design.md); Queue formal mapping remains separate | Missing/conflicting mode stays unresolved; known non-FDM can fail this condition without hiding coverage |
+| LINE-COVERAGE: line; A/spectral | Requested SPW centre with supported SKY/REST preparation; width not generally required | Assigned component interval | Associated SPW interval with supported frequency reference and usable-width interpretation | Compare requested centre with candidate coverage, not whole-window containment; mode is assessed separately by LINE-FDM | Missing width alone does not block centre coverage; missing interval/reference blocks coverage |
+| LINE-RESOLUTION-COMPATIBILITY: line; A/spectral | Window-linked planned spectral/smoothing resolution | Frequency resolution from the same assigned component | Spec.Res. SPW N with supported frequency/frame association | Independent [pair condition](line_pairing_design.md); Queue normalization remains separate | Missing/conflicting evidence remains unresolved; a coarser Archive resolution fails compatibility and blocks RMS calculation |
 | LINE-RMS: line; A/spectral | Window-linked RMS and explicit planned spectral/smoothing resolution; noise bandwidth remains independent | Assigned parsed component @10km/s sensitivity and frequency resolution | `Req.Sensitivity`, `Ref.Frequency`, `Ref.Freq.Width`; same-window resolution | Archive: confirmed same-component smoothing and angular correction implemented. Queue: resolution/RMS associations and normalization remain separate; no row-scalar fallback | Missing noise width is not supplied by resolution; broad search remains possible |
 
 ## 3. Request evidence design and implemented subset
 
 The [request API](proposed_observation_api.md#wire-format) owns accepted fields,
 units, shapes, normalization, interval arithmetic and input validation. This
-section owns the evidence semantics needed by future rules; its role names are
+section owns evidence semantics for implemented rules and scoped extensions; its role names are
 not additional accepted wire fields or new Python export names.
 
 Three distinctions must survive input normalization and candidate adaptation:
@@ -161,8 +163,10 @@ Three distinctions must survive input normalization and candidate adaptation:
   arithmetic or supplied bounds are not automatic scientific validation.
 
 The strict continuum bandwidth boundary remains a policy requirement; numerical
-input tolerances cannot turn it into an inclusive threshold. Q2 defines the
-accepted bandwidth interpretation for future qualification.
+input tolerances cannot turn it into an inclusive threshold. Direct USABLE-width
+qualification is implemented and approved within the confirmed scope. Optional
+nominal conversion remains provisional; selecting it does not establish the
+configuration applicability. See [CONT-SETUP](rules.md).
 
 ### Frequency roles and reference provenance
 
@@ -171,14 +175,18 @@ Window center, setup `representative_frequency` and sensitivity
 Each also has `origin` with kind USER_DECLARED/OT_COPIED/IMPORTED/UNKNOWN, raw
 label, source/version and optional source target/epoch. None is a fallback for
 another. Representative frequency exists independently of sensitivity entries.
-Q3 selects the role for formal continuum comparison; multiple RMS entries must
-not cause arbitrary selection. No equality-to-center constraint is imposed.
+Archive continuum uses the declared setup representative SKY frequency; multiple
+RMS entries must not cause arbitrary selection. No equality-to-center constraint
+is imposed. Queue comparison roles remain source-specific.
 
 Frequency kind/frame and origin fields use the [API representation](proposed_observation_api.md#wire-format).
-These preserve declarations; they do not implement frame transformations. An OT
-Sky label cannot establish execution-time topocentric frequency. REST and unknown
-references may support spatial discovery, but require Q3 before automated
-frequency comparison. Unknown and known-incompatible references remain different.
+These preserve declarations rather than establishing execution-time reference
+frames; an OT Sky label alone does not establish topocentric frequency. Archive
+continuum requires the declared representative SKY frequency. Archive line accepts
+SKY centres or REST centres with explicit redshift through the implemented
+[line preparation contract](line_pairing_design.md). Unknown references remain
+unresolved where required and are distinct from known incompatibility. Queue
+frequency mappings follow the [Queue-specific contract](queue_single_point_mapping.md).
 
 ### Sensitivity association
 
@@ -237,15 +245,20 @@ establish an aggregate duplicate verdict. Request issues expose PROPOSED/METHOD
 sides; the comparison layer keeps its independent
 [evidence dimensions](comparison_contexts.md#evidence-and-states).
 
-The future per-rule reason contract additionally needs candidate context/window
-identity and decision references. Planned reason categories include
+Implemented criterion results already retain evidence and decision references;
+context reports identify their candidate context, and line pair results retain
+proposed-window/candidate-component identity, conditions, intermediate values and
+blocking reasons. See [rules](rules.md), [pairing](line_pairing_design.md) and
+[report serialization](evaluation_cli.md). Request validation issues, comparison
+evidence states and criterion reasons remain separate contracts.
+
 MISSING_EVIDENCE, INVALID_EVIDENCE, AMBIGUOUS_ASSOCIATION,
 INCOMPATIBLE_REFERENCE, INCOMPATIBLE_UNIT, UNRESOLVED_SEMANTICS and
-METHOD_NOT_IMPLEMENTED. This is not a claim that all these are current request
-issue codes or attributes. Preserve simultaneous reasons. Bad supplied input
-makes `is_valid=False`; a bad candidate quantity cannot invalidate the request.
-UNKNOWN reference is uncertain evidence, not proof of known incompatibility.
-Readiness is never a duplicate verdict.
+METHOD_NOT_IMPLEMENTED are suggested diagnostic groupings here, not a shared
+implemented enum or a promise that all are serialized request issue codes.
+Preserve simultaneous reasons. Bad supplied input makes `is_valid=False`; a bad
+candidate quantity cannot invalidate the request. UNKNOWN reference is uncertain
+evidence, not proof of known incompatibility. Readiness is never a duplicate verdict.
 
 Candidate upper bounds such as angular resolution `<0.5 arcsec` retain their
 operator inside SearchOptions. They are not a requested value of 0.5 arcsec.
