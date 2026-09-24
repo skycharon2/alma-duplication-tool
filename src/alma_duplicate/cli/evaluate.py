@@ -40,7 +40,7 @@ def main(argv=None, *, archive_client_factory=None):
                         help="Use the source-documented Queue candidate-frequency beam profile")
     parser.add_argument("--aq-equivalent-filters", action="store_true")
     parser.add_argument("--queue-common", action="store_true",
-                        help="Evaluate versioned Queue common rules in the adopted fixed-celestial main-array scope")
+                        help="Evaluate Queue row-beam position and independently scoped angular rules")
     parser.add_argument("--queue-continuum", action="store_true",
                         help="Evaluate scoped Queue continuum; includes Queue common rules")
     args = parser.parse_args(argv)

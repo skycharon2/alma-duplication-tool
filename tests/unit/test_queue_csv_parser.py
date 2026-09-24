@@ -65,7 +65,7 @@ def test_original_numeric_boundary_errors_are_retained(column, value):
     assert result.raw_rows[0].value(column) == value
     assert any(i.kind is QueueIssueKind.INVALID_NUMERIC_VALUE and
                i.column == column and i.raw_value == value for i in result.issues)
-    assert result.snapshot.parser_version == "6"
+    assert result.snapshot.parser_version == "7"
 
 
 @pytest.mark.parametrize("column,value", [

@@ -39,16 +39,22 @@ def candidate_frequency(row):
 
 def candidate_diameter(row):
     """Resolve only the array supported by actual row fields, not dictionary-only fields."""
+    if "standAlone_ACA" in row.raw_row.declared_columns:
+        # Newly accepted operational evidence must not be filtered with the old
+        # auxiliary-flag profile before the row-level evaluator can inspect it.
+        return None, "standAlone_ACA", ("OPERATIONAL_STANDALONE_REQUIRES_ROW_BEAM_PROFILE",)
     if row.request.use_tp:
         return None, "Use TP?", ("TP_GEOMETRY_UNSUPPORTED",)
-    # The current strict 79-column schema has no operational standAlone_ACA.
+    # Legacy interpretation for the pinned 79-column snapshot.
     # Unlike the portal script we do not fill missing values with False.
     if not row.request.use_7m:
         return 12.0, "Use 7-m?=False;Use TP?=False", ("MAIN_ARRAY_FROM_NEGATIVE_AUXILIARY_FLAGS",)
     return None, "Use 7-m?=True;standAlone_ACA=ABSENT", ("QUEUE_ARRAY_COMBINATION_UNRESOLVED",)
 
 
-def adapt_queue_position(context, source_record):
+def adapt_queue_position(context, source_record, *, row_beam=False):
+    from alma_duplicate.queue_row_beam import PROFILE as ROW_PROFILE, DECISION_REF as ROW_REF
+    profile = ROW_PROFILE if row_beam else PROFILE
     row = context.evidence.row
     spatial = row.spatial
     ra, dec = spatial.ra_deg.value, spatial.dec_deg.value
@@ -56,29 +62,33 @@ def adapt_queue_position(context, source_record):
     frame_label = spatial.coordinate_system_raw.strip().lower()
     frame_supported = frame_label in ("", "icrs", "j2000", "galactic")
     diameter, _, array_reasons = candidate_diameter(row)
+    if row_beam:
+        from alma_duplicate.queue_row_beam import resolve_queue_primary_beam_diameter
+        beam = resolve_queue_primary_beam_diameter(row)
+        diameter, array_reasons = beam.diameter_m, (beam.source,)
     interpretation = PositionInterpretation(
         context.context_id, "ICRS" if frame_supported else "UNKNOWN",
-        "UNKNOWN" if zero else "FIXED", SOURCE_REF, diameter,
+        "UNKNOWN" if zero else "FIXED", ROW_REF if row_beam else SOURCE_REF, diameter,
     )
-    evidence = adapt_spatial(context, source_record, interpretation=interpretation)
+    evidence = adapt_spatial(context, source_record, interpretation=interpretation, queue_row_beam=row_beam)
     reasons = list(evidence.reasons) + list(array_reasons)
     reasons.append("PORTAL_EQUATORIAL_FRAME_CONVENTION_NOT_MEASURED_FRAME")
     if zero:
         return replace(evidence, selection_status=S.UNRESOLVED,
                        center_status=S.UNRESOLVED,
                        reasons=tuple(reasons) + ("POSSIBLE_EPHEMERIS_PLACEHOLDER_NAME_CHECK_REQUIRED",),
-                       adapter_version=PROFILE)
+                       adapter_version=profile)
     if not frame_supported:
         return replace(evidence, selection_status=S.UNRESOLVED,
                        reasons=tuple(reasons) + ("QUEUE_OFFSET_FRAME_UNSUPPORTED",),
-                       adapter_version=PROFILE)
+                       adapter_version=profile)
     # No upgrade of rectangle/custom or blank-with-offset geometry to single field.
     if spatial.mosaic_kind is not QueueMosaicKind.SINGLE_FIELD:
-        return replace(evidence, reasons=tuple(reasons), adapter_version=PROFILE)
+        return replace(evidence, reasons=tuple(reasons), adapter_version=profile)
     dx, dy = spatial.long_offset_arcsec.value, spatial.lat_offset_arcsec.value
     if not all(math.isfinite(v) for v in (dx, dy)) or math.hypot(dx, dy) >= 90 * 3600:
         return replace(evidence, selection_status=S.INVALID,
-                       reasons=tuple(reasons) + ("QUEUE_OFFSET_OUTSIDE_LOCAL_DOMAIN",), adapter_version=PROFILE)
+                       reasons=tuple(reasons) + ("QUEUE_OFFSET_OUTSIDE_LOCAL_DOMAIN",), adapter_version=profile)
     if abs(dx) > spatial.zero_tolerance_arcsec or abs(dy) > spatial.zero_tolerance_arcsec:
         from astropy.coordinates import SkyCoord
         from astropy import units as u
@@ -91,10 +101,10 @@ def adapt_queue_position(context, source_record):
         evidence = replace(evidence, center=SkyPosition(center.ra.deg, center.dec.deg, "ICRS"))
         reasons = [r for r in reasons if r != "NONZERO_OFFSETS_NOT_APPLIED"]
         reasons.append("TANGENT_OFFSETS_SPHERICAL_1")
-        # Only lift the offset gate; TP/SPS and all other unsupported states remain.
-        if not row.request.use_tp and isinstance(row.spectral, RegularSpwEvidence):
+        # Lift offsets for this selected profile; scans and other scope gates remain.
+        if (row_beam or not row.request.use_tp) and isinstance(row.spectral, RegularSpwEvidence):
             evidence = replace(evidence, selection_status=S.AVAILABLE)
-    return replace(evidence, reasons=tuple(reasons), adapter_version=PROFILE)
+    return replace(evidence, reasons=tuple(reasons), adapter_version=profile)
 
 
 @dataclass(frozen=True)

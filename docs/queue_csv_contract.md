@@ -57,14 +57,14 @@ Those operations belong to later shared-comparison and policy layers.
 
 This section defines runtime provenance. Historical populations are linked below.
 
-### Runtime provenance (client 2, parser 6)
+### Runtime provenance (client 2, parser 7)
 
 Current version constants are maintained in
 [`queue_csv_client.py`](../src/alma_duplicate/clients/queue_csv_client.py),
 [`queue_csv.py`](../src/alma_duplicate/parsers/queue_csv.py) and
 [`queue_reconstruction.py`](../src/alma_duplicate/queue_reconstruction.py).
 
-Parser 6 retains the parser-5 exact-decimal checks before accepting values that
+Parser 7 retains the parser-5 exact-decimal checks before accepting values that
 would underflow to floating-point zero. RA/Dec ranges are checked using the
 original decimal value, so rounding cannot hide an out-of-range coordinate.
 RA also requires its canonical float to remain in `[0, 360)` degrees: a valid
@@ -247,7 +247,11 @@ The 48 columns therefore represent 16 aligned triples, not 16 frequencies ×
 16 bandwidths × 16 resolutions and not an observed relationship between every
 spatial and spectral component.
 
-All 79 operational columns are required schema columns. Individual values may
+All 79 baseline operational columns remain required. Parser 7 additionally
+accepts optional `standAlone_ACA`, preserving its raw token for the versioned
+[row-beam resolver](queue_common.md); empty/invalid values remain unresolved in
+that rule, and every other unexpected column remains an error.
+All 79 baseline operational columns are required schema columns. Individual values may
 be blank only where the field's row-level semantics permit it.
 
 ## Embedded dictionary and secondary header
@@ -283,7 +287,7 @@ dictionary and operational table:
 | SPS bandwidth unit | `[MHz]` | `[GHz]` | Preserve both; normalize the pinned schema as MHz with a structured warning |
 | Velocity unit spelling | `[km/s]` | `[kms/s]` | Normalize to `km/s`; preserve both raw strings |
 | Mosaic datatype | `[boolean]` | `Custom`, `Rectangle`, or blank | Treat as a categorical value, never a boolean |
-| `standAlone_ACA` | Present | No operational column | Preserve the dictionary entry; do not require or synthesize a data value |
+| `standAlone_ACA` | Present | Absent in pinned snapshot; optional in parser 7 | Preserve raw operational evidence if supplied; dictionary presence alone is not source status. Row-beam fallback is separately recorded. |
 | SPW resolution template | `Spec.Res SPW [N]` | `Spec.Res. SPW N` | Use an explicit template alias |
 | Mosaic reference-system field | `Mos. Coord. Ref. Sys` | `Mos. Coord.` plus `Ref. Sys.` | Join only at the metadata layer; preserve both source tokens |
 | Requested LAS spelling | `Req.LAS` | `Req. LAS` | Use an explicit alias |
