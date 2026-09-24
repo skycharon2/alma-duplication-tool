@@ -1,6 +1,6 @@
 # Queue common rules: row beam and component scope
 
-`--queue-common` selects `queue_pos_single_5` and `queue_angular_factor_6`.
+`--queue-common` selects `queue_pos_single_5` and `queue_angular_factor_7`.
 `--queue-continuum` includes these common rules. The
 [current decision](evidence/queue_row_beam_decision_2026-09-24.md) adopts the Cycle 13
 Portal row-beam convention. Report v4/evaluation v5 remain compatible; method
@@ -29,18 +29,19 @@ position-only zero-reference sky-SPW fallback. FWHM = 1.13*c/(frequency*D), radi
 = FWHM/2. Spherical separation <= radius is inclusive, with no equality band.
 Spherical offset transport is reused, including rows requesting TP.
 
-## Independent angular and continuum scope
+## Shared observation scope
 
-The row-beam decision does not approve every component's requested resolution or
-sensitivity. ANGULAR retains the supported main-array interpretation and exact
-symmetric factor-two comparison. Positive auxiliary flags or explicit standalone
-ACA give QUEUE_COMPONENT_SCOPE_NOT_ADOPTED for ANGULAR, not a position failure.
-Missing angular quantities do not erase a computable position result.
+The same coherent Queue row supplies POS-SINGLE, requested ANGULAR and continuum
+frequency/RMS. Auxiliary flags and standalone status do not block these rules.
+See the [scope correction](evidence/queue_row_continuum_decision_2026-09-24.md).
+ANGULAR keeps its exact symmetric factor-two comparison; the row's requested RMS
+retains the previously adopted reference-width/usable-union interpretation.
+No per-component measurements are invented. Missing quantities remain unknown.
 
-Continuum's existing main-array branch requires its own common scope gate;
-position success on an auxiliary-array row cannot upgrade frequency/RMS or
-produce a formal continuum failure from incomplete scope. Queue LINE and
-component-specific TP/7-m science remain separate work.
+The same POS-SINGLE and ANGULAR objects are passed to LINE pair evaluation.
+Queue LINE numerical rules remain unfinished; this does not create a second
+position method or change the diameter. Mosaic and other unsupported geometry
+remain outside this single-field increment.
 
 ## Report evidence
 

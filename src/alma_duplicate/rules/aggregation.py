@@ -85,6 +85,6 @@ def aggregate_continuum(context, criteria, *, supported=True, queue_method=False
     kwargs = {}
     if queue_method:
         from alma_duplicate.rules.queue_continuum import DECISION_REF as QUEUE_REF
-        kwargs = dict(method_version="queue_continuum_branch_1", decision_refs=(QUEUE_REF,))
+        kwargs = dict(method_version="queue_continuum_branch_2", decision_refs=(QUEUE_REF,))
     return BranchAssessment("CONTINUUM", context.context_id, status, truth,
                             CONTINUUM_CRITERIA, tuple(reasons), **kwargs)

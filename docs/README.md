@@ -137,6 +137,6 @@ is unfinished. See [status](status.md) and [roadmap](roadmap.md).
 
 - [Queue mode evidence adapter](queue_mode_adapter.md): typed row/SPW mode evidence, exact-first reviewed compatibility, and separate single-point applicability.
 
-- [Queue common rules](queue_common.md): opt-in Portal row-beam position, separately scoped angular conditions and versioned provenance.
+- [Queue common rules](queue_common.md): opt-in Portal row-beam position, shared row-level angular conditions and versioned provenance.
 
-- [Queue continuum](queue_continuum.md): opt-in main-12m frequency, usable-union RMS and branch contract.
+- [Queue continuum](queue_continuum.md): opt-in row-level frequency, usable-union RMS and branch contract.

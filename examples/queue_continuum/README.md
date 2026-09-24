@@ -15,7 +15,7 @@ resolution 0.3 arcsec; candidate angular resolution is 0.45 arcsec.
 | 1 | RMS 0.15 mJy | CRITERIA_MET |
 | 2 | RMS 0.3 mJy > 0.2 | CRITERIA_NOT_MET |
 | 3 | Reference frequency zero | INDETERMINATE; no continuum frequency fallback |
-| 4 | Use 7-m true without standalone evidence | INDETERMINATE |
+| 4 | Use 7-m true; recorded Portal row-beam fallback | CRITERIA_MET |
 
 `ngc6240_diagnostic_request.json` reuses the existing single-point coordinates,
 search settings and windows, but adds **assumed** proposed aggregate RMS

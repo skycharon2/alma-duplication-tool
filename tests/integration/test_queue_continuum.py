@@ -72,7 +72,7 @@ def test_complete_branch_and_unchanged_source_values():
     )
     records = json.loads(dict(r.details)["spw_evidence_json"])
     assert len(records) == 4 and {x["spw_number"] for x in records} == {1, 2, 3, 4}
-    assert c.branches[0].method_version == "queue_continuum_branch_1"
+    assert c.branches[0].method_version == "queue_continuum_branch_2"
 
 
 @pytest.mark.parametrize(
@@ -139,7 +139,7 @@ def test_missing_evidence_no_partial_rms(changes):
 
 
 @pytest.mark.parametrize(
-    "changes", [{"Use 7-m?": "True"}, {"Use TP?": "True"}, {"Mosaic": "Custom"}]
+    "changes", [{"Mosaic": "Custom"}]
 )
 def test_scope_cannot_become_negative(changes):
     _, _, c = case(changes, frequency=400)
@@ -203,9 +203,9 @@ def test_cli_report_all_rows_strict_json(tmp_path, monkeypatch):
     from collections import Counter
 
     assert Counter(c["branches"][0]["status"] for c in contexts) == {
-        "CRITERIA_MET": 1,
+        "CRITERIA_MET": 2,
         "CRITERIA_NOT_MET": 1,
-        "INDETERMINATE": 2,
+        "INDETERMINATE": 1,
     }
     assert doc["assessment"] == "NOT_AGGREGATED"
 
@@ -222,7 +222,7 @@ def test_invalid_reference_width_remains_source_failure():
 
 def test_direct_aggregation_cannot_override_common_scope():
     from alma_duplicate.rules.aggregation import aggregate_continuum
-    s, report, c = case({'Use TP?':'True'}, frequency=400)
+    s, report, c = case({'Mosaic':'Custom'}, frequency=400)
     branch = aggregate_continuum(c.candidate.context,
                                  (*report.request_criteria, *c.criteria),
                                  supported=True, queue_method=True)

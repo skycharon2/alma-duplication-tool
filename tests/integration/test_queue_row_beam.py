@@ -70,9 +70,7 @@ def test_flags_do_not_select_diameter(standalone, diameter, kind, use7, tp):
     assert len(details) == len(p.details)
     assert "TP_GEOMETRY_UNSUPPORTED" not in p.reasons
     assert "STANDALONE_ACA_EVIDENCE_UNAVAILABLE" not in p.reasons
-    if tp == "True" or use7 == "True" or standalone == "True":
-        assert a.outcome is None
-        assert "QUEUE_COMPONENT_SCOPE_NOT_ADOPTED" in a.reasons
+    assert a.outcome == "SATISFIED"
 
 
 @pytest.mark.parametrize("token", ["", "unknown", "1", "0", "NaN"])
@@ -152,7 +150,7 @@ def test_cross_source_spatial_evidence_rejected():
         )
 
 
-def test_new_position_does_not_upgrade_continuum_components():
+def test_same_row_interpretation_reaches_continuum():
     from tests.integration.test_queue_continuum import case
 
     _, _, c = case({"Use 7-m?": "True", "Use TP?": "True"})
@@ -160,7 +158,7 @@ def test_new_position_does_not_upgrade_continuum_components():
         next(r for r in c.criteria if r.criterion_id == "POS-SINGLE").outcome
         == "SATISFIED"
     )
-    assert c.branches[0].status == "INDETERMINATE"
+    assert c.branches[0].status == "CRITERIA_MET"
 
 
 def test_legacy_candidate_profile_stays_conservative():

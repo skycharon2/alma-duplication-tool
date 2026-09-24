@@ -9,8 +9,8 @@ Reviewed baseline: PR #81 plus the scoped Queue continuum increment. This is the
 | Ingestion and association | Implemented TAP validation and coherent Source–SPW construction | Implemented CSV parsing, reconstruction and source snapshots |
 | Candidate search | Implemented with explicit binding/completeness | Implemented with source-specific filters and conservative retention |
 | Fixed single-point position | Approved within confirmed scope | [Opt-in Portal row-beam method](queue_common.md): standalone True/False or explicit missing-column assumption; requested components separate |
-| Angular comparison | Approved wrapper in confirmed scope | Opt-in queue_angular_factor_6 approved for common main-12m scope; legacy method stays provisional |
-| Continuum branch | Five conditions and three-valued context branch implemented | [Opt-in main-12m continuum](queue_continuum.md): five conditions and context branch; source-specific usable-union RMS |
+| Angular comparison | Approved wrapper in confirmed scope | Opt-in queue_angular_factor_7 approved for coherent single-field row scope; legacy method stays provisional |
+| Continuum branch | Five conditions and three-valued context branch implemented | [Opt-in row-level continuum](queue_continuum.md): five conditions and context branch; source-specific usable-union RMS |
 | Line branch | Same-pair conditions, intermediate values and context-local aggregation implemented | Formal line pairing/evaluation not implemented |
 | Mode diagnostics | Association-bound operational em_xel interpretation for confirmed LINE scope; not universal telemetry | PR #75 census and PR #76 processor experiment delivered; formal mode UNKNOWN |
 | Derived Queue mode evidence | Existing Archive method unchanged | [Adapter](queue_mode_adapter.md) returns scoped FDM/TDM/UNKNOWN independently of geometry; formal LINE integration remains pending |

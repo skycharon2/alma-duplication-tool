@@ -158,3 +158,10 @@ Use 7-m?/Use TP? do not choose D or exclude a row from POS-SINGLE. Operational
 standalone true means 7 m, false means 12 m; absent means the recorded Cycle 13
 Portal 12-m assumption, while invalid remains unknown. This does not extend
 angular/RMS/component branch scope. See [Queue common](queue_common.md).
+
+## Coherent row continuum correction (0018)
+
+With --queue-continuum, auxiliary flags no longer gate ANGULAR, frequency/RMS or
+the branch. POS-SINGLE v5 is shared with LINE; Queue LINE numerical rules remain
+unimplemented. This supersedes the component-scope restriction stated in the
+0017 note above. See the [decision](evidence/queue_row_continuum_decision_2026-09-24.md).

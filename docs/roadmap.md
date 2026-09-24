@@ -23,8 +23,8 @@ own scientific decisions. An experiment being delivered does not approve its met
 
 | Increment | Work | Exit gate |
 | --- | --- | --- |
-| QUEUE-COMMON — row beam delivered, component scope deferred | Scoped single-point position and angular-resolution evidence | Supported geometry/frame/array interpretation, boundaries and missing/conflict behavior explicit; independent numerical cases and method status recorded |
-| QUEUE-CONTINUUM — main-12m delivered, wider scope deferred | Queue frequency/RMS mappings and independent continuum branch | Same-context/setup evidence, positive/negative/boundary/unknown cases; source-specific sensitivity semantics; no FDM/TDM prerequisite |
+| QUEUE-COMMON — coherent single-field row scope delivered | Scoped single-point position and angular-resolution evidence | Supported geometry/frame/array interpretation, boundaries and missing/conflict behavior explicit; independent numerical cases and method status recorded |
+| QUEUE-CONTINUUM — coherent single-field row scope delivered | Queue frequency/RMS mappings and independent continuum branch | Same-context/setup evidence, positive/negative/boundary/unknown cases; source-specific sensitivity semantics; no FDM/TDM prerequisite |
 | QUEUE-LINE | Mode applicability, coherent same-window coverage/resolution/RMS and pair reports | Supported configuration/profile evidence; no cross-SPW borrowing; coarse-resolution blocking; independent intermediate-value and pair aggregation acceptance |
 | DUAL-SOURCE-ACCEPTANCE | Exercise Archive and supported Queue branches on the same request; acquire actual proposal cases with independent review | Source failures, incomplete retrieval, unsupported geometry and display truncation remain visible; no invented scientific labels |
 | Thin browser interface | Input, candidates, independent branches, pair evidence and export using the backend report | UI/CLI agreement, no duplicate formulas, no UNKNOWN/empty-source-to-negative conversion |
