@@ -86,6 +86,7 @@ def evaluate_queue_common(request, context, spatial_evidence):
         if evidence.selection_status is not SpatialStatus.AVAILABLE:
             issue("QUEUE_POSITION_SCOPE_UNRESOLVED", "context.spatial.selection_status")
     details = (
+        ("common_scope", "SUPPORTED" if not issues else "UNRESOLVED"),
         ("source_row_id", row.raw_row.row_id.value),
         ("snapshot_sha256", row.raw_row.row_id.snapshot_sha256),
         ("queue_geometry", row.spatial.mosaic_kind.value),

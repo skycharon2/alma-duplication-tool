@@ -1,0 +1,126 @@
+{
+  "request": {
+    "target_kind": "FIXED",
+    "geometry": "SINGLE_POINTING",
+    "target_name": "Synthetic Queue continuum acceptance",
+    "position": {
+      "ra": 201.365,
+      "dec": -43.019,
+      "ra_format": "DEG",
+      "dec_format": "DEG",
+      "frame": "ICRS"
+    },
+    "setup_id": "setup-1",
+    "setup_complete": true,
+    "intents": [
+      "CONTINUUM"
+    ],
+    "angular_resolution": {
+      "value": 0.3,
+      "unit": "arcsec"
+    },
+    "representative_frequency": {
+      "value": 230,
+      "unit": "GHz",
+      "kind": "SKY",
+      "frame": "UNKNOWN",
+      "origin": {
+        "kind": "USER_DECLARED",
+        "raw_label": "Sky frequency"
+      }
+    },
+    "spectral_windows": [
+      {
+        "window_id": "w0",
+        "representation": "CENTER_BANDWIDTH",
+        "center": {
+          "value": 226,
+          "unit": "GHz",
+          "kind": "SKY",
+          "frame": "UNKNOWN"
+        },
+        "bandwidth_kind": "USABLE",
+        "bandwidth": {
+          "value": 1.875,
+          "unit": "GHz"
+        }
+      },
+      {
+        "window_id": "w1",
+        "representation": "CENTER_BANDWIDTH",
+        "center": {
+          "value": 228,
+          "unit": "GHz",
+          "kind": "SKY",
+          "frame": "UNKNOWN"
+        },
+        "bandwidth_kind": "USABLE",
+        "bandwidth": {
+          "value": 1.875,
+          "unit": "GHz"
+        }
+      },
+      {
+        "window_id": "w2",
+        "representation": "CENTER_BANDWIDTH",
+        "center": {
+          "value": 232,
+          "unit": "GHz",
+          "kind": "SKY",
+          "frame": "UNKNOWN"
+        },
+        "bandwidth_kind": "USABLE",
+        "bandwidth": {
+          "value": 1.875,
+          "unit": "GHz"
+        }
+      },
+      {
+        "window_id": "w3",
+        "representation": "CENTER_BANDWIDTH",
+        "center": {
+          "value": 234,
+          "unit": "GHz",
+          "kind": "SKY",
+          "frame": "UNKNOWN"
+        },
+        "bandwidth_kind": "USABLE",
+        "bandwidth": {
+          "value": 1.875,
+          "unit": "GHz"
+        }
+      }
+    ],
+    "sensitivities": [
+      {
+        "sensitivity_id": "aggregate",
+        "purpose": "CONTINUUM",
+        "scope": "SETUP",
+        "setup_id": "setup-1",
+        "basis": "AGGREGATE",
+        "aggregate_path": "DIRECT_DECLARATION",
+        "rms": {
+          "value": 0.1,
+          "unit": "mJy/beam"
+        },
+        "window_ids": [
+          "w0",
+          "w1",
+          "w2",
+          "w3"
+        ]
+      }
+    ]
+  },
+  "search_options": {
+    "radius": {
+      "value": 30,
+      "unit": "arcsec"
+    },
+    "sources": [
+      "QUEUE"
+    ],
+    "result_limit": 1,
+    "predicates": []
+  }
+}

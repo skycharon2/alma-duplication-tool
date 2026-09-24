@@ -199,3 +199,11 @@ The example uses the repository Queue fixture, does not invent position
 interpretations, and reports Archive as NOT_PROVIDED. Its retained unevaluated
 candidates are not confirmed spatial matches. Regression coverage is in
 [the connection tests](../tests/integration/test_context_rule_evaluation.py).
+
+## Scoped Queue continuum
+
+The `queue_continuum=True` evaluator option enables the
+[Queue continuum contract](queue_continuum.md) and implies Queue common methods.
+It supplies approved source-specific frequency/RMS criteria and a context-local
+continuum branch. Unsupported common scope remains indeterminate. Default and
+common-only calls retain their previous scope. Queue LINE is not enabled by this option.
