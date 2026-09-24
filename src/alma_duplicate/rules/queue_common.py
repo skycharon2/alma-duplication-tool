@@ -27,7 +27,7 @@ from alma_duplicate.rules.model import (
     EvidenceSide as S,
 )
 
-DECISION_REF = "docs/evidence/queue_common_decision_2026-09-24.md#source-evidence-only-correction"
+DECISION_REF = "docs/evidence/queue_row_continuum_decision_2026-09-24.md"
 
 
 def evaluate_queue_common(request, context, spatial_evidence):
@@ -57,12 +57,6 @@ def evaluate_queue_common(request, context, spatial_evidence):
     beam = resolve_queue_primary_beam_diameter(row)
     if beam.diameter_m is None:
         issue("INVALID_STANDALONE_VALUE", "context.raw_row.standAlone_ACA")
-    # Component-level interpretation is unchanged by a row-beam convention.
-    component_issues = []
-    if row.request.use_tp is not False or row.request.use_7m is not False or beam.standalone is True:
-        component_issues.append(CriterionIssue(S.CANDIDATE,
-            "QUEUE_COMPONENT_SCOPE_NOT_ADOPTED", "context.request.arrays",
-            "Row primary beam does not approve component angular/RMS semantics"))
     evidence = None
     if spatial_evidence is None:
         issue("QUEUE_SPATIAL_SOURCE_REQUIRED", "context.spatial")
@@ -88,7 +82,7 @@ def evaluate_queue_common(request, context, spatial_evidence):
         if evidence.selection_status is not SpatialStatus.AVAILABLE:
             issue("QUEUE_POSITION_SCOPE_UNRESOLVED", "context.spatial.selection_status")
     details = (
-        ("common_scope", "SUPPORTED" if not issues and not component_issues else "UNRESOLVED"),
+        ("common_scope", "SUPPORTED" if not issues else "UNRESOLVED"),
         ("source_row_id", row.raw_row.row_id.value),
         ("snapshot_sha256", row.raw_row.row_id.snapshot_sha256),
         ("queue_geometry", row.spatial.mosaic_kind.value),
@@ -107,12 +101,12 @@ def evaluate_queue_common(request, context, spatial_evidence):
     angular = evaluate_angular_resolution(request, context)
     angular = replace(
         angular,
-        method_version="queue_angular_factor_6",
+        method_version="queue_angular_factor_7",
         approval=MethodApproval.APPROVED,
         decision_refs=angular.decision_refs + (DECISION_REF, ROW_DECISION_REF,),
         details=angular.details + details,
     )
-    angular_issues = issues + component_issues
+    angular_issues = issues
     if angular_issues:
         angular = replace(
             angular,

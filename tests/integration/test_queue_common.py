@@ -222,7 +222,7 @@ def test_cli_all_retained_including_hidden_and_source_failure(tmp_path):
     assert scope["evaluated_contexts"] == scope["total_retained"] == 13
     assert scope["shown_candidates"] == 1
     assert all(
-        c["criteria"][0]["method_version"] == "queue_angular_factor_6"
+        c["criteria"][0]["method_version"] == "queue_angular_factor_7"
         for c in report["context_evaluations"]
     )
     assert all(
@@ -299,8 +299,7 @@ def test_tp_request_does_not_block_row_beam_or_approve_component(use_7m):
     evidence = replace(r.spatial_evidence, interpretation=PositionInterpretation(
         r.context.context_id, 'ICRS', 'FIXED', 'external-review', 12.0))
     rules = evaluate_queue_common(s.plan.validation.request, r.context, evidence)
-    assert rules[0].outcome is None
-    assert 'QUEUE_COMPONENT_SCOPE_NOT_ADOPTED' in rules[0].reasons
+    assert rules[0].outcome == 'SATISFIED'
     assert rules[1].outcome == 'SATISFIED'
     assert dict(rules[1].derived)['antenna_diameter_m'] == 12.0
     assert dict(rules[1].details)['diameter_source'] == 'CYCLE13_PORTAL_HELPER_FALLBACK'

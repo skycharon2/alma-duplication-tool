@@ -24,14 +24,14 @@ from alma_duplicate.rules.model import (
 )
 from alma_duplicate.rules.numeric import positive_canonical
 
-DECISION_REF = "docs/evidence/queue_continuum_decision_2026-09-24.md"
+DECISION_REF = "docs/evidence/queue_row_continuum_decision_2026-09-24.md"
 
 
 def scope_supported(common):
     return (
         len(common) == 2
         and {r.method_version for r in common}
-        == {"queue_angular_factor_6", "queue_pos_single_5"}
+        == {"queue_angular_factor_7", "queue_pos_single_5"}
         and all(dict(r.details).get("common_scope") == "SUPPORTED" for r in common)
     )
 
@@ -77,9 +77,9 @@ def _result(name, context, proposed, candidate, issues, passed, derived, details
     return CriterionResult(
         criterion_id=name,
         policy_ref=f"{POLICY_DOCUMENT}, Spectral windows",
-        method_version="queue_cont_freq_1"
+        method_version="queue_cont_freq_2"
         if name == "CONT-FREQ"
-        else "queue_cont_rms_portal_1",
+        else "queue_cont_rms_portal_2",
         approval=MethodApproval.APPROVED,
         applicability=A.UNRESOLVED if issues else A.APPLICABLE,
         evaluation=E.INSUFFICIENT_INFORMATION if issues else E.EVALUATED,

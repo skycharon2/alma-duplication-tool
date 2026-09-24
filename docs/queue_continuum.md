@@ -2,12 +2,12 @@
 
 Opt in with `--queue-continuum`; it implies `--queue-common`. Only selected
 CONTINUUM intent receives the new branch. Archive methods and Queue LINE are
-unchanged. The [decision](evidence/queue_continuum_decision_2026-09-24.md) owns
+unchanged. The [decision](evidence/queue_row_continuum_decision_2026-09-24.md) owns
 approval and source-interpretation boundaries.
 
 Five conditions are combined within one retained coherent context: POS-SINGLE,
 ANGULAR, request CONT-SETUP, CONT-FREQ and CONT-RMS. Common scope is checked before
-aggregation: TP, unresolved standalone ACA and other unsupported geometry cannot
+aggregation: unsupported geometry or invalid standalone evidence cannot
 become a negative branch merely because a numerical condition fails.
 Within supported scope, false AND unknown is false; no false and an unknown
 is unknown. All five approved conditions must pass for CRITERIA_MET.
@@ -54,9 +54,13 @@ python -m alma_duplicate.cli.evaluate \
 python -m pytest tests/integration/test_queue_continuum.py -q
 ```
 
-Four synthetic contexts, one displayed: 1 met, 1 not met, 2 indeterminate.
+Four synthetic contexts, one displayed: 2 met, 1 not met, 1 indeterminate.
 This tests numbers and scope, not independently reviewed real-proposal labels.
 The NGC6240 diagnostic request adds an assumed proposed RMS to the existing
 retrieval example; see the [example](../examples/queue_continuum/README.md).
 Source failures and search completeness remain in the original report.
 Top-level NOT_AGGREGATED never means no duplication was found in a complete search.
+
+Auxiliary Use 7-m?/Use TP? flags do not exclude row-level continuum. Position
+uses the recorded Portal diameter interpretation; all other candidate quantities
+come from that same coherent row/setup.
