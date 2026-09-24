@@ -44,7 +44,7 @@ def test_candidate_beam_and_outside_retained_for_evaluation(offset, outcome):
     assert p.outcome == outcome
     assert a.outcome == "SATISFIED"
     assert p.approval == a.approval == "APPROVED"
-    assert p.method_version == "queue_pos_single_3"
+    assert p.method_version == "queue_pos_single_4"
     d = dict(p.derived)
     expected = math.degrees(1.13 * 299792458 / (338.5e9 * 12))
     assert d["candidate_fwhm_deg"] == pytest.approx(expected)
@@ -94,8 +94,8 @@ def test_angular_symmetric_exact_limits(candidate, outcome):
 @pytest.mark.parametrize(
     "changes,reason",
     [
-        ({"Use 7-m?": "True"}, "EXCLUSIVE_ARRAY_DECLARATION_REQUIRED"),
-        ({"Use TP?": "True"}, "EXCLUSIVE_ARRAY_DECLARATION_REQUIRED"),
+        ({"Use 7-m?": "True"}, "STANDALONE_ACA_EVIDENCE_UNAVAILABLE"),
+        ({"Use TP?": "True"}, "TP_GEOMETRY_UNSUPPORTED"),
         ({"Mosaic": "Custom"}, "QUEUE_SINGLE_FIELD_REQUIRED"),
         ({"RA": "0", "Dec": "0"}, "QUEUE_CENTER_OR_FIXED_TARGET_UNRESOLVED"),
         ({"Mos. Coord.": "B1950"}, "QUEUE_POSITION_SCOPE_UNRESOLVED"),
@@ -224,11 +224,11 @@ def test_cli_all_retained_including_hidden_and_source_failure(tmp_path):
     assert scope["evaluated_contexts"] == scope["total_retained"] == 13
     assert scope["shown_candidates"] == 1
     assert all(
-        c["criteria"][0]["method_version"] == "queue_angular_factor_4"
+        c["criteria"][0]["method_version"] == "queue_angular_factor_5"
         for c in report["context_evaluations"]
     )
     assert all(
-        c["criteria"][1]["method_version"] == "queue_pos_single_3"
+        c["criteria"][1]["method_version"] == "queue_pos_single_4"
         for c in report["context_evaluations"]
     )
     assert report["assessment"] == "NOT_AGGREGATED"
@@ -293,87 +293,47 @@ def test_proposed_scope(change):
     )
 
 
-@pytest.mark.parametrize('array,flags,diameter', [
-    ('7M_ONLY', {'Use 7-m?': 'True'}, 7),
-    ('TP_ONLY', {'Use TP?': 'True'}, 12),
-])
-@pytest.mark.parametrize('offset', [False, True])
-def test_explicit_exclusive_arrays(array, flags, diameter, offset):
-    from alma_duplicate.rules.queue_common import QueueArrayDeclaration
-    if offset:
-        flags = flags | {'Mosaic': 'N/A', 'Long Offset': '3', 'Lat Offset': '4'}
-    s, _ = case(flags)
+@pytest.mark.parametrize('use_7m', ['False', 'True'])
+def test_tp_cannot_enter_interferometry_even_with_explicit_diameter(use_7m):
+    from alma_duplicate.domain.spatial import PositionInterpretation
+    s, _ = case({'Use 7-m?': use_7m, 'Use TP?': 'True'})
     r = s.queue.rows[0]
-    declaration = QueueArrayDeclaration(r.context.evidence.row.raw_row.row_id.value, array, 'review:array-only')
-    a, p = evaluate_queue_common(s.plan.validation.request, r.context, r.spatial_evidence,
-                                array_declaration=declaration)
-    assert a.outcome == p.outcome == 'SATISFIED'
-    assert dict(p.derived)['antenna_diameter_m'] == diameter
-    expected = math.degrees(1.13 * 299792458 / (338.5e9 * diameter)) / 2
-    assert dict(p.derived)['candidate_radius_deg'] == expected
-    assert dict(p.details)['array_scope'] == array
-    assert 'review:array-only' in p.decision_refs
-    assert 'TP_GEOMETRY_UNSUPPORTED' not in p.reasons
-    report = evaluate_candidate_search(s, queue_common=True, queue_array_declarations=(declaration,))
-    assert report.context_evaluations[0].criteria[:2] == (a, p)
-    assert all(b.status == 'INDETERMINATE' for b in report.context_evaluations[0].branches)
+    evidence = replace(r.spatial_evidence, interpretation=PositionInterpretation(
+        r.context.context_id, 'ICRS', 'FIXED', 'external-review', 12.0))
+    rules = evaluate_queue_common(s.plan.validation.request, r.context, evidence)
+    assert all(c.outcome is None and 'TP_GEOMETRY_UNSUPPORTED' in c.reasons for c in rules)
+    assert dict(rules[1].derived)['antenna_diameter_m'] is None
+    assert dict(rules[1].details)['array_scope'] == 'OUTSIDE_INTERFEROMETRY_SCOPE'
 
 
-@pytest.mark.parametrize('changes,reason', [
-    ({'Use 7-m?': 'True', 'Use TP?': 'True'}, 'MIXED_7M_TP_UNSUPPORTED'),
-    ({'Use 7-m?': 'True'}, 'ARRAY_DECLARATION_CONFLICTS_WITH_FLAGS'),
-    ({'Use TP?': 'True', 'Mos. Coord.': 'B1950'}, 'QUEUE_POSITION_SCOPE_UNRESOLVED'),
-    ({'Use TP?': 'True', 'RA': '0', 'Dec': '0'}, 'QUEUE_CENTER_OR_FIXED_TARGET_UNRESOLVED'),
-    ({'Use TP?': 'True', 'Mosaic': 'Custom'}, 'QUEUE_SINGLE_FIELD_REQUIRED'),
-    ({'Use TP?': 'True', 'Mosaic': 'N/A', 'Long Offset': '324000'}, 'QUEUE_POSITION_SCOPE_UNRESOLVED'),
-])
-def test_declaration_cannot_override_other_gates(changes, reason):
-    from alma_duplicate.rules.queue_common import QueueArrayDeclaration
-    s, _ = case(changes)
+def test_7m_positive_flag_and_manual_diameter_do_not_prove_standalone():
+    from alma_duplicate.domain.spatial import PositionInterpretation
+    s, _ = case({'Use 7-m?': 'True', 'Use TP?': 'False'})
     r = s.queue.rows[0]
-    d = QueueArrayDeclaration(r.context.evidence.row.raw_row.row_id.value, 'TP_ONLY', 'review:tp')
-    rules = evaluate_queue_common(s.plan.validation.request, r.context, r.spatial_evidence, array_declaration=d)
-    assert all(c.outcome is None and reason in c.reasons for c in rules)
+    evidence = replace(r.spatial_evidence, interpretation=PositionInterpretation(
+        r.context.context_id, 'ICRS', 'FIXED', 'external-review', 7.0))
+    rules = evaluate_queue_common(s.plan.validation.request, r.context, evidence)
+    assert all(c.outcome is None and 'STANDALONE_ACA_EVIDENCE_UNAVAILABLE' in c.reasons for c in rules)
+    assert dict(rules[1].derived)['antenna_diameter_m'] is None
+    assert dict(rules[1].details)['array_scope'] == 'UNRESOLVED'
 
 
-def test_declaration_binding_and_duplicates():
-    from alma_duplicate.rules.queue_common import QueueArrayDeclaration
-    s, _ = case({'Use 7-m?': 'True'})
-    r = s.queue.rows[0]
-    d = QueueArrayDeclaration(r.context.evidence.row.raw_row.row_id.value, '7M_ONLY', 'review:7m')
-    with pytest.raises(ValueError, match='another source row'):
-        evaluate_queue_common(s.plan.validation.request, r.context, r.spatial_evidence,
-                              array_declaration=replace(d, source_row_id='wrong'))
-    with pytest.raises(ValueError, match='Duplicate'):
-        evaluate_candidate_search(s, queue_common=True, queue_array_declarations=(d, d))
-    with pytest.raises(ValueError, match='retained source row'):
-        evaluate_candidate_search(s, queue_common=True, queue_array_declarations=(replace(d, source_row_id='wrong'),))
-    with pytest.raises(ValueError, match='require queue_common'):
-        evaluate_candidate_search(s, queue_array_declarations=(d,))
-
-
-@pytest.mark.parametrize('array', ['7M_ONLY', 'TP_ONLY'])
-def test_cli_explicit_array_declaration(tmp_path, array):
-    source = tmp_path / 'queue.csv'
-    # Use a real parser input, retaining raw row identity through CLI reload.
-    from tests.unit.test_queue_csv_parser import _records, _indices, _render
-    records = _records()[:42]
-    columns = _indices(records)
-    for key, value in {'Use 7-m?': str(array == '7M_ONLY'), 'Use TP?': str(array == 'TP_ONLY'), 'RA': '10', 'Dec': '20',
-                       'Mosaic': 'N/A', 'Long Offset': '0', 'Lat Offset': '0'}.items():
-        records[41][columns[key]] = value
-    source.write_bytes(_render(records))
-    from alma_duplicate.clients.queue_csv_client import QueueCsvClient
-    q = QueueCsvClient().load(source)
-    candidates = [r for r in q.row_inputs if r.request.use_7m or r.request.use_tp]
-    assert candidates
-    row_id = candidates[0].raw_row.row_id.value
+@pytest.mark.parametrize('flag,value', [('--queue-array', 'row=TP_ONLY'),
+                                      ('--queue-array-decision-ref', 'review')])
+def test_removed_cli_options_rejected_before_report(tmp_path, flag, value):
     output = tmp_path / 'report.json'
-    args = ['--request', str(REQUEST), '--queue-csv', str(source), '--output', str(output),
-            '--queue-common', '--queue-array', row_id + '=' + array,
-            '--queue-array-decision-ref', 'review:exclusive-7m']
-    assert main(args) == 0
-    text = output.read_text()
-    assert 'EXPLICIT_ROW_ARRAY_DECLARATION_NOT_CSV_ONLY_INFERENCE' in text
-    assert 'review:exclusive-7m' in text
-    assert main(args[:-2]) == 2
+    with pytest.raises(SystemExit) as exc:
+        main(['--request', str(REQUEST), '--queue-csv', str(QUEUE), '--queue-common',
+              '--output', str(output), flag, value])
+    assert exc.value.code == 2
+    assert not output.exists()
+
+
+def test_removed_api_does_not_silently_ignore_declarations():
+    s, _ = case()
+    with pytest.raises(TypeError, match='queue_array_declarations'):
+        evaluate_candidate_search(s, queue_common=True, queue_array_declarations=())
+    r = s.queue.rows[0]
+    with pytest.raises(TypeError, match='array_declaration'):
+        evaluate_queue_common(s.plan.validation.request, r.context, r.spatial_evidence,
+                              array_declaration=None)

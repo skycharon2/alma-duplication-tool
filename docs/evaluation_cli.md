@@ -138,12 +138,7 @@ their historical meanings; consumers should explicitly support report version 4.
 
 ## Opt-in Queue common methods
 
-`--queue-common` selects the [versioned single-array Queue common rules](queue_common.md).
+`--queue-common` selects the [versioned main-12m Queue common rules](queue_common.md).
 It requires Queue source selection, does not enable candidate-beam retrieval,
 and does not complete Queue continuum/LINE branches. Without it, legacy methods
 are unchanged. See the linked contract for fixed-target assumptions and source gates.
-
-Explicit exclusive-array interpretations use repeatable `--queue-array ROW_ID=7M_ONLY`
-or `ROW_ID=TP_ONLY` plus `--queue-array-decision-ref REF`, with `--queue-common`.
-See the [row-binding and conflict contract](queue_common.md#explicit-array-declarations-without-a-sidecar).
-They do not infer exclusive membership from a positive auxiliary flag.

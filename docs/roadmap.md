@@ -23,17 +23,16 @@ own scientific decisions. An experiment being delivered does not approve its met
 
 | Increment | Work | Exit gate |
 | --- | --- | --- |
-| QUEUE-COMMON — single-array delivered, mixed deferred | Scoped single-point position and angular-resolution evidence | Supported geometry/frame/array interpretation, boundaries and missing/conflict behavior explicit; independent numerical cases and method status recorded |
+| QUEUE-COMMON — main-12m delivered, wider arrays deferred | Scoped single-point position and angular-resolution evidence | Supported geometry/frame/array interpretation, boundaries and missing/conflict behavior explicit; independent numerical cases and method status recorded |
 | QUEUE-CONTINUUM | Queue frequency/RMS mappings and independent continuum branch | Same-context/setup evidence, positive/negative/boundary/unknown cases; source-specific sensitivity semantics; no FDM/TDM prerequisite |
 | QUEUE-LINE | Mode applicability, coherent same-window coverage/resolution/RMS and pair reports | Supported configuration/profile evidence; no cross-SPW borrowing; coarse-resolution blocking; independent intermediate-value and pair aggregation acceptance |
 | DUAL-SOURCE-ACCEPTANCE | Exercise Archive and supported Queue branches on the same request; acquire actual proposal cases with independent review | Source failures, incomplete retrieval, unsupported geometry and display truncation remain visible; no invented scientific labels |
 | Thin browser interface | Input, candidates, independent branches, pair evidence and export using the backend report | UI/CLI agreement, no duplicate formulas, no UNKNOWN/empty-source-to-negative conversion |
-| Broader modes — deferred | Mosaic, moving targets, TP branch/RMS evaluation, mixed setups and broader conversions | Separate scope, evidence and acceptance decisions |
+| Broader modes — deferred | Mosaic, moving targets, TP scientific evaluation, mixed setups and broader conversions | Separate scope, evidence and acceptance decisions |
 
-The [first Queue common increment](queue_common.md) supplies opt-in single-array
+The [first Queue common increment](queue_common.md) supplies opt-in main-12m
 position/angular criteria. Next implement Queue continuum within that supported
-scope. Exclusive 7-m/TP declarations are supported; automated exclusive-array
-source recovery and mixed-array interpretation remain separate extensions.
+scope; source-bound 7-m/mixed-array interpretation remains a separate extension.
 
 These are engineering increment IDs, not scientific Q1–Q8 question IDs. The
 [mapping table](queue_single_point_mapping.md) owns detailed fields, units,

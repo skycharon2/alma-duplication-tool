@@ -40,24 +40,10 @@ def main(argv=None, *, archive_client_factory=None):
                         help="Use the source-documented Queue candidate-frequency beam profile")
     parser.add_argument("--aq-equivalent-filters", action="store_true")
     parser.add_argument("--queue-common", action="store_true",
-                        help="Evaluate versioned Queue common rules in the adopted fixed-celestial single-array scope")
-    parser.add_argument("--queue-array", action="append", default=[], metavar="ROW_ID=ARRAY",
-                        help="Explicit row declaration: 7M_ONLY or TP_ONLY; repeat per row")
-    parser.add_argument("--queue-array-decision-ref",
-                        help="Source/reference supporting the explicit exclusive-array declarations")
+                        help="Evaluate versioned Queue common rules in the adopted fixed-celestial main-array scope")
     args = parser.parse_args(argv)
 
     try:
-        from alma_duplicate.rules.queue_common import QueueArrayDeclaration
-        declarations = []
-        if args.queue_array or args.queue_array_decision_ref is not None:
-            if not args.queue_common or not args.queue_array or not args.queue_array_decision_ref:
-                raise ValueError("--queue-array requires --queue-common and --queue-array-decision-ref")
-            for value in args.queue_array:
-                row_id, separator, array = value.rpartition("=")
-                if not separator:
-                    raise ValueError("--queue-array expects ROW_ID=ARRAY")
-                declarations.append(QueueArrayDeclaration(row_id, array, args.queue_array_decision_ref))
         inputs = [args.request]
         if args.queue_csv is not None:
             inputs.append(args.queue_csv)
@@ -145,8 +131,7 @@ def main(argv=None, *, archive_client_factory=None):
         )
         # Archive fixed-celestial interpretation is versioned in its criterion.
         # Queue interpretation is selected only by the explicit common-method option.
-        report = evaluate_candidate_search(search, queue_common=args.queue_common,
-                                           queue_array_declarations=tuple(declarations))
+        report = evaluate_candidate_search(search, queue_common=args.queue_common)
         document = report_document(
             report, input_sha256=hashlib.sha256(raw).hexdigest(),
             archive_replay_metadata=replay_metadata

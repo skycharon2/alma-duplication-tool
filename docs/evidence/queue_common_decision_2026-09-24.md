@@ -1,5 +1,9 @@
 # Queue common-rule adoption — 2026-09-24
 
+The original adoption below records the superseded declaration-capable v3/v4
+methods. The [source-only correction](#source-evidence-only-correction) is the
+current contract. Historical statements are retained for old report references.
+
 ## Common rules
 
 Project authority: the owner-provided handwritten synthesis (PDF pp. 13–17),
@@ -78,3 +82,34 @@ Public sources opened on 2026-09-24:
 - [Existing captured Queue position interpretation](official_sources.md#queue-position-profile): implementation provenance for the reused source adapter.
 
 The [current contract](../queue_common.md) owns scope, execution and regression gates.
+
+## Source evidence only correction
+
+The project owner's subsequent review retracts the manual exclusive-array
+interpretation path for the current interferometric method. Current versions are
+queue_pos_single_4 and queue_angular_factor_5. The original inclusive position
+comparison, candidate frequency, exact angular comparison, source binding and
+fixed-target/geometry gates remain in effect.
+
+- Both auxiliary flags explicitly False: 12 m under the normal supported profile.
+- Use 7-m? True without a supported authoritative standalone source: unresolved.
+- Use TP? True: outside this interferometry method, irrespective of its 12-m dish.
+- Unknown flags: unresolved; never silently fill missing source evidence.
+
+Remove QueueArrayDeclaration, CLI --queue-array/--queue-array-decision-ref and
+corresponding evaluator arguments. A reference string alone is not verified
+array evidence. TP cannot be enabled by any manual declaration or spatial
+interpretation. No existing raw CSV, legacy retrieval method or historical report
+is rewritten. Future authoritative standalone information requires a separate
+source adapter and versioned adoption.
+
+The Cycle 13 Proposer's Guide A.1/A.3/A.4 distinguishes accompanying and
+standalone ACA and the TP single-dish component. The Portal helper uses 7 m
+only for standalone ACA; missing standalone values are replaced with False for
+its plotting convention. That fallback is not adopted as formal source evidence.
+See the public links above and the project's captured official-source record.
+
+The pinned snapshot has 3,200 observation rows: 108 with both flags False,
+16 with 7-m True/TP False, zero with 7-m False/TP True, and 3,076 with both True.
+These are row counts, not counts of assessable single-field candidates. The
+16 rows remain unresolved; neither the counts nor target names prove standalone.

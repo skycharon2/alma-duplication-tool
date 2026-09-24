@@ -137,4 +137,4 @@ is unfinished. See [status](status.md) and [roadmap](roadmap.md).
 
 - [Queue mode evidence adapter](queue_mode_adapter.md): typed row/SPW mode evidence, exact-first reviewed compatibility, and separate single-point applicability.
 
-- [Queue common rules](queue_common.md): opt-in single-array position/angular conditions, source interpretation and versioned boundaries.
+- [Queue common rules](queue_common.md): opt-in main-12m position/angular conditions, source interpretation and versioned boundaries.
