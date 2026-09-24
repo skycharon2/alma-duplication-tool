@@ -39,9 +39,25 @@ def main(argv=None, *, archive_client_factory=None):
     parser.add_argument("--queue-candidate-beam", action="store_true",
                         help="Use the source-documented Queue candidate-frequency beam profile")
     parser.add_argument("--aq-equivalent-filters", action="store_true")
+    parser.add_argument("--queue-common", action="store_true",
+                        help="Evaluate versioned Queue common rules in the adopted fixed-celestial single-array scope")
+    parser.add_argument("--queue-array", action="append", default=[], metavar="ROW_ID=ARRAY",
+                        help="Explicit row declaration: 7M_ONLY or TP_ONLY; repeat per row")
+    parser.add_argument("--queue-array-decision-ref",
+                        help="Source/reference supporting the explicit exclusive-array declarations")
     args = parser.parse_args(argv)
 
     try:
+        from alma_duplicate.rules.queue_common import QueueArrayDeclaration
+        declarations = []
+        if args.queue_array or args.queue_array_decision_ref is not None:
+            if not args.queue_common or not args.queue_array or not args.queue_array_decision_ref:
+                raise ValueError("--queue-array requires --queue-common and --queue-array-decision-ref")
+            for value in args.queue_array:
+                row_id, separator, array = value.rpartition("=")
+                if not separator:
+                    raise ValueError("--queue-array expects ROW_ID=ARRAY")
+                declarations.append(QueueArrayDeclaration(row_id, array, args.queue_array_decision_ref))
         inputs = [args.request]
         if args.queue_csv is not None:
             inputs.append(args.queue_csv)
@@ -89,6 +105,8 @@ def main(argv=None, *, archive_client_factory=None):
             return 2
 
         selected = validated.search_options.sources
+        if args.queue_common and "QUEUE" not in selected:
+            raise ValueError("--queue-common requires QUEUE selection")
         if args.live_archive and "ARCHIVE" not in selected:
             raise ValueError("--live-archive requires ARCHIVE selection")
         if args.queue_csv is not None and "QUEUE" not in selected:
@@ -126,8 +144,9 @@ def main(argv=None, *, archive_client_factory=None):
             queue_candidate_beam=args.queue_candidate_beam,
         )
         # Archive fixed-celestial interpretation is versioned in its criterion.
-        # No Queue interpretation or nominal conversion is invented.
-        report = evaluate_candidate_search(search)
+        # Queue interpretation is selected only by the explicit common-method option.
+        report = evaluate_candidate_search(search, queue_common=args.queue_common,
+                                           queue_array_declarations=tuple(declarations))
         document = report_document(
             report, input_sha256=hashlib.sha256(raw).hexdigest(),
             archive_replay_metadata=replay_metadata

@@ -1,6 +1,6 @@
 # Current implementation status
 
-Reviewed baseline: PR #78 plus the scoped Queue mode evidence increment. This is the single capability summary;
+Reviewed baseline: PR #79 plus the revised Queue common increment. This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
 
@@ -8,8 +8,8 @@ Reviewed baseline: PR #78 plus the scoped Queue mode evidence increment. This is
 | --- | --- | --- |
 | Ingestion and association | Implemented TAP validation and coherent Source–SPW construction | Implemented CSV parsing, reconstruction and source snapshots |
 | Candidate search | Implemented with explicit binding/completeness | Implemented with source-specific filters and conservative retention |
-| Fixed single-point position | Approved within confirmed scope | Existing opt-in candidate-beam method is provisional |
-| Angular comparison | Approved wrapper in confirmed scope | Numerical factor-two method exists; source/method status remains provisional |
+| Fixed single-point position | Approved within confirmed scope | [Opt-in single-array common method](queue_common.md) approved in project scope; legacy search/position profile stays provisional |
+| Angular comparison | Approved wrapper in confirmed scope | Opt-in queue_angular_factor_4 approved for declared single-array scope; legacy method stays provisional |
 | Continuum branch | Five conditions and three-valued context branch implemented | Complete formal branch not implemented; Archive frequency/RMS mappings do not transfer |
 | Line branch | Same-pair conditions, intermediate values and context-local aggregation implemented | Formal line pairing/evaluation not implemented |
 | Mode diagnostics | Association-bound operational em_xel interpretation for confirmed LINE scope; not universal telemetry | PR #75 census and PR #76 processor experiment delivered; formal mode UNKNOWN |
