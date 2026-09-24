@@ -120,6 +120,7 @@ def adapt_spatial(
     source_record: ArchiveQueryResult | QueueCsvParseResult,
     *,
     interpretation: PositionInterpretation | None = None,
+    queue_row_beam: bool = False,
 ) -> SpatialEvidence:
     """Preserve source geometry; unresolved inputs never become single pointings."""
     if interpretation and interpretation.context_id != context.context_id:
@@ -190,7 +191,7 @@ def adapt_spatial(
         reasons.append("NONZERO_OFFSETS_NOT_APPLIED")
     elif any(v != 0 for v in offsets):
         reasons.append("OFFSETS_WITHIN_SOURCE_ZERO_TOLERANCE")
-    if row.request.use_tp:
+    if row.request.use_tp and not queue_row_beam:
         status = S.UNSUPPORTED
         reasons.append("TP_GEOMETRY_UNSUPPORTED")
     if isinstance(row.spectral, SpectralScanEvidence):

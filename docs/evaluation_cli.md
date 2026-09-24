@@ -150,3 +150,11 @@ branch within the source-only main-12m scope. It requires QUEUE source selection
 Default evaluation and common-only evaluation retain their existing behavior.
 See [Queue continuum](queue_continuum.md) for units, intermediate values, versions
 and runnable examples. Report v4 and the top-level assessment are unchanged.
+
+## Row-beam correction
+
+`--queue-common` (also included by `--queue-continuum`) now selects position v5.
+Use 7-m?/Use TP? do not choose D or exclude a row from POS-SINGLE. Operational
+standalone true means 7 m, false means 12 m; absent means the recorded Cycle 13
+Portal 12-m assumption, while invalid remains unknown. This does not extend
+angular/RMS/component branch scope. See [Queue common](queue_common.md).

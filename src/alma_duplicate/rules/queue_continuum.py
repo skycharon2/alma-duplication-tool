@@ -31,7 +31,7 @@ def scope_supported(common):
     return (
         len(common) == 2
         and {r.method_version for r in common}
-        == {"queue_angular_factor_5", "queue_pos_single_4"}
+        == {"queue_angular_factor_6", "queue_pos_single_5"}
         and all(dict(r.details).get("common_scope") == "SUPPORTED" for r in common)
     )
 

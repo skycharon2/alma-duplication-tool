@@ -44,7 +44,7 @@ def test_candidate_beam_and_outside_retained_for_evaluation(offset, outcome):
     assert p.outcome == outcome
     assert a.outcome == "SATISFIED"
     assert p.approval == a.approval == "APPROVED"
-    assert p.method_version == "queue_pos_single_4"
+    assert p.method_version == "queue_pos_single_5"
     d = dict(p.derived)
     expected = math.degrees(1.13 * 299792458 / (338.5e9 * 12))
     assert d["candidate_fwhm_deg"] == pytest.approx(expected)
@@ -94,8 +94,6 @@ def test_angular_symmetric_exact_limits(candidate, outcome):
 @pytest.mark.parametrize(
     "changes,reason",
     [
-        ({"Use 7-m?": "True"}, "STANDALONE_ACA_EVIDENCE_UNAVAILABLE"),
-        ({"Use TP?": "True"}, "TP_GEOMETRY_UNSUPPORTED"),
         ({"Mosaic": "Custom"}, "QUEUE_SINGLE_FIELD_REQUIRED"),
         ({"RA": "0", "Dec": "0"}, "QUEUE_CENTER_OR_FIXED_TARGET_UNRESOLVED"),
         ({"Mos. Coord.": "B1950"}, "QUEUE_POSITION_SCOPE_UNRESOLVED"),
@@ -224,11 +222,11 @@ def test_cli_all_retained_including_hidden_and_source_failure(tmp_path):
     assert scope["evaluated_contexts"] == scope["total_retained"] == 13
     assert scope["shown_candidates"] == 1
     assert all(
-        c["criteria"][0]["method_version"] == "queue_angular_factor_5"
+        c["criteria"][0]["method_version"] == "queue_angular_factor_6"
         for c in report["context_evaluations"]
     )
     assert all(
-        c["criteria"][1]["method_version"] == "queue_pos_single_4"
+        c["criteria"][1]["method_version"] == "queue_pos_single_5"
         for c in report["context_evaluations"]
     )
     assert report["assessment"] == "NOT_AGGREGATED"
@@ -294,16 +292,18 @@ def test_proposed_scope(change):
 
 
 @pytest.mark.parametrize('use_7m', ['False', 'True'])
-def test_tp_cannot_enter_interferometry_even_with_explicit_diameter(use_7m):
+def test_tp_request_does_not_block_row_beam_or_approve_component(use_7m):
     from alma_duplicate.domain.spatial import PositionInterpretation
     s, _ = case({'Use 7-m?': use_7m, 'Use TP?': 'True'})
     r = s.queue.rows[0]
     evidence = replace(r.spatial_evidence, interpretation=PositionInterpretation(
         r.context.context_id, 'ICRS', 'FIXED', 'external-review', 12.0))
     rules = evaluate_queue_common(s.plan.validation.request, r.context, evidence)
-    assert all(c.outcome is None and 'TP_GEOMETRY_UNSUPPORTED' in c.reasons for c in rules)
-    assert dict(rules[1].derived)['antenna_diameter_m'] is None
-    assert dict(rules[1].details)['array_scope'] == 'OUTSIDE_INTERFEROMETRY_SCOPE'
+    assert rules[0].outcome is None
+    assert 'QUEUE_COMPONENT_SCOPE_NOT_ADOPTED' in rules[0].reasons
+    assert rules[1].outcome == 'SATISFIED'
+    assert dict(rules[1].derived)['antenna_diameter_m'] == 12.0
+    assert dict(rules[1].details)['diameter_source'] == 'CYCLE13_PORTAL_HELPER_FALLBACK'
 
 
 def test_7m_positive_flag_and_manual_diameter_do_not_prove_standalone():
@@ -313,9 +313,10 @@ def test_7m_positive_flag_and_manual_diameter_do_not_prove_standalone():
     evidence = replace(r.spatial_evidence, interpretation=PositionInterpretation(
         r.context.context_id, 'ICRS', 'FIXED', 'external-review', 7.0))
     rules = evaluate_queue_common(s.plan.validation.request, r.context, evidence)
-    assert all(c.outcome is None and 'STANDALONE_ACA_EVIDENCE_UNAVAILABLE' in c.reasons for c in rules)
-    assert dict(rules[1].derived)['antenna_diameter_m'] is None
-    assert dict(rules[1].details)['array_scope'] == 'UNRESOLVED'
+    assert all(c.outcome is None for c in rules)
+    assert 'CONFLICTING_POSITION_INTERPRETATION' in rules[1].reasons
+    assert dict(rules[1].derived)['antenna_diameter_m'] == 12.0
+    assert dict(rules[1].details)['standalone_aca_field'] == 'ABSENT'
 
 
 @pytest.mark.parametrize('flag,value', [('--queue-array', 'row=TP_ONLY'),

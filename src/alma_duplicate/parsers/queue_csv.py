@@ -63,7 +63,7 @@ from alma_duplicate.queue_normalization import (
 
 from alma_duplicate.parsers.queue_provenance import parse_source_as_of
 
-QUEUE_CSV_PARSER_VERSION = "6"
+QUEUE_CSV_PARSER_VERSION = "7"
 DEFAULT_QUEUE_SOURCE_URL = (
     "https://almascience.eso.org/proposing/duplications"
 )
@@ -1164,7 +1164,7 @@ def _parse_queue_csv_bytes(
     unexpected = tuple(
         column
         for column in columns
-        if column not in QUEUE_EXPECTED_COLUMNS
+        if column not in QUEUE_EXPECTED_COLUMNS and column != "standAlone_ACA"
     )
 
     for column in duplicates:
@@ -1199,7 +1199,7 @@ def _parse_queue_csv_bytes(
         not missing
         and not unexpected
         and not duplicates
-        and columns != QUEUE_EXPECTED_COLUMNS
+        and tuple(c for c in columns if c != "standAlone_ACA") != QUEUE_EXPECTED_COLUMNS
     ):
         issues.append(
             QueueParseIssue(
