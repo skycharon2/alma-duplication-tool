@@ -43,7 +43,7 @@ def _check_search(result: CandidateSearchResult) -> None:
 
 def evaluate_candidate_search(
     search_result: CandidateSearchResult, *, nominal_conversion: str | None = None,
-    queue_common: bool = False, queue_array_declarations: tuple = (),
+    queue_common: bool = False,
 ) -> EvaluationReport:
     """Evaluate selected branches for every retained context, including hidden rows.
 
@@ -53,15 +53,6 @@ unless the explicit common-method option selects its versioned project adoption.
 Programming/contract errors propagate; they are not scientific missing evidence.
 """
     _check_search(search_result)
-    declarations = {d.source_row_id: d for d in queue_array_declarations}
-    if len(declarations) != len(queue_array_declarations):
-        raise ValueError("Duplicate Queue array declaration")
-    if declarations and not queue_common:
-        raise ValueError("Queue array declarations require queue_common")
-    retained_ids = {r.context.evidence.row.raw_row.row_id.value
-                    for r in search_result.queue.retained_rows}
-    if declarations.keys() - retained_ids:
-        raise ValueError("Queue array declaration does not identify a retained source row")
     request = search_result.plan.validation.request
 
     continuum = "CONTINUUM" in request.intents
@@ -75,8 +66,7 @@ Programming/contract errors propagate; they are not scientific missing evidence.
             branches = []
             if request.intents and queue_common and context.reference.source == "QUEUE":
                 from alma_duplicate.rules.queue_common import evaluate_queue_common
-                criteria.extend(evaluate_queue_common(request, context, row.spatial_evidence,
-                    array_declaration=declarations.get(context.evidence.row.raw_row.row_id.value)))
+                criteria.extend(evaluate_queue_common(request, context, row.spatial_evidence))
             elif request.intents:
                 criteria.extend((approve_angular(evaluate_angular_resolution(request, context), request, context),
                                  evaluate_position_single(request, context, row.spatial_evidence)))
