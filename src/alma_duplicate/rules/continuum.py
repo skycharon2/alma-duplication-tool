@@ -77,6 +77,22 @@ def evaluate_continuum_frequency(request, context):
 
 def evaluate_continuum_rms(request, context):
     candidate, issues = _candidate(context, "cont_sensitivity_bandwidth")
+    proposed, proposed_issues, declarations = prepare_aggregate_rms(request)
+    issues.extend(proposed_issues)
+    for value, side, path in ((proposed, S.PROPOSED, "request.sensitivities"),
+                              (candidate, S.CANDIDATE, "context.cont_sensitivity_bandwidth")):
+        issue = _quantity_issue(value, "mJy/beam", side, path)
+        if issue:
+            issues.append(issue)
+    ratio = None if issues else positive_canonical(candidate.value) / positive_canonical(proposed.value)
+    return _result("CONT-RMS", context, proposed, candidate, issues, ratio, 2.0,
+                   tuple(("contributing_window_id", wid) for wid in declarations[0].window_ids)
+                   if len(declarations) == 1 else ())
+
+
+def prepare_aggregate_rms(request):
+    """Resolve one direct setup declaration without source-specific conversion."""
+    issues = []
     # Multiple declarations cannot be resolved by selecting the most favourable RMS.
     declarations = [s for s in request.sensitivities if s.purpose == "CONTINUUM"]
     proposed = None
@@ -98,12 +114,4 @@ def evaluate_continuum_rms(request, context):
         if s.rms is not None:
             proposed = CriterionValue(s.rms.value, s.rms.unit, s.sensitivity_id,
                                       "PROPOSED_REQUESTED_AGGREGATE_RMS")
-    for value, side, path in ((proposed, S.PROPOSED, "request.sensitivities"),
-                              (candidate, S.CANDIDATE, "context.cont_sensitivity_bandwidth")):
-        issue = _quantity_issue(value, "mJy/beam", side, path)
-        if issue:
-            issues.append(issue)
-    ratio = None if issues else positive_canonical(candidate.value) / positive_canonical(proposed.value)
-    return _result("CONT-RMS", context, proposed, candidate, issues, ratio, 2.0,
-                   tuple(("contributing_window_id", wid) for wid in declarations[0].window_ids)
-                   if len(declarations) == 1 else ())
+    return proposed, issues, declarations

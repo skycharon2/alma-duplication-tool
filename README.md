@@ -12,7 +12,8 @@ with ALMA reviewers.
 
 Archive fixed-target, single-point continuum and LINE evaluation are implemented.
 Queue ingestion/search and conditional mode diagnostics are implemented; complete
-Queue scientific branch evaluation and the browser UI remain unfinished.
+Queue continuum is available in the opt-in source-only main-12m scope
+([contract](docs/queue_continuum.md)); Queue LINE, wider arrays and the browser UI remain unfinished.
 See the [capability matrix](docs/status.md), [documentation guide](docs/README.md)
 and [engineering roadmap](docs/roadmap.md).
 

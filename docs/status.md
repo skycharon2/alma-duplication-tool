@@ -1,6 +1,6 @@
 # Current implementation status
 
-Reviewed baseline: PR #79 plus the source-only Queue common correction. This is the single capability summary;
+Reviewed baseline: PR #81 plus the scoped Queue continuum increment. This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
 
@@ -10,7 +10,7 @@ Reviewed baseline: PR #79 plus the source-only Queue common correction. This is 
 | Candidate search | Implemented with explicit binding/completeness | Implemented with source-specific filters and conservative retention |
 | Fixed single-point position | Approved within confirmed scope | [Opt-in main-12m common method](queue_common.md) approved in project scope; legacy search/position profile stays provisional |
 | Angular comparison | Approved wrapper in confirmed scope | Opt-in queue_angular_factor_5 approved for common main-12m scope; legacy method stays provisional |
-| Continuum branch | Five conditions and three-valued context branch implemented | Complete formal branch not implemented; Archive frequency/RMS mappings do not transfer |
+| Continuum branch | Five conditions and three-valued context branch implemented | [Opt-in main-12m continuum](queue_continuum.md): five conditions and context branch; source-specific usable-union RMS |
 | Line branch | Same-pair conditions, intermediate values and context-local aggregation implemented | Formal line pairing/evaluation not implemented |
 | Mode diagnostics | Association-bound operational em_xel interpretation for confirmed LINE scope; not universal telemetry | PR #75 census and PR #76 processor experiment delivered; formal mode UNKNOWN |
 | Derived Queue mode evidence | Existing Archive method unchanged | [Adapter](queue_mode_adapter.md) returns scoped FDM/TDM/UNKNOWN independently of geometry; formal LINE integration remains pending |

@@ -41,6 +41,8 @@ def main(argv=None, *, archive_client_factory=None):
     parser.add_argument("--aq-equivalent-filters", action="store_true")
     parser.add_argument("--queue-common", action="store_true",
                         help="Evaluate versioned Queue common rules in the adopted fixed-celestial main-array scope")
+    parser.add_argument("--queue-continuum", action="store_true",
+                        help="Evaluate scoped Queue continuum; includes Queue common rules")
     args = parser.parse_args(argv)
 
     try:
@@ -91,8 +93,8 @@ def main(argv=None, *, archive_client_factory=None):
             return 2
 
         selected = validated.search_options.sources
-        if args.queue_common and "QUEUE" not in selected:
-            raise ValueError("--queue-common requires QUEUE selection")
+        if (args.queue_common or args.queue_continuum) and "QUEUE" not in selected:
+            raise ValueError("--queue-common/--queue-continuum requires QUEUE selection")
         if args.live_archive and "ARCHIVE" not in selected:
             raise ValueError("--live-archive requires ARCHIVE selection")
         if args.queue_csv is not None and "QUEUE" not in selected:
@@ -131,7 +133,8 @@ def main(argv=None, *, archive_client_factory=None):
         )
         # Archive fixed-celestial interpretation is versioned in its criterion.
         # Queue interpretation is selected only by the explicit common-method option.
-        report = evaluate_candidate_search(search, queue_common=args.queue_common)
+        report = evaluate_candidate_search(search, queue_common=args.queue_common,
+                                           queue_continuum=args.queue_continuum)
         document = report_document(
             report, input_sha256=hashlib.sha256(raw).hexdigest(),
             archive_replay_metadata=replay_metadata

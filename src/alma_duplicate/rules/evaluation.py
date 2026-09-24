@@ -43,7 +43,7 @@ def _check_search(result: CandidateSearchResult) -> None:
 
 def evaluate_candidate_search(
     search_result: CandidateSearchResult, *, nominal_conversion: str | None = None,
-    queue_common: bool = False,
+    queue_common: bool = False, queue_continuum: bool = False,
 ) -> EvaluationReport:
     """Evaluate selected branches for every retained context, including hidden rows.
 
@@ -52,6 +52,7 @@ becomes a negative criterion result. Queue mappings keep their legacy approval
 unless the explicit common-method option selects its versioned project adoption.
 Programming/contract errors propagate; they are not scientific missing evidence.
 """
+    queue_common = queue_common or queue_continuum
     _check_search(search_result)
     request = search_result.plan.validation.request
 
@@ -71,13 +72,20 @@ Programming/contract errors propagate; they are not scientific missing evidence.
                 criteria.extend((approve_angular(evaluate_angular_resolution(request, context), request, context),
                                  evaluate_position_single(request, context, row.spatial_evidence)))
             if continuum:
-                criteria.extend((evaluate_continuum_frequency(request, context),
-                                 evaluate_continuum_rms(request, context)))
-                supported = (archive_scope(request, context) and
-                    context.evidence.prepared.normalized_metadata.is_mosaic.value is False and
-                    not {"UNIQUE_INTERFEROMETRIC_DIAMETER_REQUIRED",
-                         "CONFLICTING_POSITION_INTERPRETATION"}.intersection(criteria[1].reasons))
-                branches.append(aggregate_continuum(context, (setup, *criteria), supported=supported))
+                if queue_continuum and context.reference.source == "QUEUE":
+                    from alma_duplicate.rules.queue_continuum import evaluate_queue_continuum, scope_supported
+                    supported = scope_supported(criteria)
+                    criteria.extend(evaluate_queue_continuum(request, context, criteria))
+                    branches.append(aggregate_continuum(context, (setup, *criteria),
+                                                       supported=supported, queue_method=True))
+                else:
+                    criteria.extend((evaluate_continuum_frequency(request, context),
+                                     evaluate_continuum_rms(request, context)))
+                    supported = (archive_scope(request, context) and
+                        context.evidence.prepared.normalized_metadata.is_mosaic.value is False and
+                        not {"UNIQUE_INTERFEROMETRIC_DIAMETER_REQUIRED",
+                             "CONFLICTING_POSITION_INTERPRETATION"}.intersection(criteria[1].reasons))
+                    branches.append(aggregate_continuum(context, (setup, *criteria), supported=supported))
             pairing, pairs = None, ()
             if "LINE" in request.intents:
                 pairing, pairs, branch = evaluate_line(request, context, tuple(criteria[:2]))

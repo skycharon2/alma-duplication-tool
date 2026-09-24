@@ -142,3 +142,11 @@ their historical meanings; consumers should explicitly support report version 4.
 It requires Queue source selection, does not enable candidate-beam retrieval,
 and does not complete Queue continuum/LINE branches. Without it, legacy methods
 are unchanged. See the linked contract for fixed-target assumptions and source gates.
+
+## Queue continuum option
+
+`--queue-continuum` implies `--queue-common` and enables the selected continuum
+branch within the source-only main-12m scope. It requires QUEUE source selection.
+Default evaluation and common-only evaluation retain their existing behavior.
+See [Queue continuum](queue_continuum.md) for units, intermediate values, versions
+and runnable examples. Report v4 and the top-level assessment are unchanged.
