@@ -132,8 +132,9 @@ citations and Q1–Q8 interpretations remain in the rule-input contract.
 - [Queue POS-SINGLE](pos_single.md): provisional candidate coverage criterion,
   retained-context scope, derived filter summaries and offline replay.
 
-Queue diagnostic deliveries #75/#76 are complete; formal Queue branch evaluation
-is unfinished. See [status](status.md) and [roadmap](roadmap.md).
+Queue diagnostic deliveries #75/#76 and the supported Queue continuum and LINE
+formal evaluation paths are complete. See [status](status.md) and
+[roadmap](roadmap.md) for the remaining dual-source acceptance and interface work.
 
 - [Queue mode evidence adapter](queue_mode_adapter.md): typed row/SPW mode evidence, exact-first reviewed compatibility, and separate single-point applicability.
 
@@ -141,4 +142,4 @@ is unfinished. See [status](status.md) and [roadmap](roadmap.md).
 
 - [Queue continuum](queue_continuum.md): opt-in row-level frequency, usable-union RMS and branch contract.
 
-- [Queue LINE pairing](queue_line_pairing.md): offline same-row/SPW evidence preparation, provenance checks and step-by-step delivery guide; formal line criteria remain pending.
+- [Queue LINE pairing and evaluation](queue_line_pairing.md): same-row/SPW evidence preparation, formal FDM/coverage/resolution/RMS evaluation, provenance checks and aggregation boundaries.
