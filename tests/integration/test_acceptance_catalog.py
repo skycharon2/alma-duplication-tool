@@ -65,6 +65,11 @@ DUAL_SOURCE_LINE_QUEUE_SHA256 = (
     "6aca3260b84022857c6ea4f42e76f490"
 )
 
+ADVERSARIAL_ISOLATION_QUEUE_SHA256 = (
+    "58ce5543aa6af17a49b86bb10f018111"
+    "5e217fd5937e851e55e85192374b8f5e"
+)
+
 
 @pytest.fixture(scope="module")
 def accepted(tmp_path_factory):
@@ -96,7 +101,7 @@ def one_case(tmp_path, case_id="guide-b"):
 
 def test_all_cases_pass_without_claiming_scientific_review(accepted):
     output, result = accepted
-    assert result["status"] == "PASS" and len(result["cases"]) == 11
+    assert result["status"] == "PASS" and len(result["cases"]) == 12
     assert result["acceptance_run_version"] == "2"
     assert result["catalog_version"] == "2"
     assert result["scientific_review_inferred_from_test_pass"] is False
@@ -107,10 +112,12 @@ def test_all_cases_pass_without_claiming_scientific_review(accepted):
         expected_options = {
             "dual-source-continuum": DUAL_SOURCE_CONTINUUM_OPTIONS,
             "dual-source-line": DUAL_SOURCE_LINE_OPTIONS,
+            "adversarial-source-spw-isolation": DUAL_SOURCE_LINE_OPTIONS,
         }.get(c["case_id"], FALSE_EVALUATION_OPTIONS)
         expected_configuration = {
             "dual-source-continuum": DUAL_SOURCE_CONTINUUM_CONFIGURATION,
             "dual-source-line": DUAL_SOURCE_LINE_CONFIGURATION,
+            "adversarial-source-spw-isolation": DUAL_SOURCE_LINE_CONFIGURATION,
         }.get(c["case_id"], FALSE_EVALUATION_CONFIGURATION)
         assert c["evaluation_options"] == expected_options
         assert c["differences"] == []
@@ -156,6 +163,130 @@ def test_dual_source_line_has_one_source_bound_pair_per_queue_row(accepted):
         ["SATISFIED"] * 6,
         ["SATISFIED"] * 5 + ["NOT_SATISFIED"],
     ]
+
+
+def test_adversarial_source_spw_isolation_never_borrows_favorable_evidence(
+    accepted,
+):
+    document = report(
+        accepted,
+        "adversarial-source-spw-isolation",
+    )
+    contexts = document["context_evaluations"]
+
+    assert [
+        c["reference"]["source"]
+        for c in contexts
+    ] == [
+        "ARCHIVE",
+        "ARCHIVE",
+        "QUEUE",
+    ]
+    assert [
+        len(c["line_pairs"])
+        for c in contexts
+    ] == [
+        1,
+        1,
+        2,
+    ]
+
+    pairs = [
+        contexts[0]["line_pairs"][0],
+        contexts[1]["line_pairs"][0],
+        contexts[2]["line_pairs"][0],
+        contexts[2]["line_pairs"][1],
+    ]
+
+    assert [
+        p["truth"]
+        for p in pairs
+    ] == [
+        "FALSE",
+        "FALSE",
+        "FALSE",
+        "FALSE",
+    ]
+
+    signatures = [
+        {
+            criterion["criterion_id"]:
+                criterion["outcome"]
+            for criterion
+            in pair["criteria"]
+        }
+        for pair in pairs
+    ]
+
+    assert [
+        (
+            item["LINE-FDM"],
+            item["LINE-COVERAGE"],
+            item["LINE-RESOLUTION-COMPATIBILITY"],
+            item["LINE-RMS"],
+        )
+        for item in signatures
+    ] == [
+        (
+            "SATISFIED",
+            "NOT_SATISFIED",
+            "SATISFIED",
+            "SATISFIED",
+        ),
+        (
+            "NOT_SATISFIED",
+            "SATISFIED",
+            "SATISFIED",
+            "NOT_SATISFIED",
+        ),
+        (
+            "NOT_SATISFIED",
+            "SATISFIED",
+            "NOT_SATISFIED",
+            None,
+        ),
+        (
+            "SATISFIED",
+            "NOT_SATISFIED",
+            "SATISFIED",
+            "SATISFIED",
+        ),
+    ]
+
+    queue_pairs = contexts[2]["line_pairs"]
+    assert [
+        pair["attempt"]["reference"]["spw_number"]
+        for pair in queue_pairs
+    ] == [
+        1,
+        2,
+    ]
+    assert {
+        pair["attempt"]["reference"]["snapshot_sha256"]
+        for pair in queue_pairs
+    } == {
+        ADVERSARIAL_ISOLATION_QUEUE_SHA256
+    }
+    assert len(
+        {
+            pair["attempt"]["reference"]["source_row_id"]
+            for pair in queue_pairs
+        }
+    ) == 1
+
+    assert any(
+        item["LINE-FDM"] == "SATISFIED"
+        for item in signatures
+    )
+    assert any(
+        item["LINE-COVERAGE"] == "SATISFIED"
+        for item in signatures
+    )
+    assert not any(
+        item["LINE-FDM"] == "SATISFIED"
+        and item["LINE-COVERAGE"] == "SATISFIED"
+        for item in signatures
+    )
 
 
 def test_catalog_v1_remains_readable_with_historical_option_semantics(

@@ -3278,6 +3278,909 @@
           "absolute_tolerance": 1e-13
         }
       ]
+    },
+    {
+      "case_id": "adversarial-source-spw-isolation",
+      "evidence_kind": "SYNTHETIC_NUMERICAL",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/adversarial-source-spw-isolation.json",
+          "sha256": "6439b5939604a9b08bc9efb58083efcfd0636b88407430a73d2709d28dfee644"
+        },
+        "archive_replay": {
+          "path": "../confirmed_line/archive/manifest.json",
+          "sha256": "8d8f7d1294df4e5c0a97f3a723f0a76055eae35ee261a1bd95c72d8f1cc93156"
+        },
+        "queue_csv": {
+          "path": "queue/adversarial-source-spw-isolation.csv",
+          "sha256": "58ce5543aa6af17a49b86bb10f0181115e217fd5937e851e55e85192374b8f5e"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_adversarial_source_spw_isolation.md",
+          "sha256": "84b541236af8cf18b522e94e51c1b0952fa01cac5d4083b8ad25d01b8f96c247"
+        }
+      },
+      "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": true
+      },
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 3,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 3,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 2,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 1,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-guide-B-pairing-v1:00000000",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "archive_line_context_or_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "truth"
+          ],
+          "equals": "FALSE",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_association",
+            "spw_token"
+          ],
+          "equals": "0",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-guide-B-pairing-v1:00000001",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "archive_line_context_or_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "truth"
+          ],
+          "equals": "FALSE",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_association",
+            "spw_token"
+          ],
+          "equals": "1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "58ce5543aa6af17a49b86bb10f0181115e217fd5937e851e55e85192374b8f5e:42",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_line_context_or_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "source_row_id"
+          ],
+          "equals": "58ce5543aa6af17a49b86bb10f0181115e217fd5937e851e55e85192374b8f5e:42",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "snapshot_sha256"
+          ],
+          "equals": "58ce5543aa6af17a49b86bb10f0181115e217fd5937e851e55e85192374b8f5e",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "spw_number"
+          ],
+          "equals": 1,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "truth"
+          ],
+          "equals": "FALSE",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_line_pair_and_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "attempt",
+            "reference",
+            "source_row_id"
+          ],
+          "equals": "58ce5543aa6af17a49b86bb10f0181115e217fd5937e851e55e85192374b8f5e:42",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "attempt",
+            "reference",
+            "snapshot_sha256"
+          ],
+          "equals": "58ce5543aa6af17a49b86bb10f0181115e217fd5937e851e55e85192374b8f5e",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "attempt",
+            "reference",
+            "spw_number"
+          ],
+          "equals": 2,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "truth"
+          ],
+          "equals": "FALSE",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "method_version"
+          ],
+          "equals": "queue_line_pair_and_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            0,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            1,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "criteria",
+            0,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "criteria",
+            1,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            0,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            1,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": null,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            0,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            1,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "method_version"
+          ],
+          "equals": "queue_line_fdm_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "method_version"
+          ],
+          "equals": "queue_line_coverage_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "method_version"
+          ],
+          "equals": "queue_line_resolution_compatibility_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "method_version"
+          ],
+          "equals": "queue_line_rms_portal_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            2,
+            "method_version"
+          ],
+          "equals": "queue_line_fdm_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            3,
+            "method_version"
+          ],
+          "equals": "queue_line_coverage_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            4,
+            "method_version"
+          ],
+          "equals": "queue_line_resolution_compatibility_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            5,
+            "method_version"
+          ],
+          "equals": "queue_line_rms_portal_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        }
+      ]
     }
   ]
 }

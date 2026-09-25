@@ -19,11 +19,12 @@ outcomes and engineering-only boundaries.
 | mixed-intents | SYNTHETIC_NUMERICAL | Independent continuum/LINE results with explicit sensitivity associations |
 | dual-source-continuum | SYNTHETIC_NUMERICAL | Same-request Archive+Queue formal continuum with source-bound outcomes |
 | dual-source-line | SYNTHETIC_NUMERICAL | Same-request Archive+Queue formal LINE with one positive and one RMS-negative Queue whole pair |
+| adversarial-source-spw-isolation | SYNTHETIC_NUMERICAL | Favorable LINE evidence is split across Archive contexts and Queue SPWs; no pair may borrow evidence |
 | source-not-provided | SOURCE_FAILURE_ENGINEERING | Missing Queue input leaves Archive report usable; exit 3 |
 | ngc6240-continuum | REAL_CAPTURE_ENGINEERING | Real capture mapping plus synthetic proposal; 157 evaluated contexts |
 | ngc6240-line-diagnostic | HYBRID_DIAGNOSTIC | Real Source–SPW component independently checked against artificial line input; retain .5 arcsec angle |
 
-All eleven cases have status AWAITING_INDEPENDENT_REVIEW, with no invented reviewer,
+All twelve cases have status AWAITING_INDEPENDENT_REVIEW, with no invented reviewer,
 date or approval record. **Reviewed real-proposal cases: zero.** Confirmed formulas,
 independent arithmetic and executable expected results do not justify silently
 promoting artificial requests to reviewed real science cases.
