@@ -1,0 +1,66 @@
+{
+  "request": {
+    "target_kind": "FIXED",
+    "geometry": "SINGLE_POINTING",
+    "target_name": "Synthetic Queue line pairing preparation",
+    "position": {
+      "ra": 201.365,
+      "dec": -43.019,
+      "ra_format": "DEG",
+      "dec_format": "DEG",
+      "frame": "ICRS"
+    },
+    "setup_id": "setup-1",
+    "setup_complete": true,
+    "intents": [
+      "LINE"
+    ],
+    "angular_resolution": {
+      "value": 0.3,
+      "unit": "arcsec"
+    },
+    "spectral_windows": [
+      {
+        "window_id": "line-0",
+        "center": {
+          "value": 230.538,
+          "unit": "GHz",
+          "kind": "REST",
+          "frame": "UNKNOWN"
+        },
+        "correlator_mode": "FDM"
+      }
+    ],
+    "sensitivities": [
+      {
+        "sensitivity_id": "line-rms",
+        "purpose": "LINE",
+        "scope": "WINDOW",
+        "window_ids": [
+          "line-0"
+        ],
+        "basis": "SMOOTHED",
+        "rms": {
+          "value": 0.3,
+          "unit": "mJy/beam"
+        },
+        "smoothing_resolution": {
+          "value": 20,
+          "unit": "km/s"
+        }
+      }
+    ],
+    "source_redshift": 0.024
+  },
+  "search_options": {
+    "radius": {
+      "value": 30,
+      "unit": "arcsec"
+    },
+    "sources": [
+      "QUEUE"
+    ],
+    "result_limit": 1,
+    "predicates": []
+  }
+}

@@ -11,7 +11,7 @@ Reviewed baseline: PR #81 plus the scoped Queue continuum increment. This is the
 | Fixed single-point position | Approved within confirmed scope | [Opt-in Portal row-beam method](queue_common.md): standalone True/False or explicit missing-column assumption; requested components separate |
 | Angular comparison | Approved wrapper in confirmed scope | Opt-in queue_angular_factor_7 approved for coherent single-field row scope; legacy method stays provisional |
 | Continuum branch | Five conditions and three-valued context branch implemented | [Opt-in row-level continuum](queue_continuum.md): five conditions and context branch; source-specific usable-union RMS |
-| Line branch | Same-pair conditions, intermediate values and context-local aggregation implemented | Formal line pairing/evaluation not implemented |
+| Line branch | Same-pair conditions, intermediate values and context-local aggregation implemented | [Same-row/SPW evidence pairing](queue_line_pairing.md) implemented as an independent preparation API/CLI; formal criteria and aggregation remain pending |
 | Mode diagnostics | Association-bound operational em_xel interpretation for confirmed LINE scope; not universal telemetry | PR #75 census and PR #76 processor experiment delivered; formal mode UNKNOWN |
 | Derived Queue mode evidence | Existing Archive method unchanged | [Adapter](queue_mode_adapter.md) returns scoped FDM/TDM/UNKNOWN independently of geometry; formal LINE integration remains pending |
 | Acceptance | Pinned numerical and real-capture engineering cases | Ingestion/diagnostic/profile regressions; no complete formal Queue science acceptance |
