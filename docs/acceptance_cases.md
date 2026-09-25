@@ -1,8 +1,9 @@
 # Reproducible acceptance cases and review status
 
-The [catalog](../examples/acceptance/catalog.json) is an offline executable list
-against PR #73. It adds no scientific methods and does not require new formula
-approval. The [independent reference ledger](acceptance_reference_values.md) owns
+The [catalog](../examples/acceptance/catalog.json) is an offline executable,
+versioned acceptance contract. Catalog v2 adds explicit evaluator selection without
+adding or approving any scientific method. The
+[independent reference ledger](acceptance_reference_values.md) continues to own
 raw-field extraction, arithmetic, expected outcomes and engineering-only boundaries.
 
 ## Inventory
@@ -24,6 +25,35 @@ date or approval record. **Reviewed real-proposal cases: zero.** Confirmed formu
 independent arithmetic and executable expected results do not justify silently
 promoting artificial requests to reviewed real science cases.
 
+## Catalog v2 evaluator options
+
+Every v2 case declares exactly three JSON booleans:
+
+    "evaluation_options": {
+      "queue_common": false,
+      "queue_continuum": false,
+      "queue_line": false
+    }
+
+Unknown option names, missing option keys, non-boolean values, unknown v2 case
+keys and non-boolean `queue_candidate_beam` values are rejected before execution.
+
+Queue evaluator options must also agree with the request contract. Queue must be
+a selected source, `queue_continuum` requires CONTINUUM intent and `queue_line`
+requires LINE intent. A Queue CSV is deliberately not required because
+NOT_PROVIDED is itself an acceptance condition.
+
+The runner translates true options to production CLI flags in deterministic
+common/continuum/LINE order. For catalog v2 it also checks requested options
+against report-v4 `evaluation_configuration`. Queue continuum or LINE therefore
+has effective `queue_common=true`. This checks execution provenance, not a
+scientific expected value.
+
+The nine pre-existing cases were migrated to catalog v2 with all three evaluator
+options false, so their historical scientific invocation is unchanged. Historical
+catalog v1 remains readable; absence of `evaluation_options` in v1 normalizes to
+all false and does not retroactively label those runs as formal Queue evaluation.
+
 ## Execute
 
 ```bash
@@ -40,7 +70,8 @@ directories are rejected to avoid replacing evidence. Use a new directory each r
 
 Each case produces `report.json` (unaltered report v4), `inspection.json` (read-only
 gap summary), `comparison.json` (expected/actual differences with references), and
-`execution.txt`. Root `summary.json` records catalog hash, case classifications,
+`execution.txt`. Acceptance-run version 2 records each case's requested
+`evaluation_options`. Root `summary.json` records catalog hash, case classifications,
 review status, input hashes and results, including the number of REAL_PROPOSAL
 cases declared REVIEWED. That count reads review metadata; it does not create or
 authenticate a human sign-off. Outputs are intentionally not committed

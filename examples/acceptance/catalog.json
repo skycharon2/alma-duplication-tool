@@ -1,5 +1,5 @@
 {
-  "catalog_version": "1",
+  "catalog_version": "2",
   "cases": [
     {
       "case_id": "guide-a",
@@ -25,6 +25,11 @@
         }
       },
       "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -175,6 +180,11 @@
         }
       },
       "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -445,6 +455,11 @@
         }
       },
       "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -625,6 +640,11 @@
         }
       },
       "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -837,6 +857,11 @@
         }
       },
       "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -1149,6 +1174,11 @@
         }
       },
       "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -1489,6 +1519,11 @@
         }
       },
       "queue_candidate_beam": true,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -1775,6 +1810,11 @@
         }
       },
       "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 3,
       "assertions": [
         {
@@ -2059,6 +2099,11 @@
         }
       },
       "queue_candidate_beam": true,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {

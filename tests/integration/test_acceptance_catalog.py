@@ -13,11 +13,26 @@ from alma_duplicate.cli.acceptance import (
     load_catalog,
     run_catalog,
     compare_assertions,
+    _effective_evaluation_configuration,
+    _evaluation_flags,
 )
 from alma_duplicate.report_inspection import inspect_report
 
 ROOT = Path(__file__).parents[2]
 CATALOG = ROOT / "examples/acceptance/catalog.json"
+
+FALSE_EVALUATION_OPTIONS = {
+    "queue_common": False,
+    "queue_continuum": False,
+    "queue_line": False,
+}
+
+FALSE_EVALUATION_CONFIGURATION = {
+    "nominal_conversion": None,
+    "queue_common": False,
+    "queue_continuum": False,
+    "queue_line": False,
+}
 
 
 @pytest.fixture(scope="module")
@@ -51,16 +66,319 @@ def one_case(tmp_path, case_id="guide-b"):
 def test_all_cases_pass_without_claiming_scientific_review(accepted):
     output, result = accepted
     assert result["status"] == "PASS" and len(result["cases"]) == 9
+    assert result["acceptance_run_version"] == "2"
+    assert result["catalog_version"] == "2"
     assert result["scientific_review_inferred_from_test_pass"] is False
     assert result["reviewed_real_proposal_cases"] == 0
     for c in result["cases"]:
         assert c["review"]["status"] == "AWAITING_INDEPENDENT_REVIEW"
         assert c["review"]["reviewer"] is None
+        assert c["evaluation_options"] == FALSE_EVALUATION_OPTIONS
         assert c["differences"] == []
+        assert (
+            report(accepted, c["case_id"])["evaluation_configuration"]
+            == FALSE_EVALUATION_CONFIGURATION
+        )
         assert (output / c["case_id"] / "inspection.json").is_file()
         assert (output / c["case_id"] / "comparison.json").is_file()
     diagnostic = report(accepted, "ngc6240-line-diagnostic")
     assert diagnostic["request"]["normalized"]["angular_resolution"]["value"] == 0.5
+
+
+def test_catalog_v1_remains_readable_with_historical_option_semantics(
+    tmp_path,
+):
+    path, catalog = one_case(tmp_path)
+
+    catalog["catalog_version"] = "1"
+    catalog["cases"][0].pop(
+        "evaluation_options"
+    )
+    catalog["cases"][0].pop(
+        "queue_candidate_beam"
+    )
+    path.write_text(
+        json.dumps(catalog)
+    )
+
+    loaded_catalog, loaded = load_catalog(
+        path
+    )
+
+    assert (
+        loaded_catalog["catalog_version"]
+        == "1"
+    )
+    assert (
+        loaded[0][2]
+        == FALSE_EVALUATION_OPTIONS
+    )
+
+
+@pytest.mark.parametrize(
+    ("options", "flags", "effective"),
+    [
+        (
+            {
+                "queue_common": False,
+                "queue_continuum": False,
+                "queue_line": False,
+            },
+            (),
+            {
+                "nominal_conversion": None,
+                "queue_common": False,
+                "queue_continuum": False,
+                "queue_line": False,
+            },
+        ),
+        (
+            {
+                "queue_common": True,
+                "queue_continuum": False,
+                "queue_line": False,
+            },
+            ("--queue-common",),
+            {
+                "nominal_conversion": None,
+                "queue_common": True,
+                "queue_continuum": False,
+                "queue_line": False,
+            },
+        ),
+        (
+            {
+                "queue_common": False,
+                "queue_continuum": True,
+                "queue_line": False,
+            },
+            ("--queue-continuum",),
+            {
+                "nominal_conversion": None,
+                "queue_common": True,
+                "queue_continuum": True,
+                "queue_line": False,
+            },
+        ),
+        (
+            {
+                "queue_common": False,
+                "queue_continuum": False,
+                "queue_line": True,
+            },
+            ("--queue-line",),
+            {
+                "nominal_conversion": None,
+                "queue_common": True,
+                "queue_continuum": False,
+                "queue_line": True,
+            },
+        ),
+        (
+            {
+                "queue_common": True,
+                "queue_continuum": True,
+                "queue_line": True,
+            },
+            (
+                "--queue-common",
+                "--queue-continuum",
+                "--queue-line",
+            ),
+            {
+                "nominal_conversion": None,
+                "queue_common": True,
+                "queue_continuum": True,
+                "queue_line": True,
+            },
+        ),
+    ],
+)
+def test_evaluation_options_have_deterministic_cli_and_effective_mapping(
+    options,
+    flags,
+    effective,
+):
+    assert (
+        _evaluation_flags(options)
+        == flags
+    )
+    assert (
+        _effective_evaluation_configuration(
+            options
+        )
+        == effective
+    )
+
+
+def test_v2_runner_records_line_selection_when_queue_is_not_provided(
+    tmp_path,
+):
+    path, catalog = one_case(
+        tmp_path,
+        "source-not-provided",
+    )
+
+    catalog["cases"][0][
+        "evaluation_options"
+    ]["queue_line"] = True
+
+    path.write_text(
+        json.dumps(catalog)
+    )
+
+    output = tmp_path / "run"
+
+    result = run_catalog(
+        path,
+        output,
+    )
+
+    assert result["status"] == "PASS"
+
+    case = result["cases"][0]
+
+    assert case["exit_code"] == 3
+    assert case["evaluation_options"] == {
+        "queue_common": False,
+        "queue_continuum": False,
+        "queue_line": True,
+    }
+
+    document = json.loads(
+        (
+            output
+            / "source-not-provided"
+            / "report.json"
+        ).read_text()
+    )
+
+    assert (
+        document["sources"]["QUEUE"]["status"]
+        == "NOT_PROVIDED"
+    )
+
+    assert document[
+        "evaluation_configuration"
+    ] == {
+        "nominal_conversion": None,
+        "queue_common": True,
+        "queue_continuum": False,
+        "queue_line": True,
+    }
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "missing-options",
+        "missing-option-key",
+        "unknown-option",
+        "non-boolean-option",
+        "unknown-case-key",
+        "non-boolean-queue-candidate-beam",
+    ],
+)
+def test_catalog_v2_rejects_ambiguous_evaluation_schema(
+    tmp_path,
+    change,
+):
+    path, catalog = one_case(
+        tmp_path
+    )
+
+    case = catalog["cases"][0]
+
+    if change == "missing-options":
+        case.pop(
+            "evaluation_options"
+        )
+
+    elif change == "missing-option-key":
+        case[
+            "evaluation_options"
+        ].pop(
+            "queue_line"
+        )
+
+    elif change == "unknown-option":
+        case[
+            "evaluation_options"
+        ][
+            "queue_lnie"
+        ] = True
+
+    elif change == "non-boolean-option":
+        case[
+            "evaluation_options"
+        ][
+            "queue_line"
+        ] = "true"
+
+    elif change == "unknown-case-key":
+        case[
+            "evaluation_option"
+        ] = {}
+
+    else:
+        case[
+            "queue_candidate_beam"
+        ] = "false"
+
+    path.write_text(
+        json.dumps(catalog)
+    )
+
+    with pytest.raises(
+        ValueError
+    ):
+        load_catalog(path)
+
+
+@pytest.mark.parametrize(
+    ("case_id", "option", "message"),
+    [
+        (
+            "guide-b",
+            "queue_common",
+            "QUEUE source selection",
+        ),
+        (
+            "source-not-provided",
+            "queue_continuum",
+            "CONTINUUM intent",
+        ),
+        (
+            "ngc6240-continuum",
+            "queue_line",
+            "LINE intent",
+        ),
+    ],
+)
+def test_catalog_v2_rejects_options_outside_request_contract(
+    tmp_path,
+    case_id,
+    option,
+    message,
+):
+    path, catalog = one_case(
+        tmp_path,
+        case_id,
+    )
+
+    catalog["cases"][0][
+        "evaluation_options"
+    ][option] = True
+
+    path.write_text(
+        json.dumps(catalog)
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=message,
+    ):
+        load_catalog(path)
 
 
 def test_report_consumer_never_changes_evaluator_report_or_top_level_assessment(

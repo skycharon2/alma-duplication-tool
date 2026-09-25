@@ -16,6 +16,28 @@ from alma_duplicate.report_inspection import inspect_report
 from alma_duplicate.reporting import write_report
 
 
+CATALOG_VERSIONS = {"1", "2"}
+EVALUATION_OPTION_FLAGS = (
+    ("queue_common", "--queue-common"),
+    ("queue_continuum", "--queue-continuum"),
+    ("queue_line", "--queue-line"),
+)
+EVALUATION_OPTION_KEYS = tuple(key for key, _ in EVALUATION_OPTION_FLAGS)
+EVALUATION_OPTION_KEY_SET = frozenset(EVALUATION_OPTION_KEYS)
+V2_CASE_KEYS = frozenset(
+    {
+        "case_id",
+        "evidence_kind",
+        "review",
+        "inputs",
+        "queue_candidate_beam",
+        "evaluation_options",
+        "expected_exit_code",
+        "assertions",
+    }
+)
+
+
 def read_json(path):
     result = json.loads(
         Path(path).read_text(encoding="utf-8"),
@@ -78,13 +100,100 @@ def compare_assertions(document, assertions):
     return differences
 
 
+def _evaluation_options(case, catalog_version):
+    if catalog_version == "1":
+        if "evaluation_options" in case:
+            raise ValueError(
+                "Acceptance catalog version 1 does not define evaluation_options"
+            )
+        return {key: False for key in EVALUATION_OPTION_KEYS}
+
+    options = case.get("evaluation_options")
+    if not isinstance(options, dict) or set(options) != EVALUATION_OPTION_KEY_SET:
+        raise ValueError(
+            "Catalog v2 evaluation_options must contain exactly "
+            "queue_common, queue_continuum and queue_line"
+        )
+    if any(type(options[key]) is not bool for key in EVALUATION_OPTION_KEYS):
+        raise ValueError("Catalog v2 evaluation options must be JSON booleans")
+    return {key: options[key] for key in EVALUATION_OPTION_KEYS}
+
+
+def _evaluation_flags(options):
+    return tuple(
+        flag for key, flag in EVALUATION_OPTION_FLAGS if options[key]
+    )
+
+
+def _effective_evaluation_configuration(options):
+    return {
+        "nominal_conversion": None,
+        "queue_common": (
+            options["queue_common"]
+            or options["queue_continuum"]
+            or options["queue_line"]
+        ),
+        "queue_continuum": options["queue_continuum"],
+        "queue_line": options["queue_line"],
+    }
+
+
+def _validate_evaluation_request(request_path, options):
+    if not any(options.values()):
+        return
+
+    document = read_json(request_path)
+    try:
+        selected = document["search_options"]["sources"]
+        intents = document["request"]["intents"]
+    except (KeyError, TypeError) as exc:
+        raise ValueError(
+            "Acceptance request must declare search sources and intents"
+        ) from exc
+
+    if not isinstance(selected, list) or not all(
+        isinstance(value, str) for value in selected
+    ):
+        raise ValueError("Acceptance request sources must be a list of strings")
+    if not isinstance(intents, list) or not all(
+        isinstance(value, str) for value in intents
+    ):
+        raise ValueError("Acceptance request intents must be a list of strings")
+    if "QUEUE" not in selected:
+        raise ValueError("Queue evaluation options require QUEUE source selection")
+    if options["queue_continuum"] and "CONTINUUM" not in intents:
+        raise ValueError(
+            "queue_continuum acceptance option requires CONTINUUM intent"
+        )
+    if options["queue_line"] and "LINE" not in intents:
+        raise ValueError("queue_line acceptance option requires LINE intent")
+
+
 def load_catalog(path):
     path = Path(path).resolve()
     catalog = read_json(path)
-    if catalog["catalog_version"] != "1" or not catalog["cases"]:
-        raise ValueError("Expected nonempty acceptance catalog version 1")
+    if not isinstance(catalog, dict):
+        raise ValueError("Acceptance catalog must be a JSON object")
+    version = catalog.get("catalog_version")
+    if version not in CATALOG_VERSIONS or not catalog.get("cases"):
+        raise ValueError("Expected nonempty acceptance catalog version 1 or 2")
+    if version == "2" and set(catalog) != {"catalog_version", "cases"}:
+        raise ValueError(
+            "Catalog v2 top level must contain exactly catalog_version and cases"
+        )
     seen, loaded = set(), []
     for case in catalog["cases"]:
+        if not isinstance(case, dict):
+            raise ValueError("Acceptance cases must be JSON objects")
+        if version == "2" and set(case) != V2_CASE_KEYS:
+            raise ValueError(
+                "Catalog v2 case keys must match the versioned case contract"
+            )
+        evaluation_options = _evaluation_options(case, version)
+        if version == "2" and type(case["queue_candidate_beam"]) is not bool:
+            raise ValueError(
+                "Catalog v2 queue_candidate_beam must be a JSON boolean"
+            )
         identifier = case["case_id"]
         if (
             not isinstance(identifier, str)
@@ -145,12 +254,14 @@ def load_catalog(path):
             raise ValueError("Unsupported case input")
         if "reference" not in inputs:
             raise ValueError("An independent reference document is required")
+        if version == "2":
+            _validate_evaluation_request(inputs["request"], evaluation_options)
         # Verify every captured response before any report directory is created.
         if "archive_replay" in inputs:
             from alma_duplicate.clients.archive_replay import RecordedArchiveClient
 
             RecordedArchiveClient(inputs["archive_replay"])
-        loaded.append((case, inputs))
+        loaded.append((case, inputs, evaluation_options))
     return catalog, loaded
 
 
@@ -159,7 +270,7 @@ def run_catalog(catalog_path, output):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
     results = []
-    for case, inputs in loaded:
+    for case, inputs, evaluation_options in loaded:
         directory = output / case["case_id"]
         directory.mkdir()
         report_path = directory / "report.json"
@@ -172,6 +283,7 @@ def run_catalog(catalog_path, output):
                 args.extend((flag, str(inputs[key])))
         if case.get("queue_candidate_beam", False):
             args.append("--queue-candidate-beam")
+        args.extend(_evaluation_flags(evaluation_options))
         log = io.StringIO()
         with redirect_stdout(log), redirect_stderr(log):
             code = evaluate_main(args)
@@ -188,6 +300,23 @@ def run_catalog(catalog_path, output):
         if report_path.exists():
             document = read_json(report_path)
             inspection = inspect_report(document)
+            if catalog["catalog_version"] == "2":
+                expected_configuration = _effective_evaluation_configuration(
+                    evaluation_options
+                )
+                actual_configuration = document.get("evaluation_configuration")
+                if actual_configuration != expected_configuration:
+                    differences.append(
+                        {
+                            "path": ["report", "evaluation_configuration"],
+                            "expected": expected_configuration,
+                            "actual": actual_configuration,
+                            "reference": (
+                                "Catalog v2 requested-to-effective "
+                                "evaluation configuration"
+                            ),
+                        }
+                    )
             differences.extend(
                 compare_assertions(
                     {"report": document, "inspection": inspection}, case["assertions"]
@@ -203,6 +332,7 @@ def run_catalog(catalog_path, output):
             "evidence_kind": case["evidence_kind"],
             "review": case["review"],
             "inputs": case["inputs"],
+            "evaluation_options": evaluation_options,
             "exit_code": code,
             "status": "PASS" if not differences else "FAIL",
             "differences": differences,
@@ -213,7 +343,7 @@ def run_catalog(catalog_path, output):
         write_report(directory / "comparison.json", result)
         results.append(result)
     summary = {
-        "acceptance_run_version": "1",
+        "acceptance_run_version": "2",
         "catalog_version": catalog["catalog_version"],
         "catalog_sha256": hashlib.sha256(Path(catalog_path).read_bytes()).hexdigest(),
         "status": "PASS" if all(r["status"] == "PASS" for r in results) else "FAIL",
