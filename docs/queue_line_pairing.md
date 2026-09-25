@@ -1,9 +1,11 @@
 # Queue spectral-line evidence and pairing contract
 
-Status: same-row regular-SPW evidence preparation implemented. Formal Queue
-LINE-FDM, coverage, resolution, RMS and branch aggregation remain pending.
-The independent preparation API and CLI leave the existing evaluation entry
-point, Archive LINE, Queue continuum and evaluation report schema unchanged.
+Status: same-row regular-SPW evidence preparation and formal Queue LINE
+evaluation are implemented for the fixed-celestial, single-field interferometric,
+regular-SPW scope. The standalone preparation API and CLI remain independent and
+continue to report `assessment: NOT_EVALUATED`; formal evaluation is opt-in through
+the shared evaluator and CLI. Archive LINE and Queue continuum retain their
+existing source-specific methods.
 
 The builder version is `queue_line_pair_builder_1`; the standalone preparation
 report schema is `1`. Preparation always reports `assessment: NOT_EVALUATED`.
@@ -53,7 +55,9 @@ The sensitivity binding is `SAME_ROW_REFERENCE_TRIPLET_NOT_SPW_RMS`. This
 retains the input basis for later Queue normalization without asserting that
 the row's requested RMS is already the RMS at every SPW or proposed resolution.
 Raw mJy quantities are not relabelled mJy/beam, and no Archive 10-km/s basis is
-introduced. No spectral smoothing or angular correction runs in this increment.
+introduced. The standalone preparation step performs no spectral smoothing or
+angular correction. Formal Queue LINE evaluation performs those operations only
+after resolution compatibility using its versioned source-specific method.
 
 Candidate evidence is a preparation snapshot. Criterion consumers must resolve
 the reference again against the owning context, rather than combining detached
@@ -68,11 +72,16 @@ from ingestion; the builder does not repeat or replace those derivations.
 | Queue mode UNKNOWN | Retain the pair with QUEUE_MODE_UNRESOLVED and the adapter reason |
 | Missing usable interval | Record QUEUE_USABLE_INTERVAL_REQUIRED; no nominal-coverage substitution |
 | Zero reference-frequency sentinel | Retain the raw value and QUEUE_REFERENCE_FREQUENCY_UNRESOLVED; no beam-frequency fallback |
-| Unsupported geometry or requested TP scope | Retain regular-SPW diagnostic attempts with scope reasons; no scientific outcome |
+| Unsupported geometry or unresolved common scope | Retain regular-SPW diagnostic attempts with scope reasons; no preparation scientific outcome |
 | Spectral scan | Return SPECTRAL_SCAN_NOT_EXPANDED with no fabricated regular SPWs |
 | LINE not selected | Return LINE_NOT_SELECTED with no attempts |
 | Empty proposed window list | Return NO_PROPOSED_LINE_WINDOWS |
 | Incomplete proposed setup | Preserve PROPOSED_ENUMERATION_INCOMPLETE |
+
+`Use TP? = True` alone is not a pair-level Queue LINE blocker. Supported
+interferometric common scope is owned by the versioned Queue POS-SINGLE and
+ANGULAR criteria. TP-specific formal scientific evaluation remains outside this
+delivery.
 
 `association_status: RESOLVED` means the row/SPW relationship is established.
 `evidence_status: AVAILABLE` means no preparation gaps were recorded; it does
@@ -139,25 +148,41 @@ resolution binding, foreign proposed sensitivity exclusion, missing usable
 coverage, REST-to-SKY provenance, unsupported scope, spectral scans, duplicate
 identities, strict JSON and offline execution without network access.
 
-Validation at baseline `b1dc21dc9faeff81214435a53771ffb187dbea1f`, Python 3.12.14:
-17 pairing tests passed; the offline suite passed 1293 tests with 12 live or
-external-snapshot tests deselected. No live Archive query or external snapshot
-scientific acceptance is claimed.
+Validation on 2026-09-25, Python 3.12:
+the targeted Queue LINE pairing/evaluation suite passed 21 tests; the integration
+suite passed 649 tests; the full suite passed 1300 tests with 9 skipped.
+`python -m compileall -q src tests` and `git diff --check` also succeeded.
+No live Archive query or external-snapshot scientific acceptance is claimed.
 
 ```bash
 python -m pytest -q -m 'not live and not snapshot'
 git diff --check
 ```
 
-## Evaluator integration boundary
+## Formal evaluator integration
 
-The next increment can implement formal LINE-FDM against the proposed window
-and the resolved candidate SPW, using the existing approval/applicability and
-criterion-result contracts. Coverage, resolution, Queue RMS normalization and
-whole-pair aggregation follow on the same references.
+The shared evaluator exposes Queue LINE only when explicitly selected with
+`queue_line=True`; the CLI equivalent is `--queue-line`. Queue LINE reuses the
+already-computed Queue POS-SINGLE and ANGULAR results and evaluates every
+prepared proposed-window x regular-SPW pair without crossing row or SPW
+boundaries.
 
-Future Queue LINE evaluation should consume the already computed common
-POS-SINGLE and ANGULAR results. This builder does not read or calculate an
-antenna diameter. The existing row-beam method and its ABSENT /
-PORTAL_HELPER_ASSUMPTION provenance remain unchanged. Resolving the pending
-primary-beam interpretation therefore does not require rebuilding line pairing.
+Each pair evaluates `LINE-FDM`, `LINE-COVERAGE`,
+`LINE-RESOLUTION-COMPATIBILITY` and `LINE-RMS` using the method versions
+`queue_line_fdm_1`, `queue_line_coverage_1`,
+`queue_line_resolution_compatibility_1` and `queue_line_rms_portal_1`.
+The pair conjunction is `queue_line_pair_and_1`; context existential
+aggregation is `queue_line_context_or_1`.
+
+A Queue spectral resolution coarser than the planned resolution is a definite
+resolution failure and blocks the dependent RMS threshold calculation. Queue
+LINE-RMS starts from the owning row's `Req.Sensitivity` at `Ref.Freq.Width`,
+normalizes to the proposed spectral width, applies the shared line angular
+correction, and then performs the one-sided factor-two comparison. A zero
+`Ref.Frequency` sentinel does not by itself block this RMS path.
+
+Context aggregation ORs only whole-pair truth values. Incomplete proposed or
+candidate enumeration contributes UNKNOWN to the existential result, so a
+no-pass result with incomplete evidence remains INDETERMINATE. The standalone
+pairing CLI remains a preparation interface and continues to report
+`NOT_EVALUATED`.
