@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 
 from alma_duplicate.clients.queue_csv_client import QueueCsvClient
+from alma_duplicate.cli.json_input import load_request_document
 from alma_duplicate.comparison import build_queue_contexts
 from alma_duplicate.queue_line_pairing import build_queue_line_pairs
 from alma_duplicate.reporting import json_value
@@ -13,10 +14,8 @@ from alma_duplicate.request_validation import validate_proposed_observation
 
 
 def run(request_path, csv_path):
-    payload = json.loads(Path(request_path).read_text(encoding="utf-8"))
-    if not isinstance(payload, dict) or not isinstance(payload.get("request"), dict):
-        raise ValueError("Request file requires a request object")
-    validation = validate_proposed_observation(payload["request"], payload.get("search_options"))
+    _, payload = load_request_document(Path(request_path))
+    validation = validate_proposed_observation(payload["request"], payload["search_options"])
     if not validation.is_valid or validation.request is None:
         raise ValueError(f"Invalid request: {validation.issues}")
     if "LINE" not in validation.request.intents:

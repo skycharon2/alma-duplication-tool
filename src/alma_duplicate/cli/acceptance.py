@@ -10,11 +10,8 @@ from pathlib import Path
 import re
 import sys
 
-from alma_duplicate.cli.evaluate import (
-    main as evaluate_main,
-    _reject_constant,
-    _unique_object,
-)
+from alma_duplicate.cli.evaluate import main as evaluate_main
+from alma_duplicate.cli.json_input import _reject_constant, _unique_object
 from alma_duplicate.report_inspection import inspect_report
 from alma_duplicate.reporting import write_report
 

@@ -10,10 +10,11 @@ from alma_duplicate.domain.comparison import ComparisonContext, QueueContextEvid
 from alma_duplicate.domain.line_evidence import ProposedLineEvidence
 from alma_duplicate.domain.proposed_observation import ProposedObservationRequest
 from alma_duplicate.domain.queue import (
-    QueueQuantity, QueueRowInput, QueueSensitivityRequest, QueueSpw, RegularSpwEvidence,
+    QueueMosaicKind, QueueQuantity, QueueRowInput, QueueSensitivityRequest, QueueSpw,
+    RegularSpwEvidence,
 )
 from alma_duplicate.proposed_line import prepare_line_window
-from alma_duplicate.queue_mode_adapter import classify_spw, single_point_applicability
+from alma_duplicate.queue_mode_adapter import classify_spw
 
 
 def _row(context: ComparisonContext) -> QueueRowInput:
@@ -167,9 +168,8 @@ def build_queue_line_pairs(
     scope_reasons = []
     if request.target_kind != "FIXED" or request.geometry != "SINGLE_POINTING":
         scope_reasons.append("FIXED_SINGLE_POINT_REQUEST_REQUIRED")
-    applicability = single_point_applicability(row.spatial.mosaic_kind, row.request.use_tp)
-    if applicability["status"] != "SUPPORTED":
-        scope_reasons.append(applicability["reason"])
+    if row.spatial.mosaic_kind is not QueueMosaicKind.SINGLE_FIELD:
+        scope_reasons.append("QUEUE_SINGLE_FIELD_REQUIRED")
     reasons.extend(scope_reasons)
     attempts = []
     for window in request.spectral_windows:
@@ -187,8 +187,6 @@ def build_queue_line_pairs(
                 missing.extend(("QUEUE_MODE_UNRESOLVED", candidate.mode["mode_evidence"]["reason"]))
             if candidate.spw.usable_bandwidth_ghz is None:
                 missing.append("QUEUE_USABLE_INTERVAL_REQUIRED")
-            if candidate.sensitivity_reference.reference_frequency_ghz.value <= 0:
-                missing.append("QUEUE_REFERENCE_FREQUENCY_UNRESOLVED")
             attempts.append(QueueLinePairAttempt(reference, proposed, candidate, tuple(dict.fromkeys(missing))))
     return QueueLinePairBuildResult(
         context.context_id, tuple(attempts), complete, bool(numbers), tuple(reasons)

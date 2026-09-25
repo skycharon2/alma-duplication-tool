@@ -109,12 +109,18 @@ def test_no_partial_or_unknown_evidence_is_a_negative():
     assert result.assessment == "NOT_EVALUATED"
 
 
-@pytest.mark.parametrize("changes", [{"Mosaic": "Custom"}, {"Use TP?": "True"}])
-def test_scope_diagnostics_preserve_pairs_without_scientific_pass(changes):
-    result = build_queue_line_pairs(request(), contexts(changes)[0])
+def test_scope_diagnostics_preserve_pairs_without_scientific_pass():
+    result = build_queue_line_pairs(request(), contexts({"Mosaic": "Custom"})[0])
     assert result.reasons and len(result.attempts) == 4
     assert all(a.reasons for a in result.attempts)
     assert result.assessment == "NOT_EVALUATED"
+
+
+def test_tp_flag_is_not_a_pair_preparation_blanket_blocker():
+    result = build_queue_line_pairs(request(), contexts({"Use TP?": "True"})[0])
+    assert "TP_RULES_OUTSIDE_CURRENT_SCOPE" not in result.reasons
+    assert all("TP_RULES_OUTSIDE_CURRENT_SCOPE" not in a.reasons for a in result.attempts)
+    assert len(result.attempts) == 4 and result.assessment == "NOT_EVALUATED"
 
 
 def test_rest_to_sky_and_raw_hardware_width_are_retained():
@@ -182,3 +188,20 @@ def test_cli_invalid_csv_and_solar_do_not_emit_report(tmp_path):
     args[1] = str(solar)
     args[3] = str(tmp_path / "does-not-exist.csv")
     assert main(args) == 2 and not out.exists()
+
+
+
+def test_cli_rejects_duplicate_json_keys(tmp_path):
+    payload = (ROOT / "examples/confirmed_line/request.json").read_text()
+    payload = payload.replace(
+        '"source_redshift": 0.024',
+        '"source_redshift": 0.024,\n    "source_redshift": 0.1',
+    )
+    request_path = tmp_path / "duplicate.json"
+    request_path.write_text(payload)
+    out = tmp_path / "pairs.json"
+    args = ["--request", str(request_path),
+            "--queue-csv", str(ROOT / "examples/queue_continuum/queue.csv"),
+            "--output", str(out)]
+    assert main(args) == 2
+    assert not out.exists()
