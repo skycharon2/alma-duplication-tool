@@ -1,6 +1,6 @@
 # Current implementation status
 
-Reviewed baseline: `746d3cb` plus the Queue LINE evaluator increment validated on 2026-09-25. This is the single capability summary;
+Reviewed implementation baseline: `c2abd57` (PR #86 merged); documentation synchronized through PR #87. This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
 
