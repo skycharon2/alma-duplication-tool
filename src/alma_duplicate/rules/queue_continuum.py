@@ -23,17 +23,13 @@ from alma_duplicate.rules.model import (
     EvidenceSide as S,
 )
 from alma_duplicate.rules.numeric import positive_canonical
+from alma_duplicate.rules.queue_common import queue_common_scope_supported
 
 DECISION_REF = "docs/evidence/queue_row_continuum_decision_2026-09-24.md"
 
 
 def scope_supported(common):
-    return (
-        len(common) == 2
-        and {r.method_version for r in common}
-        == {"queue_angular_factor_7", "queue_pos_single_5"}
-        and all(dict(r.details).get("common_scope") == "SUPPORTED" for r in common)
-    )
+    return queue_common_scope_supported(common)
 
 
 def merge_intervals(intervals):
