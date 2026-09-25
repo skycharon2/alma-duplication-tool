@@ -47,6 +47,24 @@ DUAL_SOURCE_CONTINUUM_CONFIGURATION = {
     "queue_line": False,
 }
 
+DUAL_SOURCE_LINE_OPTIONS = {
+    "queue_common": False,
+    "queue_continuum": False,
+    "queue_line": True,
+}
+
+DUAL_SOURCE_LINE_CONFIGURATION = {
+    "nominal_conversion": None,
+    "queue_common": True,
+    "queue_continuum": False,
+    "queue_line": True,
+}
+
+DUAL_SOURCE_LINE_QUEUE_SHA256 = (
+    "13df41cc24ffcfd571f32670f5668c0b"
+    "6aca3260b84022857c6ea4f42e76f490"
+)
+
 
 @pytest.fixture(scope="module")
 def accepted(tmp_path_factory):
@@ -78,7 +96,7 @@ def one_case(tmp_path, case_id="guide-b"):
 
 def test_all_cases_pass_without_claiming_scientific_review(accepted):
     output, result = accepted
-    assert result["status"] == "PASS" and len(result["cases"]) == 10
+    assert result["status"] == "PASS" and len(result["cases"]) == 11
     assert result["acceptance_run_version"] == "2"
     assert result["catalog_version"] == "2"
     assert result["scientific_review_inferred_from_test_pass"] is False
@@ -86,16 +104,14 @@ def test_all_cases_pass_without_claiming_scientific_review(accepted):
     for c in result["cases"]:
         assert c["review"]["status"] == "AWAITING_INDEPENDENT_REVIEW"
         assert c["review"]["reviewer"] is None
-        expected_options = (
-            DUAL_SOURCE_CONTINUUM_OPTIONS
-            if c["case_id"] == "dual-source-continuum"
-            else FALSE_EVALUATION_OPTIONS
-        )
-        expected_configuration = (
-            DUAL_SOURCE_CONTINUUM_CONFIGURATION
-            if c["case_id"] == "dual-source-continuum"
-            else FALSE_EVALUATION_CONFIGURATION
-        )
+        expected_options = {
+            "dual-source-continuum": DUAL_SOURCE_CONTINUUM_OPTIONS,
+            "dual-source-line": DUAL_SOURCE_LINE_OPTIONS,
+        }.get(c["case_id"], FALSE_EVALUATION_OPTIONS)
+        expected_configuration = {
+            "dual-source-continuum": DUAL_SOURCE_CONTINUUM_CONFIGURATION,
+            "dual-source-line": DUAL_SOURCE_LINE_CONFIGURATION,
+        }.get(c["case_id"], FALSE_EVALUATION_CONFIGURATION)
         assert c["evaluation_options"] == expected_options
         assert c["differences"] == []
         assert (
@@ -106,6 +122,40 @@ def test_all_cases_pass_without_claiming_scientific_review(accepted):
         assert (output / c["case_id"] / "comparison.json").is_file()
     diagnostic = report(accepted, "ngc6240-line-diagnostic")
     assert diagnostic["request"]["normalized"]["angular_resolution"]["value"] == 0.5
+
+
+def test_dual_source_line_has_one_source_bound_pair_per_queue_row(accepted):
+    document = report(accepted, "dual-source-line")
+    contexts = document["context_evaluations"]
+
+    assert [c["reference"]["source"] for c in contexts] == [
+        "ARCHIVE",
+        "ARCHIVE",
+        "QUEUE",
+        "QUEUE",
+    ]
+
+    queue = contexts[2:]
+    assert [len(c["line_pairs"]) for c in queue] == [1, 1]
+
+    pairs = [c["line_pairs"][0] for c in queue]
+    assert [p["attempt"]["reference"]["spw_number"] for p in pairs] == [1, 1]
+    assert {
+        p["attempt"]["reference"]["snapshot_sha256"]
+        for p in pairs
+    } == {DUAL_SOURCE_LINE_QUEUE_SHA256}
+    assert [p["truth"] for p in pairs] == ["TRUE", "FALSE"]
+    assert [p["status"] for p in pairs] == [
+        "CRITERIA_MET",
+        "CRITERIA_NOT_MET",
+    ]
+    assert [
+        [criterion["outcome"] for criterion in pair["criteria"]]
+        for pair in pairs
+    ] == [
+        ["SATISFIED"] * 6,
+        ["SATISFIED"] * 5 + ["NOT_SATISFIED"],
+    ]
 
 
 def test_catalog_v1_remains_readable_with_historical_option_semantics(

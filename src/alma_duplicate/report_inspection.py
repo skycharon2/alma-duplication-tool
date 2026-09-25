@@ -143,7 +143,19 @@ def inspect_report(document):
             for r in c["criteria"]:
                 criterion(r, f"{cid}/criteria/{r['criterion_id']}", cid, source)
             for pair in c["line_pairs"]:
-                wid = pair["attempt"]["proposed_window_id"]
+                attempt = pair["attempt"]
+                if "proposed_window_id" in attempt:
+                    wid = attempt["proposed_window_id"]
+                else:
+                    reference = attempt.get("reference")
+                    if (
+                        not isinstance(reference, dict)
+                        or "proposed_window_id" not in reference
+                    ):
+                        raise ValueError(
+                            "Line pair lacks proposed window identity"
+                        )
+                    wid = reference["proposed_window_id"]
                 for r in pair["criteria"]:
                     if r["criterion_id"] not in {"POS-SINGLE", "ANGULAR"}:
                         criterion(

@@ -2560,6 +2560,724 @@
           "reference": "Independent dual-source continuum reference"
         }
       ]
+    },
+    {
+      "case_id": "dual-source-line",
+      "evidence_kind": "SYNTHETIC_NUMERICAL",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/dual-source-line.json",
+          "sha256": "074e6f1721f1d4cfceb11d676a4cbc6e314d81621d140ae509c58820b7a1437c"
+        },
+        "archive_replay": {
+          "path": "../confirmed_line/archive/manifest.json",
+          "sha256": "8d8f7d1294df4e5c0a97f3a723f0a76055eae35ee261a1bd95c72d8f1cc93156"
+        },
+        "queue_csv": {
+          "path": "queue/dual-source-line.csv",
+          "sha256": "13df41cc24ffcfd571f32670f5668c0b6aca3260b84022857c6ea4f42e76f490"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_dual_source_line.md",
+          "sha256": "9194d208235126003ef547e5f3e76db2f030c8066e5388d8313065e8f8b59612"
+        }
+      },
+      "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": true
+      },
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 4,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 4,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 2,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 2,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-guide-B-pairing-v1:00000000",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-guide-B-pairing-v1:00000001",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_line_context_or_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "truth"
+          ],
+          "equals": "TRUE",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_line_pair_and_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "snapshot_sha256"
+          ],
+          "equals": "13df41cc24ffcfd571f32670f5668c0b6aca3260b84022857c6ea4f42e76f490",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "spw_number"
+          ],
+          "equals": 1,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_line_context_or_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "truth"
+          ],
+          "equals": "FALSE",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_line_pair_and_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "snapshot_sha256"
+          ],
+          "equals": "13df41cc24ffcfd571f32670f5668c0b6aca3260b84022857c6ea4f42e76f490",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "spw_number"
+          ],
+          "equals": 1,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "method_version"
+          ],
+          "equals": "queue_line_fdm_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "method_version"
+          ],
+          "equals": "queue_line_coverage_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "method_version"
+          ],
+          "equals": "queue_line_resolution_compatibility_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "method_version"
+          ],
+          "equals": "queue_line_rms_portal_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "derived",
+            0,
+            1
+          ],
+          "equals": 225.134765625,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "derived",
+            1,
+            1
+          ],
+          "equals": 224.1625,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "derived",
+            2,
+            1
+          ],
+          "equals": 226.0375,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "derived",
+            1,
+            1
+          ],
+          "equals": 15.01937487867023,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "derived",
+            2,
+            1
+          ],
+          "equals": 7.8125,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            2,
+            1
+          ],
+          "equals": 0.29980643870445817,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            5,
+            1
+          ],
+          "equals": 0.1332473060908703,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            2,
+            1
+          ],
+          "equals": 1.9987095913630544,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            5,
+            1
+          ],
+          "equals": 0.8883153739391353,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        }
+      ]
     }
   ]
 }
