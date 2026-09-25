@@ -3,8 +3,9 @@
 The [catalog](../examples/acceptance/catalog.json) is an offline executable,
 versioned acceptance contract. Catalog v2 adds explicit evaluator selection without
 adding or approving any scientific method. The
-[independent reference ledger](acceptance_reference_values.md) continues to own
-raw-field extraction, arithmetic, expected outcomes and engineering-only boundaries.
+[independent reference ledger](acceptance_reference_values.md) and pinned
+case-specific reference records own raw-field extraction, arithmetic, expected
+outcomes and engineering-only boundaries.
 
 ## Inventory
 
@@ -16,11 +17,12 @@ raw-field extraction, arithmetic, expected outcomes and engineering-only boundar
 | coarse-line-resolution | SYNTHETIC_NUMERICAL | Coarse resolution fails compatibility and blocks RMS |
 | multiple-line-windows | SYNTHETIC_NUMERICAL | Two requested windows against two candidate SPWs; no cross-pair borrowing |
 | mixed-intents | SYNTHETIC_NUMERICAL | Independent continuum/LINE results with explicit sensitivity associations |
+| dual-source-continuum | SYNTHETIC_NUMERICAL | Same-request Archive+Queue formal continuum with source-bound outcomes |
 | source-not-provided | SOURCE_FAILURE_ENGINEERING | Missing Queue input leaves Archive report usable; exit 3 |
 | ngc6240-continuum | REAL_CAPTURE_ENGINEERING | Real capture mapping plus synthetic proposal; 157 evaluated contexts |
 | ngc6240-line-diagnostic | HYBRID_DIAGNOSTIC | Real Source–SPW component independently checked against artificial line input; retain .5 arcsec angle |
 
-All nine cases have status AWAITING_INDEPENDENT_REVIEW, with no invented reviewer,
+All ten cases have status AWAITING_INDEPENDENT_REVIEW, with no invented reviewer,
 date or approval record. **Reviewed real-proposal cases: zero.** Confirmed formulas,
 independent arithmetic and executable expected results do not justify silently
 promoting artificial requests to reviewed real science cases.

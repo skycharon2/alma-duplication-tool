@@ -2197,6 +2197,369 @@
           "reference": "Independent reference ledger: Guide B arithmetic"
         }
       ]
+    },
+    {
+      "case_id": "dual-source-continuum",
+      "evidence_kind": "SYNTHETIC_NUMERICAL",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/dual-source-continuum.json",
+          "sha256": "119acddfe977310b7314b1b181634df20b4c40d8b2dbfd3618270975e239089d"
+        },
+        "archive_replay": {
+          "path": "../confirmed_continuum/archive/manifest.json",
+          "sha256": "25de8fb10fd23aca46576710aa8bccc991acb903a1d4284f77c8dff12011aa4e"
+        },
+        "queue_csv": {
+          "path": "../queue_continuum/queue.csv",
+          "sha256": "648a98841b506f1838b7982445ba9b9a6f0d82483d1a67ecab1f5312fea92eac"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_dual_source_continuum.md",
+          "sha256": "09a2716c924bd972d225c4c2971a824715b50fdcbc46b9e886c04b83a63f341f"
+        }
+      },
+      "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": true,
+        "queue_line": false
+      },
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 8,
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 8,
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 4,
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 4,
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "INDETERMINATE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            4,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            4,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            5,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            5,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            6,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            6,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "INDETERMINATE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            7,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            7,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            4,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_continuum_branch_2",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            5,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_continuum_branch_2",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            6,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_continuum_branch_2",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            7,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_continuum_branch_2",
+          "reference": "Independent dual-source continuum reference"
+        }
+      ]
     }
   ]
 }

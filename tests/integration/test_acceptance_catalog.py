@@ -34,6 +34,19 @@ FALSE_EVALUATION_CONFIGURATION = {
     "queue_line": False,
 }
 
+DUAL_SOURCE_CONTINUUM_OPTIONS = {
+    "queue_common": False,
+    "queue_continuum": True,
+    "queue_line": False,
+}
+
+DUAL_SOURCE_CONTINUUM_CONFIGURATION = {
+    "nominal_conversion": None,
+    "queue_common": True,
+    "queue_continuum": True,
+    "queue_line": False,
+}
+
 
 @pytest.fixture(scope="module")
 def accepted(tmp_path_factory):
@@ -65,7 +78,7 @@ def one_case(tmp_path, case_id="guide-b"):
 
 def test_all_cases_pass_without_claiming_scientific_review(accepted):
     output, result = accepted
-    assert result["status"] == "PASS" and len(result["cases"]) == 9
+    assert result["status"] == "PASS" and len(result["cases"]) == 10
     assert result["acceptance_run_version"] == "2"
     assert result["catalog_version"] == "2"
     assert result["scientific_review_inferred_from_test_pass"] is False
@@ -73,11 +86,21 @@ def test_all_cases_pass_without_claiming_scientific_review(accepted):
     for c in result["cases"]:
         assert c["review"]["status"] == "AWAITING_INDEPENDENT_REVIEW"
         assert c["review"]["reviewer"] is None
-        assert c["evaluation_options"] == FALSE_EVALUATION_OPTIONS
+        expected_options = (
+            DUAL_SOURCE_CONTINUUM_OPTIONS
+            if c["case_id"] == "dual-source-continuum"
+            else FALSE_EVALUATION_OPTIONS
+        )
+        expected_configuration = (
+            DUAL_SOURCE_CONTINUUM_CONFIGURATION
+            if c["case_id"] == "dual-source-continuum"
+            else FALSE_EVALUATION_CONFIGURATION
+        )
+        assert c["evaluation_options"] == expected_options
         assert c["differences"] == []
         assert (
             report(accepted, c["case_id"])["evaluation_configuration"]
-            == FALSE_EVALUATION_CONFIGURATION
+            == expected_configuration
         )
         assert (output / c["case_id"] / "inspection.json").is_file()
         assert (output / c["case_id"] / "comparison.json").is_file()
