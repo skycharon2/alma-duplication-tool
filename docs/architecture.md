@@ -14,7 +14,7 @@ The [object index](data_model.md) links definitions and the
 | Association | Reconstruction and comparison construction retain row/component or real Queue associations, including alternatives. Member grouping does not authorize mixing them. |
 | Search execution | Candidate search orchestrates source calls, binding, local selectors and independent execution reports; failed or incomplete sources remain visible. |
 | Presentation | Grouping organizes candidate rows for display while retaining their contexts and filter records. |
-| Criteria | Five approved Archive continuum conditions feed per-context branch aggregation. Queue retains independent provisional methods; line input/mode evidence, pair building, numerical pair AND and context-local pair OR are implemented. |
+| Criteria | Archive continuum/LINE and the supported Queue common/continuum/LINE methods feed source-bound per-context branch aggregation. Queue LINE keeps same-row/same-SPW evidence; no branch aggregation crosses candidate contexts or sources. |
 
 The [evaluation entry point](../src/alma_duplicate/rules/evaluation.py) takes the
 original plan request and selects branches by intents. For CONTINUUM it evaluates
@@ -23,7 +23,7 @@ candidates hidden by the display limit. It keeps the search
 result and candidate objects intact. The [rule contract](rules.md) specifies
 computation, outcome, applicability, approval and multi-side diagnostics.
 A successful search, a display group and an approved criterion remain different
-objects with different completeness requirements. Continuum context aggregation is implemented; search-wide conclusions are not.
+objects with different completeness requirements. Continuum and LINE context aggregation are implemented for the supported Archive and Queue paths; search-wide and cross-source conclusions are not.
 Valid SUN requests exit through a typed request-level exemption before search;
 no source clients or replay loaders are invoked.
 
@@ -38,7 +38,9 @@ No Web framework is selected by this change.
 
 ANGULAR and CONT-SETUP share exact canonical-scalar arithmetic. POS-SINGLE
 uses spherical floating-point geometry: Archive has an inclusive <= boundary;
-legacy Queue preserves the boundary behavior documented in [its contract](pos_single.md).
+the supported Queue workflow uses the versioned row-beam method documented in
+[Queue common](queue_common.md), while legacy Queue method versions retain their
+historical meaning.
 Other dependency work is explicitly deferred: move scalar execution out of
 planning, extract common spherical helpers from spatial/beam code, and isolate
 the source-scoped bandwidth mapping currently imported from Queue normalization.

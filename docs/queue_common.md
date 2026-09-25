@@ -1,7 +1,7 @@
 # Queue common rules: row beam and component scope
 
 `--queue-common` selects `queue_pos_single_5` and `queue_angular_factor_7`.
-`--queue-continuum` includes these common rules. The
+`--queue-continuum` and `--queue-line` include these common rules. The
 [current decision](evidence/queue_row_beam_decision_2026-09-24.md) adopts the Cycle 13
 Portal row-beam convention. Report v4/evaluation v5 remain compatible; method
 versions identify the changed interpretation. Archive behavior is unchanged.
@@ -38,10 +38,13 @@ ANGULAR keeps its exact symmetric factor-two comparison; the row's requested RMS
 retains the previously adopted reference-width/usable-union interpretation.
 No per-component measurements are invented. Missing quantities remain unknown.
 
-The same POS-SINGLE and ANGULAR objects are passed to LINE pair evaluation.
-Queue LINE numerical rules remain unfinished; this does not create a second
-position method or change the diameter. Mosaic and other unsupported geometry
-remain outside this single-field increment.
+The same POS-SINGLE and ANGULAR objects are passed to formal Queue LINE pair
+evaluation. `queue_line_fdm_1`, `queue_line_coverage_1`,
+`queue_line_resolution_compatibility_1` and `queue_line_rms_portal_1` operate
+only on the bound same-row/same-SPW pair; `queue_line_pair_and_1` and
+`queue_line_context_or_1` preserve pair/context boundaries. This does not create
+a second position method or change the row diameter. Mosaic and other unsupported
+geometry remain outside the supported fixed single-field increment.
 
 ## Report evidence
 
@@ -75,4 +78,5 @@ python -m pytest tests/integration/test_queue_row_beam.py \
 
 Old manual --queue-array declarations remain removed. Historical position v3/v4
 and angular v4/v5 reports keep their original meaning. Generate a new report;
-do not relabel an old one. The roadmap owns remaining component/LINE/UI work.
+do not relabel an old one. The roadmap owns remaining dual-source acceptance,
+interface and broader-mode work.

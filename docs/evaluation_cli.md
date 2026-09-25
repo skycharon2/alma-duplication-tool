@@ -93,11 +93,14 @@ For same-request Archive and Queue replay, use `--archive-replay` with the
 [captured NGC6240 example](dual_source_replay.md). It is mutually exclusive with
 `--live-archive` and never falls back to a network query.
 
-Evaluation version 3 selects branches by intent and adds the confirmed Archive
-continuum methods and context aggregation. The separate provisional Queue
-POS-SINGLE method requires `--queue-candidate-beam`. See [the method contract](pos_single.md).
-Per-source `filter_summary` counts are derived from processed row audits;
-excluded rows remain auditable and server-unreturned rows are outside the count.
+Current evaluation version 5 preserves source-bound branch evaluation.
+Archive formal methods run from the selected intents. Supported Queue formal
+methods are opt-in with `--queue-common`, `--queue-continuum` or `--queue-line`;
+the latter two imply Queue common methods. `--queue-candidate-beam` remains a
+search/profile option and does not by itself select a formal Queue continuum or
+LINE method. Per-source `filter_summary` counts are derived from processed row
+audits; excluded rows remain auditable and server-unreturned rows are outside
+the count.
 
 ## Line pair export (report 4 / evaluation 5)
 
@@ -117,13 +120,15 @@ attempts. It is empty when LINE is not selected or no windows are listed. Each i
 - `truth`, `status`, `reasons`, `scope`, `method_version`, `decision_refs`:
   the coherent pair's three-valued AND result.
 
-LINE-RMS `derived` contains `archive_resolution_kms`, `planned_resolution_kms`,
-`sigma_10kms_mjy_beam`, `theta_plan_arcsec`, `theta_archive_arcsec`,
-`sigma_at_plan_mjy_beam`, `sigma_comp_mjy_beam`, `sigma_requested_mjy_beam` and
-`max_factor`. Blocked calculations remain null with explicit reasons.
-LINE-COVERAGE records the sky center and exact component endpoints in GHz.
-The [rules contract](rules.md#confirmed-archive-line-evaluation) owns formula and
-numeric semantics; the JSON encodes `derived` and `details` as key/value arrays.
+LINE-RMS `derived` is source-specific. Archive LINE records its 10-km/s
+starting estimate, planned resolution, Archive/proposal angular values and
+comparable RMS. Queue LINE records the planned resolution in MHz, Queue reference
+width, Queue RMS normalized to the planned spectral width, Queue/proposal angular
+values and the comparable Queue RMS. Blocked calculations remain null with
+explicit reasons. LINE-COVERAGE likewise preserves the source-specific bound
+interval and prepared sky center. The [rules contract](rules.md) and
+[Queue LINE contract](queue_line_pairing.md) own formula and numeric semantics;
+the JSON encodes `derived` and `details` as key/value arrays.
 
 The LINE entry in `branches` is the context-local OR of whole pairs. It reports
 CRITERIA_MET, CRITERIA_NOT_MET or INDETERMINATE. Incomplete proposed enumeration
@@ -146,22 +151,37 @@ are unchanged. See the linked contract for fixed-target assumptions and source g
 ## Queue continuum option
 
 `--queue-continuum` implies `--queue-common` and enables the selected continuum
-branch within the source-only main-12m scope. It requires QUEUE source selection.
-Default evaluation and common-only evaluation retain their existing behavior.
-See [Queue continuum](queue_continuum.md) for units, intermediate values, versions
-and runnable examples. Report v4 and the top-level assessment are unchanged.
+branch within the supported coherent single-field Queue scope. It requires QUEUE
+source selection. Default evaluation and common-only evaluation retain their
+existing behavior. See [Queue continuum](queue_continuum.md) for units,
+intermediate values, versions and runnable examples. Report v4 and the top-level
+assessment are unchanged.
+
+## Queue LINE option
+
+`--queue-line` implies `--queue-common` and enables formal Queue LINE evaluation
+for selected LINE intent in the supported fixed single-field regular-SPW scope.
+Every proposed-window/candidate-SPW attempt remains bound to the same physical
+Queue row and SPW. FDM, coverage, resolution compatibility and Queue-specific RMS
+are combined only within that pair, followed by context-local OR of whole pairs.
+Incomplete enumeration remains UNKNOWN. See
+[Queue LINE](queue_line_pairing.md) for versions, evidence bindings and runnable
+acceptance commands. Report v4 and top-level `NOT_AGGREGATED` are unchanged.
 
 ## Row-beam correction
 
-`--queue-common` (also included by `--queue-continuum`) now selects position v5.
+`--queue-common` (also included by `--queue-continuum` and `--queue-line`) selects position v5.
 Use 7-m?/Use TP? do not choose D or exclude a row from POS-SINGLE. Operational
 standalone true means 7 m, false means 12 m; absent means the recorded Cycle 13
 Portal 12-m assumption, while invalid remains unknown. This does not extend
 angular/RMS/component branch scope. See [Queue common](queue_common.md).
 
-## Coherent row continuum correction (0018)
+## Coherent Queue row scope
 
-With --queue-continuum, auxiliary flags no longer gate ANGULAR, frequency/RMS or
-the branch. POS-SINGLE v5 is shared with LINE; Queue LINE numerical rules remain
-unimplemented. This supersedes the component-scope restriction stated in the
-0017 note above. See the [decision](evidence/queue_row_continuum_decision_2026-09-24.md).
+With `--queue-continuum`, auxiliary flags no longer gate ANGULAR, frequency/RMS
+or the continuum branch. POS-SINGLE v5 and ANGULAR are also the shared common
+criteria used by `--queue-line`; formal Queue LINE then evaluates the bound
+same-row/same-SPW FDM, coverage, resolution and RMS conditions. Broader mosaic,
+moving-target, TP-science and mixed-array interpretation remain outside the
+supported scope. The earlier continuum-only decision remains preserved as dated
+evidence in [the 2026-09-24 record](evidence/queue_row_continuum_decision_2026-09-24.md).
