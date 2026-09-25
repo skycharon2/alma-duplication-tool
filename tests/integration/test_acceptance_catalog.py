@@ -101,7 +101,7 @@ def one_case(tmp_path, case_id="guide-b"):
 
 def test_all_cases_pass_without_claiming_scientific_review(accepted):
     output, result = accepted
-    assert result["status"] == "PASS" and len(result["cases"]) == 12
+    assert result["status"] == "PASS" and len(result["cases"]) == 15
     assert result["acceptance_run_version"] == "2"
     assert result["catalog_version"] == "2"
     assert result["scientific_review_inferred_from_test_pass"] is False
@@ -113,11 +113,17 @@ def test_all_cases_pass_without_claiming_scientific_review(accepted):
             "dual-source-continuum": DUAL_SOURCE_CONTINUUM_OPTIONS,
             "dual-source-line": DUAL_SOURCE_LINE_OPTIONS,
             "adversarial-source-spw-isolation": DUAL_SOURCE_LINE_OPTIONS,
+            "archive-failed-queue-preserved": DUAL_SOURCE_LINE_OPTIONS,
+            "queue-failed-archive-preserved": DUAL_SOURCE_LINE_OPTIONS,
+            "completed-empty-queue": DUAL_SOURCE_LINE_OPTIONS,
         }.get(c["case_id"], FALSE_EVALUATION_OPTIONS)
         expected_configuration = {
             "dual-source-continuum": DUAL_SOURCE_CONTINUUM_CONFIGURATION,
             "dual-source-line": DUAL_SOURCE_LINE_CONFIGURATION,
             "adversarial-source-spw-isolation": DUAL_SOURCE_LINE_CONFIGURATION,
+            "archive-failed-queue-preserved": DUAL_SOURCE_LINE_CONFIGURATION,
+            "queue-failed-archive-preserved": DUAL_SOURCE_LINE_CONFIGURATION,
+            "completed-empty-queue": DUAL_SOURCE_LINE_CONFIGURATION,
         }.get(c["case_id"], FALSE_EVALUATION_CONFIGURATION)
         assert c["evaluation_options"] == expected_options
         assert c["differences"] == []
@@ -619,6 +625,87 @@ def test_missing_input_candidate_missing_and_dependency_remain_distinct(accepted
     )
 
 
+def test_inspection_v2_closes_known_reason_taxonomy_and_v1_remains_readable(
+    accepted,
+):
+    for case in accepted[1]["cases"]:
+        view = inspect_report(
+            report(accepted, case["case_id"])
+        )
+        assert view["inspection_version"] == "2"
+        assert not any(
+            occurrence["category"] == "UNCLASSIFIED"
+            for occurrence in view["gap_occurrences"]
+        )
+
+    continuum = report(
+        accepted,
+        "ngc6240-continuum",
+    )
+    legacy = inspect_report(
+        continuum,
+        inspection_version="1",
+    )
+    current = inspect_report(continuum)
+
+    assert legacy["inspection_version"] == "1"
+    assert any(
+        occurrence["code"] == "MISSING_OR_INVALID_QUANTITY"
+        and occurrence["source"] == "QUEUE"
+        and occurrence["side"] == "CANDIDATE"
+        and occurrence["category"] == "UNCLASSIFIED"
+        for occurrence in legacy["gap_occurrences"]
+    )
+    assert any(
+        occurrence["code"] == "MISSING_OR_INVALID_QUANTITY"
+        and occurrence["source"] == "QUEUE"
+        and occurrence["side"] == "CANDIDATE"
+        and occurrence["category"] == "QUEUE_EVIDENCE_MISSING"
+        for occurrence in current["gap_occurrences"]
+    )
+
+    line = inspect_report(
+        report(
+            accepted,
+            "ngc6240-line-diagnostic",
+        )
+    )
+    assert any(
+        occurrence["code"] == "CANDIDATE_DIAMETER_UNAVAILABLE"
+        and occurrence["source"] == "QUEUE"
+        and occurrence["category"] == "QUEUE_EVIDENCE_MISSING"
+        for occurrence in line["gap_occurrences"]
+    )
+    assert any(
+        occurrence["code"] == "POSITION_SCOPE_UNRESOLVED"
+        and occurrence["source"] == "QUEUE"
+        and occurrence["category"] == "SCOPE_UNSUPPORTED"
+        for occurrence in line["gap_occurrences"]
+    )
+
+    adversarial = inspect_report(
+        report(
+            accepted,
+            "adversarial-source-spw-isolation",
+        )
+    )
+    assert any(
+        occurrence["code"] == "QUEUE_RESOLUTION_COARSER_THAN_PLANNED"
+        and occurrence["source"] == "QUEUE"
+        and occurrence["category"] == "METHOD_OR_DEPENDENCY"
+        for occurrence in adversarial["gap_occurrences"]
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="Inspection version",
+    ):
+        inspect_report(
+            continuum,
+            inspection_version="99",
+        )
+
+
 def test_shared_common_conditions_not_counted_again_in_each_pair(accepted):
     doc = report(accepted, "multiple-line-windows")
     common = doc["context_evaluations"][0]["criteria"][0]
@@ -632,17 +719,151 @@ def test_shared_common_conditions_not_counted_again_in_each_pair(accepted):
 
 
 def test_source_failure_preserves_successful_archive_results(accepted):
-    view = inspect_report(report(accepted, "source-not-provided"))
+    document = report(
+        accepted,
+        "source-not-provided",
+    )
+    view = inspect_report(document)
+
     assert view["source_statuses"]["QUEUE"] == "NOT_PROVIDED"
-    assert view["branch_counts"] and view["search_wide_verdict"] == "NOT_PROVIDED"
-    assert any(
-        o["code"] == "NOT_PROVIDED" and o["category"] == "SOURCE_OR_SEARCH_INCOMPLETE"
-        for o in view["gap_occurrences"]
+    assert view["branch_counts"]
+    assert (
+        view["search_wide_verdict"]
+        == "NOT_PROVIDED"
     )
+
+    queue_gaps = [
+        occurrence["code"]
+        for occurrence
+        in view["gap_occurrences"]
+        if occurrence["source"] == "QUEUE"
+        and occurrence["category"]
+        == "SOURCE_OR_SEARCH_INCOMPLETE"
+    ]
+
+    assert queue_gaps == [
+        "NOT_PROVIDED"
+    ]
+
+    legacy = inspect_report(
+        document,
+        inspection_version="1",
+    )
+    legacy_queue_gaps = [
+        occurrence["code"]
+        for occurrence
+        in legacy["gap_occurrences"]
+        if occurrence["source"] == "QUEUE"
+        and occurrence["category"]
+        == "SOURCE_OR_SEARCH_INCOMPLETE"
+    ]
+
+    assert legacy_queue_gaps == [
+        "NOT_PROVIDED",
+        "REQUESTED_FILTERS_NOT_FULLY_EVALUATED",
+    ]
+
     case = next(
-        c for c in accepted[1]["cases"] if c["case_id"] == "source-not-provided"
+        c
+        for c in accepted[1]["cases"]
+        if c["case_id"]
+        == "source-not-provided"
     )
-    assert case["status"] == "PASS" and case["exit_code"] == 3
+    assert (
+        case["status"] == "PASS"
+        and case["exit_code"] == 3
+    )
+
+
+def test_source_state_matrix_keeps_execution_and_filter_gaps_distinct(
+    accepted,
+):
+    expected = {
+        "guide-b": {
+            "QUEUE": (
+                "NOT_SELECTED",
+                [],
+            ),
+        },
+        "source-not-provided": {
+            "QUEUE": (
+                "NOT_PROVIDED",
+                ["NOT_PROVIDED"],
+            ),
+        },
+        "archive-failed-queue-preserved": {
+            "ARCHIVE": (
+                "FAILED",
+                ["FAILED"],
+            ),
+            "QUEUE": (
+                "COMPLETED",
+                ["REQUESTED_FILTERS_NOT_FULLY_EVALUATED"],
+            ),
+        },
+        "queue-failed-archive-preserved": {
+            "ARCHIVE": (
+                "COMPLETED",
+                [],
+            ),
+            "QUEUE": (
+                "FAILED",
+                ["FAILED"],
+            ),
+        },
+        "completed-empty-queue": {
+            "ARCHIVE": (
+                "NOT_SELECTED",
+                [],
+            ),
+            "QUEUE": (
+                "COMPLETED",
+                [],
+            ),
+        },
+        "dual-source-line": {
+            "QUEUE": (
+                "COMPLETED",
+                ["REQUESTED_FILTERS_NOT_FULLY_EVALUATED"],
+            ),
+        },
+    }
+
+    for case_id, sources in expected.items():
+        view = inspect_report(
+            report(
+                accepted,
+                case_id,
+            )
+        )
+
+        assert view["inspection_version"] == "2"
+        assert view["search_wide_verdict"] == "NOT_PROVIDED"
+
+        for source, (expected_status, expected_codes) in sources.items():
+            assert view["source_statuses"][source] == expected_status
+
+            actual_codes = [
+                occurrence["code"]
+                for occurrence in view["gap_occurrences"]
+                if occurrence["source"] == source
+                and occurrence["category"]
+                == "SOURCE_OR_SEARCH_INCOMPLETE"
+            ]
+
+            assert actual_codes == expected_codes
+
+    empty = report(
+        accepted,
+        "completed-empty-queue",
+    )
+    assert empty["evaluation_scope"]["evaluated_contexts"] == 0
+    assert (
+        empty["sources"]["QUEUE"][
+            "requested_filters_fully_evaluated"
+        ]
+        is True
+    )
 
 
 def test_real_mapping_scope_and_association_categories_are_explicit(accepted):

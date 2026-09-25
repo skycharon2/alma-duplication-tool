@@ -1,4 +1,5 @@
 """Offline CLI tests; production code does not import test helpers."""
+from dataclasses import replace
 import json
 import os
 from pathlib import Path
@@ -8,6 +9,7 @@ import sys
 import pytest
 
 from alma_duplicate.cli.evaluate import main
+from alma_duplicate.clients.archive_contract import ArchiveQueryStatus
 from alma_duplicate.report_inspection import inspect_report
 from alma_duplicate.reporting import report_document
 from alma_duplicate.rules.evaluation import evaluate_candidate_search
@@ -170,6 +172,71 @@ def test_source_failure_still_writes_other_source_report(tmp_path):
     data = json.loads(output.read_text())
     assert data["sources"]["ARCHIVE"]["status"] == "FAILED"
     assert data["sources"]["QUEUE"]["status"] == "COMPLETED"
+
+
+def test_incomplete_archive_preserves_completed_queue_and_consumer_state(
+    tmp_path,
+):
+    request, payload = request_file(
+        tmp_path,
+        ["ARCHIVE", "QUEUE"],
+    )
+    validated = validate_proposed_observation(
+        payload["request"],
+        payload["search_options"],
+    )
+    archive_result, _ = archive(
+        build_search_plan(validated)
+    )
+    archive_result = replace(
+        archive_result,
+        status=ArchiveQueryStatus.OVERFLOW,
+    )
+    output = tmp_path / "report.json"
+
+    code = main(
+        [
+            "--request",
+            str(request),
+            "--queue-csv",
+            str(QUEUE),
+            "--live-archive",
+            "--output",
+            str(output),
+        ],
+        archive_client_factory=lambda: SpyClient(
+            archive_result
+        ),
+    )
+
+    assert code == 3
+
+    document = json.loads(
+        output.read_text()
+    )
+
+    assert document["sources"]["ARCHIVE"]["status"] == "INCOMPLETE"
+    assert (
+        document["sources"]["ARCHIVE"][
+            "filter_summary"
+        ]["retained_rows"]
+        == 0
+    )
+    assert document["sources"]["QUEUE"]["status"] == "COMPLETED"
+    assert document["evaluation_scope"]["evaluated_contexts"] > 0
+
+    view = inspect_report(document)
+
+    archive_gaps = [
+        occurrence["code"]
+        for occurrence in view["gap_occurrences"]
+        if occurrence["source"] == "ARCHIVE"
+        and occurrence["category"]
+        == "SOURCE_OR_SEARCH_INCOMPLETE"
+    ]
+
+    assert archive_gaps == ["INCOMPLETE"]
+    assert view["search_wide_verdict"] == "NOT_PROVIDED"
 
 
 def test_invalid_json_does_not_write_report(tmp_path):

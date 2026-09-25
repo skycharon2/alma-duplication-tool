@@ -2,7 +2,7 @@
 
 from collections import Counter
 
-CATEGORIES = (
+CATEGORIES_V1 = (
     "USER_INPUT_MISSING",
     "ARCHIVE_EVIDENCE_MISSING",
     "ASSOCIATION_UNRESOLVED",
@@ -11,6 +11,17 @@ CATEGORIES = (
     "METHOD_OR_DEPENDENCY",
     "UNCLASSIFIED",
 )
+CATEGORIES_V2 = (
+    "USER_INPUT_MISSING",
+    "ARCHIVE_EVIDENCE_MISSING",
+    "QUEUE_EVIDENCE_MISSING",
+    "ASSOCIATION_UNRESOLVED",
+    "SCOPE_UNSUPPORTED",
+    "SOURCE_OR_SEARCH_INCOMPLETE",
+    "METHOD_OR_DEPENDENCY",
+    "UNCLASSIFIED",
+)
+CATEGORIES = CATEGORIES_V2
 ASSOCIATION = {
     "SOURCE_SPW_COMPONENT_UNASSIGNED",
     "PAIR_REFERENCE_UNRESOLVED",
@@ -43,7 +54,7 @@ CANDIDATE = {
 }
 
 
-def _category(code, side, source):
+def _category_v1(code, side, source):
     if code in ASSOCIATION:
         return "ASSOCIATION_UNRESOLVED"
     if code in SCOPE:
@@ -63,13 +74,45 @@ def _category(code, side, source):
     return "UNCLASSIFIED"
 
 
-def inspect_report(document):
+V2_SCOPE = {
+    "POSITION_SCOPE_UNRESOLVED",
+    "QUEUE_POSITION_SCOPE_UNRESOLVED",
+}
+V2_METHOD = {
+    "QUEUE_RESOLUTION_COARSER_THAN_PLANNED",
+}
+
+
+def _category(code, side, source, inspection_version):
+    legacy = _category_v1(code, side, source)
+    if inspection_version == "1":
+        return legacy
+    if code in V2_SCOPE:
+        return "SCOPE_UNSUPPORTED"
+    if code in V2_METHOD:
+        return "METHOD_OR_DEPENDENCY"
+    if legacy != "UNCLASSIFIED":
+        return legacy
+    if source == "QUEUE" and (
+        side == "CANDIDATE"
+        or code in CANDIDATE
+        or code.startswith(
+            ("CANDIDATE_", "COMPONENT_", "EXACT_COMPONENT_", "UNIQUE_COMPONENT_")
+        )
+    ):
+        return "QUEUE_EVIDENCE_MISSING"
+    return legacy
+
+
+def inspect_report(document, *, inspection_version="2"):
     """Summarize source gaps and unevaluable evidence, including hidden contexts.
 
     Counts are evidence occurrences, not failed observations. Shared POS/ANGULAR
     occur once per context, not once per pair. Distinct pair issues stay distinct.
     Unknown codes stay visible as UNCLASSIFIED rather than becoming input advice.
     """
+    if inspection_version not in {"1", "2"}:
+        raise ValueError("Inspection version must be 1 or 2")
     if document.get("report_version") != "4":
         raise ValueError("Inspection requires report version 4")
     kind = document.get("report_kind")
@@ -93,7 +136,8 @@ def inspect_report(document):
                 "side": side,
                 "source": source,
                 "context_id": context,
-                "category": category or _category(code, side, source),
+                "category": category
+                or _category(code, side, source, inspection_version),
             }
         )
 
@@ -126,7 +170,19 @@ def inspect_report(document):
                     source=name,
                     category="SOURCE_OR_SEARCH_INCOMPLETE",
                 )
-            if source.get("requested_filters_fully_evaluated") is False:
+            filters_incomplete = (
+                source.get(
+                    "requested_filters_fully_evaluated"
+                )
+                is False
+            )
+            if (
+                filters_incomplete
+                and (
+                    inspection_version == "1"
+                    or source["status"] == "COMPLETED"
+                )
+            ):
                 add(
                     f"sources/{name}/filters",
                     "REQUESTED_FILTERS_NOT_FULLY_EVALUATED",
@@ -175,7 +231,8 @@ def inspect_report(document):
                             context=cid,
                         )
     groups = []
-    for name in CATEGORIES:
+    categories = CATEGORIES_V1 if inspection_version == "1" else CATEGORIES_V2
+    for name in categories:
         values = [o for o in occurrences if o["category"] == name]
         groups.append(
             {
@@ -194,7 +251,7 @@ def inspect_report(document):
         for b in c["branches"]
     )
     return {
-        "inspection_version": "1",
+        "inspection_version": inspection_version,
         "report_version": "4",
         "report_kind": kind,
         "assessment": document["assessment"],
