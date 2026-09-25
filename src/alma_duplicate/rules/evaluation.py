@@ -10,7 +10,11 @@ from alma_duplicate.rules.line import evaluate_line
 from alma_duplicate.rules.position_single import evaluate_position_single
 from alma_duplicate.rules.angular import evaluate_angular_resolution
 from alma_duplicate.rules.continuum_setup import evaluate_continuum_setup
-from alma_duplicate.rules.evaluation_model import ContextEvaluation, EvaluationReport
+from alma_duplicate.rules.evaluation_model import (
+    ContextEvaluation,
+    EvaluationConfiguration,
+    EvaluationReport,
+)
 from alma_duplicate.rules.confirmed import approve_angular, approve_setup, archive_scope
 from alma_duplicate.rules.continuum import evaluate_continuum_frequency, evaluate_continuum_rms
 from alma_duplicate.rules.aggregation import aggregate_continuum
@@ -58,6 +62,12 @@ Programming/contract errors propagate; they are not scientific missing evidence.
     request = search_result.plan.validation.request
 
     continuum = "CONTINUUM" in request.intents
+    configuration = EvaluationConfiguration(
+        nominal_conversion=nominal_conversion if continuum else None,
+        queue_common=queue_common,
+        queue_continuum=queue_continuum,
+        queue_line=queue_line,
+    )
     setup = (approve_setup(evaluate_continuum_setup(request, nominal_conversion=nominal_conversion),
                            nominal_conversion=nominal_conversion) if continuum else None)
     contexts = []
@@ -101,5 +111,9 @@ Programming/contract errors propagate; they are not scientific missing evidence.
                 branches.append(branch)
             contexts.append(ContextEvaluation(candidate=row, criteria=tuple(criteria), branches=tuple(branches),
                                               line_pairing=pairing, line_pairs=pairs))
-    return EvaluationReport(search_result=search_result, request_criteria=() if setup is None else (setup,),
-                            context_evaluations=tuple(contexts))
+    return EvaluationReport(
+        search_result=search_result,
+        request_criteria=() if setup is None else (setup,),
+        context_evaluations=tuple(contexts),
+        evaluation_configuration=configuration,
+    )

@@ -17,6 +17,22 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
+class EvaluationConfiguration:
+    """Effective evaluator configuration, independent of source execution success."""
+
+    nominal_conversion: str | None = None
+    queue_common: bool = False
+    queue_continuum: bool = False
+    queue_line: bool = False
+
+    def __post_init__(self):
+        if (self.queue_continuum or self.queue_line) and not self.queue_common:
+            raise ValueError(
+                "Queue continuum/LINE configuration requires Queue common methods"
+            )
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
 class ContextEvaluation:
     candidate: CandidateRecord
     criteria: tuple[CriterionResult, ...]
@@ -42,6 +58,7 @@ class EvaluationReport:
     search_result: CandidateSearchResult
     request_criteria: tuple[CriterionResult, ...]
     context_evaluations: tuple[ContextEvaluation, ...]
+    evaluation_configuration: EvaluationConfiguration
     evaluation_version: str = field(default="5", init=False)
     execution: Literal["FINISHED"] = field(default="FINISHED", init=False)
     assessment: Literal["NOT_AGGREGATED"] = field(default="NOT_AGGREGATED", init=False)
