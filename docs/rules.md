@@ -1,11 +1,14 @@
 # Criterion result contract
 
-The [rules package](../src/alma_duplicate/rules/) implements the confirmed
-Archive fixed-target, single-point continuum branch: POS-SINGLE, ANGULAR,
-CONT-SETUP, CONT-FREQ and CONT-RMS. `intents` selects execution. Each coherent
-retained context gets a three-valued continuum assessment. Queue methods retain
-their independent provisional status. Archive LINE implements reference-bound
-FDM, coverage, resolution compatibility and RMS criteria, pair AND and context-local pair OR. No search-wide absence verdict is produced.
+The [rules package](../src/alma_duplicate/rules/) implements source-specific
+fixed-target, single-point evaluation paths. Archive continuum uses POS-SINGLE,
+ANGULAR, CONT-SETUP, CONT-FREQ and CONT-RMS; Archive LINE adds reference-bound
+FDM, coverage, resolution compatibility and RMS with pair AND and context-local
+pair OR. The supported Queue workflow provides versioned common, continuum and
+LINE methods for coherent fixed single-field regular-SPW contexts. `intents`
+select branches, while Queue formal methods remain explicit evaluator options.
+No aggregation crosses candidate contexts or sources, and no search-wide absence
+verdict is produced.
 
 ## Separate result dimensions (schema 2)
 
@@ -49,12 +52,12 @@ method needs uncertainty bounds, it must define and version them explicitly.
 
 | Criterion | Method version | Behavior |
 | --- | --- | --- |
-| ANGULAR | `archive_angular_factor_3` (approved Archive); `angular_factor_2` (legacy) | Symmetric max/min <= 2, inclusive. Uses Archive `spatial_resolution` estimates or Queue requested angular resolution, canonical arcsec. Missing/invalid/unit-unsafe evidence on both sides is retained. |
-| POS-SINGLE | `queue_pos_single_1` | [Queue candidate-side coverage](pos_single.md); structured issues identify proposed, candidate or method limitations. |
+| ANGULAR | `archive_angular_factor_3` (approved Archive); `queue_angular_factor_7` (supported Queue); `angular_factor_2` (legacy) | Symmetric max/min <= 2, inclusive. Uses source-specific Archive or Queue angular evidence in canonical arcsec. Missing/invalid/unit-unsafe evidence remains explicit. |
+| POS-SINGLE | `queue_pos_single_5` (supported Queue); `queue_pos_single_1` (legacy) | The supported Queue row-beam method is defined in [Queue common](queue_common.md); legacy reports retain their original method identity. Structured issues preserve proposed, candidate and method limitations. |
 | CONT-SETUP | `continuum_setup_3` (approved without nominal conversion); `continuum_setup_2` (legacy) | At least two distinct proposed windows with USABLE width strictly > 1.8 GHz. Exactly 1.8 does not qualify; 1.8000000005 does. UNKNOWN width semantics remain unresolved, including narrow widths. |
 | Archive POS-SINGLE | `archive_pos_single_1` | Candidate `frequency`, unambiguous interferometric diameter, spherical separation <= half-power radius; inclusive float64 boundary. |
-| CONT-FREQ | `archive_cont_freq_1` | User representative SKY frequency versus Archive `frequency`: symmetric factor <= 1.3. No SPW-mean fallback. |
-| CONT-RMS | `archive_cont_rms_2` | One direct setup aggregate RMS: Archive estimate <= 2 × proposal RMS. Optional contributing IDs must uniquely reference this setup's windows; subsets are allowed. No bandwidth or angular scaling. |
+| CONT-FREQ | `archive_cont_freq_1`; `queue_cont_freq_2` | Archive uses its source frequency estimate; supported Queue continuum uses the coherent row reference SKY frequency. Both use the versioned factor-1.3 contract without cross-source substitution. |
+| CONT-RMS | `archive_cont_rms_2`; `queue_cont_rms_portal_2` | Archive uses its direct aggregate RMS comparison. Supported Queue continuum uses the same-row reference sensitivity and reference width with the versioned usable-bandwidth union before the one-sided factor-two comparison. Source-specific methods never borrow RMS evidence across sources. |
 
 Version 2 of CONT-RMS accepts legal contribution references and records them in
 `details`; version 1 remains the identity of historical reports. Rule-result
@@ -206,4 +209,22 @@ The `queue_continuum=True` evaluator option enables the
 [Queue continuum contract](queue_continuum.md) and implies Queue common methods.
 It supplies approved source-specific frequency/RMS criteria and a context-local
 continuum branch. Unsupported common scope remains indeterminate. Default and
-common-only calls retain their previous scope. Queue LINE is not enabled by this option.
+common-only calls retain their previous scope. Queue LINE is not enabled by this
+option.
+
+## Scoped Queue LINE
+
+The `queue_line=True` evaluator option enables the formal
+[Queue LINE contract](queue_line_pairing.md) and implies Queue common methods.
+Each proposed window is evaluated only against one regular SPW from the same
+physical Queue row. The numerical criteria use `queue_line_fdm_1`,
+`queue_line_coverage_1`, `queue_line_resolution_compatibility_1` and
+`queue_line_rms_portal_1`; `queue_line_pair_and_1` combines one coherent pair and
+`queue_line_context_or_1` ORs only whole pairs within that Queue context.
+
+Incomplete proposed or candidate enumeration contributes UNKNOWN rather than a
+negative result. A coarser Queue spectral resolution is a definite resolution
+failure and blocks the dependent RMS calculation. No Queue LINE result borrows
+coverage, resolution, sensitivity, mode or common-condition evidence from a
+different row, SPW, candidate context or source. Queue continuum and Archive LINE
+retain their independent source-specific methods.

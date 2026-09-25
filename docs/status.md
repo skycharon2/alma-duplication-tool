@@ -1,6 +1,6 @@
 # Current implementation status
 
-Reviewed implementation baseline: `c2abd57` (PR #86 merged); documentation synchronized through PR #87. This is the single capability summary;
+Reviewed implementation baseline: `78ed45d` (PR #88 merged). This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
 
@@ -24,6 +24,13 @@ Continuum and LINE are reported independently. A supported candidate branch
 result is not a search-wide absence verdict; top-level NOT_AGGREGATED remains
 intentional. Missing evidence, source failures and unsupported scope are not
 negative duplication results. Display limits do not limit retained-context evaluation.
+
+The existing NGC6240 same-request Archive+Queue replay remains an engineering
+acquisition/replay baseline whose historical command does not enable the later
+formal Queue continuum/LINE options. Formal DUAL-SOURCE-ACCEPTANCE remains the
+next delivery gate: it must exercise supported Archive and Queue formal branches
+on the same request while preserving source failure, completeness and provenance
+independently.
 
 ## Queue experimental boundary
 
