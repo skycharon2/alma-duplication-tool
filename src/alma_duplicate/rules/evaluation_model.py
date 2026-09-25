@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from alma_duplicate.domain.candidate_search import CandidateRecord, CandidateSearchResult
 from alma_duplicate.rules.model import CriterionResult
@@ -11,14 +11,18 @@ from alma_duplicate.rules.aggregation import BranchAssessment
 from alma_duplicate.domain.line_pairing import LinePairBuildResult
 from alma_duplicate.rules.line import LinePairEvaluation
 
+if TYPE_CHECKING:
+    from alma_duplicate.queue_line_pairing import QueueLinePairBuildResult
+    from alma_duplicate.rules.queue_line import QueueLinePairEvaluation
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ContextEvaluation:
     candidate: CandidateRecord
     criteria: tuple[CriterionResult, ...]
     branches: tuple[BranchAssessment, ...] = ()
-    line_pairing: LinePairBuildResult | None = None
-    line_pairs: tuple[LinePairEvaluation, ...] = ()
+    line_pairing: LinePairBuildResult | QueueLinePairBuildResult | None = None
+    line_pairs: tuple[LinePairEvaluation | QueueLinePairEvaluation, ...] = ()
 
     def __post_init__(self):
         if ((self.line_pairing is None and self.line_pairs) or

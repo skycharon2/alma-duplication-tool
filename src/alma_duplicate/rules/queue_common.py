@@ -30,6 +30,15 @@ from alma_duplicate.rules.model import (
 DECISION_REF = "docs/evidence/queue_row_continuum_decision_2026-09-24.md"
 
 
+def queue_common_scope_supported(common):
+    return (
+        len(common) == 2
+        and {r.method_version for r in common}
+        == {"queue_angular_factor_7", "queue_pos_single_5"}
+        and all(dict(r.details).get("common_scope") == "SUPPORTED" for r in common)
+    )
+
+
 def evaluate_queue_common(request, context, spatial_evidence):
     """Return ANGULAR and POS-SINGLE for one source-bound retained context.
 
