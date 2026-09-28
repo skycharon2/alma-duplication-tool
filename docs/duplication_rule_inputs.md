@@ -2,11 +2,12 @@
 
 Design version: 0.3. Implementation coverage is specified separately below.
 
-Reviewed implementation baseline: `13c41d5` (PR #76). Archive fixed-target,
+The reviewed implementation baseline is maintained in [status](status.md). Archive fixed-target,
 single-point continuum implements five approved conditions and per-context
 three-valued aggregation. Direct usable widths and direct aggregate RMS are
-supported; arbitrary nominal/noise conversions and Queue scientific mappings
-remain separate. Solar has a request-level exemption without source access.
+supported; arbitrary nominal/noise conversions remain outside that path.
+Queue common, continuum and LINE mappings are implemented within the separately
+adopted coherent single-field / regular-SPW scope linked in section 7. Solar has a request-level exemption without source access.
 Line has versioned input/mode preparation, a reference-bound builder, four numerical
 criteria, pair AND and context-local pair OR. Remaining tasks are tracked in the
 [sole remaining-work plan](roadmap.md).
@@ -131,18 +132,18 @@ coherent evidence from the same candidate context, as defined in section 6.
 
 | ID / applicability / policy | Proposed input | Archive evidence | Queue evidence | Derivation and readiness | Missing behavior |
 | --- | --- | --- | --- | --- | --- |
-| POS-SINGLE: fixed, single-field interferometry; A/location | ICRS position | `s_ra`, `s_dec`; `s_region`, optional `s_fov`, `antenna_arrays`, frequency as supporting evidence | `RA`, `Dec`, geometry and array evidence | Archive: approved candidate-frequency/unique-diameter position method. Queue: provisional candidate-beam profile, with explicit geometry/frame/array evidence; see queue_single_point_mapping.md | Position required for fixed-target search; missing candidate beam permits bounded search, blocks formal position rule |
+| POS-SINGLE: fixed, single-field interferometry; A/location | ICRS position | `s_ra`, `s_dec`; `s_region`, optional `s_fov`, `antenna_arrays`, frequency as supporting evidence | `RA`, `Dec`, geometry and array evidence | Archive: approved candidate-frequency/unique-diameter position method. Queue: adopted opt-in row-beam method with explicit geometry/frame/array evidence; see [Queue common](queue_common.md). Legacy candidate-beam methods retain their provisional identity | Position required for fixed-target search; missing candidate beam permits bounded search, blocks formal position rule |
 | POS-MOSAIC: mosaics; A/location | Proposed pointing list or reproducible pointing-generation inputs | Actual pointing/coverage evidence; generic footprint insufficient | Mosaic fields and offsets are inputs, not a verified pointing list | Future pointing-count coverage calculation | Unsupported formal mode; never reduce to center/FOV or area overlap |
 | TARGET-MOVING: moving; A/location | Explicit moving identity | `target_name` alone does not establish normalized identity | Target label alone does not establish normalized identity | Future identity normalization; no fixed-coordinate fallback | Unsupported search in first model |
 | SOLAR: Sun; A final sentence | Explicit target kind | Candidate matching unnecessary for exemption | Same | `NOT_APPLICABLE` assessment, distinct from unavailable implementation | Never extend exemption to all Solar System objects |
 | ANGULAR: applicable candidate comparison; A/resolution | Positive angular resolution with `REQUESTED_VALUE` meaning | `spatial_resolution` canonical evidence; optional `s_resolution` stays separate | `Req. Ang. Res.` | Convert supported units, preserve requested-versus-estimated semantics; policy comparison after context validation | Missing request or candidate quantity blocks this rule, not spatial retrieval |
 | CONT-SETUP: continuum applicability; A/spectral definition | Distinct `window_id`s, per-window bandwidth kind and setup completeness | Not a substitute for proposed setup | Not a substitute for proposed setup | Approved direct USABLE-width path; count distinct qualified proposed windows. Explicit nominal conversion stays provisional and does not prove configuration applicability; unknown widths remain unresolved where decisive | Intent label alone never activates rule; no imputed width or mode |
-| CONT-FREQ: continuum; A/spectral | Independent setup representative frequency, optional representative-window link and reference/origin | `frequency`, full parsed support, canonical interval | `Ref.Frequency`, SPW frequencies, `Is Sky Freq?`, velocity evidence | Archive: confirmed proposed representative SKY frequency versus candidate frequency. Queue: comparison-frequency mapping remains separate; beam fallback is not automatic CONT-FREQ evidence | Broad spatial retrieval permitted; frequency assessment unavailable |
-| CONT-RMS: continuum; A/spectral | Direct aggregate RMS with declared basis/setup scope, or reference RMS with conversion inputs | `cont_sensitivity_bandwidth`, parsed component sensitivities with their bases | `Req.Sensitivity` plus `Ref.Frequency` and `Ref.Freq.Width` | Archive: approved direct aggregate RMS comparison. Queue: requested sensitivity basis/setup mapping remains unresolved; no automatic Archive sensitivity or beam-unit substitution | Missing metadata limits affected operations, not request storage; candidate gaps remain candidate-side |
-| LINE-FDM: line; A/spectral | Proposed window correlator-mode evidence | Versioned association-bound operational em_xel interpretation for the exact candidate component | Same-row/SPW mode evidence with supported interpretation; census results remain experimental | Independent condition in the [Archive pair evaluator](line_pairing_design.md); Queue formal mapping remains separate | Missing/conflicting mode stays unresolved; known non-FDM can fail this condition without hiding coverage |
+| CONT-FREQ: continuum; A/spectral | Independent setup representative frequency, optional representative-window link and reference/origin | `frequency`, full parsed support, canonical interval | `Ref.Frequency`, SPW frequencies, `Is Sky Freq?`, velocity evidence | Archive: confirmed proposed representative SKY frequency versus candidate frequency. Queue: implemented same-row reference SKY frequency mapping; [Queue continuum](queue_continuum.md) owns scope and provenance. Beam fallback is not CONT-FREQ evidence | Broad spatial retrieval permitted; frequency assessment unavailable |
+| CONT-RMS: continuum; A/spectral | Direct aggregate RMS with declared basis/setup scope, or reference RMS with conversion inputs | `cont_sensitivity_bandwidth`, parsed component sensitivities with their bases | `Req.Sensitivity` plus `Ref.Frequency` and `Ref.Freq.Width` | Archive: approved direct aggregate RMS comparison. Queue: implemented adopted same-row reference-width/usable-union mapping in [Queue continuum](queue_continuum.md); no automatic Archive sensitivity or beam-unit substitution | Missing metadata limits affected operations, not request storage; candidate gaps remain candidate-side |
+| LINE-FDM: line; A/spectral | Proposed window correlator-mode evidence | Versioned association-bound operational em_xel interpretation for the exact candidate component | Same-row/SPW mode evidence with supported interpretation; census results remain experimental | Independent condition in the [Archive pair evaluator](line_pairing_design.md); Queue [mode adapter](queue_mode_adapter.md) and [formal pair evaluator](queue_line_pairing.md) are implemented in their adopted scope | Missing/conflicting mode stays unresolved; known non-FDM can fail this condition without hiding coverage |
 | LINE-COVERAGE: line; A/spectral | Requested SPW centre with supported SKY/REST preparation; width not generally required | Assigned component interval | Associated SPW interval with supported frequency reference and usable-width interpretation | Compare requested centre with candidate coverage, not whole-window containment; mode is assessed separately by LINE-FDM | Missing width alone does not block centre coverage; missing interval/reference blocks coverage |
-| LINE-RESOLUTION-COMPATIBILITY: line; A/spectral | Window-linked planned spectral/smoothing resolution | Frequency resolution from the same assigned component | Spec.Res. SPW N with supported frequency/frame association | Independent [pair condition](line_pairing_design.md); Queue normalization remains separate | Missing/conflicting evidence remains unresolved; a coarser Archive resolution fails compatibility and blocks RMS calculation |
-| LINE-RMS: line; A/spectral | Window-linked RMS and explicit planned spectral/smoothing resolution; noise bandwidth remains independent | Assigned parsed component @10km/s sensitivity and frequency resolution | `Req.Sensitivity`, `Ref.Frequency`, `Ref.Freq.Width`; same-window resolution | Archive: confirmed same-component smoothing and angular correction implemented. Queue: resolution/RMS associations and normalization remain separate; no row-scalar fallback | Missing noise width is not supplied by resolution; broad search remains possible |
+| LINE-RESOLUTION-COMPATIBILITY: line; A/spectral | Window-linked planned spectral/smoothing resolution | Frequency resolution from the same assigned component | Spec.Res. SPW N with supported frequency/frame association | Independent [pair condition](line_pairing_design.md); Queue same-SPW resolution normalization is implemented in the [formal pair evaluator](queue_line_pairing.md) | Missing/conflicting evidence remains unresolved; a coarser Archive or Queue resolution fails compatibility and blocks RMS calculation |
+| LINE-RMS: line; A/spectral | Window-linked RMS and explicit planned spectral/smoothing resolution; noise bandwidth remains independent | Assigned parsed component @10km/s sensitivity and frequency resolution | `Req.Sensitivity`, `Ref.Frequency`, `Ref.Freq.Width`; same-window resolution | Archive: confirmed same-component smoothing and angular correction implemented. Queue: implemented same-row reference-triplet normalization bound to the same SPW and planned resolution; see [Queue LINE](queue_line_pairing.md). No cross-row/SPW borrowing | Missing noise width is not supplied by resolution; broad search remains possible |
 
 ## 3. Request evidence design and implemented subset
 
@@ -329,11 +330,14 @@ reconstruct a full context: explicitly reparse the validated source to obtain
 current in-memory evidence, retaining the new run separately until binding exists.
 
 Queue `Req.Sensitivity` is mJy, linked to `Ref.Frequency` and `Ref.Freq.Width`.
-Its beam meaning and relation to Archive estimated RMS are unresolved; retain
-them as different evidence types. Full `frequency_support` parse results do not
+The adopted [Queue continuum](queue_continuum.md) and [Queue LINE](queue_line_pairing.md)
+methods implement a limited requested-RMS interpretation with explicit reference
+width, associations and provenance. This does not establish general equivalence
+to Archive estimated RMS; retain them as different evidence types. Outside the
+adopted scope, missing evidence or conflicting associations remain unresolved. Full `frequency_support` parse results do not
 by themselves establish authoritative mode, frame or sensitivity equivalence.
 
-For LINE-RMS, select sensitivity attached to the actual matched candidate SPW
+For Archive LINE-RMS, select sensitivity attached to the actual matched candidate SPW
 first, with its basis/reference and source context. Row-level `sensitivity_10kms`
 is usable only when its representative-window relationship to that matched SPW
 is confirmed; row co-location alone is not that confirmation. Queue reference
@@ -366,6 +370,23 @@ confirmation dated 2026-09-17 and implementation clarifications dated 2026-09-21
 See [current implementation and CLI acceptance](confirmed_continuum.md) and the
 [PR plan](roadmap.md). These items are coding/acceptance tasks, not
 questions to resubmit before implementing the confirmed workflow.
+
+### Adopted Queue scope (separate project decisions)
+
+These later records define the implemented coherent single-field / regular-SPW
+Queue methods. They do not extend or rewrite the Archive confirmation above.
+
+| Method scope | Decision records | Current contract |
+| --- | --- | --- |
+| Common position/angular | [Common scope](evidence/queue_common_decision_2026-09-24.md), [row beam](evidence/queue_row_beam_decision_2026-09-24.md), [row interpretation](evidence/queue_row_continuum_decision_2026-09-24.md) | [Queue common](queue_common.md) |
+| Continuum frequency/RMS | [Continuum decision](evidence/queue_continuum_decision_2026-09-24.md), [row scope correction](evidence/queue_row_continuum_decision_2026-09-24.md) | [Queue continuum](queue_continuum.md) |
+| LINE mode and pair evaluation | [Mode evidence](evidence/queue_mode_evidence_decision_2026-09-23.md), [LINE decision](evidence/queue_line_decision_2026-09-25.md) | [Mode adapter](queue_mode_adapter.md), [Queue LINE](queue_line_pairing.md) |
+
+Source semantics, Portal derivation limitations, required associations and
+missing/conflict gates remain part of each method. Implementation and numerical
+acceptance do not establish broader-mode support or an independently reviewed
+real-proposal label. Current LINE numerical versions follow the
+[precision contract](line_precision.md); historical references remain unchanged.
 
 ### Historical register through 2026-09-15 (superseded within the scope above)
 

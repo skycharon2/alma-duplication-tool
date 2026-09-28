@@ -39,8 +39,8 @@ retains the previously adopted reference-width/usable-union interpretation.
 No per-component measurements are invented. Missing quantities remain unknown.
 
 The same POS-SINGLE and ANGULAR objects are passed to formal Queue LINE pair
-evaluation. `queue_line_fdm_1`, `queue_line_coverage_1`,
-`queue_line_resolution_compatibility_1` and `queue_line_rms_portal_1` operate
+evaluation. `queue_line_fdm_1`, `queue_line_coverage_2`,
+`queue_line_resolution_compatibility_2` and `queue_line_rms_portal_2` operate
 only on the bound same-row/same-SPW pair; `queue_line_pair_and_1` and
 `queue_line_context_or_1` preserve pair/context boundaries. This does not create
 a second position method or change the row diameter. Mosaic and other unsupported

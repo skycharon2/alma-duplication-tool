@@ -1,6 +1,6 @@
 # Current implementation status
 
-Reviewed implementation baseline: `f28e24f` (PR #92, 2026-09-28). This is the single capability summary;
+Reviewed implementation baseline: `3f7f3156d450e5b6164053c34b17e873309989ef` (PR #100, 2026-09-28). This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
 
@@ -16,30 +16,40 @@ Reviewed implementation baseline: `f28e24f` (PR #92, 2026-09-28). This is the si
 | Derived Queue mode evidence | Existing Archive method unchanged | [Adapter](queue_mode_adapter.md) returns scoped FDM/TDM/UNKNOWN and is integrated into Queue LINE-FDM; UNKNOWN supplies no formal pass |
 | Acceptance | Formal same-request Archive+Queue continuum/LINE engineering acceptance, adversarial source/SPW isolation and source-state completeness matrix | Pinned numerical, real-capture engineering and failure/completeness cases; inspection v3 preserves distinct pair identities and the existing reason taxonomy without inventing a search-wide verdict |
 | Reviewed real-proposal cases | 0; no genuine proposal input has been supplied | 0; no reviewed labels claimed |
+| Shared application entry | [Implemented](assessment_entry.md): validation, Solar exemption, lazy sources, search/evaluation and report assembly | Explicit Queue method options; configuration preflight before source access |
 | Browser UI | Not implemented | Not implemented |
+
 Completed correctness fixes: PR #91 preserves shared LINE exact decision operands
 ([contract](line_precision.md)); PR #92 preserves inspection pair identities and
 context-level common-condition counting ([contract](report_inspection.md)).
+The shared assessment entry is implemented; PR #100 validates search-plan
+configuration before source access, including conflicting beam strategies.
 Current report version is 4, evaluation version is 5 and default inspection
 version is 3. Explicit inspection v1/v2 reproduce historical behavior.
 
-Recorded verification on 2026-09-28 for the PR #92 code tree:
+Recorded pre-UI review on 2026-09-28 for this baseline (supplied local review,
+not re-executed by this documentation-only change):
 
 | Check | Recorded result and conditions |
 | --- | --- |
-| Full suite | 1341 passed, 9 skipped with the pinned Queue CSV available via `ALMA_QUEUE_CSV_SNAPSHOT` |
-| Inspection/acceptance targeted suite | 41 passed |
-| Ruff F | Passed |
+| Full suite | 1405 passed, 9 skipped; Python 3.12.11 with a local Queue snapshot |
 | Acceptance catalog | 15 cases PASS; `reviewed_real_proposal_cases=0` |
+| Python tests CI | completed / success for the reviewed commit |
+| Local Markdown paths | No missing paths reported; anchors and external links were not fully checked |
 | Live TAP | Not run; skipped tests are not passes |
 
-Snapshot SHA-256:
-`8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5`.
-The local retained run `reports/inspection-pair-identity-346402d/` contains the
-user-verified acceptance output; it is a local artifact, not a checked-in source
-or a promise that every checkout contains it. These are recorded baseline
-results, not a new full-suite run by this documentation-only change. Earlier
-1322/12 or 1337/9 counts describe earlier code/environment states.
+The supplied review locates acceptance output at
+`/tmp/alma-pre-ui-review-3f7f315-20260928/summary.json`. This is a local review
+artifact, not a checked-in file or a promise that another checkout contains it.
+The review does not supply a snapshot digest; do not infer one from an older run.
+
+Historical PR #92 verification: 1341 passed, 9 skipped with
+`ALMA_QUEUE_CSV_SNAPSHOT`; inspection/acceptance targeted suite 41 passed,
+Ruff F passed, acceptance 15 cases PASS, Live TAP not run. Its snapshot SHA-256
+was `8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5`,
+and the retained local output was `reports/inspection-pair-identity-346402d/`.
+These historical measurements and earlier counts describe their own code and
+environment states, not the current baseline.
 
 
 Solar exemption is implemented at request level without accessing either source.
