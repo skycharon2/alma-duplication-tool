@@ -62,16 +62,29 @@ from display truncation. Report v4's existing generated timestamp is not a captu
 ## Optional gap inspection
 
 `report_inspection.inspect_report(report_document)` is a read-only report consumer.
-It neither re-evaluates science nor modifies report v4. `inspection_version=1`
-provides branch counts, source statuses, scope and traceable gap occurrences:
+It neither re-evaluates science nor modifies report v4. The default
+`inspection_version=2` provides branch counts, source statuses, scope and
+traceable gap occurrences. Version 1 remains explicitly readable with its
+historical classification behavior.
+
+Version 2 categories are:
 
 - USER_INPUT_MISSING: missing proposed evidence.
-- ARCHIVE_EVIDENCE_MISSING: unavailable candidate evidence; not a demand to edit the proposal.
+- ARCHIVE_EVIDENCE_MISSING: unavailable Archive candidate evidence; not a demand to edit the proposal.
+- QUEUE_EVIDENCE_MISSING: unavailable Queue candidate evidence; not a demand to edit the proposal.
 - ASSOCIATION_UNRESOLVED: source/SPW/reference cannot be safely linked.
 - SCOPE_UNSUPPORTED: geometry, array/source mapping or branch applicability is outside scope.
 - SOURCE_OR_SEARCH_INCOMPLETE: missing/failed/incomplete sources or unevaluated requested filters.
 - METHOD_OR_DEPENDENCY: unapproved method or blocked calculation such as coarse resolution.
-- UNCLASSIFIED: a reason not safely mapped by the current consumer; preserve its code and location.
+- UNCLASSIFIED: a reason not safely mapped by the selected consumer version; preserve its code and location.
+
+Version 2 additionally classifies Queue candidate-side missing quantities as
+Queue evidence, position-scope unresolved reasons as scope limitations and Queue
+resolution-coarser-than-planned as a method/dependency blocker. It reports
+`REQUESTED_FILTERS_NOT_FULLY_EVALUATED` only for a `COMPLETED` source; the false
+property value that necessarily accompanies `NOT_SELECTED`, `NOT_PROVIDED`,
+`FAILED` or `INCOMPLETE` is not a second filter-completeness gap. Version 1 keeps
+the prior category vocabulary and mappings unchanged.
 
 Counts concern unevaluable evidence, including issues in otherwise false or true
 branches. They are not counts of duplicate observations. Multiple reasons can

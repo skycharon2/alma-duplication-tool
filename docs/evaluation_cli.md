@@ -102,6 +102,20 @@ LINE method. Per-source `filter_summary` counts are derived from processed row
 audits; excluded rows remain auditable and server-unreturned rows are outside
 the count.
 
+Candidate `CANDIDATE_EVALUATION` report v4 records the effective evaluator
+selection in `evaluation_configuration`. `queue_common` is the effective value,
+so it is true when either `queue_continuum` or `queue_line` implies the common
+Queue methods. `nominal_conversion` records the evaluator-level continuum
+conversion selection; the current production CLI leaves it null. This metadata
+records execution configuration only and does not create a search-wide or
+cross-source assessment.
+
+This is an additive report-v4 provenance field: historical report-v4 documents
+that predate it remain valid. Absence means the effective evaluator selection
+was not recorded in that historical report; consumers must not interpret a
+missing field as all options being false. `SOLAR_EXEMPTION` reports omit the
+field because candidate evaluation is not executed.
+
 ## Line pair export (report 4 / evaluation 5)
 
 `context_evaluations[].line_pairing` retains the unchanged preparation-only
@@ -151,8 +165,9 @@ are unchanged. See the linked contract for fixed-target assumptions and source g
 ## Queue continuum option
 
 `--queue-continuum` implies `--queue-common` and enables the selected continuum
-branch within the supported coherent single-field Queue scope. It requires QUEUE
-source selection. Default evaluation and common-only evaluation retain their
+branch within the supported coherent single-field Queue scope. It requires
+CONTINUUM intent and QUEUE source selection. Default evaluation and common-only
+evaluation retain their
 existing behavior. See [Queue continuum](queue_continuum.md) for units,
 intermediate values, versions and runnable examples. Report v4 and the top-level
 assessment are unchanged.

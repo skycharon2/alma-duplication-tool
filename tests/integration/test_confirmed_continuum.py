@@ -210,6 +210,7 @@ def test_nominal_conversion_remains_provisional_and_cannot_make_positive_branch(
     source=RecordedArchiveClient(EXAMPLE/'archive/manifest.json')
     search=search_candidates(v,archive_client=source)
     report=evaluate_candidate_search(search,nominal_conversion='PORTAL_SCRIPT_V1')
+    assert report.evaluation_configuration.nominal_conversion == 'PORTAL_SCRIPT_V1'
     assert report.request_criteria[0].outcome is O.SATISFIED
     assert report.request_criteria[0].approval is MethodApproval.PROVISIONAL
     assert report.context_evaluations[0].branches[0].truth is T.UNKNOWN

@@ -116,6 +116,9 @@ against report v4. No delivered case is falsely labelled as a reviewed real prop
 
 
 The [remaining PR plan](roadmap.md) owns implementation order and gates.
+Dual-source engineering acceptance is complete; genuine real-proposal review is
+deferred pending external input, and the thin browser interface is the next
+engineering delivery.
 Continuum delivery records are [initial acceptance](confirmed_continuum.md) and
 [contract closure](continuum_closure.md); neither is another active task list.
 
@@ -133,8 +136,9 @@ citations and Q1–Q8 interpretations remain in the rule-input contract.
   retained-context scope, derived filter summaries and offline replay.
 
 Queue diagnostic deliveries #75/#76 and the supported Queue continuum and LINE
-formal evaluation paths are complete. See [status](status.md) and
-[roadmap](roadmap.md) for the remaining dual-source acceptance and interface work.
+formal evaluation paths and dual-source engineering acceptance are complete.
+See [status](status.md) and [roadmap](roadmap.md) for the deferred genuine-proposal
+review gate, interface work and broader-mode scope.
 
 - [Queue mode evidence adapter](queue_mode_adapter.md): typed row/SPW mode evidence, exact-first reviewed compatibility, and separate single-point applicability.
 

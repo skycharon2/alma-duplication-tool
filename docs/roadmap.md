@@ -1,7 +1,9 @@
 # Engineering delivery roadmap
 
-Reviewed implementation baseline: `c2abd57` (PR #86 merged).
-Queue LINE formal evaluation is delivered in the supported fixed single-field regular-SPW scope.
+Reviewed implementation baseline: `9d190c6`.
+Archive and supported Queue continuum/LINE dual-source engineering acceptance is
+delivered in the supported fixed single-field scope. No independently reviewed
+real-proposal case is claimed.
 This is the sole owner of remaining engineering order and exit gates.
 [Status](status.md) owns the capability matrix; [rule inputs](duplication_rule_inputs.md)
 own scientific decisions. An experiment being delivered does not approve its method.
@@ -26,15 +28,21 @@ own scientific decisions. An experiment being delivered does not approve its met
 | QUEUE-COMMON — coherent single-field row scope delivered | Scoped single-point position and angular-resolution evidence | Supported geometry/frame/array interpretation, boundaries and missing/conflict behavior explicit; independent numerical cases and method status recorded |
 | QUEUE-CONTINUUM — coherent single-field row scope delivered | Queue frequency/RMS mappings and independent continuum branch | Same-context/setup evidence, positive/negative/boundary/unknown cases; source-specific sensitivity semantics; no FDM/TDM prerequisite |
 | QUEUE-LINE — fixed single-field regular-SPW scope delivered | Mode applicability, coherent same-window coverage/resolution/RMS and pair reports | Supported configuration/profile evidence; no cross-SPW borrowing; coarse-resolution blocking; independent intermediate-value and pair aggregation acceptance |
-| DUAL-SOURCE-ACCEPTANCE | Exercise Archive and supported Queue branches on the same request; acquire actual proposal cases with independent review | Source failures, incomplete retrieval, unsupported geometry and display truncation remain visible; no invented scientific labels |
 | Thin browser interface | Input, candidates, independent branches, pair evidence and export using the backend report | UI/CLI agreement, no duplicate formulas, no UNKNOWN/empty-source-to-negative conversion |
 | Broader modes — deferred | Mosaic, moving targets, TP scientific evaluation, mixed setups and broader conversions | Separate scope, evidence and acceptance decisions |
 
 The [first Queue common increment](queue_common.md) supplies opt-in main-12m
 row-beam position and separately scoped angular criteria. [Queue continuum](queue_continuum.md)
 and [Queue LINE](queue_line_pairing.md) now complete the supported fixed
-single-field branches. Next deliver DUAL-SOURCE-ACCEPTANCE; source-bound
-7-m/mixed-array interpretation remains a separate extension.
+single-field branches. Formal same-request Archive+Queue continuum/LINE
+acceptance, cross-source/SPW isolation and source-state completeness are also
+delivered. The next engineering delivery is the thin browser interface;
+source-bound 7-m/mixed-array interpretation remains a separate extension.
+
+Independent review of an actual proposal remains an external validation gate.
+No genuine proposal input is currently available, so
+`reviewed_real_proposal_cases` remains zero. Do not synthesize or relabel a case
+to satisfy that gate.
 
 These are engineering increment IDs, not scientific Q1–Q8 question IDs. The
 [mapping table](queue_single_point_mapping.md) owns detailed fields, units,

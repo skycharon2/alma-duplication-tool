@@ -1,5 +1,5 @@
 {
-  "catalog_version": "1",
+  "catalog_version": "2",
   "cases": [
     {
       "case_id": "guide-a",
@@ -25,6 +25,11 @@
         }
       },
       "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -175,6 +180,11 @@
         }
       },
       "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -445,6 +455,11 @@
         }
       },
       "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -625,6 +640,11 @@
         }
       },
       "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -837,6 +857,11 @@
         }
       },
       "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -1149,6 +1174,11 @@
         }
       },
       "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -1489,6 +1519,11 @@
         }
       },
       "queue_candidate_beam": true,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -1775,6 +1810,11 @@
         }
       },
       "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 3,
       "assertions": [
         {
@@ -2059,6 +2099,11 @@
         }
       },
       "queue_candidate_beam": true,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": false
+      },
       "expected_exit_code": 0,
       "assertions": [
         {
@@ -2150,6 +2195,2701 @@
           ],
           "equals": 0.5,
           "reference": "Independent reference ledger: Guide B arithmetic"
+        }
+      ]
+    },
+    {
+      "case_id": "dual-source-continuum",
+      "evidence_kind": "SYNTHETIC_NUMERICAL",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/dual-source-continuum.json",
+          "sha256": "119acddfe977310b7314b1b181634df20b4c40d8b2dbfd3618270975e239089d"
+        },
+        "archive_replay": {
+          "path": "../confirmed_continuum/archive/manifest.json",
+          "sha256": "25de8fb10fd23aca46576710aa8bccc991acb903a1d4284f77c8dff12011aa4e"
+        },
+        "queue_csv": {
+          "path": "../queue_continuum/queue.csv",
+          "sha256": "648a98841b506f1838b7982445ba9b9a6f0d82483d1a67ecab1f5312fea92eac"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_dual_source_continuum.md",
+          "sha256": "09a2716c924bd972d225c4c2971a824715b50fdcbc46b9e886c04b83a63f341f"
+        }
+      },
+      "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": true,
+        "queue_line": false
+      },
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 8,
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 8,
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 4,
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 4,
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "INDETERMINATE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            4,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            4,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            5,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            5,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            6,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            6,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "INDETERMINATE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            7,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            7,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            4,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_continuum_branch_2",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            5,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_continuum_branch_2",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            6,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_continuum_branch_2",
+          "reference": "Independent dual-source continuum reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            7,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_continuum_branch_2",
+          "reference": "Independent dual-source continuum reference"
+        }
+      ]
+    },
+    {
+      "case_id": "dual-source-line",
+      "evidence_kind": "SYNTHETIC_NUMERICAL",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/dual-source-line.json",
+          "sha256": "074e6f1721f1d4cfceb11d676a4cbc6e314d81621d140ae509c58820b7a1437c"
+        },
+        "archive_replay": {
+          "path": "../confirmed_line/archive/manifest.json",
+          "sha256": "8d8f7d1294df4e5c0a97f3a723f0a76055eae35ee261a1bd95c72d8f1cc93156"
+        },
+        "queue_csv": {
+          "path": "queue/dual-source-line.csv",
+          "sha256": "13df41cc24ffcfd571f32670f5668c0b6aca3260b84022857c6ea4f42e76f490"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_dual_source_line.md",
+          "sha256": "9194d208235126003ef547e5f3e76db2f030c8066e5388d8313065e8f8b59612"
+        }
+      },
+      "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": true
+      },
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 4,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 4,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 2,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 2,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-guide-B-pairing-v1:00000000",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-guide-B-pairing-v1:00000001",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_line_context_or_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "truth"
+          ],
+          "equals": "TRUE",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_line_pair_and_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "snapshot_sha256"
+          ],
+          "equals": "13df41cc24ffcfd571f32670f5668c0b6aca3260b84022857c6ea4f42e76f490",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "spw_number"
+          ],
+          "equals": 1,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_line_context_or_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "truth"
+          ],
+          "equals": "FALSE",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_line_pair_and_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "snapshot_sha256"
+          ],
+          "equals": "13df41cc24ffcfd571f32670f5668c0b6aca3260b84022857c6ea4f42e76f490",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "spw_number"
+          ],
+          "equals": 1,
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "method_version"
+          ],
+          "equals": "queue_line_fdm_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "method_version"
+          ],
+          "equals": "queue_line_coverage_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "method_version"
+          ],
+          "equals": "queue_line_resolution_compatibility_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "method_version"
+          ],
+          "equals": "queue_line_rms_portal_1",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent dual-source LINE reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "derived",
+            0,
+            1
+          ],
+          "equals": 225.134765625,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "derived",
+            1,
+            1
+          ],
+          "equals": 224.1625,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "derived",
+            2,
+            1
+          ],
+          "equals": 226.0375,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "derived",
+            1,
+            1
+          ],
+          "equals": 15.01937487867023,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "derived",
+            2,
+            1
+          ],
+          "equals": 7.8125,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            2,
+            1
+          ],
+          "equals": 0.29980643870445817,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            5,
+            1
+          ],
+          "equals": 0.1332473060908703,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            2,
+            1
+          ],
+          "equals": 1.9987095913630544,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            3,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "derived",
+            5,
+            1
+          ],
+          "equals": 0.8883153739391353,
+          "reference": "Independent dual-source LINE reference",
+          "absolute_tolerance": 1e-13
+        }
+      ]
+    },
+    {
+      "case_id": "adversarial-source-spw-isolation",
+      "evidence_kind": "SYNTHETIC_NUMERICAL",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/adversarial-source-spw-isolation.json",
+          "sha256": "6439b5939604a9b08bc9efb58083efcfd0636b88407430a73d2709d28dfee644"
+        },
+        "archive_replay": {
+          "path": "../confirmed_line/archive/manifest.json",
+          "sha256": "8d8f7d1294df4e5c0a97f3a723f0a76055eae35ee261a1bd95c72d8f1cc93156"
+        },
+        "queue_csv": {
+          "path": "queue/adversarial-source-spw-isolation.csv",
+          "sha256": "58ce5543aa6af17a49b86bb10f0181115e217fd5937e851e55e85192374b8f5e"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_adversarial_source_spw_isolation.md",
+          "sha256": "84b541236af8cf18b522e94e51c1b0952fa01cac5d4083b8ad25d01b8f96c247"
+        }
+      },
+      "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": true
+      },
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 3,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 3,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 2,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 1,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-guide-B-pairing-v1:00000000",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "archive_line_context_or_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "truth"
+          ],
+          "equals": "FALSE",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_association",
+            "spw_token"
+          ],
+          "equals": "0",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "synthetic-guide-B-pairing-v1:00000001",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "archive_line_context_or_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "truth"
+          ],
+          "equals": "FALSE",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "candidate_association",
+            "spw_token"
+          ],
+          "equals": "1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "reference",
+            "raw_row_id"
+          ],
+          "equals": "58ce5543aa6af17a49b86bb10f0181115e217fd5937e851e55e85192374b8f5e:42",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_line_context_or_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "source_row_id"
+          ],
+          "equals": "58ce5543aa6af17a49b86bb10f0181115e217fd5937e851e55e85192374b8f5e:42",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "snapshot_sha256"
+          ],
+          "equals": "58ce5543aa6af17a49b86bb10f0181115e217fd5937e851e55e85192374b8f5e",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "attempt",
+            "reference",
+            "spw_number"
+          ],
+          "equals": 1,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "truth"
+          ],
+          "equals": "FALSE",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "method_version"
+          ],
+          "equals": "queue_line_pair_and_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "attempt",
+            "reference",
+            "source_row_id"
+          ],
+          "equals": "58ce5543aa6af17a49b86bb10f0181115e217fd5937e851e55e85192374b8f5e:42",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "attempt",
+            "reference",
+            "snapshot_sha256"
+          ],
+          "equals": "58ce5543aa6af17a49b86bb10f0181115e217fd5937e851e55e85192374b8f5e",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "attempt",
+            "reference",
+            "spw_number"
+          ],
+          "equals": 2,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "truth"
+          ],
+          "equals": "FALSE",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "method_version"
+          ],
+          "equals": "queue_line_pair_and_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            0,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            1,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "criteria",
+            0,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "criteria",
+            1,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            0,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            1,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": null,
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            0,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            1,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            2,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            3,
+            "outcome"
+          ],
+          "equals": "NOT_SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            4,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            5,
+            "outcome"
+          ],
+          "equals": "SATISFIED",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            2,
+            "method_version"
+          ],
+          "equals": "queue_line_fdm_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            3,
+            "method_version"
+          ],
+          "equals": "queue_line_coverage_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            4,
+            "method_version"
+          ],
+          "equals": "queue_line_resolution_compatibility_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            0,
+            "criteria",
+            5,
+            "method_version"
+          ],
+          "equals": "queue_line_rms_portal_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            2,
+            "method_version"
+          ],
+          "equals": "queue_line_fdm_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            3,
+            "method_version"
+          ],
+          "equals": "queue_line_coverage_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            4,
+            "method_version"
+          ],
+          "equals": "queue_line_resolution_compatibility_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            2,
+            "line_pairs",
+            1,
+            "criteria",
+            5,
+            "method_version"
+          ],
+          "equals": "queue_line_rms_portal_1",
+          "reference": "Independent adversarial source/SPW isolation reference"
+        }
+      ]
+    },
+    {
+      "case_id": "archive-failed-queue-preserved",
+      "evidence_kind": "SOURCE_FAILURE_ENGINEERING",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/archive-failed-queue-preserved.json",
+          "sha256": "6c08cdaed6480a4f74ed33da3a907d1529037bad955257389b9af882559e6902"
+        },
+        "archive_replay": {
+          "path": "../confirmed_line/archive/manifest.json",
+          "sha256": "8d8f7d1294df4e5c0a97f3a723f0a76055eae35ee261a1bd95c72d8f1cc93156"
+        },
+        "queue_csv": {
+          "path": "queue/dual-source-line.csv",
+          "sha256": "13df41cc24ffcfd571f32670f5668c0b6aca3260b84022857c6ea4f42e76f490"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_source_state_matrix.md",
+          "sha256": "bd9c28b404cb138ce4561d6e98bf9f0c3d9250082707247683591ab0c9d47145"
+        }
+      },
+      "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": true
+      },
+      "expected_exit_code": 3,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "status"
+          ],
+          "equals": "FAILED",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 0,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 2,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 2,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 2,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "inspection_version"
+          ],
+          "equals": "2",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "source_statuses"
+          ],
+          "equals": {
+            "ARCHIVE": "FAILED",
+            "QUEUE": "COMPLETED"
+          },
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "gap_categories",
+            5,
+            "codes"
+          ],
+          "equals": {
+            "FAILED": 1,
+            "REQUESTED_FILTERS_NOT_FULLY_EVALUATED": 1
+          },
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "gap_categories",
+            7,
+            "codes"
+          ],
+          "equals": {},
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "search_wide_verdict"
+          ],
+          "equals": "NOT_PROVIDED",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "requested_filters_fully_evaluated"
+          ],
+          "equals": false,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "requested_filters_fully_evaluated"
+          ],
+          "equals": false,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "reference",
+            "source"
+          ],
+          "equals": "QUEUE",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent source-state completeness matrix"
+        }
+      ]
+    },
+    {
+      "case_id": "queue-failed-archive-preserved",
+      "evidence_kind": "SOURCE_FAILURE_ENGINEERING",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/dual-source-line.json",
+          "sha256": "074e6f1721f1d4cfceb11d676a4cbc6e314d81621d140ae509c58820b7a1437c"
+        },
+        "archive_replay": {
+          "path": "../confirmed_line/archive/manifest.json",
+          "sha256": "8d8f7d1294df4e5c0a97f3a723f0a76055eae35ee261a1bd95c72d8f1cc93156"
+        },
+        "queue_csv": {
+          "path": "queue/queue-failed-archive-preserved.csv",
+          "sha256": "a01babeba24983e3b4efe3e0fbd3ad9db752c0a03da3a1718d5eb335cb1245d6"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_source_state_matrix.md",
+          "sha256": "bd9c28b404cb138ce4561d6e98bf9f0c3d9250082707247683591ab0c9d47145"
+        }
+      },
+      "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": true
+      },
+      "expected_exit_code": 3,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 2,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "status"
+          ],
+          "equals": "FAILED",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 0,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 2,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 2,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 1,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": true,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "inspection_version"
+          ],
+          "equals": "2",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "source_statuses"
+          ],
+          "equals": {
+            "ARCHIVE": "COMPLETED",
+            "QUEUE": "FAILED"
+          },
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "gap_categories",
+            5,
+            "codes"
+          ],
+          "equals": {
+            "FAILED": 1
+          },
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "gap_categories",
+            7,
+            "codes"
+          ],
+          "equals": {},
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "search_wide_verdict"
+          ],
+          "equals": "NOT_PROVIDED",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "requested_filters_fully_evaluated"
+          ],
+          "equals": true,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "requested_filters_fully_evaluated"
+          ],
+          "equals": false,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "reference",
+            "source"
+          ],
+          "equals": "ARCHIVE",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            0,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_MET",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            1,
+            "branches",
+            0,
+            "status"
+          ],
+          "equals": "CRITERIA_NOT_MET",
+          "reference": "Independent source-state completeness matrix"
+        }
+      ]
+    },
+    {
+      "case_id": "completed-empty-queue",
+      "evidence_kind": "SOURCE_FAILURE_ENGINEERING",
+      "review": {
+        "status": "AWAITING_INDEPENDENT_REVIEW",
+        "reviewer": null,
+        "reviewed_at": null,
+        "record": null
+      },
+      "inputs": {
+        "request": {
+          "path": "requests/completed-empty-queue.json",
+          "sha256": "4350029de21b0cd0b232c2548d6ca6597dff2775430146bbcff454aae1a012a9"
+        },
+        "queue_csv": {
+          "path": "queue/completed-empty-queue.csv",
+          "sha256": "93d27c59d8a6b0390fcc975cfe4c2425ea3fc7109af0c38103b744c8634c3859"
+        },
+        "reference": {
+          "path": "../../docs/acceptance_reference_source_state_matrix.md",
+          "sha256": "bd9c28b404cb138ce4561d6e98bf9f0c3d9250082707247683591ab0c9d47145"
+        }
+      },
+      "queue_candidate_beam": false,
+      "evaluation_options": {
+        "queue_common": false,
+        "queue_continuum": false,
+        "queue_line": true
+      },
+      "expected_exit_code": 0,
+      "assertions": [
+        {
+          "path": [
+            "report",
+            "report_version"
+          ],
+          "equals": "4",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "assessment"
+          ],
+          "equals": "NOT_AGGREGATED",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "status"
+          ],
+          "equals": "NOT_SELECTED",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 0,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "status"
+          ],
+          "equals": "COMPLETED",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "filter_summary",
+            "retained_rows"
+          ],
+          "equals": 0,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "total_retained"
+          ],
+          "equals": 0,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "evaluated_contexts"
+          ],
+          "equals": 0,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "shown_candidates"
+          ],
+          "equals": 0,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "display_truncated"
+          ],
+          "equals": false,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "inspection_version"
+          ],
+          "equals": "2",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "source_statuses"
+          ],
+          "equals": {
+            "ARCHIVE": "NOT_SELECTED",
+            "QUEUE": "COMPLETED"
+          },
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "gap_categories",
+            5,
+            "codes"
+          ],
+          "equals": {},
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "gap_categories",
+            7,
+            "codes"
+          ],
+          "equals": {},
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "search_wide_verdict"
+          ],
+          "equals": "NOT_PROVIDED",
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "ARCHIVE",
+            "requested_filters_fully_evaluated"
+          ],
+          "equals": false,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "sources",
+            "QUEUE",
+            "requested_filters_fully_evaluated"
+          ],
+          "equals": true,
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations"
+          ],
+          "equals": [],
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "branch_counts"
+          ],
+          "equals": [],
+          "reference": "Independent source-state completeness matrix"
+        },
+        {
+          "path": [
+            "inspection",
+            "gap_occurrences"
+          ],
+          "equals": [],
+          "reference": "Independent source-state completeness matrix"
         }
       ]
     }

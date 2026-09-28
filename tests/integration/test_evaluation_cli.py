@@ -1,11 +1,16 @@
 """Offline CLI tests; production code does not import test helpers."""
+from dataclasses import replace
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
 
+import pytest
+
 from alma_duplicate.cli.evaluate import main
+from alma_duplicate.clients.archive_contract import ArchiveQueryStatus
+from alma_duplicate.report_inspection import inspect_report
 from alma_duplicate.reporting import report_document
 from alma_duplicate.rules.evaluation import evaluate_candidate_search
 from tests.integration.test_context_rule_evaluation import sample
@@ -45,6 +50,96 @@ def test_default_does_not_create_archive_client_and_reports_missing_source(tmp_p
     assert data["sources"]["QUEUE"]["status"] == "COMPLETED"
     assert data["assessment"] == "NOT_AGGREGATED"
     assert len(data["input_sha256"]) == 64
+    assert data["evaluation_configuration"] == {
+        "nominal_conversion": None,
+        "queue_common": False,
+        "queue_continuum": False,
+        "queue_line": False,
+    }
+
+    historical_v4 = dict(data)
+    historical_v4.pop("evaluation_configuration")
+    assert inspect_report(historical_v4)["report_version"] == "4"
+
+
+@pytest.mark.parametrize(
+    ("flag", "expected"),
+    [
+        (
+            "--queue-common",
+            {
+                "nominal_conversion": None,
+                "queue_common": True,
+                "queue_continuum": False,
+                "queue_line": False,
+            },
+        ),
+        (
+            "--queue-continuum",
+            {
+                "nominal_conversion": None,
+                "queue_common": True,
+                "queue_continuum": True,
+                "queue_line": False,
+            },
+        ),
+        (
+            "--queue-line",
+            {
+                "nominal_conversion": None,
+                "queue_common": True,
+                "queue_continuum": False,
+                "queue_line": True,
+            },
+        ),
+    ],
+)
+def test_effective_queue_configuration_survives_missing_queue_input(
+    tmp_path, flag, expected
+):
+    request, _ = request_file(tmp_path, ["QUEUE"])
+    output = tmp_path / f"{flag[2:]}.json"
+
+    code = main(
+        [
+            "--request",
+            str(request),
+            flag,
+            "--output",
+            str(output),
+        ]
+    )
+
+    assert code == 3
+    data = json.loads(output.read_text())
+    assert data["sources"]["QUEUE"]["status"] == "NOT_PROVIDED"
+    assert data["context_evaluations"] == []
+    assert data["evaluation_configuration"] == expected
+
+
+def test_queue_continuum_requires_continuum_intent(tmp_path):
+    payload = json.loads(
+        (ROOT / "examples/confirmed_line/request.json").read_text()
+    )
+    payload["search_options"]["sources"] = ["QUEUE"]
+
+    request = tmp_path / "line-only.json"
+    request.write_text(json.dumps(payload))
+    output = tmp_path / "report.json"
+
+    assert (
+        main(
+            [
+                "--request",
+                str(request),
+                "--queue-continuum",
+                "--output",
+                str(output),
+            ]
+        )
+        == 2
+    )
+    assert not output.exists()
 
 
 def test_live_flag_uses_injected_fake_and_preserves_query(tmp_path):
@@ -77,6 +172,71 @@ def test_source_failure_still_writes_other_source_report(tmp_path):
     data = json.loads(output.read_text())
     assert data["sources"]["ARCHIVE"]["status"] == "FAILED"
     assert data["sources"]["QUEUE"]["status"] == "COMPLETED"
+
+
+def test_incomplete_archive_preserves_completed_queue_and_consumer_state(
+    tmp_path,
+):
+    request, payload = request_file(
+        tmp_path,
+        ["ARCHIVE", "QUEUE"],
+    )
+    validated = validate_proposed_observation(
+        payload["request"],
+        payload["search_options"],
+    )
+    archive_result, _ = archive(
+        build_search_plan(validated)
+    )
+    archive_result = replace(
+        archive_result,
+        status=ArchiveQueryStatus.OVERFLOW,
+    )
+    output = tmp_path / "report.json"
+
+    code = main(
+        [
+            "--request",
+            str(request),
+            "--queue-csv",
+            str(QUEUE),
+            "--live-archive",
+            "--output",
+            str(output),
+        ],
+        archive_client_factory=lambda: SpyClient(
+            archive_result
+        ),
+    )
+
+    assert code == 3
+
+    document = json.loads(
+        output.read_text()
+    )
+
+    assert document["sources"]["ARCHIVE"]["status"] == "INCOMPLETE"
+    assert (
+        document["sources"]["ARCHIVE"][
+            "filter_summary"
+        ]["retained_rows"]
+        == 0
+    )
+    assert document["sources"]["QUEUE"]["status"] == "COMPLETED"
+    assert document["evaluation_scope"]["evaluated_contexts"] > 0
+
+    view = inspect_report(document)
+
+    archive_gaps = [
+        occurrence["code"]
+        for occurrence in view["gap_occurrences"]
+        if occurrence["source"] == "ARCHIVE"
+        and occurrence["category"]
+        == "SOURCE_OR_SEARCH_INCOMPLETE"
+    ]
+
+    assert archive_gaps == ["INCOMPLETE"]
+    assert view["search_wide_verdict"] == "NOT_PROVIDED"
 
 
 def test_invalid_json_does_not_write_report(tmp_path):

@@ -203,6 +203,7 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
         "generated_at": datetime.now(UTC),
         "input_sha256": input_sha256,
         "evaluation_version": report.evaluation_version,
+        "evaluation_configuration": report.evaluation_configuration,
         "execution": report.execution,
         "assessment": report.assessment,
         "search_assessment": search.assessment,

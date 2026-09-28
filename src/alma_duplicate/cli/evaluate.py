@@ -75,6 +75,8 @@ def main(argv=None, *, archive_client_factory=None):
         selected = validated.search_options.sources
         if (args.queue_common or args.queue_continuum or args.queue_line) and "QUEUE" not in selected:
             raise ValueError("--queue-common/--queue-continuum/--queue-line requires QUEUE selection")
+        if args.queue_continuum and "CONTINUUM" not in validated.request.intents:
+            raise ValueError("--queue-continuum requires CONTINUUM intent")
         if args.queue_line and "LINE" not in validated.request.intents:
             raise ValueError("--queue-line requires LINE intent")
         if args.live_archive and "ARCHIVE" not in selected:
