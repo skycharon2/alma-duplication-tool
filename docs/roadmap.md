@@ -26,17 +26,25 @@ own scientific decisions. An experiment being delivered does not approve its met
 ## Bounded maintenance increments
 
 These small commits support the thin UI; they are not a new prerequisite
-rearchitecture phase. Complete DOC-BASE and LINE-HELPERS first, then start UI.
+rearchitecture phase. DOC-BASE (PR #93) and LINE-HELPERS are now delivered; UI can start.
 The remaining extractions may proceed alongside UI work, independently.
 
 | Commit | Scope | Exit gate |
 | --- | --- | --- |
-| DOC-BASE — this documentation increment | Align architecture, current status, interface versions and this order | Current vs historical state is explicit; relative links resolve; no runtime change or new test required |
-| LINE-HELPERS — next | Extract shared rational display and explicit unit conversion into numerical helpers, criterion truth into aggregation | First verify equivalent behavior; boundary tests and acceptance retain numbers, reasons, methods and outcomes; keep source-specific result/evidence/RMS implementations |
+| DOC-BASE — delivered in PR #93 | Align architecture, current status, interface versions and this order | Current vs historical state is explicit; relative links resolve; no runtime change or new test required |
+| LINE-HELPERS — delivered | Extract shared rational display and explicit unit conversion into numerical helpers, criterion truth into aggregation | First verify equivalent behavior; boundary tests and acceptance retain numbers, reasons, methods and outcomes; keep source-specific result/evidence/RMS implementations |
 | GEOMETRY | Extract pure separation and beam formulas | Preserve spherical/offset/placeholder and boundary behavior; keep legacy boundary conventions in strategies; do not claim all cycles removed yet |
 | SPATIAL-EVIDENCE | Separate spatial evidence adaptation from strategy dispatch | Queue strategy depends on adaptation rather than dispatch; remove target reverse imports; preserve retention, formal POS and explicit legacy paths, with compatibility exports where needed |
 | MODE-REFERENCE | Separate reference configurations/mappings from experiment report generation | Formal adapter no longer consumes experiment report dictionaries; configuration IDs, matches, N16 allowance, mode results and historical CLIs unchanged |
 | APP-ENTRY — with first UI | Extract genuine shared CLI/UI orchestration | One validation/Solar/method-selection flow with injected clients/loaders; same effective configuration, science, source states and report for identical inputs |
+
+LINE-HELPERS verification on 2026-09-28: 29 helper contract cases plus 116
+existing LINE regressions passed; full suite with the pinned Queue snapshot was
+1370 passed, 9 skipped; Ruff F passed. Before/after acceptance each passed all
+15 cases. Full report comparison differed only at `generated_at`,
+`search_started_at`, `search_finished_at` and Queue snapshot `parsed_at`;
+all 15 inspection documents were identical. No scientific version or pinned
+catalog/reference changed. Live TAP was not run.
 
 Each code increment runs affected tests and the pinned acceptance catalog, then
 full regression before merge. Compare reports allowing only identified dynamic
@@ -60,8 +68,8 @@ row-beam position and separately scoped angular criteria. [Queue continuum](queu
 and [Queue LINE](queue_line_pairing.md) now complete the supported fixed
 single-field branches. Formal same-request Archive+Queue continuum/LINE
 acceptance, cross-source/SPW isolation and source-state completeness are also
-delivered. After the two bounded preparatory increments above, the next product
-delivery is the thin browser interface;
+delivered. The two bounded preparatory increments above are complete; the next
+product delivery is the thin browser interface;
 source-bound 7-m/mixed-array interpretation remains a separate extension.
 
 Independent review of an actual proposal remains an external validation gate.

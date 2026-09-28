@@ -1,18 +1,14 @@
 """Confirmed Archive line rules, evaluated without crossing pair boundaries."""
 
 from dataclasses import dataclass
-from decimal import Decimal, localcontext
-from alma_duplicate.proposed_line import exact_prepared
 from fractions import Fraction
-import math
-
-from astropy import units as u
 
 from alma_duplicate.domain.line_pairing import LinePairAttempt
 from alma_duplicate.line_pairing import build_line_pairs
-from alma_duplicate.proposed_line import C_KMS
+from alma_duplicate.proposed_line import C_KMS, exact_prepared
 from alma_duplicate.rules.aggregation import (
     BranchAssessment,
+    criterion_truth,
     Truth,
     three_and,
     three_or,
@@ -29,7 +25,7 @@ from alma_duplicate.rules.model import (
     EvaluationStatus as E,
     EvidenceSide as S,
 )
-from alma_duplicate.rules.numeric import positive_canonical
+from alma_duplicate.rules.numeric import explicit_unit_quantity, rational_to_display
 
 LINE_CRITERIA = (
     "POS-SINGLE",
@@ -44,12 +40,6 @@ STATUS = {
     Truth.FALSE: "CRITERIA_NOT_MET",
     Truth.UNKNOWN: "INDETERMINATE",
 }
-
-
-def _truth(result):
-    if not result.eligible_for_formal_aggregation:
-        return Truth.UNKNOWN
-    return Truth.TRUE if result.outcome is O.SATISFIED else Truth.FALSE
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,32 +69,10 @@ class LinePairEvaluation:
         expected = (
             Truth.UNKNOWN
             if "BRANCH_SCOPE_UNSUPPORTED" in self.reasons
-            else three_and(_truth(r) for r in self.criteria)
+            else three_and(criterion_truth(r) for r in self.criteria)
         )
         if self.truth is not expected:
             raise ValueError("Pair truth disagrees with its gated criteria")
-
-
-def _number(value, *, sqrt=False):
-    if value is None:
-        return None
-    with localcontext() as ctx:
-        ctx.prec = 40
-        decimal = Decimal(value.numerator) / Decimal(value.denominator)
-        result = float(decimal.sqrt() if sqrt else decimal)
-    return result if math.isfinite(result) and (result != 0 or value == 0) else None
-
-
-def _quantity(value, unit, target):
-    """Convert explicit units only, comparing decimal scalars and scale exactly."""
-    if value is None or unit is None:
-        return None
-    try:
-        return positive_canonical(value) * positive_canonical(
-            u.Unit(unit).to(u.Unit(target))
-        )
-    except (ValueError, TypeError):
-        return None
 
 
 def _result(
@@ -156,7 +124,7 @@ def _result(
 
 
 def _value(value, unit, field, semantics):
-    return CriterionValue(_number(value), unit, field, semantics)
+    return CriterionValue(rational_to_display(value), unit, field, semantics)
 
 
 def _numerical(request, context, attempt):
@@ -201,8 +169,8 @@ def _numerical(request, context, attempt):
     ]
 
     interval = component.frequency_interval
-    low = None if interval is None else _quantity(interval.low, interval.unit, "GHz")
-    high = None if interval is None else _quantity(interval.high, interval.unit, "GHz")
+    low = None if interval is None else explicit_unit_quantity(interval.low, interval.unit, "GHz")
+    high = None if interval is None else explicit_unit_quantity(interval.high, interval.unit, "GHz")
     coverage_reasons = []
     if sky is None:
         coverage_reasons.append("PROPOSED_SKY_FREQUENCY_REQUIRED")
@@ -216,9 +184,9 @@ def _numerical(request, context, attempt):
             coverage_reasons,
             proposed=_value(sky, "GHz", window.window_id, "PREPARED_SKY_CENTER"),
             derived=(
-                ("sky_frequency_ghz", _number(sky)),
-                ("interval_low_ghz", _number(low)),
-                ("interval_high_ghz", _number(high)),
+                ("sky_frequency_ghz", rational_to_display(sky)),
+                ("interval_low_ghz", rational_to_display(low)),
+                ("interval_high_ghz", rational_to_display(high)),
             ),
             details=(("interval_source", "frequency_support.assigned_component"),),
         )
@@ -228,7 +196,7 @@ def _numerical(request, context, attempt):
     dnu = (
         None
         if resolution is None
-        else _quantity(resolution.value, resolution.unit, "GHz")
+        else explicit_unit_quantity(resolution.value, resolution.unit, "GHz")
     )
     dv_archive = None if sky is None or dnu is None else C_KMS * dnu / sky
     resolution_reasons = []
@@ -242,8 +210,8 @@ def _numerical(request, context, attempt):
     if compatible is False:
         resolution_reasons.append("ARCHIVE_RESOLUTION_COARSER_THAN_PLANNED")
     resolution_derived = (
-        ("archive_resolution_kms", _number(dv_archive)),
-        ("planned_resolution_kms", _number(dv_plan)),
+        ("archive_resolution_kms", rational_to_display(dv_archive)),
+        ("planned_resolution_kms", rational_to_display(dv_plan)),
     )
     results.append(
         _result(
@@ -267,7 +235,7 @@ def _numerical(request, context, attempt):
     rms_reasons = list(resolution_reasons)
     entries = [s for s in component.sensitivities if s.basis == "10km/s"]
     sigma10 = (
-        _quantity(entries[0].value, entries[0].unit, "mJy/beam")
+        explicit_unit_quantity(entries[0].value, entries[0].unit, "mJy/beam")
         if len(entries) == 1
         else None
     )
@@ -275,17 +243,17 @@ def _numerical(request, context, attempt):
         rms_reasons.append("UNIQUE_COMPONENT_10KMS_RMS_REQUIRED")
     rms = sensitivity.rms
     sigma_requested = (
-        None if rms is None else _quantity(rms.value, rms.unit, "mJy/beam")
+        None if rms is None else explicit_unit_quantity(rms.value, rms.unit, "mJy/beam")
     )
     if sigma_requested is None:
         rms_reasons.append("PLANNED_LINE_RMS_REQUIRED")
     if sensitivity.basis not in {"SMOOTHED", "NATIVE_CHANNEL"}:
         rms_reasons.append("PLANNED_LINE_RMS_BASIS_UNRESOLVED")
     theta = request.angular_resolution
-    theta_plan = None if theta is None else _quantity(theta.value, theta.unit, "arcsec")
+    theta_plan = None if theta is None else explicit_unit_quantity(theta.value, theta.unit, "arcsec")
     q = context.evidence.prepared.comparison_evidence.angular_resolution.quantity
     theta_archive = (
-        _quantity(q.canonical_value, q.canonical_unit, "arcsec")
+        explicit_unit_quantity(q.canonical_value, q.canonical_unit, "arcsec")
         if q.is_available
         else None
     )
@@ -299,12 +267,12 @@ def _numerical(request, context, attempt):
         comp_squared = at_plan_squared * (theta_plan / theta_archive) ** 4
         ratio_squared = comp_squared / sigma_requested**2
     derived = resolution_derived + (
-        ("sigma_10kms_mjy_beam", _number(sigma10)),
-        ("theta_plan_arcsec", _number(theta_plan)),
-        ("theta_archive_arcsec", _number(theta_archive)),
-        ("sigma_at_plan_mjy_beam", _number(at_plan_squared, sqrt=True)),
-        ("sigma_comp_mjy_beam", _number(comp_squared, sqrt=True)),
-        ("sigma_requested_mjy_beam", _number(sigma_requested)),
+        ("sigma_10kms_mjy_beam", rational_to_display(sigma10)),
+        ("theta_plan_arcsec", rational_to_display(theta_plan)),
+        ("theta_archive_arcsec", rational_to_display(theta_archive)),
+        ("sigma_at_plan_mjy_beam", rational_to_display(at_plan_squared, sqrt=True)),
+        ("sigma_comp_mjy_beam", rational_to_display(comp_squared, sqrt=True)),
+        ("sigma_requested_mjy_beam", rational_to_display(sigma_requested)),
         ("max_factor", 2.0),
     )
     details = (
@@ -370,7 +338,7 @@ def evaluate_line(request, context, common_criteria):
             common["ANGULAR"],
             *_numerical(request, context, attempt),
         )
-        truth = three_and(_truth(r) for r in criteria) if supported else Truth.UNKNOWN
+        truth = three_and(criterion_truth(r) for r in criteria) if supported else Truth.UNKNOWN
         reasons = tuple(
             f"{r.criterion_id}_UNRESOLVED_OR_UNAPPROVED"
             for r in criteria

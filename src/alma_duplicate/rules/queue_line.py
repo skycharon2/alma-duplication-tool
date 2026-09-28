@@ -1,17 +1,14 @@
 """Formal Queue spectral-line rules evaluated without crossing row/SPW boundaries."""
 
 from dataclasses import dataclass
-from decimal import Decimal, localcontext
-from alma_duplicate.proposed_line import exact_prepared
 from fractions import Fraction
-import math
 
-from astropy import units as u
-
-from alma_duplicate.proposed_line import C_KMS
+from alma_duplicate.proposed_line import C_KMS, exact_prepared
 from alma_duplicate.queue_line_pairing import QueueLinePairAttempt, build_queue_line_pairs
 from alma_duplicate.queue_normalization import QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION
-from alma_duplicate.rules.aggregation import BranchAssessment, Truth, three_and, three_or
+from alma_duplicate.rules.aggregation import (
+    BranchAssessment, Truth, criterion_truth, three_and, three_or,
+)
 from alma_duplicate.rules.model import (
     POLICY_DOCUMENT,
     CriterionIssue,
@@ -23,7 +20,7 @@ from alma_duplicate.rules.model import (
     MethodApplicability as A,
     MethodApproval,
 )
-from alma_duplicate.rules.numeric import positive_canonical
+from alma_duplicate.rules.numeric import explicit_unit_quantity, rational_to_display
 from alma_duplicate.rules.queue_common import queue_common_scope_supported
 
 DECISION_REF = "docs/evidence/queue_line_decision_2026-09-25.md"
@@ -46,12 +43,6 @@ METHODS = {
     "LINE-RESOLUTION-COMPATIBILITY": "queue_line_resolution_compatibility_2",
     "LINE-RMS": "queue_line_rms_portal_2",
 }
-
-
-def _truth(result):
-    if not result.eligible_for_formal_aggregation:
-        return Truth.UNKNOWN
-    return Truth.TRUE if result.outcome is O.SATISFIED else Truth.FALSE
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,32 +71,10 @@ class QueueLinePairEvaluation:
         expected = (
             Truth.UNKNOWN
             if "BRANCH_SCOPE_UNSUPPORTED" in self.reasons
-            else three_and(_truth(r) for r in self.criteria)
+            else three_and(criterion_truth(r) for r in self.criteria)
         )
         if self.truth is not expected:
             raise ValueError("Queue pair truth disagrees with its gated criteria")
-
-
-def _number(value, *, sqrt=False):
-    if value is None:
-        return None
-    with localcontext() as ctx:
-        ctx.prec = 40
-        decimal = Decimal(value.numerator) / Decimal(value.denominator)
-        result = float(decimal.sqrt() if sqrt else decimal)
-    return result if math.isfinite(result) and (result != 0 or value == 0) else None
-
-
-def _quantity(value, unit, target):
-    """Convert explicit units only, using the repository's exact decimal scale."""
-    if value is None or unit is None:
-        return None
-    try:
-        return positive_canonical(value) * positive_canonical(
-            u.Unit(unit).to(u.Unit(target))
-        )
-    except (ValueError, TypeError):
-        return None
 
 
 def _result(
@@ -155,7 +124,7 @@ def _result(
 
 
 def _value(value, unit, field, semantics):
-    return CriterionValue(_number(value), unit, field, semantics)
+    return CriterionValue(rational_to_display(value), unit, field, semantics)
 
 
 def _window(request, window_id):
@@ -207,8 +176,8 @@ def _numerical(request, context, attempt):
     ]
 
     # LINE-COVERAGE: exact usable interval from this same SPW.
-    low = _quantity(spw.usable_lower_sky_frequency_ghz, "GHz", "GHz")
-    high = _quantity(spw.usable_upper_sky_frequency_ghz, "GHz", "GHz")
+    low = explicit_unit_quantity(spw.usable_lower_sky_frequency_ghz, "GHz", "GHz")
+    high = explicit_unit_quantity(spw.usable_upper_sky_frequency_ghz, "GHz", "GHz")
     coverage_reasons = []
     if sky is None:
         coverage_reasons.append("PROPOSED_SKY_FREQUENCY_REQUIRED")
@@ -228,16 +197,16 @@ def _numerical(request, context, attempt):
             coverage_reasons,
             proposed=_value(sky, "GHz", window.window_id, "PREPARED_SKY_CENTER"),
             derived=(
-                ("sky_frequency_ghz", _number(sky)),
-                ("interval_low_ghz", _number(low)),
-                ("interval_high_ghz", _number(high)),
+                ("sky_frequency_ghz", rational_to_display(sky)),
+                ("interval_low_ghz", rational_to_display(low)),
+                ("interval_high_ghz", rational_to_display(high)),
             ),
             details=details,
         )
     )
 
     # LINE-RESOLUTION: Queue Spec.Res. must be equal or finer than proposal target width.
-    dnu_q = _quantity(
+    dnu_q = explicit_unit_quantity(
         spw.spectral_resolution_mhz.value,
         spw.spectral_resolution_mhz.canonical_unit,
         "MHz",
@@ -267,9 +236,9 @@ def _numerical(request, context, attempt):
                 "QUEUE_SPECTRAL_RESOLUTION",
             ),
             derived=(
-                ("planned_resolution_kms", _number(dv_plan)),
-                ("planned_resolution_mhz", _number(dnu_plan)),
-                ("queue_resolution_mhz", _number(dnu_q)),
+                ("planned_resolution_kms", rational_to_display(dv_plan)),
+                ("planned_resolution_mhz", rational_to_display(dnu_plan)),
+                ("queue_resolution_mhz", rational_to_display(dnu_q)),
             ),
             details=details,
         )
@@ -284,18 +253,18 @@ def _numerical(request, context, attempt):
 
     sensitivity = _sensitivity(request, planned.sensitivity_id)
     rms = None if sensitivity is None else sensitivity.rms
-    sigma_requested = None if rms is None else _quantity(rms.value, rms.unit, "mJy/beam")
+    sigma_requested = None if rms is None else explicit_unit_quantity(rms.value, rms.unit, "mJy/beam")
     if sigma_requested is None:
         rms_reasons.append("PLANNED_LINE_RMS_REQUIRED")
     if sensitivity is not None and sensitivity.basis not in {"SMOOTHED", "NATIVE_CHANNEL"}:
         rms_reasons.append("PLANNED_LINE_RMS_BASIS_UNRESOLVED")
 
-    sigma_q_ref = _quantity(
+    sigma_q_ref = explicit_unit_quantity(
         candidate.sensitivity_reference.requested_sensitivity_mjy.value,
         candidate.sensitivity_reference.requested_sensitivity_mjy.canonical_unit,
         "mJy",
     )
-    ref_width = _quantity(
+    ref_width = explicit_unit_quantity(
         candidate.sensitivity_reference.reference_width_mhz.value,
         candidate.sensitivity_reference.reference_width_mhz.canonical_unit,
         "MHz",
@@ -306,8 +275,8 @@ def _numerical(request, context, attempt):
         rms_reasons.append("QUEUE_REFERENCE_WIDTH_REQUIRED")
 
     theta = request.angular_resolution
-    theta_plan = None if theta is None else _quantity(theta.value, theta.unit, "arcsec")
-    theta_queue = _quantity(
+    theta_plan = None if theta is None else explicit_unit_quantity(theta.value, theta.unit, "arcsec")
+    theta_queue = explicit_unit_quantity(
         candidate.angular_resolution.value,
         candidate.angular_resolution.canonical_unit,
         "arcsec",
@@ -352,13 +321,13 @@ def _numerical(request, context, attempt):
                 "QUEUE_REQUESTED_RMS_AT_REFERENCE_WIDTH",
             ),
             derived=(
-                ("planned_resolution_mhz", _number(dnu_plan)),
-                ("queue_reference_width_mhz", _number(ref_width)),
-                ("queue_rms_at_planned_resolution_mjy", _number(spectral_squared, sqrt=True)),
-                ("theta_plan_arcsec", _number(theta_plan)),
-                ("theta_queue_arcsec", _number(theta_queue)),
-                ("comparable_queue_rms_mjy", _number(comp_squared, sqrt=True)),
-                ("sigma_requested_mjy_beam", _number(sigma_requested)),
+                ("planned_resolution_mhz", rational_to_display(dnu_plan)),
+                ("queue_reference_width_mhz", rational_to_display(ref_width)),
+                ("queue_rms_at_planned_resolution_mjy", rational_to_display(spectral_squared, sqrt=True)),
+                ("theta_plan_arcsec", rational_to_display(theta_plan)),
+                ("theta_queue_arcsec", rational_to_display(theta_queue)),
+                ("comparable_queue_rms_mjy", rational_to_display(comp_squared, sqrt=True)),
+                ("sigma_requested_mjy_beam", rational_to_display(sigma_requested)),
                 ("max_factor", 2.0),
             ),
             details=rms_details,
@@ -386,7 +355,7 @@ def evaluate_queue_line(request, context, common_criteria):
             common["ANGULAR"],
             *_numerical(request, context, attempt),
         )
-        truth = three_and(_truth(r) for r in criteria) if supported else Truth.UNKNOWN
+        truth = three_and(criterion_truth(r) for r in criteria) if supported else Truth.UNKNOWN
         reasons = tuple(
             f"{r.criterion_id}_UNRESOLVED_OR_UNAPPROVED"
             for r in criteria

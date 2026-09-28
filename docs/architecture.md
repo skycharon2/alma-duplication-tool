@@ -60,11 +60,14 @@ the extraction work below.
 | Proposed pure helpers | Geometry and numeric transformations may depend on math, Astropy and required value types; they must not import strategy dispatch, source clients or rules. |
 
 These are maintenance boundaries, not a claim that every current import already
-follows the target direction. Current exceptions are explicit:
+follows the target direction. The LINE helper extraction is complete; remaining exceptions are explicit:
 
-- Archive/Queue LINE duplicate display, unit conversion and criterion-to-truth
-  helpers. Their source-specific result construction and RMS evidence remain
-  intentionally separate.
+- Archive/Queue LINE now share `rules.numeric.rational_to_display()` and
+  `explicit_unit_quantity()`, plus `rules.aggregation.criterion_truth()`.
+  These were identical implementations before extraction; display overflow,
+  underflow, square-root handling, unit scales and formal eligibility gates are
+  preserved. Source-specific result construction, evidence and RMS formulas
+  remain separate. Scientific method and report versions are unchanged.
 - `spatial` dispatches to `primary_beam` and `queue_position`; those modules
   import separation and/or adaptation back from `spatial`, including lazy imports.
   Extracting geometry alone will not remove the adaptation dependency.
