@@ -86,9 +86,13 @@ remaining exceptions are explicit:
   `spatial` back. Independent-process tests cover this dependency boundary and
   import order. This closes the targeted spatial adaptation/dispatch cycle,
   not an audit or elimination of every possible repository import cycle.
-- The formal `queue_mode_adapter` imports configurations and calls experimental
-  `queue_processor_mode.evaluate()` for mapping output. Reference configuration
-  and mapping responsibilities should be separated without changing their scope.
+- `queue_mode_reference` owns the supported configuration catalog, matching,
+  representation tolerances and typed conditional TP counterpart mapping. Both
+  the formal `queue_mode_adapter` and the experimental `queue_processor_mode`
+  consume this layer; the formal adapter never reads an experiment report.
+  The experiment retains compatibility exports and its provisional report
+  contract. The older census retains its distinct BLC catalog. Mapping remains
+  conditional, enumeration incomplete, and N16 scope unchanged.
 - Validation, Solar handling and method selection currently live in CLI
   orchestration. Extract a shared entry with the first actual UI caller.
 

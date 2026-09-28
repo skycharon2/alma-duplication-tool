@@ -3,32 +3,17 @@
 from __future__ import annotations
 
 import math
-import re
 from functools import lru_cache
 
-from alma_duplicate.data.correlator_modes import PROJECT_CYCLES, configurations
+from alma_duplicate.data.correlator_modes import configurations
 from alma_duplicate.domain.queue_mode import QueueCorrelatorModeEvidence
 
-# Only absorb representation noise (e.g. 7.812011718750001). Do not round
-# 7.81201171875 to 7.8125 or 0.060577392578125 to 0.06103515625.
-REL_TOL = 1e-12
-ABS_TOL_MHZ = 1e-12
-
-
-def project_cycle(project_code: str) -> int | None:
-    """Submission cycle, never the year in the snapshot filename."""
-    if not re.fullmatch(r"\d{4}\.[12A]\.[0-9]{5}\.[A-Z]", project_code):
-        return None
-    return PROJECT_CYCLES.get(project_code[:4])
-
-
-def _positive(value: float | None) -> bool:
-    return (
-        isinstance(value, (int, float))
-        and not isinstance(value, bool)
-        and math.isfinite(value)
-        and value > 0
-    )
+from alma_duplicate.queue_mode_reference import (
+    ABS_TOL_MHZ as ABS_TOL_MHZ,
+    REL_TOL as REL_TOL,
+    _positive as _positive,
+    project_cycle as project_cycle,
+)
 
 
 @lru_cache(maxsize=4096)
