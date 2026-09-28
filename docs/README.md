@@ -111,6 +111,7 @@ behavior belong to the [search/spatial contract](search_plan_spatial.md).
 
 The [acceptance catalog](acceptance_cases.md) pins inputs and independently documented
 reference values; its runner saves reports, differences and evidence-gap counts.
+[Inspection v3](report_inspection.md) preserves candidate pair identities in those counts.
 The [thin-interface contract](thin_interface_contract.md) defines the first UI
 against report v4. No delivered case is falsely labelled as a reviewed real proposal.
 
