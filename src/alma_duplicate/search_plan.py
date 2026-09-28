@@ -34,6 +34,28 @@ def _aq_archive_predicate(p) -> PlannedPredicate:
     return PlannedPredicate(p.field, A.PLANNED_LOCAL, _AQ_SOURCE_FIELDS[p.field], p, AQ_FILTER_REASON)
 
 
+def validate_search_plan_configuration(
+    validation: RequestValidationResult, *,
+    beam_decision_ref: str | None = None,
+    aq_equivalent_filters: bool = False,
+    queue_candidate_beam: bool = False,
+) -> None:
+    """Validate search-plan configuration before any source provider is invoked."""
+    if not isinstance(aq_equivalent_filters, bool):
+        raise TypeError("aq_equivalent_filters must be a bool")
+    if (not validation.is_valid or not validation.can_search
+            or validation.request is None or validation.search_options is None):
+        raise ValueError("Search planning requires a valid request with search readiness")
+    if type(queue_candidate_beam) is not bool:
+        raise TypeError("queue_candidate_beam must be bool")
+    if queue_candidate_beam and beam_decision_ref is not None:
+        raise ValueError(
+            "Candidate-beam profile cannot be mixed with the legacy request-beam strategy"
+        )
+    if queue_candidate_beam and "QUEUE" not in validation.search_options.sources:
+        raise ValueError("Queue candidate-beam profile requires QUEUE selection")
+
+
 def build_search_plan(
     validation: RequestValidationResult, *, archive_science_only: bool = False,
     beam_decision_ref: str | None = None, aq_equivalent_filters: bool = False,
@@ -46,18 +68,13 @@ def build_search_plan(
     ALMA Archive Query interface. They are candidate filters, not Appendix A
     criteria; Queue predicates stay SKIPPED.
     """
-    if not isinstance(aq_equivalent_filters, bool):
-        raise TypeError("aq_equivalent_filters must be a bool")
-    if (not validation.is_valid or not validation.can_search
-            or validation.request is None or validation.search_options is None):
-        raise ValueError("Search planning requires a valid request with search readiness")
-    if type(queue_candidate_beam) is not bool:
-        raise TypeError("queue_candidate_beam must be bool")
-    if queue_candidate_beam and beam_decision_ref is not None:
-        raise ValueError("Candidate-beam profile cannot be mixed with the legacy request-beam strategy")
+    validate_search_plan_configuration(
+        validation,
+        beam_decision_ref=beam_decision_ref,
+        aq_equivalent_filters=aq_equivalent_filters,
+        queue_candidate_beam=queue_candidate_beam,
+    )
     request, options = validation.request, validation.search_options
-    if queue_candidate_beam and "QUEUE" not in options.sources:
-        raise ValueError("Queue candidate-beam profile requires QUEUE selection")
     if request.position is None or options.radius is None or not options.sources:
         raise ValueError("Position, radius and selected sources are required")
     if request.position.frame != "ICRS" or options.radius.unit != "deg":
