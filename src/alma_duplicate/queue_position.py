@@ -9,8 +9,9 @@ import math
 
 from alma_duplicate.domain.queue import QueueMosaicKind, RegularSpwEvidence
 from alma_duplicate.domain.spatial import PositionInterpretation, SkyPosition, SpatialSelection, SpatialStatus as S
-from alma_duplicate.primary_beam import at_boundary, covers, primary_beam_fwhm_deg
-from alma_duplicate.spatial import adapt_spatial, _separation
+from alma_duplicate.primary_beam import at_boundary, covers
+from alma_duplicate.geometry import angular_separation_deg, primary_beam_fwhm_deg
+from alma_duplicate.spatial import adapt_spatial
 
 PROFILE = "QUEUE_PORTAL_CANDIDATE_1"
 SOURCE_REF = "docs/evidence/official_sources.md#queue-position-profile"
@@ -133,7 +134,7 @@ def candidate_coverage(request, evidence):
         blockers.extend(diameter_notes)
     separation = None
     if evidence.center is not None and evidence.center_status is S.AVAILABLE:
-        separation = _separation(SkyPosition(request.position.ra_deg, request.position.dec_deg, "ICRS"), evidence.center)
+        separation = angular_separation_deg(SkyPosition(request.position.ra_deg, request.position.dec_deg, "ICRS"), evidence.center)
     else:
         blockers.append("CENTER_UNAVAILABLE")
     width = primary_beam_fwhm_deg(frequency, diameter) if frequency is not None and diameter is not None else None

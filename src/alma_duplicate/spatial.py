@@ -19,6 +19,10 @@ from alma_duplicate.domain.spatial import (
     SpatialSelection, SpatialStatus as S,
 )
 from alma_duplicate.search_plan import bind_archive_query
+from alma_duplicate.geometry import angular_separation_deg
+
+# Preserve the historical import path while runtime callers use the public helper.
+_separation = angular_separation_deg
 
 
 def _text(value):
@@ -105,15 +109,6 @@ def _circle(value):
     return CircleFootprint(SkyPosition(ra, dec, "ICRS"), radius), S.AVAILABLE, ()
 
 
-def _separation(a: SkyPosition, b: SkyPosition) -> float:
-    """Great-circle angle via atan2 of cross-product norm and dot product."""
-    ra1, dec1, ra2, dec2 = map(math.radians, (a.ra_deg, a.dec_deg, b.ra_deg, b.dec_deg))
-    delta = ra2 - ra1
-    x = math.cos(dec2) * math.sin(delta)
-    y = math.cos(dec1) * math.sin(dec2) - math.sin(dec1) * math.cos(dec2) * math.cos(delta)
-    dot = math.sin(dec1) * math.sin(dec2) + math.cos(dec1) * math.cos(dec2) * math.cos(delta)
-    return math.degrees(math.atan2(math.hypot(x, y), dot))
-
 
 def adapt_spatial(
     context: ComparisonContext,
@@ -140,7 +135,7 @@ def adapt_spatial(
         mosaic = payload.prepared.normalized_metadata.is_mosaic.value
         array = classify_array_type(row.get("antenna_arrays"))
         geometry = "SINGLE_FIELD" if mosaic is False else ("MOSAIC" if mosaic is True else "UNKNOWN")
-        if circle and center and center.frame == "ICRS" and _separation(center, circle.center) > 1e-9:
+        if circle and center and center.frame == "ICRS" and angular_separation_deg(center, circle.center) > 1e-9:
             reasons += ("CENTER_AND_REGION_CENTER_DIFFER",)
         # Circle footprint and raw center are separate evidence. Neither overwrites the other.
         if mosaic is not False:
@@ -234,7 +229,7 @@ def evaluate_spatial(plan: SearchPlan, evidence: SpatialEvidence) -> SpatialSele
     else:
         assert evidence.center is not None
         position = evidence.center
-    separation = _separation(target, position)
+    separation = angular_separation_deg(target, position)
     # Numerical boundary band is unresolved, never a false definite exclusion.
     if abs(separation - threshold) <= 1e-10:
         return SpatialSelection(evidence.context.context_id, "NOT_EVALUATED", operation,

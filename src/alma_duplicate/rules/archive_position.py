@@ -2,8 +2,8 @@
 from alma_duplicate.domain.comparison import ArchiveContextEvidence
 from alma_duplicate.domain.spatial import SkyPosition, SpatialStatus, PositionInterpretation
 from alma_duplicate.parsers.array_classification import classify_array_type
-from alma_duplicate.primary_beam import primary_beam_fwhm_deg
-from alma_duplicate.spatial import adapt_spatial, _separation
+from alma_duplicate.geometry import angular_separation_deg, primary_beam_fwhm_deg
+from alma_duplicate.spatial import adapt_spatial
 from alma_duplicate.rules.confirmed import DECISION_REF
 from alma_duplicate.rules.model import (
     POLICY_DOCUMENT, CriterionResult, CriterionIssue, CriterionOutcome as O,
@@ -55,7 +55,7 @@ def evaluate_archive_position(request, context, spatial_evidence):
                 radius = primary_beam_fwhm_deg(q.canonical_value, diameter) / 2
             except ValueError:
                 issue("CANDIDATE_BEAM_UNREPRESENTABLE", "context.frequency")
-        separation = None if evidence.center is None else _separation(
+        separation = None if evidence.center is None else angular_separation_deg(
             SkyPosition(request.position.ra_deg, request.position.dec_deg, "ICRS"), evidence.center)
         derived = (("separation_deg", separation), ("candidate_radius_deg", radius),
                    ("candidate_frequency_ghz", q.canonical_value), ("antenna_diameter_m", diameter))

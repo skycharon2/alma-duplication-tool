@@ -2,12 +2,14 @@
 import math
 from numbers import Real
 
+from alma_duplicate.geometry import angular_separation_deg
+from alma_duplicate.geometry import primary_beam_fwhm_deg as primary_beam_fwhm_deg
+
 from alma_duplicate.domain.comparison import ArchiveContextEvidence
 from alma_duplicate.domain.spatial import SpatialSelection, SpatialStatus, SkyPosition
 
-# Numerical band in which a separation equals the half-power radius. Shared by
-# every beam strategy so that one boundary convention cannot drift between them.
-# It is a float64 guard, not the policy reading of "within" the beam.
+# Legacy selection guard, retained in this strategy module. Confirmed inclusive
+# POS-SINGLE criteria do not adopt this boundary band.
 BOUNDARY_TOLERANCE_DEG = 1e-10
 
 
@@ -17,24 +19,12 @@ def at_boundary(separation_deg: float, radius_deg: float) -> bool:
 
 
 def covers(separation_deg: float, radius_deg: float) -> bool:
-    """The single reading of a position falling within a half-power radius.
+    """Legacy strict-inside predicate; callers exclude the boundary band first.
 
-    Every selection strategy and the position criterion call this, so whether
-    equality counts as covered stays one decision in one place. Callers exclude
-    the boundary band first; inside it neither answer is evidenced.
+    Confirmed inclusive POS-SINGLE rules keep their own comparison convention.
     """
     return separation_deg < radius_deg
 
-
-def primary_beam_fwhm_deg(frequency_ghz: float, diameter_m: float) -> float:
-    """Full width, not radius; fixed coefficient 1.13 and exact SI speed of light."""
-    for value in (frequency_ghz, diameter_m):
-        if isinstance(value, bool) or not isinstance(value, Real) or not math.isfinite(value) or value <= 0:
-            raise ValueError("Frequency and diameter must be finite positive numbers")
-    width = math.degrees(1.13 * 299792458. / 1e9 / frequency_ghz / diameter_m)
-    if not math.isfinite(width) or not 0 < width <= 360:
-        raise ValueError("Beam cannot be represented as a physical sky width")
-    return width
 
 
 def requested_beam_frequency(request):
@@ -54,7 +44,6 @@ def evaluate_primary_beam(plan, evidence):
     declaration of a unique array. The decision reference records a convention,
     not proof of scientific approval.
     """
-    from alma_duplicate.spatial import _separation
     from alma_duplicate.search_plan import bind_archive_query
     from alma_duplicate.parsers.array_classification import classify_array_type
 
@@ -91,7 +80,7 @@ def evaluate_primary_beam(plan, evidence):
     if evidence.center_status is not SpatialStatus.AVAILABLE or evidence.center is None:
         reasons.append("CENTER_UNAVAILABLE")
     else:
-        separation = _separation(SkyPosition(request.position.ra_deg, request.position.dec_deg, "ICRS"), evidence.center)
+        separation = angular_separation_deg(SkyPosition(request.position.ra_deg, request.position.dec_deg, "ICRS"), evidence.center)
         if (isinstance(evidence.context.evidence, ArchiveContextEvidence)
                     and separation > plan.retrieval_radius_deg + 1e-10):
             # Do not silently trust an inconsistent returned Archive row. Queue

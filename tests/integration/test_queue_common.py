@@ -66,7 +66,7 @@ def test_literal_boundary_without_legacy_equality_band(monkeypatch, factor, outc
     # Isolate numerical policy from inverse spherical coordinate rounding.
     radius = primary_beam_fwhm_deg(338.5, 12) / 2
     monkeypatch.setattr(
-        "alma_duplicate.rules.queue_common._separation", lambda *a: radius * factor
+        "alma_duplicate.rules.queue_common.angular_separation_deg", lambda *a: radius * factor
     )
     _, (_, p) = case()
     assert p.outcome == outcome

@@ -5,7 +5,7 @@ from dataclasses import replace
 from alma_duplicate.domain.comparison import QueueContextEvidence
 from alma_duplicate.domain.queue import QueueMosaicKind, RegularSpwEvidence
 from alma_duplicate.domain.spatial import SkyPosition, SpatialStatus
-from alma_duplicate.primary_beam import primary_beam_fwhm_deg
+from alma_duplicate.geometry import angular_separation_deg, primary_beam_fwhm_deg
 from alma_duplicate.queue_position import (
     adapt_queue_position,
     candidate_frequency,
@@ -14,7 +14,6 @@ from alma_duplicate.queue_position import (
 from alma_duplicate.queue_row_beam import (
     resolve_queue_primary_beam_diameter, PROFILE, DECISION_REF as ROW_DECISION_REF,
 )
-from alma_duplicate.spatial import _separation
 from alma_duplicate.rules.angular import evaluate_angular_resolution
 from alma_duplicate.rules.model import (
     POLICY_DOCUMENT,
@@ -153,7 +152,7 @@ def evaluate_queue_common(request, context, spatial_evidence):
         and evidence.center is not None
         and request.position is not None
     ):
-        separation = _separation(
+        separation = angular_separation_deg(
             SkyPosition(request.position.ra_deg, request.position.dec_deg, "ICRS"),
             evidence.center,
         )
