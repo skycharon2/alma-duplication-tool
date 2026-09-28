@@ -1,6 +1,6 @@
 # Engineering delivery roadmap
 
-Reviewed implementation baseline: `f28e24f` (PR #92).
+Reviewed pre-extraction baseline: `741421c` (PR #95).
 Archive and supported Queue continuum/LINE dual-source engineering acceptance is
 delivered in the supported fixed single-field scope. No independently reviewed
 real-proposal case is claimed.
@@ -34,7 +34,7 @@ The remaining extractions may proceed alongside UI work, independently.
 | DOC-BASE — delivered in PR #93 | Align architecture, current status, interface versions and this order | Current vs historical state is explicit; relative links resolve; no runtime change or new test required |
 | LINE-HELPERS — delivered | Extract shared rational display and explicit unit conversion into numerical helpers, criterion truth into aggregation | First verify equivalent behavior; boundary tests and acceptance retain numbers, reasons, methods and outcomes; keep source-specific result/evidence/RMS implementations |
 | GEOMETRY — delivered (3A) | Extract pure separation and beam formulas | Preserve spherical/offset/placeholder and boundary behavior; keep legacy boundary conventions in strategies; do not claim all cycles removed yet |
-| SPATIAL-EVIDENCE — next spatial increment (3B) | Separate spatial evidence adaptation from strategy dispatch | Queue strategy depends on adaptation rather than dispatch; remove target reverse imports; preserve retention, formal POS and explicit legacy paths, with compatibility exports where needed |
+| SPATIAL-EVIDENCE — delivered (3B) | Separate spatial evidence adaptation from strategy dispatch | Queue strategy depends on adaptation rather than dispatch; remove target reverse imports; preserve retention, formal POS and explicit legacy paths, with compatibility exports where needed |
 | MODE-REFERENCE | Separate reference configurations/mappings from experiment report generation | Formal adapter no longer consumes experiment report dictionaries; configuration IDs, matches, N16 allowance, mode results and historical CLIs unchanged |
 | APP-ENTRY — with first UI | Extract genuine shared CLI/UI orchestration | One validation/Solar/method-selection flow with injected clients/loaders; same effective configuration, science, source states and report for identical inputs |
 
@@ -54,6 +54,14 @@ comparison excluded only the same four execution timestamp paths listed above,
 and all inspection documents were identical. No method or report versions
 changed. Source adaptation remains a separate 3B increment; UI need not wait.
 Live TAP was not run.
+
+SPATIAL-EVIDENCE verification on 2026-09-28: 300 targeted tests passed,
+including 10 compatibility/import-boundary cases. Full suite with pinned Queue
+snapshot was 1389 passed, 9 skipped; Ruff F passed. The five moved functions and
+retained dispatcher are AST-identical to the baseline. Before/after acceptance
+passed all 15 cases; complete reports differed only at the four execution
+timestamp paths above and all inspections were identical. No scientific method,
+report, evidence schema or fixed reference changed. Live TAP was not run.
 
 Each code increment runs affected tests and the pinned acceptance catalog, then
 full regression before merge. Compare reports allowing only identified dynamic

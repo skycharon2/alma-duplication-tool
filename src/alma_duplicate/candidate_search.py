@@ -20,7 +20,8 @@ from alma_duplicate.domain.spatial import PositionInterpretation
 from alma_duplicate.search_plan import (
     build_search_plan, bind_archive_query, evaluate_angular_filter, evaluate_archive_scalar_filter,
 )
-from alma_duplicate.spatial import adapt_spatial, evaluate_spatial
+from alma_duplicate.spatial import evaluate_spatial
+from alma_duplicate.spatial_evidence import adapt_spatial
 
 
 class ArchiveSearcher(Protocol):
