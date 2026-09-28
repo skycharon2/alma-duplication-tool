@@ -1,7 +1,7 @@
 # Thin-interface contract over report v4
 
-Contract version 1, backend baseline PR #73 (`a3d2923`). The browser UI is not
-implemented by the acceptance increment. The [form sketch](proposed_observation_form.md)
+Contract version 2, backend baseline PR #92 (`f28e24f`). The browser UI is not
+implemented yet. The [form sketch](proposed_observation_form.md)
 owns layout; the [request API](proposed_observation_api.md) owns field validation;
 [reporting](evaluation_cli.md) owns JSON; [rules](rules.md) owns every formula and
 aggregation. This document defines how the first UI must consume those contracts.
@@ -22,6 +22,20 @@ aggregation. This document defines how the first UI must consume those contracts
    contexts. Never rebuild report criteria from a displayed subset or calculate
    formula/aggregation logic in the browser. A diagnostic inspection is an optional
    separate export, not a replacement for report v4.
+
+## Effective backend configuration
+
+Selecting Queue as a source does not enable its formal science methods.
+`evaluate_candidate_search()` still defaults `queue_continuum` and `queue_line`
+to False. The UI integration must explicitly enable the formal Queue option for
+each selected intent when Queue is selected, and display the report's effective
+`evaluation_configuration`. Reuse the existing option implications/validation;
+do not create an independent UI method-selection policy. Solar exemption must
+continue to run before source access.
+
+The [shared LINE precision contract](line_precision.md) separates exact decision
+operands from display floats. Display the backend results; never reconstruct a
+comparison from rounded values or parse rational evidence to run browser rules.
 
 ## Labels and ownership
 
@@ -63,11 +77,11 @@ from display truncation. Report v4's existing generated timestamp is not a captu
 
 `report_inspection.inspect_report(report_document)` is a read-only report consumer.
 It neither re-evaluates science nor modifies report v4. The default
-`inspection_version=2` provides branch counts, source statuses, scope and
-traceable gap occurrences. Version 1 remains explicitly readable with its
-historical classification behavior.
+`inspection_version=3` provides branch counts, source statuses, scope and
+traceable gap occurrences. Versions 1 and 2 remain explicitly callable to
+reproduce their historical behavior; new consumers use version 3.
 
-Version 2 categories are:
+Version 3 retains the version 2 categories:
 
 - USER_INPUT_MISSING: missing proposed evidence.
 - ARCHIVE_EVIDENCE_MISSING: unavailable Archive candidate evidence; not a demand to edit the proposal.
@@ -78,7 +92,7 @@ Version 2 categories are:
 - METHOD_OR_DEPENDENCY: unapproved method or blocked calculation such as coarse resolution.
 - UNCLASSIFIED: a reason not safely mapped by the selected consumer version; preserve its code and location.
 
-Version 2 additionally classifies Queue candidate-side missing quantities as
+Versions 2 and 3 classify Queue candidate-side missing quantities as
 Queue evidence, position-scope unresolved reasons as scope limitations and Queue
 resolution-coarser-than-planned as a method/dependency blocker. It reports
 `REQUESTED_FILTERS_NOT_FULLY_EVALUATED` only for a `COMPLETED` source; the false
@@ -94,6 +108,13 @@ pairs and request-level diagnostics remain separate occurrences. Each group
 reports unique affected contexts, unscoped occurrences and reason-code counts.
 Source/filter gaps remain distinguishable through their original code/location.
 Do not label every unresolved reason “missing user input”.
+
+For pair gaps, v3 adds `pair_identity` with context, proposed window, pair index
+and the original source-specific reference. Its `location` is a JSON Pointer to
+the criterion in this exact report. Distinct SPWs must remain separate even if
+they share the same reason. An unresolved reference can be null; do not invent
+an association. Other location strings retain their existing convention. Report
+indices are not cross-run identifiers. See the [inspection contract](report_inspection.md).
 
 ## First UI acceptance gate
 

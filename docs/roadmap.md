@@ -1,6 +1,6 @@
 # Engineering delivery roadmap
 
-Reviewed implementation baseline: `9d190c6`.
+Reviewed implementation baseline: `f28e24f` (PR #92).
 Archive and supported Queue continuum/LINE dual-source engineering acceptance is
 delivered in the supported fixed single-field scope. No independently reviewed
 real-proposal case is claimed.
@@ -20,6 +20,30 @@ own scientific decisions. An experiment being delivered does not approve its met
 | PR #75 | Queue mode/configuration census v1 | Conditional diagnostic, not formal LINE-FDM |
 | PR #76 | Queue processor-equivalence experiment | Conditional TPS mapping; incomplete enumeration; formal mode UNKNOWN |
 | PR #77 | Documentation ownership and Queue mapping table | No runtime or scientific approval change |
+| PR #91 | Shared LINE precision contract and both-source boundary regression | Exact decision operands; no global epsilon |
+| PR #92 | Inspection v3 pair identities and common-condition deduplication | Report consumer only; explicit historical v1/v2 retained |
+
+## Bounded maintenance increments
+
+These small commits support the thin UI; they are not a new prerequisite
+rearchitecture phase. Complete DOC-BASE and LINE-HELPERS first, then start UI.
+The remaining extractions may proceed alongside UI work, independently.
+
+| Commit | Scope | Exit gate |
+| --- | --- | --- |
+| DOC-BASE — this documentation increment | Align architecture, current status, interface versions and this order | Current vs historical state is explicit; relative links resolve; no runtime change or new test required |
+| LINE-HELPERS — next | Extract shared rational display and explicit unit conversion into numerical helpers, criterion truth into aggregation | First verify equivalent behavior; boundary tests and acceptance retain numbers, reasons, methods and outcomes; keep source-specific result/evidence/RMS implementations |
+| GEOMETRY | Extract pure separation and beam formulas | Preserve spherical/offset/placeholder and boundary behavior; keep legacy boundary conventions in strategies; do not claim all cycles removed yet |
+| SPATIAL-EVIDENCE | Separate spatial evidence adaptation from strategy dispatch | Queue strategy depends on adaptation rather than dispatch; remove target reverse imports; preserve retention, formal POS and explicit legacy paths, with compatibility exports where needed |
+| MODE-REFERENCE | Separate reference configurations/mappings from experiment report generation | Formal adapter no longer consumes experiment report dictionaries; configuration IDs, matches, N16 allowance, mode results and historical CLIs unchanged |
+| APP-ENTRY — with first UI | Extract genuine shared CLI/UI orchestration | One validation/Solar/method-selection flow with injected clients/loaders; same effective configuration, science, source states and report for identical inputs |
+
+Each code increment runs affected tests and the pinned acceptance catalog, then
+full regression before merge. Compare reports allowing only identified dynamic
+execution fields, never ignoring methods, reasons, associations or outcomes.
+Function relocation alone does not bump scientific method versions. Record and
+fix discovered behavior defects separately. Keep dated reports and reference
+hashes intact; retain the recorded baseline described in [status](status.md).
 
 ## Remaining delivery order
 
@@ -36,7 +60,8 @@ row-beam position and separately scoped angular criteria. [Queue continuum](queu
 and [Queue LINE](queue_line_pairing.md) now complete the supported fixed
 single-field branches. Formal same-request Archive+Queue continuum/LINE
 acceptance, cross-source/SPW isolation and source-state completeness are also
-delivered. The next engineering delivery is the thin browser interface;
+delivered. After the two bounded preparatory increments above, the next product
+delivery is the thin browser interface;
 source-bound 7-m/mixed-array interpretation remains a separate extension.
 
 Independent review of an actual proposal remains an external validation gate.
