@@ -632,7 +632,7 @@ def test_inspection_v2_closes_known_reason_taxonomy_and_v1_remains_readable(
         view = inspect_report(
             report(accepted, case["case_id"])
         )
-        assert view["inspection_version"] == "2"
+        assert view["inspection_version"] == "3"
         assert not any(
             occurrence["category"] == "UNCLASSIFIED"
             for occurrence in view["gap_occurrences"]
@@ -837,7 +837,7 @@ def test_source_state_matrix_keeps_execution_and_filter_gaps_distinct(
             )
         )
 
-        assert view["inspection_version"] == "2"
+        assert view["inspection_version"] == "3"
         assert view["search_wide_verdict"] == "NOT_PROVIDED"
 
         for source, (expected_status, expected_codes) in sources.items():
@@ -991,3 +991,71 @@ def test_raw_capture_tampering_rejected_before_reports(tmp_path):
     out = tmp_path / "run"
     assert main(["--catalog", str(path), "--output-dir", str(out)]) == 2
     assert not out.exists()
+
+
+def _pair_gap(code="PLANNED_LINE_RMS_REQUIRED", criterion_id="LINE-RMS"):
+    return {
+        "criterion_id": criterion_id,
+        "approval": "APPROVED",
+        "evaluation": "INSUFFICIENT_INFORMATION",
+        "outcome": None,
+        "issues": [{"code": code, "side": "PROPOSED"}],
+        "reasons": [code],
+    }
+
+
+def test_inspection_v3_retains_four_queue_spws_and_exact_report_locations(accepted):
+    doc = report(accepted, "dual-source-line")
+    context = next(c for c in doc["context_evaluations"] if c["reference"]["source"] == "QUEUE")
+    original_pair = context["line_pairs"][0]
+    context["line_pairs"] = [deepcopy(original_pair) for _ in range(4)]
+    for number, pair in enumerate(context["line_pairs"], 1):
+        pair["attempt"]["reference"]["spw_number"] = number
+    for pair in context["line_pairs"]:
+        pair["criteria"] = [_pair_gap(), _pair_gap(criterion_id="POS-SINGLE"), _pair_gap(criterion_id="ANGULAR")]
+    context["criteria"] = [_pair_gap(criterion_id="POS-SINGLE"), _pair_gap(criterion_id="ANGULAR")]
+    original = deepcopy(doc)
+    view = inspect_report(doc)
+    occurrences = [o for o in view["gap_occurrences"] if o["context_id"] == context["context_id"] and o["code"] == "PLANNED_LINE_RMS_REQUIRED"]
+    pairs = [o for o in occurrences if "pair_identity" in o]
+    assert len(pairs) == 4
+    assert {o["pair_identity"]["reference"]["spw_number"] for o in pairs} == {1, 2, 3, 4}
+    assert len(occurrences) == 6  # Four pair issues, common POS and ANGULAR once each.
+    for occurrence in pairs:
+        node = doc
+        for token in occurrence["location"].split("/")[1:]:
+            node = node[int(token)] if isinstance(node, list) else node[token]
+        assert node["criterion_id"] == "LINE-RMS"
+        assert node["issues"][0]["code"] == occurrence["code"]
+    assert doc == original
+    legacy = inspect_report(doc, inspection_version="2")
+    assert len([o for o in legacy["gap_occurrences"] if o["context_id"] == context["context_id"] and o["code"] == "PLANNED_LINE_RMS_REQUIRED"]) == 3
+
+
+def test_inspection_v3_deduplicates_same_pair_issue_but_not_other_windows(accepted):
+    doc = report(accepted, "dual-source-line")
+    context = next(c for c in doc["context_evaluations"] if c["reference"]["source"] == "QUEUE")
+    pair = deepcopy(context["line_pairs"][0])
+    gap = _pair_gap()
+    gap["issues"] *= 2
+    pair["criteria"] = [gap]
+    other = deepcopy(pair)
+    other["attempt"]["reference"]["proposed_window_id"] = "other/window~name"
+    context["line_pairs"] = [pair, other]
+    view = inspect_report(doc)
+    values = [o for o in view["gap_occurrences"] if o.get("pair_identity", {}).get("context_id") == context["context_id"]]
+    assert len(values) == 2
+    assert len({o["location"] for o in values}) == 2
+    assert {o["pair_identity"]["proposed_window_id"] for o in values} == {pair["attempt"]["reference"]["proposed_window_id"], "other/window~name"}
+
+
+def test_inspection_v3_archive_unresolved_reference_keeps_report_location(accepted):
+    doc = report(accepted, "missing-line-rms")
+    context = doc["context_evaluations"][0]
+    pair = context["line_pairs"][0]
+    pair["attempt"]["reference"] = None
+    pair["criteria"] = [_pair_gap()]
+    view = inspect_report(doc)
+    values = [o for o in view["gap_occurrences"] if o.get("pair_identity", {}).get("context_id") == context["context_id"]]
+    assert values[0]["pair_identity"]["reference"] is None
+    assert values[0]["location"].startswith("/context_evaluations/0/line_pairs/0/criteria/")

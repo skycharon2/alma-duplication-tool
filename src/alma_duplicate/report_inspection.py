@@ -104,15 +104,15 @@ def _category(code, side, source, inspection_version):
     return legacy
 
 
-def inspect_report(document, *, inspection_version="2"):
+def inspect_report(document, *, inspection_version="3"):
     """Summarize source gaps and unevaluable evidence, including hidden contexts.
 
     Counts are evidence occurrences, not failed observations. Shared POS/ANGULAR
     occur once per context, not once per pair. Distinct pair issues stay distinct.
     Unknown codes stay visible as UNCLASSIFIED rather than becoming input advice.
     """
-    if inspection_version not in {"1", "2"}:
-        raise ValueError("Inspection version must be 1 or 2")
+    if inspection_version not in {"1", "2", "3"}:
+        raise ValueError("Inspection version must be 1, 2 or 3")
     if document.get("report_version") != "4":
         raise ValueError("Inspection requires report version 4")
     kind = document.get("report_kind")
@@ -124,7 +124,7 @@ def inspect_report(document, *, inspection_version="2"):
     occurrences = []
     seen = set()
 
-    def add(location, code, *, side=None, source=None, context=None, category=None):
+    def add(location, code, *, side=None, source=None, context=None, category=None, pair_identity=None):
         key = (location, code, side)
         if key in seen:
             return
@@ -136,16 +136,17 @@ def inspect_report(document, *, inspection_version="2"):
                 "side": side,
                 "source": source,
                 "context_id": context,
+                **({"pair_identity": pair_identity} if pair_identity is not None else {}),
                 "category": category
                 or _category(code, side, source, inspection_version),
             }
         )
 
-    def criterion(r, location, context=None, source=None):
+    def criterion(r, location, context=None, source=None, pair_identity=None):
         if r["evaluation"] == "NOT_APPLICABLE":
             return
         if r["approval"] != "APPROVED":
-            add(location, "METHOD_UNAPPROVED", source=source, context=context)
+            add(location, "METHOD_UNAPPROVED", source=source, context=context, pair_identity=pair_identity)
         if r["outcome"] is not None:
             return
         if r["issues"]:
@@ -156,10 +157,11 @@ def inspect_report(document, *, inspection_version="2"):
                     side=issue["side"],
                     source=source,
                     context=context,
+                    pair_identity=pair_identity,
                 )
         else:
             for reason in r["reasons"] or ["UNSPECIFIED_MISSING_EVIDENCE"]:
-                add(location, reason, source=source, context=context)
+                add(location, reason, source=source, context=context, pair_identity=pair_identity)
 
     if kind == "CANDIDATE_EVALUATION":
         for name, source in document["sources"].items():
@@ -194,11 +196,11 @@ def inspect_report(document, *, inspection_version="2"):
                 add(f"request/issues/{i}", issue["code"], side=issue.get("side"))
         for r in document["request_criteria"]:
             criterion(r, f"request_criteria/{r['criterion_id']}")
-        for c in contexts:
+        for context_index, c in enumerate(contexts):
             cid, source = c["context_id"], c["reference"]["source"]
             for r in c["criteria"]:
                 criterion(r, f"{cid}/criteria/{r['criterion_id']}", cid, source)
-            for pair in c["line_pairs"]:
+            for pair_index, pair in enumerate(c["line_pairs"]):
                 attempt = pair["attempt"]
                 if "proposed_window_id" in attempt:
                     wid = attempt["proposed_window_id"]
@@ -212,13 +214,24 @@ def inspect_report(document, *, inspection_version="2"):
                             "Line pair lacks proposed window identity"
                         )
                     wid = reference["proposed_window_id"]
-                for r in pair["criteria"]:
+                identity = None
+                if inspection_version == "3":
+                    identity = {
+                        "context_id": cid,
+                        "proposed_window_id": wid,
+                        "pair_index": pair_index,
+                        "reference": attempt.get("reference"),
+                    }
+                for criterion_index, r in enumerate(pair["criteria"]):
                     if r["criterion_id"] not in {"POS-SINGLE", "ANGULAR"}:
                         criterion(
                             r,
-                            f"{cid}/line_pairs/{wid}/{r['criterion_id']}",
+                            (f"/context_evaluations/{context_index}/line_pairs/{pair_index}/criteria/{criterion_index}"
+                             if inspection_version == "3"
+                             else f"{cid}/line_pairs/{wid}/{r['criterion_id']}"),
                             cid,
                             source,
+                            identity,
                         )
             for b in c["branches"]:
                 # Aggregate placeholders are explained by the underlying conditions.

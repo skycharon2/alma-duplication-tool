@@ -4316,7 +4316,7 @@
             "inspection",
             "inspection_version"
           ],
-          "equals": "2",
+          "equals": "3",
           "reference": "Independent source-state completeness matrix"
         },
         {
@@ -4563,7 +4563,7 @@
             "inspection",
             "inspection_version"
           ],
-          "equals": "2",
+          "equals": "3",
           "reference": "Independent source-state completeness matrix"
         },
         {
@@ -4805,7 +4805,7 @@
             "inspection",
             "inspection_version"
           ],
-          "equals": "2",
+          "equals": "3",
           "reference": "Independent source-state completeness matrix"
         },
         {
