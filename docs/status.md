@@ -1,6 +1,6 @@
 # Current implementation status
 
-Reviewed implementation baseline: `9d190c6`. This is the single capability summary;
+Reviewed implementation baseline: `f28e24f` (PR #92, 2026-09-28). This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
 
@@ -14,10 +14,33 @@ Reviewed implementation baseline: `9d190c6`. This is the single capability summa
 | Line branch | Same-pair conditions, intermediate values and context-local aggregation implemented | [Same-row/SPW pairing and formal evaluation](queue_line_pairing.md) implemented for fixed single-field regular-SPW Queue contexts; FDM, coverage, resolution, RMS and whole-pair aggregation remain source-bound |
 | Mode diagnostics | Association-bound operational em_xel interpretation for confirmed LINE scope; not universal telemetry | PR #75 census and PR #76 processor experiment delivered; formal mode UNKNOWN |
 | Derived Queue mode evidence | Existing Archive method unchanged | [Adapter](queue_mode_adapter.md) returns scoped FDM/TDM/UNKNOWN and is integrated into Queue LINE-FDM; UNKNOWN supplies no formal pass |
-| Acceptance | Formal same-request Archive+Queue continuum/LINE engineering acceptance, adversarial source/SPW isolation and source-state completeness matrix | Pinned numerical, real-capture engineering and failure/completeness cases; inspection v2 closes known reason taxonomy without inventing a search-wide verdict |
+| Acceptance | Formal same-request Archive+Queue continuum/LINE engineering acceptance, adversarial source/SPW isolation and source-state completeness matrix | Pinned numerical, real-capture engineering and failure/completeness cases; inspection v3 preserves distinct pair identities and the existing reason taxonomy without inventing a search-wide verdict |
 | Reviewed real-proposal cases | 0; no genuine proposal input has been supplied | 0; no reviewed labels claimed |
 | Browser UI | Not implemented | Not implemented |
-Validation on 2026-09-28: dual-source/source-state targeted regression 96 passed; full suite 1322 passed, 12 skipped; the 15-case acceptance catalog passed with `reviewed_real_proposal_cases=0`; `compileall` and `git diff --check` succeeded.
+Completed correctness fixes: PR #91 preserves shared LINE exact decision operands
+([contract](line_precision.md)); PR #92 preserves inspection pair identities and
+context-level common-condition counting ([contract](report_inspection.md)).
+Current report version is 4, evaluation version is 5 and default inspection
+version is 3. Explicit inspection v1/v2 reproduce historical behavior.
+
+Recorded verification on 2026-09-28 for the PR #92 code tree:
+
+| Check | Recorded result and conditions |
+| --- | --- |
+| Full suite | 1341 passed, 9 skipped with the pinned Queue CSV available via `ALMA_QUEUE_CSV_SNAPSHOT` |
+| Inspection/acceptance targeted suite | 41 passed |
+| Ruff F | Passed |
+| Acceptance catalog | 15 cases PASS; `reviewed_real_proposal_cases=0` |
+| Live TAP | Not run; skipped tests are not passes |
+
+Snapshot SHA-256:
+`8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5`.
+The local retained run `reports/inspection-pair-identity-346402d/` contains the
+user-verified acceptance output; it is a local artifact, not a checked-in source
+or a promise that every checkout contains it. These are recorded baseline
+results, not a new full-suite run by this documentation-only change. Earlier
+1322/12 or 1337/9 counts describe earlier code/environment states.
+
 
 Solar exemption is implemented at request level without accessing either source.
 Continuum and LINE are reported independently. A supported candidate branch
