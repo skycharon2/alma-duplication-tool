@@ -1,6 +1,6 @@
 # Thin-interface contract over report v4
 
-Contract version 2, backend baseline PR #92 (`f28e24f`). The browser UI is not
+Contract version 2; shared application entry added after PR #97 (`e05ec71`). The browser UI is not
 implemented yet. The [form sketch](proposed_observation_form.md)
 owns layout; the [request API](proposed_observation_api.md) owns field validation;
 [reporting](evaluation_cli.md) owns JSON; [rules](rules.md) owns every formula and
@@ -14,7 +14,7 @@ aggregation. This document defines how the first UI must consume those contracts
    require explicit redshift for evaluation; planned resolution can use frequency
    or velocity units. Missing noise bandwidth alone does not block the confirmed
    direct line method. Invalid supplied fields still fail validation.
-2. Run the existing search/evaluation pipeline and display its report. Candidate
+2. Call [assess_observation](assessment_entry.md) and display its report. Candidate
    selection does not set FDM, confer continuum bandwidth eligibility, fill missing
    RMS or supply a scientific verdict. Valid SUN produces the existing no-search
    exemption. Queue mappings keep their source-specific limitations.

@@ -393,9 +393,9 @@ def test_pair_result_enforces_context_and_window_identity():
 
 
 def test_no_source_reads_for_solar_with_valid_line_inputs(tmp_path, monkeypatch):
-    import alma_duplicate.cli.evaluate as cli
 
-    monkeypatch.setattr(cli, "search_candidates", lambda *a, **k: pytest.fail("search"))
+    from alma_duplicate import assessment
+    monkeypatch.setattr(assessment, "search_candidates", lambda *a, **k: pytest.fail("search"))
     p = payload()
     p["request"]["target_kind"] = "SUN"
     request = tmp_path / "solar.json"
