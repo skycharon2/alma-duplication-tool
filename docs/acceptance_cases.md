@@ -7,6 +7,20 @@ adding or approving any scientific method. The
 case-specific reference records own raw-field extraction, arithmetic, expected
 outcomes and engineering-only boundaries.
 
+## Version boundary for pinned references
+
+Treat pinned reference records as immutable historical acceptance evidence. A
+reference may name the method versions that existed when it was prepared; do not
+rewrite that file or its catalog SHA solely to track a later method/numeric
+version migration.
+
+For current runtime method identities, use [rules](rules.md), the shared
+[LINE precision contract](line_precision.md), and the assertions in the active
+catalog/report. The LINE precision migration advances Archive and Queue
+coverage/resolution/RMS to version 2 while preserving pinned numerical/reference
+records and expected outcomes. A version-1 method identifier inside a pinned
+reference is provenance, not a UI/backend method-selection instruction.
+
 ## Inventory
 
 | Case | Evidence kind | Purpose |

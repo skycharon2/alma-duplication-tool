@@ -1,5 +1,14 @@
 # Queue POS-SINGLE, method queue_pos_single_1
 
+> **Legacy/provisional increment.** This file documents `queue_pos_single_1`
+> and the report/evaluation versions produced by that delivery. It is retained
+> for reproducibility; it is not the current formal Queue POS-SINGLE contract.
+> For UI/backend integration, use [Queue common](queue_common.md), where
+> `queue_pos_single_5` is current, together with the
+> [thin-interface contract](thin_interface_contract.md) and
+> [current status](status.md). Do not translate the version numbers below into
+> current report or method requirements.
+
 This provisional method evaluates whether a proposed fixed single pointing lies
 within the candidate's half-power beam. It does not evaluate duplication as a
 whole. It consumes the typed `QUEUE_PORTAL_CANDIDATE_1` spatial evidence produced

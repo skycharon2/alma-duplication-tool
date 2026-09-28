@@ -141,12 +141,15 @@ provides the source entry points and policy references. A candidate is evidence
 for review, not an automatic formal duplication conclusion. Versioned policy
 citations and Q1–Q8 interpretations remain in the rule-input contract.
 
-- [Queue candidate-beam profile](queue_candidate_beam.md)
+- [Queue candidate-beam profile](queue_candidate_beam.md): legacy/provisional
+  search-profile behavior; not the current formal Queue POS-SINGLE/UI contract.
 - [Verified ALMA source evidence](evidence/official_sources.md)
 
 - [Real dual-source replay](dual_source_replay.md): fixed NGC6240 request, raw Archive capture and Queue subset.
-- [Queue POS-SINGLE](pos_single.md): provisional candidate coverage criterion,
-  retained-context scope, derived filter summaries and offline replay.
+- [Queue POS-SINGLE](pos_single.md): retained historical/provisional
+  `queue_pos_single_1` increment. Current formal Queue POS-SINGLE is owned by
+  [Queue common](queue_common.md); do not use this file's report/evaluation
+  versions as current UI requirements.
 
 Queue diagnostic deliveries #75/#76 and the supported Queue continuum and LINE
 formal evaluation paths and dual-source engineering acceptance are complete.
