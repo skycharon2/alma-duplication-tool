@@ -12,6 +12,7 @@ from alma_duplicate.domain.queue import QueueCsvParseResult
 from alma_duplicate.domain.proposed_observation import RequestValidationResult
 from alma_duplicate.reporting import report_document
 from alma_duplicate.request_validation import validate_proposed_observation
+from alma_duplicate.search_plan import validate_search_plan_configuration
 from alma_duplicate.rules.evaluation import evaluate_candidate_search
 from alma_duplicate.rules.evaluation_model import SolarExemptionReport
 
@@ -92,6 +93,13 @@ def assess_observation(request: dict, search_options: dict, *,
         raise ValueError("--beam-decision-ref must not be blank")
     if sources.archive_kind == "REPLAY" and "ARCHIVE" not in selected:
         raise ValueError("--archive-replay requires ARCHIVE selection")
+
+    validate_search_plan_configuration(
+        validated,
+        beam_decision_ref=options.beam_decision_ref,
+        aq_equivalent_filters=options.aq_equivalent_filters,
+        queue_candidate_beam=options.queue_candidate_beam,
+    )
 
     archive = sources.archive_provider() if sources.archive_provider is not None else None
     search = search_candidates(

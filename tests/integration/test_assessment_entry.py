@@ -86,6 +86,23 @@ def test_invalid_configuration_is_rejected_before_source_access(options, sources
         assess_observation(**payload, options=options, sources=sources)
 
 
+def test_conflicting_beam_strategies_are_rejected_before_source_access():
+    payload = json.loads((ROOT / 'examples/proposed_observation.json').read_text())
+    payload['search_options']['sources'] = ['ARCHIVE', 'QUEUE']
+    with pytest.raises(
+        ValueError,
+        match='Candidate-beam profile cannot be mixed with the legacy request-beam strategy',
+    ):
+        assess_observation(
+            **payload,
+            options=AssessmentOptions(
+                beam_decision_ref='decision-ref',
+                queue_candidate_beam=True,
+            ),
+            sources=AssessmentSources('LIVE', forbidden, forbidden),
+        )
+
+
 def test_failed_queue_source_preserves_structured_report():
     payload = json.loads((ROOT / 'examples/queue_continuum/request.json').read_text())
     payload['search_options']['sources'] = ['QUEUE']
