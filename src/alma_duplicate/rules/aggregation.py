@@ -12,6 +12,13 @@ class Truth(StrEnum):
     UNKNOWN = "UNKNOWN"
 
 
+def criterion_truth(result) -> Truth:
+    """Apply the formal criterion gate before mapping its computed outcome."""
+    if not result.eligible_for_formal_aggregation:
+        return Truth.UNKNOWN
+    return Truth.TRUE if result.outcome is O.SATISFIED else Truth.FALSE
+
+
 def three_and(values):
     values = tuple(values)
     if Truth.FALSE in values:
