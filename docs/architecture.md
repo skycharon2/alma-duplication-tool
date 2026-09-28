@@ -93,8 +93,11 @@ remaining exceptions are explicit:
   The experiment retains compatibility exports and its provisional report
   contract. The older census retains its distinct BLC catalog. Mapping remains
   conditional, enumeration incomplete, and N16 scope unchanged.
-- Validation, Solar handling and method selection currently live in CLI
-  orchestration. Extract a shared entry with the first actual UI caller.
+- `assessment.assess_observation()` owns validation, Solar handling, method
+  selection, search/evaluation and report assembly. CLI retains JSON/file
+  handling, lazy provider construction, overwrite guards and exit codes.
+  [Application contract](assessment_entry.md) documents the callable boundary;
+  browser form/rendering integration remains the next delivery.
 
 The [roadmap](roadmap.md#bounded-maintenance-increments) owns their order and
 acceptance gates. Compatibility exports, explicit legacy/provisional paths,

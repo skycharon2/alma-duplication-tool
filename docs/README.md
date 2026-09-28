@@ -148,3 +148,5 @@ review gate, interface work and broader-mode scope.
 - [Queue continuum](queue_continuum.md): opt-in row-level frequency, usable-union RMS and branch contract.
 
 - [Queue LINE pairing and evaluation](queue_line_pairing.md): same-row/SPW evidence preparation, formal FDM/coverage/resolution/RMS evaluation, provenance checks and aggregation boundaries.
+
+- [Shared assessment entry](assessment_entry.md): callable orchestration, lazy sources and execution statuses; browser UI remains pending.

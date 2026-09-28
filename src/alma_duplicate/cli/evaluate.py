@@ -5,14 +5,12 @@ import json
 from pathlib import Path
 import sys
 
-from alma_duplicate.candidate_search import search_candidates
+from alma_duplicate.assessment import (
+    ArchiveInput, AssessmentOptions, AssessmentSources, AssessmentStatus, assess_observation,
+)
 from alma_duplicate.clients.queue_csv_client import QueueCsvClient
 from alma_duplicate.cli.json_input import load_request_document
-from alma_duplicate.reporting import json_value, report_document, write_report
-from alma_duplicate.request_validation import validate_proposed_observation
-from alma_duplicate.rules.evaluation import evaluate_candidate_search
-from alma_duplicate.rules.evaluation_model import SolarExemptionReport
-
+from alma_duplicate.reporting import json_value, write_report
 
 
 def main(argv=None, *, archive_client_factory=None):
@@ -49,92 +47,56 @@ def main(argv=None, *, archive_client_factory=None):
                 "Output exists; select another path or use --overwrite"
             )
         raw, payload = load_request_document(args.request)
-        validated = validate_proposed_observation(
-            payload["request"], payload["search_options"]
+
+        def archive_provider():
+            if args.archive_replay is not None:
+                from alma_duplicate.clients.archive_replay import RecordedArchiveClient
+                client = RecordedArchiveClient(args.archive_replay)
+                if args.output.resolve() in client.input_paths:
+                    raise ValueError("Output must not replace a replay response")
+                return ArchiveInput(client, client.metadata)
+            factory = archive_client_factory
+            if factory is None:
+                from alma_duplicate.clients.archive_client import ArchiveClient
+                factory = lambda: ArchiveClient("https://almascience.eso.org/tap")
+            return ArchiveInput(factory())
+
+        archive_kind = "REPLAY" if args.archive_replay is not None else "LIVE" if args.live_archive else None
+        loader = (lambda: QueueCsvClient().load(args.queue_csv)) if args.queue_csv is not None else None
+        result = assess_observation(
+            payload["request"], payload["search_options"],
+            options=AssessmentOptions(
+                beam_decision_ref=args.beam_decision_ref,
+                queue_candidate_beam=args.queue_candidate_beam,
+                aq_equivalent_filters=args.aq_equivalent_filters,
+                queue_common=args.queue_common,
+                queue_continuum=args.queue_continuum,
+                queue_line=args.queue_line,
+            ),
+            sources=AssessmentSources(archive_kind, archive_provider if archive_kind else None, loader),
+            input_sha256=hashlib.sha256(raw).hexdigest(),
         )
-        if validated.is_valid and validated.request.target_kind == "SUN":
-            # No client, replay manifest or Queue file is opened for an exempt request.
-            # Without reading a replay manifest, its referenced response paths are unknown.
-            if args.overwrite and args.archive_replay is not None:
-                raise ValueError("Solar exemption with --archive-replay requires a new output (no --overwrite)")
-            document = report_document(
-                SolarExemptionReport(validation=validated),
-                input_sha256=hashlib.sha256(raw).hexdigest(),
-            )
-            write_report(args.output, document, overwrite=args.overwrite)
-            print(f"Solar exemption report written: {args.output}")
-            return 0
-        if not validated.is_valid or not validated.can_search:
+        if result.status == AssessmentStatus.REQUEST_NOT_SEARCH_READY:
             print(json.dumps({
                 "error": "REQUEST_NOT_SEARCH_READY",
-                "issues": json_value(validated.issues),
-                "search_readiness": validated.search_readiness,
+                "issues": json_value(result.validation.issues),
+                "search_readiness": result.validation.search_readiness,
             }, allow_nan=False), file=sys.stderr)
             return 2
-
-        selected = validated.search_options.sources
-        if (args.queue_common or args.queue_continuum or args.queue_line) and "QUEUE" not in selected:
-            raise ValueError("--queue-common/--queue-continuum/--queue-line requires QUEUE selection")
-        if args.queue_continuum and "CONTINUUM" not in validated.request.intents:
-            raise ValueError("--queue-continuum requires CONTINUUM intent")
-        if args.queue_line and "LINE" not in validated.request.intents:
-            raise ValueError("--queue-line requires LINE intent")
-        if args.live_archive and "ARCHIVE" not in selected:
-            raise ValueError("--live-archive requires ARCHIVE selection")
-        if args.queue_csv is not None and "QUEUE" not in selected:
-            raise ValueError("--queue-csv requires QUEUE selection")
-        if args.beam_decision_ref is not None and not args.beam_decision_ref.strip():
-            raise ValueError("--beam-decision-ref must not be blank")
-
-        replay_metadata = None
-        client = None
-        if args.archive_replay is not None:
-            if "ARCHIVE" not in selected:
-                raise ValueError("--archive-replay requires ARCHIVE selection")
-            from alma_duplicate.clients.archive_replay import RecordedArchiveClient
-            client = RecordedArchiveClient(args.archive_replay)
-            if args.output.resolve() in client.input_paths:
-                raise ValueError("Output must not replace a replay response")
-            replay_metadata = client.metadata
-        if args.live_archive:
-            if archive_client_factory is None:
-                from alma_duplicate.clients.archive_client import ArchiveClient
-                archive_client_factory = lambda: ArchiveClient(
-                    "https://almascience.eso.org/tap"
-                )
-            client = archive_client_factory()
-
-        loader = None
-        if args.queue_csv is not None:
-            loader = lambda: QueueCsvClient().load(args.queue_csv)
-        search = search_candidates(
-            validated,
-            archive_client=client,
-            queue_loader=loader,
-            beam_decision_ref=args.beam_decision_ref,
-            aq_equivalent_filters=args.aq_equivalent_filters,
-            queue_candidate_beam=args.queue_candidate_beam,
-        )
-        # Archive fixed-celestial interpretation is versioned in its criterion.
-        # Queue interpretation is selected only by the explicit common-method option.
-        report = evaluate_candidate_search(search, queue_common=args.queue_common,
-                                           queue_continuum=args.queue_continuum,
-                                           queue_line=args.queue_line)
-        document = report_document(
-            report, input_sha256=hashlib.sha256(raw).hexdigest(),
-            archive_replay_metadata=replay_metadata
-        )
+        if result.status == AssessmentStatus.SOLAR_EXEMPTION:
+            if args.overwrite and args.archive_replay is not None:
+                raise ValueError("Solar exemption with --archive-replay requires a new output (no --overwrite)")
+            write_report(args.output, result.document, overwrite=args.overwrite)
+            print(f"Solar exemption report written: {args.output}")
+            return 0
+        document = result.document
         write_report(args.output, document, overwrite=args.overwrite)
     except (OSError, UnicodeError, ValueError) as exc:
         print(f"Evaluation failed: {exc}", file=sys.stderr)
         return 2
 
-    unavailable = any(
-        source.status in {"FAILED", "INCOMPLETE", "NOT_PROVIDED"}
-        for source in (search.archive, search.queue)
-    )
     print(f"Report written: {args.output}")
-    return 3 if unavailable else 0
+    return 3 if result.status == AssessmentStatus.SOURCES_UNAVAILABLE else 0
 
 
 if __name__ == "__main__":

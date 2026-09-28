@@ -59,7 +59,8 @@ def test_solar_cli_exempts_before_any_source_access(tmp_path, monkeypatch, sourc
     import requests
     def forbidden(*args, **kwargs):
         pytest.fail('Solar must not query or load sources')
-    monkeypatch.setattr(cli, 'search_candidates', forbidden)
+    from alma_duplicate import assessment
+    monkeypatch.setattr(assessment, 'search_candidates', forbidden)
     monkeypatch.setattr(cli.QueueCsvClient, 'load', forbidden)
     monkeypatch.setattr(replay, 'RecordedArchiveClient', forbidden)
     monkeypatch.setattr(requests.sessions.Session, 'request', forbidden)
