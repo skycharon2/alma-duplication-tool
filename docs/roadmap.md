@@ -1,6 +1,6 @@
 # Engineering delivery roadmap
 
-Reviewed pre-extraction baseline: `741421c` (PR #95).
+Reviewed pre-extraction baseline: `15e3214` (PR #96).
 Archive and supported Queue continuum/LINE dual-source engineering acceptance is
 delivered in the supported fixed single-field scope. No independently reviewed
 real-proposal case is claimed.
@@ -35,7 +35,7 @@ The remaining extractions may proceed alongside UI work, independently.
 | LINE-HELPERS — delivered | Extract shared rational display and explicit unit conversion into numerical helpers, criterion truth into aggregation | First verify equivalent behavior; boundary tests and acceptance retain numbers, reasons, methods and outcomes; keep source-specific result/evidence/RMS implementations |
 | GEOMETRY — delivered (3A) | Extract pure separation and beam formulas | Preserve spherical/offset/placeholder and boundary behavior; keep legacy boundary conventions in strategies; do not claim all cycles removed yet |
 | SPATIAL-EVIDENCE — delivered (3B) | Separate spatial evidence adaptation from strategy dispatch | Queue strategy depends on adaptation rather than dispatch; remove target reverse imports; preserve retention, formal POS and explicit legacy paths, with compatibility exports where needed |
-| MODE-REFERENCE | Separate reference configurations/mappings from experiment report generation | Formal adapter no longer consumes experiment report dictionaries; configuration IDs, matches, N16 allowance, mode results and historical CLIs unchanged |
+| MODE-REFERENCE — delivered | Separate reference configurations/mappings from experiment report generation | Formal adapter no longer consumes experiment report dictionaries; configuration IDs, matches, N16 allowance, mode results and historical CLIs unchanged |
 | APP-ENTRY — with first UI | Extract genuine shared CLI/UI orchestration | One validation/Solar/method-selection flow with injected clients/loaders; same effective configuration, science, source states and report for identical inputs |
 
 LINE-HELPERS verification on 2026-09-28: 29 helper contract cases plus 116
@@ -62,6 +62,15 @@ retained dispatcher are AST-identical to the baseline. Before/after acceptance
 passed all 15 cases; complete reports differed only at the four execution
 timestamp paths above and all inspections were identical. No scientific method,
 report, evidence schema or fixed reference changed. Live TAP was not run.
+
+MODE-REFERENCE verification on 2026-09-28: full suite with pinned Queue
+snapshot passed 1393 tests, with 9 skipped; Ruff F passed. All 3498 reference
+configuration records and their formal/experimental outputs were byte-identical.
+The adapter, processor census and original mode census produced byte-identical
+artifacts for all 16216 snapshot SPWs. Before/after acceptance passed 15 cases;
+reports differed only at the four timestamp paths above, inspections were
+identical. No scientific method, N16 allowance, catalog or report version changed.
+Live TAP was not run.
 
 Each code increment runs affected tests and the pinned acceptance catalog, then
 full regression before merge. Compare reports allowing only identified dynamic

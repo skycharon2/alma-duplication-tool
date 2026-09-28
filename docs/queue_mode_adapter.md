@@ -83,3 +83,13 @@ compatibility occurrences, independent applicability counts, original resolution
 preservation, repeated output reproducibility and strict report checksums.
 The earlier census and processor modules are unchanged and remain diagnostic.
 Queue continuum remains independent; the [roadmap](roadmap.md) owns next work.
+
+## Reference implementation ownership
+
+The adapter reads supported configurations and typed conditional mappings from
+`queue_mode_reference`. It does not invoke the processor experiment evaluator
+or consume its report dictionary. The experimental module retains compatibility
+exports and historical CLI behavior. Shared representation-noise constants and
+project-cycle parsing also live in the reference module; the original census
+keeps its own narrower catalog. This extraction changes no scientific method
+version, configuration ID, classification bound, source evidence or report field.

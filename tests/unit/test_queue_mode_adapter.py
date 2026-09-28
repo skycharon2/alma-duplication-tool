@@ -179,7 +179,8 @@ def test_tp_equivalence_and_mapping_block(cycle):
 
 
 def test_tp_mapping_missing_is_not_silently_ignored(monkeypatch):
-    monkeypatch.setattr(adapter, "_mapping_probe", lambda *args: {"tps_mappings": []})
+    from alma_duplicate.queue_mode_reference import ProcessorMapping
+    monkeypatch.setattr(adapter, "map_tp_counterpart", lambda c: ProcessorMapping(None))
     r = derive(
         resolution=31.25,
         processor_scope=adapter.ProcessorScope.REQUESTED_TP_EQUIVALENCE,

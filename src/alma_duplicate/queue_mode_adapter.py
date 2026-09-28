@@ -5,18 +5,17 @@ from __future__ import annotations
 from dataclasses import asdict
 from fractions import Fraction
 from enum import StrEnum
-from functools import lru_cache
 import math
 
-from alma_duplicate.queue_mode import ABS_TOL_MHZ, REL_TOL, _positive, project_cycle
+from alma_duplicate.queue_mode_reference import ABS_TOL_MHZ, REL_TOL, _positive, project_cycle
 from alma_duplicate.domain.queue import (
     QueueRowInput,
     RegularSpwEvidence,
     QueueMosaicKind,
 )
-from alma_duplicate.queue_processor_mode import (
+from alma_duplicate.queue_mode_reference import (
     configurations,
-    evaluate as processor_evaluate,
+    map_tp_counterpart,
 )
 
 METHOD_VERSION = "queue_mode_evidence_adapter_2"
@@ -173,29 +172,14 @@ def derive_mode(cycle, polarization, bandwidth_mhz, resolution_mhz, *, processor
         result["processor_evidence"] = "CONDITIONAL_EQUIVALENCE_MAPPING"
         mappings = []
         for c in matches:
-            # Reuse existing equivalence at the configuration prediction. This
-            # is a mapping probe, never replacement of the observed resolution.
-            view = _mapping_probe(
-                c.cycle, c.polarization, c.bandwidth_mhz, c.resolution_mhz
-            )
-            bound = [
-                m
-                for m in view["tps_mappings"]
-                if m["blc_configuration_id"] == c.configuration_id
-            ]
-            if not bound:
+            mapping = map_tp_counterpart(c)
+            if mapping.counterpart is None:
                 result["mode"] = "UNKNOWN"
                 result["reason"] = "PROCESSOR_MAPPING_INCOMPLETE"
-            mappings.extend(bound)
+            else:
+                mappings.append(asdict(mapping.counterpart))
         result["processor_mappings"] = mappings
     return result
-
-
-@lru_cache(maxsize=4096)
-def _mapping_probe(cycle, polarization, bandwidth, resolution):
-    return processor_evaluate(
-        cycle, polarization, bandwidth, resolution, require_tp=True
-    )
 
 
 def single_point_applicability(geometry, use_tp):
