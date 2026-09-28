@@ -86,9 +86,9 @@ used; Queue mappings and mosaic/moving/TP remain outside this approved workflow.
 | Criterion | Method version | Inclusive condition / dependency |
 | --- | --- | --- |
 | LINE-FDM | `archive_line_fdm_1` | Both proposed mode and associated Archive operational mode are FDM; a known TDM is false; otherwise absent mode is unknown |
-| LINE-COVERAGE | `archive_line_coverage_1` | Exact component interval contains the prepared sky center, including both endpoints; no row frequency/bandwidth approximation |
-| LINE-RESOLUTION-COMPATIBILITY | `archive_line_resolution_compatibility_1` | `299792.458 * dnu_archive_GHz / nu_sky_GHz <= dv_plan_kms` |
-| LINE-RMS | `archive_line_rms_1` | Compatible resolution, same-component @10km/s estimate, associated requested RMS and both angular resolutions are required |
+| LINE-COVERAGE | `archive_line_coverage_2` | Exact component interval contains the prepared sky center, including both endpoints; no row frequency/bandwidth approximation |
+| LINE-RESOLUTION-COMPATIBILITY | `archive_line_resolution_compatibility_2` | `299792.458 * dnu_archive_GHz / nu_sky_GHz <= dv_plan_kms` |
+| LINE-RMS | `archive_line_rms_2` | Compatible resolution, same-component @10km/s estimate, associated requested RMS and both angular resolutions are required |
 
 LINE-RMS computes `sigma_at_plan = sigma10 * sqrt(10 / dv_plan_kms)`, then
 `sigma_comp = sigma_at_plan * (theta_plan / theta_archive)^2`, and checks
@@ -98,13 +98,15 @@ resolution condition false but leaves LINE-RMS without an outcome or either
 computed RMS, with `ARCHIVE_RESOLUTION_COARSER_THAN_PLANNED`.
 Missing resolution similarly blocks RMS; missing RMS does not erase coverage.
 
-The numeric method `canonical_decimal_unit_scale_squared_rms_1` uses rational
-arithmetic over the decimal spellings of validated values and explicit unit
-conversion scales. It compares the squared RMS ratio to 4 exactly, without an
-epsilon. Square roots are calculated with a local 40-digit Decimal context for
-display only. This does not recover precision lost in parsing or prior request
-preparation, and performs no new frame transformation. Exact squared quantities
-are retained in details. A display value outside finite nonzero float range is
+Coverage, resolution compatibility and RMS use
+`exact_prepared_line_rationals_2`, consuming the exact prepared operands defined
+in the [shared LINE precision contract](line_precision.md). Rational arithmetic
+preserves validated decimal inputs and explicit unit conversion scales. LINE-RMS
+compares the squared RMS ratio to 4 exactly, without an epsilon. Square roots are calculated with a local 40-digit Decimal context for
+display only. This does not recover precision lost before input or in candidate parsing,
+and performs no new frame transformation. FDM retains its version 1 method
+and numeric identity; pair AND and context OR also remain version 1. Exact
+squared quantities are retained in details. A display value outside finite nonzero float range is
 null with `NUMERIC_DISPLAY_UNREPRESENTABLE`; the exact comparison remains valid.
 
 `LinePairEvaluation` retains the complete attempt/reference and six criteria:
@@ -218,9 +220,13 @@ The `queue_line=True` evaluator option enables the formal
 [Queue LINE contract](queue_line_pairing.md) and implies Queue common methods.
 Each proposed window is evaluated only against one regular SPW from the same
 physical Queue row. The numerical criteria use `queue_line_fdm_1`,
-`queue_line_coverage_1`, `queue_line_resolution_compatibility_1` and
-`queue_line_rms_portal_1`; `queue_line_pair_and_1` combines one coherent pair and
+`queue_line_coverage_2`, `queue_line_resolution_compatibility_2` and
+`queue_line_rms_portal_2`; `queue_line_pair_and_1` combines one coherent pair and
 `queue_line_context_or_1` ORs only whole pairs within that Queue context.
+
+Queue coverage, resolution compatibility and RMS also use
+`exact_prepared_line_rationals_2`; FDM and pair/context aggregation are unchanged.
+See the [precision contract](line_precision.md) for exact versus display operands.
 
 Incomplete proposed or candidate enumeration contributes UNKNOWN rather than a
 negative result. A coarser Queue spectral resolution is a definite resolution

@@ -39,6 +39,18 @@ design; the request API owns the accepted backend format. Historical statistics 
 original ERDs and conceptual entities live in the [design document](design/conceptual_data_model.md).
 They are not current population counts or Python class definitions.
 
+## UI reading order
+
+Read [status](status.md), [thin-interface contract](thin_interface_contract.md),
+[shared assessment entry](assessment_entry.md), [request API](proposed_observation_api.md),
+[report contract](evaluation_cli.md), then [inspection](report_inspection.md) and
+[acceptance](acceptance_cases.md). The [roadmap](roadmap.md) owns delivery order.
+Project plans define design goals; current API/report contracts and tests define
+field names, branch enums and behavior. In particular, coarse resolution can
+fail compatibility while blocking dependent RMS; it is not a blanket unknown.
+Historical evidence/reference files retain their original bytes and versions;
+the catalog's SHA-256 pins must not be changed by a current-document sync.
+
 ## Document classes
 
 | Class | Responsibility | Entry |

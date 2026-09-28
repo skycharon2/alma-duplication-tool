@@ -1,7 +1,8 @@
 # Thin-interface contract over report v4
 
-Contract version 2; shared application entry added after PR #97 (`e05ec71`). The browser UI is not
-implemented yet. The [form sketch](proposed_observation_form.md)
+Contract version 2. The [shared entry](assessment_entry.md) and configuration
+preflight are implemented; [status](status.md) owns the reviewed baseline.
+The browser UI is not implemented yet. The [form sketch](proposed_observation_form.md)
 owns layout; the [request API](proposed_observation_api.md) owns field validation;
 [reporting](evaluation_cli.md) owns JSON; [rules](rules.md) owns every formula and
 aggregation. This document defines how the first UI must consume those contracts.
@@ -36,6 +37,21 @@ continue to run before source access.
 The [shared LINE precision contract](line_precision.md) separates exact decision
 operands from display floats. Display the backend results; never reconstruct a
 comparison from rounded values or parse rational evidence to run browser rules.
+
+## Call order and execution errors
+
+Construct `request`, `search_options` and explicit `AssessmentOptions` first,
+then call `assess_observation()`. When `AssessmentResult.document` is present,
+render and export that report v4 document; derive the optional gap view with
+`inspect_report(document, inspection_version="3")`. Inspection is a report
+consumer, not a step that selects Queue methods or precedes assessment.
+
+Invalid/non-search-ready input returns validation details without a document.
+Source failures can leave a usable report with independent source states.
+Configuration and provider-construction exceptions may propagate: display an
+execution error without inventing a report or a scientific outcome. Valid Solar
+requests return the exemption before method checks and source access. See the
+[application contract](assessment_entry.md) for the exact execution boundary.
 
 ## Labels and ownership
 
@@ -77,7 +93,7 @@ from display truncation. Report v4's existing generated timestamp is not a captu
 
 `report_inspection.inspect_report(report_document)` is a read-only report consumer.
 It neither re-evaluates science nor modifies report v4. The default
-`inspection_version=3` provides branch counts, source statuses, scope and
+`inspection_version="3"` provides branch counts, source statuses, scope and
 traceable gap occurrences. Versions 1 and 2 remain explicitly callable to
 reproduce their historical behavior; new consumers use version 3.
 
@@ -119,7 +135,9 @@ indices are not cross-run identifiers. See the [inspection contract](report_insp
 ## First UI acceptance gate
 
 Use the [pinned catalog](acceptance_cases.md). Compare the UI-exported report with
-the backend report, accounting only for genuinely run-generated timestamp fields.
+the backend report from the same run without dropping any fields. For separate
+UI/CLI runs, exclude only the execution timestamp paths identified in the
+[roadmap](roadmap.md#bounded-maintenance-increments).
 Keep input/capture hashes, methods, associations, all retained contexts and outcomes
 identical. The UI must demonstrate guide A/B, mixed intents, missing RMS, coarse
 resolution blocking, multi-window pair expansion, source-not-provided and display

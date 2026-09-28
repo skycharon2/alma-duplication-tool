@@ -1,7 +1,8 @@
 # Runtime architecture
 
-Reviewed pre-extraction baseline: `741421c` (PR #95, 2026-09-28).
-Spatial evidence/dispatch separation below is delivered by this increment.
+The reviewed implementation baseline and verification conditions are owned by
+[status](status.md). The bounded extractions and shared application entry below
+are implemented; browser integration remains the next product delivery.
 
 This is a navigation map of implemented boundaries, not another field schema.
 The [object index](data_model.md) links definitions and the
@@ -46,15 +47,14 @@ historical meaning.
 The shared LINE preparation preserves exact decision operands, with floating-point
 values reserved for display; see the [precision contract](line_precision.md).
 Inspection v3 preserves pair references and report-local locations; see the
-[inspection contract](report_inspection.md). These fixes are implemented, unlike
-the extraction work below.
+[inspection contract](report_inspection.md). These fixes and the bounded extractions below are implemented.
 
-### Dependency responsibilities and current exceptions
+### Dependency responsibilities and delivered extractions
 
 | Layer | Allowed responsibility/dependency direction |
 | --- | --- |
 | CLI and future UI | Call application orchestration; own arguments/forms, file handling and presentation, not scientific formulas. |
-| Application orchestration | Validate, handle Solar exemption, configure sources, search, evaluate and serialize. Today this coordination lives in the CLI; no shared application entry has been extracted yet. |
+| Application orchestration | Validate, handle Solar exemption, configure sources, search, evaluate and serialize. The shared `assessment.assess_observation()` entry owns this coordination, including configuration preflight before source access; see [application contract](assessment_entry.md). |
 | Source and association adapters | Parse source-specific evidence into domain objects and preserve provenance; do not depend on UI rendering or branch verdicts. |
 | Scientific rules and aggregation | Consume coherent request/context/pair evidence and numerical helpers; retain source-specific mappings and combine whole criteria/pairs. |
 | Reports and inspection | Consume evaluation output; do not call source clients or recompute scientific conditions. |
@@ -62,7 +62,7 @@ the extraction work below.
 
 These are maintenance boundaries, not a claim that every current import already
 follows the target direction. The LINE helper, pure geometry and spatial evidence extractions are complete;
-remaining exceptions are explicit:
+their preserved boundaries are explicit:
 
 - Archive/Queue LINE now share `rules.numeric.rational_to_display()` and
   `explicit_unit_quantity()`, plus `rules.aggregation.criterion_truth()`.

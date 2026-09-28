@@ -1,6 +1,7 @@
 # Engineering delivery roadmap
 
-Reviewed pre-extraction baseline: `e05ec71` (PR #97).
+The reviewed implementation baseline and current verification conditions are
+maintained in [status](status.md).
 Archive and supported Queue continuum/LINE dual-source engineering acceptance is
 delivered in the supported fixed single-field scope. No independently reviewed
 real-proposal case is claimed.
@@ -26,8 +27,9 @@ own scientific decisions. An experiment being delivered does not approve its met
 ## Bounded maintenance increments
 
 These small commits support the thin UI; they are not a new prerequisite
-rearchitecture phase. DOC-BASE (PR #93) and LINE-HELPERS are now delivered; UI can start.
-The remaining extractions may proceed alongside UI work, independently.
+rearchitecture phase. DOC-BASE, LINE-HELPERS, GEOMETRY, SPATIAL-EVIDENCE,
+MODE-REFERENCE and APP-ENTRY are delivered. Configuration preflight is also
+implemented (PR #100). The next product delivery is the thin browser interface.
 
 | Commit | Scope | Exit gate |
 | --- | --- | --- |
@@ -102,7 +104,7 @@ row-beam position and separately scoped angular criteria. [Queue continuum](queu
 and [Queue LINE](queue_line_pairing.md) now complete the supported fixed
 single-field branches. Formal same-request Archive+Queue continuum/LINE
 acceptance, cross-source/SPW isolation and source-state completeness are also
-delivered. The two bounded preparatory increments above are complete; the next
+delivered. The bounded preparatory increments above are complete; the next
 product delivery is the thin browser interface;
 source-bound 7-m/mixed-array interpretation remains a separate extension.
 
@@ -125,6 +127,25 @@ mode interpretation remains a separate extension.
 The 76 export signatures and 14 all-family TP mapping gaps are tracked in the
 [dated experiment results](evidence/queue_processor_consensus_2026-09-23.md).
 Do not make all-family experimental closure a blanket prerequisite for Queue continuum.
+
+## Thin UI delivery increments
+
+1. Report display and export: consume existing acceptance reports; show each
+   source status, independent continuum/LINE branches and context/window/SPW
+   evidence. Export the same complete report, optionally with inspection v3.
+2. Minimal form: one setup, multiple windows, both intents, explicit units and
+   a controlled Queue snapshot. Construct explicit AssessmentOptions before
+   calling the shared entry. Distinguish missing from invalid input, no-document
+   validation results, propagated execution exceptions and usable partial-source
+   reports. Preserve Solar exemption and unsupported-scope explanations.
+3. Browser/CLI agreement: reuse the catalog for mixed intents, missing RMS,
+   coarse resolution, multiple pairs, source failure/missing/empty results and
+   display truncation; include Solar. A same-run download preserves the original
+   report. Separate-run comparison may ignore only the four execution timestamp
+   paths recorded above, never methods, provenance, associations or outcomes.
+
+Independent real-proposal review continues separately; broader modes do not
+become a blanket prerequisite for these UI increments.
 
 ## Weekly report measures
 

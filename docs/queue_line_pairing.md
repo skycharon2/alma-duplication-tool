@@ -169,10 +169,13 @@ boundaries.
 
 Each pair evaluates `LINE-FDM`, `LINE-COVERAGE`,
 `LINE-RESOLUTION-COMPATIBILITY` and `LINE-RMS` using the method versions
-`queue_line_fdm_1`, `queue_line_coverage_1`,
-`queue_line_resolution_compatibility_1` and `queue_line_rms_portal_1`.
+`queue_line_fdm_1`, `queue_line_coverage_2`,
+`queue_line_resolution_compatibility_2` and `queue_line_rms_portal_2`.
 The pair conjunction is `queue_line_pair_and_1`; context existential
-aggregation is `queue_line_context_or_1`.
+aggregation is `queue_line_context_or_1`. Coverage, resolution compatibility and
+RMS use `exact_prepared_line_rationals_2`; see the [precision contract](line_precision.md).
+FDM, builder and aggregation versions are unchanged. Historical reports and
+hash-pinned acceptance references retain their original method identities.
 
 A Queue spectral resolution coarser than the planned resolution is a definite
 resolution failure and blocks the dependent RMS threshold calculation. Queue
