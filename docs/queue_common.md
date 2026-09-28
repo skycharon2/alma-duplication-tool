@@ -78,5 +78,6 @@ python -m pytest tests/integration/test_queue_row_beam.py \
 
 Old manual --queue-array declarations remain removed. Historical position v3/v4
 and angular v4/v5 reports keep their original meaning. Generate a new report;
-do not relabel an old one. The roadmap owns remaining dual-source acceptance,
-interface and broader-mode work.
+do not relabel an old one. The roadmap owns remaining interface and
+broader-mode work; genuine-proposal review remains a separate external validation
+gate.

@@ -14,8 +14,11 @@ Archive fixed-target, single-point continuum and LINE evaluation are implemented
 Queue ingestion/search and conditional mode diagnostics are implemented. Queue
 continuum and Queue LINE evaluation are available in the supported coherent
 single-field Queue scope ([continuum contract](docs/queue_continuum.md),
-[LINE contract](docs/queue_line_pairing.md)); wider array/mode coverage and the
-browser UI remain unfinished.
+[LINE contract](docs/queue_line_pairing.md)). Same-request Archive+Queue
+engineering acceptance, cross-source/SPW isolation and source-state completeness
+coverage are delivered. A genuine proposal has not been supplied for independent
+real-proposal review; wider array/mode coverage and the browser UI remain
+unfinished.
 See the [capability matrix](docs/status.md), [documentation guide](docs/README.md)
 and [engineering roadmap](docs/roadmap.md).
 
@@ -104,8 +107,8 @@ evidence; their outputs do not establish current production capabilities.
 The [candidate-search service](docs/candidate_search.md) connects existing request,
 comparison and search/spatial objects; per-context rule evaluation is documented
 in [rules](docs/rules.md). The [next-delivery checklist](docs/README.md#next-delivery)
-tracks the remaining dual-source acceptance, real-case review and interface work
-after Archive and supported Queue branch evaluation.
+tracks the completed dual-source engineering acceptance, the externally blocked
+real-proposal review gate and the remaining interface work.
 Archive continuum and line branch aggregation and input/CLI closure are implemented;
 search-wide absence conclusions are intentionally not provided. Existing CASE
 retrieval evidence remains retrieval evidence:
@@ -140,7 +143,8 @@ python -m alma_duplicate.cli.acceptance \
   --output-dir reports/acceptance-run-1
 ```
 
-Use a new output directory. The nine offline cases save report v4, comparison
-results and gap summaries. A passing replay does not confer human scientific
-review. See [case provenance and references](docs/acceptance_cases.md) and the
+Use a new output directory. The fifteen offline cases save report v4,
+comparison results and gap summaries. A passing replay does not confer human
+scientific review; the catalog currently contains zero reviewed real-proposal
+cases. See [case provenance and references](docs/acceptance_cases.md) and the
 [thin-interface contract](docs/thin_interface_contract.md).

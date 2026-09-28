@@ -1,6 +1,6 @@
 # Current implementation status
 
-Reviewed implementation baseline: `78ed45d` (PR #88 merged). This is the single capability summary;
+Reviewed implementation baseline: `9d190c6`. This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
 
@@ -14,10 +14,10 @@ Reviewed implementation baseline: `78ed45d` (PR #88 merged). This is the single 
 | Line branch | Same-pair conditions, intermediate values and context-local aggregation implemented | [Same-row/SPW pairing and formal evaluation](queue_line_pairing.md) implemented for fixed single-field regular-SPW Queue contexts; FDM, coverage, resolution, RMS and whole-pair aggregation remain source-bound |
 | Mode diagnostics | Association-bound operational em_xel interpretation for confirmed LINE scope; not universal telemetry | PR #75 census and PR #76 processor experiment delivered; formal mode UNKNOWN |
 | Derived Queue mode evidence | Existing Archive method unchanged | [Adapter](queue_mode_adapter.md) returns scoped FDM/TDM/UNKNOWN and is integrated into Queue LINE-FDM; UNKNOWN supplies no formal pass |
-| Acceptance | Pinned numerical and real-capture engineering cases | Pairing/evaluator acceptance includes strict JSON, cross-SPW rejection, incomplete enumeration, Queue RMS normalization and full-suite regression |
-| Reviewed real-proposal cases | No reviewed labels claimed by the delivered catalog | No reviewed labels claimed |
+| Acceptance | Formal same-request Archive+Queue continuum/LINE engineering acceptance, adversarial source/SPW isolation and source-state completeness matrix | Pinned numerical, real-capture engineering and failure/completeness cases; inspection v2 closes known reason taxonomy without inventing a search-wide verdict |
+| Reviewed real-proposal cases | 0; no genuine proposal input has been supplied | 0; no reviewed labels claimed |
 | Browser UI | Not implemented | Not implemented |
-Validation on 2026-09-25: Queue LINE targeted tests 21 passed; integration 649 passed; full suite 1300 passed, 9 skipped; `compileall` and `git diff --check` succeeded.
+Validation on 2026-09-28: dual-source/source-state targeted regression 96 passed; full suite 1322 passed, 12 skipped; the 15-case acceptance catalog passed with `reviewed_real_proposal_cases=0`; `compileall` and `git diff --check` succeeded.
 
 Solar exemption is implemented at request level without accessing either source.
 Continuum and LINE are reported independently. A supported candidate branch
@@ -27,10 +27,15 @@ negative duplication results. Display limits do not limit retained-context evalu
 
 The existing NGC6240 same-request Archive+Queue replay remains an engineering
 acquisition/replay baseline whose historical command does not enable the later
-formal Queue continuum/LINE options. Formal DUAL-SOURCE-ACCEPTANCE remains the
-next delivery gate: it must exercise supported Archive and Queue formal branches
-on the same request while preserving source failure, completeness and provenance
-independently.
+formal Queue continuum/LINE options. Formal dual-source engineering acceptance is
+now delivered separately: supported Archive and Queue branches run against the
+same request, source/SPW evidence remains isolated, and source failure,
+incompleteness, completed-empty results and provenance remain distinct.
+
+Independent review of a genuine proposal remains deferred because no genuine
+proposal input has been supplied. That external validation gap does not create a
+reviewed label and does not change the intentional absence of a search-wide
+verdict.
 
 ## Queue experimental boundary
 
