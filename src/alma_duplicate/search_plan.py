@@ -66,7 +66,8 @@ def build_search_plan(
     if beam_decision_ref is not None:
         if not isinstance(beam_decision_ref, str) or not beam_decision_ref.strip():
             raise ValueError("Beam strategy requires an explicit decision reference")
-        from alma_duplicate.primary_beam import requested_beam_frequency, primary_beam_fwhm_deg
+        from alma_duplicate.primary_beam import requested_beam_frequency
+        from alma_duplicate.geometry import primary_beam_fwhm_deg
         frequency = requested_beam_frequency(request)
         if frequency is not None:
             retrieval_radius = max(retrieval_radius, primary_beam_fwhm_deg(frequency, 7.) / 2 + 1e-10)

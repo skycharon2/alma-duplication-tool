@@ -87,7 +87,7 @@ def test_seven_metre_beam_is_wider_and_inclusive(monkeypatch):
 
     radius12 = primary_beam_fwhm_deg(338.5, 12) / 2
     monkeypatch.setattr(
-        "alma_duplicate.rules.queue_common._separation", lambda *a: radius12 * 1.2
+        "alma_duplicate.rules.queue_common.angular_separation_deg", lambda *a: radius12 * 1.2
     )
     assert evaluate(source("False"))[1][1].outcome == "NOT_SATISFIED"
     p7 = evaluate(source("True"))[1][1]
@@ -99,7 +99,7 @@ def test_seven_metre_beam_is_wider_and_inclusive(monkeypatch):
         (1 + 1e-12, "NOT_SATISFIED"),
     ]:
         monkeypatch.setattr(
-            "alma_duplicate.rules.queue_common._separation",
+            "alma_duplicate.rules.queue_common.angular_separation_deg",
             lambda *a: dict(p7.derived)["candidate_radius_deg"] * factor,
         )
         assert evaluate(source("True"))[1][1].outcome == expected

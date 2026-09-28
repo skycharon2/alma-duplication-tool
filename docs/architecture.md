@@ -60,7 +60,8 @@ the extraction work below.
 | Proposed pure helpers | Geometry and numeric transformations may depend on math, Astropy and required value types; they must not import strategy dispatch, source clients or rules. |
 
 These are maintenance boundaries, not a claim that every current import already
-follows the target direction. The LINE helper extraction is complete; remaining exceptions are explicit:
+follows the target direction. The LINE helper and pure geometry extractions are complete; remaining exceptions
+are explicit:
 
 - Archive/Queue LINE now share `rules.numeric.rational_to_display()` and
   `explicit_unit_quantity()`, plus `rules.aggregation.criterion_truth()`.
@@ -68,9 +69,17 @@ follows the target direction. The LINE helper extraction is complete; remaining 
   underflow, square-root handling, unit scales and formal eligibility gates are
   preserved. Source-specific result construction, evidence and RMS formulas
   remain separate. Scientific method and report versions are unchanged.
-- `spatial` dispatches to `primary_beam` and `queue_position`; those modules
-  import separation and/or adaptation back from `spatial`, including lazy imports.
-  Extracting geometry alone will not remove the adaptation dependency.
+- `geometry` owns `angular_separation_deg()` and `primary_beam_fwhm_deg()`.
+  Its runtime imports are standard-library only; the coordinate annotation is
+  type-checking-only. It interprets neither source evidence nor frame/beam scope.
+  Formula bodies and operation order are unchanged. `spatial._separation` and
+  `primary_beam.primary_beam_fwhm_deg` remain compatibility exports of the same
+  functions. Legacy `at_boundary()` and `covers()` stay in `primary_beam`;
+  formal inclusive position comparisons remain in the source rules.
+- `spatial` still dispatches to `queue_position`, which still imports
+  `spatial.adapt_spatial`. The direct geometry back-import from `primary_beam`
+  has been removed, but spatial adaptation/dispatch separation remains pending.
+  This increment does not claim all runtime import cycles have been eliminated.
 - The formal `queue_mode_adapter` imports configurations and calls experimental
   `queue_processor_mode.evaluate()` for mapping output. Reference configuration
   and mapping responsibilities should be separated without changing their scope.
