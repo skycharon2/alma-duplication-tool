@@ -11,7 +11,7 @@ from alma_duplicate.domain.queue import QueueMosaicKind, RegularSpwEvidence
 from alma_duplicate.domain.spatial import PositionInterpretation, SkyPosition, SpatialSelection, SpatialStatus as S
 from alma_duplicate.primary_beam import at_boundary, covers
 from alma_duplicate.geometry import angular_separation_deg, primary_beam_fwhm_deg
-from alma_duplicate.spatial import adapt_spatial
+from alma_duplicate.spatial_evidence import adapt_spatial
 
 PROFILE = "QUEUE_PORTAL_CANDIDATE_1"
 SOURCE_REF = "docs/evidence/official_sources.md#queue-position-profile"

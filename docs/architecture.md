@@ -1,6 +1,7 @@
 # Runtime architecture
 
-Reviewed runtime baseline: `f28e24f` (PR #92, 2026-09-28).
+Reviewed pre-extraction baseline: `741421c` (PR #95, 2026-09-28).
+Spatial evidence/dispatch separation below is delivered by this increment.
 
 This is a navigation map of implemented boundaries, not another field schema.
 The [object index](data_model.md) links definitions and the
@@ -57,11 +58,11 @@ the extraction work below.
 | Source and association adapters | Parse source-specific evidence into domain objects and preserve provenance; do not depend on UI rendering or branch verdicts. |
 | Scientific rules and aggregation | Consume coherent request/context/pair evidence and numerical helpers; retain source-specific mappings and combine whole criteria/pairs. |
 | Reports and inspection | Consume evaluation output; do not call source clients or recompute scientific conditions. |
-| Proposed pure helpers | Geometry and numeric transformations may depend on math, Astropy and required value types; they must not import strategy dispatch, source clients or rules. |
+| Pure helpers | Geometry and numeric transformations may depend on math, Astropy and required value types; they must not import strategy dispatch, source clients or rules. |
 
 These are maintenance boundaries, not a claim that every current import already
-follows the target direction. The LINE helper and pure geometry extractions are complete; remaining exceptions
-are explicit:
+follows the target direction. The LINE helper, pure geometry and spatial evidence extractions are complete;
+remaining exceptions are explicit:
 
 - Archive/Queue LINE now share `rules.numeric.rational_to_display()` and
   `explicit_unit_quantity()`, plus `rules.aggregation.criterion_truth()`.
@@ -76,10 +77,15 @@ are explicit:
   `primary_beam.primary_beam_fwhm_deg` remain compatibility exports of the same
   functions. Legacy `at_boundary()` and `covers()` stay in `primary_beam`;
   formal inclusive position comparisons remain in the source rules.
-- `spatial` still dispatches to `queue_position`, which still imports
-  `spatial.adapt_spatial`. The direct geometry back-import from `primary_beam`
-  has been removed, but spatial adaptation/dispatch separation remains pending.
-  This increment does not claim all runtime import cycles have been eliminated.
+- `spatial_evidence` now owns `adapt_spatial()` and its four parsing helpers.
+  It depends on source/domain contracts, array classification and geometry, not
+  strategy dispatch, search planning or scientific rules. `spatial` retains
+  `evaluate_spatial()` and compatibility exports for the moved functions.
+  `queue_position`, `candidate_search` and the Archive position rule import the
+  adapter directly from its owner. Thus Queue strategy no longer imports
+  `spatial` back. Independent-process tests cover this dependency boundary and
+  import order. This closes the targeted spatial adaptation/dispatch cycle,
+  not an audit or elimination of every possible repository import cycle.
 - The formal `queue_mode_adapter` imports configurations and calls experimental
   `queue_processor_mode.evaluate()` for mapping output. Reference configuration
   and mapping responsibilities should be separated without changing their scope.
