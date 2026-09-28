@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from decimal import Decimal, localcontext
+from alma_duplicate.proposed_line import exact_prepared
 from fractions import Fraction
 import math
 
@@ -41,9 +42,9 @@ STATUS = {
 }
 METHODS = {
     "LINE-FDM": "queue_line_fdm_1",
-    "LINE-COVERAGE": "queue_line_coverage_1",
-    "LINE-RESOLUTION-COMPATIBILITY": "queue_line_resolution_compatibility_1",
-    "LINE-RMS": "queue_line_rms_portal_1",
+    "LINE-COVERAGE": "queue_line_coverage_2",
+    "LINE-RESOLUTION-COMPATIBILITY": "queue_line_resolution_compatibility_2",
+    "LINE-RMS": "queue_line_rms_portal_2",
 }
 
 
@@ -148,7 +149,8 @@ def _result(
         derived=tuple(derived),
         details=tuple(details),
         decision_refs=(DECISION_REF,),
-        numeric_method="canonical_decimal_unit_scale_squared_rms_1",
+        numeric_method=("canonical_decimal_unit_scale_squared_rms_1" if name == "LINE-FDM"
+                        else "exact_prepared_line_rationals_2"),
     )
 
 
@@ -173,8 +175,8 @@ def _numerical(request, context, attempt):
     planned, candidate = attempt.reference.resolve(request, context)
     window = _window(request, attempt.reference.proposed_window_id)
     spw = candidate.spw
-    sky = _quantity(planned.sky_frequency_ghz, "GHz", "GHz")
-    dv_plan = _quantity(planned.planned_resolution_kms, "km/s", "km/s")
+    sky = exact_prepared(planned.sky_frequency_ghz_exact)
+    dv_plan = exact_prepared(planned.planned_resolution_kms_exact)
     details = (
         ("proposed_window_id", attempt.reference.proposed_window_id),
         ("source_row_id", attempt.reference.source_row_id),

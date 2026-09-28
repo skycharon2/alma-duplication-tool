@@ -21,6 +21,30 @@ def _positive(value):
     return value
 
 
+def exact_request_quantity(quantity):
+    """Recover decimal input before float unit normalization, for LINE only."""
+    scales = {
+        "GHz": {"GHz": "1", "MHz": "0.001", "kHz": "0.000001", "Hz": "0.000000001"},
+        "MHz": {"GHz": "1000", "MHz": "1", "kHz": "0.001", "Hz": "0.000001"},
+        "km/s": {"km/s": "1", "m/s": "0.001"},
+    }
+    try:
+        scale = Fraction(scales[quantity.unit][quantity.raw_unit])
+    except KeyError as exc:
+        raise ValueError("Unsupported LINE input unit") from exc
+    return _positive(quantity.raw_value) * scale
+
+
+def exact_prepared(value):
+    """Read a prepared decision operand; never reconstruct it from display."""
+    if value is None:
+        return None
+    try:
+        return _positive(value)
+    except (ValueError, ZeroDivisionError):
+        return None
+
+
 def _finite_float(value):
     try:
         rounded = float(value)
@@ -48,7 +72,7 @@ def prepare_line_window(
         try:
             if center.quantity.unit != "GHz":
                 raise ValueError("Canonical GHz required")
-            sky = _positive(center.quantity.value)
+            sky = exact_request_quantity(center.quantity)
             if center.kind == "REST":
                 if source_redshift is None:
                     reasons.append("SOURCE_REDSHIFT_REQUIRED")
@@ -93,7 +117,7 @@ def prepare_line_window(
             continue
         sources.append(name)
         try:
-            width = _positive(q.value)
+            width = exact_request_quantity(q)
             if q.unit == "km/s":
                 values.append(width)
             elif q.unit == "MHz":
@@ -121,4 +145,6 @@ def prepare_line_window(
         resolution,
         tuple(sources),
         tuple(dict.fromkeys(reasons)),
+        sky_frequency_ghz_exact=str(sky) if sky is not None else None,
+        planned_resolution_kms_exact=str(values[0]) if resolution is not None else None,
     )

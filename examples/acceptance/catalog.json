@@ -2981,7 +2981,7 @@
             3,
             "method_version"
           ],
-          "equals": "queue_line_coverage_1",
+          "equals": "queue_line_coverage_2",
           "reference": "Independent dual-source LINE reference"
         },
         {
@@ -2995,7 +2995,7 @@
             4,
             "method_version"
           ],
-          "equals": "queue_line_resolution_compatibility_1",
+          "equals": "queue_line_resolution_compatibility_2",
           "reference": "Independent dual-source LINE reference"
         },
         {
@@ -3009,7 +3009,7 @@
             5,
             "method_version"
           ],
-          "equals": "queue_line_rms_portal_1",
+          "equals": "queue_line_rms_portal_2",
           "reference": "Independent dual-source LINE reference"
         },
         {
@@ -4093,7 +4093,7 @@
             3,
             "method_version"
           ],
-          "equals": "queue_line_coverage_1",
+          "equals": "queue_line_coverage_2",
           "reference": "Independent adversarial source/SPW isolation reference"
         },
         {
@@ -4107,7 +4107,7 @@
             4,
             "method_version"
           ],
-          "equals": "queue_line_resolution_compatibility_1",
+          "equals": "queue_line_resolution_compatibility_2",
           "reference": "Independent adversarial source/SPW isolation reference"
         },
         {
@@ -4121,7 +4121,7 @@
             5,
             "method_version"
           ],
-          "equals": "queue_line_rms_portal_1",
+          "equals": "queue_line_rms_portal_2",
           "reference": "Independent adversarial source/SPW isolation reference"
         },
         {
@@ -4149,7 +4149,7 @@
             3,
             "method_version"
           ],
-          "equals": "queue_line_coverage_1",
+          "equals": "queue_line_coverage_2",
           "reference": "Independent adversarial source/SPW isolation reference"
         },
         {
@@ -4163,7 +4163,7 @@
             4,
             "method_version"
           ],
-          "equals": "queue_line_resolution_compatibility_1",
+          "equals": "queue_line_resolution_compatibility_2",
           "reference": "Independent adversarial source/SPW isolation reference"
         },
         {
@@ -4177,7 +4177,7 @@
             5,
             "method_version"
           ],
-          "equals": "queue_line_rms_portal_1",
+          "equals": "queue_line_rms_portal_2",
           "reference": "Independent adversarial source/SPW isolation reference"
         }
       ]

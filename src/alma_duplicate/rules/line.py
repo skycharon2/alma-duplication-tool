@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from decimal import Decimal, localcontext
+from alma_duplicate.proposed_line import exact_prepared
 from fractions import Fraction
 import math
 
@@ -135,7 +136,7 @@ def _result(
     return CriterionResult(
         criterion_id=name,
         policy_ref=f"{POLICY_DOCUMENT}, Spectral windows",
-        method_version=f"archive_{name.lower().replace('-', '_')}_1",
+        method_version=f"archive_{name.lower().replace('-', '_')}_{1 if name == 'LINE-FDM' else 2}",
         approval=MethodApproval.APPROVED,
         applicability=A.UNRESOLVED if unknown else A.APPLICABLE,
         evaluation=E.INSUFFICIENT_INFORMATION if unknown else E.EVALUATED,
@@ -149,7 +150,8 @@ def _result(
         derived=tuple(derived),
         details=tuple(details),
         decision_refs=(DECISION_REF,),
-        numeric_method="canonical_decimal_unit_scale_squared_rms_1",
+        numeric_method=("canonical_decimal_unit_scale_squared_rms_1" if name == "LINE-FDM"
+                        else "exact_prepared_line_rationals_2"),
     )
 
 
@@ -168,8 +170,8 @@ def _numerical(request, context, attempt):
         )
     window, sensitivity, component = attempt.reference.resolve(request, context)
     planned = attempt.proposed
-    sky = _quantity(planned.sky_frequency_ghz, "GHz", "GHz")
-    dv_plan = _quantity(planned.planned_resolution_kms, "km/s", "km/s")
+    sky = exact_prepared(planned.sky_frequency_ghz_exact)
+    dv_plan = exact_prepared(planned.planned_resolution_kms_exact)
     mode = attempt.candidate_mode
     candidate_mode = (
         mode.operational_mode
