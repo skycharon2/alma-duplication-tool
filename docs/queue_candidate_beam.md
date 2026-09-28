@@ -1,5 +1,15 @@
 # Queue candidate-beam profile
 
+> **Legacy/provisional search profile.** `--queue-candidate-beam` remains an
+> explicit opt-in profile, but this document does not define the current formal
+> Queue POS-SINGLE science method and selecting Queue must not implicitly enable
+> it. For UI/backend integration, use [Queue common](queue_common.md) for the
+> current formal position/angular rules and [shared assessment entry](assessment_entry.md)
+> for the option boundary. The report-v1 wording below describes the increment
+> that introduced this profile; it is not the current report schema. See
+> [current status](status.md) and the
+> [thin-interface contract](thin_interface_contract.md).
+
 Run from an installed checkout:
 
 ```bash
