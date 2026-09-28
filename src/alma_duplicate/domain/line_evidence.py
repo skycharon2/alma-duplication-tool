@@ -48,4 +48,7 @@ class ProposedLineEvidence:
     planned_resolution_kms: float | None
     resolution_sources: tuple[str, ...]
     reasons: tuple[str, ...]
-    method_version: str = "proposed_line_preparation_1"
+    method_version: str = "proposed_line_preparation_2"
+    # JSON-safe rational strings are decision operands; floats above are display.
+    sky_frequency_ghz_exact: str | None = None
+    planned_resolution_kms_exact: str | None = None
