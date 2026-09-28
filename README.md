@@ -74,6 +74,12 @@ explicit external file:
 python -m pytest -q
 ```
 
+For a clean test-only environment, install `python -m pip install -e ".[test]"`
+and run `python -m pip check` before pytest. This includes the project runtime
+dependencies and pytest; use `.[dev]` for notebook and plotting tools. Both test
+workflows use the smaller test extra. Dependency versions are not locked by this
+change; a 60-second pip timeout mitigates network stalls, not incompatibilities.
+
 Optional full Queue snapshot acceptance:
 
 ```bash

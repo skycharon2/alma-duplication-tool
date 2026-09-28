@@ -16,6 +16,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+test = [
+    "pytest",
+]
 dev = [
     "jupyterlab",
     "ipykernel",
