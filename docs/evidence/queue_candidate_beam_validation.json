@@ -1,6 +1,6 @@
 {
   "base_commit": "46e69cd09cae7e9a12f4b6ac536d13e1ba79845a",
-  "validation_environment": "Codex patch-preparation environment, not maintainer local execution",
+  "validation_environment": "Patch-preparation environment, not maintainer local execution",
   "python": "3.12.14",
   "packages": {
     "pytest": "9.1.1",

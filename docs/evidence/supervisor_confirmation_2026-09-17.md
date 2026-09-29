@@ -81,7 +81,7 @@ the supplied project confirmation.
 
 ## Supplied source fingerprints
 
-- `.codex-upload-07b5bd2ec6a245f1ae64455cd422f5de`: SHA-256 `5c8a968363d32765fa68ef8beca6beb4c952ce6c372633502ce7318063b04418`
+- Uploaded source document: SHA-256 `5c8a968363d32765fa68ef8beca6beb4c952ce6c372633502ce7318063b04418`
 - `ALMA_Duplication_Confirmed_Implementation_Guide_2026-09-21(2).md`: SHA-256 `20c5b21ae8747ef7a3b04631b785fc8f15be316df64e49b9b0a3502834f03a64`
 - `Project_Plan_9_14(1).pdf`: SHA-256 `7e964cb9419ab67f8b867f956f3dca0700be9c25ffb7f35edb432c28077449c0`
 - `ノート 2(2).pdf`: SHA-256 `768d49447b76d183a0a8db7bba3bb8c3ce01342b16bc49c8535236ce642c7917`

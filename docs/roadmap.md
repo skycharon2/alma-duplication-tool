@@ -106,8 +106,9 @@ and [Queue LINE](queue_line_pairing.md) now complete the supported fixed
 single-field branches. Formal same-request Archive+Queue continuum/LINE
 acceptance, cross-source/SPW isolation and source-state completeness are also
 delivered. The bounded preparatory increments above are complete; the next
-product delivery is the thin browser interface;
-source-bound 7-m/mixed-array interpretation remains a separate extension.
+product delivery is the thin browser interface. Broader component-specific and
+mixed-array interpretations beyond the supported row-level scope remain separate
+extensions.
 
 Independent review of an actual proposal remains an external validation gate.
 No genuine proposal input is currently available, so
