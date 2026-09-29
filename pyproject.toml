@@ -16,6 +16,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+ui = [
+    "Flask>=3.1,<4",
+]
 test = [
     "pytest",
 ]
