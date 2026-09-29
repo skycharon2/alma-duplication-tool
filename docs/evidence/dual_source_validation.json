@@ -1,6 +1,6 @@
 {
   "baseline_commit": "e1868212aabb30be4178eff3028712d1a840fbca",
-  "validation_environment": "Codex patch-preparation environment; not maintainer local execution.",
+  "validation_environment": "Patch-preparation environment; not maintainer local execution.",
   "offline_pytest": {
     "passed": 880,
     "skipped": 10
