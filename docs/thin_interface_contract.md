@@ -81,10 +81,8 @@ Render each result/evidence value according to the unit defined by its backend
 field/report contract. For `derived` key/value arrays, preserve the field-specific
 unit indicated by the field name and report contract; do not apply one
 source-agnostic label. Queue LINE includes MHz resolution quantities and mJy
-candidate/comparable RMS alongside proposed mJy/beam;
-do not apply one source-agnostic label. Queue LINE includes MHz resolution
-quantities and mJy candidate/comparable RMS alongside proposed mJy/beam. A blocked RMS has
-null computed values; explain the dependency and show the available resolution.
+candidate/comparable RMS alongside proposed mJy/beam. A blocked RMS has null
+computed values; explain the dependency and show the available resolution.
 No condition from another pair may be substituted for a missing one.
 
 Show original input and mode provenance in expandable evidence details. Where

@@ -103,8 +103,12 @@ The [capture register](evidence/exploration_snapshots.md#archive-capture-registe
 [exploration summary](evidence/exploration_snapshots.md#archive-exploration-summary)
 and [cross-field experiments](evidence/exploration_snapshots.md#archive-cross-field-experiments)
 retain dates, populations, schema checksum, samples and their limits. They are
-historical evidence, not a current census. Production preserves raw `em_xel`
-without inferring Archive UI classification or correlator mode.
+historical evidence, not a current census. The production ingestion layer
+preserves raw `em_xel` without inferring Archive UI classification or correlator
+mode. Downstream comparison construction derives versioned, association-bound
+operational mode evidence for the confirmed Archive LINE scope; see
+[comparison contexts](comparison_contexts.md#association-bound-archive-mode-evidence).
+Source-native correlator telemetry remains unavailable through this path.
 
 ## Implementation boundary
 
