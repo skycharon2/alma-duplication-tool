@@ -116,8 +116,10 @@ behavior belong to the [search/spatial contract](search_plan_spatial.md).
 
 1. [Queue CSV contract](queue_csv_contract.md) and [snapshot storage](queue_snapshot_store.md).
 2. [Single-point rule mapping](queue_single_point_mapping.md): source semantics, associations, gaps and tests.
-3. [Census v1](queue_mode_census.md) and [processor experiment](experiments/queue_processor_consensus.md), read as diagnostics rather than formal rule evidence.
-4. [Roadmap](roadmap.md): the single owner of engineering order.
+3. Current formal contracts: [Queue common](queue_common.md), [continuum](queue_continuum.md) and [LINE](queue_line_pairing.md).
+4. [Mode evidence adapter](queue_mode_adapter.md): scoped row/SPW evidence used by Queue LINE.
+5. Read [census v1](queue_mode_census.md) and the [processor experiment](experiments/queue_processor_consensus.md) as needed for diagnostic assumptions and limitations.
+6. [Roadmap](roadmap.md): the single owner of engineering order.
 
 ## Next delivery
 

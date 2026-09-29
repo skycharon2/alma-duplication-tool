@@ -31,12 +31,12 @@ reference is provenance, not a UI/backend method-selection instruction.
 | coarse-line-resolution | SYNTHETIC_NUMERICAL | Coarse resolution fails compatibility and blocks RMS |
 | multiple-line-windows | SYNTHETIC_NUMERICAL | Two requested windows against two candidate SPWs; no cross-pair borrowing |
 | mixed-intents | SYNTHETIC_NUMERICAL | Independent continuum/LINE results with explicit sensitivity associations |
-| dual-source-continuum | SYNTHETIC_NUMERICAL | Same-request Archive+Queue formal continuum with source-bound outcomes |
-| dual-source-line | SYNTHETIC_NUMERICAL | Same-request Archive+Queue formal LINE with one positive and one RMS-negative Queue whole pair |
-| adversarial-source-spw-isolation | SYNTHETIC_NUMERICAL | Favorable LINE evidence is split across Archive contexts and Queue SPWs; no pair may borrow evidence |
-| archive-failed-queue-preserved | SOURCE_FAILURE_ENGINEERING | Archive query binding fails while completed Queue contexts remain usable; exit 3 |
-| queue-failed-archive-preserved | SOURCE_FAILURE_ENGINEERING | Strict Queue ingestion fails while completed Archive contexts remain usable; exit 3 |
-| completed-empty-queue | SOURCE_FAILURE_ENGINEERING | Queue completes with zero rows; empty success remains distinct from missing/failure and yields no search-wide verdict |
+| [dual-source-continuum](acceptance_reference_dual_source_continuum.md) | SYNTHETIC_NUMERICAL | Same-request Archive+Queue formal continuum with source-bound outcomes |
+| [dual-source-line](acceptance_reference_dual_source_line.md) | SYNTHETIC_NUMERICAL | Same-request Archive+Queue formal LINE with one positive and one RMS-negative Queue whole pair |
+| [adversarial-source-spw-isolation](acceptance_reference_adversarial_source_spw_isolation.md) | SYNTHETIC_NUMERICAL | Favorable LINE evidence is split across Archive contexts and Queue SPWs; no pair may borrow evidence |
+| [archive-failed-queue-preserved](acceptance_reference_source_state_matrix.md#archive-failed-queue-preserved) | SOURCE_FAILURE_ENGINEERING | Archive query binding fails while completed Queue contexts remain usable; exit 3 |
+| [queue-failed-archive-preserved](acceptance_reference_source_state_matrix.md#queue-failed-archive-preserved) | SOURCE_FAILURE_ENGINEERING | Strict Queue ingestion fails while completed Archive contexts remain usable; exit 3 |
+| [completed-empty-queue](acceptance_reference_source_state_matrix.md#completed-empty-queue) | SOURCE_FAILURE_ENGINEERING | Queue completes with zero rows; empty success remains distinct from missing/failure and yields no search-wide verdict |
 | source-not-provided | SOURCE_FAILURE_ENGINEERING | Missing Queue input leaves Archive report usable; exit 3 |
 | ngc6240-continuum | REAL_CAPTURE_ENGINEERING | Real capture mapping plus synthetic proposal; 157 evaluated contexts |
 | ngc6240-line-diagnostic | HYBRID_DIAGNOSTIC | Real Source–SPW component independently checked against artificial line input; retain .5 arcsec angle |

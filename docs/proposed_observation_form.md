@@ -127,8 +127,9 @@ carry the same distinctions independently of the future web framework.
 
 ## After search — Minimum result explanation
 
-This is the future browser presentation contract over the already implemented
-Archive continuum and line backend. Candidate evaluation and search completeness
+This is the future browser presentation contract over the implemented Archive
+and supported Queue continuum and LINE backend. Source-specific scope follows
+the [rule contract](rules.md). Candidate evaluation and search completeness
 remain separate; the UI does not synthesize an overall duplication verdict.
 
 | Result area | Required explanation |
