@@ -61,7 +61,7 @@ Each item separately reports:
 | unit | Existing canonical unit validation, or UNKNOWN for raw/component units not adapted here |
 | association | Evidence belongs to the row/component, or its matched-SPW association is unverified |
 | reference | UNKNOWN until reference compatibility is evaluated against another operand |
-| method | NOT_IMPLEMENTED for formal comparison methods; PRESENT identifies the implemented mode derivation, not a criterion outcome |
+| method | At this context-construction layer, NOT_IMPLEMENTED means no formal comparison method is executed here; PRESENT identifies the implemented mode derivation, not a criterion outcome |
 
 PRESENT is not a criterion pass or a cross-source compatibility result.
 A row scalar `sensitivity_10kms` retains its own availability but has UNKNOWN
@@ -75,7 +75,9 @@ Within context construction, Archive spatial fields remain raw evidence and
 Queue geometry is retained as supplied. The independent [spatial adapter and
 individual selectors](search_plan_spatial.md#spatial-evidence) normalize supported
 centers and parse limited `CIRCLE ICRS` footprints without changing this payload.
-Formal comparison geometry methods and SPS expansion are not implemented.
+Formal comparison methods are not executed by this context-construction API.
+Supported POS/continuum/LINE criteria run downstream through
+[rules](rules.md) and evaluation; SPS expansion remains unsupported.
 No single `comparison_ready` Boolean is exposed.
 
 ## Provenance
