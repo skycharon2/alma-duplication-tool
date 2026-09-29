@@ -99,8 +99,9 @@ hashes intact; retain the recorded baseline described in [status](status.md).
 | Thin browser interface | Input, candidates, independent branches, pair evidence and export using the backend report | UI/CLI agreement, no duplicate formulas, no UNKNOWN/empty-source-to-negative conversion |
 | Broader modes — deferred | Mosaic, moving targets, TP scientific evaluation, mixed setups and broader conversions | Separate scope, evidence and acceptance decisions |
 
-The [first Queue common increment](queue_common.md) supplies opt-in main-12m
-row-beam position and separately scoped angular criteria. [Queue continuum](queue_continuum.md)
+The [first Queue common increment](queue_common.md) supplies opt-in coherent
+single-field row-beam position, including the supported 7 m/12 m
+`standAlone_ACA` interpretation, and separately scoped angular criteria. [Queue continuum](queue_continuum.md)
 and [Queue LINE](queue_line_pairing.md) now complete the supported fixed
 single-field branches. Formal same-request Archive+Queue continuum/LINE
 acceptance, cross-source/SPW isolation and source-state completeness are also
