@@ -77,8 +77,13 @@ reason codes as visible details rather than guessing their meaning.
 
 Use `context_evaluations[].line_pairs[]`. Show proposed window and candidate
 Source–SPW/component together. Keep the reference associated with all six criteria.
-Render `derived` key/value arrays with their declared units: sky/interval GHz,
-resolution km/s, angular resolution arcsec and RMS mJy/beam. A blocked RMS has
+Render each result/evidence value according to the unit defined by its backend
+field/report contract. For `derived` key/value arrays, preserve the field-specific
+unit indicated by the field name and report contract; do not apply one
+source-agnostic label. Queue LINE includes MHz resolution quantities and mJy
+candidate/comparable RMS alongside proposed mJy/beam;
+do not apply one source-agnostic label. Queue LINE includes MHz resolution
+quantities and mJy candidate/comparable RMS alongside proposed mJy/beam. A blocked RMS has
 null computed values; explain the dependency and show the available resolution.
 No condition from another pair may be substituted for a missing one.
 

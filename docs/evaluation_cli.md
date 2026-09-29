@@ -80,8 +80,11 @@ issues remain present. Unsupported serialization types fail explicitly.
 
 This is a reviewable report, not a lossless Archive/Queue raw-data backup.
 It does not serialize full original source tables or establish retrieval beyond
-the executed scope. generated_at changes on each export; source-run timestamps
-and identities retain their original values.
+the executed scope. `generated_at` is set when `report_document()` constructs a
+new report document. `write_report()` serializes the supplied document without
+changing it, so repeated exports or downloads of that same-run document preserve
+the timestamp; separately constructed report documents receive a new one.
+Source-run timestamps and identities retain their original values.
 
 See [the rule contract](rules.md) and [scientific follow-up](scientific_followup.md).
 
@@ -157,10 +160,12 @@ their historical meanings; consumers should explicitly support report version 4.
 
 ## Opt-in Queue common methods
 
-`--queue-common` selects the [versioned main-12m Queue common rules](queue_common.md).
-It requires Queue source selection, does not enable candidate-beam retrieval,
-and does not complete Queue continuum/LINE branches. Without it, legacy methods
-are unchanged. See the linked contract for fixed-target assumptions and source gates.
+`--queue-common` selects the [versioned Queue common rules](queue_common.md) for
+the supported coherent single-field row scope. Row-beam selection follows the
+contracted `standAlone_ACA` evidence (7 m or 12 m as applicable). It requires
+Queue source selection, does not enable candidate-beam retrieval, and does not
+complete Queue continuum/LINE branches. Without it, legacy methods are unchanged.
+See the linked contract for fixed-target assumptions and source gates.
 
 ## Queue continuum option
 
