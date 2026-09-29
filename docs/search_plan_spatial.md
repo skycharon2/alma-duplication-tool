@@ -154,7 +154,7 @@ retrieval or approved duplicate labels.
 
 The [candidate-search service](candidate_search.md) now orchestrates these plans
 and individual checks and owns execution/completeness reporting. Per-context
-provisional criterion execution is documented separately in [rules](rules.md);
-SearchOptions predicates remain distinct from formal criteria. Current scientific-
-closure priorities, including Archive POS-SINGLE, CONT-FREQ/CONT-RMS and Q8
-aggregation, are centralized in the [next-delivery checklist](README.md#next-delivery).
+criterion execution and approval scope are documented separately in [rules](rules.md);
+SearchOptions predicates remain distinct from formal criteria. [Status](status.md)
+records implemented capabilities, and the [roadmap](roadmap.md) owns remaining
+delivery order and acceptance gates.

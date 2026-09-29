@@ -41,7 +41,7 @@ none implies that an approved comparison method or a persistence schema exists.
 | Criterion evaluation | [`CriterionResult`, `CriterionValue`, `CriterionIssue`](../src/alma_duplicate/rules/model.py) | Separate computation, outcome, applicability and approval; retain all affected evidence sides |
 | Line evaluation | [`LinePairEvaluation`](../src/alma_duplicate/rules/line.py) | One preparation attempt, six coherent conditions, gated pair truth, status, reasons and method identity; context LINE is OR of whole pairs |
 | Line preparation | [`ArchiveModeEvidence`, `ProposedLineEvidence`](../src/alma_duplicate/domain/line_evidence.py); [`LinePairBuildResult`, `LinePairAttempt`](../src/alma_duplicate/domain/line_pairing.py) | Derived metadata and coherent pairing attempts, no numerical line verdict |
-| Evaluation orchestration | [`EvaluationReport`, `ContextEvaluation`](../src/alma_duplicate/rules/evaluation_model.py) | Retain search result and independent continuum branch assessments per context; SolarExemptionReport represents request-level exemption without search |
+| Evaluation orchestration | [`EvaluationReport`, `ContextEvaluation`](../src/alma_duplicate/rules/evaluation_model.py) | Retain search result and independent continuum and LINE branch assessments per context; SolarExemptionReport represents request-level exemption without search |
 
 ## Archive identities and associations
 
