@@ -30,7 +30,8 @@ and immediately around the frequency-resolution boundary, equivalent input
 units, REST/redshift preparation, missing resolution and strict JSON output.
 Existing line tests continue to cover RMS calculations and evidence isolation.
 
-Pair inspection identities and the thin UI remain separate increments.
+Pair inspection identities were delivered separately in inspection v3; the thin
+browser UI remains a separate delivery.
 
 The active acceptance catalog expects the new numerical method versions; its
 scientific reference values, source captures and expected outcomes are unchanged.

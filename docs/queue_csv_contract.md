@@ -602,20 +602,24 @@ has not been established. Successful reconstruction does not establish
 cross-source comparability or a formal duplication decision.
 
 Every successfully derived SPW currently carries
-`PENDING_ARRAY_PROCESSOR_CONFIRMATION`. The mapping must not become an
-authoritative formal-duplication coverage input until the project confirms
-whether it applies uniformly or must be separated for the requested 12-m,
-7-m, and TP processor contexts. In particular, one Queue row can request both
-7-m and TP observations, while the current SPW object has only one derived
-usable interval.
+`PENDING_ARRAY_PROCESSOR_CONFIRMATION`. This is ingestion-level provenance: the
+CSV itself does not establish one universal source-native processor interpretation
+for every requested 12-m, 7-m, and TP context. It is not a blanket gate on all
+downstream Queue science.
 
-The open scientific decision should be put to the supervisor in this exact
-form:
+Versioned downstream contracts may adopt the derived usable-width evidence
+within an explicitly bounded scientific scope. The current
+[Queue continuum](queue_continuum.md) and
+[Queue LINE](queue_line_pairing.md) contracts do so with their own applicability,
+provenance and completeness gates; the
+[mode adapter](queue_mode_adapter.md) owns its separate scoped processor/mode
+interpretation. Unsupported or unresolved array/processor cases remain unknown
+rather than inheriting a universal mapping.
 
-> Should the `plotobs_cycle13.py` nominal-to-usable bandwidth mapping be
-> applied to every Queue SPW regardless of the requested arrays, or should
-> usable coverage be represented separately for the 12-m/7-m correlator and
-> the TP spectrometer?
+The historical question of whether the `plotobs_cycle13.py` mapping applies
+uniformly to every requested array remains part of the provenance behind these
+bounded decisions; it is not a current prerequisite for enabling the delivered
+formal Queue methods in their documented scope.
 
 Nominal bounds remain available for conservative discovery. The reference-frequency
 diagnostic uses a numerical boundary tolerance of `1e-12 GHz`. Values outside
@@ -783,10 +787,13 @@ The pinned schema does not provide:
 Missing capabilities must not be filled by target-name heuristics, bandwidth
 thresholds presented as correlator mode, or undocumented Web endpoints.
 
-Bandwidth-based continuum criteria may later be computed as policy evidence,
-but such a result is not an authoritative TDM label. Final rule behavior for
-unavailable correlator mode must be agreed with the supervisor and represented
-explicitly in the rule contract.
+Bandwidth-based continuum criteria and formal Queue LINE evaluation are defined
+by their downstream versioned rule contracts; they do not turn this ingestion
+layer into authoritative source-native TDM/FDM telemetry. The current
+[Queue continuum](queue_continuum.md), [Queue LINE](queue_line_pairing.md) and
+[mode adapter](queue_mode_adapter.md) define the supported bounded
+interpretations and failure behavior. Outside those scopes, unavailable mode or
+processor evidence remains explicit and must not be guessed.
 
 ## Production pipeline boundary
 

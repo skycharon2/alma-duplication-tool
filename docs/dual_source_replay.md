@@ -100,16 +100,18 @@ not query filters or expected populations for future live acquisitions.
 
 ## Relationship to formal dual-source acceptance
 
-The formal dual-source acceptance increment should reuse this fixture only where
-its provenance and acquisition semantics are appropriate. New acceptance cases
-must explicitly select the supported Queue formal evaluator options, pin their
-own expectations, preserve Archive and Queue context provenance independently,
-and keep source failure/completeness separate from scientific branch truth.
+Formal same-request Archive+Queue continuum/LINE engineering acceptance has
+since been delivered separately; see [acceptance cases](acceptance_cases.md).
+That acceptance reuses source material only where its provenance and acquisition
+semantics are appropriate, explicitly selects the supported Queue formal
+evaluator options, pins its own expectations, preserves Archive and Queue
+context provenance independently, and keeps source failure/completeness separate
+from scientific branch truth.
 
 Do not rewrite the historical counts above to make them appear to have exercised
-methods that were not selected by this invocation. A future formal acceptance
-case may use the same raw Archive capture or Queue fixture, but it is a distinct
-case with distinct method-selection and expected-result evidence.
+methods that were not selected by this invocation. Any additional acceptance
+case using the same raw Archive capture or Queue fixture remains a distinct case
+with distinct method-selection and expected-result evidence.
 
 ## Separate live acquisition
 

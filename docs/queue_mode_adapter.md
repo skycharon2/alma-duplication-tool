@@ -38,9 +38,10 @@ keeps snapshot SHA, physical row identity, project/target, SPW slot, original
 numeric values and raw tokens next to mode_evidence and single_point_applicability.
 
 The CLI reads QueueCsvClient typed rows directly. It does not import the census
-or consume census JSON. A future evaluator should resolve the same typed row and
-SPW through existing association references and call this same entry point.
-It must not substitute catalog predictions into coverage/resolution/RMS.
+or consume census JSON. The current formal Queue LINE evaluator resolves the
+same typed row/SPW through existing association references and uses this entry
+point for mode evidence. Other consumers must preserve that binding and must not
+substitute catalog predictions into coverage/resolution/RMS.
 
 SUPPORTED applicability means only SINGLE_FIELD with explicit non-TP arrays;
 position/frame/frequency/RMS and other rule evidence still require evaluation.
