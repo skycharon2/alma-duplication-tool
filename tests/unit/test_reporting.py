@@ -4,7 +4,7 @@ from types import MappingProxyType
 
 import pytest
 
-from alma_duplicate.reporting import json_value, write_report
+from alma_duplicate.reporting import json_value, report_json_text, write_report
 
 
 def test_mapping_and_nonfinite_values_remain_explicit():
@@ -24,6 +24,22 @@ def test_mapping_and_nonfinite_values_remain_explicit():
 def test_unknown_values_are_not_silently_stringified():
     with pytest.raises(TypeError):
         json_value(object())
+
+
+def test_report_json_text_matches_published_document(tmp_path):
+    document = {
+        "report_version": "4",
+        "generated_at": "2026-09-29T08:00:00+00:00",
+        "label": "ALMA µm evidence",
+    }
+    expected = json.dumps(
+        document, indent=2, ensure_ascii=False, allow_nan=False
+    ) + "\n"
+    assert report_json_text(document) == expected
+    path = tmp_path / "report.json"
+    write_report(path, document)
+    assert path.read_text() == expected
+    assert json.loads(path.read_text())["generated_at"] == document["generated_at"]
 
 
 def test_existing_report_is_preserved_without_overwrite(tmp_path):

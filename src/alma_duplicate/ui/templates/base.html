@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ALMA Duplication Assessment{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='workbench.css') }}">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to assessment</a>
+  <header class="site-header">
+    <div class="masthead-photo">
+      <img class="masthead-image" src="{{ url_for('static', filename='alma-dusk.jpg') }}" alt="ALMA antennas on the Chajnantor plateau at dusk">
+      <div class="masthead page-width">
+        <a class="identity" href="{{ url_for('index') }}" aria-label="ALMA Duplication Assessment home">
+          <span class="identity-tool">ALMA Duplication Assessment</span>
+          <span class="identity-description">Observation comparison and evidence review</span>
+        </a>
+      </div>
+      <div class="photo-credit-position page-width">
+        <p class="photo-credit">
+          <a href="https://www.eso.org/public/images/2016_04_09_alma_dusk_fd360_pano_horalek/">P. Horálek/ESO</a>
+          <span aria-hidden="true"> · </span><a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+          <span> · Cropped &amp; faded</span>
+        </p>
+      </div>
+    </div>
+    <nav class="navigation" aria-label="Main navigation">
+      <div class="page-width nav-inner">
+        <a class="current" href="#main" aria-current="page">Observation</a>
+        <a href="#candidates">Candidates</a>
+        <a href="#evidence">Evidence</a>
+        <a href="#result-guide">Interpreting results</a>
+        <a class="portal-link" href="https://almascience.eso.org/">ALMA Science Portal <span aria-hidden="true">↗</span></a>
+      </div>
+    </nav>
+  </header>
+  <main id="main" class="page-width" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <div class="page-width footer-inner">
+      <span>Independent decision-support tool. Official ALMA review remains authoritative.</span>
+      <a href="https://almascience.eso.org/aq/">ALMA Science Archive <span aria-hidden="true">↗</span></a>
+    </div>
+  </footer>
+</body>
+</html>

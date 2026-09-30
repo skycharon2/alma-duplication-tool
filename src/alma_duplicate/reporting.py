@@ -258,6 +258,13 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
     })
 
 
+def report_json_text(document):
+    """Serialize an already JSON-native report document for publication."""
+    return json.dumps(
+        document, indent=2, ensure_ascii=False, allow_nan=False
+    ) + "\n"
+
+
 def write_report(path, document, *, overwrite=False):
     """Publish a complete JSON file; never truncate an existing report.
 
@@ -265,9 +272,7 @@ def write_report(path, document, *, overwrite=False):
     Converting again here would let an unconverted evidence object reach a file
     without passing that boundary, so an unsupported type raises instead.
     """
-    text = json.dumps(
-        document, indent=2, ensure_ascii=False, allow_nan=False
-    ) + "\n"
+    text = report_json_text(document)
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     temporary = None
