@@ -98,8 +98,10 @@ The proposed form supports validation/request download and an opt-in
 shared entry with explicit Queue intent options and local replay/CSV providers,
 then renders and exports its retained report v4 and inspection v3. Reports from
 separate runs remain independent. This does not change the dated baseline or
-verification counts above. Live Archive execution, persistent multi-user storage
-and the complete browser/CLI acceptance gate remain outstanding.
+verification counts above. The [offline UI/CLI parity gate](ui_offline_assessment.md#offline-uicli-parity-gate)
+now compares complete reports and inspection documents under the current UI
+configuration, with exact same-run downloads. Live Archive execution and
+persistent multi-user storage remain outstanding.
 
 ## Maintenance
 

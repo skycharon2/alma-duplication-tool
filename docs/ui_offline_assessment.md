@@ -116,5 +116,49 @@ UI tests exercise actual offline shared-entry execution for LINE, CONTINUUM and
 mixed requests; explicit Queue methods; invalid/unready no-execution paths;
 source failure isolation; optional SPWs; exact report and inspection downloads;
 run independence; retention; and no network access. The existing report-browser
-suite also runs the pinned acceptance catalog. This is not a claim that every
-browser/CLI parity scenario or real-proposal review gate is complete.
+suite also runs the pinned acceptance catalog.
+
+### Offline UI/CLI parity gate
+
+`tests/ui/test_cli_parity.py` checks the current form and offline execution
+configuration through Flask's test client and the real CLI entry. Run it with:
+
+```bash
+python -m pytest tests/ui/test_cli_parity.py -q
+```
+
+The gate verifies the pinned catalog's input/source/reference checksums and
+uses all 15 input cases to populate supported form fields. Each form submission
+produces a retained report and request download; the CLI receives those exact
+downloaded request bytes, the same source files and explicit formal Queue flags.
+This compares the same wire request, including the form's sensitivity IDs.
+Historical catalog options, including legacy beam settings, are not substituted
+for the current UI configuration. Original catalog runs and their expected
+scientific assertions remain independently checked by the report-browser suite.
+
+Additional cases cover dual-source mixed intents, setup declaration without
+SPWs, contradictory complete-list evidence, alternate supported units and 21
+contexts across two pages with a display limit of one. Solar is tested through
+the execution adapter, CLI and report viewer, with source access forbidden; it
+is not an available form mode. Network calls are forbidden throughout the gate.
+
+Full report dictionaries are compared, including method versions, reasons,
+outcomes, source states, snapshot hashes, configuration and pair associations.
+Only these execution-time fields are normalized:
+
+- `generated_at`
+- `search_started_at`
+- `search_finished_at`
+- `sources.QUEUE.source_metadata.snapshot.parsed_at`
+
+Input provenance is checked separately: the CLI's `input_sha256` must match the
+actual request-file bytes, and the form report's value must be null. Capture
+dates and all other provenance remain in the comparison. Inspection v3
+documents must match without normalization. Refresh, pagination and downloads
+must preserve the original report/request/inspection bytes and must not execute
+the assessment again. A comparator regression test protects against silently
+excluding scientific or provenance differences.
+
+This gate covers offline HTTP routes and rendering. Live Archive execution,
+browser JavaScript interaction and independent real-proposal review require
+their own verification.
