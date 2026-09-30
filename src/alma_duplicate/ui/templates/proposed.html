@@ -7,7 +7,7 @@
 {% macro quantity(name, label, units, default) %}<div class="quantity-grid"><div>{{ input(name, label) }}</div><div>{{ select(name + '_unit', 'Unit for ' + label|lower, units, default, true) }}</div></div>{% endmacro %}
 {% block content %}
 <div class="page-heading proposal-heading"><div><h1>Proposed observation</h1><p>Prepare the target, spectral setup and sensitivity for a duplication check.</p></div><p class="scope-note">Fixed target / Single pointing</p></div>
-<p class="proposal-intro"><strong>Input validation only.</strong> No assessment has been run; Archive and Queue are not queried here.</p>
+<p class="proposal-intro">{% if offline.enabled %}<strong>Offline assessment.</strong> Run an assessment against configured local reference data. No live Archive query is made.{% else %}<strong>Input validation only.</strong> No assessment has been run; offline assessment is not configured.{% endif %}</p>
 <form method="post" action="{{ url_for('proposed') }}" class="proposed-form" novalidate>
 <button type="submit" name="action" value="validate" hidden>Validate input</button>
 <div class="proposal-layout">
@@ -31,9 +31,10 @@
 {% if edit_notice %}<p role="status">{{ edit_notice }}</p>{% endif %}
 </section>
 <nav class="proposal-sections" aria-label="Form sections"><h2>On this page</h2><a href="#position">Target and purpose</a><a href="#sensitivities">Continuum sensitivity</a><a href="#windows">Spectral windows (optional)</a><a href="#search">Search options</a><a href="#form-actions">Validate and download</a></nav>
-<p class="field-note">Entries are not saved by the application. Download the request to keep a copy.</p>
+<p class="field-note">Validation does not save entries. Running an assessment retains its input and report temporarily; download to keep a copy.</p>
 </aside>
 <div class="proposal-fields">
+{% if execution_error %}<section id="execution-error" class="removal-notice" role="alert" tabindex="-1"><h2>Assessment not completed</h2><p>{{ execution_error }}</p></section>{% endif %}
 {% if pending_removal %}<section class="removal-notice" id="remove-confirmation" tabindex="-1" role="alert"><h2>Remove Window {{ rows.index(pending_removal) + 1 }}?</h2><p>This removes its frequency, bandwidth and LINE sensitivity. Any selected continuum reference will remain flagged for review; the aggregate RMS will not be recalculated.</p><button class="button" name="action" value="confirm-remove:{{ pending_removal }}">Confirm removal</button> <button class="button" name="action" value="cancel-remove">Keep window</button></section>{% endif %}
 <section id="position"><h2>Target and purpose</h2>
 {{ messages('position') }}
@@ -47,6 +48,9 @@
 </section>
 <section id="sensitivities"><h2>Continuum sensitivity</h2><p data-continuum-hint>Select CONTINUUM above to enter the setup sensitivity.</p><div data-purpose="CONTINUUM">
 {{ messages('sensitivities') }}
+<label class="complete-choice"><input type="checkbox" id="continuum_setup_declaration" name="continuum_setup_declaration" aria-describedby="continuum_setup_declaration-notes" {% if values.get('continuum_setup_declaration') == 'on' %}checked{% endif %}> I confirm that this setup contains at least two distinct spectral windows, each with usable bandwidth greater than 1.8 GHz.</label>
+{{ messages('continuum_setup_declaration') }}
+<p class="field-note">Optional researcher declaration for CONT-SETUP only. Detailed SPWs are not required when confirmed. The report records this declaration and checks it against any supplied complete window list. Other comparison criteria still require their own evidence.</p>
 <div class="form-pair"><div>{{ quantity('representative', 'Representative frequency', ['GHz','MHz','kHz','Hz'], 'GHz') }}
 {{ select('representative_kind', 'Representative frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>
 {{ quantity('aggregate', 'Aggregate RMS for this setup', ['mJy/beam','Jy/beam'], 'mJy/beam') }}</div>
@@ -56,7 +60,7 @@
 {% for window_id in stale_ids %}<label class="stale-reference"><input type="checkbox" name="aggregate_windows" value="{{ window_id }}" checked>Unavailable window: {{ window_id }}</label>{% endfor %}
 {% if stale_ids %}<p class="field-note">Review the aggregate RMS before clearing an unavailable reference. No sensitivity is recalculated automatically.</p>{% endif %}
 {{ messages('aggregate_windows') }}</fieldset>
-<p class="field-note">Declare the aggregate RMS independently of each LINE RMS. CONTINUUM selects the observing purpose; without window-width evidence, setup qualification remains incomplete.</p>
+<p class="field-note">Declare the aggregate RMS independently of each LINE RMS. CONTINUUM selects the observing purpose. Setup qualification needs the separate confirmation above or qualifying window-width evidence.</p>
 </div></section>
 <section id="windows"><h2>Spectral windows (optional)</h2><p>You do not need to enter every SPW. Add only the windows or line centres you want to describe; omitted details remain unknown.</p><p class="field-note">For LINE comparisons, frequency, planned resolution and RMS belong to the same window. A complete list is needed to support an exhaustive negative line conclusion.</p>{{ messages('windows') }}
 {% if not rows %}<p class="field-note">No window details supplied. You can validate and download a valid partial request without adding a window.</p>{% endif %}
@@ -76,13 +80,17 @@
 <button class="button" type="submit" name="action" value="add" {% if rows|length >= 32 %}disabled{% endif %}>Add window</button><span class="field-note"> {{ rows|length }} of 32 windows</span>
 <label class="complete-choice"><input type="checkbox" id="setup_complete" name="setup_complete" {% if values.get('setup_complete') == 'on' %}checked{% endif %}> I have listed every window in this setup</label>{{ messages('setup_complete') }}
 </section>
-<section id="search"><h2>Search options</h2><p>These options describe a future search. Selecting a source does not access it.</p>
+<section id="search"><h2>Search options</h2><p>Selecting a source does not access it until you choose Run assessment.</p>
 <div class="form-pair">{{ quantity('radius', 'Search radius', ['arcsec','arcmin','deg'], 'arcsec') }}
 <fieldset id="sources" class="choice-group"><legend>Sources</legend><div class="inline-choices">{% for source in ['ARCHIVE','QUEUE'] %}<label><input type="checkbox" name="sources" value="{{ source }}" {% if source in values.get('sources', []) %}checked{% endif %}>{{ source }}</label>{% endfor %}</div>{{ messages('sources') }}</fieldset></div>
 <div class="display-limit">{{ input('result_limit', 'Candidate display limit (optional positive integer)') }}</div><p class="field-note">Limits displayed candidates only; it does not limit retrieval or evaluation.</p>
 </section>
-<div class="input-actions" id="form-actions"><button class="button primary" type="submit" name="action" value="validate">Validate input</button> <button class="button" type="submit" name="action" value="download">Validate and download request JSON</button></div>
-<p class="field-note">Download checks the current input. Valid inputs may still lack scientific evidence. No assessment has been run.</p>
+{% if offline.enabled %}<section id="offline-sources"><h2>Offline reference data</h2>
+<p>Archive replay: {{ 'configured' if offline.archive_replay else 'not provided' }}. Queue CSV: {{ 'configured' if offline.queue_csv else 'not provided' }}.</p>
+<p>Archive replay requires the recorded coordinates and search radius. A different query can fail; it will not fall back to a live search. These reference files do not establish current Archive or Queue coverage.</p>
+<p>When Queue is selected, common criteria and the formal methods for each selected purpose are explicitly enabled. The report shows the effective configuration.</p></section>{% endif %}
+<div class="input-actions" id="form-actions">{% if offline.enabled %}<button class="button primary" type="submit" name="action" value="assess">Run assessment</button>{% endif %}<button class="button{% if not offline.enabled %} primary{% endif %}" type="submit" name="action" value="validate">Validate input</button> <button class="button" type="submit" name="action" value="download">Validate and download request JSON</button></div>
+<p class="field-note">Download checks the current input. Valid inputs may still lack scientific evidence. Validation and request download do not run an assessment.</p>
 {% if document %}<details><summary>Request JSON from the last validation</summary><pre class="report-json">{{ document | tojson(indent=2) }}</pre></details>{% endif %}
 </div></div></form>
 <script src="{{ url_for('static', filename='proposed.js') }}" defer></script>

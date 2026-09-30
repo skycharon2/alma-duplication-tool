@@ -22,6 +22,10 @@ def approve_angular(result, request, context):
 
 
 def approve_setup(result, *, nominal_conversion):
+    # The declaration route owns its project-adoption reference and identity.
+    from alma_duplicate.rules.continuum_setup import DECLARATION_METHOD
+    if result.method_version == DECLARATION_METHOD:
+        return result
     # Arbitrary nominal conversion remains provisional, even when selected explicitly.
     if nominal_conversion is not None:
         return result

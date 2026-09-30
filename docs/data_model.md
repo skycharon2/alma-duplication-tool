@@ -3,7 +3,10 @@
 
 Document revision: 0.9. The object index includes search, grouping and rule
 results. Rule-result schema 2 is defined in the [rule contract](rules.md);
-request model 2 and context model/construction 2 include line preparation inputs and mode evidence. Evaluation 5 adds reference-bound numerical pair results.
+request model 3 adds an optional explicit continuum setup declaration to the line
+preparation inputs and mode evidence. Context model/construction remains 2.
+Evaluation 5 adds reference-bound numerical pair results. The declaration's
+evidence and conflict semantics are defined in the [declaration contract](continuum_setup_declaration.md).
 
 ## Status and scope
 

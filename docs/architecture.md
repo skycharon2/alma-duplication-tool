@@ -2,7 +2,7 @@
 
 The reviewed implementation baseline and verification conditions are owned by
 [status](status.md). The bounded extractions and shared application entry below
-are implemented; browser integration remains the next product delivery.
+are implemented, including offline browser assessment; live browser integration remains outstanding.
 
 This is a navigation map of implemented boundaries, not another field schema.
 The [object index](data_model.md) links definitions and the
@@ -54,7 +54,7 @@ Inspection v3 preserves pair references and report-local locations; see the
 
 | Layer | Allowed responsibility/dependency direction |
 | --- | --- |
-| CLI and future UI | Call application orchestration; own arguments/forms, file handling and presentation, not scientific formulas. |
+| CLI and browser UI | Call application orchestration; own arguments/forms, file handling and presentation, not scientific formulas. |
 | Application orchestration | Validate, handle Solar exemption, configure sources, search, evaluate and serialize. The shared `assessment.assess_observation()` entry owns this coordination, including configuration preflight before source access; see [application contract](assessment_entry.md). |
 | Source and association adapters | Parse source-specific evidence into domain objects and preserve provenance; do not depend on UI rendering or branch verdicts. |
 | Scientific rules and aggregation | Consume coherent request/context/pair evidence and numerical helpers; retain source-specific mappings and combine whole criteria/pairs. |
@@ -117,12 +117,18 @@ Flask/Jinja consumes startup-bound backend report artifacts through `ui/reports.
 It calls the existing inspection v3 consumer; it does not call search or rule
 evaluators. The original bytes are retained for download, while a paginated view
 uses the parsed document. UI paths select opaque in-process IDs, not filesystem
-paths. The proposed-input form validates requests but does not invoke the assessment entry.
+paths. The proposed-input form has a separate offline assessment action; existing reports remain read-only.
 
 ## Proposed form boundary
 
 `ui/proposed.py` maps submitted strings into the existing request wire schema.
 `/proposed` calls `validate_proposed_observation()` directly and displays its
-diagnostics/readiness. It does not invoke assessment, providers or source clients.
+diagnostics/readiness. Validation and request download do not access sources.
+The separate Run assessment action delegates to `ui/runs.py`, which constructs
+explicit options and lazy local replay/CSV providers for `assess_observation()`.
+Each returned report is serialized once and retained under an independent run ID.
+A count/serialized-byte bounded process-local store holds request/report/inspection
+artifacts; refresh and downloads do not rerun the assessment. No live client is
+constructed. See the [offline execution contract](ui_offline_assessment.md).
 Window row tokens survive editing; window IDs bind each LINE sensitivity.
 Request JSON downloads revalidate the current form and contain no report verdict.

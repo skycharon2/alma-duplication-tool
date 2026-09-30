@@ -5,15 +5,26 @@
 <p>Method: {{ r.method_version }}</p>{{ evidence(r) }}</details>
 {% endmacro %}
 {% block content %}
-<p><a href="{{ url_for('report_index') }}">All reports</a></p>
-<h1>{{ item.name }}</h1>
+<p><a href="{{ url_for('report_index') }}">Existing reports</a></p>
+<div class="page-heading"><h1>{{ item.name }}</h1></div>
+{% if run %}<div class="notice"><strong>Offline reference data</strong><span>This assessment used your submitted input and configured local sources. No live Archive query was made.</span></div>
+<p class="report-hash">Run ID: {{ report_id }} · Execution status: {{ run.status }}</p>
+<p>Reports are retained temporarily in this local process. Download to keep a copy; restarting or reaching retention limits removes older runs.</p>
+<p><a href="{{ url_for('proposed') }}">Enter another observation</a> · <a href="{{ url_for(download_endpoint, report_id=report_id, kind='request') }}">Download this run's input request</a></p>
+{% if document.evaluation_configuration is defined %}<details open><summary>Effective evaluation configuration</summary>{{ evidence(document.evaluation_configuration) }}</details>{% endif %}
+{% set replay = document.sources.get('ARCHIVE', {}).get('replay') %}{% if replay %}<p>Archive evidence: {{ replay.fixture_kind }} · Capture: {{ replay.capture_started_at }} to {{ replay.capture_finished_at }}.</p>{% endif %}
+{% if run.status == 'SOURCES_UNAVAILABLE' %}<p class="notice">One or more selected sources were unavailable or incomplete. Read their individual states below; the available results are retained.</p>{% endif %}
+{% endif %}
 <p>{{ document.report_kind }} · report {{ document.report_version }} · generated {{ document.generated_at }}</p>
-<p><a href="{{ url_for('report_download', report_id=report_id, kind='report') }}">Download complete original JSON</a> · <a href="{{ url_for('report_download', report_id=report_id, kind='inspection') }}">Download inspection v3</a></p>
+<p><a href="{{ url_for(download_endpoint, report_id=report_id, kind='report') }}">Download complete original JSON</a> · <a href="{{ url_for(download_endpoint, report_id=report_id, kind='inspection') }}">Download inspection v3</a></p>
 <p class="report-hash">Original SHA-256: {{ item.sha256 }}</p>
 <section id="result-guide"><h2>Interpretation</h2>
 {% if document.report_kind == 'SOLAR_EXEMPTION' %}<p>Solar exemption: search not performed; this is not a completed search with zero matches.</p>{% else %}
 <p>Branch results apply only to their context. CRITERIA_MET means those branch criteria are met; CRITERIA_NOT_MET means they are not met in that context. INDETERMINATE means evidence or support is insufficient.</p>{% endif %}
 <p>Whole-search assessment: {{ document.assessment }}. No search-wide absence of duplication is inferred. A missing source is different from a completed empty source.</p></section>
+{% if document.request_criteria %}<section><h2>Proposed setup qualification</h2>{% for r in document.request_criteria %}
+{% if r.method_version == 'continuum_setup_declaration_1' %}<p class="notice">CONT-SETUP uses a researcher declaration. Individual usable widths have not necessarily been verified. This does not establish the other duplication criteria.</p>{% if 'CONTINUUM_SETUP_DECLARATION_CONFLICT' in r.reasons %}<p role="alert">The setup confirmation conflicts with the complete window list. Review the confirmation, list completeness and widths before relying on this criterion.</p>{% endif %}{% endif %}
+{{ criterion(r) }}{% endfor %}</section>{% endif %}
 <section><h2>Sources</h2>{% for name, source in document.sources.items() %}<details open><summary>{{ name }} — {{ source.status }}</summary>{{ evidence(source) }}</details>{% endfor %}</section>
 <details><summary>Request, configuration and search scope</summary>{% for key, value in document.items() %}{% if key not in ['context_evaluations', 'sources'] %}<h3>{{ key }}</h3>{{ evidence(value) }}{% endif %}{% endfor %}</details>
 <section id="candidates"><h2>Evaluated contexts</h2>
@@ -27,6 +38,6 @@
 <details><summary>Complete pair record</summary>{{ evidence(pair) }}</details></details>{% endfor %}
 <details><summary>Complete context record</summary>{{ evidence(c) }}</details></article>
 {% else %}<p>No evaluated contexts in this report. Consult source and search states; this is not proof of no duplication.</p>{% endfor %}
-<nav aria-label="Report pages">{% if page > 1 %}<a href="{{ url_for('report_view', report_id=report_id, page=page-1) }}">Previous</a>{% endif %} {% if page < pages %}<a href="{{ url_for('report_view', report_id=report_id, page=page+1) }}">Next</a>{% endif %}</nav></section>
+<nav aria-label="Report pages">{% if page > 1 %}<a href="{{ url_for(view_endpoint, report_id=report_id, page=page-1) }}">Previous</a>{% endif %} {% if page < pages %}<a href="{{ url_for(view_endpoint, report_id=report_id, page=page+1) }}">Next</a>{% endif %}</nav></section>
 <section id="evidence"><h2>Evidence gaps — inspection v3</h2><p>Occurrences overlap and are not counts of duplicate observations. Locations refer to the complete downloaded report.</p>{{ evidence(item.inspection) }}</section>
 {% endblock %}

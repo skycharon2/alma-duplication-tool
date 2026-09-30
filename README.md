@@ -46,8 +46,10 @@ python -m flask --app alma_duplicate.ui.app:create_app run
 ```
 
 Open the local URL printed by Flask. The home route opens the [proposed form](docs/ui_proposed_form.md)
-at `/proposed`, which validates inputs and exports request JSON; new assessments are not
-yet connected.
+at `/proposed`, which validates inputs and exports request JSON. Configure the
+[offline assessment flow](docs/ui_offline_assessment.md) to run the current input
+against Archive replay and/or a Queue CSV and view its own report. Live Archive
+assessment is not connected.
 The read-only [report browser](docs/ui_report_browser.md) displays backend reports
 and exports their original JSON plus inspection v3. To enable it, generate an
 acceptance run and set `ALMA_UI_REPORT_DIR` to its output directory before starting

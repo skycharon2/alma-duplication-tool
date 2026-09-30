@@ -258,7 +258,7 @@ def test_cli_guide_b_prepares_both_pairs_and_evaluates_line_without_filtering_pa
     )
     doc = json.loads(out.read_text())
     assert doc["evaluation_version"] == "5"
-    assert doc["request"]["normalized"]["model_version"] == "2"
+    assert doc["request"]["normalized"]["model_version"] == "3"
     assert doc["evaluation_scope"]["shown_candidates"] == 1
     assert doc["evaluation_scope"]["evaluated_contexts"] == 2
     for row, mode in zip(doc["context_evaluations"], ["FDM", "TDM"]):

@@ -9,6 +9,9 @@ from enum import StrEnum
 from typing import Mapping
 
 
+CONTINUUM_SETUP_DECLARATION = "AT_LEAST_TWO_USABLE_WINDOWS_GT_1_8_GHZ"
+
+
 class SearchReadiness(StrEnum):
     READY = "READY"
     BLOCKED = "BLOCKED"
@@ -113,8 +116,9 @@ class ProposedObservationRequest:
     sensitivities: tuple[ProposedSensitivity, ...]
     array_context: Mapping[str, object]
     raw_input: Mapping[str, object]
-    model_version: str = "2"
+    model_version: str = "3"
     source_redshift: float | None = None
+    continuum_setup_declaration: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -143,7 +147,7 @@ class RequestValidationResult:
     search_options: SearchOptions | None
     issues: tuple[RequestIssue, ...]
     search_readiness: SearchReadiness
-    validation_version: str = "6"
+    validation_version: str = "7"
 
     @property
     def errors(self) -> tuple[RequestIssue, ...]:

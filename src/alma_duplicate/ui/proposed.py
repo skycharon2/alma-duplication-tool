@@ -4,6 +4,7 @@ import re
 from uuid import uuid4
 
 from alma_duplicate.request_validation import validate_proposed_observation
+from alma_duplicate.domain.proposed_observation import CONTINUUM_SETUP_DECLARATION
 
 MAX_WINDOWS = 32
 ROW = re.compile(r"w[0-9a-f]{12}\Z")
@@ -79,6 +80,9 @@ def build_document(values, rows):
         "spectral_windows": [], "sensitivities": [],
     }
     redshift = raw("redshift", "request.source_redshift")
+    declaration = raw("continuum_setup_declaration", "request.continuum_setup_declaration")
+    if declaration:
+        request["continuum_setup_declaration"] = CONTINUUM_SETUP_DECLARATION if declaration == "on" else declaration
     if redshift.strip():
         request["source_redshift"] = redshift
     bindings.update({"request.intents": "intents", "request.setup_complete": "setup_complete",

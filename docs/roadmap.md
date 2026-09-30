@@ -89,6 +89,18 @@ Function relocation alone does not bump scientific method versions. Record and
 fix discovered behavior defects separately. Keep dated reports and reference
 hashes intact; retain the recorded baseline described in [status](status.md).
 
+## Current browser increment
+
+Explicit researcher confirmation of continuum setup qualification is implemented
+as a [separate evidence route](continuum_setup_declaration.md), including backend
+conflict handling and CLI/browser scientific-result parity for the new path.
+
+The [offline form-to-report flow](ui_offline_assessment.md) is implemented:
+current input, explicit Queue methods, shared assessment entry, independent run
+identity, and original report/inspection downloads. The next browser work is the
+complete UI/CLI parity gate, followed by explicit live-source configuration and
+execution feedback. The local in-memory lifecycle is not a multi-user service.
+
 ## Remaining delivery order
 
 | Increment | Work | Exit gate |
