@@ -97,9 +97,11 @@ conflict handling and CLI/browser scientific-result parity for the new path.
 
 The [offline form-to-report flow](ui_offline_assessment.md) is implemented:
 current input, explicit Queue methods, shared assessment entry, independent run
-identity, and original report/inspection downloads. The next browser work is the
-complete UI/CLI parity gate, followed by explicit live-source configuration and
-execution feedback. The local in-memory lifecycle is not a multi-user service.
+identity, and original report/inspection downloads. The
+[offline UI/CLI parity gate](ui_offline_assessment.md#offline-uicli-parity-gate)
+is implemented for the current form and execution configuration. The next browser
+increment is explicit live-source configuration and execution feedback. The local
+in-memory lifecycle is not a multi-user service.
 
 ## Remaining delivery order
 
@@ -147,17 +149,21 @@ Do not make all-family experimental closure a blanket prerequisite for Queue con
 1. Report display and export — implemented as a [read-only viewer](ui_report_browser.md): consume existing acceptance reports; show each
    source status, independent continuum/LINE branches and context/window/SPW
    evidence. Export the same complete report, optionally with inspection v3.
-2. Minimal form — validation implemented at `/proposed`: one setup, multiple
-   windows, both intents and explicit units. Controlled Queue snapshot and
-   assessment execution remain next. Construct explicit AssessmentOptions before
-   calling the shared entry. Distinguish missing from invalid input, no-document
-   validation results, propagated execution exceptions and usable partial-source
-   reports. Preserve Solar exemption and unsupported-scope explanations.
-3. Browser/CLI agreement: reuse the catalog for mixed intents, missing RMS,
-   coarse resolution, multiple pairs, source failure/missing/empty results and
-   display truncation; include Solar. A same-run download preserves the original
-   report. Separate-run comparison may ignore only the four execution timestamp
-   paths recorded above, never methods, provenance, associations or outcomes.
+2. Minimal form — validation and offline execution implemented at `/proposed`:
+   one fixed single-point setup, multiple windows, both intents and explicit units.
+   Configured Archive replay and Queue CSV providers call the shared entry with
+   explicit AssessmentOptions. Missing/invalid input, execution errors and usable
+   partial-source reports remain distinct. Solar is supported by the execution
+   adapter and report viewer; the form does not expose Solar input.
+3. Browser/CLI agreement — implemented in `tests/ui/test_cli_parity.py`: catalog
+   inputs cover mixed intents, missing RMS, coarse resolution, multiple pairs and
+   source failure/missing/empty results. Additional cases cover declarations,
+   conflicting evidence, equivalent units, pagination/display truncation and the
+   Solar adapter/viewer boundary. Same-run downloads preserve original bytes.
+   Separate runs compare complete reports and inspection v3. Only four execution
+   timestamps are normalized; the CLI input-file hash and absent form-file hash
+   are separately asserted. See the [gate contract](ui_offline_assessment.md#offline-uicli-parity-gate)
+   for configuration and provenance boundaries.
 
 Independent real-proposal review continues separately; broader modes do not
 become a blanket prerequisite for these UI increments.
