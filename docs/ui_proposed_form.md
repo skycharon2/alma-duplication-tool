@@ -4,6 +4,28 @@
 windows. The initial form has no window rows. Detailed SPW input is optional;
 researchers need not enter SPW 0–3 to validate a partial request. The limit is
 local to this interface, not a scientific restriction.
+The form groups shared target information, scientific purposes, spectral line
+requirements, continuum requirements, optional window evidence, and data sources.
+LINE and CONTINUUM remain independent checkboxes and can both be selected.
+Changing either checkbox submits the presentation-only `purpose` action; without
+JavaScript, use Update requirement sections. This retains all entered values and
+row identities, clears stale validation results, and never queries or assesses.
+Selecting LINE with no rows creates one blank entry, with no assumed mode or
+scientific values. Its frequency, reference, planned resolution, RMS and mode
+appear in Spectral line requirements. Redshift is shared by REST frequencies.
+Additional bandwidth evidence and IDs are in a separate optional section, linked
+to the same entries. Controls are not duplicated between sections.
+
+Continuum has its own representative frequency, aggregate RMS, explicit setup
+qualification declaration and optional contributing-window links. When a purpose
+is deselected, entered scientific values stay visible with an inactive-purpose
+notice. They remain in request provenance and are still validated; only selected
+branches are evaluated. Blank unselected requirement panels are hidden.
+All listed windows remain subject to LINE preparation when LINE is selected;
+this increment does not introduce per-window purpose selection or new pairing.
+The initial form still has no required four-SPW list. Single-point geometry is
+explicitly displayed with the proposed-mosaic limitation and candidate geometry
+checks explained; the geometry contract has not changed.
 The home route redirects to this working input page. Global navigation separates
 Proposed observation from Existing reports; reports are independent of the current form.
 

@@ -5,6 +5,7 @@ import os
 from flask import Flask, Response, abort, redirect, render_template, request, url_for
 
 from alma_duplicate.ui.reports import load_reports
+from alma_duplicate.ui.report_view import criterion_view, pair_binding
 from alma_duplicate.ui.runs import OfflineAssessment, RunStore
 from alma_duplicate.ui.proposed import MAX_WINDOWS, contributing_windows, initial_form, new_row, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
@@ -54,6 +55,7 @@ def create_app(config=None):
         return render_template("report.html", item=item, report_id=report_id,
                                document=item.document, contexts=contexts[start:start + 20],
                                start=start, page=page, pages=pages, run=run,
+                               criterion_view=criterion_view, pair_binding=pair_binding,
                                view_endpoint="run_view" if run else "report_view",
                                download_endpoint="run_download" if run else "report_download")
 
@@ -99,6 +101,8 @@ def create_app(config=None):
         result, issues, document = None, [], None
         pending_removal = None
         edit_notice = None
+        added_row = None
+        purpose_updated = False
         execution_error = None
         if request.method == "POST":
             try:
@@ -106,10 +110,17 @@ def create_app(config=None):
             except ValueError as exc:
                 abort(400, description=str(exc))
             action = values.get("action", "validate")
-            if action == "add":
+            if action == "purpose":
+                purpose_updated = True
+                if "LINE" in values.get("intents", []) and not rows:
+                    added_row = new_row()
+                    rows.append(added_row)
+                edit_notice = "Requirement sections updated. Entered values are retained; validate again."
+            elif action == "add":
                 if len(rows) >= MAX_WINDOWS:
                     abort(400, description="Maximum 32 windows in this form")
-                rows.append(new_row())
+                added_row = new_row()
+                rows.append(added_row)
                 edit_notice = "Window added. Validate input to update the diagnostics."
             elif action.startswith(("remove:", "confirm-remove:")):
                 row = action.split(":", 1)[1]
@@ -152,7 +163,8 @@ def create_app(config=None):
         return render_template("proposed.html", values=values, rows=rows,
                                result=result, issues=issues, document=document,
                                selected_windows=selected, stale_ids=stale_ids,
-                               pending_removal=pending_removal, edit_notice=edit_notice,
+                               pending_removal=pending_removal, edit_notice=edit_notice, added_row=added_row,
+                               purpose_updated=purpose_updated,
                                offline=offline, execution_error=execution_error)
 
     @app.get("/healthz")

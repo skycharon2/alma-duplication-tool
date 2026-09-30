@@ -105,3 +105,88 @@ def test_solar_report_remains_no_search(tmp_path):
     client = create_app({"TESTING": True, "REPORT_DIRECTORY": tmp_path}).test_client()
     assert b"Solar exemption: search not performed" in client.get("/reports/1").data
     assert client.get("/reports/1/download/report").data == raw
+
+
+def test_comparison_projection_preserves_units_nulls_and_pair_binding(reports):
+    from copy import deepcopy
+    from alma_duplicate.ui.report_view import criterion_view, pair_binding
+
+    document = json.loads((reports / "dual-source-line/report.json").read_bytes())
+    original = deepcopy(document)
+    contexts = document["context_evaluations"]
+    archive = next(c for c in contexts if c["reference"]["source"] == "ARCHIVE")
+    queue = next(c for c in contexts if c["reference"]["source"] == "QUEUE")
+    archive_pair, queue_pair = archive["line_pairs"][0], queue["line_pairs"][0]
+    assert ("spw_token", "0") in pair_binding(archive_pair)
+    assert ("spw_index", 0) in pair_binding(archive_pair)
+    assert ("spw_number", 1) in pair_binding(queue_pair)
+    assert ("source_row_id", queue_pair["attempt"]["reference"]["source_row_id"]) in pair_binding(queue_pair)
+    for pair, unit, key in [
+        (archive_pair, "mJy/beam", "sigma_comp_mjy_beam"),
+        (queue_pair, "mJy", "comparable_queue_rms_mjy"),
+    ]:
+        rms = next(r for r in pair["criteria"] if r["criterion_id"] == "LINE-RMS")
+        view = criterion_view(rms)
+        assert view["candidate"]["unit"] == unit
+        assert next(x for x in view["derived"] if x["key"] == key)["unit"] == unit
+        assert view["record"]["method_version"] == rms["method_version"]
+    assert document == original
+    coarse = json.loads((reports / "coarse-line-resolution/report.json").read_bytes())
+    rms = coarse["context_evaluations"][0]["line_pairs"][0]["criteria"][-1]
+    view = criterion_view(rms)
+    assert view["record"]["outcome"] is None
+    assert "ARCHIVE_RESOLUTION_COARSER_THAN_PLANNED" in view["record"]["reasons"]
+    assert next(x for x in view["derived"] if x["key"] == "sigma_comp_mjy_beam")["value"] is None
+    unknown = deepcopy(rms)
+    unknown["derived"].append(["future_measurement", 0])
+    assert criterion_view(unknown)["derived"][-1] == {
+        "key": "future_measurement", "label": "future_measurement", "unit": "", "value": 0,
+    }
+
+
+def test_comparison_tables_keep_pairs_separate_and_escape_values(reports, tmp_path):
+    from html.parser import HTMLParser
+
+    class Tables(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.tables = []
+            self.current = None
+
+        def handle_starttag(self, tag, attrs):
+            if tag == "table":
+                self.current = []
+            if tag == "script":
+                pytest.fail("unescaped report content")
+
+        def handle_data(self, data):
+            if self.current is not None:
+                self.current.append(data)
+
+        def handle_endtag(self, tag):
+            if tag == "table":
+                self.tables.append(" ".join(self.current))
+                self.current = None
+
+    doc = json.loads((reports / "dual-source-line/report.json").read_bytes())
+    doc["context_evaluations"][0]["line_pairs"][0]["criteria"][-1]["candidate"]["source_field"] = '<script>alert(1)</script>'
+    case = tmp_path / "case"
+    case.mkdir()
+    raw = json.dumps(doc).encode()
+    (case / "report.json").write_bytes(raw)
+    client = create_app({"TESTING": True, "REPORT_DIRECTORY": tmp_path}).test_client()
+    html = client.get("/reports/1").get_data(as_text=True)
+    parser = Tables()
+    parser.feed(html)
+    candidate_table = parser.tables[0]
+    assert "CONTINUUM" not in candidate_table  # Friendly column heading, no synthesized branch.
+    assert "No branch result" in candidate_table and "CRITERIA_MET" in candidate_table
+    pair_tables = [t for t in parser.tables if "Criteria for this LINE pair" in t]
+    pairs = [p for c in doc["context_evaluations"] for p in c["line_pairs"]]
+    assert len(pair_tables) == len(pairs)
+    for table, pair in zip(pair_tables, pairs):
+        for result in pair["criteria"]:
+            assert result["criterion_id"] in table
+            assert (result["outcome"] or "Not computed") in table
+    assert "&lt;script&gt;alert(1)&lt;/script&gt;" in html
+    assert client.get("/reports/1/download/report").data == raw
