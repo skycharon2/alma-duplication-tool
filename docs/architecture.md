@@ -109,3 +109,11 @@ in separate changes. No general rule engine or directory redesign is required.
 Project plans and historical measurement records describe their dated baseline.
 Current implementation status belongs to executable contracts and tests; a plan's
 older statement about missing request/search functionality does not override them.
+
+## Read-only browser reports
+
+Flask/Jinja consumes startup-bound backend report artifacts through `ui/reports.py`.
+It calls the existing inspection v3 consumer; it does not call search or rule
+evaluators. The original bytes are retained for download, while a paginated view
+uses the parsed document. UI paths select opaque in-process IDs, not filesystem
+paths. The form preview still does not invoke the assessment entry.

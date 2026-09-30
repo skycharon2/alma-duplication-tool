@@ -167,3 +167,5 @@ review gate, interface work and broader-mode scope.
 - [Queue LINE pairing and evaluation](queue_line_pairing.md): same-row/SPW evidence preparation, formal FDM/coverage/resolution/RMS evaluation, provenance checks and aggregation boundaries.
 
 - [Shared assessment entry](assessment_entry.md): callable orchestration, lazy sources and execution statuses; browser UI remains pending.
+
+- [Read-only report browser](ui_report_browser.md): configure reports, read evidence, export originals.
