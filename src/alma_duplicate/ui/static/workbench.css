@@ -277,3 +277,46 @@ summary { cursor: pointer; padding: .4rem; }
   .proposed-form select { font-size: 16px; min-height: 40px; }
   .proposed-form .input-actions .button { width: 100%; }
 }
+
+/* Candidate comparisons retain the report's source and pair boundaries. */
+.report-page { min-width: 0; }
+.report-page section { margin-block: 24px; scroll-margin-top: 16px; }
+.report-page h2 { color: var(--blue-dark); font-size: 19px; padding-block: 10px; border-bottom: 1px solid var(--border); }
+.report-page h3 { color: var(--blue-dark); font-size: 17px; }
+.report-page p { margin-block: 10px; }
+.report-nav { display: flex; flex-wrap: wrap; gap: 10px 24px; padding: 12px 0; border-block: 1px solid var(--border); }
+.source-states { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.source-states > div { padding: 12px 16px; background: var(--surface); border-left: 3px solid var(--blue); min-width: 0; overflow-wrap: anywhere; }
+.report-table-scroll { overflow-x: auto; margin-block: 14px; }
+.report-page table { width: 100%; border-collapse: collapse; min-width: 650px; table-layout: fixed; }
+.report-page caption { text-align: left; padding-block: 8px; color: var(--muted); font-size: 13px; }
+.report-page th, .report-page td { padding: 12px; border: 1px solid var(--border); text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+.report-page thead { background: var(--surface); color: var(--blue-dark); }
+.report-page tbody th { font-weight: 500; }
+.report-page small { display: block; font-weight: 400; color: var(--muted); font-size: 11px; line-height: 1.5; margin-top: 5px; overflow-wrap: anywhere; }
+.report-number, .derived-values dd { font-variant-numeric: tabular-nums; }
+.report-status { display: inline-block; font-weight: 500; font-size: 12px; }
+.report-status[data-status="SATISFIED"], .report-status[data-status="CRITERIA_MET"] { color: #23613d; }
+.report-status[data-status="NOT_SATISFIED"], .report-status[data-status="CRITERIA_NOT_MET"] { color: #993d24; }
+.report-status[data-status="Not computed"], .report-status[data-status="INDETERMINATE"] { color: #755a11; }
+.report-context-id { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.branch-result { padding: 10px 14px; background: var(--info); margin-block: 8px; overflow-wrap: anywhere; }
+.criterion-evidence { border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.criterion-evidence > details { border-top: 1px solid var(--border); margin: 0; padding: 4px 0; }
+.criterion-evidence p { overflow-wrap: anywhere; }
+.derived-values, .pair-binding { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin: 12px 0; }
+.derived-values dt, .derived-values dd, .pair-binding dt, .pair-binding dd { margin: 0; padding: 8px 12px; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.derived-values dt, .pair-binding dt { background: var(--surface); }
+.line-pair { padding: 8px 14px; border: 1px solid var(--border); margin-block: 14px; }
+.line-pair > summary { font-weight: 500; color: var(--blue-dark); overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .source-states { grid-template-columns: 1fr; gap: 10px; }
+  .line-pair { padding: 6px; }
+  .report-nav { gap: 10px 16px; }
+}
+
+/* Scientific requirements precede optional correlator-window evidence. */
+.proposed-form .purpose-retained { padding: 8px 12px; background: var(--warning); border-left: 3px solid #ad841e; }
+.proposed-form #position > .quantity-grid { max-width: 420px; }
+.proposed-form #line-requirements > input[type="text"] { max-width: 280px; }
+.proposed-form #requirements > p { max-width: 80ch; }

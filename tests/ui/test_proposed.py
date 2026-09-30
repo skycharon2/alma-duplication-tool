@@ -272,11 +272,15 @@ def test_navigation_and_diagnostic_targets_exist(client):
 def test_initial_form_has_no_required_window_rows(client):
     html = client.get("/proposed").get_data(as_text=True)
     assert 'name="rows"' not in html
-    assert 'Spectral windows (optional)' in html
-    assert html.index('id="sensitivities"') < html.index('id="windows"')
-    html = client.post("/proposed", data={"setup_id": "setup-1", "action": "add"}).get_data(as_text=True)
+    assert 'Spectral line requirements' in html
+    assert 'Observation geometry: Single pointing.' in html
+    assert html.index('id="line-requirements"') < html.index('id="sensitivities"') < html.index('id="windows"')
+    html = client.post("/proposed", data={"setup_id": "setup-1", "intents": "LINE", "action": "purpose"}).get_data(as_text=True)
     rows = re.findall(r'name="rows" value="([a-z0-9]+)"', html)
     assert len(rows) == 1
+    assert 'Rest / laboratory or observed frequency' in html
+    assert 'Planned spectral resolution' in html
+    assert 'Planned RMS at this resolution' in html
     assert f'name="{rows[0]}_id" value="{rows[0]}"' in html
 
 
@@ -300,3 +304,62 @@ def test_no_windows_preserves_partial_request_and_missing_evidence(client, purpo
     assert 'Input valid: <strong>Yes</strong>' in html
     assert 'Search readiness: <strong>READY</strong>' in html
     assert 'href="#windows"' in html
+
+
+def test_purpose_update_preserves_mixed_inputs_and_does_not_validate(client):
+    from html.parser import HTMLParser
+
+    class FormValues(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.data = MultiDict()
+            self.select = None
+
+        def handle_starttag(self, tag, attrs):
+            attrs = dict(attrs)
+            if tag == "input" and attrs.get("name"):
+                if attrs.get("type") != "checkbox" or "checked" in attrs:
+                    self.data.add(attrs["name"], attrs.get("value", "on" if attrs.get("type") == "checkbox" else ""))
+            elif tag == "select":
+                self.select = attrs["name"]
+            elif tag == "option" and "selected" in attrs:
+                self.data.add(self.select, attrs["value"])
+
+    data = MultiDict(fields())
+    data.setlist("intents", ["LINE", "CONTINUUM"])
+    data.update({"representative": "230000", "representative_unit": "MHz",
+                 "aggregate": "0.0001", "aggregate_unit": "Jy/beam",
+                 "continuum_setup_declaration": "on"})
+    data.setlist("action", ["download"])
+    original = client.post("/proposed", data=data).get_json()
+    for purposes in (["CONTINUUM"], ["LINE"], [], ["LINE", "CONTINUUM"]):
+        data.setlist("intents", purposes)
+        data.setlist("action", ["purpose"])
+        response = client.post("/proposed", data=data)
+        assert response.status_code == 200
+        html = response.get_data(as_text=True)
+        assert 'data-validated="true"' not in html
+        assert re.findall(r'name="rows" value="([a-z0-9]+)"', html) == [ROW]
+        assert 'name="intents" value="LINE"' in html
+        assert 'name="intents" value="CONTINUUM"' in html
+        parsed = FormValues()
+        parsed.feed(html)
+        data = parsed.data
+    data.setlist("action", ["download"])
+    assert client.post("/proposed", data=data).get_json() == original
+
+
+def test_purpose_update_adds_only_one_blank_line_and_keeps_continuum_windows(client):
+    data = MultiDict({"setup_id": "setup-1", "intents": "LINE", "action": "purpose"})
+    html = client.post("/proposed", data=data).get_data(as_text=True)
+    rows = re.findall(r'name="rows" value="([a-z0-9]+)"', html)
+    assert len(rows) == 1
+    assert 'value="UNKNOWN" selected' in html
+    assert 'data-validated="true"' not in html
+    data.add("rows", rows[0])
+    data.add(rows[0] + "_id", "retained-window")
+    for purposes in (["CONTINUUM"], ["CONTINUUM", "LINE"]):
+        data.setlist("intents", purposes)
+        html = client.post("/proposed", data=data).get_data(as_text=True)
+        assert re.findall(r'name="rows" value="([a-z0-9]+)"', html) == rows
+        assert f'name="{rows[0]}_id" value="retained-window"' in html

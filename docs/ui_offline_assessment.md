@@ -34,7 +34,7 @@ No live Archive client or network fallback is constructed.
 | Purposes | LINE |
 | Requested angular resolution | 0.3 arcsec |
 | Source redshift | 0.024 |
-| Add window → centre | 230.538 GHz, REST |
+| Requested line / SPW centre frequency | 230.538 GHz, REST (LINE opens the first entry; Add line / window adds more) |
 | Declared correlator mode | FDM |
 | Planned LINE resolution / RMS | 20 km/s / 0.3 mJy/beam |
 | Complete window list | Checked |
