@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% macro evidence(value) %}<pre class="report-json">{{ value | tojson(indent=2) }}</pre>{% endmacro %}
+{% macro criterion(r) %}
+<details><summary>{{ r.criterion_id }} — {{ r.outcome if r.outcome is not none else 'Not computed' }} · {{ r.evaluation }} · {{ r.approval }}</summary>
+<p>Method: {{ r.method_version }}</p>{{ evidence(r) }}</details>
+{% endmacro %}
+{% block content %}
+<p><a href="{{ url_for('report_index') }}">All reports</a></p>
+<h1>{{ item.name }}</h1>
+<p>{{ document.report_kind }} · report {{ document.report_version }} · generated {{ document.generated_at }}</p>
+<p><a href="{{ url_for('report_download', report_id=report_id, kind='report') }}">Download complete original JSON</a> · <a href="{{ url_for('report_download', report_id=report_id, kind='inspection') }}">Download inspection v3</a></p>
+<p class="report-hash">Original SHA-256: {{ item.sha256 }}</p>
+<section id="result-guide"><h2>Interpretation</h2>
+{% if document.report_kind == 'SOLAR_EXEMPTION' %}<p>Solar exemption: search not performed; this is not a completed search with zero matches.</p>{% else %}
+<p>Branch results apply only to their context. CRITERIA_MET means those branch criteria are met; CRITERIA_NOT_MET means they are not met in that context. INDETERMINATE means evidence or support is insufficient.</p>{% endif %}
+<p>Whole-search assessment: {{ document.assessment }}. No search-wide absence of duplication is inferred. A missing source is different from a completed empty source.</p></section>
+<section><h2>Sources</h2>{% for name, source in document.sources.items() %}<details open><summary>{{ name }} — {{ source.status }}</summary>{{ evidence(source) }}</details>{% endfor %}</section>
+<details><summary>Request, configuration and search scope</summary>{% for key, value in document.items() %}{% if key not in ['context_evaluations', 'sources'] %}<h3>{{ key }}</h3>{{ evidence(value) }}{% endif %}{% endfor %}</details>
+<section id="candidates"><h2>Evaluated contexts</h2>
+<p>{{ document.context_evaluations | length }} contexts in this report. Browser page {{ page }} of {{ pages }} (20 per page). Backend display limits do not remove evaluated contexts from these pages or downloads.</p>
+{% for c in contexts %}{% set context_index = start + loop.index0 %}<article class="report-context" id="context-{{ start + loop.index0 }}"><h3>{{ c.context_id }}</h3><p>Source: {{ c.reference.source }}</p>
+{% for b in c.branches %}<details open><summary>{{ b.branch }} — {{ b.status }}</summary>{{ evidence(b) }}</details>{% endfor %}
+<details><summary>Context reference and common criteria</summary>{{ evidence(c.reference) }}{% for r in c.criteria %}{{ criterion(r) }}{% endfor %}</details>
+{% for pair in c.line_pairs %}<details id="pair-{{ context_index }}-{{ loop.index0 }}"><summary>LINE pair {{ loop.index }} — {{ pair.status }}</summary>
+<h4>Proposed window and candidate SPW binding</h4>{{ evidence(pair.attempt) }}
+{% for r in pair.criteria %}{{ criterion(r) }}{% endfor %}
+<details><summary>Complete pair record</summary>{{ evidence(pair) }}</details></details>{% endfor %}
+<details><summary>Complete context record</summary>{{ evidence(c) }}</details></article>
+{% else %}<p>No evaluated contexts in this report. Consult source and search states; this is not proof of no duplication.</p>{% endfor %}
+<nav aria-label="Report pages">{% if page > 1 %}<a href="{{ url_for('report_view', report_id=report_id, page=page-1) }}">Previous</a>{% endif %} {% if page < pages %}<a href="{{ url_for('report_view', report_id=report_id, page=page+1) }}">Next</a>{% endif %}</nav></section>
+<section id="evidence"><h2>Evidence gaps — inspection v3</h2><p>Occurrences overlap and are not counts of duplicate observations. Locations refer to the complete downloaded report.</p>{{ evidence(item.inspection) }}</section>
+{% endblock %}

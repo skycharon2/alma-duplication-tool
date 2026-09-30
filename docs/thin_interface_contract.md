@@ -2,7 +2,8 @@
 
 Contract version 2. The [shared entry](assessment_entry.md) and configuration
 preflight are implemented; [status](status.md) owns the reviewed baseline.
-The browser UI is not implemented yet. The [form sketch](proposed_observation_form.md)
+The browser has a visual form preview and a [read-only report viewer](ui_report_browser.md).
+Form submission and new assessments are not connected yet. The [form sketch](proposed_observation_form.md)
 owns layout; the [request API](proposed_observation_api.md) owns field validation;
 [reporting](evaluation_cli.md) owns JSON; [rules](rules.md) owns every formula and
 aggregation. This document defines how the first UI must consume those contracts.

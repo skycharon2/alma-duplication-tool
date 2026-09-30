@@ -132,7 +132,7 @@ Do not make all-family experimental closure a blanket prerequisite for Queue con
 
 ## Thin UI delivery increments
 
-1. Report display and export: consume existing acceptance reports; show each
+1. Report display and export — implemented as a [read-only viewer](ui_report_browser.md): consume existing acceptance reports; show each
    source status, independent continuum/LINE branches and context/window/SPW
    evidence. Export the same complete report, optionally with inspection v3.
 2. Minimal form: one setup, multiple windows, both intents, explicit units and

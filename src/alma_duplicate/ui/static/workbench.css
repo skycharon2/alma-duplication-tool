@@ -187,3 +187,10 @@ tbody th { font-weight: 400; }
   .outcome, .notice, input[type="text"] { border-color: CanvasText; }
   .empty-table-icon { stroke: CanvasText; }
 }
+
+/* Read-only backend report evidence. */
+.report-json { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 32rem; overflow: auto; padding: 1rem; background: #f4f6f8; font-size: .85rem; }
+.report-context { border-top: 1px solid #ccd4dc; padding: 1rem 0; }
+.report-hash { overflow-wrap: anywhere; }
+details { margin: .65rem 0; }
+summary { cursor: pointer; padding: .4rem; }

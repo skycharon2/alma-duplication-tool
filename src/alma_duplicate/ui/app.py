@@ -1,13 +1,61 @@
 """Flask application factory for the thin browser interface."""
 
-from flask import Flask, render_template
+import os
+
+from flask import Flask, Response, abort, render_template, request
+
+from alma_duplicate.ui.reports import load_reports
 
 
 def create_app(config=None):
     """Create the browser application without accessing assessment sources."""
     app = Flask(__name__)
+    app.config["REPORT_DIRECTORY"] = os.environ.get("ALMA_UI_REPORT_DIR")
     if config is not None:
         app.config.from_mapping(config)
+
+    reports = load_reports(app.config["REPORT_DIRECTORY"])
+
+    @app.after_request
+    def private_response(response):
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+
+    @app.get("/reports")
+    def report_index():
+        return render_template("reports.html", reports=reports)
+
+    def artifact(report_id):
+        if report_id not in reports:
+            abort(404)
+        return reports[report_id]
+
+    @app.get("/reports/<report_id>")
+    def report_view(report_id):
+        item = artifact(report_id)
+        page = request.args.get("page", "1")
+        if not page.isdecimal() or len(page) > 8 or int(page) < 1:
+            abort(400)
+        page = int(page)
+        contexts = item.document["context_evaluations"]
+        pages = max(1, (len(contexts) + 19) // 20)
+        if page > pages:
+            abort(404)
+        start = (page - 1) * 20
+        return render_template("report.html", item=item, report_id=report_id,
+                               document=item.document, contexts=contexts[start:start + 20],
+                               start=start, page=page, pages=pages)
+
+    @app.get("/reports/<report_id>/download/<kind>")
+    def report_download(report_id, kind):
+        item = artifact(report_id)
+        if kind not in {"report", "inspection"}:
+            abort(404)
+        data = item.raw if kind == "report" else item.inspection_bytes
+        return Response(data, mimetype="application/json", headers={
+            "Content-Disposition": f'attachment; filename="{kind}-{report_id}.json"',
+        })
 
     @app.get("/healthz")
     def healthz():
