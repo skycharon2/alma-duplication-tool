@@ -1,8 +1,11 @@
 # Proposed input form and shared validation
 
 `/proposed` supports fixed ICRS targets, single pointing, one setup and up to 32
-windows. The limit is local to this interface, not a scientific restriction.
-The old home layout remains a preview and links to this working input page.
+windows. The initial form has no window rows. Detailed SPW input is optional;
+researchers need not enter SPW 0–3 to validate a partial request. The limit is
+local to this interface, not a scientific restriction.
+The home route redirects to this working input page. Global navigation separates
+Proposed observation from Existing reports; reports are independent of the current form.
 
 Install `.[test,ui]` and start the existing Flask application, then open
 http://127.0.0.1:5000/proposed. `ALMA_UI_REPORT_DIR` is optional and independent:
@@ -47,13 +50,32 @@ interval endpoint entry, arbitrary predicates, mosaics, moving targets and
 request-file import are outside this increment; the existing backend API remains
 available for its wider supported input contract.
 
+Purpose checkboxes declare the intended branches; they do not qualify a setup.
+Continuum representative frequency and aggregate RMS can be entered without any
+window rows or contribution list. Missing widths retain the backend CONT-SETUP
+missing-evidence diagnostic. For LINE, omitted centres/resolution/RMS likewise
+remain missing evidence. Position, radius and source selection can still permit
+candidate search. The interface does not invent windows, widths or sensitivities.
+
 ## Editing and export
 
-Add/remove posts rerender the form without executing validation or search. Hidden
-row tokens remain stable; user-visible window IDs bind the wire request. Renaming
-or removing windows does not silently repair explicit aggregate references: the
-validator detects stale/duplicate IDs. Aggregate IDs are whitespace-separated in
-this form; use whitespace-free IDs when supplying that list.
+Add/remove posts rerender the form without executing validation or search. Setup
+and window IDs are generated automatically and displayed read-only in technical
+details. Hidden row tokens keep each window's inputs together. Contributing
+windows are selected with checkboxes; the adapter preserves their explicit IDs.
+Removing a window requires a confirmation POST and removes its LINE sensitivity.
+Any continuum reference to that window remains visible as an unavailable selection;
+the researcher must review the aggregate RMS and explicitly clear the reference.
+The interface never recalculates RMS or silently repairs the declaration. The
+previous whitespace-separated input representation is still accepted by the adapter.
+
+The status column separates errors and missing information from expandable full
+backend diagnostics. Aggregate-reference diagnostics target the contribution
+selector. Browser presentation hides irrelevant empty purpose sections, while
+retaining and showing previously entered values; without JavaScript all sections
+remain available. Editing a validated form marks its status stale. Diagnostics
+focus their controls and expand technical details as needed. Validation, export,
+window editing and removal confirmation also work without JavaScript.
 
 Download revalidates current fields. Only is_valid permits a request JSON download;
 can_search can remain false and missing evidence can remain. It is an input

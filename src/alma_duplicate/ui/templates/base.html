@@ -27,10 +27,8 @@
     </div>
     <nav class="navigation" aria-label="Main navigation">
       <div class="page-width nav-inner">
-        <a class="current" href="#main" aria-current="page">Observation</a>
-        <a href="#candidates">Candidates</a>
-        <a href="#evidence">Evidence</a>
-        <a href="#result-guide">Interpreting results</a>
+        <a href="{{ url_for('proposed') }}" {% if request.endpoint == 'proposed' %}class="current" aria-current="page"{% endif %}>Proposed observation</a>
+        <a href="{{ url_for('report_index') }}" {% if request.endpoint in ['report_index', 'report_view'] %}class="current" aria-current="page"{% endif %}>Existing reports</a>
         <a class="portal-link" href="https://almascience.eso.org/">ALMA Science Portal <span aria-hidden="true">↗</span></a>
       </div>
     </nav>

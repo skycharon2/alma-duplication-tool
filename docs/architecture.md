@@ -117,7 +117,7 @@ Flask/Jinja consumes startup-bound backend report artifacts through `ui/reports.
 It calls the existing inspection v3 consumer; it does not call search or rule
 evaluators. The original bytes are retained for download, while a paginated view
 uses the parsed document. UI paths select opaque in-process IDs, not filesystem
-paths. The form preview still does not invoke the assessment entry.
+paths. The proposed-input form validates requests but does not invoke the assessment entry.
 
 ## Proposed form boundary
 

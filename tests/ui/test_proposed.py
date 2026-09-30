@@ -91,6 +91,11 @@ def test_add_remove_preserves_row_identity_and_raw_values(client):
     data.setlist("rows", rows)
     data.setlist("action", ["remove:" + rows[1]])
     html = client.post("/proposed", data=data).get_data(as_text=True)
+    assert re.findall(r'name="rows" value="([a-z0-9]+)"', html) == rows
+    assert 'Confirm removal' in html
+    assert 'value="230.538"' in html
+    data.setlist("action", ["confirm-remove:" + rows[1]])
+    html = client.post("/proposed", data=data).get_data(as_text=True)
     assert re.findall(r'name="rows" value="([a-z0-9]+)"', html) == [ROW]
 
 
@@ -196,3 +201,86 @@ def test_continuum_usable_widths_and_aggregate_binding(client):
     result = validate_proposed_observation(document["request"], document["search_options"])
     assert result.is_valid
     assert result.request.spectral_windows[0].bandwidth.value == result.request.spectral_windows[1].bandwidth.value
+
+
+def test_aggregate_diagnostic_targets_contribution_selection():
+    values = fields() | {"intents": ["CONTINUUM"], "sources": ["ARCHIVE"],
+                         "aggregate": "0.1", "aggregate_windows": ["absent"]}
+    _, result, issues = validate_form(values, [ROW])
+    assert not result.is_valid
+    assert any(entry["field"] == "aggregate_windows" and
+               entry["issue"].path == "request.sensitivities[0].window_ids" for entry in issues)
+
+
+def test_contribution_checkboxes_preserve_selection_through_editing(client):
+    data = MultiDict(fields())
+    data.setlist("rows", [ROW, OTHER])
+    data.update({OTHER + "_id": "second", OTHER + "_center": "228",
+                 "aggregate": "0.1"})
+    data.setlist("aggregate_windows", ["line-0", "second"])
+    data.setlist("action", ["cancel-remove"])
+    html = client.post("/proposed", data=data).get_data(as_text=True)
+    assert 'name="aggregate_windows" value="second" checked' in html
+    assert re.findall(r'name="rows" value="([a-z0-9]+)"', html) == [ROW, OTHER]
+    data.setlist("action", ["confirm-remove:" + OTHER])
+    html = client.post("/proposed", data=data).get_data(as_text=True)
+    assert 'Unavailable window: second' in html
+    assert 'name="aggregate_windows" value="second" checked' in html
+    # Removal preserves the declaration until the researcher explicitly revises it.
+    data.setlist("rows", [ROW])
+    data.setlist("action", ["download"])
+    response = client.post("/proposed", data=data)
+    assert response.mimetype == "text/html"
+    assert 'href="#aggregate_windows"' in response.get_data(as_text=True)
+    data.setlist("aggregate_windows", ["line-0"])
+    document = client.post("/proposed", data=data).get_json()
+    assert document["request"]["sensitivities"][0]["window_ids"] == ["line-0"]
+    assert document["request"]["sensitivities"][0]["rms"]["value"] == "0.1"
+
+
+def test_navigation_and_diagnostic_targets_exist(client):
+    for url in ("/proposed", "/reports"):
+        html = client.get(url).get_data(as_text=True)
+        assert 'href="#candidates"' not in html
+        assert 'href="#evidence"' not in html
+        assert 'href="#result-guide"' not in html
+        assert f'href="{url}" class="current" aria-current="page"' in html
+    html = client.post("/proposed", data=fields() | {ROW + "_rms": "-1"}).get_data(as_text=True)
+    ids = set(re.findall(r' id="([^"]+)"', html))
+    assert len(ids) == len(re.findall(r' id="([^"]+)"', html))
+    assert set(re.findall(r'href="#([^"]+)"', html)) <= ids
+    assert 'aria-invalid="true"' in html
+    assert 'All validation details' in html
+
+
+def test_initial_form_has_no_required_window_rows(client):
+    html = client.get("/proposed").get_data(as_text=True)
+    assert 'name="rows"' not in html
+    assert 'Spectral windows (optional)' in html
+    assert html.index('id="sensitivities"') < html.index('id="windows"')
+    html = client.post("/proposed", data={"setup_id": "setup-1", "action": "add"}).get_data(as_text=True)
+    rows = re.findall(r'name="rows" value="([a-z0-9]+)"', html)
+    assert len(rows) == 1
+    assert f'name="{rows[0]}_id" value="{rows[0]}"' in html
+
+
+@pytest.mark.parametrize("purpose,rule", [("CONTINUUM", "CONT-SETUP"), ("LINE", "LINE-COVERAGE")])
+def test_no_windows_preserves_partial_request_and_missing_evidence(client, purpose, rule):
+    data = {"setup_id": "setup-1", "ra": "201.365", "dec": "-43.019",
+            "radius": "30", "sources": "ARCHIVE", "intents": purpose,
+            "angular": "0.3", "representative": "230", "aggregate": "0.1",
+            "action": "download"}
+    response = client.post("/proposed", data=data)
+    document = response.get_json()
+    assert document["request"]["spectral_windows"] == []
+    assert document["request"]["setup_complete"] is False
+    assert document["request"]["representative_frequency"]["value"] == "230"
+    sensitivity = document["request"]["sensitivities"][0]
+    assert sensitivity["rms"]["value"] == "0.1" and sensitivity["window_ids"] == []
+    result = validate_proposed_observation(document["request"], document["search_options"])
+    assert result.is_valid and result.can_search
+    assert any(issue.category == "MISSING" and issue.rule_id == rule for issue in result.issues)
+    html = client.post("/proposed", data=data | {"action": "validate"}).get_data(as_text=True)
+    assert 'Input valid: <strong>Yes</strong>' in html
+    assert 'Search readiness: <strong>READY</strong>' in html
+    assert 'href="#windows"' in html

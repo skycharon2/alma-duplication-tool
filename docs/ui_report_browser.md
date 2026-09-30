@@ -1,8 +1,8 @@
 # Read-only backend report browser
 
 This increment consumes report v4 and inspection v3. It does not submit a proposal,
-query sources, or implement scientific calculations. Existing form controls remain
-an explicitly labelled preview. No scientific method version changes.
+query sources, or implement scientific calculations. The separate [proposed form](ui_proposed_form.md) validates input and exports
+request JSON; existing reports are not results of the current form. No scientific method version changes.
 
 ## Run locally
 

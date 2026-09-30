@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Backend reports</h1>
+<div class="page-heading"><h1>Existing reports</h1>
+<p>These reports are independent of the observation currently being entered.</p></div>
 <p>Read-only reports selected by the operator. No new assessment or source query is performed.</p>
 <ul>{% for id, item in reports.items() %}<li><a href="{{ url_for('report_view', report_id=id) }}">{{ item.name }}</a> — {{ item.document.report_kind }}</li>{% else %}<li>No reports configured. This does not mean that no duplicates exist.</li>{% endfor %}</ul>
 {% endblock %}

@@ -14,12 +14,12 @@ def new_row():
 
 
 def initial_form():
-    return {"setup_id": "setup-1"}, [new_row()]
+    return {"setup_id": "setup-1"}, []
 
 
 def read_form(form):
     """Preserve raw strings; reject ambiguous wire shape before field mapping."""
-    repeated = {"rows", "intents", "sources"}
+    repeated = {"rows", "intents", "sources", "aggregate_windows"}
     for key in form:
         if key not in repeated and len(form.getlist(key)) != 1:
             raise ValueError("Repeated scalar form field")
@@ -31,7 +31,14 @@ def read_form(form):
     values = form.to_dict()
     values["intents"] = form.getlist("intents")
     values["sources"] = form.getlist("sources")
+    values["aggregate_windows"] = [value for item in form.getlist("aggregate_windows") for value in item.split()]
     return values, rows
+
+
+def contributing_windows(values):
+    """Accept checkbox selections and the previous form's text representation."""
+    selected = values.get("aggregate_windows", [])
+    return selected.split() if isinstance(selected, str) else selected
 
 
 def build_document(values, rows):
@@ -81,11 +88,13 @@ def build_document(values, rows):
     if aggregate is not None:
         i = len(request["sensitivities"])
         bindings[f"request.sensitivities[{i}]"] = "aggregate"
+        bindings[f"request.sensitivities[{i}].rms"] = "aggregate"
+        bindings[f"request.sensitivities[{i}].window_ids"] = "aggregate_windows"
         request["sensitivities"].append({
             "sensitivity_id": "aggregate", "purpose": "CONTINUUM", "scope": "SETUP",
             "setup_id": setup, "basis": "AGGREGATE", "aggregate_path": "DIRECT_DECLARATION",
             "rms": aggregate,
-            "window_ids": values.get("aggregate_windows", "").split(),
+            "window_ids": contributing_windows(values),
         })
     for i, row in enumerate(rows):
         path = f"request.spectral_windows[{i}]"
