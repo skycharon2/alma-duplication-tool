@@ -23,7 +23,9 @@ docs/evidence/scientific_feedback.md:
 """
 from __future__ import annotations
 
-from alma_duplicate.domain.proposed_observation import ProposedObservationRequest, ProposedWindow
+from alma_duplicate.domain.proposed_observation import (
+    CONTINUUM_SETUP_DECLARATION, ProposedObservationRequest, ProposedWindow,
+)
 from alma_duplicate.queue_normalization import QueueFrequencyDerivationError, map_nominal_to_usable_mhz
 from alma_duplicate.rules.model import (
     POLICY_DOCUMENT, CriterionOutcome as O, CriterionResult, EvidenceSide, MethodApproval, CriterionIssue,
@@ -37,6 +39,8 @@ METHOD_VERSION = "continuum_setup_2"
 POLICY_REF = f"{POLICY_DOCUMENT}, Spectral windows (continuum definition)"
 THRESHOLD_GHZ = 1.8
 MIN_QUALIFYING_WINDOWS = 2
+DECLARATION_METHOD = "continuum_setup_declaration_1"
+DECLARATION_REF = "docs/continuum_setup_declaration.md"
 PORTAL_SCRIPT_V1 = "PORTAL_SCRIPT_V1"
 DECISION_REFS = ("scientific-feedback-Q2:usable-bandwidth-for-1.8-GHz-threshold",)
 
@@ -103,8 +107,37 @@ def evaluate_continuum_setup(
     identities = [w.window_id for w in request.spectral_windows]
     if len(set(identities)) != len(identities):
         raise ValueError("Duplicate window identities: expected a validated request")
+    declaration = request.continuum_setup_declaration
+    if declaration is not None and declaration != CONTINUUM_SETUP_DECLARATION:
+        raise ValueError("Unknown continuum setup declaration")
     per_window = [(w.window_id, *qualify_window(w, nominal_conversion=nominal_conversion))
                   for w in request.spectral_windows]
+    if declaration is not None:
+        # Contradictions use direct evidence only; optional nominal conversion
+        # must not determine whether an explicit usable-width declaration holds.
+        direct = [(w.window_id, *qualify_window(w)) for w in request.spectral_windows]
+        qualified = sum(status == QUALIFIED for _, status, _ in direct)
+        possible = sum(status != NOT_QUALIFIED for _, status, _ in direct)
+        conflict = request.setup_complete is True and possible < MIN_QUALIFYING_WINDOWS
+        return CriterionResult(
+            criterion_id=CRITERION_ID, policy_ref=POLICY_REF, method_version=DECLARATION_METHOD,
+            approval=MethodApproval.APPROVED,
+            applicability=A.UNRESOLVED if conflict else A.APPLICABLE,
+            evaluation=E.INSUFFICIENT_INFORMATION if conflict else E.EVALUATED,
+            outcome=None if conflict else O.SATISFIED, context_id=None, proposed=None, candidate=None,
+            derived=(("evidenced_qualifying_windows", float(qualified)), ("threshold_ghz", THRESHOLD_GHZ)),
+            reasons=(("CONTINUUM_SETUP_DECLARATION_CONFLICT",) if conflict else
+                     ("CONTINUUM_SETUP_USER_DECLARED",)),
+            issues=((CriterionIssue(EvidenceSide.PROPOSED, "CONFLICTING_EVIDENCE",
+                     "request.continuum_setup_declaration",
+                     "The declared complete window list cannot contain two qualifying windows. "
+                     "Review the declaration, list completeness and supplied widths."),) if conflict else ()),
+            decision_refs=(DECLARATION_REF,),
+            details=(("evidence_basis", "USER_DECLARED"), ("declaration", declaration),
+                     ("setup_id", request.setup_id),
+                     ("width_evidence_corroborates", str(qualified >= MIN_QUALIFYING_WINDOWS).lower()),
+                     *((window_id, f"{status}:{reason}") for window_id, status, reason in direct)),
+        )
     details = tuple((window_id, f"{status}:{reason}") for window_id, status, reason in per_window)
     # Distinct identities only; the validator already rejects duplicate IDs.
     qualified = len({window_id for window_id, status, _ in per_window if status == QUALIFIED})

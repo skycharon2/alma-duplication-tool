@@ -38,7 +38,8 @@ if (form) {
     if (!target.hasAttribute('tabindex') && !target.matches('input, select, button')) target.tabIndex = -1;
     target.focus();
   });
-  const focusTarget = document.getElementById('remove-confirmation') ||
+  const focusTarget = document.getElementById('execution-error') ||
+    document.getElementById('remove-confirmation') ||
     form.querySelector('[aria-invalid="true"]') || form.querySelector('[data-validated]');
   if (focusTarget) {
     for (let parent = focusTarget.parentElement; parent; parent = parent.parentElement) {

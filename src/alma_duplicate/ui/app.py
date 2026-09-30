@@ -5,6 +5,7 @@ import os
 from flask import Flask, Response, abort, redirect, render_template, request, url_for
 
 from alma_duplicate.ui.reports import load_reports
+from alma_duplicate.ui.runs import OfflineAssessment, RunStore
 from alma_duplicate.ui.proposed import MAX_WINDOWS, contributing_windows, initial_form, new_row, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
 
@@ -14,10 +15,16 @@ def create_app(config=None):
     app = Flask(__name__)
     app.config["MAX_CONTENT_LENGTH"] = 1024 * 1024
     app.config["REPORT_DIRECTORY"] = os.environ.get("ALMA_UI_REPORT_DIR")
+    app.config["OFFLINE_ARCHIVE_REPLAY"] = os.environ.get("ALMA_UI_ARCHIVE_REPLAY")
+    app.config["OFFLINE_QUEUE_CSV"] = os.environ.get("ALMA_UI_QUEUE_CSV")
+    app.config["MAX_RETAINED_RUNS"] = 20
+    app.config["MAX_RETAINED_BYTES"] = 32 * 1024 * 1024
     if config is not None:
         app.config.from_mapping(config)
 
     reports = load_reports(app.config["REPORT_DIRECTORY"])
+    offline = OfflineAssessment(app.config["OFFLINE_ARCHIVE_REPLAY"], app.config["OFFLINE_QUEUE_CSV"])
+    runs = RunStore(app.config["MAX_RETAINED_RUNS"], app.config["MAX_RETAINED_BYTES"])
 
     @app.after_request
     def private_response(response):
@@ -34,9 +41,7 @@ def create_app(config=None):
             abort(404)
         return reports[report_id]
 
-    @app.get("/reports/<report_id>")
-    def report_view(report_id):
-        item = artifact(report_id)
+    def render_report(item, report_id, run=None):
         page = request.args.get("page", "1")
         if not page.isdecimal() or len(page) > 8 or int(page) < 1:
             abort(400)
@@ -48,7 +53,35 @@ def create_app(config=None):
         start = (page - 1) * 20
         return render_template("report.html", item=item, report_id=report_id,
                                document=item.document, contexts=contexts[start:start + 20],
-                               start=start, page=page, pages=pages)
+                               start=start, page=page, pages=pages, run=run,
+                               view_endpoint="run_view" if run else "report_view",
+                               download_endpoint="run_download" if run else "report_download")
+
+    @app.get("/reports/<report_id>")
+    def report_view(report_id):
+        return render_report(artifact(report_id), report_id)
+
+    def retained_run(report_id):
+        run = runs.get(report_id)
+        if run is None:
+            abort(404, description="Run unavailable: unknown ID, application restarted, or retention limit reached.")
+        return run
+
+    @app.get("/runs/<report_id>")
+    def run_view(report_id):
+        run = retained_run(report_id)
+        return render_report(run.artifact, report_id, run)
+
+    @app.get("/runs/<report_id>/download/<kind>")
+    def run_download(report_id, kind):
+        run = retained_run(report_id)
+        payloads = {"report": run.artifact.raw, "inspection": run.artifact.inspection_bytes,
+                    "request": run.request_bytes}
+        if kind not in payloads:
+            abort(404)
+        return Response(payloads[kind], mimetype="application/json", headers={
+            "Content-Disposition": f'attachment; filename="{kind}-{report_id}.json"',
+        })
 
     @app.get("/reports/<report_id>/download/<kind>")
     def report_download(report_id, kind):
@@ -66,6 +99,7 @@ def create_app(config=None):
         result, issues, document = None, [], None
         pending_removal = None
         edit_notice = None
+        execution_error = None
         if request.method == "POST":
             try:
                 values, rows = read_form(request.form)
@@ -88,8 +122,23 @@ def create_app(config=None):
                     pending_removal = row
             elif action == "cancel-remove":
                 edit_notice = "Window retained. Validate input to update the diagnostics."
-            elif action in {"validate", "download"}:
+            elif action in {"validate", "download", "assess"}:
                 document, result, issues = validate_form(values, rows)
+                if action == "assess":
+                    if not offline.enabled:
+                        execution_error = "Offline assessment is not configured. You can still validate and download the request."
+                    elif result.is_valid and result.can_search:
+                        try:
+                            assessment = offline.assess(document)
+                            if assessment.document is not None:
+                                run_id = runs.add(document, assessment)
+                                return redirect(url_for("run_view", report_id=run_id), code=303)
+                            execution_error = "Assessment returned no report. Review input readiness."
+                        except (OSError, UnicodeError, ValueError, TypeError) as exc:
+                            app.logger.warning("Offline assessment failed: %s", exc)
+                            execution_error = "Offline assessment could not be completed. Check the configured reference files and server log. No report was created."
+                    else:
+                        execution_error = "Assessment was not run. Correct invalid inputs and supply the search information shown below."
                 if action == "download" and result.is_valid:
                     return Response(report_json_text(document), mimetype="application/json",
                                     headers={"Content-Disposition": 'attachment; filename="proposed-request.json"'})
@@ -103,7 +152,8 @@ def create_app(config=None):
         return render_template("proposed.html", values=values, rows=rows,
                                result=result, issues=issues, document=document,
                                selected_windows=selected, stale_ids=stale_ids,
-                               pending_removal=pending_removal, edit_notice=edit_notice)
+                               pending_removal=pending_removal, edit_notice=edit_notice,
+                               offline=offline, execution_error=execution_error)
 
     @app.get("/healthz")
     def healthz():

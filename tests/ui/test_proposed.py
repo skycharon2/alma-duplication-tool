@@ -44,6 +44,22 @@ def test_initial_and_line_validation(client):
     assert 'REST_FREQUENCY_RETAINED' in html
 
 
+def test_continuum_confirmation_is_explicit_preserved_and_removable(client):
+    data = {"setup_id": "setup-1", "ra": "201.365", "dec": "-43.019",
+            "radius": "30", "sources": "ARCHIVE", "intents": "CONTINUUM",
+            "continuum_setup_declaration": "on", "action": "validate"}
+    html = client.post("/proposed", data=data).get_data(as_text=True)
+    assert 'name="continuum_setup_declaration" aria-describedby="continuum_setup_declaration-notes" checked' in html
+    assert "CONTINUUM_SETUP_USER_DECLARED" in html
+    assert "Width evidence for setup qualification is incomplete" not in html
+    data["action"] = "download"
+    assert client.post("/proposed", data=data).get_json()["request"]["continuum_setup_declaration"]
+    del data["continuum_setup_declaration"]
+    assert "continuum_setup_declaration" not in client.post("/proposed", data=data).get_json()["request"]
+    data.update(action="validate", continuum_setup_declaration="invalid")
+    assert b"Input valid: <strong>No</strong>" in client.post("/proposed", data=data).data
+
+
 def test_download_is_request_and_backend_ready(client):
     data = fields() | {"action": "download"}
     response = client.post("/proposed", data=data)
@@ -147,7 +163,7 @@ def test_transport_limits_and_escaping(client):
     data.add("ra", "10")
     assert client.post("/proposed", data=data).status_code == 400
     assert client.post("/proposed", data=fields() | {"rows": "../bad"}).status_code == 400
-    assert client.post("/proposed", data=fields() | {"action": "assess"}).status_code == 400
+    assert client.post("/proposed", data=fields() | {"action": "unsupported"}).status_code == 400
     html = client.post("/proposed", data=fields() | {"target_name": '<script>alert(1)</script>'}).data
     assert b'<script>alert' not in html
     assert client.post("/proposed", data=b'x' * (1024 * 1024 + 1), content_type='application/x-www-form-urlencoded').status_code == 413

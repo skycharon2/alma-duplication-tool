@@ -32,6 +32,21 @@ def _constant(value):
     raise ValueError(f"Non-finite JSON number: {value}")
 
 
+def report_artifact(name, raw):
+    """Build a viewer artifact and inspection from the exact exported report bytes."""
+    document = json.loads(raw, object_pairs_hook=_object, parse_constant=_constant)
+    inspection = inspect_report(document, inspection_version="3")
+    report_json_text(document)  # Reject overflowed numeric literals.
+    for context in document["context_evaluations"]:
+        for field in ("reference", "criteria", "branches", "line_pairs"):
+            if field not in context:
+                raise ValueError(f"Missing context field: {field}")
+    return ReportArtifact(
+        name, raw, document, inspection,
+        report_json_text(inspection).encode("utf-8"), hashlib.sha256(raw).hexdigest(),
+    )
+
+
 def load_reports(directory):
     """Load only immediate case/report.json files from an operator-selected root.
 
@@ -49,19 +64,9 @@ def load_reports(directory):
             raise ValueError("UI reports must not be symbolic links")
         raw = path.read_bytes()
         try:
-            document = json.loads(raw, object_pairs_hook=_object, parse_constant=_constant)
-            inspection = inspect_report(document, inspection_version="3")
-            # Also reject overflowed numeric literals, without changing original bytes.
-            report_json_text(document)
-            for context in document["context_evaluations"]:
-                for field in ("reference", "criteria", "branches", "line_pairs"):
-                    if field not in context:
-                        raise ValueError(f"Missing context field: {field}")
+            item = report_artifact(path.parent.name, raw)
         except (ValueError, TypeError, KeyError, AttributeError) as exc:
             raise ValueError(f"Invalid UI report: {path.parent.name}: {exc}") from exc
         key = str(len(result) + 1)
-        result[key] = ReportArtifact(
-            path.parent.name, raw, document, inspection,
-            report_json_text(inspection).encode("utf-8"), hashlib.sha256(raw).hexdigest(),
-        )
+        result[key] = item
     return result

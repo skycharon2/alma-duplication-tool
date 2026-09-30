@@ -3,7 +3,9 @@
 Contract version 2. The [shared entry](assessment_entry.md) and configuration
 preflight are implemented; [status](status.md) owns the reviewed baseline.
 The browser has a [validator-connected proposed form](ui_proposed_form.md) and a
-[read-only report viewer](ui_report_browser.md). New assessments are not connected yet. The [form sketch](proposed_observation_form.md)
+[read-only report viewer](ui_report_browser.md). The [offline assessment flow](ui_offline_assessment.md)
+connects the current form to per-run report v4 and inspection v3 exports; live
+Archive access is not connected. The [form sketch](proposed_observation_form.md)
 owns layout; the [request API](proposed_observation_api.md) owns field validation;
 [reporting](evaluation_cli.md) owns JSON; [rules](rules.md) owns every formula and
 aggregation. This document defines how the first UI must consume those contracts.
@@ -20,6 +22,9 @@ aggregation. This document defines how the first UI must consume those contracts
    selection does not set FDM, confer continuum bandwidth eligibility, fill missing
    RMS or supply a scientific verdict. Valid SUN produces the existing no-search
    exemption. Queue mappings keep their source-specific limitations.
+   The separate [continuum setup confirmation](continuum_setup_declaration.md)
+   can provide USER_DECLARED qualification evidence. Display its distinct method
+   and any contradiction; ordinary purpose selection is not this confirmation.
 3. Expand a context/pair and export the **same complete report**, including hidden
    contexts. Never rebuild report criteria from a displayed subset or calculate
    formula/aggregation logic in the browser. A diagnostic inspection is an optional

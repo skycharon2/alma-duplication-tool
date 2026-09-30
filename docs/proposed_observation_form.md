@@ -36,6 +36,7 @@ with a specific reason; Sun displays assessment not applicable.
 | Control | Initial display | Interaction |
 | --- | --- | --- |
 | Purpose | Continuum / Spectral line checkboxes | Both may be selected; explanatory text says configuration determines rule applicability |
+| Continuum setup confirmation | Unchecked, separate from purpose | Explicitly confirms at least two distinct windows each with usable bandwidth > 1.8 GHz; records USER_DECLARED evidence under the [declaration contract](continuum_setup_declaration.md) |
 | Requested angular resolution | Value + arcsec/mas | Optional for broad search; never labelled as a maximum candidate resolution |
 | Array information | Unknown / explicit information | Expand only if supplied; no automatic diameter |
 | Have you listed all spectral windows? | Explicit yes/no | List completeness only; some listed windows may still lack parameters |

@@ -15,6 +15,7 @@ from types import MappingProxyType
 from alma_duplicate.proposed_line import prepare_line_window
 
 from alma_duplicate.domain.proposed_observation import (
+    CONTINUUM_SETUP_DECLARATION,
     CandidatePredicate,
     ProposedObservationRequest,
     ProposedSensitivity,
@@ -834,6 +835,7 @@ def validate_proposed_observation(
             "position",
             "setup_id",
             "setup_complete",
+            "continuum_setup_declaration",
             "intents",
             "angular_resolution",
             "representative_frequency",
@@ -866,6 +868,16 @@ def validate_proposed_observation(
             "Use Boolean or missing; this describes list completeness only.",
         )
     intents = v.names(obj.get("intents"), "request.intents", {"CONTINUUM", "LINE"})
+    declaration = None
+    if obj.get("continuum_setup_declaration") is not None:
+        declaration = v.enum(obj["continuum_setup_declaration"],
+                             "request.continuum_setup_declaration", {CONTINUUM_SETUP_DECLARATION})
+        if declaration is not None:
+            v.issue("EVIDENCE", "CONTINUUM_SETUP_USER_DECLARED",
+                    "request.continuum_setup_declaration",
+                    "Researcher confirms at least two distinct windows each with usable bandwidth > 1.8 GHz. "
+                    "The evaluator checks contradictions with supplied complete-window evidence; this is not an input-validation verdict.",
+                    "CONT-SETUP")
     angle = v.quantity(
         obj.get("angular_resolution"), "request.angular_resolution", "angle"
     )
@@ -1005,7 +1017,7 @@ def validate_proposed_observation(
                 v.missing("request.representative_frequency.kind",
                           "Continuum comparison requires the user representative SKY frequency.",
                           "CONT-FREQ")
-            if not windows or any(w.bandwidth is None and w.interval is None for w in windows):
+            if declaration is None and (not windows or any(w.bandwidth is None and w.interval is None for w in windows)):
                 v.missing(
                     "request.spectral_windows",
                     "Width evidence for setup qualification is incomplete.",
@@ -1056,6 +1068,7 @@ def validate_proposed_observation(
         MappingProxyType(dict(array)),
         raw,
         source_redshift=redshift,
+        continuum_setup_declaration=declaration,
     )
     if kind == "SUN":
         readiness = SearchReadiness.NOT_APPLICABLE

@@ -17,7 +17,7 @@ Reviewed implementation baseline: `3f7f3156d450e5b6164053c34b17e873309989ef` (PR
 | Acceptance | Formal same-request Archive+Queue continuum/LINE engineering acceptance, adversarial source/SPW isolation and source-state completeness matrix | Pinned numerical, real-capture engineering and failure/completeness cases; inspection v3 preserves distinct pair identities and the existing reason taxonomy without inventing a search-wide verdict |
 | Reviewed real-proposal cases | 0; no genuine proposal input has been supplied | 0; no reviewed labels claimed |
 | Shared application entry | [Implemented](assessment_entry.md): validation, Solar exemption, lazy sources, search/evaluation and report assembly | Explicit Queue method options; configuration preflight before source access |
-| Browser UI | Read-only backend report display and original JSON / inspection v3 exports; proposed form validation and request export | Same viewer and validator; live form assessment not connected |
+| Browser UI | Proposed form validation, offline replay assessment, run-specific reports and complete JSON / inspection v3 / request exports | Offline CSV assessment with explicit Queue options in the same flow; live form assessment not connected |
 
 Completed correctness fixes: PR #91 preserves shared LINE exact decision operands
 ([contract](line_precision.md)); PR #92 preserves inspection pair identities and
@@ -85,6 +85,21 @@ now accepts a bounded mode adapter; it does not change those historical results.
 The [Queue position method record](pos_single.md) retains its original execution-version
 notes for provenance. Current orchestration/report versions belong to
 [rules](rules.md) and [CLI/report](evaluation_cli.md).
+
+## Browser increment after the reviewed baseline
+
+The [continuum setup declaration](continuum_setup_declaration.md) now permits
+explicit researcher confirmation without detailed SPWs. Request model 3 / validator
+7 and `continuum_setup_declaration_1` retain provenance and detect contradictory
+complete lists; ordinary intent selection still does not establish qualification.
+
+The proposed form supports validation/request download and an opt-in
+[offline assessment flow](ui_offline_assessment.md). Each execution calls the
+shared entry with explicit Queue intent options and local replay/CSV providers,
+then renders and exports its retained report v4 and inspection v3. Reports from
+separate runs remain independent. This does not change the dated baseline or
+verification counts above. Live Archive execution, persistent multi-user storage
+and the complete browser/CLI acceptance gate remain outstanding.
 
 ## Maintenance
 

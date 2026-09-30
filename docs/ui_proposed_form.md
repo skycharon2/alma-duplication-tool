@@ -31,6 +31,7 @@ search-ready inputs. Evidence notes are not errors or requests for candidate dat
 | --- | --- |
 | Target coordinates | position with DEG/HMS and DEG/DMS, ICRS |
 | Purpose | CONTINUUM and/or LINE, independently selected |
+| Continuum setup confirmation | Separate positive `continuum_setup_declaration`, USER_DECLARED; never inferred from purpose |
 | Complete window list | setup_complete, false unless explicitly checked |
 | Representative frequency | declared quantity/reference, no window averaging |
 | Source redshift | source_redshift; blank is omitted, never assumed zero |
@@ -52,8 +53,9 @@ available for its wider supported input contract.
 
 Purpose checkboxes declare the intended branches; they do not qualify a setup.
 Continuum representative frequency and aggregate RMS can be entered without any
-window rows or contribution list. Missing widths retain the backend CONT-SETUP
-missing-evidence diagnostic. For LINE, omitted centres/resolution/RMS likewise
+window rows or contribution list. The separate [setup declaration](continuum_setup_declaration.md)
+can supply CONT-SETUP evidence without SPW details. Without it, missing widths
+retain the backend CONT-SETUP missing-evidence diagnostic. For LINE, omitted centres/resolution/RMS likewise
 remain missing evidence. Position, radius and source selection can still permit
 candidate search. The interface does not invent windows, widths or sensitivities.
 
@@ -79,9 +81,11 @@ window editing and removal confirmation also work without JavaScript.
 
 Download revalidates current fields. Only is_valid permits a request JSON download;
 can_search can remain false and missing evidence can remain. It is an input
-artifact, not an evaluation report. No request is stored, and there is no server
-session shared between users. The current form must be reposted for every action.
-No assess_observation(), Archive provider, Queue loader, or network call is used.
+artifact, not an evaluation report. Validation and request export do not save the
+request or access sources. The current form must be reposted for every action.
+When configured, the separate Run assessment action calls the shared entry using
+local reference sources and temporarily retains an independent input/report pair;
+see [offline assessment](ui_offline_assessment.md). No live source client is used.
 Responses inherit no-store. Duplicate scalar fields and malformed row lists fail
 400; the application request-size cap is 1 MiB. Jinja escapes reflected values.
 These local controls are not a production multi-user authentication/lifecycle system.
@@ -94,5 +98,6 @@ row editing, duplicate references, invalid quantities, partial search readiness,
 backend diagnostic parity, escaped values, transport limits and request export.
 Existing report browser/acceptance tests remain unchanged.
 
-Next increment connects validated inputs to explicit AssessmentOptions and
-assess_observation(), with controlled sources and per-run result identity.
+The [offline assessment increment](ui_offline_assessment.md) connects inputs to
+explicit AssessmentOptions and assess_observation(), with independent run IDs.
+Live Archive access and a persistent multi-user run lifecycle remain future work.

@@ -1,6 +1,11 @@
 # Proposed observation input API
 
-Request model version: **2**. Validation report version: **6**.
+Request model version: **3**. Validation report version: **7**.
+
+Version 7 adds the explicit [continuum setup declaration](continuum_setup_declaration.md).
+The optional `continuum_setup_declaration` accepts only
+`AT_LEAST_TWO_USABLE_WINDOWS_GT_1_8_GHZ` or absence/null. It records researcher
+evidence independently of intent and list completeness; existing inputs remain valid.
 
 Implements the request-side subset of
 [design 0.3](duplication_rule_inputs.md). No candidate search, policy verdict,
@@ -59,7 +64,7 @@ Empty windows may coexist with independent frequency, angular resolution and RMS
 
 | Object | Accepted fields |
 | --- | --- |
-| Request | target_kind, geometry, target_name, position, setup_id, setup_complete, intents, angular_resolution, representative_frequency, representative_window_id, spectral_windows, sensitivities, array_context, source_redshift |
+| Request | target_kind, geometry, target_name, position, setup_id, setup_complete, continuum_setup_declaration, intents, angular_resolution, representative_frequency, representative_window_id, spectral_windows, sensitivities, array_context, source_redshift |
 | Position | ra, dec, ra_format (DEG/HMS), dec_format (DEG/DMS), frame (explicit ICRS) |
 | Quantity | value, unit; supported units below |
 | Frequency | value, unit, kind (SKY/REST/UNKNOWN), frame, origin |

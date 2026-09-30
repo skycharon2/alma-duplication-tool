@@ -41,6 +41,10 @@ They are not current population counts or Python class definitions.
 
 ## UI reading order
 
+For running the browser end to end, start with [offline assessment](ui_offline_assessment.md).
+For optional SPWs and explicit researcher confirmation, see the
+[continuum setup declaration](continuum_setup_declaration.md).
+
 Read [status](status.md), [thin-interface contract](thin_interface_contract.md),
 [shared assessment entry](assessment_entry.md), [request API](proposed_observation_api.md),
 [report contract](evaluation_cli.md), then [inspection](report_inspection.md) and
