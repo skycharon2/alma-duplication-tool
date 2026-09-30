@@ -38,6 +38,16 @@ source .venv/bin/activate
 python -m pip install -e ".[dev]"
 ```
 
+For the browser preview, also install the optional UI dependencies:
+
+```bash
+python -m pip install -e ".[ui]"
+python -m flask --app alma_duplicate.ui.app:create_app run
+```
+
+Open the local URL printed by Flask. The interface is a visual preview;
+assessment and downloads are not connected yet.
+
 ## Minimal example
 
 Validate the committed partial observation request without network access:
@@ -67,20 +77,24 @@ distinguishes reading a historical source from reparsing it.
 
 ## Tests
 
-Default tests do not contact ALMA services. Full Queue acceptance requires an
-explicit external file:
+Default tests, including the UI tests, do not contact ALMA services. In a clean
+environment, install the runtime, test and optional UI dependencies before
+running the full suite:
 
 ```bash
+python -m pip install -e ".[test,ui]"
+python -m pip check
 python -m pytest -q
 ```
 
-For a clean test-only environment, install `python -m pip install -e ".[test]"`
-and run `python -m pip check` before pytest. This includes the project runtime
-dependencies and pytest; use `.[dev]` for notebook and plotting tools. Both test
-workflows use the smaller test extra. Dependency versions are not locked by this
-change; a 60-second pip timeout mitigates network stalls, not incompatibilities.
+The Python tests CI workflow installs `.[test,ui]` so it also exercises the
+browser interface. The separate Live Archive smoke workflow runs only the
+Archive smoke tests and uses `.[test]`. Notebook and plotting tools remain in
+`.[dev]`; UI dependencies remain optional for backend-only use. Dependency
+versions are not locked; a 60-second CI pip timeout mitigates network stalls,
+not incompatibilities.
 
-Optional full Queue snapshot acceptance:
+Optional full Queue snapshot acceptance requires an explicit external file:
 
 ```bash
 ALMA_QUEUE_CSV_SNAPSHOT="$PWD/data/raw/projects_in_queue_cycle13_20260901.csv" \
