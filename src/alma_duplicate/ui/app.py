@@ -2,14 +2,17 @@
 
 import os
 
-from flask import Flask, Response, abort, render_template, request
+from flask import Flask, Response, abort, redirect, render_template, request, url_for
 
 from alma_duplicate.ui.reports import load_reports
+from alma_duplicate.ui.proposed import MAX_WINDOWS, contributing_windows, initial_form, new_row, read_form, validate_form
+from alma_duplicate.reporting import report_json_text
 
 
 def create_app(config=None):
     """Create the browser application without accessing assessment sources."""
     app = Flask(__name__)
+    app.config["MAX_CONTENT_LENGTH"] = 1024 * 1024
     app.config["REPORT_DIRECTORY"] = os.environ.get("ALMA_UI_REPORT_DIR")
     if config is not None:
         app.config.from_mapping(config)
@@ -57,12 +60,57 @@ def create_app(config=None):
             "Content-Disposition": f'attachment; filename="{kind}-{report_id}.json"',
         })
 
+    @app.route("/proposed", methods=["GET", "POST"])
+    def proposed():
+        values, rows = initial_form()
+        result, issues, document = None, [], None
+        pending_removal = None
+        edit_notice = None
+        if request.method == "POST":
+            try:
+                values, rows = read_form(request.form)
+            except ValueError as exc:
+                abort(400, description=str(exc))
+            action = values.get("action", "validate")
+            if action == "add":
+                if len(rows) >= MAX_WINDOWS:
+                    abort(400, description="Maximum 32 windows in this form")
+                rows.append(new_row())
+                edit_notice = "Window added. Validate input to update the diagnostics."
+            elif action.startswith(("remove:", "confirm-remove:")):
+                row = action.split(":", 1)[1]
+                if row not in rows:
+                    abort(400)
+                if action.startswith("confirm-remove:"):
+                    rows.remove(row)
+                    edit_notice = "Window removed with its LINE inputs. Review any retained continuum references and validate again."
+                else:
+                    pending_removal = row
+            elif action == "cancel-remove":
+                edit_notice = "Window retained. Validate input to update the diagnostics."
+            elif action in {"validate", "download"}:
+                document, result, issues = validate_form(values, rows)
+                if action == "download" and result.is_valid:
+                    return Response(report_json_text(document), mimetype="application/json",
+                                    headers={"Content-Disposition": 'attachment; filename="proposed-request.json"'})
+            else:
+                abort(400)
+        for row in rows:
+            values.setdefault(row + "_id", row)
+        selected = contributing_windows(values)
+        known_ids = {values[row + "_id"] for row in rows}
+        stale_ids = list(dict.fromkeys(value for value in selected if value not in known_ids))
+        return render_template("proposed.html", values=values, rows=rows,
+                               result=result, issues=issues, document=document,
+                               selected_windows=selected, stale_ids=stale_ids,
+                               pending_removal=pending_removal, edit_notice=edit_notice)
+
     @app.get("/healthz")
     def healthz():
         return {"status": "ok"}
 
     @app.get("/")
     def index():
-        return render_template("index.html")
+        return redirect(url_for("proposed"))
 
     return app

@@ -17,7 +17,7 @@ Reviewed implementation baseline: `3f7f3156d450e5b6164053c34b17e873309989ef` (PR
 | Acceptance | Formal same-request Archive+Queue continuum/LINE engineering acceptance, adversarial source/SPW isolation and source-state completeness matrix | Pinned numerical, real-capture engineering and failure/completeness cases; inspection v3 preserves distinct pair identities and the existing reason taxonomy without inventing a search-wide verdict |
 | Reviewed real-proposal cases | 0; no genuine proposal input has been supplied | 0; no reviewed labels claimed |
 | Shared application entry | [Implemented](assessment_entry.md): validation, Solar exemption, lazy sources, search/evaluation and report assembly | Explicit Queue method options; configuration preflight before source access |
-| Browser UI | Read-only backend report display and original JSON / inspection v3 exports; form preview only | Same viewer; live form assessment not connected |
+| Browser UI | Read-only backend report display and original JSON / inspection v3 exports; proposed form validation and request export | Same viewer and validator; live form assessment not connected |
 
 Completed correctness fixes: PR #91 preserves shared LINE exact decision operands
 ([contract](line_precision.md)); PR #92 preserves inspection pair identities and

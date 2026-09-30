@@ -135,8 +135,9 @@ Do not make all-family experimental closure a blanket prerequisite for Queue con
 1. Report display and export — implemented as a [read-only viewer](ui_report_browser.md): consume existing acceptance reports; show each
    source status, independent continuum/LINE branches and context/window/SPW
    evidence. Export the same complete report, optionally with inspection v3.
-2. Minimal form: one setup, multiple windows, both intents, explicit units and
-   a controlled Queue snapshot. Construct explicit AssessmentOptions before
+2. Minimal form — validation implemented at `/proposed`: one setup, multiple
+   windows, both intents and explicit units. Controlled Queue snapshot and
+   assessment execution remain next. Construct explicit AssessmentOptions before
    calling the shared entry. Distinguish missing from invalid input, no-document
    validation results, propagated execution exceptions and usable partial-source
    reports. Preserve Solar exemption and unsupported-scope explanations.
