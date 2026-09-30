@@ -1,6 +1,6 @@
 """Flask application factory for the thin browser interface."""
 
-from flask import Flask, Response
+from flask import Flask, render_template
 
 
 def create_app(config=None):
@@ -15,9 +15,6 @@ def create_app(config=None):
 
     @app.get("/")
     def index():
-        return Response(
-            "ALMA Duplication Assessment\n",
-            mimetype="text/plain",
-        )
+        return render_template("index.html")
 
     return app

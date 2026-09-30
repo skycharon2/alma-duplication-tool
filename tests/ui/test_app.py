@@ -15,9 +15,12 @@ def test_health_endpoint_is_side_effect_free():
     assert response.get_json() == {"status": "ok"}
 
 
-def test_index_is_minimal_until_visual_shell_is_added():
+def test_index_renders_visual_preview():
     app = create_app({"TESTING": True})
     response = app.test_client().get("/")
     assert response.status_code == 200
-    assert response.mimetype == "text/plain"
-    assert response.get_data(as_text=True) == "ALMA Duplication Assessment\n"
+    assert response.mimetype == "text/html"
+    html = response.get_data(as_text=True)
+    assert "ALMA Duplication Assessment" in html
+    assert "Visual preview" in html
+    assert "No assessment has been run" in html

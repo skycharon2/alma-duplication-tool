@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="page-heading">
+    <h1>Observation assessment</h1>
+    <p>Compare a proposed observation with Archive and Queue evidence.</p>
+  </div>
+  <div class="notice" id="preview-notice">
+    <strong>Visual preview</strong>
+    <span>Explore the layout and input fields. Assessment and downloads are not connected. Entries are not submitted or saved.</span>
+  </div>
+
+  <div class="workspace">
+    <aside class="input-panel" aria-labelledby="proposed-title">
+      <h2 class="panel-title" id="proposed-title">Proposed observation</h2>
+      <div class="input-body" aria-describedby="preview-notice">
+        <section class="input-section" aria-labelledby="target-title">
+          <div class="section-heading"><h3 id="target-title">Target</h3><span class="context-label">Fixed target / ICRS</span></div>
+          <label for="target-name">Target name <span class="optional">(optional)</span></label>
+          <input id="target-name" type="text" placeholder="Observation label" autocomplete="off">
+          <div class="field-grid">
+            <div><label for="ra">Right ascension</label><div class="unit-field"><input id="ra" type="text" inputmode="decimal" aria-label="Right ascension in degrees" placeholder="0 ≤ RA < 360"><span>deg</span></div></div>
+            <div><label for="dec">Declination</label><div class="unit-field"><input id="dec" type="text" inputmode="decimal" aria-label="Declination in degrees" placeholder="−90 to +90"><span>deg</span></div></div>
+          </div>
+          <p class="field-note">Single pointing. Enter coordinates directly; the name is a label only.</p>
+        </section>
+
+        <section class="input-section" aria-labelledby="search-title">
+          <h3 id="search-title">Search scope</h3>
+          <label for="radius">Search radius</label>
+          <div class="unit-field"><input id="radius" type="text" inputmode="decimal" aria-label="Search radius in arcseconds" placeholder="Enter radius" aria-describedby="radius-help"><span>arcsec</span></div>
+          <p class="field-note" id="radius-help">Retrieval area, separate from angular resolution.</p>
+          <fieldset class="choice-group"><legend>Data sources</legend>
+            <label><input type="checkbox"> ALMA Science Archive</label>
+            <label><input type="checkbox"> Observing Queue <span class="optional">(snapshot)</span></label>
+          </fieldset>
+        </section>
+
+        <section class="input-section" aria-labelledby="science-title">
+          <h3 id="science-title">Scientific assessment</h3>
+          <fieldset class="choice-group inline-choices"><legend>Purpose</legend>
+            <label><input type="checkbox"> Continuum</label>
+            <label><input type="checkbox"> Spectral line</label>
+          </fieldset>
+          <label for="angular">Requested angular resolution</label>
+          <div class="unit-field"><input id="angular" type="text" inputmode="decimal" aria-label="Requested angular resolution in arcseconds" aria-describedby="angular-help" placeholder="Enter resolution"><span>arcsec</span></div>
+          <p class="field-note" id="angular-help">Optional for broad candidate search.</p>
+          <details class="input-details">
+            <summary>Spectral windows and sensitivity</summary>
+            <p>The full form will associate frequency, resolution and RMS with each spectral window. These controls are not part of this preview.</p>
+          </details>
+          <p class="field-note">Each selected purpose is assessed independently.</p>
+        </section>
+        <div class="input-actions">
+          <button class="button primary" type="button" disabled aria-describedby="run-help">Assess observation</button>
+          <p class="field-note" id="run-help">Assessment is unavailable in this visual preview.</p>
+        </div>
+      </div>
+    </aside>
+
+    <div class="results-column">
+      <section class="panel" aria-labelledby="sources-title">
+        <div class="panel-heading"><h2 id="sources-title">Source coverage</h2><span class="neutral-label">Not run</span></div>
+        <div class="table-scroll" role="region" aria-labelledby="sources-title" aria-describedby="source-scroll-help" tabindex="0">
+          <table class="source-table">
+            <caption class="sr-only">Source execution and snapshot state before an assessment</caption>
+            <thead><tr><th scope="col">Source</th><th scope="col">Execution</th><th scope="col">Snapshot / acquisition</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">ALMA Science Archive</th><td><span class="status-dot" aria-hidden="true"></span>Not queried</td><td class="muted">Not available</td></tr>
+              <tr><th scope="row">Observing Queue</th><td><span class="status-dot" aria-hidden="true"></span>Not loaded</td><td class="muted">No snapshot loaded</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-hint" id="source-scroll-help">Scroll horizontally to view all source details.</p>
+        <p class="panel-note">Source coverage and scientific outcomes are reported separately.</p>
+      </section>
+
+      <section class="panel candidates-panel" id="candidates" aria-labelledby="candidates-title">
+        <div class="panel-heading"><h2 id="candidates-title">Candidate observations</h2><span class="muted">Awaiting assessment</span></div>
+        <div class="result-toolbar">
+          <span>Archive and Queue contexts</span>
+          <div class="export-actions"><button class="button" type="button" disabled aria-describedby="export-help">Download report</button><button class="button" type="button" disabled aria-describedby="export-help">Download inspection</button></div>
+        </div>
+        <p class="sr-only" id="export-help">Downloads become available when assessment is connected and a report has been produced.</p>
+        <div class="table-scroll" role="region" aria-labelledby="candidates-title" aria-describedby="candidate-scroll-help" tabindex="0">
+          <table class="candidate-table">
+            <caption class="sr-only">Candidate observations will appear after an assessment</caption>
+            <colgroup span="2"></colgroup>
+            <colgroup span="2"></colgroup>
+            <colgroup span="1"></colgroup>
+            <thead>
+              <tr class="column-groups">
+                <th scope="colgroup" colspan="2">Observation identity</th>
+                <th scope="colgroup" colspan="2">Scientific assessment</th>
+                <th scope="col" rowspan="2">Evidence</th>
+              </tr>
+              <tr>
+                <th scope="col">Source</th><th scope="col">Project / context</th>
+                <th scope="col">Continuum</th><th scope="col">Spectral line</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="table-hint" id="candidate-scroll-help">Scroll horizontally to view all candidate columns.</p>
+        <div class="empty-state">
+          <svg class="empty-table-icon" width="36" height="30" viewBox="0 0 36 30" fill="none" aria-hidden="true" focusable="false"><rect x="1" y="1" width="34" height="28" rx="2"/><path d="M1 10h34M1 19h34M12 1v28"/></svg>
+          <h3>No assessment has been run</h3>
+          <p>Candidate contexts and their scientific results will appear here.</p>
+          <span>An empty workspace does not establish the absence of duplication.</span>
+        </div>
+        <section class="evidence-placeholder" id="evidence" aria-labelledby="evidence-title" tabindex="-1"><h3 id="evidence-title">Context and pair evidence</h3><p>After assessment, select a context to inspect criterion values, units, method versions and unresolved reasons.</p></section>
+      </section>
+
+      <section class="panel result-guide" id="result-guide" aria-labelledby="guide-title">
+        <div class="panel-heading"><h2 id="guide-title">Interpreting results</h2><span class="muted">Per branch and context</span></div>
+        <dl class="outcome-guide">
+          <div><dt><span class="outcome met">Criteria met</span></dt><dd>The applicable criteria are satisfied for this branch and context.</dd></div>
+          <div><dt><span class="outcome not-met">Criteria not met</span></dt><dd>The criteria are not satisfied here. Other contexts may differ.</dd></div>
+          <div><dt><span class="outcome unknown">Indeterminate</span></dt><dd>Evidence, method applicability or a required dependency is unresolved.</dd></div>
+        </dl>
+        <details class="guide-details"><summary>How to read incomplete evidence</summary><p>Missing candidate evidence is distinct from missing proposal input. Expand the relevant criterion to see its reason and source. Neither an incomplete search nor an unresolved result establishes that no duplicate exists.</p></details>
+      </section>
+    </div>
+  </div>
+{% endblock %}
