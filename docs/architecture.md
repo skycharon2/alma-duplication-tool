@@ -37,7 +37,8 @@ PyVO supplies TAP access; source adapters and typed domain objects preserve the
 project's stronger provenance and evidence contracts. Notebook/plotting tooling
 supports exploration. The present dependency lists do not establish a tested
 minimum/maximum compatibility matrix; changing bounds needs separate validation.
-No Web framework is selected by this change.
+The browser presentation layer uses Flask and Jinja; it consumes backend
+contracts without reimplementing scientific rules.
 
 ANGULAR and CONT-SETUP share exact canonical-scalar arithmetic. POS-SINGLE
 uses spherical floating-point geometry: Archive has an inclusive <= boundary;
@@ -117,3 +118,11 @@ It calls the existing inspection v3 consumer; it does not call search or rule
 evaluators. The original bytes are retained for download, while a paginated view
 uses the parsed document. UI paths select opaque in-process IDs, not filesystem
 paths. The form preview still does not invoke the assessment entry.
+
+## Proposed form boundary
+
+`ui/proposed.py` maps submitted strings into the existing request wire schema.
+`/proposed` calls `validate_proposed_observation()` directly and displays its
+diagnostics/readiness. It does not invoke assessment, providers or source clients.
+Window row tokens survive editing; window IDs bind each LINE sensitivity.
+Request JSON downloads revalidate the current form and contain no report verdict.

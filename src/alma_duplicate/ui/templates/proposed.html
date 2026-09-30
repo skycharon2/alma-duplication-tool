@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% macro messages(name) %}{% for entry in issues if entry.field == name %}<p class="field-note" data-category="{{ entry.issue.category }}">{{ entry.issue.category }} · {{ entry.issue.code }}: {{ entry.issue.message }}</p>{% endfor %}{% endmacro %}
+{% macro input(name, label) %}<label for="{{ name }}">{{ label }}</label><input type="text" id="{{ name }}" name="{{ name }}" value="{{ values.get(name, '') }}">{{ messages(name) }}{% endmacro %}
+{% macro select(name, label, choices, default) %}<label for="{{ name }}">{{ label }}</label><select id="{{ name }}" name="{{ name }}">{% set chosen = values.get(name, default) %}{% if chosen not in choices %}<option selected value="{{ chosen }}">{{ chosen }} (invalid selection)</option>{% endif %}{% for option in choices %}<option value="{{ option }}" {% if chosen == option %}selected{% endif %}>{{ option }}</option>{% endfor %}</select>{% endmacro %}
+{% macro quantity(name, label, units, default) %}<div class="field-grid"><div>{{ input(name, label) }}</div><div>{{ select(name + '_unit', label + ' unit', units, default) }}</div></div>{% endmacro %}
+{% block content %}
+<h1>Proposed observation — input validation</h1>
+<p>Fixed target, single pointing, one setup. This form validates input only: no Archive query, Queue loading or duplication assessment is performed. Entries are returned to this page and are not stored by the application.</p>
+<p><a href="{{ url_for('report_index') }}">Browse existing backend reports</a></p>
+<form method="post" action="{{ url_for('proposed') }}" class="proposed-form" novalidate>
+<section id="validation" aria-live="polite"><h2>Validation</h2>
+{% if result %}<p>Input valid: <strong>{{ 'Yes' if result.is_valid else 'No' }}</strong> · Search readiness: <strong>{{ result.search_readiness.value }}</strong> · Can search: <strong>{{ 'Yes' if result.can_search else 'No' }}</strong></p><p>Readiness is not a duplication verdict. Missing scientific evidence may still permit candidate search. Validation version: {{ result.validation_version }}.</p>
+<ul>{% for entry in issues %}<li><a href="#{{ entry.field }}">{{ entry.issue.path }}</a> — {{ entry.issue.category }} · {{ entry.issue.code }} · {{ entry.issue.message }}{% if entry.issue.rule_id %} ({{ entry.issue.rule_id }}){% endif %}</li>{% else %}<li>No input diagnostics.</li>{% endfor %}</ul>
+{% else %}<p>Not validated. Choose Validate input below.</p>{% endif %}</section>
+<section id="position"><h2>Target and search</h2>
+{{ input('target_name', 'Target name (optional label)') }}
+<div class="field-grid"><div>{{ input('ra', 'Right ascension') }}{{ select('ra_format', 'RA format', ['DEG','HMS'], 'DEG') }}</div><div>{{ input('dec', 'Declination') }}{{ select('dec_format', 'Dec format', ['DEG','DMS'], 'DEG') }}</div></div>
+<p>ICRS coordinates. HMS / DMS accept colon-separated values. The target name is not resolved.</p>
+{{ quantity('radius', 'Search radius', ['arcsec','arcmin','deg'], 'arcsec') }}
+<fieldset id="sources"><legend>Sources to request later</legend>{% for source in ['ARCHIVE','QUEUE'] %}<label><input type="checkbox" name="sources" value="{{ source }}" {% if source in values.get('sources', []) %}checked{% endif %}>{{ source }}</label>{% endfor %}{{ messages('sources') }}</fieldset>
+{{ input('result_limit', 'Candidate display limit (optional positive integer)') }}<p>This is a display limit, not a retrieval or evaluation cap.</p>
+</section>
+<section><h2>Setup and purposes</h2>{{ input('setup_id', 'Setup ID') }}
+<label><input type="checkbox" id="setup_complete" name="setup_complete" {% if values.get('setup_complete') == 'on' %}checked{% endif %}>The window list is complete</label>{{ messages('setup_complete') }}
+<fieldset id="intents"><legend>Purposes</legend>{% for intent in ['CONTINUUM','LINE'] %}<label><input type="checkbox" name="intents" value="{{ intent }}" {% if intent in values.get('intents', []) %}checked{% endif %}>{{ intent }}</label>{% endfor %}{{ messages('intents') }}</fieldset>
+{{ quantity('angular', 'Requested angular resolution', ['arcsec','mas'], 'arcsec') }}
+{{ quantity('representative', 'Representative frequency', ['GHz','MHz','kHz','Hz'], 'GHz') }}
+{{ select('representative_kind', 'Representative frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}
+{{ input('redshift', 'Source redshift (required for REST line centres)') }}
+<p>Frequency frame is recorded as UNKNOWN. Unit conversions and REST-to-SKY preparation are performed by the existing backend, not this form.</p>
+</section>
+<section id="sensitivities"><h2>Continuum sensitivity</h2>
+{{ quantity('aggregate', 'Direct setup aggregate RMS', ['mJy/beam','Jy/beam'], 'mJy/beam') }}
+{{ input('aggregate_windows', 'Contributing window IDs (optional, separated by spaces)') }}
+<p>Aggregate RMS belongs to this setup. The validator checks supplied contributing IDs. It is independent of each LINE window RMS.</p>
+</section>
+<section id="windows"><h2>Spectral windows</h2><p>Window IDs remain stable when adding or removing rows. Each LINE RMS and its planned resolution belong to that row only. Removing a row removes its LINE sensitivity; explicit aggregate references are retained for validation.</p>
+{% for row in rows %}<fieldset id="{{ row }}"><legend>Window {{ loop.index }}</legend><input type="hidden" name="rows" value="{{ row }}">
+{{ messages(row) }}{{ input(row + '_id', 'Window ID') }}
+{{ quantity(row + '_center', 'Centre frequency', ['GHz','MHz','kHz','Hz'], 'GHz') }}
+{{ select(row + '_center_kind', 'Centre reference', ['SKY','REST','UNKNOWN'], 'SKY') }}
+{{ quantity(row + '_bandwidth', 'Window bandwidth (optional)', ['MHz','GHz','kHz','Hz'], 'MHz') }}
+{{ select(row + '_bandwidth_kind', 'Bandwidth interpretation', ['UNKNOWN','USABLE','NOMINAL'], 'UNKNOWN') }}
+{{ select(row + '_mode', 'Declared correlator mode', ['UNKNOWN','FDM','TDM'], 'UNKNOWN') }}
+{{ quantity(row + '_resolution', 'Planned LINE spectral resolution', ['km/s','m/s','MHz','GHz','kHz','Hz'], 'km/s') }}
+{{ quantity(row + '_rms', 'LINE RMS at this planned resolution', ['mJy/beam','Jy/beam'], 'mJy/beam') }}
+<p>Planned spectral resolution is not channel spacing or noise bandwidth. This form binds it through the existing smoothing_resolution field; it does not infer either of those other quantities.</p>
+<button class="button" type="submit" name="action" value="remove:{{ row }}">Remove this window</button></fieldset>{% endfor %}
+<button class="button" type="submit" name="action" value="add">Add window</button><p>Form limit: 32 windows; this is an interface limit, not a scientific constraint.</p>
+</section>
+<div class="input-actions"><button class="button primary" type="submit" name="action" value="validate">Validate input</button> <button class="button" type="submit" name="action" value="download">Validate and download request JSON</button></div>
+<p>Download requires valid input, but can preserve incomplete scientific evidence. Every click validates the current values. The file is a request, not a report. No assessment has been run.</p>
+</form>
+{% if document %}<details><summary>Submitted backend request document</summary><pre class="report-json">{{ document | tojson(indent=2) }}</pre></details>{% endif %}
+{% endblock %}

@@ -45,7 +45,9 @@ python -m pip install -e ".[ui]"
 python -m flask --app alma_duplicate.ui.app:create_app run
 ```
 
-Open the local URL printed by Flask. The observation form remains a visual preview.
+Open the local URL printed by Flask. The home layout remains a visual preview. The [proposed form](docs/ui_proposed_form.md)
+at `/proposed` validates inputs and exports request JSON; new assessments are not
+yet connected.
 The read-only [report browser](docs/ui_report_browser.md) displays backend reports
 and exports their original JSON plus inspection v3. To enable it, generate an
 acceptance run and set `ALMA_UI_REPORT_DIR` to its output directory before starting

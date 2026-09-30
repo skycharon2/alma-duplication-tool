@@ -169,3 +169,5 @@ review gate, interface work and broader-mode scope.
 - [Shared assessment entry](assessment_entry.md): callable orchestration, lazy sources and execution statuses; browser UI remains pending.
 
 - [Read-only report browser](ui_report_browser.md): configure reports, read evidence, export originals.
+
+- [Proposed form validation](ui_proposed_form.md): field mapping, per-window RMS, request export.

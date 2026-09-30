@@ -194,3 +194,9 @@ tbody th { font-weight: 400; }
 .report-hash { overflow-wrap: anywhere; }
 details { margin: .65rem 0; }
 summary { cursor: pointer; padding: .4rem; }
+
+.proposed-form { max-width: 60rem; }
+.proposed-form section, .proposed-form fieldset { margin: 1rem 0; padding: 1rem; border: 1px solid #ccd4dc; }
+.proposed-form select { padding: .5rem; max-width: 100%; }
+.proposed-form input[type="text"] { width: 100%; box-sizing: border-box; }
+.proposed-form [data-category="ERROR"] { color: #9c2020; }
