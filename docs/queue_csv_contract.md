@@ -287,7 +287,7 @@ dictionary and operational table:
 | SPS bandwidth unit | `[MHz]` | `[GHz]` | Preserve both; normalize the pinned schema as MHz with a structured warning |
 | Velocity unit spelling | `[km/s]` | `[kms/s]` | Normalize to `km/s`; preserve both raw strings |
 | Mosaic datatype | `[boolean]` | `Custom`, `Rectangle`, or blank | Treat as a categorical value, never a boolean |
-| `standAlone_ACA` | Present | Absent in pinned snapshot; optional in parser 7 | Preserve raw operational evidence if supplied; dictionary presence alone is not source status. Row-beam fallback is separately recorded. |
+| `standAlone_ACA` | Present | Absent in pinned snapshot; optional in parser 7 | Preserve raw operational evidence if supplied; dictionary presence alone is not source status. Versioned beam inference is separately recorded; absence never fabricates a standalone value. |
 | SPW resolution template | `Spec.Res SPW [N]` | `Spec.Res. SPW N` | Use an explicit template alias |
 | Mosaic reference-system field | `Mos. Coord. Ref. Sys` | `Mos. Coord.` plus `Ref. Sys.` | Join only at the metadata layer; preserve both source tokens |
 | Requested LAS spelling | `Req.LAS` | `Req. LAS` | Use an explicit alias |
@@ -902,3 +902,13 @@ spectral-scan expansion, Archive-frame alignment, mosaic overlap, and
 sensitivity comparison are real policy or cross-source limitations. They are
 not reasons to continue broad CSV structure exploration or to weaken raw-data
 preservation and association safety.
+
+
+## Current assessment beam inference
+
+[Queue common](queue_common.md) consumes the typed row using
+`QUEUE_ARRAY_BEAM_INFERENCE_2`. Operational standalone status has priority;
+absent fields use Use 7-m?/Use TP? and, only when necessary, the fixed band/AR
+table. The resolver recognizes source band labels such as `ALMA_RB_06` without
+changing their raw values. MIX means two assessment hypotheses for one source
+row. It does not alter parser grouping, signatures, row IDs or CSV snapshots.

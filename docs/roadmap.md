@@ -154,7 +154,10 @@ Do not make all-family experimental closure a blanket prerequisite for Queue con
    Configured Archive replay and Queue CSV providers call the shared entry with
    explicit AssessmentOptions. Missing/invalid input, execution errors and usable
    partial-source reports remain distinct. Solar is supported by the execution
-   adapter and report viewer; the form does not expose Solar input.
+   adapter and report viewer. The form now exposes target type and geometry with
+   support notices and server-side execution guards. Moving/Mosaic and Sun
+   selections support validation/export only; dedicated scientific inputs and
+   broader execution remain separate increments.
 3. Browser/CLI agreement — implemented in `tests/ui/test_cli_parity.py`: catalog
    inputs cover mixed intents, missing RMS, coarse resolution, multiple pairs and
    source failure/missing/empty results. Additional cases cover declarations,

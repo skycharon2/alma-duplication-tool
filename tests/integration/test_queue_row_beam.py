@@ -16,7 +16,7 @@ from tests.unit.test_queue_csv_parser import _records, _indices, _render
 ABSENT = object()
 
 
-def source(standalone=ABSENT, use7="True", tp="True", changes=None):
+def source(standalone=ABSENT, use7="False", tp="False", changes=None):
     records = _records()[:42]
     columns = _indices(records)
     row = records[41]
@@ -51,26 +51,21 @@ def evaluate(raw):
 
 
 @pytest.mark.parametrize("use7,tp", list(product(("True", "False"), repeat=2)))
-@pytest.mark.parametrize(
-    "standalone,diameter,kind",
-    [
-        (ABSENT, 12, "PORTAL_HELPER_ASSUMPTION"),
-        ("True", 7, "SOURCE_PROVIDED"),
-        ("False", 12, "SOURCE_PROVIDED"),
-    ],
-)
-def test_flags_do_not_select_diameter(standalone, diameter, kind, use7, tp):
-    _, (a, p) = evaluate(source(standalone, use7, tp))
-    assert p.outcome == "SATISFIED"
-    assert dict(p.derived)["antenna_diameter_m"] == diameter
-    details = dict(p.details)
-    assert details["standalone_aca_interpretation_kind"] == kind
+@pytest.mark.parametrize("standalone", [ABSENT, "True", "False"])
+def test_operational_priority_and_absent_flags(standalone, use7, tp):
+    row = parse_queue_csv_bytes(source(standalone, use7, tp)).row_inputs[0]
+    beam = resolve_queue_primary_beam_diameter(row)
+    if standalone == "True":
+        expected = (7.0, 12.0) if tp == "True" else (7.0,)
+    else:
+        expected = (7.0, 12.0) if use7 == "True" else (12.0,)
+    assert beam.diameters_m == expected
+    assert beam.standalone is (None if standalone is ABSENT else standalone == "True")
+    assert ("STANDALONE_WITHOUT_7M_REQUEST" in beam.anomalies) == (standalone == "True" and use7 == "False")
+    details = dict(beam.details(row))
     assert details["use_7m_requested"] == use7.lower()
     assert details["use_tp_requested"] == tp.lower()
-    assert len(details) == len(p.details)
-    assert "TP_GEOMETRY_UNSUPPORTED" not in p.reasons
-    assert "STANDALONE_ACA_EVIDENCE_UNAVAILABLE" not in p.reasons
-    assert a.outcome == "SATISFIED"
+    assert len(details) == len(beam.details(row))
 
 
 @pytest.mark.parametrize("token", ["", "unknown", "1", "0", "NaN"])
@@ -154,10 +149,9 @@ def test_same_row_interpretation_reaches_continuum():
     from tests.integration.test_queue_continuum import case
 
     _, _, c = case({"Use 7-m?": "True", "Use TP?": "True"})
-    assert (
-        next(r for r in c.criteria if r.criterion_id == "POS-SINGLE").outcome
-        == "SATISFIED"
-    )
+    assert len(c.beam_variants) == 2
+    assert all(next(r for r in v.evaluation.criteria if r.criterion_id == "POS-SINGLE").outcome
+               == "SATISFIED" for v in c.beam_variants)
     assert c.branches[0].status == "CRITERIA_MET"
 
 
@@ -166,7 +160,7 @@ def test_legacy_candidate_profile_stays_conservative():
 
     row = queue_rows({"Use 7-m?": "True", "Use TP?": "True"}).row_inputs[0]
     assert candidate_diameter(row)[0] is None
-    assert resolve_queue_primary_beam_diameter(row).diameter_m == 12
+    assert resolve_queue_primary_beam_diameter(row).diameters_m == (7.0, 12.0)
 
 
 def test_cli_reads_optional_field_and_exports_assumption(tmp_path):
@@ -203,7 +197,7 @@ def test_cli_reads_optional_field_and_exports_assumption(tmp_path):
             for r in doc["context_evaluations"][0]["criteria"]
             if r["criterion_id"] == "POS-SINGLE"
         )
-        assert result["method_version"] == "queue_pos_single_5"
+        assert result["method_version"] == "queue_pos_single_6"
         assert dict(result["details"])["standalone_aca_field"] == (
             "ABSENT" if token is ABSENT else "INVALID" if token == "" else "PRESENT"
         )

@@ -206,7 +206,7 @@ summary { cursor: pointer; padding: .4rem; }
 .proposal-fields { min-width: 0; }
 .proposed-form section { margin: 0 0 22px; padding: 0 18px 16px; border: 1px solid var(--border); background: var(--paper); }
 .proposed-form h2 { color: var(--blue-dark); font-size: 16px; margin-bottom: 12px; }
-.proposal-fields > section > h2 { margin: 0 -18px 16px; padding: 9px 18px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.proposal-fields > section > h2, .solar-retained > section > h2 { margin: 0 -18px 16px; padding: 9px 18px; background: var(--surface); border-bottom: 1px solid var(--border); }
 .proposed-form h3 { margin: 18px 0 10px; padding-top: 12px; border-top: 1px solid var(--border); }
 .proposed-form section > p { margin-block: 8px; max-width: 80ch; }
 .proposed-form fieldset { margin: 16px 0; padding: 16px; border: 1px solid var(--border); min-width: 0; }
@@ -320,3 +320,12 @@ summary { cursor: pointer; padding: .4rem; }
 .proposed-form #position > .quantity-grid { max-width: 420px; }
 .proposed-form #line-requirements > input[type="text"] { max-width: 280px; }
 .proposed-form #requirements > p { max-width: 80ch; }
+
+/* Observation scope uses the same scientific form hierarchy. */
+.scope-support { padding: 12px 14px; border-left: 3px solid var(--blue); background: var(--info); }
+.scope-support.scope-unavailable { border-left-color: #a47b18; background: var(--warning); }
+.scope-support p { margin-top: 5px; }
+.appendix-guide { padding: 8px 12px; background: var(--info); border: 1px solid var(--border); }
+.appendix-guide p, .appendix-guide li { max-width: 80ch; margin-block: 8px; }
+.solar-retained > summary { color: var(--blue-dark); padding: 12px; border: 1px solid var(--border); }
+.solar-retained > p { margin-block: 12px; }

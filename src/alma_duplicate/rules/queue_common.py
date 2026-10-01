@@ -12,7 +12,7 @@ from alma_duplicate.queue_position import (
     SOURCE_REF,
 )
 from alma_duplicate.queue_row_beam import (
-    resolve_queue_primary_beam_diameter, PROFILE, DECISION_REF as ROW_DECISION_REF,
+    resolve_queue_beam_interpretation, PROFILE, DECISION_REF as ROW_DECISION_REF,
 )
 from alma_duplicate.rules.angular import evaluate_angular_resolution
 from alma_duplicate.rules.model import (
@@ -33,12 +33,12 @@ def queue_common_scope_supported(common):
     return (
         len(common) == 2
         and {r.method_version for r in common}
-        == {"queue_angular_factor_7", "queue_pos_single_5"}
+        == {"queue_angular_factor_7", "queue_pos_single_6"}
         and all(dict(r.details).get("common_scope") == "SUPPORTED" for r in common)
     )
 
 
-def evaluate_queue_common(request, context, spatial_evidence):
+def evaluate_queue_common(request, context, spatial_evidence, *, beam_diameter_m=None):
     """Return ANGULAR and POS-SINGLE for one source-bound retained context.
 
     Selecting this workflow adopts the recorded fixed-celestial Portal position
@@ -62,9 +62,15 @@ def evaluate_queue_common(request, context, spatial_evidence):
         issue("QUEUE_SINGLE_FIELD_REQUIRED", "context.spatial.mosaic_kind")
     if not isinstance(row.spectral, RegularSpwEvidence):
         issue("REGULAR_QUEUE_SETUP_REQUIRED", "context.spectral")
-    beam = resolve_queue_primary_beam_diameter(row)
-    if beam.diameter_m is None:
-        issue("INVALID_STANDALONE_VALUE", "context.raw_row.standAlone_ACA")
+    beam = resolve_queue_beam_interpretation(row)
+    if beam_diameter_m is not None and beam_diameter_m not in beam.diameters_m:
+        raise ValueError("Diameter is not a resolved Queue beam hypothesis")
+    diameter = beam.diameter_m if beam_diameter_m is None else beam_diameter_m
+    if diameter is None:
+        if beam.diameters_m:
+            issue("EXPLICIT_BEAM_VARIANT_REQUIRED", "context.request.arrays")
+        else:
+            issue(beam.reasons[-1], "context.request.arrays")
     evidence = None
     if spatial_evidence is None:
         issue("QUEUE_SPATIAL_SOURCE_REQUIRED", "context.spatial")
@@ -75,13 +81,13 @@ def evaluate_queue_common(request, context, spatial_evidence):
         if old is not None and (
             old.frame != "ICRS"
             or old.target_kind != "FIXED"
-            or old.antenna_diameter_m not in (None, beam.diameter_m)
+            or old.antenna_diameter_m not in (None, *beam.diameters_m)
         ):
             issue(
                 "CONFLICTING_POSITION_INTERPRETATION", "context.spatial.interpretation"
             )
         # Reuse source binding, offset transport and placeholder checks.
-        evidence = adapt_queue_position(context, spatial_evidence.source_record, row_beam=True)
+        evidence = adapt_queue_position(context, spatial_evidence.source_record, row_beam=True, beam_diameter_m=diameter)
         if (
             evidence.center_status is not SpatialStatus.AVAILABLE
             or evidence.center is None
@@ -102,7 +108,7 @@ def evaluate_queue_common(request, context, spatial_evidence):
         ("frame_interpretation", "PORTAL_EQUATORIAL_CONVENTION_NOT_MEASURED_FRAME"),
         ("offset_frame_raw", row.spatial.coordinate_system_raw),
         ("array_scope", "ROW_BEAM_NOT_COMPONENT_MEMBERSHIP"),
-        ("array_evidence_method", "QUEUE_OPERATIONAL_STANDALONE_OR_PORTAL_FALLBACK_1"),
+        ("array_evidence_method", "QUEUE_ARRAY_BEAM_INFERENCE_2"),
     ) + beam.details(row)
     # ANGULAR has its own missing-value/unit diagnostics. Beam frequency is not
     # its dependency; a missing candidate beam must not erase a valid ratio.
@@ -127,7 +133,7 @@ def evaluate_queue_common(request, context, spatial_evidence):
         )
     position_issues = list(issues)
     frequency, frequency_source, frequency_notes = candidate_frequency(row)
-    diameter, diameter_notes = beam.diameter_m, (beam.source,)
+    diameter_notes = beam.reasons
     if frequency is None:
         position_issues.append(
             CriterionIssue(
@@ -183,7 +189,7 @@ def evaluate_queue_common(request, context, spatial_evidence):
     position = CriterionResult(
         criterion_id="POS-SINGLE",
         policy_ref=f"{POLICY_DOCUMENT}, Position",
-        method_version="queue_pos_single_5",
+        method_version="queue_pos_single_6",
         approval=MethodApproval.APPROVED,
         applicability=A.UNRESOLVED if position_issues else A.APPLICABLE,
         evaluation=E.INSUFFICIENT_INFORMATION if position_issues else E.EVALUATED,

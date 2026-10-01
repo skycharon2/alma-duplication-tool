@@ -1,17 +1,19 @@
 # Proposed input form and shared validation
 
-`/proposed` supports fixed ICRS targets, single pointing, one setup and up to 32
-windows. The initial form has no window rows. Detailed SPW input is optional;
+`/proposed` executes assessments for fixed ICRS targets, single pointing, one
+setup and up to 32 windows. Other target/geometry choices are available for
+selection, validation and valid-request export only. The initial form has no window rows. Detailed SPW input is optional;
 researchers need not enter SPW 0–3 to validate a partial request. The limit is
 local to this interface, not a scientific restriction.
-The form groups shared target information, scientific purposes, spectral line
+The form groups observation type, shared target information, scientific purposes, spectral line
 requirements, continuum requirements, optional window evidence, and data sources.
 LINE and CONTINUUM remain independent checkboxes and can both be selected.
 Changing either checkbox submits the presentation-only `purpose` action; without
 JavaScript, use Update requirement sections. This retains all entered values and
 row identities, clears stale validation results, and never queries or assesses.
 Selecting LINE with no rows creates one blank entry, with no assumed mode or
-scientific values. Its frequency, reference, planned resolution, RMS and mode
+scientific values. Each entry is a requested correlator window, not an individual
+spectral feature. Its central frequency, reference, planned resolution, RMS and mode
 appear in Spectral line requirements. Redshift is shared by REST frequencies.
 Additional bandwidth evidence and IDs are in a separate optional section, linked
 to the same entries. Controls are not duplicated between sections.
@@ -23,11 +25,72 @@ notice. They remain in request provenance and are still validated; only selected
 branches are evaluated. Blank unselected requirement panels are hidden.
 All listed windows remain subject to LINE preparation when LINE is selected;
 this increment does not introduce per-window purpose selection or new pairing.
-The initial form still has no required four-SPW list. Single-point geometry is
-explicitly displayed with the proposed-mosaic limitation and candidate geometry
-checks explained; the geometry contract has not changed.
+The initial form still has no required four-SPW list. Proposed target type and
+geometry are explicit; candidate geometry remains independently checked by the backend.
 The home route redirects to this working input page. Global navigation separates
 Proposed observation from Existing reports; reports are independent of the current form.
+
+## Observation type and support
+
+Target type offers Fixed target, Moving target and Sun; geometry separately offers
+Single pointing and Mosaic. Defaults remain FIXED / SINGLE_POINTING, including
+older form submissions that omit these fields. Explicit unknown values are kept
+for validation, never replaced by a supported choice.
+
+Changing a selector posts the presentation-only `scope` action. Without JavaScript,
+use Update observation type. Both paths retain all entered values, units, selected
+purposes, row identities and aggregate references, and clear stale validation.
+They do not validate, access sources or execute assessments.
+
+Only FIXED / SINGLE_POINTING can reach browser execution. Moving/Mosaic combinations
+show their limitation and disable Run assessment. Sun instead shows the Appendix A
+exemption and omits that action; retained inputs are collapsed, not discarded.
+The server independently rejects direct assessment POSTs for these types before
+invoking the execution adapter. No motion trajectory
+or mosaic-pattern editor is provided. Retained coordinates do not define either.
+
+Validation and request download use the existing backend contract. Valid moving
+or mosaic requests report UNSUPPORTED. Valid Sun requests report NOT_APPLICABLE:
+the backend already recognizes Solar exemption, but this increment does not enable
+the browser Solar report flow. Sun takes the existing backend exemption path even
+when its selected geometry is Mosaic. No choice creates a duplication verdict.
+
+Only valid requests can be exported, even when unsupported for execution. Selected
+types are preserved in JSON. Non-fixed targets with both coordinates blank omit
+the position value; supplied or partially entered coordinates remain subject to
+validation. Switching back to fixed single pointing restores the entered values.
+These choices do not claim complete Appendix A implementation.
+
+## Appendix A wording and input meaning
+
+The form explains location AND angular resolution AND either the continuum or
+spectral-line conditions for the same other observation. Both purpose checkboxes
+may be selected for independent branch results; the UI does not require both
+spectral alternatives or introduce a search-wide verdict.
+
+- Fixed single-field location uses the other observation's half-power beam;
+  the candidate search radius is a separate retrieval setting.
+- Moving objects use a name field. Name/alias matching remains unimplemented;
+  retained RA/Dec do not substitute for identification by name.
+- Mosaic location uses strictly more than 50% of the proposed pointings within
+  the half-power beam area covered by the other observation. It is not an area
+  overlap percentage. No pointing editor or coverage evaluator is implied.
+- Angular resolution uses the Appendix's inclusive factor-of-two condition.
+- Continuum requires at least two windows with bandwidth strictly greater than
+  1.8 GHz, plus frequency and aggregate sensitivity conditions. The UI explicitly
+  separates that policy wording from the project's usable-bandwidth interpretation
+  and researcher-declaration evidence route. Nominal-to-usable interpretation is
+  not unit conversion and is not enabled by this browser configuration.
+- LINE entries supply requested window centres. FDM is required on both sides;
+  one qualifying window can meet the spectral-line condition. The UI explains
+  sensitivity comparison after smoothing to the same spectral resolution, without
+  implementing calculations. Multiple features in one physical SPW must not be
+  entered as distinct windows for continuum qualification.
+- Sun is exempt, including Solar mosaics and either selected purpose. It is not
+  labeled as a future duplication-checking feature or a successful empty search.
+
+The expandable policy summary is explanatory. Thresholds, scientific methods,
+pair association, approval states and aggregation continue to belong to the backend.
 
 Install `.[test,ui]` and start the existing Flask application, then open
 http://127.0.0.1:5000/proposed. `ALMA_UI_REPORT_DIR` is optional and independent:

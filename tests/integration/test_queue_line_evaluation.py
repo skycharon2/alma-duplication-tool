@@ -55,7 +55,7 @@ def common(context):
 
     return (
         result("ANGULAR", "queue_angular_factor_7"),
-        result("POS-SINGLE", "queue_pos_single_5"),
+        result("POS-SINGLE", "queue_pos_single_6"),
     )
 
 

@@ -18,6 +18,12 @@ def initial_form():
     return {"setup_id": "setup-1"}, []
 
 
+def assessment_supported(values):
+    """Browser execution scope; backend scientific readiness remains separate."""
+    return (values.get("target_kind", "FIXED") == "FIXED"
+            and values.get("geometry", "SINGLE_POINTING") == "SINGLE_POINTING")
+
+
 def read_form(form):
     """Preserve raw strings; reject ambiguous wire shape before field mapping."""
     repeated = {"rows", "intents", "sources", "aggregate_windows"}
@@ -64,7 +70,8 @@ def build_document(values, rows):
 
     setup = raw("setup_id", "request.setup_id")
     request = {
-        "target_kind": "FIXED", "geometry": "SINGLE_POINTING",
+        "target_kind": raw("target_kind", "request.target_kind") if "target_kind" in values else "FIXED",
+        "geometry": raw("geometry", "request.geometry") if "geometry" in values else "SINGLE_POINTING",
         "target_name": raw("target_name", "request.target_name"),
         "position": {
             "ra": raw("ra", "request.position.ra"),
@@ -79,6 +86,10 @@ def build_document(values, rows):
         "representative_frequency": frequency("representative", "request.representative_frequency", "SKY"),
         "spectral_windows": [], "sensitivities": [],
     }
+    # Non-fixed targets need not supply coordinates. Keep any supplied values
+    # for provenance/validation, but do not invent an empty position.
+    if request["target_kind"] != "FIXED" and not any(values.get(k, "").strip() for k in ("ra", "dec")):
+        request["position"] = None
     redshift = raw("redshift", "request.source_redshift")
     declaration = raw("continuum_setup_declaration", "request.continuum_setup_declaration")
     if declaration:

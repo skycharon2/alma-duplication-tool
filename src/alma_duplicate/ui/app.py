@@ -7,7 +7,7 @@ from flask import Flask, Response, abort, redirect, render_template, request, ur
 from alma_duplicate.ui.reports import load_reports
 from alma_duplicate.ui.report_view import criterion_view, pair_binding
 from alma_duplicate.ui.runs import OfflineAssessment, RunStore
-from alma_duplicate.ui.proposed import MAX_WINDOWS, contributing_windows, initial_form, new_row, read_form, validate_form
+from alma_duplicate.ui.proposed import MAX_WINDOWS, assessment_supported, contributing_windows, initial_form, new_row, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
 
 
@@ -103,6 +103,7 @@ def create_app(config=None):
         edit_notice = None
         added_row = None
         purpose_updated = False
+        scope_updated = False
         execution_error = None
         if request.method == "POST":
             try:
@@ -110,7 +111,10 @@ def create_app(config=None):
             except ValueError as exc:
                 abort(400, description=str(exc))
             action = values.get("action", "validate")
-            if action == "purpose":
+            if action == "scope":
+                scope_updated = True
+                edit_notice = "Observation type updated. Entered values are retained; validate again."
+            elif action == "purpose":
                 purpose_updated = True
                 if "LINE" in values.get("intents", []) and not rows:
                     added_row = new_row()
@@ -136,7 +140,11 @@ def create_app(config=None):
             elif action in {"validate", "download", "assess"}:
                 document, result, issues = validate_form(values, rows)
                 if action == "assess":
-                    if not offline.enabled:
+                    if values.get("target_kind") == "SUN":
+                        execution_error = "Solar observations are exempt from duplication checking under Appendix A. No assessment or source search was run."
+                    elif not assessment_supported(values):
+                        execution_error = "This observation type cannot be assessed in this browser version. Your inputs are retained. You can validate and export a valid request."
+                    elif not offline.enabled:
                         execution_error = "Offline assessment is not configured. You can still validate and download the request."
                     elif result.is_valid and result.can_search:
                         try:
@@ -165,6 +173,7 @@ def create_app(config=None):
                                selected_windows=selected, stale_ids=stale_ids,
                                pending_removal=pending_removal, edit_notice=edit_notice, added_row=added_row,
                                purpose_updated=purpose_updated,
+                               scope_updated=scope_updated, assessment_supported=assessment_supported(values),
                                offline=offline, execution_error=execution_error)
 
     @app.get("/healthz")

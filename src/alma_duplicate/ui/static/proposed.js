@@ -3,11 +3,15 @@ const form = document.querySelector('.proposed-form');
 if (form) {
   const updatePurpose = form.querySelector('[data-update-purpose]');
   updatePurpose.hidden = true;
+  const updateScope = form.querySelector('[data-update-scope]');
+  updateScope.hidden = true;
   form.addEventListener('change', event => {
     if (event.target.matches('[name="intents"]')) {
       // Re-render the input groups on the server with all current values.
       // This action never validates, queries sources, or runs an assessment.
       form.requestSubmit(updatePurpose);
+    } else if (event.target.matches('[name="target_kind"], [name="geometry"]')) {
+      form.requestSubmit(updateScope);
     }
   });
   form.addEventListener('input', () => {
@@ -38,6 +42,7 @@ if (form) {
     document.getElementById('remove-confirmation') ||
     form.querySelector('[data-added-row] input[type="text"]') ||
     form.querySelector('[data-purpose-updated]') ||
+    form.querySelector('[data-scope-updated]') ||
     form.querySelector('[aria-invalid="true"]') || form.querySelector('[data-validated]');
   if (focusTarget) {
     for (let parent = focusTarget.parentElement; parent; parent = parent.parentElement) {

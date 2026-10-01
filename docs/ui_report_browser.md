@@ -4,7 +4,7 @@ This increment consumes report v4 and inspection v3. It does not submit a propos
 query sources, or implement scientific calculations. The [proposed form](ui_proposed_form.md) validates input and exports
 request JSON; [offline assessment](ui_offline_assessment.md) creates temporary runs
 using configured local sources. Existing reports are not results of the current
-form. Both report routes use the same comparison view. No scientific method version changes.
+form. Both report routes use the same comparison view. The viewer displays the methods supplied by each report.
 
 ## Run locally
 
@@ -82,3 +82,12 @@ These are engineering cases, not independently reviewed real proposals.
 Form validation and offline execution are implemented. Live Archive integration
 and production run storage are separate future increments; the comparison view
 continues to consume backend results without querying sources on refresh.
+
+
+### Queue MIX evidence
+
+A MIX candidate appears once. Its CONTINUUM and LINE summaries use the backend's
+complete-variant OR results. Two labeled sections display D=7 m and D=12 m, each
+with common/continuum criteria and its own LINE pair tables. Matching diameters
+are read from `mix_aggregation`, never computed by Jinja or JavaScript. Complete
+JSON exports retain both variants; inspection links refer to that full document.

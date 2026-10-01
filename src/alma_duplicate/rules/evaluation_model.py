@@ -40,7 +40,17 @@ class ContextEvaluation:
     line_pairing: LinePairBuildResult | QueueLinePairBuildResult | None = None
     line_pairs: tuple[LinePairEvaluation | QueueLinePairEvaluation, ...] = ()
 
+    beam_variants: tuple[BeamVariant, ...] = ()
+
     def __post_init__(self):
+        if self.beam_variants:
+            if self.criteria or self.line_pairing is not None or self.line_pairs:
+                raise ValueError("MIX criteria must stay inside their complete beam variants")
+            if tuple(v.diameter_m for v in self.beam_variants) != (7.0, 12.0):
+                raise ValueError("MIX requires exactly the 7-m and 12-m variants")
+            if any(v.evaluation.candidate != self.candidate or v.evaluation.beam_variants
+                   for v in self.beam_variants):
+                raise ValueError("Beam variants must share one original candidate without nesting")
         if ((self.line_pairing is None and self.line_pairs) or
                 (self.line_pairing is not None and
                  tuple(p.attempt for p in self.line_pairs) != self.line_pairing.attempts)):
@@ -51,6 +61,22 @@ class ContextEvaluation:
             raise ValueError("Branch belongs to a different candidate context")
         if any(r.context_id != self.candidate.context.context_id for r in self.criteria):
             raise ValueError("Criterion result belongs to a different candidate context")
+
+
+@dataclass(frozen=True, slots=True)
+class BeamVariant:
+    diameter_m: float
+    evaluation: ContextEvaluation
+
+    def __post_init__(self):
+        positions = [r for r in self.evaluation.criteria if r.criterion_id == "POS-SINGLE"]
+        if (self.diameter_m not in (7.0, 12.0) or len(positions) != 1
+                or dict(positions[0].derived).get("antenna_diameter_m") != self.diameter_m):
+            raise ValueError("Beam variant diameter must match its position evidence")
+
+    @property
+    def variant_id(self):
+        return f"{self.evaluation.candidate.context.context_id}#beam-{self.diameter_m:g}m"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
