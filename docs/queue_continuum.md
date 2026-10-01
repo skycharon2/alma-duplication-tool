@@ -64,3 +64,8 @@ Top-level NOT_AGGREGATED never means no duplication was found in a complete sear
 Auxiliary Use 7-m?/Use TP? flags do not exclude row-level continuum. Position
 uses the recorded Portal diameter interpretation; all other candidate quantities
 come from that same coherent row/setup.
+
+
+For [MIX beam hypotheses](queue_common.md), these same five conditions are
+computed separately for each diameter. Only the complete branch results feed
+`queue_beam_variant_or_1`; row sensitivity is never mixed across variants.

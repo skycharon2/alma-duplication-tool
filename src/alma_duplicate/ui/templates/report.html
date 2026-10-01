@@ -62,15 +62,26 @@
 <h3>Candidate {{ start + loop.index }} · {{ c.reference.source }}</h3><p class="report-context-id">{{ c.context_id }}</p>
 {% for b in c.branches %}<div class="branch-result"><strong>{{ b.branch }} — {{ b.status }}</strong>{% for reason in b.reasons %}<p>{{ reason }}</p>{% endfor %}
 <details><summary>Branch method and aggregation scope</summary>{{ evidence(b) }}</details></div>{% endfor %}
-{% if c.criteria %}{{ comparison(c.criteria, 'Context criteria') }}{% endif %}
-{% if c.branches | selectattr('branch', 'equalto', 'CONTINUUM') | list %}<p>Continuum also uses the <a href="#setup-qualification">proposed setup qualification</a> above.</p>{% endif %}
-{% if c.line_pairs %}<p>Each LINE pair binds one proposed window to one candidate SPW/component. Read its criteria together; evidence is not combined across different pairs.</p>{% endif %}
-{% for pair in c.line_pairs %}<details class="line-pair" id="pair-{{ context_index }}-{{ loop.index0 }}"><summary>LINE pair {{ loop.index }} — {{ pair.status }} · Proposed window {{ (pair.attempt.reference or {}).get('proposed_window_id', 'Not recorded') }}</summary>
+{% if c.beam_variants %}
+<h4>Queue beam hypotheses: 7 m + 12 m</h4>
+<p>One source observation, evaluated independently with both diameters. The backend combines complete branch results; it does not combine criteria across variants.</p>
+<p>Matching beam diameters (m): {{ c.mix_aggregation.matching_diameters_m | join(', ') or 'None' }}.</p>
+<details><summary>Beam aggregation evidence</summary>{{ evidence(c.mix_aggregation) }}</details>
+{% endif %}
+{% for scope in c.beam_variants or [c] %}{% set variant_index = loop.index0 %}
+{% if c.beam_variants %}<section class="beam-variant"><h4>Beam variant · D = {{ scope.diameter_m }} m</h4>
+<p class="report-context-id">{{ scope.variant_id }}</p>
+{% for b in scope.branches %}<p>{{ b.branch }} — {{ status(b.status) }}</p>{% endfor %}{% endif %}
+{% if scope.criteria %}{{ comparison(scope.criteria, 'Context criteria') }}{% endif %}
+{% if scope.branches | selectattr('branch', 'equalto', 'CONTINUUM') | list %}<p>Continuum also uses the <a href="#setup-qualification">proposed setup qualification</a> above.</p>{% endif %}
+{% if scope.line_pairs %}<p>Each LINE pair binds one proposed window to one candidate SPW/component. Read its criteria together; evidence is not combined across different pairs.</p>{% endif %}
+{% for pair in scope.line_pairs %}<details class="line-pair" id="pair-{{ context_index }}-{% if c.beam_variants %}beam-{{ variant_index }}-{% endif %}{{ loop.index0 }}"><summary>LINE pair {{ loop.index }} — {{ pair.status }} · Proposed window {{ (pair.attempt.reference or {}).get('proposed_window_id', 'Not recorded') }}</summary>
 <h4>Proposed window and candidate SPW binding</h4><dl class="pair-binding">{% for key, value in pair_binding(pair) if key in ['Proposed setup', 'Proposed window', 'spw_token', 'spw_number'] %}<dt>{{ key }}</dt><dd>{{ value }}</dd>{% endfor %}</dl>
 <details><summary>Full binding identity</summary><dl class="pair-binding">{% for key, value in pair_binding(pair) %}<dt>{{ key }}</dt><dd>{{ value }}</dd>{% endfor %}</dl></details>
 {% for reason in pair.reasons %}<p>{{ reason }}</p>{% endfor %}
 {{ comparison(pair.criteria, 'Criteria for this LINE pair') }}
 <details><summary>Complete pair record</summary>{{ evidence(pair) }}</details></details>{% endfor %}
+{% if c.beam_variants %}</section>{% endif %}{% endfor %}
 <details><summary>Complete context record</summary>{{ evidence(c) }}</details><p><a href="#candidates">Back to candidate results</a></p></article>{% endfor %}</section>
 <section id="evidence"><h2>Evidence gaps — inspection v3</h2><p>Occurrences overlap and are not counts of duplicate observations. Locations refer to the complete downloaded report.</p><details><summary>Complete inspection record</summary>{{ evidence(item.inspection) }}</details></section>
 <details><summary>Request, configuration and search scope</summary>{% for key, value in document.items() %}{% if key not in ['context_evaluations', 'sources'] %}<h3>{{ key }}</h3>{{ evidence(value) }}{% endif %}{% endfor %}</details>

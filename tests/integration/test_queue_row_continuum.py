@@ -15,8 +15,9 @@ from tests.integration.test_confirmed_continuum import payload, validated
 def test_auxiliary_flags_do_not_gate_continuum(use7,tp,frequency,status):
     _,_,c=case({'Use 7-m?':use7,'Use TP?':tp},frequency=frequency)
     assert c.branches[0].status==status
-    assert rule(c,'ANGULAR').outcome=='SATISFIED'
-    assert rule(c,'CONT-RMS').outcome=='SATISFIED'
+    for evaluated in ([v.evaluation for v in c.beam_variants] or [c]):
+        assert rule(evaluated,'ANGULAR').outcome=='SATISFIED'
+        assert rule(evaluated,'CONT-RMS').outcome=='SATISFIED'
 
 
 def test_position_false_and_missing_rms_is_false_with_auxiliary_flags():
@@ -24,8 +25,10 @@ def test_position_false_and_missing_rms_is_false_with_auxiliary_flags():
     req=replace(s.plan.validation.request,sensitivities=())
     s=replace(s,plan=replace(s.plan,validation=replace(s.plan.validation,request=req)))
     c=evaluate_candidate_search(s,queue_continuum=True).context_evaluations[0]
-    assert rule(c,'POS-SINGLE').outcome=='NOT_SATISFIED'
-    assert rule(c,'CONT-RMS').outcome is None
+    assert len(c.beam_variants) == 2
+    for v in c.beam_variants:
+        assert rule(v.evaluation,'POS-SINGLE').outcome=='NOT_SATISFIED'
+        assert rule(v.evaluation,'CONT-RMS').outcome is None
     assert c.branches[0].status=='CRITERIA_NOT_MET'
 
 

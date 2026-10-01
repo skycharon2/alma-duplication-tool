@@ -21,7 +21,10 @@ proposals. Existing `ALMA_UI_REPORT_DIR` configuration is independent and option
 Neither form validation nor application startup reads assessment source files.
 
 Run assessment appears when either reference path is configured. The browser
-cannot supply file paths. Selecting an unconfigured source yields the backend's
+enables it only for fixed single-point requests, and rejects other observation
+types at the server before execution. Moving/Mosaic and Sun selections remain
+available for validation and valid-request export; see [observation support](ui_proposed_form.md#observation-type-and-support).
+The browser cannot supply file paths. Selecting an unconfigured source yields the backend's
 NOT_PROVIDED state. Source files are read for each run, so their backend hashes
 and provenance describe that run. A fresh replay client is created for each call.
 No live Archive client or network fallback is constructed.
@@ -140,7 +143,8 @@ Additional cases cover dual-source mixed intents, setup declaration without
 SPWs, contradictory complete-list evidence, alternate supported units and 21
 contexts across two pages with a display limit of one. Solar is tested through
 the execution adapter, CLI and report viewer, with source access forbidden; it
-is not an available form mode. Network calls are forbidden throughout the gate.
+is selectable for validation/export but cannot execute through the form. Network
+calls are forbidden throughout the gate.
 
 Full report dictionaries are compared, including method versions, reasons,
 outcomes, source states, snapshot hashes, configuration and pair associations.

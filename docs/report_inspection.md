@@ -36,3 +36,15 @@ Regressions cover an actual four-SPW Queue evaluation with missing planned RMS,
 shared common criteria, repeated issues, distinct windows, unresolved Archive
 references and exact report lookup. Source failures, empty results and the
 absence of a search-wide verdict retain their existing behavior.
+
+
+## Queue beam-variant extension
+
+For new MIX reports, v3 traverses both `beam_variants`. Common-condition gaps are
+counted once per variant, excluding their copies in LINE pairs. Pair pointers
+include `/beam_variants/<index>/`, and `pair_identity.beam_variant_id` distinguishes
+the hypotheses while `context_id` and source pairing references remain original.
+Context branch counts still count each original observation once. Historical
+reports without this optional extension produce their original inspection output.
+Versions 1/2 also traverse variants if supplied, retaining their older within-pair
+location convention; they remain unchanged for historical flat reports.

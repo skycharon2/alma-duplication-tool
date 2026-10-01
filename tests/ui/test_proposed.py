@@ -278,7 +278,7 @@ def test_initial_form_has_no_required_window_rows(client):
     html = client.post("/proposed", data={"setup_id": "setup-1", "intents": "LINE", "action": "purpose"}).get_data(as_text=True)
     rows = re.findall(r'name="rows" value="([a-z0-9]+)"', html)
     assert len(rows) == 1
-    assert 'Rest / laboratory or observed frequency' in html
+    assert 'Window central frequency (REST or SKY)' in html
     assert 'Planned spectral resolution' in html
     assert 'Planned RMS at this resolution' in html
     assert f'name="{rows[0]}_id" value="{rows[0]}"' in html

@@ -1,6 +1,6 @@
 # Current implementation status
 
-Reviewed implementation baseline: `3f7f3156d450e5b6164053c34b17e873309989ef` (PR #100, 2026-09-28). This is the single capability summary;
+Committed baseline: `143b1229b1d085055e2fa5a0ba78ac3f37998d3e` (PR #113). The working-tree increment below is not yet committed. This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
 
@@ -8,7 +8,7 @@ Reviewed implementation baseline: `3f7f3156d450e5b6164053c34b17e873309989ef` (PR
 | --- | --- | --- |
 | Ingestion and association | Implemented TAP validation and coherent Source–SPW construction | Implemented CSV parsing, reconstruction and source snapshots |
 | Candidate search | Implemented with explicit binding/completeness | Implemented with source-specific filters and conservative retention |
-| Fixed single-point position | Approved within confirmed scope | [Opt-in Portal row-beam method](queue_common.md): standalone True/False or explicit missing-column assumption; requested components separate |
+| Fixed single-point position | Approved within confirmed scope | [Versioned array/beam inference](queue_common.md): operational standalone priority, fixed band/AR fallback, complete 7-m/12-m variants for MIX |
 | Angular comparison | Approved wrapper in confirmed scope | Opt-in queue_angular_factor_7 approved for coherent single-field row scope; legacy method stays provisional |
 | Continuum branch | Five conditions and three-valued context branch implemented | [Opt-in row-level continuum](queue_continuum.md): five conditions and context branch; source-specific usable-union RMS |
 | Line branch | Same-pair conditions, intermediate values and context-local aggregation implemented | [Same-row/SPW pairing and formal evaluation](queue_line_pairing.md) implemented for fixed single-field regular-SPW Queue contexts; FDM, coverage, resolution, RMS and whole-pair aggregation remain source-bound |
@@ -27,7 +27,7 @@ configuration before source access, including conflicting beam strategies.
 Current report version is 4, evaluation version is 5 and default inspection
 version is 3. Explicit inspection v1/v2 reproduce historical behavior.
 
-Recorded pre-UI review on 2026-09-28 for this baseline (supplied local review,
+Recorded pre-UI review on 2026-09-28 for `3f7f3156d450e5b6164053c34b17e873309989ef` (PR #100) (supplied local review,
 not re-executed by this documentation-only change):
 
 | Check | Recorded result and conditions |
@@ -110,3 +110,22 @@ Keep measurement counts in dated evidence, versions in their owning contracts,
 and remaining order in the roadmap. Historical reports retain original method
 versions and approval states. No source-native mode or scientific approval may
 be inferred merely from an implementation status.
+
+
+## Pending Queue beam inference increment (2026-10-01)
+
+The [new decision](evidence/queue_array_beam_inference_decision_2026-10-01.md)
+replaces the absent-column 12-m assumption with explicit D7/D12/MIX/unresolved
+interpretations. MIX keeps both complete branch evaluations under one original
+Queue candidate. Position method is now `queue_pos_single_6`; OR method is
+`queue_beam_variant_or_1`. Report v4 adds optional nested beam evidence, consumed
+by inspection v3 and the report browser. Existing observation-scope UI edits
+remain in the same working tree. Live Archive integration remains the next
+separate increment; no new scientific real-proposal review is claimed.
+
+Local verification of this pending increment (2026-10-01): `1575 passed,
+12 skipped`; all 15 offline acceptance catalog cases PASS; Ruff F and
+`git diff --check` PASS. The existing Archive continuum replay was also compared
+against the committed evaluator: report content was identical after excluding
+`generated_at`. Browser review confirmed one MIX candidate with both diameter
+sections. Skipped tests and live TAP were not claimed as passes.

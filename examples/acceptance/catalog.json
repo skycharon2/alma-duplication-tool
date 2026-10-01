@@ -2556,8 +2556,60 @@
             0,
             "method_version"
           ],
-          "equals": "queue_continuum_branch_2",
-          "reference": "Independent dual-source continuum reference"
+          "equals": "queue_beam_variant_or_1",
+          "reference": "2026-10-01 Queue beam inference decision; complete variant OR"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            7,
+            "beam_variants",
+            0,
+            "diameter_m"
+          ],
+          "reference": "2026-10-01 Queue MIX beam decision",
+          "equals": 7.0
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            7,
+            "beam_variants",
+            0,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "reference": "Unchanged continuum method within each coherent beam variant",
+          "equals": "queue_continuum_branch_2"
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            7,
+            "beam_variants",
+            1,
+            "diameter_m"
+          ],
+          "reference": "2026-10-01 Queue MIX beam decision",
+          "equals": 12.0
+        },
+        {
+          "path": [
+            "report",
+            "context_evaluations",
+            7,
+            "beam_variants",
+            1,
+            "branches",
+            0,
+            "method_version"
+          ],
+          "reference": "Unchanged continuum method within each coherent beam variant",
+          "equals": "queue_continuum_branch_2"
         }
       ]
     },

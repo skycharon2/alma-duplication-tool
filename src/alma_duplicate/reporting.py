@@ -53,6 +53,32 @@ def _criterion(result):
     return data
 
 
+
+def _context_results(item):
+    data = {
+        "criteria": [_criterion(r) for r in item.criteria],
+        "branches": json_value(item.branches),
+        "line_pairing": json_value(item.line_pairing),
+        "line_pairs": [json_value(pair) | {"criteria": [_criterion(r) for r in pair.criteria]}
+                       for pair in item.line_pairs],
+    }
+    if item.beam_variants:
+        from alma_duplicate.rules.queue_beam import matching_diameters, METHOD
+        data["beam_variants"] = [
+            {"variant_id": v.variant_id, "diameter_m": v.diameter_m,
+             "context_id": item.candidate.context.context_id, **_context_results(v.evaluation)}
+            for v in item.beam_variants
+        ]
+        data["mix_aggregation"] = {
+            "method_version": METHOD,
+            "any_variant_met": bool(matching_diameters(item.beam_variants)),
+            "matching_diameters_m": matching_diameters(item.beam_variants),
+            "branches": [{"branch": b.branch, "status": b.status,
+                          "matching_diameters_m": matching_diameters(item.beam_variants, b.branch)}
+                         for b in item.branches],
+        }
+    return data
+
 def _spatial(evidence):
     """Export row-local geometry without repeating its full source table."""
     if evidence is None:
@@ -247,11 +273,7 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
                 "context_id": item.candidate.context.context_id,
                 "reference": item.candidate.context.reference,
                 "evidence_states": item.candidate.context.items,
-                "criteria": [_criterion(r) for r in item.criteria],
-                "branches": item.branches,
-                "line_pairing": item.line_pairing,
-                "line_pairs": [json_value(pair) | {"criteria": [_criterion(r) for r in pair.criteria]}
-                               for pair in item.line_pairs],
+                **_context_results(item),
             }
             for item in report.context_evaluations
         ],

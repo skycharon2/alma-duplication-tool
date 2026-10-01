@@ -198,51 +198,65 @@ def inspect_report(document, *, inspection_version="3"):
             criterion(r, f"request_criteria/{r['criterion_id']}")
         for context_index, c in enumerate(contexts):
             cid, source = c["context_id"], c["reference"]["source"]
-            for r in c["criteria"]:
-                criterion(r, f"{cid}/criteria/{r['criterion_id']}", cid, source)
-            for pair_index, pair in enumerate(c["line_pairs"]):
-                attempt = pair["attempt"]
-                if "proposed_window_id" in attempt:
-                    wid = attempt["proposed_window_id"]
-                else:
-                    reference = attempt.get("reference")
-                    if (
-                        not isinstance(reference, dict)
-                        or "proposed_window_id" not in reference
-                    ):
-                        raise ValueError(
-                            "Line pair lacks proposed window identity"
-                        )
-                    wid = reference["proposed_window_id"]
-                identity = None
-                if inspection_version == "3":
-                    identity = {
-                        "context_id": cid,
-                        "proposed_window_id": wid,
-                        "pair_index": pair_index,
-                        "reference": attempt.get("reference"),
-                    }
-                for criterion_index, r in enumerate(pair["criteria"]):
-                    if r["criterion_id"] not in {"POS-SINGLE", "ANGULAR"}:
-                        criterion(
-                            r,
-                            (f"/context_evaluations/{context_index}/line_pairs/{pair_index}/criteria/{criterion_index}"
-                             if inspection_version == "3"
-                             else f"{cid}/line_pairs/{wid}/{r['criterion_id']}"),
-                            cid,
-                            source,
-                            identity,
-                        )
-            for b in c["branches"]:
-                # Aggregate placeholders are explained by the underlying conditions.
-                for reason in b["reasons"]:
-                    if reason in ASSOCIATION | SCOPE | USER:
-                        add(
-                            f"{cid}/branches/{b['branch']}",
-                            reason,
-                            source=source,
-                            context=cid,
-                        )
+            variants = c.get("beam_variants", [])
+            if variants and (
+                [v.get("diameter_m") for v in variants] != [7, 12]
+                or any(v.get("context_id") != cid or v.get("variant_id") != f"{cid}#beam-{v['diameter_m']:g}m"
+                       for v in variants)
+                or source != "QUEUE" or c["criteria"] or c["line_pairs"]
+            ):
+                raise ValueError("Invalid coherent Queue beam variants")
+            for variant_index, scope in enumerate(variants or [c]):
+                scope_id = scope["variant_id"] if variants else cid
+                pointer = f"/context_evaluations/{context_index}"
+                if variants:
+                    pointer += f"/beam_variants/{variant_index}"
+                for r in scope["criteria"]:
+                    criterion(r, f"{scope_id}/criteria/{r['criterion_id']}", cid, source)
+                for pair_index, pair in enumerate(scope["line_pairs"]):
+                    attempt = pair["attempt"]
+                    if "proposed_window_id" in attempt:
+                        wid = attempt["proposed_window_id"]
+                    else:
+                        reference = attempt.get("reference")
+                        if (
+                            not isinstance(reference, dict)
+                            or "proposed_window_id" not in reference
+                        ):
+                            raise ValueError(
+                                "Line pair lacks proposed window identity"
+                            )
+                        wid = reference["proposed_window_id"]
+                    identity = None
+                    if inspection_version == "3":
+                        identity = {
+                            "context_id": cid,
+                            **({"beam_variant_id": scope_id} if variants else {}),
+                            "proposed_window_id": wid,
+                            "pair_index": pair_index,
+                            "reference": attempt.get("reference"),
+                        }
+                    for criterion_index, r in enumerate(pair["criteria"]):
+                        if r["criterion_id"] not in {"POS-SINGLE", "ANGULAR"}:
+                            criterion(
+                                r,
+                                (f"{pointer}/line_pairs/{pair_index}/criteria/{criterion_index}"
+                                 if inspection_version == "3"
+                                 else f"{scope_id}/line_pairs/{wid}/{r['criterion_id']}"),
+                                cid,
+                                source,
+                                identity,
+                            )
+                for b in scope["branches"]:
+                    # Aggregate placeholders are explained by the underlying conditions.
+                    for reason in b["reasons"]:
+                        if reason in ASSOCIATION | SCOPE | USER:
+                            add(
+                                f"{scope_id}/branches/{b['branch']}",
+                                reason,
+                                source=source,
+                                context=cid,
+                            )
     groups = []
     categories = CATEGORIES_V1 if inspection_version == "1" else CATEGORIES_V2
     for name in categories:

@@ -44,7 +44,7 @@ def test_candidate_beam_and_outside_retained_for_evaluation(offset, outcome):
     assert p.outcome == outcome
     assert a.outcome == "SATISFIED"
     assert p.approval == a.approval == "APPROVED"
-    assert p.method_version == "queue_pos_single_5"
+    assert p.method_version == "queue_pos_single_6"
     d = dict(p.derived)
     expected = math.degrees(1.13 * 299792458 / (338.5e9 * 12))
     assert d["candidate_fwhm_deg"] == pytest.approx(expected)
@@ -223,11 +223,13 @@ def test_cli_all_retained_including_hidden_and_source_failure(tmp_path):
     assert scope["shown_candidates"] == 1
     assert all(
         c["criteria"][0]["method_version"] == "queue_angular_factor_7"
-        for c in report["context_evaluations"]
+        for context in report["context_evaluations"]
+        for c in context.get("beam_variants", [context])
     )
     assert all(
-        c["criteria"][1]["method_version"] == "queue_pos_single_5"
-        for c in report["context_evaluations"]
+        c["criteria"][1]["method_version"] == "queue_pos_single_6"
+        for context in report["context_evaluations"]
+        for c in context.get("beam_variants", [context])
     )
     assert report["assessment"] == "NOT_AGGREGATED"
     assert (
@@ -298,11 +300,11 @@ def test_tp_request_does_not_block_row_beam_or_approve_component(use_7m):
     r = s.queue.rows[0]
     evidence = replace(r.spatial_evidence, interpretation=PositionInterpretation(
         r.context.context_id, 'ICRS', 'FIXED', 'external-review', 12.0))
-    rules = evaluate_queue_common(s.plan.validation.request, r.context, evidence)
+    rules = evaluate_queue_common(s.plan.validation.request, r.context, evidence, beam_diameter_m=12.0)
     assert rules[0].outcome == 'SATISFIED'
     assert rules[1].outcome == 'SATISFIED'
     assert dict(rules[1].derived)['antenna_diameter_m'] == 12.0
-    assert dict(rules[1].details)['diameter_source'] == 'CYCLE13_PORTAL_HELPER_FALLBACK'
+    assert 'TP_12M_REQUESTED' in dict(rules[1].details)['diameter_source']
 
 
 def test_7m_positive_flag_and_manual_diameter_do_not_prove_standalone():
@@ -313,8 +315,8 @@ def test_7m_positive_flag_and_manual_diameter_do_not_prove_standalone():
         r.context.context_id, 'ICRS', 'FIXED', 'external-review', 7.0))
     rules = evaluate_queue_common(s.plan.validation.request, r.context, evidence)
     assert all(c.outcome is None for c in rules)
-    assert 'CONFLICTING_POSITION_INTERPRETATION' in rules[1].reasons
-    assert dict(rules[1].derived)['antenna_diameter_m'] == 12.0
+    assert 'EXPLICIT_BEAM_VARIANT_REQUIRED' in rules[1].reasons
+    assert dict(rules[1].derived)['antenna_diameter_m'] is None
     assert dict(rules[1].details)['standalone_aca_field'] == 'ABSENT'
 
 

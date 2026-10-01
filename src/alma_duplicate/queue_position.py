@@ -53,7 +53,7 @@ def candidate_diameter(row):
     return None, "Use 7-m?=True;standAlone_ACA=ABSENT", ("QUEUE_ARRAY_COMBINATION_UNRESOLVED",)
 
 
-def adapt_queue_position(context, source_record, *, row_beam=False):
+def adapt_queue_position(context, source_record, *, row_beam=False, beam_diameter_m=None):
     from alma_duplicate.queue_row_beam import PROFILE as ROW_PROFILE, DECISION_REF as ROW_REF
     profile = ROW_PROFILE if row_beam else PROFILE
     row = context.evidence.row
@@ -64,9 +64,12 @@ def adapt_queue_position(context, source_record, *, row_beam=False):
     frame_supported = frame_label in ("", "icrs", "j2000", "galactic")
     diameter, _, array_reasons = candidate_diameter(row)
     if row_beam:
-        from alma_duplicate.queue_row_beam import resolve_queue_primary_beam_diameter
-        beam = resolve_queue_primary_beam_diameter(row)
-        diameter, array_reasons = beam.diameter_m, (beam.source,)
+        from alma_duplicate.queue_row_beam import resolve_queue_beam_interpretation
+        beam = resolve_queue_beam_interpretation(row)
+        if beam_diameter_m is not None and beam_diameter_m not in beam.diameters_m:
+            raise ValueError("Diameter is not a resolved Queue beam hypothesis")
+        diameter = beam.diameter_m if beam_diameter_m is None else beam_diameter_m
+        array_reasons = beam.reasons
     interpretation = PositionInterpretation(
         context.context_id, "ICRS" if frame_supported else "UNKNOWN",
         "UNKNOWN" if zero else "FIXED", ROW_REF if row_beam else SOURCE_REF, diameter,

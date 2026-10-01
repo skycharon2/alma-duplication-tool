@@ -12,6 +12,7 @@ from alma_duplicate.rules.angular import evaluate_angular_resolution
 from alma_duplicate.rules.continuum_setup import evaluate_continuum_setup
 from alma_duplicate.rules.evaluation_model import (
     ContextEvaluation,
+    BeamVariant,
     EvaluationConfiguration,
     EvaluationReport,
 )
@@ -73,47 +74,68 @@ Programming/contract errors propagate; they are not scientific missing evidence.
     contexts = []
     for source in (search_result.archive, search_result.queue):
         for row in source.retained_rows:
-            context = row.context
-            criteria = []
-            branches = []
-            if request.intents and queue_common and context.reference.source == "QUEUE":
-                from alma_duplicate.rules.queue_common import evaluate_queue_common
-                criteria.extend(evaluate_queue_common(request, context, row.spatial_evidence))
-            elif request.intents:
-                criteria.extend((approve_angular(evaluate_angular_resolution(request, context), request, context),
-                                 evaluate_position_single(request, context, row.spatial_evidence)))
-            if continuum:
-                if queue_continuum and context.reference.source == "QUEUE":
-                    from alma_duplicate.rules.queue_continuum import evaluate_queue_continuum, scope_supported
-                    supported = scope_supported(criteria)
-                    criteria.extend(evaluate_queue_continuum(request, context, criteria))
-                    branches.append(aggregate_continuum(context, (setup, *criteria),
-                                                       supported=supported, queue_method=True))
-                else:
-                    criteria.extend((evaluate_continuum_frequency(request, context),
-                                     evaluate_continuum_rms(request, context)))
-                    supported = (archive_scope(request, context) and
-                        context.evidence.prepared.normalized_metadata.is_mosaic.value is False and
-                        not {"UNIQUE_INTERFEROMETRIC_DIAMETER_REQUIRED",
-                             "CONFLICTING_POSITION_INTERPRETATION"}.intersection(criteria[1].reasons))
-                    branches.append(aggregate_continuum(context, (setup, *criteria), supported=supported))
-            pairing, pairs = None, ()
-            if "LINE" in request.intents:
-                if queue_line and context.reference.source == "QUEUE":
-                    from alma_duplicate.rules.queue_line import evaluate_queue_line
-                    pairing, pairs, branch = evaluate_queue_line(
-                        request, context, tuple(criteria[:2])
-                    )
-                else:
-                    pairing, pairs, branch = evaluate_line(
-                        request, context, tuple(criteria[:2])
-                    )
-                branches.append(branch)
-            contexts.append(ContextEvaluation(candidate=row, criteria=tuple(criteria), branches=tuple(branches),
-                                              line_pairing=pairing, line_pairs=pairs))
+            from alma_duplicate.queue_row_beam import resolve_queue_beam_interpretation
+            from alma_duplicate.rules.queue_beam import aggregate_beam_variants
+            diameters = ()
+            if request.intents and queue_common and row.context.reference.source == "QUEUE":
+                diameters = resolve_queue_beam_interpretation(row.context.evidence.row).diameters_m
+            if len(diameters) == 2:
+                variants = tuple(BeamVariant(d, _evaluate_context(
+                    row, request, setup, configuration, beam_diameter_m=d)) for d in diameters)
+                contexts.append(ContextEvaluation(
+                    candidate=row, criteria=(), branches=aggregate_beam_variants(variants),
+                    beam_variants=variants))
+            else:
+                contexts.append(_evaluate_context(row, request, setup, configuration))
     return EvaluationReport(
         search_result=search_result,
         request_criteria=() if setup is None else (setup,),
         context_evaluations=tuple(contexts),
         evaluation_configuration=configuration,
     )
+
+
+def _evaluate_context(row, request, setup, configuration, *, beam_diameter_m=None):
+    """Evaluate all requested branches with one coherent position hypothesis."""
+    continuum = "CONTINUUM" in request.intents
+    queue_common = configuration.queue_common
+    queue_continuum = configuration.queue_continuum
+    queue_line = configuration.queue_line
+    context = row.context
+    criteria = []
+    branches = []
+    if request.intents and queue_common and context.reference.source == "QUEUE":
+        from alma_duplicate.rules.queue_common import evaluate_queue_common
+        criteria.extend(evaluate_queue_common(request, context, row.spatial_evidence, beam_diameter_m=beam_diameter_m))
+    elif request.intents:
+        criteria.extend((approve_angular(evaluate_angular_resolution(request, context), request, context),
+                         evaluate_position_single(request, context, row.spatial_evidence)))
+    if continuum:
+        if queue_continuum and context.reference.source == "QUEUE":
+            from alma_duplicate.rules.queue_continuum import evaluate_queue_continuum, scope_supported
+            supported = scope_supported(criteria)
+            criteria.extend(evaluate_queue_continuum(request, context, criteria))
+            branches.append(aggregate_continuum(context, (setup, *criteria),
+                                               supported=supported, queue_method=True))
+        else:
+            criteria.extend((evaluate_continuum_frequency(request, context),
+                             evaluate_continuum_rms(request, context)))
+            supported = (archive_scope(request, context) and
+                context.evidence.prepared.normalized_metadata.is_mosaic.value is False and
+                not {"UNIQUE_INTERFEROMETRIC_DIAMETER_REQUIRED",
+                     "CONFLICTING_POSITION_INTERPRETATION"}.intersection(criteria[1].reasons))
+            branches.append(aggregate_continuum(context, (setup, *criteria), supported=supported))
+    pairing, pairs = None, ()
+    if "LINE" in request.intents:
+        if queue_line and context.reference.source == "QUEUE":
+            from alma_duplicate.rules.queue_line import evaluate_queue_line
+            pairing, pairs, branch = evaluate_queue_line(
+                request, context, tuple(criteria[:2])
+            )
+        else:
+            pairing, pairs, branch = evaluate_line(
+                request, context, tuple(criteria[:2])
+            )
+        branches.append(branch)
+    return ContextEvaluation(candidate=row, criteria=tuple(criteria), branches=tuple(branches),
+                                      line_pairing=pairing, line_pairs=pairs)
