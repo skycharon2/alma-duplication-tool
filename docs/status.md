@@ -1,8 +1,10 @@
 # Current implementation status
 
-Committed implementation baseline: `d96274a4580792157153a1ce454ac7743ce6435f` (PR #117).
+Pinned reviewed merge baseline: `d96274a4580792157153a1ce454ac7743ce6435f` (PR #117).
 Archive source-bound array evidence, mixed-beam evaluation and the TP D=12
-POS-SINGLE follow-up are included in this baseline.
+POS-SINGLE follow-up are included in that baseline. Subsequent committed browser
+increments are described below without changing the historical meaning of the
+pinned merge baseline.
 This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
@@ -20,7 +22,7 @@ This is the single capability summary;
 | Acceptance | Formal same-request Archive+Queue continuum/LINE engineering acceptance, adversarial source/SPW isolation and source-state completeness matrix | Pinned numerical, real-capture engineering and failure/completeness cases; inspection v3 preserves distinct pair identities and the existing reason taxonomy without inventing a search-wide verdict |
 | Reviewed real-proposal cases | 0; no genuine proposal input has been supplied | 0; no reviewed labels claimed |
 | Shared application entry | [Implemented](assessment_entry.md): validation, Solar exemption, lazy sources, search/evaluation and report assembly | Explicit Queue method options; configuration preflight before source access |
-| Browser UI | Proposed form validation, offline replay assessment, run-specific reports and complete JSON / inspection v3 / request exports | Offline CSV assessment with explicit Queue options in the same flow; live form assessment not connected |
+| Browser UI | Proposed form validation, explicit Archive replay/live TAP assessment, run-specific reports and complete JSON / inspection v3 / request exports | Queue CSV assessment with explicit Queue options in the same flow; source failures and provenance remain visible |
 
 Completed correctness fixes: PR #91 preserves shared LINE exact decision operands
 ([contract](line_precision.md)); PR #92 preserves inspection pair identities and
@@ -89,7 +91,7 @@ The [Queue position method record](pos_single.md) retains its original execution
 notes for provenance. Current orchestration/report versions belong to
 [rules](rules.md) and [CLI/report](evaluation_cli.md).
 
-## Browser increment after the reviewed baseline
+## Browser increments after the pinned baseline
 
 The [continuum setup declaration](continuum_setup_declaration.md) now permits
 explicit researcher confirmation without detailed SPWs. Request model 3 / validator
@@ -97,15 +99,17 @@ explicit researcher confirmation without detailed SPWs. Request model 3 / valida
 complete lists; ordinary intent selection still does not establish qualification.
 
 The proposed form supports validation/request download and an opt-in
-[offline assessment flow](ui_offline_assessment.md). Each execution calls the
-shared entry with explicit Queue intent options and local replay/CSV providers,
-then renders and exports its retained report v4 and inspection v3. Reports from
-separate runs remain independent. The current baseline includes this offline
-flow; historical verification counts above remain tied to their dated commits.
+[browser assessment flow](ui_offline_assessment.md). Each execution calls the
+shared entry with explicit Queue intent options and explicit Archive `NONE` /
+replay / live TAP configuration, then renders and exports its retained report v4
+and inspection v3. Replay and live TAP are mutually exclusive; the live client is
+lazy, failures do not fall back to replay, and live TAP does not imply live AQ
+acquisition. Reports from separate runs remain independent.
 The [offline UI/CLI parity gate](ui_offline_assessment.md#offline-uicli-parity-gate)
-now compares complete reports and inspection documents under the current UI
-configuration, with exact same-run downloads. Live Archive execution and
-persistent multi-user storage remain outstanding.
+continues to compare complete reports and inspection documents with exact same-run
+downloads. `tests/ui/test_live_source.py` separately covers live browser wiring
+with real network access forbidden. Persistent multi-user storage remains
+outstanding.
 
 ## Maintenance
 
@@ -125,8 +129,13 @@ Queue candidate. Position method is now `queue_pos_single_6`; OR method is
 `queue_beam_variant_or_1`. Report v4 adds optional nested beam evidence, consumed
 by inspection v3 and the report browser. Observation-scope UI edits were
 delivered in the same PR. Explicit live-source configuration and execution
-feedback remain the next browser increment; no new scientific real-proposal
-review is claimed.
+feedback are now delivered as a subsequent browser increment; no new scientific
+real-proposal review is claimed.
+
+Recorded browser live-source verification on 2026-10-02: `13 passed` in
+`tests/ui/test_live_source.py`, `102 passed` in `tests/ui`; Ruff F and
+`git diff --check` PASS. These tests forbid real network access, so current live
+service availability is not claimed.
 
 Recorded local verification of that increment (2026-10-01): `1575 passed,
 12 skipped`; all 15 offline acceptance catalog cases PASS; Ruff F and

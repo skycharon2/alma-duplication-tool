@@ -1,9 +1,11 @@
-# Offline browser assessment
+# Browser assessment sources
 
-The browser can execute its current form against configured local reference data:
+The browser can execute its current form against explicitly configured sources:
 form → shared validator → `assess_observation()` → independent report → exports.
+Archive access is `NONE`, replay or live TAP; Queue remains an optional local CSV.
 Scientific formulas, method versions, source association and aggregation remain
-owned by the existing backend. This increment does not connect live Archive access.
+owned by the existing backend. Live TAP uses the existing Archive client and does
+not add live AQ acquisition or new scientific scope.
 
 ## Run locally
 
@@ -18,20 +20,30 @@ python -m flask --app alma_duplicate.ui.app:create_app run --host 127.0.0.1 --po
 Open http://127.0.0.1:5001/proposed. These committed examples are synthetic
 engineering reference data, not current observatory holdings or reviewed real
 proposals. Existing `ALMA_UI_REPORT_DIR` configuration is independent and optional.
-Neither form validation nor application startup reads assessment source files.
+Neither form validation nor application startup reads assessment source files or
+contacts Archive TAP.
 
-Run assessment appears when either reference path is configured. The browser
-enables it only for fixed single-point requests, and rejects other observation
-types at the server before execution. Moving/Mosaic and Sun selections remain
-available for validation and valid-request export; see [observation support](ui_proposed_form.md#observation-type-and-support).
-The browser cannot supply file paths. Selecting an unconfigured source yields the backend's
-NOT_PROVIDED state. Source files are read for each run, so their backend hashes
-and provenance describe that run. A fresh replay client is created for each call.
-No live Archive client or network fallback is constructed.
+For live Archive TAP, do not configure `ALMA_UI_ARCHIVE_REPLAY`; instead set
+`ALMA_UI_LIVE_ARCHIVE=1`. The live flag accepts explicit boolean spellings and
+rejects unrecognized values. Live TAP and replay are mutually exclusive. The live
+Archive client is created only for a valid, search-ready Run assessment that
+selected ARCHIVE; GET, validation, request download, invalid input, Solar and
+QUEUE-only execution do not create it.
+
+Run assessment appears when at least one assessment source is configured. The
+browser enables it only for fixed single-point requests, and rejects other
+observation types at the server before execution. Moving/Mosaic and Sun selections
+remain available for validation and valid-request export; see
+[observation support](ui_proposed_form.md#observation-type-and-support).
+The browser cannot supply file paths. Selecting an unconfigured source yields the
+backend's NOT_PROVIDED state. Source files are read for each run, so their backend
+hashes and provenance describe that run. Providers are constructed per selected
+execution. A live Archive failure is not replaced by replay results.
 
 Optional `ALMA_UI_ARCHIVE_ARRAY_EVIDENCE` supplies a captured official AQ
 manifest to the same lazy Archive provider. It must correspond to the actual
-replayed science sources; unmatched sources remain UNKNOWN. The browser keeps
+Archive science sources for that run; unmatched sources remain UNKNOWN. A live
+TAP run does not automatically refresh or acquire AQ evidence. The browser keeps
 one original candidate with both complete diameter paths when the backend
 returns mixed evidence, displays the binding provenance and exports the original
 report/inspection. TP's physical 12-m aperture does not remove its unsupported
@@ -87,7 +99,9 @@ is shown in source evidence; parse time is not represented as the source date.
 
 ## Ownership and execution
 
-`ui/runs.py` supplies lazy `RecordedArchiveClient` and `QueueCsvClient` providers.
+`ui/runs.py` supplies lazy replay/live Archive and `QueueCsvClient` providers.
+Archive mode is explicit: no Archive provider, replay or live TAP. Replay and live
+TAP cannot be configured together, and no provider falls back to the other mode.
 Only selected sources receive providers. It explicitly sets `queue_common` for
 QUEUE selection and `queue_continuum` / `queue_line` for the selected intents.
 Legacy beam strategies and AQ-equivalent filters remain at their backend defaults.
@@ -171,6 +185,9 @@ must preserve the original report/request/inspection bytes and must not execute
 the assessment again. A comparator regression test protects against silently
 excluding scientific or provenance differences.
 
-This gate covers offline HTTP routes and rendering. Live Archive execution,
-browser JavaScript interaction and independent real-proposal review require
-their own verification.
+This gate remains the offline UI/CLI parity check. Live Archive browser wiring
+is covered separately by `tests/ui/test_live_source.py`: environment parsing,
+replay/live mutual exclusion, lazy construction, no replay fallback, no implicit
+live AQ lookup and shared-entry execution are tested with real network access
+forbidden. Live service availability, browser JavaScript interaction and
+independent real-proposal review remain separate verification.

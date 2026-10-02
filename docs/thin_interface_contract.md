@@ -1,11 +1,14 @@
 # Thin-interface contract over report v4
 
-Contract version 2. The [shared entry](assessment_entry.md) and configuration
+Contract version 3. The [shared entry](assessment_entry.md) and configuration
 preflight are implemented; [status](status.md) owns the reviewed baseline.
 The browser has a [validator-connected proposed form](ui_proposed_form.md) and a
-[read-only report viewer](ui_report_browser.md). The [offline assessment flow](ui_offline_assessment.md)
-connects the current form to per-run report v4 and inspection v3 exports; live
-Archive access is not connected. The [form sketch](proposed_observation_form.md)
+[read-only report viewer](ui_report_browser.md). The
+[browser assessment flow](ui_offline_assessment.md) connects the current form to
+per-run report v4 and inspection v3 exports with explicit Archive `NONE` / replay /
+live TAP configuration and optional Queue CSV. Replay and live TAP are mutually
+exclusive; live failures do not fall back to replay, and live TAP does not imply
+live AQ acquisition. The [form sketch](proposed_observation_form.md)
 owns layout; the [request API](proposed_observation_api.md) owns field validation;
 [reporting](evaluation_cli.md) owns JSON; [rules](rules.md) owns every formula and
 aggregation. This document defines how the first UI must consume those contracts.

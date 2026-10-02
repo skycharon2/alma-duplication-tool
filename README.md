@@ -17,8 +17,8 @@ single-field Queue scope ([continuum contract](docs/queue_continuum.md),
 [LINE contract](docs/queue_line_pairing.md)). Same-request Archive+Queue
 engineering acceptance, cross-source/SPW isolation and source-state completeness
 coverage are delivered. A genuine proposal has not been supplied for independent
-real-proposal review; wider array/mode coverage and the browser UI remain
-unfinished.
+real-proposal review; broader array/mode coverage and persistent multi-user
+browser operation remain unfinished.
 See the [capability matrix](docs/status.md), [documentation guide](docs/README.md)
 and [engineering roadmap](docs/roadmap.md).
 
@@ -47,9 +47,10 @@ python -m flask --app alma_duplicate.ui.app:create_app run
 
 Open the local URL printed by Flask. The home route opens the [proposed form](docs/ui_proposed_form.md)
 at `/proposed`, which validates inputs and exports request JSON. Configure the
-[offline assessment flow](docs/ui_offline_assessment.md) to run the current input
-against Archive replay and/or a Queue CSV and view its own report. Live Archive
-assessment is not connected.
+[browser assessment flow](docs/ui_offline_assessment.md) with Archive replay,
+live Archive TAP and/or a Queue CSV and view each run's own report. Set
+`ALMA_UI_LIVE_ARCHIVE=1` to opt into live TAP access; live TAP and Archive replay
+are mutually exclusive, and live TAP never implies a live AQ lookup.
 The read-only [report browser](docs/ui_report_browser.md) displays backend reports
 and exports their original JSON plus inspection v3. To enable it, generate an
 acceptance run and set `ALMA_UI_REPORT_DIR` to its output directory before starting

@@ -1,10 +1,12 @@
 # Read-only backend report browser
 
 This increment consumes report v4 and inspection v3. It does not submit a proposal,
-query sources, or implement scientific calculations. The [proposed form](ui_proposed_form.md) validates input and exports
-request JSON; [offline assessment](ui_offline_assessment.md) creates temporary runs
-using configured local sources. Existing reports are not results of the current
-form. Both report routes use the same comparison view. The viewer displays the methods supplied by each report.
+query sources, or implement scientific calculations. The
+[proposed form](ui_proposed_form.md) validates input and exports request JSON;
+[browser assessment](ui_offline_assessment.md) creates temporary runs using
+explicitly configured Archive replay/live TAP and Queue CSV sources. Existing
+reports are not results of the current form. Both report routes use the same
+comparison view. The viewer displays the methods supplied by each report.
 
 ## Run locally
 
@@ -79,9 +81,10 @@ null RMS with dependency reasons, zero-valued SPW identities, unknown derived
 fields, immutable input documents and escaping of displayed quantities.
 These are engineering cases, not independently reviewed real proposals.
 
-Form validation and offline execution are implemented. Live Archive integration
-and production run storage are separate future increments; the comparison view
-continues to consume backend results without querying sources on refresh.
+Form validation, offline execution and explicit live Archive TAP execution are
+implemented. Production run storage remains a separate future increment; the
+comparison view continues to consume retained backend results without querying
+sources on refresh.
 
 
 ### Queue MIX evidence

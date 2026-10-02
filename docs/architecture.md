@@ -2,7 +2,9 @@
 
 The reviewed implementation baseline and verification conditions are owned by
 [status](status.md). The bounded extractions and shared application entry below
-are implemented, including offline browser assessment; live browser integration remains outstanding.
+are implemented, including replay and explicit live Archive TAP browser
+assessment. Persistent multi-user lifecycle and automatic live AQ acquisition
+remain separate work.
 
 This is a navigation map of implemented boundaries, not another field schema.
 The [object index](data_model.md) links definitions and the
@@ -98,7 +100,8 @@ their preserved boundaries are explicit:
   selection, search/evaluation and report assembly. CLI retains JSON/file
   handling, lazy provider construction, overwrite guards and exit codes.
   [Application contract](assessment_entry.md) documents the callable boundary;
-  browser form/rendering integration remains the next delivery.
+  browser form/rendering integration now consumes that boundary through the
+  configured replay/live source adapter.
 
 The [roadmap](roadmap.md#bounded-maintenance-increments) owns their order and
 acceptance gates. Compatibility exports, explicit legacy/provisional paths,
@@ -117,7 +120,7 @@ Flask/Jinja consumes startup-bound backend report artifacts through `ui/reports.
 It calls the existing inspection v3 consumer; it does not call search or rule
 evaluators. The original bytes are retained for download, while a paginated view
 uses the parsed document. UI paths select opaque in-process IDs, not filesystem
-paths. The proposed-input form has a separate offline assessment action; existing reports remain read-only.
+paths. The proposed-input form has a separate assessment action; existing reports remain read-only.
 
 ## Proposed form boundary
 
@@ -125,10 +128,14 @@ paths. The proposed-input form has a separate offline assessment action; existin
 `/proposed` calls `validate_proposed_observation()` directly and displays its
 diagnostics/readiness. Validation and request download do not access sources.
 The separate Run assessment action delegates to `ui/runs.py`, which constructs
-explicit options and lazy local replay/CSV providers for `assess_observation()`.
-Each returned report is serialized once and retained under an independent run ID.
-A count/serialized-byte bounded process-local store holds request/report/inspection
-artifacts; refresh and downloads do not rerun the assessment. No live client is
-constructed. See the [offline execution contract](ui_offline_assessment.md).
+explicit options and lazy Archive replay/live TAP and Queue CSV providers for
+`assess_observation()`. Replay and live TAP are mutually exclusive. The live
+Archive client is constructed only for a search-ready assessment that selected
+ARCHIVE; validation, request download, Solar and unselected Archive paths do not
+construct it, and failures do not fall back to replay. Each returned report is
+serialized once and retained under an independent run ID. A count/serialized-byte
+bounded process-local store holds request/report/inspection artifacts; refresh and
+downloads do not rerun the assessment. See the
+[browser assessment contract](ui_offline_assessment.md).
 Window row tokens survive editing; window IDs bind each LINE sensitivity.
 Request JSON downloads revalidate the current form and contain no report verdict.
