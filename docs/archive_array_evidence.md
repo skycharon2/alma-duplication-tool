@@ -71,15 +71,28 @@ catalog has been selected.
 | `7m` | 7 m | Existing supported fixed single-field criteria |
 | `12m` | 12 m | Existing supported fixed single-field criteria |
 | `7m 12m` (either order) | 7 m and 12 m | Evaluate both complete branches, OR their three-valued results |
-| `TP` | 12 m, retaining `TOTAL_POWER` identity | Physical radius can be calculated; interferometric applicability remains UNKNOWN |
-| `7m TP` | 7 m and 12 m | 7-m branch evaluated; TP branch UNKNOWN; OR complete results |
-| Any label including both `12m` and `TP` | Unique 12-m diameter, plus 7 m if present | 12-m science branch remains UNKNOWN because this evidence does not separate the two observing modes |
+| `TP` | 12 m, retaining `TOTAL_POWER` identity | POS-SINGLE uses D=12 m and returns the geometric result; broader interferometric CONTINUUM/LINE branch scope remains UNKNOWN |
+| `7m TP` | 7 m and 12 m | 7-m branch is evaluated normally; the TP D=12 m position is evaluated, while the TP science branch remains UNKNOWN; OR complete results |
+| Any label including both `12m` and `TP` | Unique 12-m diameter, plus 7 m if present | D=12 m is valid for POS-SINGLE, but broader 12-m science scope remains UNKNOWN because this evidence does not separate main-array and TP observing modes |
 
 TP antennas are 12-m single dishes; see the official
 [Technical Handbook](https://almascience.eso.org/proposing/documents-and-tools/latest/alma-technical-handbook).
 Physical aperture alone does not establish interferometric angular, RMS or
-spectral applicability. `ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED`
-blocks formal continuum/LINE aggregation on a TP path.
+spectral applicability.
+
+### TP D=12 position follow-up
+
+The supervisor-confirmed project decision is recorded in
+[the dated decision](evidence/archive_tp_d12_position_decision_2026-10-02.md).
+For a source-bound TP path, POS-SINGLE uses D=12 m and the existing inclusive
+half-power-beam comparison normally. Source-bound Archive position reports from
+this method use `archive_pos_single_3`; historical `archive_pos_single_2` reports
+retain their original meaning.
+
+`ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED` remains visible as a
+downstream branch-scope reason. It does not erase an otherwise computable TP
+position result, but it still keeps current Archive CONTINUUM/LINE aggregation
+on that TP path UNKNOWN.
 
 Both diameter alternatives reuse exactly the same retained source context and
 its bound SPWs, frequency, resolution and sensitivity. They are **diameter
