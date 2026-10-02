@@ -29,9 +29,8 @@ own scientific decisions. An experiment being delivered does not approve its met
 These small commits support the thin UI; they are not a new prerequisite
 rearchitecture phase. DOC-BASE, LINE-HELPERS, GEOMETRY, SPATIAL-EVIDENCE,
 MODE-REFERENCE and APP-ENTRY are delivered. Configuration preflight is also
-implemented (PR #100). The thin browser interface and offline UI/CLI parity gate
-are delivered; the next browser increment is explicit live-source configuration
-and execution feedback.
+implemented (PR #100). The thin browser interface, offline UI/CLI parity gate
+and explicit live-source configuration/execution feedback are delivered.
 
 | Commit | Scope | Exit gate |
 | --- | --- | --- |
@@ -97,12 +96,13 @@ Explicit researcher confirmation of continuum setup qualification is implemented
 as a [separate evidence route](continuum_setup_declaration.md), including backend
 conflict handling and CLI/browser scientific-result parity for the new path.
 
-The [offline form-to-report flow](ui_offline_assessment.md) is implemented:
+The [browser form-to-report flow](ui_offline_assessment.md) is implemented:
 current input, explicit Queue methods, shared assessment entry, independent run
-identity, and original report/inspection downloads. The
+identity, original report/inspection downloads and explicit Archive replay/live
+TAP configuration. The
 [offline UI/CLI parity gate](ui_offline_assessment.md#offline-uicli-parity-gate)
-is implemented for the current form and execution configuration. The next browser
-increment is explicit live-source configuration and execution feedback. The local
+remains the deterministic parity gate; live browser wiring has separate no-network
+regressions for configuration, laziness and provenance boundaries. The local
 in-memory lifecycle is not a multi-user service.
 
 ## Remaining delivery order
@@ -113,7 +113,7 @@ in-memory lifecycle is not a multi-user service.
 | QUEUE-CONTINUUM — coherent single-field row scope delivered | Queue frequency/RMS mappings and independent continuum branch | Same-context/setup evidence, positive/negative/boundary/unknown cases; source-specific sensitivity semantics; no FDM/TDM prerequisite |
 | QUEUE-LINE — fixed single-field regular-SPW scope delivered | Mode applicability, coherent same-window coverage/resolution/RMS and pair reports | Supported configuration/profile evidence; no cross-SPW borrowing; coarse-resolution blocking; independent intermediate-value and pair aggregation acceptance |
 | Thin browser interface — delivered | Input, candidates, independent branches, pair evidence and export using the backend report | UI/CLI agreement, no duplicate formulas, no UNKNOWN/empty-source-to-negative conversion |
-| LIVE-SOURCE — next | Explicit live-source configuration and execution feedback through the shared application entry | Live versus replay configuration is explicit; source failures/provenance remain visible; no implicit fallback or new scientific scope |
+| LIVE-SOURCE — delivered | Explicit live-source configuration and execution feedback through the shared application entry | Live versus replay configuration is explicit; source failures/provenance remain visible; no implicit fallback, live AQ acquisition or new scientific scope |
 | Broader modes — deferred | Mosaic, moving targets, TP scientific evaluation, mixed setups and broader conversions | Separate scope, evidence and acceptance decisions |
 
 The [first Queue common increment](queue_common.md) supplies opt-in coherent
@@ -122,10 +122,10 @@ single-field row-beam position, including the supported 7 m/12 m
 and [Queue LINE](queue_line_pairing.md) now complete the supported fixed
 single-field branches. Formal same-request Archive+Queue continuum/LINE
 acceptance, cross-source/SPW isolation and source-state completeness are also
-delivered. The bounded preparatory increments and thin browser interface are
-complete; the next browser increment is explicit live-source configuration and
-execution feedback. Broader component-specific and mixed-array interpretations
-beyond the supported row-level scope remain separate extensions.
+delivered. The bounded preparatory increments, thin browser interface and
+explicit live-source execution are complete. Persistent multi-user lifecycle and
+broader component-specific or mixed-array interpretations remain separate
+extensions.
 
 Independent review of an actual proposal remains an external validation gate.
 No genuine proposal input is currently available, so
@@ -150,7 +150,7 @@ Do not make all-family experimental closure a blanket prerequisite for Queue con
 ## Thin UI delivery increments
 
 The [Archive array evidence review](evidence/archive_array_review_2026-10-02.md)
-adds five real replay examples before live browser integration. The optional
+added five real replay examples before live browser integration. The optional
 [source-bound adapter](archive_array_evidence.md) now consumes captured official
 AQ labels, confirming the two 7-m science targets and evaluating complete D7/D12
 alternatives for explicitly mixed labels. TP retains its 12-m physical aperture;
@@ -180,6 +180,13 @@ execution must continue to show unresolved candidates explicitly.
    timestamps are normalized; the CLI input-file hash and absent form-file hash
    are separately asserted. See the [gate contract](ui_offline_assessment.md#offline-uicli-parity-gate)
    for configuration and provenance boundaries.
+4. Explicit live Archive source — implemented in `tests/ui/test_live_source.py`
+   and `ui/runs.py`: `ALMA_UI_LIVE_ARCHIVE` selects live TAP, mutually exclusive
+   with Archive replay. Client construction stays lazy and source-selected; failed
+   live execution does not fall back to replay. Captured AQ array evidence remains
+   a separate configured artifact and is never auto-refreshed by live TAP. The
+   regression suite forbids real network access, so service availability is not a
+   delivery claim.
 
 Independent real-proposal review continues separately; broader modes do not
 become a blanket prerequisite for these UI increments.

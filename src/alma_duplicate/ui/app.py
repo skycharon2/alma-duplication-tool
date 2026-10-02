@@ -6,9 +6,25 @@ from flask import Flask, Response, abort, redirect, render_template, request, ur
 
 from alma_duplicate.ui.reports import load_reports
 from alma_duplicate.ui.report_view import criterion_view, pair_binding
-from alma_duplicate.ui.runs import OfflineAssessment, RunStore
+from alma_duplicate.ui.runs import BrowserAssessment, RunStore
 from alma_duplicate.ui.proposed import MAX_WINDOWS, assessment_supported, contributing_windows, initial_form, new_row, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
+
+
+def _env_flag(name):
+    value = os.environ.get(name)
+    if value is None:
+        return False
+
+    normalized = value.strip().lower()
+
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+
+    if normalized in {"0", "false", "no", "off", ""}:
+        return False
+
+    raise ValueError(f"{name} must be a boolean flag")
 
 
 def create_app(config=None):
@@ -17,6 +33,7 @@ def create_app(config=None):
     app.config["MAX_CONTENT_LENGTH"] = 1024 * 1024
     app.config["REPORT_DIRECTORY"] = os.environ.get("ALMA_UI_REPORT_DIR")
     app.config["OFFLINE_ARCHIVE_REPLAY"] = os.environ.get("ALMA_UI_ARCHIVE_REPLAY")
+    app.config["LIVE_ARCHIVE"] = _env_flag("ALMA_UI_LIVE_ARCHIVE")
     app.config["OFFLINE_QUEUE_CSV"] = os.environ.get("ALMA_UI_QUEUE_CSV")
     app.config["ARCHIVE_ARRAY_EVIDENCE"] = os.environ.get("ALMA_UI_ARCHIVE_ARRAY_EVIDENCE")
     app.config["MAX_RETAINED_RUNS"] = 20
@@ -25,9 +42,16 @@ def create_app(config=None):
         app.config.from_mapping(config)
 
     reports = load_reports(app.config["REPORT_DIRECTORY"])
-    offline = OfflineAssessment(app.config["OFFLINE_ARCHIVE_REPLAY"], app.config["OFFLINE_QUEUE_CSV"],
-                                app.config["ARCHIVE_ARRAY_EVIDENCE"])
-    runs = RunStore(app.config["MAX_RETAINED_RUNS"], app.config["MAX_RETAINED_BYTES"])
+    configured = BrowserAssessment(
+        archive_replay=app.config["OFFLINE_ARCHIVE_REPLAY"],
+        queue_csv=app.config["OFFLINE_QUEUE_CSV"],
+        archive_array_evidence=app.config["ARCHIVE_ARRAY_EVIDENCE"],
+        live_archive=app.config["LIVE_ARCHIVE"],
+    )
+    runs = RunStore(
+        app.config["MAX_RETAINED_RUNS"],
+        app.config["MAX_RETAINED_BYTES"],
+    )
 
     @app.after_request
     def private_response(response):
@@ -146,18 +170,18 @@ def create_app(config=None):
                         execution_error = "Solar observations are exempt from duplication checking under Appendix A. No assessment or source search was run."
                     elif not assessment_supported(values):
                         execution_error = "This observation type cannot be assessed in this browser version. Your inputs are retained. You can validate and export a valid request."
-                    elif not offline.enabled:
-                        execution_error = "Offline assessment is not configured. You can still validate and download the request."
+                    elif not configured.enabled:
+                        execution_error = "Assessment sources are not configured. You can still validate and download the request."
                     elif result.is_valid and result.can_search:
                         try:
-                            assessment = offline.assess(document)
+                            assessment = configured.assess(document)
                             if assessment.document is not None:
                                 run_id = runs.add(document, assessment)
                                 return redirect(url_for("run_view", report_id=run_id), code=303)
                             execution_error = "Assessment returned no report. Review input readiness."
                         except (OSError, UnicodeError, ValueError, TypeError) as exc:
-                            app.logger.warning("Offline assessment failed: %s", exc)
-                            execution_error = "Offline assessment could not be completed. Check the configured reference files and server log. No report was created."
+                            app.logger.warning("Browser assessment failed: %s", exc)
+                            execution_error = "Assessment could not be completed. Check the configured sources and server log. No report was created."
                     else:
                         execution_error = "Assessment was not run. Correct invalid inputs and supply the search information shown below."
                 if action == "download" and result.is_valid:
@@ -176,7 +200,7 @@ def create_app(config=None):
                                pending_removal=pending_removal, edit_notice=edit_notice, added_row=added_row,
                                purpose_updated=purpose_updated,
                                scope_updated=scope_updated, assessment_supported=assessment_supported(values),
-                               offline=offline, execution_error=execution_error)
+                               configured=configured, execution_error=execution_error)
 
     @app.get("/healthz")
     def healthz():

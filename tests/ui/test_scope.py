@@ -7,7 +7,7 @@ from werkzeug.datastructures import MultiDict
 
 from alma_duplicate.request_validation import validate_proposed_observation
 from alma_duplicate.ui import create_app
-from alma_duplicate.ui.runs import OfflineAssessment
+from alma_duplicate.ui.runs import BrowserAssessment
 
 
 class FormValues(HTMLParser):
@@ -35,7 +35,7 @@ def client(monkeypatch):
     def forbidden(*args, **kwargs):
         pytest.fail("Unsupported observation reached execution")
 
-    monkeypatch.setattr(OfflineAssessment, "assess", forbidden)
+    monkeypatch.setattr(BrowserAssessment, "assess", forbidden)
     return create_app({"TESTING": True, "REPORT_DIRECTORY": None,
                        "OFFLINE_ARCHIVE_REPLAY": "/must-not-read.json",
                        "OFFLINE_QUEUE_CSV": "/must-not-read.csv"}).test_client()

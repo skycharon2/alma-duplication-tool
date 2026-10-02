@@ -44,7 +44,8 @@ They are not current population counts or Python class definitions.
 
 ## UI reading order
 
-For running the browser end to end, start with [offline assessment](ui_offline_assessment.md).
+For running the browser end to end, start with
+[browser assessment sources](ui_offline_assessment.md).
 For optional SPWs and explicit researcher confirmation, see the
 [continuum setup declaration](continuum_setup_declaration.md).
 
@@ -128,7 +129,7 @@ behavior belong to the [search/spatial contract](search_plan_spatial.md).
 5. Read [census v1](queue_mode_census.md) and the [processor experiment](experiments/queue_processor_consensus.md) as needed for diagnostic assumptions and limitations.
 6. [Roadmap](roadmap.md): the single owner of engineering order.
 
-## Next delivery
+## Delivery status and remaining work
 
 The [acceptance catalog](acceptance_cases.md) pins inputs and independently documented
 reference values; its runner saves reports, differences and evidence-gap counts.
@@ -138,9 +139,10 @@ against report v4. No delivered case is falsely labelled as a reviewed real prop
 
 
 The [remaining PR plan](roadmap.md) owns implementation order and gates.
-Dual-source engineering acceptance is complete; genuine real-proposal review is
-deferred pending external input, and the thin browser interface is the next
-engineering delivery.
+Dual-source engineering acceptance, the thin browser interface, offline parity
+and explicit live Archive source wiring are complete. Genuine real-proposal
+review remains deferred pending external input; persistent multi-user lifecycle
+and broader-mode scope remain separate work.
 Continuum delivery records are [initial acceptance](confirmed_continuum.md) and
 [contract closure](continuum_closure.md); neither is another active task list.
 
@@ -163,7 +165,7 @@ citations and Q1–Q8 interpretations remain in the rule-input contract.
 Queue diagnostic deliveries #75/#76 and the supported Queue continuum and LINE
 formal evaluation paths and dual-source engineering acceptance are complete.
 See [status](status.md) and [roadmap](roadmap.md) for the deferred genuine-proposal
-review gate, interface work and broader-mode scope.
+review gate, persistent multi-user lifecycle and broader-mode scope.
 
 - [Queue mode evidence adapter](queue_mode_adapter.md): typed row/SPW mode evidence, exact-first reviewed compatibility, and separate single-point applicability.
 
@@ -173,7 +175,7 @@ review gate, interface work and broader-mode scope.
 
 - [Queue LINE pairing and evaluation](queue_line_pairing.md): same-row/SPW evidence preparation, formal FDM/coverage/resolution/RMS evaluation, provenance checks and aggregation boundaries.
 
-- [Shared assessment entry](assessment_entry.md): callable orchestration, lazy sources and execution statuses; browser UI remains pending.
+- [Shared assessment entry](assessment_entry.md): callable orchestration, lazy sources and execution statuses; browser replay/live TAP execution consumes this entry.
 
 - [Read-only report browser](ui_report_browser.md): configure reports, read evidence, export originals.
 

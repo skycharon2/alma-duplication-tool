@@ -169,8 +169,10 @@ can_search can remain false and missing evidence can remain. It is an input
 artifact, not an evaluation report. Validation and request export do not save the
 request or access sources. The current form must be reposted for every action.
 When configured, the separate Run assessment action calls the shared entry using
-local reference sources and temporarily retains an independent input/report pair;
-see [offline assessment](ui_offline_assessment.md). No live source client is used.
+explicit Archive replay/live TAP and Queue CSV source configuration and temporarily
+retains an independent input/report pair; see
+[browser assessment sources](ui_offline_assessment.md). Source providers remain
+lazy, so validation and request export never contact Archive TAP.
 Responses inherit no-store. Duplicate scalar fields and malformed row lists fail
 400; the application request-size cap is 1 MiB. Jinja escapes reflected values.
 These local controls are not a production multi-user authentication/lifecycle system.
@@ -183,6 +185,8 @@ row editing, duplicate references, invalid quantities, partial search readiness,
 backend diagnostic parity, escaped values, transport limits and request export.
 Existing report browser/acceptance tests remain unchanged.
 
-The [offline assessment increment](ui_offline_assessment.md) connects inputs to
-explicit AssessmentOptions and assess_observation(), with independent run IDs.
-Live Archive access and a persistent multi-user run lifecycle remain future work.
+The [browser assessment increment](ui_offline_assessment.md) connects inputs to
+explicit AssessmentOptions and `assess_observation()`, with independent run IDs.
+Explicit live Archive TAP execution is implemented without replay fallback or
+implicit live AQ acquisition. A persistent multi-user run lifecycle remains
+future work.

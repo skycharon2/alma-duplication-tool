@@ -275,7 +275,7 @@ def test_solar_adapter_cli_and_viewer_parity_without_source_access(tmp_path, mon
                         "setup_id": "solar", "intents": ["CONTINUUM"]},
             "search_options": {"sources": ["ARCHIVE", "QUEUE"]}}
     inputs = {"archive_replay": tmp_path / "must-not-open.json", "queue_csv": tmp_path / "must-not-open.csv"}
-    result = runs.OfflineAssessment(inputs["archive_replay"], inputs["queue_csv"]).assess(wire)
+    result = runs.BrowserAssessment(inputs["archive_replay"], inputs["queue_csv"]).assess(wire)
     assert str(result.status) == "SOLAR_EXEMPTION"
     request_bytes = report_json_text(wire).encode()
     code, cli = cli_run(tmp_path, request_bytes, inputs)

@@ -32,6 +32,7 @@ def config(**overrides):
         "TESTING": True, "REPORT_DIRECTORY": None,
         "OFFLINE_ARCHIVE_REPLAY": ROOT / "examples/confirmed_line/archive/manifest.json",
         "OFFLINE_QUEUE_CSV": ROOT / "examples/acceptance/queue/dual-source-line.csv",
+        "LIVE_ARCHIVE": False,
     } | overrides
 
 
@@ -87,7 +88,7 @@ def test_real_dual_source_run_retains_exact_report_and_input(monkeypatch, purpos
     location = response.location
     assert location.startswith("/runs/")
     html = client.get(location).get_data(as_text=True)
-    assert "Offline reference data" in html and "SYNTHETIC" in html
+    assert "Assessment run" in html and "SYNTHETIC" in html
     assert "Execution status: COMPLETED" in html
     assert "Effective evaluation configuration" in html
     report = client.get(location + "/download/report")
@@ -140,7 +141,7 @@ def test_validation_download_and_disabled_mode_never_assess(monkeypatch):
     client = create_app(config(OFFLINE_ARCHIVE_REPLAY=None, OFFLINE_QUEUE_CSV=None)).test_client()
     assert b'value="assess"' not in client.get("/proposed").data
     data.setlist("action", ["assess"])
-    assert b"Offline assessment is not configured" in client.post("/proposed", data=data).data
+    assert b"Assessment sources are not configured" in client.post("/proposed", data=data).data
 
 
 @pytest.mark.parametrize("mode,failed_source", [("mismatch", "ARCHIVE"), ("missing-queue", "QUEUE"), ("bad-queue", "QUEUE")])
