@@ -1,10 +1,13 @@
-"""Bind captured official AQ array labels to a reconstructed Archive source.
+"""Bind official AQ array labels to a reconstructed Archive source.
 
-No network access or scientific formula belongs here. A Member-only match is
-insufficient: the exact AQ source ID, Member and source name must all agree.
+Catalog provenance distinguishes captured from live acquisition; acquisition
+itself belongs elsewhere. No network access or scientific formula belongs here.
+A Member-only match is insufficient: the exact AQ source ID, Member and source
+name must all agree.
 """
 from dataclasses import dataclass
 from datetime import datetime
+from enum import StrEnum
 import hashlib
 import json
 from pathlib import Path
@@ -14,6 +17,40 @@ from alma_duplicate.domain.comparison import ArchiveContextEvidence
 METHOD = "archive_source_array_1"
 DECISION_REF = "docs/archive_array_evidence.md#source-bound-method-adoption-2026-10-02"
 COMPONENTS = {"7m": "ACA_7M", "12m": "MAIN_ARRAY_12M", "tp": "TOTAL_POWER"}
+
+
+class ArchiveArrayCatalogMode(StrEnum):
+    CAPTURED = "CAPTURED"
+    LIVE = "LIVE"
+
+
+_SCOPE_BY_MODE = {
+    ArchiveArrayCatalogMode.CAPTURED: "CAPTURED_OFFICIAL_AQ_SOURCE_LABELS",
+    ArchiveArrayCatalogMode.LIVE: "LIVE_OFFICIAL_AQ_SOURCE_LABELS",
+}
+
+
+@dataclass(frozen=True)
+class ArchiveArrayCatalogProvenance:
+    mode: ArchiveArrayCatalogMode
+    manifest_sha256: str | None = None
+
+    def __post_init__(self):
+        if not isinstance(self.mode, ArchiveArrayCatalogMode):
+            raise ValueError("Unknown Archive AQ provenance mode")
+        if self.mode is ArchiveArrayCatalogMode.CAPTURED:
+            if not isinstance(self.manifest_sha256, str) or not self.manifest_sha256:
+                raise ValueError(
+                    "Captured AQ provenance requires manifest SHA-256"
+                )
+        elif self.manifest_sha256 is not None:
+            raise ValueError(
+                "Live AQ provenance must not carry a captured manifest SHA-256"
+            )
+
+    @property
+    def scope(self) -> str:
+        return _SCOPE_BY_MODE[self.mode]
 
 
 @dataclass(frozen=True)
@@ -31,7 +68,7 @@ class ArrayRecord:
 class ArchiveArrayEvidence:
     context_id: str
     source_record_id: str
-    manifest_sha256: str
+    manifest_sha256: str | None
     records: tuple[ArrayRecord, ...]
     components: tuple[str, ...]
     diameters_m: tuple[float, ...]
@@ -45,8 +82,12 @@ class ArchiveArrayEvidence:
 @dataclass(frozen=True)
 class ArchiveArrayCatalog:
     records: tuple[ArrayRecord, ...]
-    manifest_sha256: str
+    provenance: ArchiveArrayCatalogProvenance
     input_paths: tuple[Path, ...] = ()
+
+    @property
+    def manifest_sha256(self) -> str | None:
+        return self.provenance.manifest_sha256
 
     def bind(self, context):
         def result(records=(), components=(), diameters=(), reasons=()):
@@ -124,4 +165,20 @@ def load_archive_array_catalog(path):
             inputs.append(response_path)
     except (KeyError, TypeError, IndexError) as exc:
         raise ValueError("Malformed AQ array manifest or response") from exc
-    return ArchiveArrayCatalog(tuple(records), hashlib.sha256(raw).hexdigest(), tuple(inputs))
+    provenance = ArchiveArrayCatalogProvenance(
+        ArchiveArrayCatalogMode.CAPTURED,
+        hashlib.sha256(raw).hexdigest(),
+    )
+    return ArchiveArrayCatalog(tuple(records), provenance, tuple(inputs))
+
+
+def archive_array_catalog_report_metadata(
+    catalog: ArchiveArrayCatalog,
+) -> dict[str, object]:
+    """Serialize catalog provenance without pretending live AQ is captured."""
+    data: dict[str, object] = {"method_version": METHOD}
+    if catalog.manifest_sha256 is not None:
+        data["manifest_sha256"] = catalog.manifest_sha256
+    data["record_count"] = len(catalog.records)
+    data["scope"] = catalog.provenance.scope
+    return data
