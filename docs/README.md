@@ -33,6 +33,9 @@ For formal-rule development:
 4. [Archive dictionary](archive_data_dictionary.md) and [Queue contract](queue_csv_contract.md): source-field semantics and limitations.
 5. Use [line pairing](line_pairing_design.md) and the [remaining PR plan](roadmap.md) for implementation; confirmed decisions are inputs, not a new approval gate.
 
+For Archive antenna diameter, read the [array evidence boundary](archive_array_evidence.md)
+and its five-case real-data review before interpreting mixed antenna names.
+
 [Live Archive smoke instructions](live_archive_smoke.md) describe opt-in source
 verification. The [form design](proposed_observation_form.md) is future interface
 design; the request API owns the accepted backend format. Historical statistics now live in the [snapshot register](evidence/exploration_snapshots.md);

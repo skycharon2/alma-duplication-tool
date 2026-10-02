@@ -217,3 +217,26 @@ def test_mixed_beam_report_renders_both_variants_without_duplicate_candidates(tm
     assert 'id="pair-0-beam-1-0"' in html
     assert client.get('/reports/1/download/report').data == raw
     assert client.get('/reports/1/download/inspection').get_json() == inspect_report(doc)
+
+
+def test_archive_mixed_beam_report_preserves_source_evidence_and_downloads(tmp_path):
+    from alma_duplicate.reporting import report_document, report_json_text
+    from alma_duplicate.rules.evaluation import evaluate_candidate_search
+    from tests.integration.test_archive_array_adapter import synthetic
+
+    search, catalog = synthetic(intents=("CONTINUUM", "LINE"))
+    doc = report_document(evaluate_candidate_search(search, archive_arrays=catalog))
+    raw = report_json_text(doc).encode()
+    case = tmp_path / "archive-mixed"
+    case.mkdir()
+    (case / "report.json").write_bytes(raw)
+    client = create_app({"TESTING": True, "REPORT_DIRECTORY": tmp_path}).test_client()
+    response = client.get("/reports/1")
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "Archive beam hypotheses: 7 m + 12 m" in html
+    assert "synthetic-manifest" in html
+    assert html.count('id="context-0"') == 1
+    assert 'id="pair-0-beam-0-0"' in html and 'id="pair-0-beam-1-0"' in html
+    assert client.get("/reports/1/download/report").data == raw
+    assert client.get("/reports/1/download/inspection").get_json() == inspect_report(doc)

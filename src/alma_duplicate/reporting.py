@@ -63,20 +63,22 @@ def _context_results(item):
                        for pair in item.line_pairs],
     }
     if item.beam_variants:
-        from alma_duplicate.rules.queue_beam import matching_diameters, METHOD
+        from alma_duplicate.rules.queue_beam import matching_diameters
         data["beam_variants"] = [
             {"variant_id": v.variant_id, "diameter_m": v.diameter_m,
              "context_id": item.candidate.context.context_id, **_context_results(v.evaluation)}
             for v in item.beam_variants
         ]
         data["mix_aggregation"] = {
-            "method_version": METHOD,
+            "method_version": item.branches[0].method_version,
             "any_variant_met": bool(matching_diameters(item.beam_variants)),
             "matching_diameters_m": matching_diameters(item.beam_variants),
             "branches": [{"branch": b.branch, "status": b.status,
                           "matching_diameters_m": matching_diameters(item.beam_variants, b.branch)}
                          for b in item.branches],
         }
+    if item.array_evidence is not None:
+        data["array_evidence"] = json_value(item.array_evidence)
     return data
 
 def _spatial(evidence):

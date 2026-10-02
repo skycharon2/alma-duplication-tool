@@ -1,0 +1,86 @@
+{
+  "fixture_kind": "CAPTURED_ENGINEERING_EVIDENCE",
+  "scope": "Selected narrow cones; not an Archive census or proposal acceptance",
+  "samples": [
+    {
+      "sample_id": "pure_12m",
+      "member_ous_uid": "uid://A001/X5a3/X18c",
+      "target_name": "ngc6240",
+      "obs_id": "uid://A001/X5a3/X18c.source.ngc6240.spw.25",
+      "asdm_uid": "uid://A002/Xb4da9a/X69a",
+      "science_keyword": "Merging and interacting galaxies;Luminous and Ultra-Luminous Infra-Red Galaxies (LIRG & ULIRG)",
+      "manifest": "pure_12m/manifest.json",
+      "query_spec": {
+        "ra_deg": 253.24525399994147,
+        "dec_deg": 2.4009860000026486,
+        "radius_deg": 1e-06,
+        "science_only": true,
+        "spatial_strategy": "CENTER"
+      }
+    },
+    {
+      "sample_id": "pure_7m",
+      "member_ous_uid": "uid://A001/X2fa/X245",
+      "target_name": "NGC_6240",
+      "obs_id": "uid://A001/X2fa/X245.source.NGC_6240.spw.16",
+      "asdm_uid": "uid://A002/Xb6c583/Xd99",
+      "science_keyword": "Luminous and Ultra-Luminous Infra-Red Galaxies (LIRG & ULIRG);null",
+      "manifest": "pure_7m/manifest.json",
+      "query_spec": {
+        "ra_deg": 253.24525420005313,
+        "dec_deg": 2.4009861000013637,
+        "radius_deg": 1e-06,
+        "science_only": true,
+        "spatial_strategy": "CENTER"
+      }
+    },
+    {
+      "sample_id": "cm_with_tp",
+      "member_ous_uid": "uid://A001/X2d20/X2e71",
+      "target_name": "HD14055",
+      "obs_id": "uid://A001/X2d20/X2e71.source.HD14055.spw.16",
+      "asdm_uid": "uid://A002/X1001fdc/X2085",
+      "science_keyword": "Debris disks;Exo-planets",
+      "manifest": "cm_with_tp/manifest.json",
+      "query_spec": {
+        "ra_deg": 34.328957498262625,
+        "dec_deg": 33.84685913618155,
+        "radius_deg": 1e-06,
+        "science_only": true,
+        "spatial_strategy": "CENTER"
+      }
+    },
+    {
+      "sample_id": "non_solar_mixed_names",
+      "member_ous_uid": "uid://A001/X3788/Xc194",
+      "target_name": "IRAS_09245-5228",
+      "obs_id": "uid://A001/X3788/Xc194.source.IRAS_09245-5228.spw.24",
+      "asdm_uid": "uid://A002/X11e3e46/Xff4a",
+      "science_keyword": "Disks around high-mass stars;null",
+      "manifest": "non_solar_mixed_names/manifest.json",
+      "query_spec": {
+        "ra_deg": 141.5461103909849,
+        "dec_deg": -52.70729721185924,
+        "radius_deg": 1e-06,
+        "science_only": true,
+        "spatial_strategy": "CENTER"
+      }
+    },
+    {
+      "sample_id": "solar",
+      "member_ous_uid": "uid://A001/X133d/X255b",
+      "target_name": "Sun_10",
+      "obs_id": "uid://A001/X133d/X255b.source.Sun_10.spw.11",
+      "asdm_uid": "uid://A002/Xd74c3f/X13bc4",
+      "science_keyword": "The Sun;null",
+      "manifest": "solar/manifest.json",
+      "query_spec": {
+        "ra_deg": 278.12083333333334,
+        "dec_deg": -23.216305555555557,
+        "radius_deg": 1e-06,
+        "science_only": true,
+        "spatial_strategy": "CENTER"
+      }
+    }
+  ]
+}

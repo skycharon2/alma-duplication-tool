@@ -1,0 +1,34 @@
+[
+  {
+    "sample_id": "cm_with_tp",
+    "url": "https://almascience.eso.org/dataPortal/member.uid___A001_X2d20_X2e71.qa2_report.pdf",
+    "retrieved_at": "2026-10-02T07:21:51.388228+00:00",
+    "status_code": 200,
+    "file": "cm_with_tp-qa2.pdf",
+    "sha256": "7a29453d02516c5bffb09ad35b11542563a8469fb254bf0a382d7089acfa0695"
+  },
+  {
+    "sample_id": "cm_with_tp",
+    "url": "https://almascience.eso.org/dataPortal/member.uid___A001_X2d20_X2e71.README.txt",
+    "retrieved_at": "2026-10-02T07:21:51.714335+00:00",
+    "status_code": 200,
+    "file": "cm_with_tp-readme.txt",
+    "sha256": "5ed3d51b332bbc0991f2877d948dab70ba293e616dcf9b53bc891b9b10a09d29"
+  },
+  {
+    "sample_id": "non_solar_mixed_names",
+    "url": "https://almascience.eso.org/dataPortal/member.uid___A001_X3788_Xc194.README.txt",
+    "retrieved_at": "2026-10-02T07:21:51.948900+00:00",
+    "status_code": 200,
+    "file": "non_solar_mixed_names-readme.txt",
+    "sha256": "5ed3d51b332bbc0991f2877d948dab70ba293e616dcf9b53bc891b9b10a09d29"
+  },
+  {
+    "sample_id": "non_solar_mixed_names",
+    "url": "https://almascience.eso.org/dataPortal/member.uid___A001_X3788_Xc194.qa2_report.pdf",
+    "retrieved_at": "2026-10-02T07:21:52.344831+00:00",
+    "status_code": 200,
+    "file": "non_solar_mixed_names-qa2.pdf",
+    "sha256": "6757ec1331718a3d1a6aeac154ac31e23b5a183cf00f156372b60f6378fd5b55"
+  }
+]

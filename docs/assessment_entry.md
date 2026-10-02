@@ -21,7 +21,10 @@ remains part of the UI delivery, not a completed claim here.
 ## Lazy source contract
 
 `AssessmentSources.archive_provider` is called only after request and option
-validation. It returns `ArchiveInput(client, replay_metadata)`; `archive_kind`
+validation. It returns `ArchiveInput(client, replay_metadata, array_catalog)`;
+the optional `array_catalog` supplies captured
+[source-bound official array evidence](archive_array_evidence.md).
+`archive_kind`
 is `LIVE` or `REPLAY`, and must be supplied together with the provider. Neither
 is supplied when Archive input is unavailable. `queue_loader` is the existing
 lazy Queue loader accepted by candidate search. No default network client is

@@ -1,0 +1,14 @@
+{
+  "kind": "TARGETED_SAMPLE_LOOKUP",
+  "endpoint": "https://almascience.eso.org/tap",
+  "responses": [
+    {
+      "adql": "SELECT member_ous_uid, obs_id, target_name, s_ra, s_dec, antenna_arrays, science_keyword, is_mosaic, asdm_uid FROM ivoa.obscore WHERE science_observation = 'T' AND ((member_ous_uid = 'uid://A001/X5a3/X18c' AND target_name = 'ngc6240') OR (member_ous_uid = 'uid://A001/X2fa/X245' AND target_name = 'NGC_6240') OR (member_ous_uid = 'uid://A001/X2d20/X2e71' AND target_name = 'HD14055') OR (member_ous_uid = 'uid://A001/X3788/Xc194' AND target_name = 'IRAS_09245-5228') OR (member_ous_uid = 'uid://A001/X133d/X255b' AND target_name = 'Sun_10'))",
+      "maxrec": 1000,
+      "file": "response-0.xml",
+      "sha256": "d692c7424f07d6c61c2677a8ff3ae3841614325c00d3e1843427b85fbb1bbd57",
+      "started_at": "2026-10-01T12:34:04.388104+00:00",
+      "finished_at": "2026-10-01T12:34:04.961193+00:00"
+    }
+  ]
+}

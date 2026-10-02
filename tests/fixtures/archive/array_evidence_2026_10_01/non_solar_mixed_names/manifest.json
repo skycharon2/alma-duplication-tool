@@ -1,0 +1,38 @@
+{
+  "replay_version": "1",
+  "fixture_kind": "CAPTURED_TAP_RESPONSE",
+  "endpoint": "https://almascience.eso.org/tap",
+  "maxrec": 1000,
+  "query_run_id": "40aa40d2-62ec-4535-a30b-48902f4ab079",
+  "started_at": "2026-10-01T12:34:45.702425+00:00",
+  "finished_at": "2026-10-01T12:34:59.224435+00:00",
+  "responses": [
+    {
+      "adql": "SELECT column_name\nFROM TAP_SCHEMA.columns\nWHERE table_name = 'ivoa.obscore'\n    AND column_name IN ('s_resolution', 's_fov', 't_min', 't_max', 'band_list', 'pol_states')",
+      "maxrec": 7,
+      "file": "response-0.xml",
+      "sha256": "ea26690cbf93f831d211be46940f77dad13003478d9cd66fb612ca4f47e06561",
+      "started_at": "2026-10-01T12:34:45.702455+00:00",
+      "finished_at": "2026-10-01T12:34:45.948024+00:00"
+    },
+    {
+      "adql": "SELECT COUNT(*) AS total_matches\nFROM ivoa.obscore\nWHERE 1 = CONTAINS(POINT('ICRS', s_ra, s_dec), CIRCLE('ICRS', 141.546110390985, -52.7072972118592, 1e-06))\n    AND science_observation = 'T'",
+      "maxrec": 1,
+      "file": "response-1.xml",
+      "sha256": "c52bfabf7816147a2fe2c989b1af3252af519646c56dedcfb0ca706e6e2c686c",
+      "started_at": "2026-10-01T12:34:45.950200+00:00",
+      "finished_at": "2026-10-01T12:34:52.610461+00:00"
+    },
+    {
+      "adql": "SELECT\n    proposal_id,\n    obs_publisher_did,\n    group_ous_uid,\n    member_ous_uid,\n    asdm_uid,\n    obs_id,\n    target_name,\n    s_ra,\n    s_dec,\n    s_region,\n    frequency,\n    bandwidth,\n    em_xel,\n    frequency_support,\n    spectral_resolution,\n    spatial_resolution,\n    sensitivity_10kms,\n    cont_sensitivity_bandwidth,\n    antenna_arrays,\n    is_mosaic,\n    science_observation,\n    qa2_passed,\n    obs_release_date,\n    lastModified,\n    s_resolution,\n    s_fov,\n    t_min,\n    t_max,\n    band_list,\n    pol_states\nFROM ivoa.obscore\nWHERE 1 = CONTAINS(POINT('ICRS', s_ra, s_dec), CIRCLE('ICRS', 141.546110390985, -52.7072972118592, 1e-06))\n    AND science_observation = 'T'",
+      "maxrec": 1000,
+      "file": "response-2.xml",
+      "sha256": "05bcf155a19742bdc1118968f8081ac6c6e28eccbe102849cd80453b0d6a2121",
+      "started_at": "2026-10-01T12:34:52.615363+00:00",
+      "finished_at": "2026-10-01T12:34:59.207949+00:00"
+    }
+  ],
+  "expected_count": 4,
+  "retrieved_count": 4,
+  "status": "COMPLETE"
+}

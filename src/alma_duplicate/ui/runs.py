@@ -18,6 +18,7 @@ from alma_duplicate.ui.reports import ReportArtifact, report_artifact
 class OfflineAssessment:
     archive_replay: str | None = None
     queue_csv: str | None = None
+    archive_array_evidence: str | None = None
 
     @property
     def enabled(self):
@@ -31,7 +32,9 @@ class OfflineAssessment:
 
         def archive_provider():
             client = RecordedArchiveClient(self.archive_replay)
-            return ArchiveInput(client, client.metadata)
+            from alma_duplicate.archive_array_evidence import load_archive_array_catalog
+            catalog = load_archive_array_catalog(self.archive_array_evidence) if self.archive_array_evidence else None
+            return ArchiveInput(client, client.metadata, catalog)
 
         replay = self.archive_replay and "ARCHIVE" in selected
         loader = (lambda: QueueCsvClient().load(self.queue_csv)) if self.queue_csv and queue else None

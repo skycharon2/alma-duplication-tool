@@ -146,6 +146,15 @@ Do not make all-family experimental closure a blanket prerequisite for Queue con
 
 ## Thin UI delivery increments
 
+The [Archive array evidence review](evidence/archive_array_review_2026-10-02.md)
+adds five real replay examples before live browser integration. The optional
+[source-bound adapter](archive_array_evidence.md) now consumes captured official
+AQ labels, confirming the two 7-m science targets and evaluating complete D7/D12
+alternatives for explicitly mixed labels. TP retains its 12-m physical aperture
+and unresolved scientific applicability. Automatic live AQ acquisition, capture
+freshness and component-specific product evidence remain separate work. Live
+execution must continue to show unresolved candidates explicitly.
+
 1. Report display and export — implemented as a [read-only viewer](ui_report_browser.md): consume existing acceptance reports; show each
    source status, independent continuum/LINE branches and context/window/SPW
    evidence. Export the same complete report, optionally with inspection v3.

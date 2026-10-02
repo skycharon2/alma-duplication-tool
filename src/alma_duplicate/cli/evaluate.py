@@ -21,6 +21,8 @@ def main(argv=None, *, archive_client_factory=None):
     archive_input = parser.add_mutually_exclusive_group()
     archive_input.add_argument("--live-archive", action="store_true")
     archive_input.add_argument("--archive-replay", type=Path, help="Replay a captured TAP manifest offline")
+    parser.add_argument("--archive-array-evidence", type=Path,
+                        help="Bind captured official AQ source array labels using their manifest")
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--beam-decision-ref")
     parser.add_argument("--queue-candidate-beam", action="store_true",
@@ -35,7 +37,11 @@ def main(argv=None, *, archive_client_factory=None):
     args = parser.parse_args(argv)
 
     try:
+        if args.archive_array_evidence is not None and not (args.archive_replay or args.live_archive):
+            raise ValueError("--archive-array-evidence requires --archive-replay or --live-archive")
         inputs = [args.request]
+        if args.archive_array_evidence is not None:
+            inputs.append(args.archive_array_evidence)
         if args.queue_csv is not None:
             inputs.append(args.queue_csv)
         if args.archive_replay is not None:
@@ -49,17 +55,23 @@ def main(argv=None, *, archive_client_factory=None):
         raw, payload = load_request_document(args.request)
 
         def archive_provider():
+            catalog = None
+            if args.archive_array_evidence is not None:
+                from alma_duplicate.archive_array_evidence import load_archive_array_catalog
+                catalog = load_archive_array_catalog(args.archive_array_evidence)
+                if args.output.resolve() in catalog.input_paths:
+                    raise ValueError("Output must not replace an array evidence response")
             if args.archive_replay is not None:
                 from alma_duplicate.clients.archive_replay import RecordedArchiveClient
                 client = RecordedArchiveClient(args.archive_replay)
                 if args.output.resolve() in client.input_paths:
                     raise ValueError("Output must not replace a replay response")
-                return ArchiveInput(client, client.metadata)
+                return ArchiveInput(client, client.metadata, catalog)
             factory = archive_client_factory
             if factory is None:
                 from alma_duplicate.clients.archive_client import ArchiveClient
                 factory = lambda: ArchiveClient("https://almascience.eso.org/tap")
-            return ArchiveInput(factory())
+            return ArchiveInput(factory(), array_catalog=catalog)
 
         archive_kind = "REPLAY" if args.archive_replay is not None else "LIVE" if args.live_archive else None
         loader = (lambda: QueueCsvClient().load(args.queue_csv)) if args.queue_csv is not None else None
@@ -84,8 +96,8 @@ def main(argv=None, *, archive_client_factory=None):
             }, allow_nan=False), file=sys.stderr)
             return 2
         if result.status == AssessmentStatus.SOLAR_EXEMPTION:
-            if args.overwrite and args.archive_replay is not None:
-                raise ValueError("Solar exemption with --archive-replay requires a new output (no --overwrite)")
+            if args.overwrite and (args.archive_replay is not None or args.archive_array_evidence is not None):
+                raise ValueError("Solar exemption with Archive evidence requires a new output (no --overwrite)")
             write_report(args.output, result.document, overwrite=args.overwrite)
             print(f"Solar exemption report written: {args.output}")
             return 0
