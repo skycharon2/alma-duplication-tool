@@ -15,7 +15,7 @@ from alma_duplicate.ui.reports import ReportArtifact, report_artifact
 
 
 @dataclass(frozen=True)
-class OfflineAssessment:
+class BrowserAssessment:
     archive_replay: str | None = None
     queue_csv: str | None = None
     archive_array_evidence: str | None = None
@@ -53,6 +53,9 @@ class OfflineAssessment:
             # A browser form has no original input-file bytes to hash.
         )
 
+
+# Historical internal name retained for import compatibility.
+OfflineAssessment = BrowserAssessment
 
 @dataclass(frozen=True)
 class AssessmentRun:

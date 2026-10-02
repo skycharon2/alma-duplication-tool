@@ -6,7 +6,7 @@ from flask import Flask, Response, abort, redirect, render_template, request, ur
 
 from alma_duplicate.ui.reports import load_reports
 from alma_duplicate.ui.report_view import criterion_view, pair_binding
-from alma_duplicate.ui.runs import OfflineAssessment, RunStore
+from alma_duplicate.ui.runs import BrowserAssessment, RunStore
 from alma_duplicate.ui.proposed import MAX_WINDOWS, assessment_supported, contributing_windows, initial_form, new_row, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
 
@@ -25,7 +25,7 @@ def create_app(config=None):
         app.config.from_mapping(config)
 
     reports = load_reports(app.config["REPORT_DIRECTORY"])
-    offline = OfflineAssessment(app.config["OFFLINE_ARCHIVE_REPLAY"], app.config["OFFLINE_QUEUE_CSV"],
+    offline = BrowserAssessment(app.config["OFFLINE_ARCHIVE_REPLAY"], app.config["OFFLINE_QUEUE_CSV"],
                                 app.config["ARCHIVE_ARRAY_EVIDENCE"])
     runs = RunStore(app.config["MAX_RETAINED_RUNS"], app.config["MAX_RETAINED_BYTES"])
 
