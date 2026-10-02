@@ -6,7 +6,15 @@ import shutil
 
 import pytest
 
-from alma_duplicate.archive_array_evidence import ArchiveArrayCatalog, ArrayRecord, load_archive_array_catalog
+from alma_duplicate.archive_array_evidence import (
+    METHOD,
+    ArchiveArrayCatalog,
+    ArchiveArrayCatalogMode,
+    ArchiveArrayCatalogProvenance,
+    ArrayRecord,
+    archive_array_catalog_report_metadata,
+    load_archive_array_catalog,
+)
 from alma_duplicate.candidate_search import search_candidates
 from alma_duplicate.reporting import report_document
 from alma_duplicate.report_inspection import inspect_report
@@ -19,6 +27,54 @@ from tests.integration.test_search_plan_spatial import archive
 from alma_duplicate.spatial import adapt_spatial
 
 MANIFEST = FIXTURE / "supporting/aq-manifest.json"
+
+
+def test_catalog_provenance_distinguishes_captured_and_live():
+    captured = load_archive_array_catalog(MANIFEST)
+    digest = hashlib.sha256(MANIFEST.read_bytes()).hexdigest()
+
+    assert captured.provenance.mode is ArchiveArrayCatalogMode.CAPTURED
+    assert captured.manifest_sha256 == digest
+    assert archive_array_catalog_report_metadata(captured) == {
+        "method_version": METHOD,
+        "manifest_sha256": digest,
+        "record_count": len(captured.records),
+        "scope": "CAPTURED_OFFICIAL_AQ_SOURCE_LABELS",
+    }
+
+    live = ArchiveArrayCatalog(
+        captured.records,
+        ArchiveArrayCatalogProvenance(ArchiveArrayCatalogMode.LIVE),
+    )
+
+    assert live.provenance.mode is ArchiveArrayCatalogMode.LIVE
+    assert live.manifest_sha256 is None
+    assert archive_array_catalog_report_metadata(live) == {
+        "method_version": METHOD,
+        "record_count": len(live.records),
+        "scope": "LIVE_OFFICIAL_AQ_SOURCE_LABELS",
+    }
+
+    _, context = replay("pure_7m")
+    evidence = live.bind(context)
+    assert evidence.manifest_sha256 is None
+    assert evidence.diameters_m == (7.0,)
+    assert evidence.reasons == ("OFFICIAL_AQ_SOURCE_ARRAY_BOUND",)
+
+
+@pytest.mark.parametrize(
+    "mode,manifest_sha256",
+    [
+        (ArchiveArrayCatalogMode.CAPTURED, None),
+        (ArchiveArrayCatalogMode.LIVE, "not-a-captured-manifest"),
+    ],
+)
+def test_catalog_provenance_rejects_manifest_mode_mismatch(
+    mode,
+    manifest_sha256,
+):
+    with pytest.raises(ValueError):
+        ArchiveArrayCatalogProvenance(mode, manifest_sha256)
 
 
 @pytest.mark.parametrize("sample_id,d", [("pure_12m", 12), ("pure_7m", 7),
@@ -53,7 +109,13 @@ def synthetic(label="12m 7m", *, offset=16, intents=("CONTINUUM",)):
     record = ArrayRecord(f"{key.member_ous_uid}.source.{key.source_name}", key.member_ous_uid,
                          key.source_name, label, "synthetic-response", "2026-10-02T00:00:00+00:00",
                          "https://example.invalid/synthetic")
-    catalog = ArchiveArrayCatalog((record,), "synthetic-manifest")
+    catalog = ArchiveArrayCatalog(
+        (record,),
+        ArchiveArrayCatalogProvenance(
+            ArchiveArrayCatalogMode.CAPTURED,
+            "synthetic-manifest",
+        ),
+    )
     search = search_candidates(v, archive_result=source)
     return search, catalog
 
@@ -209,6 +271,44 @@ def write_synthetic_catalog(directory, record):
         "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
         "retrieved_at": record.retrieved_at, "request_body": {"query": {"term": {"mous": record.member_ous_uid}}}}]))
     return manifest
+
+
+def test_shared_entry_reports_live_catalog_without_captured_manifest():
+    from alma_duplicate.assessment import (
+        ArchiveInput,
+        AssessmentSources,
+        assess_observation,
+    )
+
+    search, catalog = synthetic()
+    live_catalog = replace(
+        catalog,
+        provenance=ArchiveArrayCatalogProvenance(
+            ArchiveArrayCatalogMode.LIVE
+        ),
+    )
+
+    class Client:
+        def search(self, *args, **kwargs):
+            return search.archive.source_record
+
+    result = assess_observation(
+        **payload(),
+        sources=AssessmentSources(
+            "LIVE",
+            lambda: ArchiveInput(
+                Client(),
+                array_catalog=live_catalog,
+            ),
+        ),
+    )
+
+    assert result.document is not None
+    assert result.document["sources"]["ARCHIVE"]["array_evidence"] == {
+        "method_version": METHOD,
+        "record_count": len(live_catalog.records),
+        "scope": "LIVE_OFFICIAL_AQ_SOURCE_LABELS",
+    }
 
 
 def test_cli_and_shared_entry_export_bound_catalog_and_protect_inputs(tmp_path):

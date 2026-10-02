@@ -15,7 +15,10 @@ from alma_duplicate.request_validation import validate_proposed_observation
 from alma_duplicate.search_plan import validate_search_plan_configuration
 from alma_duplicate.rules.evaluation import evaluate_candidate_search
 from alma_duplicate.rules.evaluation_model import SolarExemptionReport
-from alma_duplicate.archive_array_evidence import ArchiveArrayCatalog
+from alma_duplicate.archive_array_evidence import (
+    ArchiveArrayCatalog,
+    archive_array_catalog_report_metadata,
+)
 
 
 class AssessmentStatus(StrEnum):
@@ -120,13 +123,9 @@ def assess_observation(request: dict, search_options: dict, *,
         archive_replay_metadata=archive.replay_metadata if archive else None,
     )
     if archive is not None and archive.array_catalog is not None:
-        from alma_duplicate.archive_array_evidence import METHOD
-        document["sources"]["ARCHIVE"]["array_evidence"] = {
-            "method_version": METHOD,
-            "manifest_sha256": archive.array_catalog.manifest_sha256,
-            "record_count": len(archive.array_catalog.records),
-            "scope": "CAPTURED_OFFICIAL_AQ_SOURCE_LABELS",
-        }
+        document["sources"]["ARCHIVE"]["array_evidence"] = (
+            archive_array_catalog_report_metadata(archive.array_catalog)
+        )
     unavailable = any(source.status in {"FAILED", "INCOMPLETE", "NOT_PROVIDED"}
                       for source in (search.archive, search.queue))
     status = AssessmentStatus.SOURCES_UNAVAILABLE if unavailable else AssessmentStatus.COMPLETED
