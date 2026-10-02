@@ -135,8 +135,10 @@ real-proposal review is claimed.
 
 Recorded browser live-source verification on 2026-10-02: `13 passed` in
 `tests/ui/test_live_source.py`, `102 passed` in `tests/ui`; Ruff F and
-`git diff --check` PASS. These tests forbid real network access, so current live
-service availability is not claimed.
+`git diff --check` PASS. Those regression tests forbid real network access.
+A separate [live browser Archive smoke](evidence/live_browser_archive_smoke_2026-10-02.md)
+records a successful point-in-time production TAP and browser execution without
+claiming scientific acceptance or future service availability.
 
 Recorded local verification of that increment (2026-10-01): `1575 passed,
 12 skipped`; all 15 offline acceptance catalog cases PASS; Ruff F and
