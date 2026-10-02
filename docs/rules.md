@@ -56,7 +56,7 @@ method needs uncertainty bounds, it must define and version them explicitly.
 | POS-SINGLE | `queue_pos_single_6` (supported Queue); `queue_pos_single_1` (legacy) | The supported Queue row-beam method is defined in [Queue common](queue_common.md); legacy reports retain their original method identity. Structured issues preserve proposed, candidate and method limitations. |
 | CONT-SETUP | `continuum_setup_3` (approved without nominal conversion); `continuum_setup_2` (legacy) | At least two distinct proposed windows with USABLE width strictly > 1.8 GHz. Exactly 1.8 does not qualify; 1.8000000005 does. UNKNOWN width semantics remain unresolved, including narrow widths. |
 | CONT-SETUP declaration | `continuum_setup_declaration_1` | Explicit researcher confirmation of that same qualification; accepted project evidence with USER_DECLARED provenance. A contradictory complete list leaves the outcome unresolved. Ordinary CONTINUUM intent does not qualify. See the [declaration contract](continuum_setup_declaration.md). |
-| Archive POS-SINGLE | `archive_pos_single_1` | Candidate `frequency`, unambiguous interferometric diameter, spherical separation <= half-power radius; inclusive float64 boundary. |
+| Archive POS-SINGLE | `archive_pos_single_3` (source-bound AQ); `archive_pos_single_1` (legacy TAP-only) | Candidate `frequency`, source-bound or otherwise supported physical diameter, spherical separation <= half-power radius; inclusive float64 boundary. TP uses D=12 m for this geometric criterion under the dated project decision; broader TP science scope remains separate. |
 | CONT-FREQ | `archive_cont_freq_1`; `queue_cont_freq_2` | Archive uses its source frequency estimate; supported Queue continuum uses the coherent row reference SKY frequency. Both use the versioned factor-1.3 contract without cross-source substitution. |
 | CONT-RMS | `archive_cont_rms_2`; `queue_cont_rms_portal_2` | Archive uses its direct aggregate RMS comparison. Supported Queue continuum uses the same-row reference sensitivity and reference width with the versioned usable-bandwidth union before the one-sided factor-two comparison. Source-specific methods never borrow RMS evidence across sources. |
 
@@ -240,9 +240,11 @@ retain their independent source-specific methods.
 
 Supplying `archive_arrays=catalog` selects the optional
 [official source array contract](archive_array_evidence.md).
-Position uses `archive_pos_single_2`; a source-bound `7m 12m` label creates
+Position uses `archive_pos_single_3`; a source-bound `7m 12m` label creates
 complete 7-m and 12-m context branches, aggregated with
 `archive_beam_variant_or_1`. CONTINUUM and LINE retain their existing independent
-criteria and Source–SPW bindings. TP records physical D = 12 m but blocks formal
-interferometric branch evaluation. Missing/ambiguous official evidence is UNKNOWN.
+criteria and Source–SPW bindings. TP uses physical D = 12 m for POS-SINGLE and
+returns the geometric position result, while the retained TP scope reason keeps
+broader interferometric CONTINUUM/LINE branch evaluation UNKNOWN.
+Missing/ambiguous official evidence is UNKNOWN.
 Without a catalog, `archive_pos_single_1` remains unchanged.

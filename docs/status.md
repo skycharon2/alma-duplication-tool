@@ -162,3 +162,16 @@ Local verification on 2026-10-02: 1609 passed, 12 skipped; Ruff F passed.
 The full suite includes the existing offline acceptance and UI export checks.
 Skipped live/snapshot tests are not passes. Original captured evidence bytes and
 historical acceptance labels remain unchanged.
+
+## Archive TP D=12 position follow-up (2026-10-02)
+
+The supervisor-confirmed TP position decision is implemented narrowly in the
+source-bound Archive path. A bound `TP` component retains `TOTAL_POWER` identity
+and uses physical `D = 12 m` for the existing POS-SINGLE half-power-beam
+calculation, producing an evaluated geometric outcome when the other position
+evidence is complete. The source-bound position method is
+`archive_pos_single_3`; historical `archive_pos_single_2` reports retain their
+original meaning.
+
+Broader TP CONTINUUM/LINE applicability is unchanged in this increment and
+remains INDETERMINATE rather than inheriting main-array 12-m semantics.
