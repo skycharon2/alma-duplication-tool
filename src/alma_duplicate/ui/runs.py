@@ -19,35 +19,79 @@ class BrowserAssessment:
     archive_replay: str | None = None
     queue_csv: str | None = None
     archive_array_evidence: str | None = None
+    live_archive: bool = False
+
+    def __post_init__(self):
+        if type(self.live_archive) is not bool:
+            raise ValueError("LIVE_ARCHIVE must be boolean")
+        if self.live_archive and self.archive_replay:
+            raise ValueError(
+                "Live Archive and Archive replay are mutually exclusive"
+            )
+
+    @property
+    def archive_kind(self):
+        if self.live_archive:
+            return "LIVE"
+        if self.archive_replay:
+            return "REPLAY"
+        return None
 
     @property
     def enabled(self):
-        return bool(self.archive_replay or self.queue_csv)
+        return bool(self.archive_kind or self.queue_csv)
 
     def assess(self, document):
-        """Construct fresh lazy providers; never substitute a live Archive client."""
+        """Construct fresh lazy providers; never fall back between Archive modes."""
         selected = document["search_options"]["sources"]
         intents = document["request"]["intents"]
         queue = "QUEUE" in selected
+        archive_kind = self.archive_kind if "ARCHIVE" in selected else None
 
         def archive_provider():
-            client = RecordedArchiveClient(self.archive_replay)
-            from alma_duplicate.archive_array_evidence import load_archive_array_catalog
-            catalog = load_archive_array_catalog(self.archive_array_evidence) if self.archive_array_evidence else None
-            return ArchiveInput(client, client.metadata, catalog)
+            from alma_duplicate.archive_array_evidence import (
+                load_archive_array_catalog,
+            )
 
-        replay = self.archive_replay and "ARCHIVE" in selected
-        loader = (lambda: QueueCsvClient().load(self.queue_csv)) if self.queue_csv and queue else None
+            catalog = (
+                load_archive_array_catalog(self.archive_array_evidence)
+                if self.archive_array_evidence
+                else None
+            )
+
+            if archive_kind == "REPLAY":
+                client = RecordedArchiveClient(self.archive_replay)
+                return ArchiveInput(client, client.metadata, catalog)
+
+            if archive_kind == "LIVE":
+                from alma_duplicate.clients.archive_client import ArchiveClient
+
+                return ArchiveInput(
+                    ArchiveClient("https://almascience.eso.org/tap"),
+                    array_catalog=catalog,
+                )
+
+            raise RuntimeError(
+                "Archive provider requested without Archive configuration"
+            )
+
+        loader = (
+            (lambda: QueueCsvClient().load(self.queue_csv))
+            if self.queue_csv and queue
+            else None
+        )
+
         return assess_observation(
-            document["request"], document["search_options"],
+            document["request"],
+            document["search_options"],
             options=AssessmentOptions(
                 queue_common=queue,
                 queue_continuum=queue and "CONTINUUM" in intents,
                 queue_line=queue and "LINE" in intents,
             ),
             sources=AssessmentSources(
-                archive_kind="REPLAY" if replay else None,
-                archive_provider=archive_provider if replay else None,
+                archive_kind=archive_kind,
+                archive_provider=archive_provider if archive_kind else None,
                 queue_loader=loader,
             ),
             # A browser form has no original input-file bytes to hash.
@@ -88,7 +132,7 @@ class RunStore:
         if result.document is None:
             raise ValueError("An assessment without a report cannot be retained")
         artifact = report_artifact(
-            "Offline assessment", report_json_text(result.document).encode("utf-8"),
+            "Browser assessment", report_json_text(result.document).encode("utf-8"),
         )
         run = AssessmentRun(artifact, report_json_text(request_document).encode("utf-8"), str(result.status))
         if run.byte_size > self._max_bytes:

@@ -28,7 +28,7 @@
 <div class="report-page">
 <p><a href="{{ url_for('proposed') }}">Proposed observation</a> / <a href="{{ url_for('report_index') }}">Existing reports</a></p>
 <div class="page-heading"><h1>{{ item.name }}</h1></div>
-{% if run %}<div class="notice"><strong>Offline reference data</strong><span>This assessment used your submitted input and configured local sources. No live Archive query was made.</span></div>
+{% if run %}<div class="notice"><strong>Assessment run</strong><span>This assessment used your submitted input and configured sources. Source provenance is preserved in the report and downloads.</span></div>
 <p class="report-hash">Run ID: {{ report_id }} · Execution status: {{ run.status }}</p>
 <p>Reports are retained temporarily in this local process. Download to keep a copy; restarting or reaching retention limits removes older runs.</p>
 <p><a href="{{ url_for('proposed') }}">Enter another observation</a> · <a href="{{ url_for(download_endpoint, report_id=report_id, kind='request') }}">Download this run's input request</a></p>
