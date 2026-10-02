@@ -17,6 +17,7 @@ def evaluate_archive_position(request, context, spatial_evidence, *, array_evide
     details = ()
     outcome = None
     solar = request.target_kind == "SUN"
+    scope_reasons = []
     def issue(code, path, side=S.CANDIDATE):
         issues.append(CriterionIssue(side, code, path, code))
     if request.target_kind != "FIXED" or request.geometry != "SINGLE_POINTING" or request.position is None:
@@ -55,9 +56,9 @@ def evaluate_archive_position(request, context, spatial_evidence, *, array_evide
                 for reason in array_evidence.reasons:
                     issue(reason, "context.official_array")
             elif array_evidence.total_power_at(diameter):
-                # Physical aperture is known; single-dish scientific semantics
-                # have not been approved by the interferometric method.
-                issue("ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED", "context.official_array")
+                # Supervisor-confirmed physical beam interpretation: TP uses D=12 m.
+                # Keep broader TP science scope separate from the geometric criterion.
+                scope_reasons.append("ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED")
         elif beam_diameter_m is not None:
             raise ValueError("Archive beam variants require bound official array evidence")
         elif (array.unrecognized_tokens or len(array.family_counts) > 1
@@ -87,15 +88,31 @@ def evaluate_archive_position(request, context, spatial_evidence, *, array_evide
         if not issues:
             outcome = O.SATISFIED if separation <= radius else O.NOT_SATISFIED
     from alma_duplicate.archive_array_evidence import DECISION_REF as ARRAY_DECISION
+    tp_position_decision = "docs/evidence/archive_tp_d12_position_decision_2026-10-02.md"
+    if solar:
+        reasons = ("SOLAR_EXEMPT",)
+    elif issues:
+        reasons = tuple(i.code for i in issues) + tuple(scope_reasons)
+    else:
+        reasons = (
+            "WITHIN_INCLUSIVE_CANDIDATE_BEAM"
+            if outcome is O.SATISFIED
+            else "OUTSIDE_CANDIDATE_BEAM",
+            *scope_reasons,
+        )
+    decision_refs = (DECISION_REF,)
+    if array_evidence is not None:
+        decision_refs += (ARRAY_DECISION,)
+    if scope_reasons:
+        decision_refs += (tp_position_decision,)
     return CriterionResult(
         criterion_id="POS-SINGLE", policy_ref=f"{POLICY_DOCUMENT}, Position",
-        method_version="archive_pos_single_2" if array_evidence is not None else "archive_pos_single_1", approval=MethodApproval.APPROVED,
+        method_version="archive_pos_single_3" if array_evidence is not None else "archive_pos_single_1", approval=MethodApproval.APPROVED,
         applicability=A.NOT_APPLICABLE if solar else A.UNRESOLVED if issues else A.APPLICABLE,
         evaluation=E.NOT_APPLICABLE if solar else E.INSUFFICIENT_INFORMATION if issues else E.EVALUATED,
         outcome=outcome, context_id=context.context_id, proposed=None, candidate=None,
         derived=derived, details=details, issues=tuple(issues),
-        reasons=("SOLAR_EXEMPT",) if solar else tuple(i.code for i in issues) if issues else
-        ("WITHIN_INCLUSIVE_CANDIDATE_BEAM" if outcome is O.SATISFIED else "OUTSIDE_CANDIDATE_BEAM",),
-        decision_refs=(DECISION_REF, ARRAY_DECISION) if array_evidence is not None else (DECISION_REF,),
+        reasons=reasons,
+        decision_refs=decision_refs,
         numeric_method="SPHERICAL_FLOAT64_INCLUSIVE_NO_EQUALITY_BAND",
     )

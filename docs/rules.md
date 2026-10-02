@@ -240,9 +240,11 @@ retain their independent source-specific methods.
 
 Supplying `archive_arrays=catalog` selects the optional
 [official source array contract](archive_array_evidence.md).
-Position uses `archive_pos_single_2`; a source-bound `7m 12m` label creates
+Position uses `archive_pos_single_3`; a source-bound `7m 12m` label creates
 complete 7-m and 12-m context branches, aggregated with
 `archive_beam_variant_or_1`. CONTINUUM and LINE retain their existing independent
-criteria and Source–SPW bindings. TP records physical D = 12 m but blocks formal
-interferometric branch evaluation. Missing/ambiguous official evidence is UNKNOWN.
+criteria and Source–SPW bindings. TP uses physical D = 12 m for POS-SINGLE and
+returns the geometric position result, while the retained TP scope reason keeps
+broader interferometric CONTINUUM/LINE branch evaluation UNKNOWN. Missing/ambiguous
+official evidence is UNKNOWN.
 Without a catalog, `archive_pos_single_1` remains unchanged.

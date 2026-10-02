@@ -32,7 +32,7 @@ def test_real_official_label_resolves_science_target_not_calibrator(sample_id, d
     assert evidence.diameters_m == (d,)
     result = evaluate_archive_position(request_at(SAMPLES[sample_id]), context,
                                       adapt_spatial(context, source), array_evidence=evidence)
-    assert result.method_version == "archive_pos_single_2"
+    assert result.method_version == "archive_pos_single_3"
     assert result.outcome == "SATISFIED"
     assert dict(result.derived)["antenna_diameter_m"] == d
     assert evidence.records[0].source_name == SAMPLES[sample_id]["target_name"]
@@ -83,16 +83,26 @@ def test_archive_mixed_diameters_evaluate_whole_branches_and_report_once():
         assert "criterion_id" in node
 
 
-def test_tp_has_twelve_metre_dish_but_never_inherits_interferometric_science_pass():
-    search, catalog = synthetic("TP", intents=("CONTINUUM", "LINE"))
+@pytest.mark.parametrize("offset,outcome", [(0, "SATISFIED"), (25, "NOT_SATISFIED")])
+def test_tp_uses_d12_for_position_but_not_interferometric_branch_scope(offset, outcome):
+    from alma_duplicate.primary_beam import primary_beam_fwhm_deg
+
+    search, catalog = synthetic("TP", offset=offset, intents=("CONTINUUM", "LINE"))
     c = evaluate_candidate_search(search, archive_arrays=catalog).context_evaluations[0]
     assert c.array_evidence.components == ("TOTAL_POWER",)
     assert c.array_evidence.diameters_m == (12.,)
     pos = c.criteria[1]
-    assert dict(pos.derived)["antenna_diameter_m"] == 12
-    assert dict(pos.derived)["candidate_radius_deg"] > 0
-    assert pos.outcome is None
+    derived = dict(pos.derived)
+    assert pos.method_version == "archive_pos_single_3"
+    assert derived["antenna_diameter_m"] == 12
+    assert derived["candidate_radius_deg"] == pytest.approx(
+        primary_beam_fwhm_deg(240., 12.) / 2
+    )
+    assert pos.outcome == outcome
+    assert pos.evaluation == "EVALUATED"
+    assert not pos.issues
     assert "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED" in pos.reasons
+    assert "docs/evidence/archive_tp_d12_position_decision_2026-10-02.md" in pos.decision_refs
     assert all(b.status == "INDETERMINATE" for b in c.branches)
 
 

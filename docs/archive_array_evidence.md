@@ -47,7 +47,7 @@ specific science target, complete 7-m/12-m alternatives for Archive mixed labels
 as for Queue, and recognition of TP's physical 12-m aperture. This is a **project
 method adoption**, not a new observatory approval or an independent proposal
 validation. Method identities are `archive_source_array_1` for binding,
-`archive_pos_single_2` for position, and `archive_beam_variant_or_1` for OR of
+`archive_pos_single_3` for position, and `archive_beam_variant_or_1` for OR of
 complete diameter branches.
 
 The loader consumes a captured official AQ response manifest. It checks the
@@ -71,15 +71,19 @@ catalog has been selected.
 | `7m` | 7 m | Existing supported fixed single-field criteria |
 | `12m` | 12 m | Existing supported fixed single-field criteria |
 | `7m 12m` (either order) | 7 m and 12 m | Evaluate both complete branches, OR their three-valued results |
-| `TP` | 12 m, retaining `TOTAL_POWER` identity | Physical radius can be calculated; interferometric applicability remains UNKNOWN |
-| `7m TP` | 7 m and 12 m | 7-m branch evaluated; TP branch UNKNOWN; OR complete results |
-| Any label including both `12m` and `TP` | Unique 12-m diameter, plus 7 m if present | 12-m science branch remains UNKNOWN because this evidence does not separate the two observing modes |
+| `TP` | 12 m, retaining `TOTAL_POWER` identity | POS-SINGLE uses D=12 m and returns the geometric result; broader interferometric CONTINUUM/LINE branch scope remains UNKNOWN |
+| `7m TP` | 7 m and 12 m | 7-m branch evaluated normally; the TP D=12 m position is evaluated, while the TP science branch remains UNKNOWN; OR complete results |
+| Any label including both `12m` and `TP` | Unique 12-m diameter, plus 7 m if present | D=12 m is valid for POS-SINGLE, but broader 12-m science scope remains UNKNOWN because this evidence does not separate main-array and TP observing modes |
 
 TP antennas are 12-m single dishes; see the official
 [Technical Handbook](https://almascience.eso.org/proposing/documents-and-tools/latest/alma-technical-handbook).
 Physical aperture alone does not establish interferometric angular, RMS or
-spectral applicability. `ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED`
-blocks formal continuum/LINE aggregation on a TP path.
+spectral applicability. The supervisor-confirmed TP position decision is recorded
+in [the dated decision](evidence/archive_tp_d12_position_decision_2026-10-02.md):
+TP contributes D=12 m to POS-SINGLE and the inclusive half-power-beam comparison
+is evaluated normally. `ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED` is
+retained as a downstream branch-scope blocker, not as a position-evidence failure,
+so formal CONTINUUM/LINE aggregation on a TP path remains UNKNOWN in this increment.
 
 Both diameter alternatives reuse exactly the same retained source context and
 its bound SPWs, frequency, resolution and sensitivity. They are **diameter
