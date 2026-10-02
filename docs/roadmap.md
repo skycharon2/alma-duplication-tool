@@ -29,7 +29,9 @@ own scientific decisions. An experiment being delivered does not approve its met
 These small commits support the thin UI; they are not a new prerequisite
 rearchitecture phase. DOC-BASE, LINE-HELPERS, GEOMETRY, SPATIAL-EVIDENCE,
 MODE-REFERENCE and APP-ENTRY are delivered. Configuration preflight is also
-implemented (PR #100). The next product delivery is the thin browser interface.
+implemented (PR #100). The thin browser interface and offline UI/CLI parity gate
+are delivered; the next browser increment is explicit live-source configuration
+and execution feedback.
 
 | Commit | Scope | Exit gate |
 | --- | --- | --- |
@@ -38,7 +40,7 @@ implemented (PR #100). The next product delivery is the thin browser interface.
 | GEOMETRY — delivered (3A) | Extract pure separation and beam formulas | Preserve spherical/offset/placeholder and boundary behavior; keep legacy boundary conventions in strategies; do not claim all cycles removed yet |
 | SPATIAL-EVIDENCE — delivered (3B) | Separate spatial evidence adaptation from strategy dispatch | Queue strategy depends on adaptation rather than dispatch; remove target reverse imports; preserve retention, formal POS and explicit legacy paths, with compatibility exports where needed |
 | MODE-REFERENCE — delivered | Separate reference configurations/mappings from experiment report generation | Formal adapter no longer consumes experiment report dictionaries; configuration IDs, matches, N16 allowance, mode results and historical CLIs unchanged |
-| APP-ENTRY — backend entry delivered; browser integration next | Shared application orchestration used by CLI and directly callable by frontends | Offline direct-call/CLI report agreement; browser UI agreement remains required at UI delivery |
+| APP-ENTRY — backend entry delivered | Shared application orchestration used by CLI and directly callable by frontends | Offline direct-call/CLI report agreement delivered here; browser integration and parity are now delivered separately |
 
 LINE-HELPERS verification on 2026-09-28: 29 helper contract cases plus 116
 existing LINE regressions passed; full suite with the pinned Queue snapshot was
@@ -110,7 +112,8 @@ in-memory lifecycle is not a multi-user service.
 | QUEUE-COMMON — coherent single-field row scope delivered | Scoped single-point position and angular-resolution evidence | Supported geometry/frame/array interpretation, boundaries and missing/conflict behavior explicit; independent numerical cases and method status recorded |
 | QUEUE-CONTINUUM — coherent single-field row scope delivered | Queue frequency/RMS mappings and independent continuum branch | Same-context/setup evidence, positive/negative/boundary/unknown cases; source-specific sensitivity semantics; no FDM/TDM prerequisite |
 | QUEUE-LINE — fixed single-field regular-SPW scope delivered | Mode applicability, coherent same-window coverage/resolution/RMS and pair reports | Supported configuration/profile evidence; no cross-SPW borrowing; coarse-resolution blocking; independent intermediate-value and pair aggregation acceptance |
-| Thin browser interface | Input, candidates, independent branches, pair evidence and export using the backend report | UI/CLI agreement, no duplicate formulas, no UNKNOWN/empty-source-to-negative conversion |
+| Thin browser interface — delivered | Input, candidates, independent branches, pair evidence and export using the backend report | UI/CLI agreement, no duplicate formulas, no UNKNOWN/empty-source-to-negative conversion |
+| LIVE-SOURCE — next | Explicit live-source configuration and execution feedback through the shared application entry | Live versus replay configuration is explicit; source failures/provenance remain visible; no implicit fallback or new scientific scope |
 | Broader modes — deferred | Mosaic, moving targets, TP scientific evaluation, mixed setups and broader conversions | Separate scope, evidence and acceptance decisions |
 
 The [first Queue common increment](queue_common.md) supplies opt-in coherent
@@ -119,10 +122,10 @@ single-field row-beam position, including the supported 7 m/12 m
 and [Queue LINE](queue_line_pairing.md) now complete the supported fixed
 single-field branches. Formal same-request Archive+Queue continuum/LINE
 acceptance, cross-source/SPW isolation and source-state completeness are also
-delivered. The bounded preparatory increments above are complete; the next
-product delivery is the thin browser interface. Broader component-specific and
-mixed-array interpretations beyond the supported row-level scope remain separate
-extensions.
+delivered. The bounded preparatory increments and thin browser interface are
+complete; the next browser increment is explicit live-source configuration and
+execution feedback. Broader component-specific and mixed-array interpretations
+beyond the supported row-level scope remain separate extensions.
 
 Independent review of an actual proposal remains an external validation gate.
 No genuine proposal input is currently available, so
@@ -150,8 +153,9 @@ The [Archive array evidence review](evidence/archive_array_review_2026-10-02.md)
 adds five real replay examples before live browser integration. The optional
 [source-bound adapter](archive_array_evidence.md) now consumes captured official
 AQ labels, confirming the two 7-m science targets and evaluating complete D7/D12
-alternatives for explicitly mixed labels. TP retains its 12-m physical aperture
-and unresolved scientific applicability. Automatic live AQ acquisition, capture
+alternatives for explicitly mixed labels. TP retains its 12-m physical aperture;
+POS-SINGLE is evaluated with D=12 m, while broader CONTINUUM/LINE scientific
+applicability remains unresolved. Automatic live AQ acquisition, capture
 freshness and component-specific product evidence remain separate work. Live
 execution must continue to show unresolved candidates explicitly.
 
