@@ -37,6 +37,7 @@ SCOPE = {
     "FIXED_SINGLE_POINT_REQUEST_REQUIRED",
     "UNIQUE_INTERFEROMETRIC_DIAMETER_REQUIRED",
     "CONFLICTING_POSITION_INTERPRETATION",
+    "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED",
 }
 USER = {
     "SOURCE_REDSHIFT_REQUIRED",
@@ -203,9 +204,9 @@ def inspect_report(document, *, inspection_version="3"):
                 [v.get("diameter_m") for v in variants] != [7, 12]
                 or any(v.get("context_id") != cid or v.get("variant_id") != f"{cid}#beam-{v['diameter_m']:g}m"
                        for v in variants)
-                or source != "QUEUE" or c["criteria"] or c["line_pairs"]
+                or source not in {"QUEUE", "ARCHIVE"} or c["criteria"] or c["line_pairs"]
             ):
-                raise ValueError("Invalid coherent Queue beam variants")
+                raise ValueError("Invalid coherent source beam variants")
             for variant_index, scope in enumerate(variants or [c]):
                 scope_id = scope["variant_id"] if variants else cid
                 pointer = f"/context_evaluations/{context_index}"

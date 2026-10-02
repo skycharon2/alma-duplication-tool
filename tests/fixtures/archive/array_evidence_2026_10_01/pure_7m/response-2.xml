@@ -1,0 +1,2663 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <RESOURCE type="results">
+    <INFO name="QUERY_STATUS" value="OK" />
+    <INFO name="QUERY_TIMESTAMP" value="2026-10-01T12:34:26.003" />
+    <INFO name="QUERY" value="SELECT&#xA;    proposal_id,&#xA;    obs_publisher_did,&#xA;    group_ous_uid,&#xA;    member_ous_uid,&#xA;    asdm_uid,&#xA;    obs_id,&#xA;    target_name,&#xA;    s_ra,&#xA;    s_dec,&#xA;    s_region,&#xA;    frequency,&#xA;    bandwidth,&#xA;    em_xel,&#xA;    frequency_support,&#xA;    spectral_resolution,&#xA;    spatial_resolution,&#xA;    sensitivity_10kms,&#xA;    cont_sensitivity_bandwidth,&#xA;    antenna_arrays,&#xA;    is_mosaic,&#xA;    science_observation,&#xA;    qa2_passed,&#xA;    obs_release_date,&#xA;    lastModified,&#xA;    s_resolution,&#xA;    s_fov,&#xA;    t_min,&#xA;    t_max,&#xA;    band_list,&#xA;    pol_states&#xA;FROM ivoa.obscore&#xA;WHERE 1 = CONTAINS(POINT('ICRS', s_ra, s_dec), CIRCLE('ICRS', 253.245254200053, 2.40098610000136, 1e-06))&#xA;    AND science_observation = 'T'" />
+    <TABLE>
+      <FIELD name="proposal_id" datatype="char" arraysize="64*" ucd="meta.id;obs.proposal" utype="obscore:Provenance.Proposal.identifier" xtype="adql:VARCHAR">
+        <DESCRIPTION>Identifier of proposal to which NO observation belongs.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_publisher_did" datatype="char" arraysize="33*" ucd="meta.ref.ivoid" utype="obscore:Curation.PublisherDID">
+        <DESCRIPTION>publisher dataset identifier</DESCRIPTION>
+      </FIELD>
+      <FIELD name="group_ous_uid" datatype="char" arraysize="64*" xtype="adql:VARCHAR">
+        <DESCRIPTION>Group OUS ID</DESCRIPTION>
+      </FIELD>
+      <FIELD name="member_ous_uid" datatype="char" arraysize="64*" xtype="adql:VARCHAR">
+        <DESCRIPTION>Member OUS ID</DESCRIPTION>
+      </FIELD>
+      <FIELD name="asdm_uid" datatype="char" arraysize="32*" ucd="meta.id" xtype="adql:VARCHAR">
+        <DESCRIPTION>UID of the ASDM containing this Field.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_id" datatype="char" arraysize="64*" ucd="meta.id" utype="obscore:DataID.observationID">
+        <DESCRIPTION>internal dataset identifier</DESCRIPTION>
+      </FIELD>
+      <FIELD name="target_name" datatype="char" arraysize="256*" ucd="meta.id;src" utype="obscore:Target.Name">
+        <DESCRIPTION>name of intended target</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_ra" datatype="double" ucd="pos.eq.ra" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C1" xtype="adql:DOUBLE">
+        <DESCRIPTION>RA of central coordinates</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_dec" datatype="double" ucd="pos.eq.dec" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C2" xtype="adql:DOUBLE">
+        <DESCRIPTION>DEC of central coordinates</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_region" datatype="char" arraysize="*" ucd="pos.outline;obs.field" utype="obscore:Char.SpatialAxis.Coverage.Support.Area" xtype="adql:REGION">
+        <DESCRIPTION>region bounded by observation</DESCRIPTION>
+      </FIELD>
+      <FIELD name="frequency" datatype="double" ucd="em.freq;obs;meta.main" unit="GHz" utype="obscore:Char.SpectralAxis.Coverage.Location.refval" xtype="adql:DOUBLE">
+        <DESCRIPTION>Observed (tuned) reference frequency on the sky.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="bandwidth" datatype="double" ucd="em.freq;instr.bandpass" unit="Hz" utype="obscore:Char.SpectralAxis.Coverage.Bounds.Extent" xtype="adql:DOUBLE">
+        <DESCRIPTION>Total Bandwidth</DESCRIPTION>
+      </FIELD>
+      <FIELD name="em_xel" datatype="int" ucd="meta.number" utype="obscore:Char.SpectralAxis.numBins" xtype="adql:BIGINT">
+        <DESCRIPTION>Number of elements along the spectral axis</DESCRIPTION>
+      </FIELD>
+      <FIELD name="frequency_support" datatype="char" arraysize="4000*" ucd="em.freq;obs;meta.main" unit="GHz" utype="obscore:Char.SpectralAxis.Coverage.Location.support" xtype="adql:VARCHAR">
+        <DESCRIPTION>All frequency ranges used by the field</DESCRIPTION>
+      </FIELD>
+      <FIELD name="spectral_resolution" datatype="double" unit="kHz" xtype="adql:DOUBLE" />
+      <FIELD name="spatial_resolution" datatype="double" unit="arcsec" xtype="adql:DOUBLE">
+        <DESCRIPTION>Average of the maximum and minimum spatial resolution values of all spectral windows</DESCRIPTION>
+      </FIELD>
+      <FIELD name="sensitivity_10kms" datatype="double" unit="mJy/beam" xtype="adql:DOUBLE">
+        <DESCRIPTION>Estimated noise in an nominal 10km/s bandwidth. Note this is an indication only, it does not include the effects of flagging or Hanning smoothing, and a 10km/s bandwidth may not be achievable with the data as taken.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="cont_sensitivity_bandwidth" datatype="double" unit="mJy/beam" xtype="adql:DOUBLE">
+        <DESCRIPTION>Estimated noise in the aggregated continuum bandwidth. Note this is an indication only, it does not include the effects of flagging or dynamic range limitations.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="antenna_arrays" datatype="char" arraysize="660*" ucd="meta.code.member;instr.setup" xtype="adql:VARCHAR">
+        <DESCRIPTION>Blank-separated list of Pad:Antenna pairs, i.e., A109:DV09 J504:DV02 J505:DV05 for antennas DV09, DV02 and DV05 sitting on pads A109, J504, and J505, respectively.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="is_mosaic" datatype="char" xtype="adql:CHAR">
+        <DESCRIPTION>Flag to indicate if this ASDM represents a mosaic or not.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="science_observation" datatype="char" ucd="meta.code.class;obs" xtype="adql:VARCHAR">
+        <DESCRIPTION>Flag to indicate whether this is a science observation.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="qa2_passed" datatype="char" ucd="meta.code" xtype="adql:CHAR">
+        <DESCRIPTION>Quality Assessment 2 status: does the Member / Group OUS fulfil the PI's requirements?</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_release_date" datatype="char" arraysize="*" ucd="time.release" utype="obscore:Curation.releaseDate" xtype="adql:TIMESTAMP">
+        <DESCRIPTION>timestamp of date the data becomes publicly available</DESCRIPTION>
+      </FIELD>
+      <FIELD name="lastModified" datatype="char" arraysize="32*" xtype="adql:TIMESTAMP">
+        <DESCRIPTION>Time stamp of last modification of the metadata</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_resolution" datatype="double" ucd="pos.angResolution" unit="arcsec" utype="obscore:Char.SpatialAxis.Resolution.refval.value" xtype="adql:DOUBLE">
+        <DESCRIPTION>typical spatial resolution</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_fov" datatype="double" ucd="phys.angSize;instr.fov" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Bounds.Extent.diameter" xtype="adql:DOUBLE">
+        <DESCRIPTION>size of the region covered (~diameter of minimum bounding circle)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="t_min" datatype="double" ucd="time.start;obs.exposure" unit="d" utype="obscore:Char.TimeAxis.Coverage.Bounds.Limits.StartTime" xtype="adql:DOUBLE">
+        <DESCRIPTION>start time of observation (MJD)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="t_max" datatype="double" ucd="time.end;obs.exposure" unit="d" utype="obscore:Char.TimeAxis.Coverage.Bounds.Limits.StopTime" xtype="adql:DOUBLE">
+        <DESCRIPTION>end time of observation (MJD)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="band_list" datatype="char" arraysize="30*" xtype="adql:VARCHAR">
+        <DESCRIPTION>Space delimited list of bands</DESCRIPTION>
+      </FIELD>
+      <FIELD name="pol_states" datatype="char" arraysize="64*" ucd="meta.code;phys.polarization" utype="obscore:Char.PolarizationAxis.stateList">
+        <DESCRIPTION>polarization states present in the data</DESCRIPTION>
+      </FIELD>
+      <DATA>
+        <TABLEDATA>
+          <TR>
+            <TD>2015.1.00717.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00717.S</TD>
+            <TD>uid://A001/X2fa/X242</TD>
+            <TD>uid://A001/X2fa/X245</TD>
+            <TD>uid://A002/Xb6c583/Xd99</TD>
+            <TD>uid://A001/X2fa/X245.source.NGC_6240.spw.16</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420005313</TD>
+            <TD>2.4009861000013637</TD>
+            <TD>Polygon ICRS 253.245438 2.398069 253.244350 2.398206 253.243390 2.398734 253.243000 2.399123 253.242607 2.399742 253.242335 2.400803 253.242352 2.401352 253.242534 2.402062 253.243122 2.402987 253.244009 2.403631 253.245071 2.403903 253.246158 2.403766 253.247119 2.403238 253.247818 2.402394 253.248088 2.401713 253.248174 2.401170 253.248128 2.400438 253.247974 2.399910 253.247387 2.398985 253.246500 2.398341</TD>
+            <TD>481.2734661008259</TD>
+            <TD>2.0E9</TD>
+            <TD>1024</TD>
+            <TD>[466.42..468.40GHz,31250.00kHz,39.3mJy/beam@10km/s,3.5mJy/beam@native, XX YY] U [468.22..470.20GHz,31250.00kHz,50mJy/beam@10km/s,4.4mJy/beam@native, XX YY] U [478.47..480.47GHz,1938.48kHz,45.5mJy/beam@10km/s,4.1mJy/beam@native, XX YY] U [480.27..482.27GHz,1938.48kHz,52.6mJy/beam@10km/s,4.7mJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>2.398608088087263</TD>
+            <TD>52.58068390536444</TD>
+            <TD>2.04307828548481</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N606:CM06</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-11-18T17:10:01.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>2.398608088087263</TD>
+            <TD>0.0058456098567684755</TD>
+            <TD>57615.094254</TD>
+            <TD>57631.059451</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00717.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00717.S</TD>
+            <TD>uid://A001/X2fa/X242</TD>
+            <TD>uid://A001/X2fa/X245</TD>
+            <TD>uid://A002/Xb6c583/Xd99</TD>
+            <TD>uid://A001/X2fa/X245.source.NGC_6240.spw.18</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420005313</TD>
+            <TD>2.4009861000013637</TD>
+            <TD>Polygon ICRS 253.245438 2.398069 253.244350 2.398206 253.243390 2.398734 253.243000 2.399123 253.242607 2.399742 253.242335 2.400803 253.242352 2.401352 253.242534 2.402062 253.243122 2.402987 253.244009 2.403631 253.245071 2.403903 253.246158 2.403766 253.247119 2.403238 253.247818 2.402394 253.248088 2.401713 253.248174 2.401170 253.248128 2.400438 253.247974 2.399910 253.247387 2.398985 253.246500 2.398341</TD>
+            <TD>479.4735670170387</TD>
+            <TD>2.0E9</TD>
+            <TD>1024</TD>
+            <TD>[466.42..468.40GHz,31250.00kHz,39.3mJy/beam@10km/s,3.5mJy/beam@native, XX YY] U [468.22..470.20GHz,31250.00kHz,50mJy/beam@10km/s,4.4mJy/beam@native, XX YY] U [478.47..480.47GHz,1938.48kHz,45.5mJy/beam@10km/s,4.1mJy/beam@native, XX YY] U [480.27..482.27GHz,1938.48kHz,52.6mJy/beam@10km/s,4.7mJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>2.398608088087263</TD>
+            <TD>45.485757643631615</TD>
+            <TD>2.04307828548481</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N606:CM06</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-11-18T17:10:01.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>2.398608088087263</TD>
+            <TD>0.0058456098567684755</TD>
+            <TD>57615.094254</TD>
+            <TD>57631.059451</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00717.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00717.S</TD>
+            <TD>uid://A001/X2fa/X242</TD>
+            <TD>uid://A001/X2fa/X245</TD>
+            <TD>uid://A002/Xb6c583/Xd99</TD>
+            <TD>uid://A001/X2fa/X245.source.NGC_6240.spw.20</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420005313</TD>
+            <TD>2.4009861000013637</TD>
+            <TD>Polygon ICRS 253.245438 2.398069 253.244350 2.398206 253.243390 2.398734 253.243000 2.399123 253.242607 2.399742 253.242335 2.400803 253.242352 2.401352 253.242534 2.402062 253.243122 2.402987 253.244009 2.403631 253.245071 2.403903 253.246158 2.403766 253.247119 2.403238 253.247818 2.402394 253.248088 2.401713 253.248174 2.401170 253.248128 2.400438 253.247974 2.399910 253.247387 2.398985 253.246500 2.398341</TD>
+            <TD>469.2086925448043</TD>
+            <TD>2.0E9</TD>
+            <TD>128</TD>
+            <TD>[466.42..468.40GHz,31250.00kHz,39.3mJy/beam@10km/s,3.5mJy/beam@native, XX YY] U [468.22..470.20GHz,31250.00kHz,50mJy/beam@10km/s,4.4mJy/beam@native, XX YY] U [478.47..480.47GHz,1938.48kHz,45.5mJy/beam@10km/s,4.1mJy/beam@native, XX YY] U [480.27..482.27GHz,1938.48kHz,52.6mJy/beam@10km/s,4.7mJy/beam@native, XX YY]</TD>
+            <TD>31250.0</TD>
+            <TD>2.398608088087263</TD>
+            <TD>49.95121478234204</TD>
+            <TD>2.04307828548481</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N606:CM06</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-11-18T17:10:01.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>2.398608088087263</TD>
+            <TD>0.0058456098567684755</TD>
+            <TD>57615.094254</TD>
+            <TD>57631.059451</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00717.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00717.S</TD>
+            <TD>uid://A001/X2fa/X242</TD>
+            <TD>uid://A001/X2fa/X245</TD>
+            <TD>uid://A002/Xb6c583/Xd99</TD>
+            <TD>uid://A001/X2fa/X245.source.NGC_6240.spw.22</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420005313</TD>
+            <TD>2.4009861000013637</TD>
+            <TD>Polygon ICRS 253.245438 2.398069 253.244350 2.398206 253.243390 2.398734 253.243000 2.399123 253.242607 2.399742 253.242335 2.400803 253.242352 2.401352 253.242534 2.402062 253.243122 2.402987 253.244009 2.403631 253.245071 2.403903 253.246158 2.403766 253.247119 2.403238 253.247818 2.402394 253.248088 2.401713 253.248174 2.401170 253.248128 2.400438 253.247974 2.399910 253.247387 2.398985 253.246500 2.398341</TD>
+            <TD>467.4087934610171</TD>
+            <TD>2.0E9</TD>
+            <TD>128</TD>
+            <TD>[466.42..468.40GHz,31250.00kHz,39.3mJy/beam@10km/s,3.5mJy/beam@native, XX YY] U [468.22..470.20GHz,31250.00kHz,50mJy/beam@10km/s,4.4mJy/beam@native, XX YY] U [478.47..480.47GHz,1938.48kHz,45.5mJy/beam@10km/s,4.1mJy/beam@native, XX YY] U [480.27..482.27GHz,1938.48kHz,52.6mJy/beam@10km/s,4.7mJy/beam@native, XX YY]</TD>
+            <TD>31250.0</TD>
+            <TD>2.398608088087263</TD>
+            <TD>39.348454275664714</TD>
+            <TD>2.04307828548481</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N606:CM06</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-11-18T17:10:01.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>2.398608088087263</TD>
+            <TD>0.0058456098567684755</TD>
+            <TD>57615.094254</TD>
+            <TD>57631.059451</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00717.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00717.S</TD>
+            <TD>uid://A001/X2fa/X242</TD>
+            <TD>uid://A001/X2fa/X249</TD>
+            <TD>uid://A002/Xb0e56c/X11dc</TD>
+            <TD>uid://A001/X2fa/X249.source.NGC_6240_1.spw.31</TD>
+            <TD>NGC_6240_1</TD>
+            <TD>253.24525419997138</TD>
+            <TD>2.4009861000003467</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.001705</TD>
+            <TD>479.4734513662522</TD>
+            <TD>2.0E9</TD>
+            <TD>1024</TD>
+            <TD>[466.42..468.40GHz,31250.00kHz,33.7mJy/beam@10km/s,3mJy/beam@native, XX YY] U [468.22..470.20GHz,31250.00kHz,44mJy/beam@10km/s,3.9mJy/beam@native, XX YY] U [478.47..480.47GHz,1938.48kHz,39.8mJy/beam@10km/s,3.6mJy/beam@native, XX YY] U [480.27..482.27GHz,1938.48kHz,43.6mJy/beam@10km/s,3.9mJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>11.080795859148909</TD>
+            <TD>39.827147855710464</TD>
+            <TD>1.7577776236514209</TD>
+            <TD>T701:PM03 T702:PM02 T703:PM04 T704:PM01</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-05-19T23:34:00.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>12.275783647880651</TD>
+            <TD>0.00340993990218907</TD>
+            <TD>57472.342105</TD>
+            <TD>57472.400154</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00717.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00717.S</TD>
+            <TD>uid://A001/X2fa/X242</TD>
+            <TD>uid://A001/X2fa/X249</TD>
+            <TD>uid://A002/Xb0e56c/X11dc</TD>
+            <TD>uid://A001/X2fa/X249.source.NGC_6240_1.spw.33</TD>
+            <TD>NGC_6240_1</TD>
+            <TD>253.24525419997138</TD>
+            <TD>2.4009861000003467</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.001705</TD>
+            <TD>469.20857936994344</TD>
+            <TD>2.0E9</TD>
+            <TD>128</TD>
+            <TD>[466.42..468.40GHz,31250.00kHz,33.7mJy/beam@10km/s,3mJy/beam@native, XX YY] U [468.22..470.20GHz,31250.00kHz,44mJy/beam@10km/s,3.9mJy/beam@native, XX YY] U [478.47..480.47GHz,1938.48kHz,39.8mJy/beam@10km/s,3.6mJy/beam@native, XX YY] U [480.27..482.27GHz,1938.48kHz,43.6mJy/beam@10km/s,3.9mJy/beam@native, XX YY]</TD>
+            <TD>31250.0</TD>
+            <TD>11.080795859148909</TD>
+            <TD>43.95257978656278</TD>
+            <TD>1.7577776236514209</TD>
+            <TD>T701:PM03 T702:PM02 T703:PM04 T704:PM01</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-05-19T23:34:00.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>12.275783647880651</TD>
+            <TD>0.00340993990218907</TD>
+            <TD>57472.342105</TD>
+            <TD>57472.400154</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00717.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00717.S</TD>
+            <TD>uid://A001/X2fa/X242</TD>
+            <TD>uid://A001/X2fa/X249</TD>
+            <TD>uid://A002/Xb0e56c/X11dc</TD>
+            <TD>uid://A001/X2fa/X249.source.NGC_6240_1.spw.35</TD>
+            <TD>NGC_6240_1</TD>
+            <TD>253.24525419997138</TD>
+            <TD>2.4009861000003467</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.001705</TD>
+            <TD>467.4086807202986</TD>
+            <TD>2.0E9</TD>
+            <TD>128</TD>
+            <TD>[466.42..468.40GHz,31250.00kHz,33.7mJy/beam@10km/s,3mJy/beam@native, XX YY] U [468.22..470.20GHz,31250.00kHz,44mJy/beam@10km/s,3.9mJy/beam@native, XX YY] U [478.47..480.47GHz,1938.48kHz,39.8mJy/beam@10km/s,3.6mJy/beam@native, XX YY] U [480.27..482.27GHz,1938.48kHz,43.6mJy/beam@10km/s,3.9mJy/beam@native, XX YY]</TD>
+            <TD>31250.0</TD>
+            <TD>11.080795859148909</TD>
+            <TD>33.68945830364181</TD>
+            <TD>1.7577776236514209</TD>
+            <TD>T701:PM03 T702:PM02 T703:PM04 T704:PM01</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-05-19T23:34:00.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>12.275783647880651</TD>
+            <TD>0.00340993990218907</TD>
+            <TD>57472.342105</TD>
+            <TD>57472.400154</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00717.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00717.S</TD>
+            <TD>uid://A001/X2fa/X242</TD>
+            <TD>uid://A001/X2fa/X249</TD>
+            <TD>uid://A002/Xb0e56c/X11dc</TD>
+            <TD>uid://A001/X2fa/X249.source.NGC_6240_1.spw.29</TD>
+            <TD>NGC_6240_1</TD>
+            <TD>253.24525419997138</TD>
+            <TD>2.4009861000003467</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.001705</TD>
+            <TD>481.2733500158971</TD>
+            <TD>2.0E9</TD>
+            <TD>1024</TD>
+            <TD>[466.42..468.40GHz,31250.00kHz,33.7mJy/beam@10km/s,3mJy/beam@native, XX YY] U [468.22..470.20GHz,31250.00kHz,44mJy/beam@10km/s,3.9mJy/beam@native, XX YY] U [478.47..480.47GHz,1938.48kHz,39.8mJy/beam@10km/s,3.6mJy/beam@native, XX YY] U [480.27..482.27GHz,1938.48kHz,43.6mJy/beam@10km/s,3.9mJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>11.080795859148909</TD>
+            <TD>43.565680267880424</TD>
+            <TD>1.7577776236514209</TD>
+            <TD>T701:PM03 T702:PM02 T703:PM04 T704:PM01</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-05-19T23:34:00.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>12.275783647880651</TD>
+            <TD>0.00340993990218907</TD>
+            <TD>57472.342105</TD>
+            <TD>57472.400154</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00717.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00717.S</TD>
+            <TD>uid://A001/X2fa/X242</TD>
+            <TD>uid://A001/X2fa/X243</TD>
+            <TD>uid://A002/Xb33b61/X1453</TD>
+            <TD>uid://A001/X2fa/X243.source.NGC_6240.spw.21</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420000924</TD>
+            <TD>2.40098610000001</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.001705</TD>
+            <TD>469.20863084362475</TD>
+            <TD>2.0E9</TD>
+            <TD>128</TD>
+            <TD>[466.42..468.40GHz,31250.00kHz,6mJy/beam@10km/s,529.9uJy/beam@native, XX YY] U [468.22..470.20GHz,31250.00kHz,8.1mJy/beam@10km/s,714.4uJy/beam@native, XX YY] U [478.54..480.41GHz,1938.48kHz,6mJy/beam@10km/s,554.2uJy/beam@native, XX YY] U [480.34..482.21GHz,1938.48kHz,6mJy/beam@10km/s,555.2uJy/beam@native, XX YY]</TD>
+            <TD>31250.0</TD>
+            <TD>0.25443103661017447</TD>
+            <TD>8.075575255003072</TD>
+            <TD>0.2884238779455655</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A009:DV18 A010:DV25 A011:DV09 A015:DV04 A023:DA51 A029:DV10 A030:DA65 A034:DA46 A036:DV16 A037:DV19 A048:DV15 A049:DV11 A052:DA47 A060:DA60 A061:DA62 A062:DA56 A063:DA44 A065:DV06 A067:DA42 A069:DV14 A070:DV21 A071:DA43 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A086:DV08 A089:DA50 A090:DV01 A092:DV17</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-04-13T11:50:10.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.25443103661017447</TD>
+            <TD>0.0034101641721266183</TD>
+            <TD>57527.245851</TD>
+            <TD>57527.252904</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00717.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00717.S</TD>
+            <TD>uid://A001/X2fa/X242</TD>
+            <TD>uid://A001/X2fa/X243</TD>
+            <TD>uid://A002/Xb33b61/X1453</TD>
+            <TD>uid://A001/X2fa/X243.source.NGC_6240.spw.23</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420000924</TD>
+            <TD>2.40098610000001</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.001705</TD>
+            <TD>467.40873199652526</TD>
+            <TD>2.0E9</TD>
+            <TD>128</TD>
+            <TD>[466.42..468.40GHz,31250.00kHz,6mJy/beam@10km/s,529.9uJy/beam@native, XX YY] U [468.22..470.20GHz,31250.00kHz,8.1mJy/beam@10km/s,714.4uJy/beam@native, XX YY] U [478.54..480.41GHz,1938.48kHz,6mJy/beam@10km/s,554.2uJy/beam@native, XX YY] U [480.34..482.21GHz,1938.48kHz,6mJy/beam@10km/s,555.2uJy/beam@native, XX YY]</TD>
+            <TD>31250.0</TD>
+            <TD>0.25443103661017447</TD>
+            <TD>6.001525764966811</TD>
+            <TD>0.2884238779455655</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A009:DV18 A010:DV25 A011:DV09 A015:DV04 A023:DA51 A029:DV10 A030:DA65 A034:DA46 A036:DV16 A037:DV19 A048:DV15 A049:DV11 A052:DA47 A060:DA60 A061:DA62 A062:DA56 A063:DA44 A065:DV06 A067:DA42 A069:DV14 A070:DV21 A071:DA43 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A086:DV08 A089:DA50 A090:DV01 A092:DV17</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-04-13T11:50:10.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.25443103661017447</TD>
+            <TD>0.0034101641721266183</TD>
+            <TD>57527.245851</TD>
+            <TD>57527.252904</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00717.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00717.S</TD>
+            <TD>uid://A001/X2fa/X242</TD>
+            <TD>uid://A001/X2fa/X243</TD>
+            <TD>uid://A002/Xb33b61/X1453</TD>
+            <TD>uid://A001/X2fa/X243.source.NGC_6240.spw.25</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420000924</TD>
+            <TD>2.40098610000001</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.001705</TD>
+            <TD>481.2734028131224</TD>
+            <TD>1.875E9</TD>
+            <TD>960</TD>
+            <TD>[466.42..468.40GHz,31250.00kHz,6mJy/beam@10km/s,529.9uJy/beam@native, XX YY] U [468.22..470.20GHz,31250.00kHz,8.1mJy/beam@10km/s,714.4uJy/beam@native, XX YY] U [478.54..480.41GHz,1938.48kHz,6mJy/beam@10km/s,554.2uJy/beam@native, XX YY] U [480.34..482.21GHz,1938.48kHz,6mJy/beam@10km/s,555.2uJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>0.25443103661017447</TD>
+            <TD>6.000495590959518</TD>
+            <TD>0.2884238779455655</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A009:DV18 A010:DV25 A011:DV09 A015:DV04 A023:DA51 A029:DV10 A030:DA65 A034:DA46 A036:DV16 A037:DV19 A048:DV15 A049:DV11 A052:DA47 A060:DA60 A061:DA62 A062:DA56 A063:DA44 A065:DV06 A067:DA42 A069:DV14 A070:DV21 A071:DA43 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A086:DV08 A089:DA50 A090:DV01 A092:DV17</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-04-13T11:50:10.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.25443103661017447</TD>
+            <TD>0.0034101641721266183</TD>
+            <TD>57527.245851</TD>
+            <TD>57527.252904</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00717.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00717.S</TD>
+            <TD>uid://A001/X2fa/X242</TD>
+            <TD>uid://A001/X2fa/X243</TD>
+            <TD>uid://A002/Xb33b61/X1453</TD>
+            <TD>uid://A001/X2fa/X243.source.NGC_6240.spw.27</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420000924</TD>
+            <TD>2.40098610000001</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.001705</TD>
+            <TD>479.4735039660229</TD>
+            <TD>1.875E9</TD>
+            <TD>960</TD>
+            <TD>[466.42..468.40GHz,31250.00kHz,6mJy/beam@10km/s,529.9uJy/beam@native, XX YY] U [468.22..470.20GHz,31250.00kHz,8.1mJy/beam@10km/s,714.4uJy/beam@native, XX YY] U [478.54..480.41GHz,1938.48kHz,6mJy/beam@10km/s,554.2uJy/beam@native, XX YY] U [480.34..482.21GHz,1938.48kHz,6mJy/beam@10km/s,555.2uJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>0.25443103661017447</TD>
+            <TD>6.0003424657571145</TD>
+            <TD>0.2884238779455655</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A009:DV18 A010:DV25 A011:DV09 A015:DV04 A023:DA51 A029:DV10 A030:DA65 A034:DA46 A036:DV16 A037:DV19 A048:DV15 A049:DV11 A052:DA47 A060:DA60 A061:DA62 A062:DA56 A063:DA44 A065:DV06 A067:DA42 A069:DV14 A070:DV21 A071:DA43 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A086:DV08 A089:DA50 A090:DV01 A092:DV17</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-04-13T11:50:10.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.25443103661017447</TD>
+            <TD>0.0034101641721266183</TD>
+            <TD>57527.245851</TD>
+            <TD>57527.252904</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01448.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01448.S</TD>
+            <TD>uid://A001/X2fe/Xc7f</TD>
+            <TD>uid://A001/X2fe/Xc82</TD>
+            <TD>uid://A002/Xb1d975/X2e89</TD>
+            <TD>uid://A001/X2fe/Xc82.source.NGC6240.spw.22</TD>
+            <TD>NGC6240</TD>
+            <TD>253.2452541999847</TD>
+            <TD>2.400986100000102</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.003193</TD>
+            <TD>259.5184520496836</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[244.52..246.38GHz,7812.50kHz,682uJy/beam@10km/s,45.1uJy/beam@native, XX YY] U [258.58..260.45GHz,7812.50kHz,628.3uJy/beam@10km/s,42.7uJy/beam@native, XX YY] U [260.22..262.08GHz,7812.50kHz,626.9uJy/beam@10km/s,42.7uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.5912504733309774</TD>
+            <TD>0.6282906501776977</TD>
+            <TD>0.025088481856925655</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A008:DV08 A009:DV18 A010:DV25 A011:DV09 A014:DV22 A015:DV04 A023:DA51 A029:DV10 A030:DA65 A033:DV20 A034:DA46 A036:DV16 A037:DV19 A038:DA50 A042:DV01 A047:DA55 A049:DV11 A052:DA47 A060:DA60 A061:DA62 A062:DA56 A063:DA44 A065:DV06 A067:DA42 A068:DA45 A069:DV14 A070:DV21 A071:DA43 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A092:DV17</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-06-30T14:41:18.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.5912504733309774</TD>
+            <TD>0.006385676241885213</TD>
+            <TD>57494.302433</TD>
+            <TD>57494.321186</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01448.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01448.S</TD>
+            <TD>uid://A001/X2fe/Xc7f</TD>
+            <TD>uid://A001/X2fe/Xc82</TD>
+            <TD>uid://A002/Xb1d975/X2e89</TD>
+            <TD>uid://A001/X2fe/Xc82.source.NGC6240.spw.24</TD>
+            <TD>NGC6240</TD>
+            <TD>253.2452541999847</TD>
+            <TD>2.400986100000102</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.003193</TD>
+            <TD>261.14962876852167</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[244.52..246.38GHz,7812.50kHz,682uJy/beam@10km/s,45.1uJy/beam@native, XX YY] U [258.58..260.45GHz,7812.50kHz,628.3uJy/beam@10km/s,42.7uJy/beam@native, XX YY] U [260.22..262.08GHz,7812.50kHz,626.9uJy/beam@10km/s,42.7uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.5912504733309774</TD>
+            <TD>0.6269097983880723</TD>
+            <TD>0.025088481856925655</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A008:DV08 A009:DV18 A010:DV25 A011:DV09 A014:DV22 A015:DV04 A023:DA51 A029:DV10 A030:DA65 A033:DV20 A034:DA46 A036:DV16 A037:DV19 A038:DA50 A042:DV01 A047:DA55 A049:DV11 A052:DA47 A060:DA60 A061:DA62 A062:DA56 A063:DA44 A065:DV06 A067:DA42 A068:DA45 A069:DV14 A070:DV21 A071:DA43 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A092:DV17</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-06-30T14:41:18.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.5912504733309774</TD>
+            <TD>0.006385676241885213</TD>
+            <TD>57494.302433</TD>
+            <TD>57494.321186</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01448.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01448.S</TD>
+            <TD>uid://A001/X2fe/Xc7f</TD>
+            <TD>uid://A001/X2fe/Xc82</TD>
+            <TD>uid://A002/Xb1d975/X2e89</TD>
+            <TD>uid://A001/X2fe/Xc82.source.NGC6240.spw.26</TD>
+            <TD>NGC6240</TD>
+            <TD>253.2452541999847</TD>
+            <TD>2.400986100000102</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.003193</TD>
+            <TD>245.44855996263786</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[244.52..246.38GHz,7812.50kHz,682uJy/beam@10km/s,45.1uJy/beam@native, XX YY] U [258.58..260.45GHz,7812.50kHz,628.3uJy/beam@10km/s,42.7uJy/beam@native, XX YY] U [260.22..262.08GHz,7812.50kHz,626.9uJy/beam@10km/s,42.7uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.5912504733309774</TD>
+            <TD>0.6820058794142013</TD>
+            <TD>0.025088481856925655</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A008:DV08 A009:DV18 A010:DV25 A011:DV09 A014:DV22 A015:DV04 A023:DA51 A029:DV10 A030:DA65 A033:DV20 A034:DA46 A036:DV16 A037:DV19 A038:DA50 A042:DV01 A047:DA55 A049:DV11 A052:DA47 A060:DA60 A061:DA62 A062:DA56 A063:DA44 A065:DV06 A067:DA42 A068:DA45 A069:DV14 A070:DV21 A071:DA43 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A092:DV17</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-06-30T14:41:18.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.5912504733309774</TD>
+            <TD>0.006385676241885213</TD>
+            <TD>57494.302433</TD>
+            <TD>57494.321186</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01448.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01448.S</TD>
+            <TD>uid://A001/X2fe/Xc85</TD>
+            <TD>uid://A001/X2fe/Xc86</TD>
+            <TD>uid://A002/Xb83979/X47e</TD>
+            <TD>uid://A001/X2fe/Xc86.source.NGC6240.spw.27</TD>
+            <TD>NGC6240</TD>
+            <TD>253.2452542000336</TD>
+            <TD>2.4009861000008197</TD>
+            <TD>Polygon ICRS 253.245254 2.397709 253.244047 2.397939 253.243009 2.398597 253.242600 2.399060 253.242204 2.399780 253.241974 2.400986 253.242032 2.401600 253.242286 2.402382 253.243009 2.403375 253.244047 2.404033 253.245254 2.404264 253.245869 2.404206 253.246651 2.403952 253.247645 2.403230 253.248304 2.402193 253.248535 2.400986 253.248304 2.399780 253.247908 2.399060 253.247500 2.398597 253.246462 2.397939</TD>
+            <TD>254.44666549146046</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[238.14..240.00GHz,7812.50kHz,581.8uJy/beam@10km/s,37.9uJy/beam@native, XX YY] U [239.82..241.68GHz,7812.50kHz,576.7uJy/beam@10km/s,37.7uJy/beam@native, XX YY] U [251.87..253.74GHz,7812.50kHz,551.5uJy/beam@10km/s,37uJy/beam@native, XX YY] U [253.51..255.38GHz,7812.50kHz,550.3uJy/beam@10km/s,37uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.1511494980290046</TD>
+            <TD>0.5502534744705815</TD>
+            <TD>0.01870796111224821</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A017:DV22 A023:DA51 A034:DA46 A048:DV23 A064:DV13 A065:DV01 A075:DV24 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A091:DA63 A092:DV17 A093:DV02 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A098:DV21 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A105:DA42 A106:DV08 A108:DA54 A109:DA55 A110:DA58 A111:DV05 A112:DA50 A113:DV15 A114:DA52 A115:DA44 A129:DA61 A130:DA64 A131:DA43 A135:DV19 A136:DV04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-03-31T18:36:42.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.1511494980290046</TD>
+            <TD>0.006554948818705007</TD>
+            <TD>57647.898708</TD>
+            <TD>57660.036421</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01448.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01448.S</TD>
+            <TD>uid://A001/X2fe/Xc85</TD>
+            <TD>uid://A001/X2fe/Xc86</TD>
+            <TD>uid://A002/Xb83979/X47e</TD>
+            <TD>uid://A001/X2fe/Xc86.source.NGC6240.spw.29</TD>
+            <TD>NGC6240</TD>
+            <TD>253.2452542000336</TD>
+            <TD>2.4009861000008197</TD>
+            <TD>Polygon ICRS 253.245254 2.397709 253.244047 2.397939 253.243009 2.398597 253.242600 2.399060 253.242204 2.399780 253.241974 2.400986 253.242032 2.401600 253.242286 2.402382 253.243009 2.403375 253.244047 2.404033 253.245254 2.404264 253.245869 2.404206 253.246651 2.403952 253.247645 2.403230 253.248304 2.402193 253.248535 2.400986 253.248304 2.399780 253.247908 2.399060 253.247500 2.398597 253.246462 2.397939</TD>
+            <TD>239.06934227194088</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[238.14..240.00GHz,7812.50kHz,581.8uJy/beam@10km/s,37.9uJy/beam@native, XX YY] U [239.82..241.68GHz,7812.50kHz,576.7uJy/beam@10km/s,37.7uJy/beam@native, XX YY] U [251.87..253.74GHz,7812.50kHz,551.5uJy/beam@10km/s,37uJy/beam@native, XX YY] U [253.51..255.38GHz,7812.50kHz,550.3uJy/beam@10km/s,37uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.1511494980290046</TD>
+            <TD>0.5818209533233916</TD>
+            <TD>0.01870796111224821</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A017:DV22 A023:DA51 A034:DA46 A048:DV23 A064:DV13 A065:DV01 A075:DV24 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A091:DA63 A092:DV17 A093:DV02 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A098:DV21 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A105:DA42 A106:DV08 A108:DA54 A109:DA55 A110:DA58 A111:DV05 A112:DA50 A113:DV15 A114:DA52 A115:DA44 A129:DA61 A130:DA64 A131:DA43 A135:DV19 A136:DV04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-03-31T18:36:42.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.1511494980290046</TD>
+            <TD>0.006554948818705007</TD>
+            <TD>57647.898708</TD>
+            <TD>57660.036421</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01448.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01448.S</TD>
+            <TD>uid://A001/X2fe/Xc85</TD>
+            <TD>uid://A001/X2fe/Xc86</TD>
+            <TD>uid://A002/Xb83979/X47e</TD>
+            <TD>uid://A001/X2fe/Xc86.source.NGC6240.spw.31</TD>
+            <TD>NGC6240</TD>
+            <TD>253.2452542000336</TD>
+            <TD>2.4009861000008197</TD>
+            <TD>Polygon ICRS 253.245254 2.397709 253.244047 2.397939 253.243009 2.398597 253.242600 2.399060 253.242204 2.399780 253.241974 2.400986 253.242032 2.401600 253.242286 2.402382 253.243009 2.403375 253.244047 2.404033 253.245254 2.404264 253.245869 2.404206 253.246651 2.403952 253.247645 2.403230 253.248304 2.402193 253.248535 2.400986 253.248304 2.399780 253.247908 2.399060 253.247500 2.398597 253.246462 2.397939</TD>
+            <TD>240.74953655377274</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[238.14..240.00GHz,7812.50kHz,581.8uJy/beam@10km/s,37.9uJy/beam@native, XX YY] U [239.82..241.68GHz,7812.50kHz,576.7uJy/beam@10km/s,37.7uJy/beam@native, XX YY] U [251.87..253.74GHz,7812.50kHz,551.5uJy/beam@10km/s,37uJy/beam@native, XX YY] U [253.51..255.38GHz,7812.50kHz,550.3uJy/beam@10km/s,37uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.1511494980290046</TD>
+            <TD>0.5766782652677832</TD>
+            <TD>0.01870796111224821</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A017:DV22 A023:DA51 A034:DA46 A048:DV23 A064:DV13 A065:DV01 A075:DV24 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A091:DA63 A092:DV17 A093:DV02 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A098:DV21 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A105:DA42 A106:DV08 A108:DA54 A109:DA55 A110:DA58 A111:DV05 A112:DA50 A113:DV15 A114:DA52 A115:DA44 A129:DA61 A130:DA64 A131:DA43 A135:DV19 A136:DV04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-03-31T18:36:42.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.1511494980290046</TD>
+            <TD>0.006554948818705007</TD>
+            <TD>57647.898708</TD>
+            <TD>57660.036421</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01448.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01448.S</TD>
+            <TD>uid://A001/X2fe/Xc85</TD>
+            <TD>uid://A001/X2fe/Xc86</TD>
+            <TD>uid://A002/Xb83979/X47e</TD>
+            <TD>uid://A001/X2fe/Xc86.source.NGC6240.spw.25</TD>
+            <TD>NGC6240</TD>
+            <TD>253.2452542000336</TD>
+            <TD>2.4009861000008197</TD>
+            <TD>Polygon ICRS 253.245254 2.397709 253.244047 2.397939 253.243009 2.398597 253.242600 2.399060 253.242204 2.399780 253.241974 2.400986 253.242032 2.401600 253.242286 2.402382 253.243009 2.403375 253.244047 2.404033 253.245254 2.404264 253.245869 2.404206 253.246651 2.403952 253.247645 2.403230 253.248304 2.402193 253.248535 2.400986 253.248304 2.399780 253.247908 2.399060 253.247500 2.398597 253.246462 2.397939</TD>
+            <TD>252.8084471170322</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[238.14..240.00GHz,7812.50kHz,581.8uJy/beam@10km/s,37.9uJy/beam@native, XX YY] U [239.82..241.68GHz,7812.50kHz,576.7uJy/beam@10km/s,37.7uJy/beam@native, XX YY] U [251.87..253.74GHz,7812.50kHz,551.5uJy/beam@10km/s,37uJy/beam@native, XX YY] U [253.51..255.38GHz,7812.50kHz,550.3uJy/beam@10km/s,37uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.1511494980290046</TD>
+            <TD>0.5515299099682677</TD>
+            <TD>0.01870796111224821</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A017:DV22 A023:DA51 A034:DA46 A048:DV23 A064:DV13 A065:DV01 A075:DV24 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A091:DA63 A092:DV17 A093:DV02 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A098:DV21 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A105:DA42 A106:DV08 A108:DA54 A109:DA55 A110:DA58 A111:DV05 A112:DA50 A113:DV15 A114:DA52 A115:DA44 A129:DA61 A130:DA64 A131:DA43 A135:DV19 A136:DV04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-03-31T18:36:42.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.1511494980290046</TD>
+            <TD>0.006554948818705007</TD>
+            <TD>57647.898708</TD>
+            <TD>57660.036421</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01448.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01448.S</TD>
+            <TD>uid://A001/X2fe/Xc7f</TD>
+            <TD>uid://A001/X2fe/Xc80</TD>
+            <TD>uid://A002/Xb80c59/X6def</TD>
+            <TD>uid://A001/X2fe/Xc80.source.NGC6240.spw.22</TD>
+            <TD>NGC6240</TD>
+            <TD>253.24525419999793</TD>
+            <TD>2.400986100000001</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.003193</TD>
+            <TD>259.5184488405281</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[244.51..246.38GHz,7812.50kHz,486uJy/beam@10km/s,32.1uJy/beam@native, XX YY] U [258.58..260.45GHz,7812.50kHz,448.1uJy/beam@10km/s,30.4uJy/beam@native, XX YY] U [260.22..262.08GHz,7812.50kHz,447.1uJy/beam@10km/s,30.5uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.14122786467784904</TD>
+            <TD>0.4481194707404605</TD>
+            <TD>0.017888851812458313</TD>
+            <TD>A001:DA59 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A017:DV22 A023:DA51 A034:DA46 A048:DV23 A064:DV13 A065:DV01 A075:DV24 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A092:DV17 A094:DA45 A098:DV21 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A108:DA54 A109:DA55 A112:DA50 A113:DV15 A114:DA52 A115:DA44 A116:DA48 A130:DA64 A131:DA43 A135:DV19 A136:DV04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-02-01T19:10:23.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.14122786467784904</TD>
+            <TD>0.006385676320849264</TD>
+            <TD>57644.908307</TD>
+            <TD>57644.943963</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01448.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01448.S</TD>
+            <TD>uid://A001/X2fe/Xc7f</TD>
+            <TD>uid://A001/X2fe/Xc80</TD>
+            <TD>uid://A002/Xb80c59/X6def</TD>
+            <TD>uid://A001/X2fe/Xc80.source.NGC6240.spw.24</TD>
+            <TD>NGC6240</TD>
+            <TD>253.24525419999793</TD>
+            <TD>2.400986100000001</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.003193</TD>
+            <TD>261.1496255391954</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[244.51..246.38GHz,7812.50kHz,486uJy/beam@10km/s,32.1uJy/beam@native, XX YY] U [258.58..260.45GHz,7812.50kHz,448.1uJy/beam@10km/s,30.4uJy/beam@native, XX YY] U [260.22..262.08GHz,7812.50kHz,447.1uJy/beam@10km/s,30.5uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.14122786467784904</TD>
+            <TD>0.44713459760977964</TD>
+            <TD>0.017888851812458313</TD>
+            <TD>A001:DA59 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A017:DV22 A023:DA51 A034:DA46 A048:DV23 A064:DV13 A065:DV01 A075:DV24 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A092:DV17 A094:DA45 A098:DV21 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A108:DA54 A109:DA55 A112:DA50 A113:DV15 A114:DA52 A115:DA44 A116:DA48 A130:DA64 A131:DA43 A135:DV19 A136:DV04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-02-01T19:10:23.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.14122786467784904</TD>
+            <TD>0.006385676320849264</TD>
+            <TD>57644.908307</TD>
+            <TD>57644.943963</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01448.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01448.S</TD>
+            <TD>uid://A001/X2fe/Xc7f</TD>
+            <TD>uid://A001/X2fe/Xc80</TD>
+            <TD>uid://A002/Xb80c59/X6def</TD>
+            <TD>uid://A001/X2fe/Xc80.source.NGC6240.spw.26</TD>
+            <TD>NGC6240</TD>
+            <TD>253.24525419999793</TD>
+            <TD>2.400986100000001</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.003193</TD>
+            <TD>245.44855692746796</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[244.51..246.38GHz,7812.50kHz,486uJy/beam@10km/s,32.1uJy/beam@native, XX YY] U [258.58..260.45GHz,7812.50kHz,448.1uJy/beam@10km/s,30.4uJy/beam@native, XX YY] U [260.22..262.08GHz,7812.50kHz,447.1uJy/beam@10km/s,30.5uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.14122786467784904</TD>
+            <TD>0.48597936483669296</TD>
+            <TD>0.017888851812458313</TD>
+            <TD>A001:DA59 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A017:DV22 A023:DA51 A034:DA46 A048:DV23 A064:DV13 A065:DV01 A075:DV24 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A092:DV17 A094:DA45 A098:DV21 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A108:DA54 A109:DA55 A112:DA50 A113:DV15 A114:DA52 A115:DA44 A116:DA48 A130:DA64 A131:DA43 A135:DV19 A136:DV04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-02-01T19:10:23.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.14122786467784904</TD>
+            <TD>0.006385676320849264</TD>
+            <TD>57644.908307</TD>
+            <TD>57644.943963</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2016.2.00042.S</TD>
+            <TD>ADS/JAO.ALMA#2016.2.00042.S</TD>
+            <TD>uid://A001/X1262/Xe8</TD>
+            <TD>uid://A001/X1262/Xe9</TD>
+            <TD>uid://A002/Xc23361/X7ec9</TD>
+            <TD>uid://A001/X1262/Xe9.source.ngc6240.spw.16</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525416666927</TD>
+            <TD>2.400986111110213</TD>
+            <TD>Polygon ICRS 253.245254 2.405021 253.246741 2.404738 253.248019 2.403928 253.248522 2.403358 253.249009 2.402472 253.249293 2.400986 253.249221 2.400230 253.248909 2.399268 253.248019 2.398044 253.246741 2.397234 253.245254 2.396951 253.243767 2.397234 253.242489 2.398044 253.241987 2.398614 253.241499 2.399501 253.241215 2.400986 253.241342 2.401990 253.241600 2.402704 253.242489 2.403928 253.243767 2.404738</TD>
+            <TD>338.2471796475613</TD>
+            <TD>2.0E9</TD>
+            <TD>512</TD>
+            <TD>[335.98..337.98GHz,3904.30kHz,7.1mJy/beam@10km/s,534uJy/beam@native, XX YY] U [337.25..339.25GHz,3904.30kHz,6.7mJy/beam@10km/s,501.5uJy/beam@native, XX YY] U [347.29..349.29GHz,7812.50kHz,7mJy/beam@10km/s,535.4uJy/beam@native, XX YY] U [349.17..351.16GHz,7812.50kHz,7.9mJy/beam@10km/s,600.2uJy/beam@native, XX YY]</TD>
+            <TD>3904.296875</TD>
+            <TD>3.669169543152927</TD>
+            <TD>6.67684654964625</TD>
+            <TD>0.2696872414424871</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N604:CM11 N605:CM04 N606:CM06</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-08-15T01:51:10.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>3.669169543152927</TD>
+            <TD>0.008070609776662263</TD>
+            <TD>57952.029913</TD>
+            <TD>57960.135989</TD>
+            <TD>7</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2016.2.00042.S</TD>
+            <TD>ADS/JAO.ALMA#2016.2.00042.S</TD>
+            <TD>uid://A001/X1262/Xe8</TD>
+            <TD>uid://A001/X1262/Xe9</TD>
+            <TD>uid://A002/Xc23361/X7ec9</TD>
+            <TD>uid://A001/X1262/Xe9.source.ngc6240.spw.18</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525416666927</TD>
+            <TD>2.400986111110213</TD>
+            <TD>Polygon ICRS 253.245254 2.405021 253.246741 2.404738 253.248019 2.403928 253.248522 2.403358 253.249009 2.402472 253.249293 2.400986 253.249221 2.400230 253.248909 2.399268 253.248019 2.398044 253.246741 2.397234 253.245254 2.396951 253.243767 2.397234 253.242489 2.398044 253.241987 2.398614 253.241499 2.399501 253.241215 2.400986 253.241342 2.401990 253.241600 2.402704 253.242489 2.403928 253.243767 2.404738</TD>
+            <TD>336.9810899750852</TD>
+            <TD>2.0E9</TD>
+            <TD>512</TD>
+            <TD>[335.98..337.98GHz,3904.30kHz,7.1mJy/beam@10km/s,534uJy/beam@native, XX YY] U [337.25..339.25GHz,3904.30kHz,6.7mJy/beam@10km/s,501.5uJy/beam@native, XX YY] U [347.29..349.29GHz,7812.50kHz,7mJy/beam@10km/s,535.4uJy/beam@native, XX YY] U [349.17..351.16GHz,7812.50kHz,7.9mJy/beam@10km/s,600.2uJy/beam@native, XX YY]</TD>
+            <TD>3904.296875</TD>
+            <TD>3.669169543152927</TD>
+            <TD>7.122361325409099</TD>
+            <TD>0.2696872414424871</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N604:CM11 N605:CM04 N606:CM06</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-08-15T01:51:10.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>3.669169543152927</TD>
+            <TD>0.008070609776662263</TD>
+            <TD>57952.029913</TD>
+            <TD>57960.135989</TD>
+            <TD>7</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2016.2.00042.S</TD>
+            <TD>ADS/JAO.ALMA#2016.2.00042.S</TD>
+            <TD>uid://A001/X1262/Xe8</TD>
+            <TD>uid://A001/X1262/Xe9</TD>
+            <TD>uid://A002/Xc23361/X7ec9</TD>
+            <TD>uid://A001/X1262/Xe9.source.ngc6240.spw.20</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525416666927</TD>
+            <TD>2.400986111110213</TD>
+            <TD>Polygon ICRS 253.245254 2.405021 253.246741 2.404738 253.248019 2.403928 253.248522 2.403358 253.249009 2.402472 253.249293 2.400986 253.249221 2.400230 253.248909 2.399268 253.248019 2.398044 253.246741 2.397234 253.245254 2.396951 253.243767 2.397234 253.242489 2.398044 253.241987 2.398614 253.241499 2.399501 253.241215 2.400986 253.241342 2.401990 253.241600 2.402704 253.242489 2.403928 253.243767 2.404738</TD>
+            <TD>348.28928247686366</TD>
+            <TD>2.0E9</TD>
+            <TD>256</TD>
+            <TD>[335.98..337.98GHz,3904.30kHz,7.1mJy/beam@10km/s,534uJy/beam@native, XX YY] U [337.25..339.25GHz,3904.30kHz,6.7mJy/beam@10km/s,501.5uJy/beam@native, XX YY] U [347.29..349.29GHz,7812.50kHz,7mJy/beam@10km/s,535.4uJy/beam@native, XX YY] U [349.17..351.16GHz,7812.50kHz,7.9mJy/beam@10km/s,600.2uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>3.669169543152927</TD>
+            <TD>7.024165784327605</TD>
+            <TD>0.2696872414424871</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N604:CM11 N605:CM04 N606:CM06</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-08-15T01:51:10.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>3.669169543152927</TD>
+            <TD>0.008070609776662263</TD>
+            <TD>57952.029913</TD>
+            <TD>57960.135989</TD>
+            <TD>7</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2016.2.00042.S</TD>
+            <TD>ADS/JAO.ALMA#2016.2.00042.S</TD>
+            <TD>uid://A001/X1262/Xe8</TD>
+            <TD>uid://A001/X1262/Xe9</TD>
+            <TD>uid://A002/Xc23361/X7ec9</TD>
+            <TD>uid://A001/X1262/Xe9.source.ngc6240.spw.22</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525416666927</TD>
+            <TD>2.400986111110213</TD>
+            <TD>Polygon ICRS 253.245254 2.405021 253.246741 2.404738 253.248019 2.403928 253.248522 2.403358 253.249009 2.402472 253.249293 2.400986 253.249221 2.400230 253.248909 2.399268 253.248019 2.398044 253.246741 2.397234 253.245254 2.396951 253.243767 2.397234 253.242489 2.398044 253.241987 2.398614 253.241499 2.399501 253.241215 2.400986 253.241342 2.401990 253.241600 2.402704 253.242489 2.403928 253.243767 2.404738</TD>
+            <TD>350.164300953763</TD>
+            <TD>2.0E9</TD>
+            <TD>256</TD>
+            <TD>[335.98..337.98GHz,3904.30kHz,7.1mJy/beam@10km/s,534uJy/beam@native, XX YY] U [337.25..339.25GHz,3904.30kHz,6.7mJy/beam@10km/s,501.5uJy/beam@native, XX YY] U [347.29..349.29GHz,7812.50kHz,7mJy/beam@10km/s,535.4uJy/beam@native, XX YY] U [349.17..351.16GHz,7812.50kHz,7.9mJy/beam@10km/s,600.2uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>3.669169543152927</TD>
+            <TD>7.853304723058395</TD>
+            <TD>0.2696872414424871</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N604:CM11 N605:CM04 N606:CM06</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-08-15T01:51:10.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>3.669169543152927</TD>
+            <TD>0.008070609776662263</TD>
+            <TD>57952.029913</TD>
+            <TD>57960.135989</TD>
+            <TD>7</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2016.2.00042.S</TD>
+            <TD>ADS/JAO.ALMA#2016.2.00042.S</TD>
+            <TD>uid://A001/X1262/Xe4</TD>
+            <TD>uid://A001/X1262/Xe5</TD>
+            <TD>uid://A002/Xc2c2f2/X8e2</TD>
+            <TD>uid://A001/X1262/Xe5.source.ngc6240.spw.20</TD>
+            <TD>ngc6240</TD>
+            <TD>253.2452541666758</TD>
+            <TD>2.4009861111101047</TD>
+            <TD>Polygon ICRS 253.245254 2.387854 253.240416 2.388777 253.236257 2.391414 253.233362 2.395395 253.232524 2.397720 253.232111 2.400986 253.233034 2.405820 253.234157 2.408022 253.236257 2.410559 253.240416 2.413196 253.245254 2.414118 253.250093 2.413196 253.254251 2.410559 253.257147 2.406577 253.258165 2.403447 253.258397 2.400986 253.257474 2.396152 253.256351 2.393950 253.254251 2.391414 253.250092 2.388777</TD>
+            <TD>100.49301014664073</TD>
+            <TD>2.0E9</TD>
+            <TD>256</TD>
+            <TD>[97.62..99.61GHz,7812.50kHz,7.4mJy/beam@10km/s,299uJy/beam@native, XX YY] U [99.50..101.49GHz,7812.50kHz,7.2mJy/beam@10km/s,295uJy/beam@native, XX YY] U [109.79..111.79GHz,976.56kHz,8.6mJy/beam@10km/s,369.7uJy/beam@native, XX YY] U [111.54..113.53GHz,976.56kHz,10.1mJy/beam@10km/s,438.1uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>11.482203341283153</TD>
+            <TD>7.20542121596659</TD>
+            <TD>0.16854372803992776</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 N601:CM07 N605:CM04 N606:CM06</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-08-21T15:03:25.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>11.482203341283153</TD>
+            <TD>0.026263255791598956</TD>
+            <TD>57963.023952</TD>
+            <TD>57963.098781</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2016.2.00042.S</TD>
+            <TD>ADS/JAO.ALMA#2016.2.00042.S</TD>
+            <TD>uid://A001/X1262/Xe4</TD>
+            <TD>uid://A001/X1262/Xe5</TD>
+            <TD>uid://A002/Xc2c2f2/X8e2</TD>
+            <TD>uid://A001/X1262/Xe5.source.ngc6240.spw.22</TD>
+            <TD>ngc6240</TD>
+            <TD>253.2452541666758</TD>
+            <TD>2.4009861111101047</TD>
+            <TD>Polygon ICRS 253.245254 2.387854 253.240416 2.388777 253.236257 2.391414 253.233362 2.395395 253.232524 2.397720 253.232111 2.400986 253.233034 2.405820 253.234157 2.408022 253.236257 2.410559 253.240416 2.413196 253.245254 2.414118 253.250093 2.413196 253.254251 2.410559 253.257147 2.406577 253.258165 2.403447 253.258397 2.400986 253.257474 2.396152 253.256351 2.393950 253.254251 2.391414 253.250092 2.388777</TD>
+            <TD>98.61797961433709</TD>
+            <TD>2.0E9</TD>
+            <TD>256</TD>
+            <TD>[97.62..99.61GHz,7812.50kHz,7.4mJy/beam@10km/s,299uJy/beam@native, XX YY] U [99.50..101.49GHz,7812.50kHz,7.2mJy/beam@10km/s,295uJy/beam@native, XX YY] U [109.79..111.79GHz,976.56kHz,8.6mJy/beam@10km/s,369.7uJy/beam@native, XX YY] U [111.54..113.53GHz,976.56kHz,10.1mJy/beam@10km/s,438.1uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>11.482203341283153</TD>
+            <TD>7.373310740757464</TD>
+            <TD>0.16854372803992776</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 N601:CM07 N605:CM04 N606:CM06</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-08-21T15:03:25.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>11.482203341283153</TD>
+            <TD>0.026263255791598956</TD>
+            <TD>57963.023952</TD>
+            <TD>57963.098781</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2016.2.00042.S</TD>
+            <TD>ADS/JAO.ALMA#2016.2.00042.S</TD>
+            <TD>uid://A001/X1262/Xe4</TD>
+            <TD>uid://A001/X1262/Xe5</TD>
+            <TD>uid://A002/Xc2c2f2/X8e2</TD>
+            <TD>uid://A001/X1262/Xe5.source.ngc6240.spw.16</TD>
+            <TD>ngc6240</TD>
+            <TD>253.2452541666758</TD>
+            <TD>2.4009861111101047</TD>
+            <TD>Polygon ICRS 253.245254 2.387854 253.240416 2.388777 253.236257 2.391414 253.233362 2.395395 253.232524 2.397720 253.232111 2.400986 253.233034 2.405820 253.234157 2.408022 253.236257 2.410559 253.240416 2.413196 253.245254 2.414118 253.250093 2.413196 253.254251 2.410559 253.257147 2.406577 253.258165 2.403447 253.258397 2.400986 253.257474 2.396152 253.256351 2.393950 253.254251 2.391414 253.250092 2.388777</TD>
+            <TD>112.53520671939094</TD>
+            <TD>2.0E9</TD>
+            <TD>4096</TD>
+            <TD>[97.62..99.61GHz,7812.50kHz,7.4mJy/beam@10km/s,299uJy/beam@native, XX YY] U [99.50..101.49GHz,7812.50kHz,7.2mJy/beam@10km/s,295uJy/beam@native, XX YY] U [109.79..111.79GHz,976.56kHz,8.6mJy/beam@10km/s,369.7uJy/beam@native, XX YY] U [111.54..113.53GHz,976.56kHz,10.1mJy/beam@10km/s,438.1uJy/beam@native, XX YY]</TD>
+            <TD>976.5625</TD>
+            <TD>11.482203341283153</TD>
+            <TD>10.111941678571519</TD>
+            <TD>0.16854372803992776</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 N601:CM07 N605:CM04 N606:CM06</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-08-21T15:03:25.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>11.482203341283153</TD>
+            <TD>0.026263255791598956</TD>
+            <TD>57963.023952</TD>
+            <TD>57963.098781</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2016.2.00042.S</TD>
+            <TD>ADS/JAO.ALMA#2016.2.00042.S</TD>
+            <TD>uid://A001/X1262/Xe4</TD>
+            <TD>uid://A001/X1262/Xe5</TD>
+            <TD>uid://A002/Xc2c2f2/X8e2</TD>
+            <TD>uid://A001/X1262/Xe5.source.ngc6240.spw.18</TD>
+            <TD>ngc6240</TD>
+            <TD>253.2452541666758</TD>
+            <TD>2.4009861111101047</TD>
+            <TD>Polygon ICRS 253.245254 2.387854 253.240416 2.388777 253.236257 2.391414 253.233362 2.395395 253.232524 2.397720 253.232111 2.400986 253.233034 2.405820 253.234157 2.408022 253.236257 2.410559 253.240416 2.413196 253.245254 2.414118 253.250093 2.413196 253.254251 2.410559 253.257147 2.406577 253.258165 2.403447 253.258397 2.400986 253.257474 2.396152 253.256351 2.393950 253.254251 2.391414 253.250092 2.388777</TD>
+            <TD>110.78985123261688</TD>
+            <TD>2.0E9</TD>
+            <TD>4096</TD>
+            <TD>[97.62..99.61GHz,7812.50kHz,7.4mJy/beam@10km/s,299uJy/beam@native, XX YY] U [99.50..101.49GHz,7812.50kHz,7.2mJy/beam@10km/s,295uJy/beam@native, XX YY] U [109.79..111.79GHz,976.56kHz,8.6mJy/beam@10km/s,369.7uJy/beam@native, XX YY] U [111.54..113.53GHz,976.56kHz,10.1mJy/beam@10km/s,438.1uJy/beam@native, XX YY]</TD>
+            <TD>976.5625</TD>
+            <TD>11.482203341283153</TD>
+            <TD>8.600417614910361</TD>
+            <TD>0.16854372803992776</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 N601:CM07 N605:CM04 N606:CM06</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-08-21T15:03:25.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>11.482203341283153</TD>
+            <TD>0.026263255791598956</TD>
+            <TD>57963.023952</TD>
+            <TD>57963.098781</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00370.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00370.S</TD>
+            <TD>uid://A001/X2fe/X44d</TD>
+            <TD>uid://A001/X2fe/X450</TD>
+            <TD>uid://A002/Xaf985b/Xf3f</TD>
+            <TD>uid://A001/X2fe/X450.source.NGC_6240.spw.25</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420000003</TD>
+            <TD>2.4009861</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.003464</TD>
+            <TD>225.03831250606848</TD>
+            <TD>1.875E9</TD>
+            <TD>960</TD>
+            <TD>[224.10..225.97GHz,1938.48kHz,2.8mJy/beam@10km/s,177.1uJy/beam@native, XX YY] U [226.52..228.39GHz,1938.48kHz,2.8mJy/beam@10km/s,177.3uJy/beam@native, XX YY] U [239.02..240.89GHz,1938.48kHz,2.6mJy/beam@10km/s,168.1uJy/beam@native, XX YY] U [240.97..242.84GHz,1938.48kHz,2.6mJy/beam@10km/s,168.3uJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>1.0054135233808996</TD>
+            <TD>2.799015327564504</TD>
+            <TD>0.08626792945057082</TD>
+            <TD>A001:DA59 A002:DA49 A003:DV23 A004:DA41 A005:DA54 A008:DV08 A009:DV18 A010:DV25 A011:DV09 A013:DA48 A014:DV22 A017:DV12 A018:DA52 A020:DV03 A021:DA58 A023:DA51 A025:DA57 A027:DV07 A029:DV10 A030:DA65 A035:DA62 A036:DV16 A037:DV19 A038:DA50 A042:DV01 A046:DA53 A047:DA55 A048:DV15 A049:DV11 A050:DV24 A060:DA60 A062:DA56 A063:DA44 A064:DV13 A065:DV06 A067:DA42 A068:DA45 A069:DV14 A070:DV21 A071:DA43 A072:DV05 T701:PM03 T702:PM02 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-03-18T16:51:53.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>1.0054135233808996</TD>
+            <TD>0.006928016758172677</TD>
+            <TD>57416.458432</TD>
+            <TD>57416.459207</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00370.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00370.S</TD>
+            <TD>uid://A001/X2fe/X44d</TD>
+            <TD>uid://A001/X2fe/X450</TD>
+            <TD>uid://A002/Xaf985b/Xf3f</TD>
+            <TD>uid://A001/X2fe/X450.source.NGC_6240.spw.27</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420000003</TD>
+            <TD>2.4009861</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.003464</TD>
+            <TD>227.45498942203955</TD>
+            <TD>1.875E9</TD>
+            <TD>960</TD>
+            <TD>[224.10..225.97GHz,1938.48kHz,2.8mJy/beam@10km/s,177.1uJy/beam@native, XX YY] U [226.52..228.39GHz,1938.48kHz,2.8mJy/beam@10km/s,177.3uJy/beam@native, XX YY] U [239.02..240.89GHz,1938.48kHz,2.6mJy/beam@10km/s,168.1uJy/beam@native, XX YY] U [240.97..242.84GHz,1938.48kHz,2.6mJy/beam@10km/s,168.3uJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>1.0054135233808996</TD>
+            <TD>2.7874513541299475</TD>
+            <TD>0.08626792945057082</TD>
+            <TD>A001:DA59 A002:DA49 A003:DV23 A004:DA41 A005:DA54 A008:DV08 A009:DV18 A010:DV25 A011:DV09 A013:DA48 A014:DV22 A017:DV12 A018:DA52 A020:DV03 A021:DA58 A023:DA51 A025:DA57 A027:DV07 A029:DV10 A030:DA65 A035:DA62 A036:DV16 A037:DV19 A038:DA50 A042:DV01 A046:DA53 A047:DA55 A048:DV15 A049:DV11 A050:DV24 A060:DA60 A062:DA56 A063:DA44 A064:DV13 A065:DV06 A067:DA42 A068:DA45 A069:DV14 A070:DV21 A071:DA43 A072:DV05 T701:PM03 T702:PM02 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-03-18T16:51:53.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>1.0054135233808996</TD>
+            <TD>0.006928016758172677</TD>
+            <TD>57416.458432</TD>
+            <TD>57416.459207</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00370.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00370.S</TD>
+            <TD>uid://A001/X2fe/X44d</TD>
+            <TD>uid://A001/X2fe/X450</TD>
+            <TD>uid://A002/Xaf985b/Xf3f</TD>
+            <TD>uid://A001/X2fe/X450.source.NGC_6240.spw.29</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420000003</TD>
+            <TD>2.4009861</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.003464</TD>
+            <TD>239.95331852822</TD>
+            <TD>1.875E9</TD>
+            <TD>960</TD>
+            <TD>[224.10..225.97GHz,1938.48kHz,2.8mJy/beam@10km/s,177.1uJy/beam@native, XX YY] U [226.52..228.39GHz,1938.48kHz,2.8mJy/beam@10km/s,177.3uJy/beam@native, XX YY] U [239.02..240.89GHz,1938.48kHz,2.6mJy/beam@10km/s,168.1uJy/beam@native, XX YY] U [240.97..242.84GHz,1938.48kHz,2.6mJy/beam@10km/s,168.3uJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>1.0054135233808996</TD>
+            <TD>2.5732865256820916</TD>
+            <TD>0.08626792945057082</TD>
+            <TD>A001:DA59 A002:DA49 A003:DV23 A004:DA41 A005:DA54 A008:DV08 A009:DV18 A010:DV25 A011:DV09 A013:DA48 A014:DV22 A017:DV12 A018:DA52 A020:DV03 A021:DA58 A023:DA51 A025:DA57 A027:DV07 A029:DV10 A030:DA65 A035:DA62 A036:DV16 A037:DV19 A038:DA50 A042:DV01 A046:DA53 A047:DA55 A048:DV15 A049:DV11 A050:DV24 A060:DA60 A062:DA56 A063:DA44 A064:DV13 A065:DV06 A067:DA42 A068:DA45 A069:DV14 A070:DV21 A071:DA43 A072:DV05 T701:PM03 T702:PM02 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-03-18T16:51:53.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>1.0054135233808996</TD>
+            <TD>0.006928016758172677</TD>
+            <TD>57416.458432</TD>
+            <TD>57416.459207</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00370.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00370.S</TD>
+            <TD>uid://A001/X2fe/X44d</TD>
+            <TD>uid://A001/X2fe/X450</TD>
+            <TD>uid://A002/Xaf985b/Xf3f</TD>
+            <TD>uid://A001/X2fe/X450.source.NGC_6240.spw.31</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420000003</TD>
+            <TD>2.4009861</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.003464</TD>
+            <TD>241.90224651415798</TD>
+            <TD>1.875E9</TD>
+            <TD>960</TD>
+            <TD>[224.10..225.97GHz,1938.48kHz,2.8mJy/beam@10km/s,177.1uJy/beam@native, XX YY] U [226.52..228.39GHz,1938.48kHz,2.8mJy/beam@10km/s,177.3uJy/beam@native, XX YY] U [239.02..240.89GHz,1938.48kHz,2.6mJy/beam@10km/s,168.1uJy/beam@native, XX YY] U [240.97..242.84GHz,1938.48kHz,2.6mJy/beam@10km/s,168.3uJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>1.0054135233808996</TD>
+            <TD>2.5655438907489923</TD>
+            <TD>0.08626792945057082</TD>
+            <TD>A001:DA59 A002:DA49 A003:DV23 A004:DA41 A005:DA54 A008:DV08 A009:DV18 A010:DV25 A011:DV09 A013:DA48 A014:DV22 A017:DV12 A018:DA52 A020:DV03 A021:DA58 A023:DA51 A025:DA57 A027:DV07 A029:DV10 A030:DA65 A035:DA62 A036:DV16 A037:DV19 A038:DA50 A042:DV01 A046:DA53 A047:DA55 A048:DV15 A049:DV11 A050:DV24 A060:DA60 A062:DA56 A063:DA44 A064:DV13 A065:DV06 A067:DA42 A068:DA45 A069:DV14 A070:DV21 A071:DA43 A072:DV05 T701:PM03 T702:PM02 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-03-18T16:51:53.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>1.0054135233808996</TD>
+            <TD>0.006928016758172677</TD>
+            <TD>57416.458432</TD>
+            <TD>57416.459207</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00370.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00370.S</TD>
+            <TD>uid://A001/X2fe/X44d</TD>
+            <TD>uid://A001/X2fe/X44e</TD>
+            <TD>uid://A002/Xb3c4ab/Xbef</TD>
+            <TD>uid://A001/X2fe/X44e.source.NGC_6240.spw.25</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420002288</TD>
+            <TD>2.4009861000015813</TD>
+            <TD>Polygon ICRS 253.245472 2.397529 253.244183 2.397692 253.243044 2.398317 253.242449 2.398950 253.242117 2.399511 253.241794 2.400769 253.241815 2.401420 253.242031 2.402261 253.242727 2.403357 253.243778 2.404120 253.245037 2.404443 253.246326 2.404281 253.247464 2.403655 253.248292 2.402655 253.248612 2.401848 253.248714 2.401204 253.248660 2.400337 253.248478 2.399711 253.247782 2.398615 253.246730 2.397852</TD>
+            <TD>225.05056718356636</TD>
+            <TD>1.875E9</TD>
+            <TD>960</TD>
+            <TD>[224.10..226.00GHz,1938.48kHz,2.5mJy/beam@10km/s,161uJy/beam@native, XX YY] U [226.52..228.39GHz,1938.48kHz,2.5mJy/beam@10km/s,161.2uJy/beam@native, XX YY] U [239.01..240.89GHz,1938.48kHz,2.5mJy/beam@10km/s,163.3uJy/beam@native, XX YY] U [240.96..242.84GHz,1938.48kHz,2.6mJy/beam@10km/s,170.9uJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>0.3025385850388456</TD>
+            <TD>2.545019965880015</TD>
+            <TD>0.08198617810599115</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A009:DV18 A010:DV25 A011:DV09 A013:DV20 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A030:DA65 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A049:DV11 A054:DV03 A063:DA44 A065:DV01 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A098:DV21 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A134:DA44 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-12-01T23:09:04.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.3025385850388456</TD>
+            <TD>0.006928025529886212</TD>
+            <TD>57539.187646</TD>
+            <TD>57597.194906</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00370.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00370.S</TD>
+            <TD>uid://A001/X2fe/X44d</TD>
+            <TD>uid://A001/X2fe/X44e</TD>
+            <TD>uid://A002/Xb3c4ab/Xbef</TD>
+            <TD>uid://A001/X2fe/X44e.source.NGC_6240.spw.27</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420002288</TD>
+            <TD>2.4009861000015813</TD>
+            <TD>Polygon ICRS 253.245472 2.397529 253.244183 2.397692 253.243044 2.398317 253.242449 2.398950 253.242117 2.399511 253.241794 2.400769 253.241815 2.401420 253.242031 2.402261 253.242727 2.403357 253.243778 2.404120 253.245037 2.404443 253.246326 2.404281 253.247464 2.403655 253.248292 2.402655 253.248612 2.401848 253.248714 2.401204 253.248660 2.400337 253.248478 2.399711 253.247782 2.398615 253.246730 2.397852</TD>
+            <TD>227.45450180923365</TD>
+            <TD>1.875E9</TD>
+            <TD>960</TD>
+            <TD>[224.10..226.00GHz,1938.48kHz,2.5mJy/beam@10km/s,161uJy/beam@native, XX YY] U [226.52..228.39GHz,1938.48kHz,2.5mJy/beam@10km/s,161.2uJy/beam@native, XX YY] U [239.01..240.89GHz,1938.48kHz,2.5mJy/beam@10km/s,163.3uJy/beam@native, XX YY] U [240.96..242.84GHz,1938.48kHz,2.6mJy/beam@10km/s,170.9uJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>0.3025385850388456</TD>
+            <TD>2.534561115905066</TD>
+            <TD>0.08198617810599115</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A009:DV18 A010:DV25 A011:DV09 A013:DV20 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A030:DA65 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A049:DV11 A054:DV03 A063:DA44 A065:DV01 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A098:DV21 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A134:DA44 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-12-01T23:09:04.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.3025385850388456</TD>
+            <TD>0.006928025529886212</TD>
+            <TD>57539.187646</TD>
+            <TD>57597.194906</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00370.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00370.S</TD>
+            <TD>uid://A001/X2fe/X44d</TD>
+            <TD>uid://A001/X2fe/X44e</TD>
+            <TD>uid://A002/Xb3c4ab/Xbef</TD>
+            <TD>uid://A001/X2fe/X44e.source.NGC_6240.spw.29</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420002288</TD>
+            <TD>2.4009861000015813</TD>
+            <TD>Polygon ICRS 253.245472 2.397529 253.244183 2.397692 253.243044 2.398317 253.242449 2.398950 253.242117 2.399511 253.241794 2.400769 253.241815 2.401420 253.242031 2.402261 253.242727 2.403357 253.243778 2.404120 253.245037 2.404443 253.246326 2.404281 253.247464 2.403655 253.248292 2.402655 253.248612 2.401848 253.248714 2.401204 253.248660 2.400337 253.248478 2.399711 253.247782 2.398615 253.246730 2.397852</TD>
+            <TD>239.9517977662063</TD>
+            <TD>1.875E9</TD>
+            <TD>960</TD>
+            <TD>[224.10..226.00GHz,1938.48kHz,2.5mJy/beam@10km/s,161uJy/beam@native, XX YY] U [226.52..228.39GHz,1938.48kHz,2.5mJy/beam@10km/s,161.2uJy/beam@native, XX YY] U [239.01..240.89GHz,1938.48kHz,2.5mJy/beam@10km/s,163.3uJy/beam@native, XX YY] U [240.96..242.84GHz,1938.48kHz,2.6mJy/beam@10km/s,170.9uJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>0.3025385850388456</TD>
+            <TD>2.4992501880552607</TD>
+            <TD>0.08198617810599115</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A009:DV18 A010:DV25 A011:DV09 A013:DV20 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A030:DA65 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A049:DV11 A054:DV03 A063:DA44 A065:DV01 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A098:DV21 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A134:DA44 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-12-01T23:09:04.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.3025385850388456</TD>
+            <TD>0.006928025529886212</TD>
+            <TD>57539.187646</TD>
+            <TD>57597.194906</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00370.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00370.S</TD>
+            <TD>uid://A001/X2fe/X44d</TD>
+            <TD>uid://A001/X2fe/X44e</TD>
+            <TD>uid://A002/Xb3c4ab/Xbef</TD>
+            <TD>uid://A001/X2fe/X44e.source.NGC_6240.spw.31</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420002288</TD>
+            <TD>2.4009861000015813</TD>
+            <TD>Polygon ICRS 253.245472 2.397529 253.244183 2.397692 253.243044 2.398317 253.242449 2.398950 253.242117 2.399511 253.241794 2.400769 253.241815 2.401420 253.242031 2.402261 253.242727 2.403357 253.243778 2.404120 253.245037 2.404443 253.246326 2.404281 253.247464 2.403655 253.248292 2.402655 253.248612 2.401848 253.248714 2.401204 253.248660 2.400337 253.248478 2.399711 253.247782 2.398615 253.246730 2.397852</TD>
+            <TD>241.8994201327761</TD>
+            <TD>1.875E9</TD>
+            <TD>960</TD>
+            <TD>[224.10..226.00GHz,1938.48kHz,2.5mJy/beam@10km/s,161uJy/beam@native, XX YY] U [226.52..228.39GHz,1938.48kHz,2.5mJy/beam@10km/s,161.2uJy/beam@native, XX YY] U [239.01..240.89GHz,1938.48kHz,2.5mJy/beam@10km/s,163.3uJy/beam@native, XX YY] U [240.96..242.84GHz,1938.48kHz,2.6mJy/beam@10km/s,170.9uJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>0.3025385850388456</TD>
+            <TD>2.6053001277198065</TD>
+            <TD>0.08198617810599115</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A009:DV18 A010:DV25 A011:DV09 A013:DV20 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A030:DA65 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A049:DV11 A054:DV03 A063:DA44 A065:DV01 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A098:DV21 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A134:DA44 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-12-01T23:09:04.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.3025385850388456</TD>
+            <TD>0.006928025529886212</TD>
+            <TD>57539.187646</TD>
+            <TD>57597.194906</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X727</TD>
+            <TD>uid://A001/X2fe/X728</TD>
+            <TD>uid://A002/Xb7189f/X84e2</TD>
+            <TD>uid://A001/X2fe/X728.source.ngc6240.spw.19</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525420002365</TD>
+            <TD>2.40098610000017</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.008004</TD>
+            <TD>106.05781404357269</TD>
+            <TD>2.0E9</TD>
+            <TD>128</TD>
+            <TD>[93.27..95.14GHz,7812.50kHz,989.8uJy/beam@10km/s,40.5uJy/beam@native, XX YY] U [95.08..96.95GHz,7812.50kHz,932.7uJy/beam@10km/s,38.5uJy/beam@native, XX YY] U [105.07..107.05GHz,31250.00kHz,959.8uJy/beam@10km/s,40.4uJy/beam@native, XX YY] U [106.94..108.80GHz,7812.50kHz,882.3uJy/beam@10km/s,38.7uJy/beam@native, XX YY]</TD>
+            <TD>31250.0</TD>
+            <TD>0.49638259580554156</TD>
+            <TD>0.9598264670162814</TD>
+            <TD>0.01974453488843131</TD>
+            <TD>A002:DA49 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A023:DA51 A034:DA46 A064:DV13 A073:DA54 A075:DV24 A076:DA52 A079:DA64 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A111:DV05 A113:DV15 A134:DA44 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-04-21T10:34:43.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.49638259580554156</TD>
+            <TD>0.01600890312020526</TD>
+            <TD>57624.001414</TD>
+            <TD>57624.014138</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X727</TD>
+            <TD>uid://A001/X2fe/X728</TD>
+            <TD>uid://A002/Xb7189f/X84e2</TD>
+            <TD>uid://A001/X2fe/X728.source.ngc6240.spw.25</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525420002365</TD>
+            <TD>2.40098610000017</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.008004</TD>
+            <TD>107.87037173767246</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[93.27..95.14GHz,7812.50kHz,989.8uJy/beam@10km/s,40.5uJy/beam@native, XX YY] U [95.08..96.95GHz,7812.50kHz,932.7uJy/beam@10km/s,38.5uJy/beam@native, XX YY] U [105.07..107.05GHz,31250.00kHz,959.8uJy/beam@10km/s,40.4uJy/beam@native, XX YY] U [106.94..108.80GHz,7812.50kHz,882.3uJy/beam@10km/s,38.7uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.49638259580554156</TD>
+            <TD>0.882303350063177</TD>
+            <TD>0.01974453488843131</TD>
+            <TD>A002:DA49 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A023:DA51 A034:DA46 A064:DV13 A073:DA54 A075:DV24 A076:DA52 A079:DA64 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A111:DV05 A113:DV15 A134:DA44 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-04-21T10:34:43.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.49638259580554156</TD>
+            <TD>0.01600890312020526</TD>
+            <TD>57624.001414</TD>
+            <TD>57624.014138</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X727</TD>
+            <TD>uid://A001/X2fe/X728</TD>
+            <TD>uid://A002/Xb7189f/X84e2</TD>
+            <TD>uid://A001/X2fe/X728.source.ngc6240.spw.27</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525420002365</TD>
+            <TD>2.40098610000017</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.008004</TD>
+            <TD>96.0154943943866</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[93.27..95.14GHz,7812.50kHz,989.8uJy/beam@10km/s,40.5uJy/beam@native, XX YY] U [95.08..96.95GHz,7812.50kHz,932.7uJy/beam@10km/s,38.5uJy/beam@native, XX YY] U [105.07..107.05GHz,31250.00kHz,959.8uJy/beam@10km/s,40.4uJy/beam@native, XX YY] U [106.94..108.80GHz,7812.50kHz,882.3uJy/beam@10km/s,38.7uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.49638259580554156</TD>
+            <TD>0.9327078386885838</TD>
+            <TD>0.01974453488843131</TD>
+            <TD>A002:DA49 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A023:DA51 A034:DA46 A064:DV13 A073:DA54 A075:DV24 A076:DA52 A079:DA64 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A111:DV05 A113:DV15 A134:DA44 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-04-21T10:34:43.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.49638259580554156</TD>
+            <TD>0.01600890312020526</TD>
+            <TD>57624.001414</TD>
+            <TD>57624.014138</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X727</TD>
+            <TD>uid://A001/X2fe/X728</TD>
+            <TD>uid://A002/Xb7189f/X84e2</TD>
+            <TD>uid://A001/X2fe/X728.source.ngc6240.spw.29</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525420002365</TD>
+            <TD>2.40098610000017</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.008004</TD>
+            <TD>94.20293670028687</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[93.27..95.14GHz,7812.50kHz,989.8uJy/beam@10km/s,40.5uJy/beam@native, XX YY] U [95.08..96.95GHz,7812.50kHz,932.7uJy/beam@10km/s,38.5uJy/beam@native, XX YY] U [105.07..107.05GHz,31250.00kHz,959.8uJy/beam@10km/s,40.4uJy/beam@native, XX YY] U [106.94..108.80GHz,7812.50kHz,882.3uJy/beam@10km/s,38.7uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.49638259580554156</TD>
+            <TD>0.9897695916738798</TD>
+            <TD>0.01974453488843131</TD>
+            <TD>A002:DA49 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A023:DA51 A034:DA46 A064:DV13 A073:DA54 A075:DV24 A076:DA52 A079:DA64 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A111:DV05 A113:DV15 A134:DA44 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-04-21T10:34:43.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.49638259580554156</TD>
+            <TD>0.01600890312020526</TD>
+            <TD>57624.001414</TD>
+            <TD>57624.014138</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X723</TD>
+            <TD>uid://A001/X2fe/X724</TD>
+            <TD>uid://A002/Xb857f1/X6c00</TD>
+            <TD>uid://A001/X2fe/X724.source.ngc6240.spw.25</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525420000822</TD>
+            <TD>2.400986100000004</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.008773</TD>
+            <TD>85.22222127674937</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[84.29..86.16GHz,7812.50kHz,679.6uJy/beam@10km/s,26.5uJy/beam@native, XX YY] U [86.11..87.98GHz,1938.48kHz,672.7uJy/beam@10km/s,26.5uJy/beam@native, XX YY] U [96.40..98.27GHz,7812.50kHz,637.5uJy/beam@10km/s,26.5uJy/beam@native, XX YY] U [98.22..100.09GHz,7812.50kHz,659.1uJy/beam@10km/s,27.7uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.3966235610590889</TD>
+            <TD>0.6796366558673085</TD>
+            <TD>0.013385680280965553</TD>
+            <TD>A001:DA59 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A023:DA51 A034:DA46 A048:DV23 A064:DV13 A065:DV01 A075:DV24 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A098:DV21 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A106:DV08 A108:DA54 A109:DA55 A112:DA50 A113:DV15 A114:DA52 A115:DA44 A129:DA61 A130:DA64 A135:DV19 A136:DV04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>F</TD>
+            <TD>2017-12-19T22:35:36.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.3966235610590889</TD>
+            <TD>0.017545164527207984</TD>
+            <TD>57651.903217</TD>
+            <TD>57651.928633</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X723</TD>
+            <TD>uid://A001/X2fe/X724</TD>
+            <TD>uid://A002/Xb857f1/X6c00</TD>
+            <TD>uid://A001/X2fe/X724.source.ngc6240.spw.27</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525420000822</TD>
+            <TD>2.400986100000004</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.008773</TD>
+            <TD>87.04369441991128</TD>
+            <TD>1.875E9</TD>
+            <TD>960</TD>
+            <TD>[84.29..86.16GHz,7812.50kHz,679.6uJy/beam@10km/s,26.5uJy/beam@native, XX YY] U [86.11..87.98GHz,1938.48kHz,672.7uJy/beam@10km/s,26.5uJy/beam@native, XX YY] U [96.40..98.27GHz,7812.50kHz,637.5uJy/beam@10km/s,26.5uJy/beam@native, XX YY] U [98.22..100.09GHz,7812.50kHz,659.1uJy/beam@10km/s,27.7uJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>0.3966235610590889</TD>
+            <TD>0.6727197951181931</TD>
+            <TD>0.013385680280965553</TD>
+            <TD>A001:DA59 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A023:DA51 A034:DA46 A048:DV23 A064:DV13 A065:DV01 A075:DV24 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A098:DV21 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A106:DV08 A108:DA54 A109:DA55 A112:DA50 A113:DV15 A114:DA52 A115:DA44 A129:DA61 A130:DA64 A135:DV19 A136:DV04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>F</TD>
+            <TD>2017-12-19T22:35:36.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.3966235610590889</TD>
+            <TD>0.017545164527207984</TD>
+            <TD>57651.903217</TD>
+            <TD>57651.928633</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X723</TD>
+            <TD>uid://A001/X2fe/X724</TD>
+            <TD>uid://A002/Xb857f1/X6c00</TD>
+            <TD>uid://A001/X2fe/X724.source.ngc6240.spw.29</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525420000822</TD>
+            <TD>2.400986100000004</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.008773</TD>
+            <TD>97.33599680190922</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[84.29..86.16GHz,7812.50kHz,679.6uJy/beam@10km/s,26.5uJy/beam@native, XX YY] U [86.11..87.98GHz,1938.48kHz,672.7uJy/beam@10km/s,26.5uJy/beam@native, XX YY] U [96.40..98.27GHz,7812.50kHz,637.5uJy/beam@10km/s,26.5uJy/beam@native, XX YY] U [98.22..100.09GHz,7812.50kHz,659.1uJy/beam@10km/s,27.7uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.3966235610590889</TD>
+            <TD>0.637486754648605</TD>
+            <TD>0.013385680280965553</TD>
+            <TD>A001:DA59 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A023:DA51 A034:DA46 A048:DV23 A064:DV13 A065:DV01 A075:DV24 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A098:DV21 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A106:DV08 A108:DA54 A109:DA55 A112:DA50 A113:DV15 A114:DA52 A115:DA44 A129:DA61 A130:DA64 A135:DV19 A136:DV04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>F</TD>
+            <TD>2017-12-19T22:35:36.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.3966235610590889</TD>
+            <TD>0.017545164527207984</TD>
+            <TD>57651.903217</TD>
+            <TD>57651.928633</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X723</TD>
+            <TD>uid://A001/X2fe/X724</TD>
+            <TD>uid://A002/Xb857f1/X6c00</TD>
+            <TD>uid://A001/X2fe/X724.source.ngc6240.spw.31</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525420000822</TD>
+            <TD>2.400986100000004</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.008773</TD>
+            <TD>99.15746994507111</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[84.29..86.16GHz,7812.50kHz,679.6uJy/beam@10km/s,26.5uJy/beam@native, XX YY] U [86.11..87.98GHz,1938.48kHz,672.7uJy/beam@10km/s,26.5uJy/beam@native, XX YY] U [96.40..98.27GHz,7812.50kHz,637.5uJy/beam@10km/s,26.5uJy/beam@native, XX YY] U [98.22..100.09GHz,7812.50kHz,659.1uJy/beam@10km/s,27.7uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.3966235610590889</TD>
+            <TD>0.6590574775297282</TD>
+            <TD>0.013385680280965553</TD>
+            <TD>A001:DA59 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A023:DA51 A034:DA46 A048:DV23 A064:DV13 A065:DV01 A075:DV24 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A098:DV21 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A106:DV08 A108:DA54 A109:DA55 A112:DA50 A113:DV15 A114:DA52 A115:DA44 A129:DA61 A130:DA64 A135:DV19 A136:DV04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>F</TD>
+            <TD>2017-12-19T22:35:36.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.3966235610590889</TD>
+            <TD>0.017545164527207984</TD>
+            <TD>57651.903217</TD>
+            <TD>57651.928633</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X72b</TD>
+            <TD>uid://A001/X2fe/X72c</TD>
+            <TD>uid://A002/Xb618c7/X8d4</TD>
+            <TD>uid://A001/X2fe/X72c.source.ngc6240.spw.25</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525420005585</TD>
+            <TD>2.400986100001637</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.006037</TD>
+            <TD>127.16815850914853</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[126.23..128.10GHz,7812.50kHz,664.1uJy/beam@10km/s,31.6uJy/beam@native, XX YY] U [127.81..129.68GHz,7812.50kHz,660.4uJy/beam@10km/s,31.6uJy/beam@native, XX YY] U [137.98..139.85GHz,7812.50kHz,637.6uJy/beam@10km/s,31.7uJy/beam@native, XX YY] U [139.81..141.68GHz,7812.50kHz,625.8uJy/beam@10km/s,31.3uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.5144101353447355</TD>
+            <TD>0.6641473183347393</TD>
+            <TD>0.015775300194016097</TD>
+            <TD>A001:DA59 A002:DA49 A006:DA61 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A034:DA46 A065:DV01 A072:DV05 A073:DA54 A075:DV24 A076:DA52 A078:DV12 A079:DA64 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A088:DA57 A089:DA50 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A098:DV21 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A135:DV19 T701:PM03 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>F</TD>
+            <TD>2017-12-16T12:34:22.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.5144101353447355</TD>
+            <TD>0.012074768185237558</TD>
+            <TD>57600.134553</TD>
+            <TD>57600.159081</TD>
+            <TD>4</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X72b</TD>
+            <TD>uid://A001/X2fe/X72c</TD>
+            <TD>uid://A002/Xb618c7/X8d4</TD>
+            <TD>uid://A001/X2fe/X72c.source.ngc6240.spw.27</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525420005585</TD>
+            <TD>2.400986100001637</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.006037</TD>
+            <TD>128.74679442608002</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[126.23..128.10GHz,7812.50kHz,664.1uJy/beam@10km/s,31.6uJy/beam@native, XX YY] U [127.81..129.68GHz,7812.50kHz,660.4uJy/beam@10km/s,31.6uJy/beam@native, XX YY] U [137.98..139.85GHz,7812.50kHz,637.6uJy/beam@10km/s,31.7uJy/beam@native, XX YY] U [139.81..141.68GHz,7812.50kHz,625.8uJy/beam@10km/s,31.3uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.5144101353447355</TD>
+            <TD>0.6603559191688719</TD>
+            <TD>0.015775300194016097</TD>
+            <TD>A001:DA59 A002:DA49 A006:DA61 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A034:DA46 A065:DV01 A072:DV05 A073:DA54 A075:DV24 A076:DA52 A078:DV12 A079:DA64 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A088:DA57 A089:DA50 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A098:DV21 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A135:DV19 T701:PM03 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>F</TD>
+            <TD>2017-12-16T12:34:22.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.5144101353447355</TD>
+            <TD>0.012074768185237558</TD>
+            <TD>57600.134553</TD>
+            <TD>57600.159081</TD>
+            <TD>4</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X72b</TD>
+            <TD>uid://A001/X2fe/X72c</TD>
+            <TD>uid://A002/Xb618c7/X8d4</TD>
+            <TD>uid://A001/X2fe/X72c.source.ngc6240.spw.29</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525420005585</TD>
+            <TD>2.400986100001637</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.006037</TD>
+            <TD>138.9140253416628</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[126.23..128.10GHz,7812.50kHz,664.1uJy/beam@10km/s,31.6uJy/beam@native, XX YY] U [127.81..129.68GHz,7812.50kHz,660.4uJy/beam@10km/s,31.6uJy/beam@native, XX YY] U [137.98..139.85GHz,7812.50kHz,637.6uJy/beam@10km/s,31.7uJy/beam@native, XX YY] U [139.81..141.68GHz,7812.50kHz,625.8uJy/beam@10km/s,31.3uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.5144101353447355</TD>
+            <TD>0.6376334709232961</TD>
+            <TD>0.015775300194016097</TD>
+            <TD>A001:DA59 A002:DA49 A006:DA61 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A034:DA46 A065:DV01 A072:DV05 A073:DA54 A075:DV24 A076:DA52 A078:DV12 A079:DA64 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A088:DA57 A089:DA50 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A098:DV21 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A135:DV19 T701:PM03 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>F</TD>
+            <TD>2017-12-16T12:34:22.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.5144101353447355</TD>
+            <TD>0.012074768185237558</TD>
+            <TD>57600.134553</TD>
+            <TD>57600.159081</TD>
+            <TD>4</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X72b</TD>
+            <TD>uid://A001/X2fe/X72c</TD>
+            <TD>uid://A002/Xb618c7/X8d4</TD>
+            <TD>uid://A001/X2fe/X72c.source.ngc6240.spw.31</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525420005585</TD>
+            <TD>2.400986100001637</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.006037</TD>
+            <TD>140.74357017461023</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[126.23..128.10GHz,7812.50kHz,664.1uJy/beam@10km/s,31.6uJy/beam@native, XX YY] U [127.81..129.68GHz,7812.50kHz,660.4uJy/beam@10km/s,31.6uJy/beam@native, XX YY] U [137.98..139.85GHz,7812.50kHz,637.6uJy/beam@10km/s,31.7uJy/beam@native, XX YY] U [139.81..141.68GHz,7812.50kHz,625.8uJy/beam@10km/s,31.3uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.5144101353447355</TD>
+            <TD>0.62582354431916</TD>
+            <TD>0.015775300194016097</TD>
+            <TD>A001:DA59 A002:DA49 A006:DA61 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A034:DA46 A065:DV01 A072:DV05 A073:DA54 A075:DV24 A076:DA52 A078:DV12 A079:DA64 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A088:DA57 A089:DA50 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A098:DV21 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A135:DV19 T701:PM03 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>F</TD>
+            <TD>2017-12-16T12:34:22.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.5144101353447355</TD>
+            <TD>0.012074768185237558</TD>
+            <TD>57600.134553</TD>
+            <TD>57600.159081</TD>
+            <TD>4</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X72f</TD>
+            <TD>uid://A001/X2fe/X730</TD>
+            <TD>uid://A002/Xb7189f/X8bd3</TD>
+            <TD>uid://A001/X2fe/X730.source.ngc6240.spw.25</TD>
+            <TD>ngc6240</TD>
+            <TD>253.2452542000572</TD>
+            <TD>2.4009861000017994</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.005925</TD>
+            <TD>141.65478192341237</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[128.61..130.48GHz,7812.50kHz,1.1mJy/beam@10km/s,51.8uJy/beam@native, XX YY] U [130.43..132.30GHz,7812.50kHz,1.1mJy/beam@10km/s,51.8uJy/beam@native, XX YY] U [140.72..142.59GHz,7812.50kHz,1mJy/beam@10km/s,50.3uJy/beam@native, XX YY] U [142.54..144.40GHz,7812.50kHz,996.3uJy/beam@10km/s,50.3uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.4217199613202627</TD>
+            <TD>1.0021099340742403</TD>
+            <TD>0.02551534253007068</TD>
+            <TD>A002:DA49 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A023:DA51 A034:DA46 A064:DV13 A073:DA54 A075:DV24 A076:DA52 A079:DA64 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A111:DV05 A113:DV15 A134:DA44 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-02-27T06:12:44.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.4217199613202627</TD>
+            <TD>0.011849159872837424</TD>
+            <TD>57624.075715</TD>
+            <TD>57624.088007</TD>
+            <TD>4</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X72f</TD>
+            <TD>uid://A001/X2fe/X730</TD>
+            <TD>uid://A002/Xb7189f/X8bd3</TD>
+            <TD>uid://A001/X2fe/X730.source.ngc6240.spw.27</TD>
+            <TD>ngc6240</TD>
+            <TD>253.2452542000572</TD>
+            <TD>2.4009861000017994</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.005925</TD>
+            <TD>143.47109534247966</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[128.61..130.48GHz,7812.50kHz,1.1mJy/beam@10km/s,51.8uJy/beam@native, XX YY] U [130.43..132.30GHz,7812.50kHz,1.1mJy/beam@10km/s,51.8uJy/beam@native, XX YY] U [140.72..142.59GHz,7812.50kHz,1mJy/beam@10km/s,50.3uJy/beam@native, XX YY] U [142.54..144.40GHz,7812.50kHz,996.3uJy/beam@10km/s,50.3uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.4217199613202627</TD>
+            <TD>0.9963129264749131</TD>
+            <TD>0.02551534253007068</TD>
+            <TD>A002:DA49 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A023:DA51 A034:DA46 A064:DV13 A073:DA54 A075:DV24 A076:DA52 A079:DA64 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A111:DV05 A113:DV15 A134:DA44 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-02-27T06:12:44.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.4217199613202627</TD>
+            <TD>0.011849159872837424</TD>
+            <TD>57624.075715</TD>
+            <TD>57624.088007</TD>
+            <TD>4</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X72f</TD>
+            <TD>uid://A001/X2fe/X730</TD>
+            <TD>uid://A002/Xb7189f/X8bd3</TD>
+            <TD>uid://A001/X2fe/X730.source.ngc6240.spw.29</TD>
+            <TD>ngc6240</TD>
+            <TD>253.2452542000572</TD>
+            <TD>2.4009861000017994</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.005925</TD>
+            <TD>129.54167962888152</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[128.61..130.48GHz,7812.50kHz,1.1mJy/beam@10km/s,51.8uJy/beam@native, XX YY] U [130.43..132.30GHz,7812.50kHz,1.1mJy/beam@10km/s,51.8uJy/beam@native, XX YY] U [140.72..142.59GHz,7812.50kHz,1mJy/beam@10km/s,50.3uJy/beam@native, XX YY] U [142.54..144.40GHz,7812.50kHz,996.3uJy/beam@10km/s,50.3uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.4217199613202627</TD>
+            <TD>1.078171713078319</TD>
+            <TD>0.02551534253007068</TD>
+            <TD>A002:DA49 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A023:DA51 A034:DA46 A064:DV13 A073:DA54 A075:DV24 A076:DA52 A079:DA64 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A111:DV05 A113:DV15 A134:DA44 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-02-27T06:12:44.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.4217199613202627</TD>
+            <TD>0.011849159872837424</TD>
+            <TD>57624.075715</TD>
+            <TD>57624.088007</TD>
+            <TD>4</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.01439.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.01439.S</TD>
+            <TD>uid://A001/X2fe/X72f</TD>
+            <TD>uid://A001/X2fe/X730</TD>
+            <TD>uid://A002/Xb7189f/X8bd3</TD>
+            <TD>uid://A001/X2fe/X730.source.ngc6240.spw.31</TD>
+            <TD>ngc6240</TD>
+            <TD>253.2452542000572</TD>
+            <TD>2.4009861000017994</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.005925</TD>
+            <TD>131.36244793457269</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[128.61..130.48GHz,7812.50kHz,1.1mJy/beam@10km/s,51.8uJy/beam@native, XX YY] U [130.43..132.30GHz,7812.50kHz,1.1mJy/beam@10km/s,51.8uJy/beam@native, XX YY] U [140.72..142.59GHz,7812.50kHz,1mJy/beam@10km/s,50.3uJy/beam@native, XX YY] U [142.54..144.40GHz,7812.50kHz,996.3uJy/beam@10km/s,50.3uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.4217199613202627</TD>
+            <TD>1.0712322437919972</TD>
+            <TD>0.02551534253007068</TD>
+            <TD>A002:DA49 A004:DA41 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A023:DA51 A034:DA46 A064:DV13 A073:DA54 A075:DV24 A076:DA52 A079:DA64 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A111:DV05 A113:DV15 A134:DA44 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-02-27T06:12:44.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.4217199613202627</TD>
+            <TD>0.011849159872837424</TD>
+            <TD>57624.075715</TD>
+            <TD>57624.088007</TD>
+            <TD>4</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2013.1.00049.S</TD>
+            <TD>ADS/JAO.ALMA#2013.1.00049.S</TD>
+            <TD>uid://A001/X197/X1d</TD>
+            <TD>uid://A001/X197/X1e</TD>
+            <TD>uid://A002/X9de499/X28d7</TD>
+            <TD>uid://A001/X197/X1e.source.NGC_6240.spw.13</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525416666665</TD>
+            <TD>2.400986</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.007959</TD>
+            <TD>107.57951560355448</TD>
+            <TD>1.875E9</TD>
+            <TD>1920</TD>
+            <TD>[94.71..96.59GHz,1128.91kHz,606.8uJy/beam@10km/s,25uJy/beam@native, XX YY] U [106.64..108.52GHz,1128.91kHz,528.8uJy/beam@10km/s,23.1uJy/beam@native, XX YY]</TD>
+            <TD>1128.90625</TD>
+            <TD>1.8143376993613602</TD>
+            <TD>0.5288477373139292</TD>
+            <TD>0.016990638111975556</TD>
+            <TD>A001:DA58 A002:DV16 A003:DV21 A004:DV24 A005:DV25 A010:DV02 A013:DA51 A015:DV18 A016:DV04 A017:DA57 A018:DA63 A019:DA54 A021:DA59 A023:DV11 A024:DV10 A026:DV09 A027:DV13 A029:DA49 A031:DV08 A033:DV19 A034:DV20 A036:DA60 A037:DV12 A038:DV07 A040:DA43 A042:DV17 A044:DV15 A046:DA62 A050:DV14 A058:DA46 A060:DA55 A062:DV05 A066:DA64 A068:DA44 A069:DA53 A070:DA47 A071:DA50 A075:DA61 A137:DA41</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2016-08-07T00:00:00.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>1.8143376993613602</TD>
+            <TD>0.01591783793233705</TD>
+            <TD>57123.260425</TD>
+            <TD>57487.279044</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2013.1.00049.S</TD>
+            <TD>ADS/JAO.ALMA#2013.1.00049.S</TD>
+            <TD>uid://A001/X197/X1d</TD>
+            <TD>uid://A001/X197/X1e</TD>
+            <TD>uid://A002/X9de499/X28d7</TD>
+            <TD>uid://A001/X197/X1e.source.NGC_6240.spw.15</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525416666665</TD>
+            <TD>2.400986</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.007959</TD>
+            <TD>95.64985411521225</TD>
+            <TD>1.875E9</TD>
+            <TD>1920</TD>
+            <TD>[94.71..96.59GHz,1128.91kHz,606.8uJy/beam@10km/s,25uJy/beam@native, XX YY] U [106.64..108.52GHz,1128.91kHz,528.8uJy/beam@10km/s,23.1uJy/beam@native, XX YY]</TD>
+            <TD>1128.90625</TD>
+            <TD>1.8143376993613602</TD>
+            <TD>0.606849712415914</TD>
+            <TD>0.016990638111975556</TD>
+            <TD>A001:DA58 A002:DV16 A003:DV21 A004:DV24 A005:DV25 A010:DV02 A013:DA51 A015:DV18 A016:DV04 A017:DA57 A018:DA63 A019:DA54 A021:DA59 A023:DV11 A024:DV10 A026:DV09 A027:DV13 A029:DA49 A031:DV08 A033:DV19 A034:DV20 A036:DA60 A037:DV12 A038:DV07 A040:DA43 A042:DV17 A044:DV15 A046:DA62 A050:DV14 A058:DA46 A060:DA55 A062:DV05 A066:DA64 A068:DA44 A069:DA53 A070:DA47 A071:DA50 A075:DA61 A137:DA41</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2016-08-07T00:00:00.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>1.8143376993613602</TD>
+            <TD>0.01591783793233705</TD>
+            <TD>57123.260425</TD>
+            <TD>57487.279044</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00003.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00003.S</TD>
+            <TD>uid://A001/X5a3/X185</TD>
+            <TD>uid://A001/X5a3/X186</TD>
+            <TD>uid://A002/Xb68dbd/X72f9</TD>
+            <TD>uid://A001/X5a3/X186.source.ngc6240.spw.25</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525400004578</TD>
+            <TD>2.400986000000825</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.007662</TD>
+            <TD>112.52777637572089</TD>
+            <TD>1.875E9</TD>
+            <TD>1920</TD>
+            <TD>[97.64..99.51GHz,7812.50kHz,1.1mJy/beam@10km/s,47.1uJy/beam@native, XX YY] U [99.47..101.34GHz,3904.30kHz,947.7uJy/beam@10km/s,40.1uJy/beam@native, XX YY] U [109.72..111.59GHz,3904.30kHz,904.9uJy/beam@10km/s,40.1uJy/beam@native, XX YY] U [111.59..113.46GHz,1128.91kHz,897.8uJy/beam@10km/s,40.2uJy/beam@native, XX YY]</TD>
+            <TD>1128.90625</TD>
+            <TD>0.5293275185084204</TD>
+            <TD>0.8977695923880606</TD>
+            <TD>0.020789827729274703</TD>
+            <TD>A001:DA59 A002:DA49 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A023:DA51 A034:DA46 A065:DV01 A071:DA43 A072:DV05 A073:DA54 A075:DV24 A076:DA52 A079:DA64 A081:DA53 A084:DV07 A086:DV11 A087:DV10 A088:DA57 A089:DA50 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A106:DV08 A113:DV15 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-11-01T09:17:48.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.5293275185084204</TD>
+            <TD>0.015323915173667805</TD>
+            <TD>57612.072688</TD>
+            <TD>57612.080864</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00003.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00003.S</TD>
+            <TD>uid://A001/X5a3/X185</TD>
+            <TD>uid://A001/X5a3/X186</TD>
+            <TD>uid://A002/Xb68dbd/X72f9</TD>
+            <TD>uid://A001/X5a3/X186.source.ngc6240.spw.27</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525400004578</TD>
+            <TD>2.400986000000825</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.007662</TD>
+            <TD>110.65229850026334</TD>
+            <TD>1.875E9</TD>
+            <TD>480</TD>
+            <TD>[97.64..99.51GHz,7812.50kHz,1.1mJy/beam@10km/s,47.1uJy/beam@native, XX YY] U [99.47..101.34GHz,3904.30kHz,947.7uJy/beam@10km/s,40.1uJy/beam@native, XX YY] U [109.72..111.59GHz,3904.30kHz,904.9uJy/beam@10km/s,40.1uJy/beam@native, XX YY] U [111.59..113.46GHz,1128.91kHz,897.8uJy/beam@10km/s,40.2uJy/beam@native, XX YY]</TD>
+            <TD>3904.296875</TD>
+            <TD>0.5293275185084204</TD>
+            <TD>0.9049298573882889</TD>
+            <TD>0.020789827729274703</TD>
+            <TD>A001:DA59 A002:DA49 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A023:DA51 A034:DA46 A065:DV01 A071:DA43 A072:DV05 A073:DA54 A075:DV24 A076:DA52 A079:DA64 A081:DA53 A084:DV07 A086:DV11 A087:DV10 A088:DA57 A089:DA50 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A106:DV08 A113:DV15 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-11-01T09:17:48.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.5293275185084204</TD>
+            <TD>0.015323915173667805</TD>
+            <TD>57612.072688</TD>
+            <TD>57612.080864</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00003.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00003.S</TD>
+            <TD>uid://A001/X5a3/X185</TD>
+            <TD>uid://A001/X5a3/X186</TD>
+            <TD>uid://A002/Xb68dbd/X72f9</TD>
+            <TD>uid://A001/X5a3/X186.source.ngc6240.spw.29</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525400004578</TD>
+            <TD>2.400986000000825</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.007662</TD>
+            <TD>100.40222945736136</TD>
+            <TD>1.875E9</TD>
+            <TD>480</TD>
+            <TD>[97.64..99.51GHz,7812.50kHz,1.1mJy/beam@10km/s,47.1uJy/beam@native, XX YY] U [99.47..101.34GHz,3904.30kHz,947.7uJy/beam@10km/s,40.1uJy/beam@native, XX YY] U [109.72..111.59GHz,3904.30kHz,904.9uJy/beam@10km/s,40.1uJy/beam@native, XX YY] U [111.59..113.46GHz,1128.91kHz,897.8uJy/beam@10km/s,40.2uJy/beam@native, XX YY]</TD>
+            <TD>3904.296875</TD>
+            <TD>0.5293275185084204</TD>
+            <TD>0.9477455060438593</TD>
+            <TD>0.020789827729274703</TD>
+            <TD>A001:DA59 A002:DA49 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A023:DA51 A034:DA46 A065:DV01 A071:DA43 A072:DV05 A073:DA54 A075:DV24 A076:DA52 A079:DA64 A081:DA53 A084:DV07 A086:DV11 A087:DV10 A088:DA57 A089:DA50 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A106:DV08 A113:DV15 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-11-01T09:17:48.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.5293275185084204</TD>
+            <TD>0.015323915173667805</TD>
+            <TD>57612.072688</TD>
+            <TD>57612.080864</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00003.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00003.S</TD>
+            <TD>uid://A001/X5a3/X185</TD>
+            <TD>uid://A001/X5a3/X186</TD>
+            <TD>uid://A002/Xb68dbd/X72f9</TD>
+            <TD>uid://A001/X5a3/X186.source.ngc6240.spw.31</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525400004578</TD>
+            <TD>2.400986000000825</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.007662</TD>
+            <TD>98.57490875506468</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[97.64..99.51GHz,7812.50kHz,1.1mJy/beam@10km/s,47.1uJy/beam@native, XX YY] U [99.47..101.34GHz,3904.30kHz,947.7uJy/beam@10km/s,40.1uJy/beam@native, XX YY] U [109.72..111.59GHz,3904.30kHz,904.9uJy/beam@10km/s,40.1uJy/beam@native, XX YY] U [111.59..113.46GHz,1128.91kHz,897.8uJy/beam@10km/s,40.2uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.5293275185084204</TD>
+            <TD>1.1253965696243373</TD>
+            <TD>0.020789827729274703</TD>
+            <TD>A001:DA59 A002:DA49 A007:DV12 A008:DV06 A009:DV18 A014:DV09 A015:DV04 A023:DA51 A034:DA46 A065:DV01 A071:DA43 A072:DV05 A073:DA54 A075:DV24 A076:DA52 A079:DA64 A081:DA53 A084:DV07 A086:DV11 A087:DV10 A088:DA57 A089:DA50 A091:DA63 A092:DV17 A094:DA45 A095:DV25 A096:DA65 A097:DV03 A099:DA55 A100:DA56 A101:DA60 A102:DV16 A103:DA62 A104:DV14 A106:DV08 A113:DV15 A135:DV19</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-11-01T09:17:48.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.5293275185084204</TD>
+            <TD>0.015323915173667805</TD>
+            <TD>57612.072688</TD>
+            <TD>57612.080864</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00003.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00003.S</TD>
+            <TD>uid://A001/X5a3/X18b</TD>
+            <TD>uid://A001/X5a3/X18c</TD>
+            <TD>uid://A002/Xb4da9a/X69a</TD>
+            <TD>uid://A001/X5a3/X18c.source.ngc6240.spw.25</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525399994147</TD>
+            <TD>2.4009860000026486</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.003504</TD>
+            <TD>224.86771911423784</TD>
+            <TD>1.875E9</TD>
+            <TD>960</TD>
+            <TD>[220.95..222.82GHz,7812.50kHz,1.4mJy/beam@10km/s,90.6uJy/beam@native, XX YY] U [223.93..225.80GHz,1938.48kHz,1.4mJy/beam@10km/s,90.8uJy/beam@native, XX YY] U [236.99..238.86GHz,7812.50kHz,1.4mJy/beam@10km/s,91.4uJy/beam@native, XX YY] U [238.82..240.69GHz,3904.30kHz,1.5mJy/beam@10km/s,98.4uJy/beam@native, XX YY]</TD>
+            <TD>1938.4765625</TD>
+            <TD>0.48993421575266705</TD>
+            <TD>1.4350532128589555</TD>
+            <TD>0.04631371772635464</TD>
+            <TD>A001:DA59 A002:DA49 A006:DA61 A009:DV18 A010:DV25 A013:DV20 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A049:DV11 A054:DV03 A060:DA60 A061:DA62 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A072:DV05 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-09-01T07:23:37.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.48993421575266705</TD>
+            <TD>0.007007531772100516</TD>
+            <TD>57565.997823</TD>
+            <TD>57566.000697</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00003.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00003.S</TD>
+            <TD>uid://A001/X5a3/X18b</TD>
+            <TD>uid://A001/X5a3/X18c</TD>
+            <TD>uid://A002/Xb4da9a/X69a</TD>
+            <TD>uid://A001/X5a3/X18c.source.ngc6240.spw.27</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525399994147</TD>
+            <TD>2.4009860000026486</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.003504</TD>
+            <TD>221.88542233860974</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[220.95..222.82GHz,7812.50kHz,1.4mJy/beam@10km/s,90.6uJy/beam@native, XX YY] U [223.93..225.80GHz,1938.48kHz,1.4mJy/beam@10km/s,90.8uJy/beam@native, XX YY] U [236.99..238.86GHz,7812.50kHz,1.4mJy/beam@10km/s,91.4uJy/beam@native, XX YY] U [238.82..240.69GHz,3904.30kHz,1.5mJy/beam@10km/s,98.4uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.48993421575266705</TD>
+            <TD>1.4425529297893263</TD>
+            <TD>0.04631371772635464</TD>
+            <TD>A001:DA59 A002:DA49 A006:DA61 A009:DV18 A010:DV25 A013:DV20 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A049:DV11 A054:DV03 A060:DA60 A061:DA62 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A072:DV05 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-09-01T07:23:37.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.48993421575266705</TD>
+            <TD>0.007007531772100516</TD>
+            <TD>57565.997823</TD>
+            <TD>57566.000697</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00003.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00003.S</TD>
+            <TD>uid://A001/X5a3/X18b</TD>
+            <TD>uid://A001/X5a3/X18c</TD>
+            <TD>uid://A002/Xb4da9a/X69a</TD>
+            <TD>uid://A001/X5a3/X18c.source.ngc6240.spw.29</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525399994147</TD>
+            <TD>2.4009860000026486</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.003504</TD>
+            <TD>239.75477236598397</TD>
+            <TD>1.875E9</TD>
+            <TD>480</TD>
+            <TD>[220.95..222.82GHz,7812.50kHz,1.4mJy/beam@10km/s,90.6uJy/beam@native, XX YY] U [223.93..225.80GHz,1938.48kHz,1.4mJy/beam@10km/s,90.8uJy/beam@native, XX YY] U [236.99..238.86GHz,7812.50kHz,1.4mJy/beam@10km/s,91.4uJy/beam@native, XX YY] U [238.82..240.69GHz,3904.30kHz,1.5mJy/beam@10km/s,98.4uJy/beam@native, XX YY]</TD>
+            <TD>3904.296875</TD>
+            <TD>0.48993421575266705</TD>
+            <TD>1.5064980089064404</TD>
+            <TD>0.04631371772635464</TD>
+            <TD>A001:DA59 A002:DA49 A006:DA61 A009:DV18 A010:DV25 A013:DV20 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A049:DV11 A054:DV03 A060:DA60 A061:DA62 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A072:DV05 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-09-01T07:23:37.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.48993421575266705</TD>
+            <TD>0.007007531772100516</TD>
+            <TD>57565.997823</TD>
+            <TD>57566.000697</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00003.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00003.S</TD>
+            <TD>uid://A001/X5a3/X18b</TD>
+            <TD>uid://A001/X5a3/X18c</TD>
+            <TD>uid://A002/Xb4da9a/X69a</TD>
+            <TD>uid://A001/X5a3/X18c.source.ngc6240.spw.31</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525399994147</TD>
+            <TD>2.4009860000026486</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.003504</TD>
+            <TD>237.92707779490186</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[220.95..222.82GHz,7812.50kHz,1.4mJy/beam@10km/s,90.6uJy/beam@native, XX YY] U [223.93..225.80GHz,1938.48kHz,1.4mJy/beam@10km/s,90.8uJy/beam@native, XX YY] U [236.99..238.86GHz,7812.50kHz,1.4mJy/beam@10km/s,91.4uJy/beam@native, XX YY] U [238.82..240.69GHz,3904.30kHz,1.5mJy/beam@10km/s,98.4uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.48993421575266705</TD>
+            <TD>1.4044038743634368</TD>
+            <TD>0.04631371772635464</TD>
+            <TD>A001:DA59 A002:DA49 A006:DA61 A009:DV18 A010:DV25 A013:DV20 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A049:DV11 A054:DV03 A060:DA60 A061:DA62 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A072:DV05 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2017-09-01T07:23:37.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.48993421575266705</TD>
+            <TD>0.007007531772100516</TD>
+            <TD>57565.997823</TD>
+            <TD>57566.000697</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00003.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00003.S</TD>
+            <TD>uid://A001/X5a3/X185</TD>
+            <TD>uid://A001/X5a3/X188</TD>
+            <TD>uid://A002/Xb51915/X1699</TD>
+            <TD>uid://A001/X5a3/X188.source.ngc6240.spw.25</TD>
+            <TD>ngc6240</TD>
+            <TD>253.2452539999685</TD>
+            <TD>2.4009860000004286</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.007662</TD>
+            <TD>112.52777078927443</TD>
+            <TD>1.875E9</TD>
+            <TD>1920</TD>
+            <TD>[97.64..99.51GHz,7812.50kHz,2.8mJy/beam@10km/s,117.8uJy/beam@native, XX YY] U [99.47..101.34GHz,3904.30kHz,2.4mJy/beam@10km/s,102.6uJy/beam@native, XX YY] U [109.72..111.59GHz,3904.30kHz,2.3mJy/beam@10km/s,102.8uJy/beam@native, XX YY] U [111.59..113.46GHz,1128.91kHz,2.3mJy/beam@10km/s,102.9uJy/beam@native, XX YY]</TD>
+            <TD>1128.90625</TD>
+            <TD>0.984538655778467</TD>
+            <TD>2.2991737651980206</TD>
+            <TD>0.05298735179177069</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A009:DV18 A010:DV25 A013:DV20 A015:DV04 A017:DV22 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A060:DA60 A061:DA62 A064:DV13 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A070:DV21 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02 T701:PM03 T702:PM02 T703:PM04 T704:PM01</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-06-27T15:59:29.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.984538655778467</TD>
+            <TD>0.01532389584013287</TD>
+            <TD>57572.065352</TD>
+            <TD>57572.069294</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00003.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00003.S</TD>
+            <TD>uid://A001/X5a3/X185</TD>
+            <TD>uid://A001/X5a3/X188</TD>
+            <TD>uid://A002/Xb51915/X1699</TD>
+            <TD>uid://A001/X5a3/X188.source.ngc6240.spw.27</TD>
+            <TD>ngc6240</TD>
+            <TD>253.2452539999685</TD>
+            <TD>2.4009860000004286</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.007662</TD>
+            <TD>110.65229881007403</TD>
+            <TD>1.875E9</TD>
+            <TD>480</TD>
+            <TD>[97.64..99.51GHz,7812.50kHz,2.8mJy/beam@10km/s,117.8uJy/beam@native, XX YY] U [99.47..101.34GHz,3904.30kHz,2.4mJy/beam@10km/s,102.6uJy/beam@native, XX YY] U [109.72..111.59GHz,3904.30kHz,2.3mJy/beam@10km/s,102.8uJy/beam@native, XX YY] U [111.59..113.46GHz,1128.91kHz,2.3mJy/beam@10km/s,102.9uJy/beam@native, XX YY]</TD>
+            <TD>3904.296875</TD>
+            <TD>0.984538655778467</TD>
+            <TD>2.3175110335249895</TD>
+            <TD>0.05298735179177069</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A009:DV18 A010:DV25 A013:DV20 A015:DV04 A017:DV22 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A060:DA60 A061:DA62 A064:DV13 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A070:DV21 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02 T701:PM03 T702:PM02 T703:PM04 T704:PM01</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-06-27T15:59:29.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.984538655778467</TD>
+            <TD>0.01532389584013287</TD>
+            <TD>57572.065352</TD>
+            <TD>57572.069294</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00003.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00003.S</TD>
+            <TD>uid://A001/X5a3/X185</TD>
+            <TD>uid://A001/X5a3/X188</TD>
+            <TD>uid://A002/Xb51915/X1699</TD>
+            <TD>uid://A001/X5a3/X188.source.ngc6240.spw.29</TD>
+            <TD>ngc6240</TD>
+            <TD>253.2452539999685</TD>
+            <TD>2.4009860000004286</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.007662</TD>
+            <TD>100.40219087552381</TD>
+            <TD>1.875E9</TD>
+            <TD>480</TD>
+            <TD>[97.64..99.51GHz,7812.50kHz,2.8mJy/beam@10km/s,117.8uJy/beam@native, XX YY] U [99.47..101.34GHz,3904.30kHz,2.4mJy/beam@10km/s,102.6uJy/beam@native, XX YY] U [109.72..111.59GHz,3904.30kHz,2.3mJy/beam@10km/s,102.8uJy/beam@native, XX YY] U [111.59..113.46GHz,1128.91kHz,2.3mJy/beam@10km/s,102.9uJy/beam@native, XX YY]</TD>
+            <TD>3904.296875</TD>
+            <TD>0.984538655778467</TD>
+            <TD>2.427161680578011</TD>
+            <TD>0.05298735179177069</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A009:DV18 A010:DV25 A013:DV20 A015:DV04 A017:DV22 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A060:DA60 A061:DA62 A064:DV13 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A070:DV21 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02 T701:PM03 T702:PM02 T703:PM04 T704:PM01</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-06-27T15:59:29.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.984538655778467</TD>
+            <TD>0.01532389584013287</TD>
+            <TD>57572.065352</TD>
+            <TD>57572.069294</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2015.1.00003.S</TD>
+            <TD>ADS/JAO.ALMA#2015.1.00003.S</TD>
+            <TD>uid://A001/X5a3/X185</TD>
+            <TD>uid://A001/X5a3/X188</TD>
+            <TD>uid://A002/Xb51915/X1699</TD>
+            <TD>uid://A001/X5a3/X188.source.ngc6240.spw.31</TD>
+            <TD>ngc6240</TD>
+            <TD>253.2452539999685</TD>
+            <TD>2.4009860000004286</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.007662</TD>
+            <TD>98.5751808215935</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[97.64..99.51GHz,7812.50kHz,2.8mJy/beam@10km/s,117.8uJy/beam@native, XX YY] U [99.47..101.34GHz,3904.30kHz,2.4mJy/beam@10km/s,102.6uJy/beam@native, XX YY] U [109.72..111.59GHz,3904.30kHz,2.3mJy/beam@10km/s,102.8uJy/beam@native, XX YY] U [111.59..113.46GHz,1128.91kHz,2.3mJy/beam@10km/s,102.9uJy/beam@native, XX YY]</TD>
+            <TD>7812.5</TD>
+            <TD>0.984538655778467</TD>
+            <TD>2.8132066644883444</TD>
+            <TD>0.05298735179177069</TD>
+            <TD>A001:DA59 A002:DA49 A004:DA41 A006:DA61 A009:DV18 A010:DV25 A013:DV20 A015:DV04 A017:DV22 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A060:DA60 A061:DA62 A064:DV13 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A070:DV21 A072:DV05 A073:DA54 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A086:DV11 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02 T701:PM03 T702:PM02 T703:PM04 T704:PM01</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2018-06-27T15:59:29.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.984538655778467</TD>
+            <TD>0.01532389584013287</TD>
+            <TD>57572.065352</TD>
+            <TD>57572.069294</TD>
+            <TD>3</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2023.1.00942.S</TD>
+            <TD>ADS/JAO.ALMA#2023.1.00942.S</TD>
+            <TD>uid://A001/X362b/Xb4d</TD>
+            <TD>uid://A001/X362b/Xb4e</TD>
+            <TD>uid://A002/X118e69f/X143ef</TD>
+            <TD>uid://A001/X362b/Xb4e.source.NGC6240.spw.37</TD>
+            <TD>NGC6240</TD>
+            <TD>253.24525400002156</TD>
+            <TD>2.4009860000001173</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.001819</TD>
+            <TD>451.4759762999105</TD>
+            <TD>2.0E9</TD>
+            <TD>128</TD>
+            <TD>[436.54..438.41GHz,3904.30kHz,10.2mJy/beam@10km/s,901.7uJy/beam@native, XX YY] U [438.30..440.17GHz,7812.01kHz,5.1mJy/beam@10km/s,453.7uJy/beam@native, XX YY] U [449.85..451.72GHz,3904.30kHz,5.1mJy/beam@10km/s,458.8uJy/beam@native, XX YY] U [450.48..452.47GHz,31250.00kHz,25.4mJy/beam@10km/s,2.2mJy/beam@native, XX YY]</TD>
+            <TD>31250.0</TD>
+            <TD>0.1458407603578311</TD>
+            <TD>25.3622370465841</TD>
+            <TD>0.300899605193406</TD>
+            <TD>A001:DV12 A007:DV20 A008:DV17 A011:DV01 A015:DA52 A016:DA44 A022:DA47 A023:DA60 A024:DV02 A027:DV03 A033:DV25 A035:DA51 A042:DV04 A044:DA46 A045:DA65 A047:DA42 A049:DV13 A058:DA63 A060:DV23 A062:DA56 A066:DA49 A068:DV21 A069:DA62 A070:DV18 A072:DA61 A073:DA41 A074:DV14 A075:DV22 A076:DA53 A082:DA58 A083:DV08 A085:DV05 A086:DA57 A087:DA48 A088:DA54 A090:DA59 A091:DA64 A092:DA43 A093:DV09 A094:DV07 A096:DA45 A101:DA55 A104:DV16 A105:DV06 A108:DV24 A111:DV19 A134:DV10 A135:DV15</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2025-08-01T16:29:34.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.1458407603578311</TD>
+            <TD>0.003638841153606406</TD>
+            <TD>60476.190724</TD>
+            <TD>60476.205273</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2023.1.00942.S</TD>
+            <TD>ADS/JAO.ALMA#2023.1.00942.S</TD>
+            <TD>uid://A001/X362b/Xb4d</TD>
+            <TD>uid://A001/X362b/Xb4e</TD>
+            <TD>uid://A002/X118e69f/X143ef</TD>
+            <TD>uid://A001/X362b/Xb4e.source.NGC6240.spw.39</TD>
+            <TD>NGC6240</TD>
+            <TD>253.24525400002156</TD>
+            <TD>2.4009860000001173</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.001819</TD>
+            <TD>437.4789911740455</TD>
+            <TD>1.875E9</TD>
+            <TD>480</TD>
+            <TD>[436.54..438.41GHz,3904.30kHz,10.2mJy/beam@10km/s,901.7uJy/beam@native, XX YY] U [438.30..440.17GHz,7812.01kHz,5.1mJy/beam@10km/s,453.7uJy/beam@native, XX YY] U [449.85..451.72GHz,3904.30kHz,5.1mJy/beam@10km/s,458.8uJy/beam@native, XX YY] U [450.48..452.47GHz,31250.00kHz,25.4mJy/beam@10km/s,2.2mJy/beam@native, XX YY]</TD>
+            <TD>3904.296875</TD>
+            <TD>0.1458407603578311</TD>
+            <TD>10.220570106159094</TD>
+            <TD>0.300899605193406</TD>
+            <TD>A001:DV12 A007:DV20 A008:DV17 A011:DV01 A015:DA52 A016:DA44 A022:DA47 A023:DA60 A024:DV02 A027:DV03 A033:DV25 A035:DA51 A042:DV04 A044:DA46 A045:DA65 A047:DA42 A049:DV13 A058:DA63 A060:DV23 A062:DA56 A066:DA49 A068:DV21 A069:DA62 A070:DV18 A072:DA61 A073:DA41 A074:DV14 A075:DV22 A076:DA53 A082:DA58 A083:DV08 A085:DV05 A086:DA57 A087:DA48 A088:DA54 A090:DA59 A091:DA64 A092:DA43 A093:DV09 A094:DV07 A096:DA45 A101:DA55 A104:DV16 A105:DV06 A108:DV24 A111:DV19 A134:DV10 A135:DV15</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2025-08-01T16:29:34.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.1458407603578311</TD>
+            <TD>0.003638841153606406</TD>
+            <TD>60476.190724</TD>
+            <TD>60476.205273</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2023.1.00942.S</TD>
+            <TD>ADS/JAO.ALMA#2023.1.00942.S</TD>
+            <TD>uid://A001/X362b/Xb4d</TD>
+            <TD>uid://A001/X362b/Xb4e</TD>
+            <TD>uid://A002/X118e69f/X143ef</TD>
+            <TD>uid://A001/X362b/Xb4e.source.NGC6240.spw.41</TD>
+            <TD>NGC6240</TD>
+            <TD>253.24525400002156</TD>
+            <TD>2.4009860000001173</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.001819</TD>
+            <TD>439.2360032392793</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[436.54..438.41GHz,3904.30kHz,10.2mJy/beam@10km/s,901.7uJy/beam@native, XX YY] U [438.30..440.17GHz,7812.01kHz,5.1mJy/beam@10km/s,453.7uJy/beam@native, XX YY] U [449.85..451.72GHz,3904.30kHz,5.1mJy/beam@10km/s,458.8uJy/beam@native, XX YY] U [450.48..452.47GHz,31250.00kHz,25.4mJy/beam@10km/s,2.2mJy/beam@native, XX YY]</TD>
+            <TD>7812.01171875</TD>
+            <TD>0.1458407603578311</TD>
+            <TD>5.132362361752136</TD>
+            <TD>0.300899605193406</TD>
+            <TD>A001:DV12 A007:DV20 A008:DV17 A011:DV01 A015:DA52 A016:DA44 A022:DA47 A023:DA60 A024:DV02 A027:DV03 A033:DV25 A035:DA51 A042:DV04 A044:DA46 A045:DA65 A047:DA42 A049:DV13 A058:DA63 A060:DV23 A062:DA56 A066:DA49 A068:DV21 A069:DA62 A070:DV18 A072:DA61 A073:DA41 A074:DV14 A075:DV22 A076:DA53 A082:DA58 A083:DV08 A085:DV05 A086:DA57 A087:DA48 A088:DA54 A090:DA59 A091:DA64 A092:DA43 A093:DV09 A094:DV07 A096:DA45 A101:DA55 A104:DV16 A105:DV06 A108:DV24 A111:DV19 A134:DV10 A135:DV15</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2025-08-01T16:29:34.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.1458407603578311</TD>
+            <TD>0.003638841153606406</TD>
+            <TD>60476.190724</TD>
+            <TD>60476.205273</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2023.1.00942.S</TD>
+            <TD>ADS/JAO.ALMA#2023.1.00942.S</TD>
+            <TD>uid://A001/X362b/Xb4d</TD>
+            <TD>uid://A001/X362b/Xb4e</TD>
+            <TD>uid://A002/X118e69f/X143ef</TD>
+            <TD>uid://A001/X362b/Xb4e.source.NGC6240.spw.43</TD>
+            <TD>NGC6240</TD>
+            <TD>253.24525400002156</TD>
+            <TD>2.4009860000001173</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.001819</TD>
+            <TD>450.7829596026181</TD>
+            <TD>1.875E9</TD>
+            <TD>480</TD>
+            <TD>[436.54..438.41GHz,3904.30kHz,10.2mJy/beam@10km/s,901.7uJy/beam@native, XX YY] U [438.30..440.17GHz,7812.01kHz,5.1mJy/beam@10km/s,453.7uJy/beam@native, XX YY] U [449.85..451.72GHz,3904.30kHz,5.1mJy/beam@10km/s,458.8uJy/beam@native, XX YY] U [450.48..452.47GHz,31250.00kHz,25.4mJy/beam@10km/s,2.2mJy/beam@native, XX YY]</TD>
+            <TD>3904.296875</TD>
+            <TD>0.1458407603578311</TD>
+            <TD>5.123701386641191</TD>
+            <TD>0.300899605193406</TD>
+            <TD>A001:DV12 A007:DV20 A008:DV17 A011:DV01 A015:DA52 A016:DA44 A022:DA47 A023:DA60 A024:DV02 A027:DV03 A033:DV25 A035:DA51 A042:DV04 A044:DA46 A045:DA65 A047:DA42 A049:DV13 A058:DA63 A060:DV23 A062:DA56 A066:DA49 A068:DV21 A069:DA62 A070:DV18 A072:DA61 A073:DA41 A074:DV14 A075:DV22 A076:DA53 A082:DA58 A083:DV08 A085:DV05 A086:DA57 A087:DA48 A088:DA54 A090:DA59 A091:DA64 A092:DA43 A093:DV09 A094:DV07 A096:DA45 A101:DA55 A104:DV16 A105:DV06 A108:DV24 A111:DV19 A134:DV10 A135:DV15</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2025-08-01T16:29:34.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.1458407603578311</TD>
+            <TD>0.003638841153606406</TD>
+            <TD>60476.190724</TD>
+            <TD>60476.205273</TD>
+            <TD>8</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2013.1.00813.S</TD>
+            <TD>ADS/JAO.ALMA#2013.1.00813.S</TD>
+            <TD>uid://A001/X121/X14a</TD>
+            <TD>uid://A001/X121/X14d</TD>
+            <TD>uid://A002/X9fddd8/X30f9</TD>
+            <TD>uid://A001/X121/X14d.source.NGC_6240.spw.17</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.245254</TD>
+            <TD>2.400986</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.002348</TD>
+            <TD>349.4854923080114</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[336.63..338.50GHz,7812.01kHz,5.1mJy/beam@10km/s,398.1uJy/beam@native, XX YY] U [338.39..340.25GHz,7812.01kHz,5.1mJy/beam@10km/s,398.6uJy/beam@native, XX YY] U [348.55..350.42GHz,7812.01kHz,5.1mJy/beam@10km/s,401.7uJy/beam@native, XX YY] U [350.30..352.17GHz,7812.01kHz,5.7mJy/beam@10km/s,448.2uJy/beam@native, XX YY]</TD>
+            <TD>7812.01171875</TD>
+            <TD>0.6068056470178277</TD>
+            <TD>5.094551231231541</TD>
+            <TD>0.20507759733191103</TD>
+            <TD>A001:DA58 A002:DV16 A004:DV24 A010:DV02 A013:DA51 A015:DV18 A017:DA57 A021:DA59 A023:DV11 A027:DV13 A029:DA49 A030:DA45 A031:DV08 A033:DV19 A034:DV20 A036:DA60 A037:DV12 A038:DV07 A040:DA43 A042:DV17 A046:DA62 A058:DA46 A060:DA55 A062:DV05 A066:DA64 A067:DV21 A068:DA44 A069:DA53 A070:DA47 A071:DA50 A072:DV01 A075:DA61 A137:DA41 T701:PM03 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2016-08-17T15:04:24.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.6068056470178277</TD>
+            <TD>0.004696512432128198</TD>
+            <TD>57146.344072</TD>
+            <TD>57146.345341</TD>
+            <TD>7</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2013.1.00813.S</TD>
+            <TD>ADS/JAO.ALMA#2013.1.00813.S</TD>
+            <TD>uid://A001/X121/X14a</TD>
+            <TD>uid://A001/X121/X14d</TD>
+            <TD>uid://A002/X9fddd8/X30f9</TD>
+            <TD>uid://A001/X121/X14d.source.NGC_6240.spw.19</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.245254</TD>
+            <TD>2.400986</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.002348</TD>
+            <TD>351.236877145756</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[336.63..338.50GHz,7812.01kHz,5.1mJy/beam@10km/s,398.1uJy/beam@native, XX YY] U [338.39..340.25GHz,7812.01kHz,5.1mJy/beam@10km/s,398.6uJy/beam@native, XX YY] U [348.55..350.42GHz,7812.01kHz,5.1mJy/beam@10km/s,401.7uJy/beam@native, XX YY] U [350.30..352.17GHz,7812.01kHz,5.7mJy/beam@10km/s,448.2uJy/beam@native, XX YY]</TD>
+            <TD>7812.01171875</TD>
+            <TD>0.6068056470178277</TD>
+            <TD>5.670078890485492</TD>
+            <TD>0.20507759733191103</TD>
+            <TD>A001:DA58 A002:DV16 A004:DV24 A010:DV02 A013:DA51 A015:DV18 A017:DA57 A021:DA59 A023:DV11 A027:DV13 A029:DA49 A030:DA45 A031:DV08 A033:DV19 A034:DV20 A036:DA60 A037:DV12 A038:DV07 A040:DA43 A042:DV17 A046:DA62 A058:DA46 A060:DA55 A062:DV05 A066:DA64 A067:DV21 A068:DA44 A069:DA53 A070:DA47 A071:DA50 A072:DV01 A075:DA61 A137:DA41 T701:PM03 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2016-08-17T15:04:24.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.6068056470178277</TD>
+            <TD>0.004696512432128198</TD>
+            <TD>57146.344072</TD>
+            <TD>57146.345341</TD>
+            <TD>7</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2013.1.00813.S</TD>
+            <TD>ADS/JAO.ALMA#2013.1.00813.S</TD>
+            <TD>uid://A001/X121/X14a</TD>
+            <TD>uid://A001/X121/X14d</TD>
+            <TD>uid://A002/X9fddd8/X30f9</TD>
+            <TD>uid://A001/X121/X14d.source.NGC_6240.spw.21</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.245254</TD>
+            <TD>2.400986</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.002348</TD>
+            <TD>337.5661580240537</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[336.63..338.50GHz,7812.01kHz,5.1mJy/beam@10km/s,398.1uJy/beam@native, XX YY] U [338.39..340.25GHz,7812.01kHz,5.1mJy/beam@10km/s,398.6uJy/beam@native, XX YY] U [348.55..350.42GHz,7812.01kHz,5.1mJy/beam@10km/s,401.7uJy/beam@native, XX YY] U [350.30..352.17GHz,7812.01kHz,5.7mJy/beam@10km/s,448.2uJy/beam@native, XX YY]</TD>
+            <TD>7812.01171875</TD>
+            <TD>0.6068056470178277</TD>
+            <TD>5.137306687543926</TD>
+            <TD>0.20507759733191103</TD>
+            <TD>A001:DA58 A002:DV16 A004:DV24 A010:DV02 A013:DA51 A015:DV18 A017:DA57 A021:DA59 A023:DV11 A027:DV13 A029:DA49 A030:DA45 A031:DV08 A033:DV19 A034:DV20 A036:DA60 A037:DV12 A038:DV07 A040:DA43 A042:DV17 A046:DA62 A058:DA46 A060:DA55 A062:DV05 A066:DA64 A067:DV21 A068:DA44 A069:DA53 A070:DA47 A071:DA50 A072:DV01 A075:DA61 A137:DA41 T701:PM03 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2016-08-17T15:04:24.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.6068056470178277</TD>
+            <TD>0.004696512432128198</TD>
+            <TD>57146.344072</TD>
+            <TD>57146.345341</TD>
+            <TD>7</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2013.1.00813.S</TD>
+            <TD>ADS/JAO.ALMA#2013.1.00813.S</TD>
+            <TD>uid://A001/X121/X14a</TD>
+            <TD>uid://A001/X121/X14d</TD>
+            <TD>uid://A002/X9fddd8/X30f9</TD>
+            <TD>uid://A001/X121/X14d.source.NGC_6240.spw.23</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.245254</TD>
+            <TD>2.400986</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.002348</TD>
+            <TD>339.31950014345114</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[336.63..338.50GHz,7812.01kHz,5.1mJy/beam@10km/s,398.1uJy/beam@native, XX YY] U [338.39..340.25GHz,7812.01kHz,5.1mJy/beam@10km/s,398.6uJy/beam@native, XX YY] U [348.55..350.42GHz,7812.01kHz,5.1mJy/beam@10km/s,401.7uJy/beam@native, XX YY] U [350.30..352.17GHz,7812.01kHz,5.7mJy/beam@10km/s,448.2uJy/beam@native, XX YY]</TD>
+            <TD>7812.01171875</TD>
+            <TD>0.6068056470178277</TD>
+            <TD>5.130699094734605</TD>
+            <TD>0.20507759733191103</TD>
+            <TD>A001:DA58 A002:DV16 A004:DV24 A010:DV02 A013:DA51 A015:DV18 A017:DA57 A021:DA59 A023:DV11 A027:DV13 A029:DA49 A030:DA45 A031:DV08 A033:DV19 A034:DV20 A036:DA60 A037:DV12 A038:DV07 A040:DA43 A042:DV17 A046:DA62 A058:DA46 A060:DA55 A062:DV05 A066:DA64 A067:DV21 A068:DA44 A069:DA53 A070:DA47 A071:DA50 A072:DV01 A075:DA61 A137:DA41 T701:PM03 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2016-08-17T15:04:24.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.6068056470178277</TD>
+            <TD>0.004696512432128198</TD>
+            <TD>57146.344072</TD>
+            <TD>57146.345341</TD>
+            <TD>7</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2013.1.00813.S</TD>
+            <TD>ADS/JAO.ALMA#2013.1.00813.S</TD>
+            <TD>uid://A001/X121/X14a</TD>
+            <TD>uid://A001/X121/X14b</TD>
+            <TD>uid://A002/X9fddd8/X2f3f</TD>
+            <TD>uid://A001/X121/X14b.source.NGC_6240.spw.17</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.245254</TD>
+            <TD>2.400986</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.002348</TD>
+            <TD>349.4858756739095</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[336.63..338.50GHz,7812.01kHz,3.2mJy/beam@10km/s,251.8uJy/beam@native, XX YY] U [338.39..340.25GHz,7812.01kHz,3.2mJy/beam@10km/s,252.1uJy/beam@native, XX YY] U [348.55..350.42GHz,7812.01kHz,3.1mJy/beam@10km/s,244.3uJy/beam@native, XX YY] U [350.30..352.17GHz,7812.01kHz,3.3mJy/beam@10km/s,259.1uJy/beam@native, XX YY]</TD>
+            <TD>7812.01171875</TD>
+            <TD>0.17628135940678002</TD>
+            <TD>3.0984414562900406</TD>
+            <TD>0.12583820871210857</TD>
+            <TD>A001:DA58 A002:DV16 A004:DV24 A007:DV09 A008:DV08 A010:DV02 A011:DV04 A013:DA51 A014:DV06 A015:DV18 A017:DA57 A021:DA59 A023:DV11 A027:DV13 A029:DA49 A030:DA45 A031:DV08 A033:DV19 A034:DV20 A036:DA60 A037:DV12 A038:DV07 A040:DA43 A042:DV17 A046:DA62 A058:DA46 A060:DA55 A062:DV05 A064:DA50 A066:DA64 A067:DV21 A068:DA44 A069:DA53 A070:DA47 A071:DA50 A072:DV01 A073:DA63 A075:DA61 A076:DV13 A077:DV16 A078:DV15 A079:DA43 A082:DA42 A083:DV25 A085:DA51 A086:DV14 A087:DV23 A088:DV20 A089:DA60 A090:DA54 A091:DA58 A092:DV12 A093:DV21 A094:DV02 A096:DV10 A097:DA62 A101:DA47 A103:DV03 A104:DA44 A105:DA52 A107:DA64 A110:DV22 A112:DV07 A113:DA57 A115:DV11 A137:DA41 T701:PM03 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2016-10-13T20:36:48.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.17628135940678002</TD>
+            <TD>0.0046965128845317524</TD>
+            <TD>57146.318314</TD>
+            <TD>57261.13127</TD>
+            <TD>7</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2013.1.00813.S</TD>
+            <TD>ADS/JAO.ALMA#2013.1.00813.S</TD>
+            <TD>uid://A001/X121/X14a</TD>
+            <TD>uid://A001/X121/X14b</TD>
+            <TD>uid://A002/X9fddd8/X2f3f</TD>
+            <TD>uid://A001/X121/X14b.source.NGC_6240.spw.19</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.245254</TD>
+            <TD>2.400986</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.002348</TD>
+            <TD>351.23684331196995</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[336.63..338.50GHz,7812.01kHz,3.2mJy/beam@10km/s,251.8uJy/beam@native, XX YY] U [338.39..340.25GHz,7812.01kHz,3.2mJy/beam@10km/s,252.1uJy/beam@native, XX YY] U [348.55..350.42GHz,7812.01kHz,3.1mJy/beam@10km/s,244.3uJy/beam@native, XX YY] U [350.30..352.17GHz,7812.01kHz,3.3mJy/beam@10km/s,259.1uJy/beam@native, XX YY]</TD>
+            <TD>7812.01171875</TD>
+            <TD>0.17628135940678002</TD>
+            <TD>3.2778420085999453</TD>
+            <TD>0.12583820871210857</TD>
+            <TD>A001:DA58 A002:DV16 A004:DV24 A007:DV09 A008:DV08 A010:DV02 A011:DV04 A013:DA51 A014:DV06 A015:DV18 A017:DA57 A021:DA59 A023:DV11 A027:DV13 A029:DA49 A030:DA45 A031:DV08 A033:DV19 A034:DV20 A036:DA60 A037:DV12 A038:DV07 A040:DA43 A042:DV17 A046:DA62 A058:DA46 A060:DA55 A062:DV05 A064:DA50 A066:DA64 A067:DV21 A068:DA44 A069:DA53 A070:DA47 A071:DA50 A072:DV01 A073:DA63 A075:DA61 A076:DV13 A077:DV16 A078:DV15 A079:DA43 A082:DA42 A083:DV25 A085:DA51 A086:DV14 A087:DV23 A088:DV20 A089:DA60 A090:DA54 A091:DA58 A092:DV12 A093:DV21 A094:DV02 A096:DV10 A097:DA62 A101:DA47 A103:DV03 A104:DA44 A105:DA52 A107:DA64 A110:DV22 A112:DV07 A113:DA57 A115:DV11 A137:DA41 T701:PM03 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2016-10-13T20:36:48.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.17628135940678002</TD>
+            <TD>0.0046965128845317524</TD>
+            <TD>57146.318314</TD>
+            <TD>57261.13127</TD>
+            <TD>7</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2013.1.00813.S</TD>
+            <TD>ADS/JAO.ALMA#2013.1.00813.S</TD>
+            <TD>uid://A001/X121/X14a</TD>
+            <TD>uid://A001/X121/X14b</TD>
+            <TD>uid://A002/X9fddd8/X2f3f</TD>
+            <TD>uid://A001/X121/X14b.source.NGC_6240.spw.21</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.245254</TD>
+            <TD>2.400986</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.002348</TD>
+            <TD>337.56612550713453</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[336.63..338.50GHz,7812.01kHz,3.2mJy/beam@10km/s,251.8uJy/beam@native, XX YY] U [338.39..340.25GHz,7812.01kHz,3.2mJy/beam@10km/s,252.1uJy/beam@native, XX YY] U [348.55..350.42GHz,7812.01kHz,3.1mJy/beam@10km/s,244.3uJy/beam@native, XX YY] U [350.30..352.17GHz,7812.01kHz,3.3mJy/beam@10km/s,259.1uJy/beam@native, XX YY]</TD>
+            <TD>7812.01171875</TD>
+            <TD>0.17628135940678002</TD>
+            <TD>3.2493605977794493</TD>
+            <TD>0.12583820871210857</TD>
+            <TD>A001:DA58 A002:DV16 A004:DV24 A007:DV09 A008:DV08 A010:DV02 A011:DV04 A013:DA51 A014:DV06 A015:DV18 A017:DA57 A021:DA59 A023:DV11 A027:DV13 A029:DA49 A030:DA45 A031:DV08 A033:DV19 A034:DV20 A036:DA60 A037:DV12 A038:DV07 A040:DA43 A042:DV17 A046:DA62 A058:DA46 A060:DA55 A062:DV05 A064:DA50 A066:DA64 A067:DV21 A068:DA44 A069:DA53 A070:DA47 A071:DA50 A072:DV01 A073:DA63 A075:DA61 A076:DV13 A077:DV16 A078:DV15 A079:DA43 A082:DA42 A083:DV25 A085:DA51 A086:DV14 A087:DV23 A088:DV20 A089:DA60 A090:DA54 A091:DA58 A092:DV12 A093:DV21 A094:DV02 A096:DV10 A097:DA62 A101:DA47 A103:DV03 A104:DA44 A105:DA52 A107:DA64 A110:DV22 A112:DV07 A113:DA57 A115:DV11 A137:DA41 T701:PM03 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2016-10-13T20:36:48.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.17628135940678002</TD>
+            <TD>0.0046965128845317524</TD>
+            <TD>57146.318314</TD>
+            <TD>57261.13127</TD>
+            <TD>7</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2013.1.00813.S</TD>
+            <TD>ADS/JAO.ALMA#2013.1.00813.S</TD>
+            <TD>uid://A001/X121/X14a</TD>
+            <TD>uid://A001/X121/X14b</TD>
+            <TD>uid://A002/X9fddd8/X2f3f</TD>
+            <TD>uid://A001/X121/X14b.source.NGC_6240.spw.23</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.245254</TD>
+            <TD>2.400986</TD>
+            <TD>Circle ICRS 253.245254 2.400986 0.002348</TD>
+            <TD>339.31908742595795</TD>
+            <TD>1.875E9</TD>
+            <TD>240</TD>
+            <TD>[336.63..338.50GHz,7812.01kHz,3.2mJy/beam@10km/s,251.8uJy/beam@native, XX YY] U [338.39..340.25GHz,7812.01kHz,3.2mJy/beam@10km/s,252.1uJy/beam@native, XX YY] U [348.55..350.42GHz,7812.01kHz,3.1mJy/beam@10km/s,244.3uJy/beam@native, XX YY] U [350.30..352.17GHz,7812.01kHz,3.3mJy/beam@10km/s,259.1uJy/beam@native, XX YY]</TD>
+            <TD>7812.01171875</TD>
+            <TD>0.17628135940678002</TD>
+            <TD>3.245182174542784</TD>
+            <TD>0.12583820871210857</TD>
+            <TD>A001:DA58 A002:DV16 A004:DV24 A007:DV09 A008:DV08 A010:DV02 A011:DV04 A013:DA51 A014:DV06 A015:DV18 A017:DA57 A021:DA59 A023:DV11 A027:DV13 A029:DA49 A030:DA45 A031:DV08 A033:DV19 A034:DV20 A036:DA60 A037:DV12 A038:DV07 A040:DA43 A042:DV17 A046:DA62 A058:DA46 A060:DA55 A062:DV05 A064:DA50 A066:DA64 A067:DV21 A068:DA44 A069:DA53 A070:DA47 A071:DA50 A072:DV01 A073:DA63 A075:DA61 A076:DV13 A077:DV16 A078:DV15 A079:DA43 A082:DA42 A083:DV25 A085:DA51 A086:DV14 A087:DV23 A088:DV20 A089:DA60 A090:DA54 A091:DA58 A092:DV12 A093:DV21 A094:DV02 A096:DV10 A097:DA62 A101:DA47 A103:DV03 A104:DA44 A105:DA52 A107:DA64 A110:DV22 A112:DV07 A113:DA57 A115:DV11 A137:DA41 T701:PM03 T703:PM04</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2016-10-13T20:36:48.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>0.17628135940678002</TD>
+            <TD>0.0046965128845317524</TD>
+            <TD>57146.318314</TD>
+            <TD>57261.13127</TD>
+            <TD>7</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+        </TABLEDATA>
+      </DATA>
+    </TABLE>
+    <INFO name="placeholder" value="ignore" />
+  </RESOURCE>
+</VOTABLE>

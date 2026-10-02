@@ -1,6 +1,9 @@
 # Current implementation status
 
-Committed baseline: `143b1229b1d085055e2fa5a0ba78ac3f37998d3e` (PR #113). The working-tree increment below is not yet committed. This is the single capability summary;
+Committed implementation baseline: `02cd389a3e3f875a6ed016c3625c73a457d3d794` (PR #114).
+The Archive array evidence review and source-bound adapter below are subsequent
+working-tree increments.
+This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
 
@@ -112,20 +115,50 @@ versions and approval states. No source-native mode or scientific approval may
 be inferred merely from an implementation status.
 
 
-## Pending Queue beam inference increment (2026-10-01)
+## Queue beam inference delivered in PR #114 (2026-10-01)
 
 The [new decision](evidence/queue_array_beam_inference_decision_2026-10-01.md)
 replaces the absent-column 12-m assumption with explicit D7/D12/MIX/unresolved
 interpretations. MIX keeps both complete branch evaluations under one original
 Queue candidate. Position method is now `queue_pos_single_6`; OR method is
 `queue_beam_variant_or_1`. Report v4 adds optional nested beam evidence, consumed
-by inspection v3 and the report browser. Existing observation-scope UI edits
-remain in the same working tree. Live Archive integration remains the next
+by inspection v3 and the report browser. Observation-scope UI edits were
+delivered in the same PR. Live Archive integration remains the next
 separate increment; no new scientific real-proposal review is claimed.
 
-Local verification of this pending increment (2026-10-01): `1575 passed,
+Recorded local verification of that increment (2026-10-01): `1575 passed,
 12 skipped`; all 15 offline acceptance catalog cases PASS; Ruff F and
 `git diff --check` PASS. The existing Archive continuum replay was also compared
 against the committed evaluator: report content was identical after excluding
 `generated_at`. Browser review confirmed one MIX candidate with both diameter
 sections. Skipped tests and live TAP were not claimed as passes.
+
+## Archive array evidence review (2026-10-02, working tree)
+
+Five [real array examples](evidence/archive_array_review_2026-10-02.md) now have
+original TAP replays and source-bound official AQ labels. QA2 reports confirm
+7-m science observations for two non-solar mixed-name cases, with captured EB
+identities. This distinguishes documentary confirmation from the current
+TAP-only formal diameter gate. Regression tests preserve pure-family D results,
+mixed-list insufficient information and request-level Solar exemption.
+
+The initial evidence review changed no parser or scientific method. Its dated
+verification is retained in the review record.
+
+## Archive source-bound array adapter (2026-10-02, working tree)
+
+The optional [adapter](archive_array_evidence.md) now reads captured official AQ
+source labels, requiring exact Member/source identity and capture integrity.
+`archive_source_array_1`, `archive_pos_single_2` and
+`archive_beam_variant_or_1` implement the project-adopted source binding, diameter
+selection and complete-branch OR. Missing/conflicting bindings remain UNKNOWN;
+there is no raw-name fallback under the new profile. TP is physically 12 m while
+its scientific applicability remains unsupported. Legacy evaluation is unchanged
+when the catalog is absent. CLI, shared entry and offline browser can supply the
+catalog; report v4 and inspection v3 preserve its provenance and beam alternatives.
+No automatic live AQ lookup or new reviewed real-proposal label is claimed.
+
+Local verification on 2026-10-02: 1609 passed, 12 skipped; Ruff F passed.
+The full suite includes the existing offline acceptance and UI export checks.
+Skipped live/snapshot tests are not passes. Original captured evidence bytes and
+historical acceptance labels remain unchanged.

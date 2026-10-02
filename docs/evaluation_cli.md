@@ -158,6 +158,16 @@ Request model 2, validation 6 and context model/construction 2 identify input an
 evidence semantics. Report versions 1–3 and evaluation versions through 4 retain
 their historical meanings; consumers should explicitly support report version 4.
 
+## Optional Archive array evidence
+
+Pass `--archive-array-evidence /path/to/aq-manifest.json` with the Archive replay
+or live-TAP option. This is a captured official AQ source-label catalog, not a
+replacement TAP replay. Missing catalog bindings remain UNKNOWN. Source and
+context evidence are included in report v4; Archive mixed labels use complete
+7-m/12-m branches with their own method identity. TP remains physically 12 m
+with unsupported scientific scope. See the
+[adapter contract](archive_array_evidence.md#enable-explicitly).
+
 ## Opt-in Queue common methods
 
 `--queue-common` selects the [versioned Queue common rules](queue_common.md) for

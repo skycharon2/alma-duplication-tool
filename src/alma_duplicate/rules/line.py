@@ -328,6 +328,7 @@ def evaluate_line(request, context, common_criteria):
         and not context.alternative_context_ids
         and not {
             "UNIQUE_INTERFEROMETRIC_DIAMETER_REQUIRED",
+            "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED",
             "CONFLICTING_POSITION_INTERPRETATION",
         }.intersection(common["POS-SINGLE"].reasons)
     )

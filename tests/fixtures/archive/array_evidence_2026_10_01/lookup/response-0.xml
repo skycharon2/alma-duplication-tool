@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <RESOURCE type="results">
+    <INFO name="QUERY_STATUS" value="OK" />
+    <INFO name="QUERY_TIMESTAMP" value="2026-10-01T12:34:04.839" />
+    <INFO name="QUERY" value="SELECT member_ous_uid, obs_id, target_name, s_ra, s_dec, antenna_arrays, science_keyword, is_mosaic, asdm_uid FROM ivoa.obscore WHERE science_observation = 'T' AND ((member_ous_uid = 'uid://A001/X5a3/X18c' AND target_name = 'ngc6240') OR (member_ous_uid = 'uid://A001/X2fa/X245' AND target_name = 'NGC_6240') OR (member_ous_uid = 'uid://A001/X2d20/X2e71' AND target_name = 'HD14055') OR (member_ous_uid = 'uid://A001/X3788/Xc194' AND target_name = 'IRAS_09245-5228') OR (member_ous_uid = 'uid://A001/X133d/X255b' AND target_name = 'Sun_10'))" />
+    <TABLE>
+      <FIELD name="member_ous_uid" datatype="char" arraysize="64*" xtype="adql:VARCHAR">
+        <DESCRIPTION>Member OUS ID</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_id" datatype="char" arraysize="64*" ucd="meta.id" utype="obscore:DataID.observationID">
+        <DESCRIPTION>internal dataset identifier</DESCRIPTION>
+      </FIELD>
+      <FIELD name="target_name" datatype="char" arraysize="256*" ucd="meta.id;src" utype="obscore:Target.Name">
+        <DESCRIPTION>name of intended target</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_ra" datatype="double" ucd="pos.eq.ra" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C1" xtype="adql:DOUBLE">
+        <DESCRIPTION>RA of central coordinates</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_dec" datatype="double" ucd="pos.eq.dec" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C2" xtype="adql:DOUBLE">
+        <DESCRIPTION>DEC of central coordinates</DESCRIPTION>
+      </FIELD>
+      <FIELD name="antenna_arrays" datatype="char" arraysize="660*" ucd="meta.code.member;instr.setup" xtype="adql:VARCHAR">
+        <DESCRIPTION>Blank-separated list of Pad:Antenna pairs, i.e., A109:DV09 J504:DV02 J505:DV05 for antennas DV09, DV02 and DV05 sitting on pads A109, J504, and J505, respectively.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="science_keyword" datatype="char" arraysize="200*" xtype="adql:VARCHAR" />
+      <FIELD name="is_mosaic" datatype="char" xtype="adql:CHAR">
+        <DESCRIPTION>Flag to indicate if this ASDM represents a mosaic or not.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="asdm_uid" datatype="char" arraysize="32*" ucd="meta.id" xtype="adql:VARCHAR">
+        <DESCRIPTION>UID of the ASDM containing this Field.</DESCRIPTION>
+      </FIELD>
+      <DATA>
+        <TABLEDATA>
+          <TR>
+            <TD>uid://A001/X2d20/X2e71</TD>
+            <TD>uid://A001/X2d20/X2e71.source.HD14055.spw.20</TD>
+            <TD>HD14055</TD>
+            <TD>34.328957498262625</TD>
+            <TD>33.84685913618155</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06 T701:PM02 T702:PM03 T703:PM01 T704:PM04</TD>
+            <TD>Debris disks;Exo-planets</TD>
+            <TD>F</TD>
+            <TD>uid://A002/X1001fdc/X2085</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X2d20/X2e71</TD>
+            <TD>uid://A001/X2d20/X2e71.source.HD14055.spw.22</TD>
+            <TD>HD14055</TD>
+            <TD>34.328957498262625</TD>
+            <TD>33.84685913618155</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06 T701:PM02 T702:PM03 T703:PM01 T704:PM04</TD>
+            <TD>Debris disks;Exo-planets</TD>
+            <TD>F</TD>
+            <TD>uid://A002/X1001fdc/X2085</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X2d20/X2e71</TD>
+            <TD>uid://A001/X2d20/X2e71.source.HD14055.spw.18</TD>
+            <TD>HD14055</TD>
+            <TD>34.328957498262625</TD>
+            <TD>33.84685913618155</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06 T701:PM02 T702:PM03 T703:PM01 T704:PM04</TD>
+            <TD>Debris disks;Exo-planets</TD>
+            <TD>F</TD>
+            <TD>uid://A002/X1001fdc/X2085</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X2d20/X2e71</TD>
+            <TD>uid://A001/X2d20/X2e71.source.HD14055.spw.16</TD>
+            <TD>HD14055</TD>
+            <TD>34.328957498262625</TD>
+            <TD>33.84685913618155</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06 T701:PM02 T702:PM03 T703:PM01 T704:PM04</TD>
+            <TD>Debris disks;Exo-planets</TD>
+            <TD>F</TD>
+            <TD>uid://A002/X1001fdc/X2085</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X3788/Xc194</TD>
+            <TD>uid://A001/X3788/Xc194.source.IRAS_09245-5228.spw.24</TD>
+            <TD>IRAS_09245-5228</TD>
+            <TD>141.5461103909849</TD>
+            <TD>-52.70729721185924</TD>
+            <TD>A075:DV22 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06 T701:PM04 T702:PM03</TD>
+            <TD>Disks around high-mass stars;null</TD>
+            <TD>F</TD>
+            <TD>uid://A002/X11e3e46/Xff4a</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X3788/Xc194</TD>
+            <TD>uid://A001/X3788/Xc194.source.IRAS_09245-5228.spw.26</TD>
+            <TD>IRAS_09245-5228</TD>
+            <TD>141.5461103909849</TD>
+            <TD>-52.70729721185924</TD>
+            <TD>A075:DV22 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06 T701:PM04 T702:PM03</TD>
+            <TD>Disks around high-mass stars;null</TD>
+            <TD>F</TD>
+            <TD>uid://A002/X11e3e46/Xff4a</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X3788/Xc194</TD>
+            <TD>uid://A001/X3788/Xc194.source.IRAS_09245-5228.spw.28</TD>
+            <TD>IRAS_09245-5228</TD>
+            <TD>141.5461103909849</TD>
+            <TD>-52.70729721185924</TD>
+            <TD>A075:DV22 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06 T701:PM04 T702:PM03</TD>
+            <TD>Disks around high-mass stars;null</TD>
+            <TD>F</TD>
+            <TD>uid://A002/X11e3e46/Xff4a</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X3788/Xc194</TD>
+            <TD>uid://A001/X3788/Xc194.source.IRAS_09245-5228.spw.30</TD>
+            <TD>IRAS_09245-5228</TD>
+            <TD>141.5461103909849</TD>
+            <TD>-52.70729721185924</TD>
+            <TD>A075:DV22 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06 T701:PM04 T702:PM03</TD>
+            <TD>Disks around high-mass stars;null</TD>
+            <TD>F</TD>
+            <TD>uid://A002/X11e3e46/Xff4a</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X2fa/X245</TD>
+            <TD>uid://A001/X2fa/X245.source.NGC_6240.spw.16</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420005313</TD>
+            <TD>2.4009861000013637</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N606:CM06</TD>
+            <TD>Luminous and Ultra-Luminous Infra-Red Galaxies (LIRG &amp; ULIRG);null</TD>
+            <TD>F</TD>
+            <TD>uid://A002/Xb6c583/Xd99</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X2fa/X245</TD>
+            <TD>uid://A001/X2fa/X245.source.NGC_6240.spw.18</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420005313</TD>
+            <TD>2.4009861000013637</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N606:CM06</TD>
+            <TD>Luminous and Ultra-Luminous Infra-Red Galaxies (LIRG &amp; ULIRG);null</TD>
+            <TD>F</TD>
+            <TD>uid://A002/Xb6c583/Xd99</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X2fa/X245</TD>
+            <TD>uid://A001/X2fa/X245.source.NGC_6240.spw.20</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420005313</TD>
+            <TD>2.4009861000013637</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N606:CM06</TD>
+            <TD>Luminous and Ultra-Luminous Infra-Red Galaxies (LIRG &amp; ULIRG);null</TD>
+            <TD>F</TD>
+            <TD>uid://A002/Xb6c583/Xd99</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X2fa/X245</TD>
+            <TD>uid://A001/X2fa/X245.source.NGC_6240.spw.22</TD>
+            <TD>NGC_6240</TD>
+            <TD>253.24525420005313</TD>
+            <TD>2.4009861000013637</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N606:CM06</TD>
+            <TD>Luminous and Ultra-Luminous Infra-Red Galaxies (LIRG &amp; ULIRG);null</TD>
+            <TD>F</TD>
+            <TD>uid://A002/Xb6c583/Xd99</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X133d/X255b</TD>
+            <TD>uid://A001/X133d/X255b.source.Sun_10.spw.11</TD>
+            <TD>Sun_10</TD>
+            <TD>278.12083333333334</TD>
+            <TD>-23.216305555555557</TD>
+            <TD>A002:DA51 A003:DV12 A007:DV05 A008:DV07 A010:DV13 A011:DV21 A015:DA64 A016:DV11 A019:DA61 A022:DV23 A023:DA42 A024:DA49 A025:DA46 A027:DV06 A033:DA53 A034:DA50 A035:DA43 A036:DA45 A039:DA56 A040:DA55 A041:DA57 A043:DA60 A045:DV01 A047:DV15 A048:DV02 A049:DA47 A050:DA62 A058:DA41 A060:DV17 A062:DV10 A066:DV04 A068:DA65 A069:DV16 A070:DA48 A073:DA54 A074:DV09 A075:DV18 A076:DA59 A082:DA52 A083:DV22 A085:DA63 A088:DV24 J501:CM10 J502:CM02 J504:CM12 J505:CM08 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06</TD>
+            <TD>The Sun;null</TD>
+            <TD>F</TD>
+            <TD>uid://A002/Xd74c3f/X13bc4</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X133d/X255b</TD>
+            <TD>uid://A001/X133d/X255b.source.Sun_10.spw.5</TD>
+            <TD>Sun_10</TD>
+            <TD>278.12083333333334</TD>
+            <TD>-23.216305555555557</TD>
+            <TD>A002:DA51 A003:DV12 A007:DV05 A008:DV07 A010:DV13 A011:DV21 A015:DA64 A016:DV11 A019:DA61 A022:DV23 A023:DA42 A024:DA49 A025:DA46 A027:DV06 A033:DA53 A034:DA50 A035:DA43 A036:DA45 A039:DA56 A040:DA55 A041:DA57 A043:DA60 A045:DV01 A047:DV15 A048:DV02 A049:DA47 A050:DA62 A058:DA41 A060:DV17 A062:DV10 A066:DV04 A068:DA65 A069:DV16 A070:DA48 A073:DA54 A074:DV09 A075:DV18 A076:DA59 A082:DA52 A083:DV22 A085:DA63 A088:DV24 J501:CM10 J502:CM02 J504:CM12 J505:CM08 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06</TD>
+            <TD>The Sun;null</TD>
+            <TD>F</TD>
+            <TD>uid://A002/Xd74c3f/X13bc4</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X133d/X255b</TD>
+            <TD>uid://A001/X133d/X255b.source.Sun_10.spw.7</TD>
+            <TD>Sun_10</TD>
+            <TD>278.12083333333334</TD>
+            <TD>-23.216305555555557</TD>
+            <TD>A002:DA51 A003:DV12 A007:DV05 A008:DV07 A010:DV13 A011:DV21 A015:DA64 A016:DV11 A019:DA61 A022:DV23 A023:DA42 A024:DA49 A025:DA46 A027:DV06 A033:DA53 A034:DA50 A035:DA43 A036:DA45 A039:DA56 A040:DA55 A041:DA57 A043:DA60 A045:DV01 A047:DV15 A048:DV02 A049:DA47 A050:DA62 A058:DA41 A060:DV17 A062:DV10 A066:DV04 A068:DA65 A069:DV16 A070:DA48 A073:DA54 A074:DV09 A075:DV18 A076:DA59 A082:DA52 A083:DV22 A085:DA63 A088:DV24 J501:CM10 J502:CM02 J504:CM12 J505:CM08 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06</TD>
+            <TD>The Sun;null</TD>
+            <TD>F</TD>
+            <TD>uid://A002/Xd74c3f/X13bc4</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X133d/X255b</TD>
+            <TD>uid://A001/X133d/X255b.source.Sun_10.spw.9</TD>
+            <TD>Sun_10</TD>
+            <TD>278.12083333333334</TD>
+            <TD>-23.216305555555557</TD>
+            <TD>A002:DA51 A003:DV12 A007:DV05 A008:DV07 A010:DV13 A011:DV21 A015:DA64 A016:DV11 A019:DA61 A022:DV23 A023:DA42 A024:DA49 A025:DA46 A027:DV06 A033:DA53 A034:DA50 A035:DA43 A036:DA45 A039:DA56 A040:DA55 A041:DA57 A043:DA60 A045:DV01 A047:DV15 A048:DV02 A049:DA47 A050:DA62 A058:DA41 A060:DV17 A062:DV10 A066:DV04 A068:DA65 A069:DV16 A070:DA48 A073:DA54 A074:DV09 A075:DV18 A076:DA59 A082:DA52 A083:DV22 A085:DA63 A088:DV24 J501:CM10 J502:CM02 J504:CM12 J505:CM08 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06</TD>
+            <TD>The Sun;null</TD>
+            <TD>F</TD>
+            <TD>uid://A002/Xd74c3f/X13bc4</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X5a3/X18c</TD>
+            <TD>uid://A001/X5a3/X18c.source.ngc6240.spw.25</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525399994147</TD>
+            <TD>2.4009860000026486</TD>
+            <TD>A001:DA59 A002:DA49 A006:DA61 A009:DV18 A010:DV25 A013:DV20 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A049:DV11 A054:DV03 A060:DA60 A061:DA62 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A072:DV05 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02</TD>
+            <TD>Merging and interacting galaxies;Luminous and Ultra-Luminous Infra-Red Galaxies (LIRG &amp; ULIRG)</TD>
+            <TD>F</TD>
+            <TD>uid://A002/Xb4da9a/X69a</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X5a3/X18c</TD>
+            <TD>uid://A001/X5a3/X18c.source.ngc6240.spw.27</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525399994147</TD>
+            <TD>2.4009860000026486</TD>
+            <TD>A001:DA59 A002:DA49 A006:DA61 A009:DV18 A010:DV25 A013:DV20 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A049:DV11 A054:DV03 A060:DA60 A061:DA62 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A072:DV05 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02</TD>
+            <TD>Merging and interacting galaxies;Luminous and Ultra-Luminous Infra-Red Galaxies (LIRG &amp; ULIRG)</TD>
+            <TD>F</TD>
+            <TD>uid://A002/Xb4da9a/X69a</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X5a3/X18c</TD>
+            <TD>uid://A001/X5a3/X18c.source.ngc6240.spw.29</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525399994147</TD>
+            <TD>2.4009860000026486</TD>
+            <TD>A001:DA59 A002:DA49 A006:DA61 A009:DV18 A010:DV25 A013:DV20 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A049:DV11 A054:DV03 A060:DA60 A061:DA62 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A072:DV05 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02</TD>
+            <TD>Merging and interacting galaxies;Luminous and Ultra-Luminous Infra-Red Galaxies (LIRG &amp; ULIRG)</TD>
+            <TD>F</TD>
+            <TD>uid://A002/Xb4da9a/X69a</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X5a3/X18c</TD>
+            <TD>uid://A001/X5a3/X18c.source.ngc6240.spw.31</TD>
+            <TD>ngc6240</TD>
+            <TD>253.24525399994147</TD>
+            <TD>2.4009860000026486</TD>
+            <TD>A001:DA59 A002:DA49 A006:DA61 A009:DV18 A010:DV25 A013:DV20 A014:DV09 A015:DV04 A017:DV22 A023:DA51 A034:DA46 A036:DV16 A037:DV19 A045:DA56 A048:DV15 A049:DV11 A054:DV03 A060:DA60 A061:DA62 A065:DV06 A066:DA55 A067:DA42 A068:DA45 A069:DV14 A072:DV05 A074:DA48 A075:DV24 A076:DA52 A077:DA58 A078:DV12 A079:DA64 A080:DV23 A081:DA53 A084:DV07 A085:DA47 A087:DV10 A088:DA57 A089:DA50 A090:DV01 A091:DA63 A092:DV17 A093:DV02</TD>
+            <TD>Merging and interacting galaxies;Luminous and Ultra-Luminous Infra-Red Galaxies (LIRG &amp; ULIRG)</TD>
+            <TD>F</TD>
+            <TD>uid://A002/Xb4da9a/X69a</TD>
+          </TR>
+        </TABLEDATA>
+      </DATA>
+    </TABLE>
+    <INFO name="placeholder" value="ignore" />
+  </RESOURCE>
+</VOTABLE>

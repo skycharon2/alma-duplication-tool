@@ -29,6 +29,14 @@ NOT_PROVIDED state. Source files are read for each run, so their backend hashes
 and provenance describe that run. A fresh replay client is created for each call.
 No live Archive client or network fallback is constructed.
 
+Optional `ALMA_UI_ARCHIVE_ARRAY_EVIDENCE` supplies a captured official AQ
+manifest to the same lazy Archive provider. It must correspond to the actual
+replayed science sources; unmatched sources remain UNKNOWN. The browser keeps
+one original candidate with both complete diameter paths when the backend
+returns mixed evidence, displays the binding provenance and exports the original
+report/inspection. TP's physical 12-m aperture does not remove its unsupported
+scientific scope. See the [array adapter](archive_array_evidence.md).
+
 ### Guide B form check
 
 | Input | Value |

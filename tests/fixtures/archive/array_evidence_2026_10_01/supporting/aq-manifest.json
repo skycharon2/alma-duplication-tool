@@ -1,0 +1,122 @@
+[
+  {
+    "file": "pure_12m-aq.json",
+    "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+    "request_body": {
+      "size": 20,
+      "track_total_hits": true,
+      "_source": [
+        "mous",
+        "sourceName",
+        "array",
+        "productFiles",
+        "project",
+        "band",
+        "datasetId"
+      ],
+      "query": {
+        "term": {
+          "mous": "uid://A001/X5a3/X18c"
+        }
+      }
+    },
+    "retrieved_at": "2026-10-02T07:20:33.661553+00:00",
+    "sha256": "82c5cbbf047cb49a647427f54d083314dafdc88db38735db041feb15a5199766"
+  },
+  {
+    "file": "pure_7m-aq.json",
+    "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+    "request_body": {
+      "size": 20,
+      "track_total_hits": true,
+      "_source": [
+        "mous",
+        "sourceName",
+        "array",
+        "productFiles",
+        "project",
+        "band",
+        "datasetId"
+      ],
+      "query": {
+        "term": {
+          "mous": "uid://A001/X2fa/X245"
+        }
+      }
+    },
+    "retrieved_at": "2026-10-02T07:20:33.843755+00:00",
+    "sha256": "81b94bd077c1b14f39d31a629d6cfea0befe981614a56a43b689376a5aba3a28"
+  },
+  {
+    "file": "cm_with_tp-aq.json",
+    "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+    "request_body": {
+      "size": 20,
+      "track_total_hits": true,
+      "_source": [
+        "mous",
+        "sourceName",
+        "array",
+        "productFiles",
+        "project",
+        "band",
+        "datasetId"
+      ],
+      "query": {
+        "term": {
+          "mous": "uid://A001/X2d20/X2e71"
+        }
+      }
+    },
+    "retrieved_at": "2026-10-02T07:20:34.109220+00:00",
+    "sha256": "183f5cc762b4150062779b48e4897528e38de164c934a9b12284918c471c1b02"
+  },
+  {
+    "file": "non_solar_mixed_names-aq.json",
+    "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+    "request_body": {
+      "size": 20,
+      "track_total_hits": true,
+      "_source": [
+        "mous",
+        "sourceName",
+        "array",
+        "productFiles",
+        "project",
+        "band",
+        "datasetId"
+      ],
+      "query": {
+        "term": {
+          "mous": "uid://A001/X3788/Xc194"
+        }
+      }
+    },
+    "retrieved_at": "2026-10-02T07:20:34.294230+00:00",
+    "sha256": "7e0c65e1a140e11c3990d9f2cc4e05f0ecd39a6696746778831c1b40dbebf9b9"
+  },
+  {
+    "file": "solar-aq.json",
+    "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+    "request_body": {
+      "size": 20,
+      "track_total_hits": true,
+      "_source": [
+        "mous",
+        "sourceName",
+        "array",
+        "productFiles",
+        "project",
+        "band",
+        "datasetId"
+      ],
+      "query": {
+        "term": {
+          "mous": "uid://A001/X133d/X255b"
+        }
+      }
+    },
+    "retrieved_at": "2026-10-02T07:20:34.574305+00:00",
+    "sha256": "8b91a05cf7a1566ac627a75cb520c0720daa6a9a589940ddc41b2d39b6cef7dd"
+  }
+]

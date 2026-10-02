@@ -50,6 +50,7 @@ def evaluate_candidate_search(
     search_result: CandidateSearchResult, *, nominal_conversion: str | None = None,
     queue_common: bool = False, queue_continuum: bool = False,
     queue_line: bool = False,
+    archive_arrays=None,
 ) -> EvaluationReport:
     """Evaluate selected branches for every retained context, including hidden rows.
 
@@ -77,16 +78,22 @@ Programming/contract errors propagate; they are not scientific missing evidence.
             from alma_duplicate.queue_row_beam import resolve_queue_beam_interpretation
             from alma_duplicate.rules.queue_beam import aggregate_beam_variants
             diameters = ()
+            array_evidence = None
+            if archive_arrays is not None and row.context.reference.source == "ARCHIVE":
+                array_evidence = archive_arrays.bind(row.context)
+                if request.intents:
+                    diameters = array_evidence.diameters_m
             if request.intents and queue_common and row.context.reference.source == "QUEUE":
                 diameters = resolve_queue_beam_interpretation(row.context.evidence.row).diameters_m
             if len(diameters) == 2:
                 variants = tuple(BeamVariant(d, _evaluate_context(
-                    row, request, setup, configuration, beam_diameter_m=d)) for d in diameters)
+                    row, request, setup, configuration, beam_diameter_m=d,
+                    array_evidence=array_evidence)) for d in diameters)
                 contexts.append(ContextEvaluation(
-                    candidate=row, criteria=(), branches=aggregate_beam_variants(variants),
-                    beam_variants=variants))
+                    candidate=row, criteria=(), branches=aggregate_beam_variants(variants, source=row.context.reference.source),
+                    beam_variants=variants, array_evidence=array_evidence))
             else:
-                contexts.append(_evaluate_context(row, request, setup, configuration))
+                contexts.append(_evaluate_context(row, request, setup, configuration, array_evidence=array_evidence))
     return EvaluationReport(
         search_result=search_result,
         request_criteria=() if setup is None else (setup,),
@@ -95,7 +102,7 @@ Programming/contract errors propagate; they are not scientific missing evidence.
     )
 
 
-def _evaluate_context(row, request, setup, configuration, *, beam_diameter_m=None):
+def _evaluate_context(row, request, setup, configuration, *, beam_diameter_m=None, array_evidence=None):
     """Evaluate all requested branches with one coherent position hypothesis."""
     continuum = "CONTINUUM" in request.intents
     queue_common = configuration.queue_common
@@ -108,8 +115,14 @@ def _evaluate_context(row, request, setup, configuration, *, beam_diameter_m=Non
         from alma_duplicate.rules.queue_common import evaluate_queue_common
         criteria.extend(evaluate_queue_common(request, context, row.spatial_evidence, beam_diameter_m=beam_diameter_m))
     elif request.intents:
+        if array_evidence is not None:
+            from alma_duplicate.rules.archive_position import evaluate_archive_position
+            position = evaluate_archive_position(request, context, row.spatial_evidence,
+                                                 array_evidence=array_evidence, beam_diameter_m=beam_diameter_m)
+        else:
+            position = evaluate_position_single(request, context, row.spatial_evidence)
         criteria.extend((approve_angular(evaluate_angular_resolution(request, context), request, context),
-                         evaluate_position_single(request, context, row.spatial_evidence)))
+                         position))
     if continuum:
         if queue_continuum and context.reference.source == "QUEUE":
             from alma_duplicate.rules.queue_continuum import evaluate_queue_continuum, scope_supported
@@ -123,6 +136,7 @@ def _evaluate_context(row, request, setup, configuration, *, beam_diameter_m=Non
             supported = (archive_scope(request, context) and
                 context.evidence.prepared.normalized_metadata.is_mosaic.value is False and
                 not {"UNIQUE_INTERFEROMETRIC_DIAMETER_REQUIRED",
+                     "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED",
                      "CONFLICTING_POSITION_INTERPRETATION"}.intersection(criteria[1].reasons))
             branches.append(aggregate_continuum(context, (setup, *criteria), supported=supported))
     pairing, pairs = None, ()
@@ -138,4 +152,4 @@ def _evaluate_context(row, request, setup, configuration, *, beam_diameter_m=Non
             )
         branches.append(branch)
     return ContextEvaluation(candidate=row, criteria=tuple(criteria), branches=tuple(branches),
-                                      line_pairing=pairing, line_pairs=pairs)
+                                      line_pairing=pairing, line_pairs=pairs, array_evidence=array_evidence)

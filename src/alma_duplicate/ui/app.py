@@ -18,13 +18,15 @@ def create_app(config=None):
     app.config["REPORT_DIRECTORY"] = os.environ.get("ALMA_UI_REPORT_DIR")
     app.config["OFFLINE_ARCHIVE_REPLAY"] = os.environ.get("ALMA_UI_ARCHIVE_REPLAY")
     app.config["OFFLINE_QUEUE_CSV"] = os.environ.get("ALMA_UI_QUEUE_CSV")
+    app.config["ARCHIVE_ARRAY_EVIDENCE"] = os.environ.get("ALMA_UI_ARCHIVE_ARRAY_EVIDENCE")
     app.config["MAX_RETAINED_RUNS"] = 20
     app.config["MAX_RETAINED_BYTES"] = 32 * 1024 * 1024
     if config is not None:
         app.config.from_mapping(config)
 
     reports = load_reports(app.config["REPORT_DIRECTORY"])
-    offline = OfflineAssessment(app.config["OFFLINE_ARCHIVE_REPLAY"], app.config["OFFLINE_QUEUE_CSV"])
+    offline = OfflineAssessment(app.config["OFFLINE_ARCHIVE_REPLAY"], app.config["OFFLINE_QUEUE_CSV"],
+                                app.config["ARCHIVE_ARRAY_EVIDENCE"])
     runs = RunStore(app.config["MAX_RETAINED_RUNS"], app.config["MAX_RETAINED_BYTES"])
 
     @app.after_request

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <RESOURCE type="results">
+    <INFO name="QUERY_STATUS" value="OK" />
+    <INFO name="QUERY_TIMESTAMP" value="2026-10-01T12:34:59.081" />
+    <INFO name="QUERY" value="SELECT&#xA;    proposal_id,&#xA;    obs_publisher_did,&#xA;    group_ous_uid,&#xA;    member_ous_uid,&#xA;    asdm_uid,&#xA;    obs_id,&#xA;    target_name,&#xA;    s_ra,&#xA;    s_dec,&#xA;    s_region,&#xA;    frequency,&#xA;    bandwidth,&#xA;    em_xel,&#xA;    frequency_support,&#xA;    spectral_resolution,&#xA;    spatial_resolution,&#xA;    sensitivity_10kms,&#xA;    cont_sensitivity_bandwidth,&#xA;    antenna_arrays,&#xA;    is_mosaic,&#xA;    science_observation,&#xA;    qa2_passed,&#xA;    obs_release_date,&#xA;    lastModified,&#xA;    s_resolution,&#xA;    s_fov,&#xA;    t_min,&#xA;    t_max,&#xA;    band_list,&#xA;    pol_states&#xA;FROM ivoa.obscore&#xA;WHERE 1 = CONTAINS(POINT('ICRS', s_ra, s_dec), CIRCLE('ICRS', 141.546110390985, -52.7072972118592, 1e-06))&#xA;    AND science_observation = 'T'" />
+    <TABLE>
+      <FIELD name="proposal_id" datatype="char" arraysize="64*" ucd="meta.id;obs.proposal" utype="obscore:Provenance.Proposal.identifier" xtype="adql:VARCHAR">
+        <DESCRIPTION>Identifier of proposal to which NO observation belongs.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_publisher_did" datatype="char" arraysize="33*" ucd="meta.ref.ivoid" utype="obscore:Curation.PublisherDID">
+        <DESCRIPTION>publisher dataset identifier</DESCRIPTION>
+      </FIELD>
+      <FIELD name="group_ous_uid" datatype="char" arraysize="64*" xtype="adql:VARCHAR">
+        <DESCRIPTION>Group OUS ID</DESCRIPTION>
+      </FIELD>
+      <FIELD name="member_ous_uid" datatype="char" arraysize="64*" xtype="adql:VARCHAR">
+        <DESCRIPTION>Member OUS ID</DESCRIPTION>
+      </FIELD>
+      <FIELD name="asdm_uid" datatype="char" arraysize="32*" ucd="meta.id" xtype="adql:VARCHAR">
+        <DESCRIPTION>UID of the ASDM containing this Field.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_id" datatype="char" arraysize="64*" ucd="meta.id" utype="obscore:DataID.observationID">
+        <DESCRIPTION>internal dataset identifier</DESCRIPTION>
+      </FIELD>
+      <FIELD name="target_name" datatype="char" arraysize="256*" ucd="meta.id;src" utype="obscore:Target.Name">
+        <DESCRIPTION>name of intended target</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_ra" datatype="double" ucd="pos.eq.ra" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C1" xtype="adql:DOUBLE">
+        <DESCRIPTION>RA of central coordinates</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_dec" datatype="double" ucd="pos.eq.dec" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C2" xtype="adql:DOUBLE">
+        <DESCRIPTION>DEC of central coordinates</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_region" datatype="char" arraysize="*" ucd="pos.outline;obs.field" utype="obscore:Char.SpatialAxis.Coverage.Support.Area" xtype="adql:REGION">
+        <DESCRIPTION>region bounded by observation</DESCRIPTION>
+      </FIELD>
+      <FIELD name="frequency" datatype="double" ucd="em.freq;obs;meta.main" unit="GHz" utype="obscore:Char.SpectralAxis.Coverage.Location.refval" xtype="adql:DOUBLE">
+        <DESCRIPTION>Observed (tuned) reference frequency on the sky.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="bandwidth" datatype="double" ucd="em.freq;instr.bandpass" unit="Hz" utype="obscore:Char.SpectralAxis.Coverage.Bounds.Extent" xtype="adql:DOUBLE">
+        <DESCRIPTION>Total Bandwidth</DESCRIPTION>
+      </FIELD>
+      <FIELD name="em_xel" datatype="int" ucd="meta.number" utype="obscore:Char.SpectralAxis.numBins" xtype="adql:BIGINT">
+        <DESCRIPTION>Number of elements along the spectral axis</DESCRIPTION>
+      </FIELD>
+      <FIELD name="frequency_support" datatype="char" arraysize="4000*" ucd="em.freq;obs;meta.main" unit="GHz" utype="obscore:Char.SpectralAxis.Coverage.Location.support" xtype="adql:VARCHAR">
+        <DESCRIPTION>All frequency ranges used by the field</DESCRIPTION>
+      </FIELD>
+      <FIELD name="spectral_resolution" datatype="double" unit="kHz" xtype="adql:DOUBLE" />
+      <FIELD name="spatial_resolution" datatype="double" unit="arcsec" xtype="adql:DOUBLE">
+        <DESCRIPTION>Average of the maximum and minimum spatial resolution values of all spectral windows</DESCRIPTION>
+      </FIELD>
+      <FIELD name="sensitivity_10kms" datatype="double" unit="mJy/beam" xtype="adql:DOUBLE">
+        <DESCRIPTION>Estimated noise in an nominal 10km/s bandwidth. Note this is an indication only, it does not include the effects of flagging or Hanning smoothing, and a 10km/s bandwidth may not be achievable with the data as taken.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="cont_sensitivity_bandwidth" datatype="double" unit="mJy/beam" xtype="adql:DOUBLE">
+        <DESCRIPTION>Estimated noise in the aggregated continuum bandwidth. Note this is an indication only, it does not include the effects of flagging or dynamic range limitations.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="antenna_arrays" datatype="char" arraysize="660*" ucd="meta.code.member;instr.setup" xtype="adql:VARCHAR">
+        <DESCRIPTION>Blank-separated list of Pad:Antenna pairs, i.e., A109:DV09 J504:DV02 J505:DV05 for antennas DV09, DV02 and DV05 sitting on pads A109, J504, and J505, respectively.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="is_mosaic" datatype="char" xtype="adql:CHAR">
+        <DESCRIPTION>Flag to indicate if this ASDM represents a mosaic or not.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="science_observation" datatype="char" ucd="meta.code.class;obs" xtype="adql:VARCHAR">
+        <DESCRIPTION>Flag to indicate whether this is a science observation.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="qa2_passed" datatype="char" ucd="meta.code" xtype="adql:CHAR">
+        <DESCRIPTION>Quality Assessment 2 status: does the Member / Group OUS fulfil the PI's requirements?</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_release_date" datatype="char" arraysize="*" ucd="time.release" utype="obscore:Curation.releaseDate" xtype="adql:TIMESTAMP">
+        <DESCRIPTION>timestamp of date the data becomes publicly available</DESCRIPTION>
+      </FIELD>
+      <FIELD name="lastModified" datatype="char" arraysize="32*" xtype="adql:TIMESTAMP">
+        <DESCRIPTION>Time stamp of last modification of the metadata</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_resolution" datatype="double" ucd="pos.angResolution" unit="arcsec" utype="obscore:Char.SpatialAxis.Resolution.refval.value" xtype="adql:DOUBLE">
+        <DESCRIPTION>typical spatial resolution</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_fov" datatype="double" ucd="phys.angSize;instr.fov" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Bounds.Extent.diameter" xtype="adql:DOUBLE">
+        <DESCRIPTION>size of the region covered (~diameter of minimum bounding circle)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="t_min" datatype="double" ucd="time.start;obs.exposure" unit="d" utype="obscore:Char.TimeAxis.Coverage.Bounds.Limits.StartTime" xtype="adql:DOUBLE">
+        <DESCRIPTION>start time of observation (MJD)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="t_max" datatype="double" ucd="time.end;obs.exposure" unit="d" utype="obscore:Char.TimeAxis.Coverage.Bounds.Limits.StopTime" xtype="adql:DOUBLE">
+        <DESCRIPTION>end time of observation (MJD)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="band_list" datatype="char" arraysize="30*" xtype="adql:VARCHAR">
+        <DESCRIPTION>Space delimited list of bands</DESCRIPTION>
+      </FIELD>
+      <FIELD name="pol_states" datatype="char" arraysize="64*" ucd="meta.code;phys.polarization" utype="obscore:Char.PolarizationAxis.stateList">
+        <DESCRIPTION>polarization states present in the data</DESCRIPTION>
+      </FIELD>
+      <DATA>
+        <TABLEDATA>
+          <TR>
+            <TD>2024.1.00408.S</TD>
+            <TD>ADS/JAO.ALMA#2024.1.00408.S</TD>
+            <TD>uid://A001/X3788/Xc193</TD>
+            <TD>uid://A001/X3788/Xc194</TD>
+            <TD>uid://A002/X11e3e46/Xff4a</TD>
+            <TD>uid://A001/X3788/Xc194.source.IRAS_09245-5228.spw.24</TD>
+            <TD>IRAS_09245-5228</TD>
+            <TD>141.5461103909849</TD>
+            <TD>-52.70729721185924</TD>
+            <TD>Polygon ICRS 141.556089 -52.706143 141.556089 -52.708450 141.554688 -52.710595 141.553517 -52.711510 141.551554 -52.712494 141.548014 -52.713343 141.546110 -52.713452 141.543584 -52.713259 141.540139 -52.712277 141.537532 -52.710595 141.536131 -52.708450 141.536132 -52.706143 141.537534 -52.703999 141.539157 -52.702810 141.540668 -52.702100 141.544207 -52.701251 141.548014 -52.701251 141.549850 -52.701574 141.552081 -52.702317 141.554687 -52.703999</TD>
+            <TD>216.49877450649825</TD>
+            <TD>1.875E9</TD>
+            <TD>1920</TD>
+            <TD>[215.56..217.44GHz,1128.91kHz,6.8mJy/beam@10km/s,422.7uJy/beam@native, XX YY] U [218.56..220.44GHz,1128.91kHz,6.5mJy/beam@10km/s,404.7uJy/beam@native, XX YY] U [230.48..230.60GHz,70.56kHz,6.3mJy/beam@10km/s,1.6mJy/beam@native, XX YY] U [233.06..234.94GHz,1128.91kHz,6.2mJy/beam@10km/s,401.5uJy/beam@native, XX YY]</TD>
+            <TD>1128.90625</TD>
+            <TD>3.573980180426332</TD>
+            <TD>6.810928128739662</TD>
+            <TD>0.23386931090699672</TD>
+            <TD>A075:DV22 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06 T701:PM04 T702:PM03</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2025-10-30T04:53:50.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>3.573980180426332</TD>
+            <TD>0.012310260853091089</TD>
+            <TD>60585.560029</TD>
+            <TD>60595.63127</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2024.1.00408.S</TD>
+            <TD>ADS/JAO.ALMA#2024.1.00408.S</TD>
+            <TD>uid://A001/X3788/Xc193</TD>
+            <TD>uid://A001/X3788/Xc194</TD>
+            <TD>uid://A002/X11e3e46/Xff4a</TD>
+            <TD>uid://A001/X3788/Xc194.source.IRAS_09245-5228.spw.26</TD>
+            <TD>IRAS_09245-5228</TD>
+            <TD>141.5461103909849</TD>
+            <TD>-52.70729721185924</TD>
+            <TD>Polygon ICRS 141.556089 -52.706143 141.556089 -52.708450 141.554688 -52.710595 141.553517 -52.711510 141.551554 -52.712494 141.548014 -52.713343 141.546110 -52.713452 141.543584 -52.713259 141.540139 -52.712277 141.537532 -52.710595 141.536131 -52.708450 141.536132 -52.706143 141.537534 -52.703999 141.539157 -52.702810 141.540668 -52.702100 141.544207 -52.701251 141.548014 -52.701251 141.549850 -52.701574 141.552081 -52.702317 141.554687 -52.703999</TD>
+            <TD>219.49887566028175</TD>
+            <TD>1.875E9</TD>
+            <TD>1920</TD>
+            <TD>[215.56..217.44GHz,1128.91kHz,6.8mJy/beam@10km/s,422.7uJy/beam@native, XX YY] U [218.56..220.44GHz,1128.91kHz,6.5mJy/beam@10km/s,404.7uJy/beam@native, XX YY] U [230.48..230.60GHz,70.56kHz,6.3mJy/beam@10km/s,1.6mJy/beam@native, XX YY] U [233.06..234.94GHz,1128.91kHz,6.2mJy/beam@10km/s,401.5uJy/beam@native, XX YY]</TD>
+            <TD>1128.90625</TD>
+            <TD>3.573980180426332</TD>
+            <TD>6.476432975072154</TD>
+            <TD>0.23386931090699672</TD>
+            <TD>A075:DV22 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06 T701:PM04 T702:PM03</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2025-10-30T04:53:50.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>3.573980180426332</TD>
+            <TD>0.012310260853091089</TD>
+            <TD>60585.560029</TD>
+            <TD>60595.63127</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2024.1.00408.S</TD>
+            <TD>ADS/JAO.ALMA#2024.1.00408.S</TD>
+            <TD>uid://A001/X3788/Xc193</TD>
+            <TD>uid://A001/X3788/Xc194</TD>
+            <TD>uid://A002/X11e3e46/Xff4a</TD>
+            <TD>uid://A001/X3788/Xc194.source.IRAS_09245-5228.spw.28</TD>
+            <TD>IRAS_09245-5228</TD>
+            <TD>141.5461103909849</TD>
+            <TD>-52.70729721185924</TD>
+            <TD>Polygon ICRS 141.556089 -52.706143 141.556089 -52.708450 141.554688 -52.710595 141.553517 -52.711510 141.551554 -52.712494 141.548014 -52.713343 141.546110 -52.713452 141.543584 -52.713259 141.540139 -52.712277 141.537532 -52.710595 141.536131 -52.708450 141.536132 -52.706143 141.537534 -52.703999 141.539157 -52.702810 141.540668 -52.702100 141.544207 -52.701251 141.548014 -52.701251 141.549850 -52.701574 141.552081 -52.702317 141.554687 -52.703999</TD>
+            <TD>230.53800141830845</TD>
+            <TD>1.171875E8</TD>
+            <TD>1920</TD>
+            <TD>[215.56..217.44GHz,1128.91kHz,6.8mJy/beam@10km/s,422.7uJy/beam@native, XX YY] U [218.56..220.44GHz,1128.91kHz,6.5mJy/beam@10km/s,404.7uJy/beam@native, XX YY] U [230.48..230.60GHz,70.56kHz,6.3mJy/beam@10km/s,1.6mJy/beam@native, XX YY] U [233.06..234.94GHz,1128.91kHz,6.2mJy/beam@10km/s,401.5uJy/beam@native, XX YY]</TD>
+            <TD>70.556640625</TD>
+            <TD>3.573980180426332</TD>
+            <TD>6.341575016193302</TD>
+            <TD>0.23386931090699672</TD>
+            <TD>A075:DV22 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06 T701:PM04 T702:PM03</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2025-10-30T04:53:50.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>3.573980180426332</TD>
+            <TD>0.012310260853091089</TD>
+            <TD>60585.560029</TD>
+            <TD>60595.63127</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+          <TR>
+            <TD>2024.1.00408.S</TD>
+            <TD>ADS/JAO.ALMA#2024.1.00408.S</TD>
+            <TD>uid://A001/X3788/Xc193</TD>
+            <TD>uid://A001/X3788/Xc194</TD>
+            <TD>uid://A002/X11e3e46/Xff4a</TD>
+            <TD>uid://A001/X3788/Xc194.source.IRAS_09245-5228.spw.30</TD>
+            <TD>IRAS_09245-5228</TD>
+            <TD>141.5461103909849</TD>
+            <TD>-52.70729721185924</TD>
+            <TD>Polygon ICRS 141.556089 -52.706143 141.556089 -52.708450 141.554688 -52.710595 141.553517 -52.711510 141.551554 -52.712494 141.548014 -52.713343 141.546110 -52.713452 141.543584 -52.713259 141.540139 -52.712277 141.537532 -52.710595 141.536131 -52.708450 141.536132 -52.706143 141.537534 -52.703999 141.539157 -52.702810 141.540668 -52.702100 141.544207 -52.701251 141.548014 -52.701251 141.549850 -52.701574 141.552081 -52.702317 141.554687 -52.703999</TD>
+            <TD>233.99937149048304</TD>
+            <TD>1.875E9</TD>
+            <TD>1920</TD>
+            <TD>[215.56..217.44GHz,1128.91kHz,6.8mJy/beam@10km/s,422.7uJy/beam@native, XX YY] U [218.56..220.44GHz,1128.91kHz,6.5mJy/beam@10km/s,404.7uJy/beam@native, XX YY] U [230.48..230.60GHz,70.56kHz,6.3mJy/beam@10km/s,1.6mJy/beam@native, XX YY] U [233.06..234.94GHz,1128.91kHz,6.2mJy/beam@10km/s,401.5uJy/beam@native, XX YY]</TD>
+            <TD>1128.90625</TD>
+            <TD>3.573980180426332</TD>
+            <TD>6.223602024125421</TD>
+            <TD>0.23386931090699672</TD>
+            <TD>A075:DV22 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06 T701:PM04 T702:PM03</TD>
+            <TD>F</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>2025-10-30T04:53:50.000</TD>
+            <TD>2026-09-28T18:47:19.570</TD>
+            <TD>3.573980180426332</TD>
+            <TD>0.012310260853091089</TD>
+            <TD>60585.560029</TD>
+            <TD>60595.63127</TD>
+            <TD>6</TD>
+            <TD>/XX/YY/</TD>
+          </TR>
+        </TABLEDATA>
+      </DATA>
+    </TABLE>
+    <INFO name="placeholder" value="ignore" />
+  </RESOURCE>
+</VOTABLE>

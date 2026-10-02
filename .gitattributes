@@ -1,3 +1,9 @@
 
 # Preserve captured TAP response bytes and their checksums, including CRLF.
 tests/fixtures/archive/ngc6240/response-*.xml binary
+
+# Preserve captured Archive array-evidence TAP response bytes and checksums.
+tests/fixtures/archive/array_evidence_2026_10_01/**/response-*.xml binary
+
+# Preserve downloaded Archive supporting evidence bytes exactly.
+tests/fixtures/archive/array_evidence_2026_10_01/supporting/*-readme.txt binary

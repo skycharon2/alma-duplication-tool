@@ -9,6 +9,7 @@ from alma_duplicate.rules.model import CriterionResult
 from alma_duplicate.domain.proposed_observation import RequestValidationResult
 from alma_duplicate.rules.aggregation import BranchAssessment
 from alma_duplicate.domain.line_pairing import LinePairBuildResult
+from alma_duplicate.archive_array_evidence import ArchiveArrayEvidence
 from alma_duplicate.rules.line import LinePairEvaluation
 
 if TYPE_CHECKING:
@@ -41,8 +42,13 @@ class ContextEvaluation:
     line_pairs: tuple[LinePairEvaluation | QueueLinePairEvaluation, ...] = ()
 
     beam_variants: tuple[BeamVariant, ...] = ()
+    array_evidence: ArchiveArrayEvidence | None = None
 
     def __post_init__(self):
+        if self.array_evidence is not None and (
+                self.array_evidence.context_id != self.candidate.context.context_id
+                or self.array_evidence.source_record_id != self.candidate.context.reference.source_record_id):
+            raise ValueError("Array evidence must belong to this candidate")
         if self.beam_variants:
             if self.criteria or self.line_pairing is not None or self.line_pairs:
                 raise ValueError("MIX criteria must stay inside their complete beam variants")

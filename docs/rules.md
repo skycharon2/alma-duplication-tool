@@ -235,3 +235,14 @@ failure and blocks the dependent RMS calculation. No Queue LINE result borrows
 coverage, resolution, sensitivity, mode or common-condition evidence from a
 different row, SPW, candidate context or source. Queue continuum and Archive LINE
 retain their independent source-specific methods.
+
+## Source-bound Archive array methods
+
+Supplying `archive_arrays=catalog` selects the optional
+[official source array contract](archive_array_evidence.md).
+Position uses `archive_pos_single_2`; a source-bound `7m 12m` label creates
+complete 7-m and 12-m context branches, aggregated with
+`archive_beam_variant_or_1`. CONTINUUM and LINE retain their existing independent
+criteria and Source–SPW bindings. TP records physical D = 12 m but blocks formal
+interferometric branch evaluation. Missing/ambiguous official evidence is UNKNOWN.
+Without a catalog, `archive_pos_single_1` remains unchanged.
