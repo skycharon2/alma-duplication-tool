@@ -1,8 +1,8 @@
 # Current implementation status
 
-Committed implementation baseline: `02cd389a3e3f875a6ed016c3625c73a457d3d794` (PR #114).
-The Archive array evidence review and source-bound adapter below are subsequent
-working-tree increments.
+Committed implementation baseline: `d96274a4580792157153a1ce454ac7743ce6435f` (PR #117).
+Archive source-bound array evidence, mixed-beam evaluation and the TP D=12
+POS-SINGLE follow-up are included in this baseline.
 This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
@@ -100,8 +100,9 @@ The proposed form supports validation/request download and an opt-in
 [offline assessment flow](ui_offline_assessment.md). Each execution calls the
 shared entry with explicit Queue intent options and local replay/CSV providers,
 then renders and exports its retained report v4 and inspection v3. Reports from
-separate runs remain independent. This does not change the dated baseline or
-verification counts above. The [offline UI/CLI parity gate](ui_offline_assessment.md#offline-uicli-parity-gate)
+separate runs remain independent. The current baseline includes this offline
+flow; historical verification counts above remain tied to their dated commits.
+The [offline UI/CLI parity gate](ui_offline_assessment.md#offline-uicli-parity-gate)
 now compares complete reports and inspection documents under the current UI
 configuration, with exact same-run downloads. Live Archive execution and
 persistent multi-user storage remain outstanding.
@@ -123,8 +124,9 @@ interpretations. MIX keeps both complete branch evaluations under one original
 Queue candidate. Position method is now `queue_pos_single_6`; OR method is
 `queue_beam_variant_or_1`. Report v4 adds optional nested beam evidence, consumed
 by inspection v3 and the report browser. Observation-scope UI edits were
-delivered in the same PR. Live Archive integration remains the next
-separate increment; no new scientific real-proposal review is claimed.
+delivered in the same PR. Explicit live-source configuration and execution
+feedback remain the next browser increment; no new scientific real-proposal
+review is claimed.
 
 Recorded local verification of that increment (2026-10-01): `1575 passed,
 12 skipped`; all 15 offline acceptance catalog cases PASS; Ruff F and
@@ -133,7 +135,7 @@ against the committed evaluator: report content was identical after excluding
 `generated_at`. Browser review confirmed one MIX candidate with both diameter
 sections. Skipped tests and live TAP were not claimed as passes.
 
-## Archive array evidence review (2026-10-02, working tree)
+## Archive array evidence review (PR #115, 2026-10-02)
 
 Five [real array examples](evidence/archive_array_review_2026-10-02.md) now have
 original TAP replays and source-bound official AQ labels. QA2 reports confirm
@@ -145,7 +147,7 @@ mixed-list insufficient information and request-level Solar exemption.
 The initial evidence review changed no parser or scientific method. Its dated
 verification is retained in the review record.
 
-## Archive source-bound array adapter (2026-10-02, working tree)
+## Archive source-bound array adapter (PR #115, 2026-10-02)
 
 The optional [adapter](archive_array_evidence.md) now reads captured official AQ
 source labels, requiring exact Member/source identity and capture integrity.
@@ -163,7 +165,7 @@ The full suite includes the existing offline acceptance and UI export checks.
 Skipped live/snapshot tests are not passes. Original captured evidence bytes and
 historical acceptance labels remain unchanged.
 
-## Archive TP D=12 position follow-up (2026-10-02)
+## Archive TP D=12 position follow-up (PR #117, 2026-10-02)
 
 The supervisor-confirmed TP position decision is implemented narrowly in the
 source-bound Archive path. A bound `TP` component retains `TOTAL_POWER` identity
