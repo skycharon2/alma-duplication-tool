@@ -134,9 +134,9 @@ checks in [tests](tests/). [Notebooks](notebooks/) retain dated exploration
 evidence; their outputs do not establish current production capabilities.
 The [candidate-search service](docs/candidate_search.md) connects existing request,
 comparison and search/spatial objects; per-context rule evaluation is documented
-in [rules](docs/rules.md). The [next-delivery checklist](docs/README.md#next-delivery)
-tracks the completed dual-source engineering acceptance, the externally blocked
-real-proposal review gate and the remaining interface work.
+in [rules](docs/rules.md). The [delivery status and remaining work](docs/README.md#delivery-status-and-remaining-work)
+tracks the completed engineering increments, the externally blocked
+real-proposal review gate and the remaining lifecycle/broader-mode work.
 Archive continuum and line branch aggregation and input/CLI closure are implemented;
 search-wide absence conclusions are intentionally not provided. Existing CASE
 retrieval evidence remains retrieval evidence:

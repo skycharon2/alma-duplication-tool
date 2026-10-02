@@ -1,10 +1,11 @@
 # Current implementation status
 
-Pinned reviewed merge baseline: `d96274a4580792157153a1ce454ac7743ce6435f` (PR #117).
-Archive source-bound array evidence, mixed-beam evaluation and the TP D=12
-POS-SINGLE follow-up are included in that baseline. Subsequent committed browser
-increments are described below without changing the historical meaning of the
-pinned merge baseline.
+Current merged implementation baseline: `610118cf2b216fcd56c00f484e325dbba5ed33cb` (PR #119).
+This baseline includes the PR #117 Archive source-bound array evidence,
+mixed-beam evaluation and TP D=12 POS-SINGLE follow-up, plus the explicit
+browser live-source configuration/execution delivered in PR #119. PR #119 adds
+no new scientific method or reviewed real-proposal scope; PR #117 retains its
+historical scientific-method provenance.
 This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
