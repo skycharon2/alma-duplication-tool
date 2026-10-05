@@ -1,11 +1,15 @@
 # Current implementation status
 
-Current merged implementation baseline: `610118cf2b216fcd56c00f484e325dbba5ed33cb` (PR #119).
+Current merged implementation baseline: `79532aa95432818d6a47f374d1031d9d6c3dc7c8` (PR #123).
+PR #123 separates CAPTURED and LIVE catalog provenance while preserving captured
+metadata and exact source binding. It introduces no runtime AQ acquisition.
 This baseline includes the PR #117 Archive source-bound array evidence,
 mixed-beam evaluation and TP D=12 POS-SINGLE follow-up, plus the explicit
 browser live-source configuration/execution delivered in PR #119. PR #119 adds
 no new scientific method or reviewed real-proposal scope; PR #117 retains its
 historical scientific-method provenance.
+The independent LIVE-AQ-2 client described below is a subsequent working-tree
+increment, outside this committed baseline.
 This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
@@ -189,3 +193,18 @@ original meaning.
 
 Broader TP CONTINUUM/LINE applicability is unchanged in this increment and
 remains INDETERMINATE rather than inheriting main-array 12-m semantics.
+
+## Independent live AQ client (2026-10-04, working tree)
+
+[LIVE-AQ-2](archive_aq_client.md) implements explicit Member acquisition,
+complete-response validation, LIVE catalogs and per-query provenance, including
+zero-hit queries. Failed acquisition returns no partial catalog. Offline tests
+cover HTTP failures, discovery restrictions and source preservation. Automatic
+assessment/CLI/browser wiring is not implemented; scientific methods and the
+existing captured evidence loader remain unchanged.
+
+Local verification on 2026-10-04: new fake-HTTP client tests `57 passed`;
+full suite `1684 passed, 12 skipped`; Ruff F, `git diff --check` and affected
+document relative paths passed. The client tests include unchanged official
+response bytes replayed through fake HTTP. No live AQ request was made for this
+verification; skipped tests are not passes.

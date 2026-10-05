@@ -1,5 +1,12 @@
 """Public Archive client interfaces."""
 
+from .archive_aq_client import (
+    ArchiveAqClient,
+    ArchiveAqError,
+    ArchiveAqFetchResult,
+    ArchiveAqMemberQuery,
+)
+
 from .archive_adapter import (
     ADAPTER_VERSION,
     ArchivePipelineBatch,
@@ -91,6 +98,10 @@ from .queue_csv_contract import (
 )
 
 __all__ = [
+    "ArchiveAqClient",
+    "ArchiveAqError",
+    "ArchiveAqFetchResult",
+    "ArchiveAqMemberQuery",
     "ARCHIVE_CORE_COLUMNS",
     "ARCHIVE_OPTIONAL_COLUMNS",
     "ARCHIVE_PROJECTION_VERSION",
