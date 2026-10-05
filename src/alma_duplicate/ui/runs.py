@@ -1,4 +1,4 @@
-"""Local offline execution and bounded, process-local report retention."""
+"""Explicit browser source execution and bounded, process-local report retention."""
 
 from collections import OrderedDict
 from dataclasses import dataclass
@@ -20,6 +20,7 @@ class BrowserAssessment:
     queue_csv: str | None = None
     archive_array_evidence: str | None = None
     live_archive: bool = False
+    live_aq: bool = False
 
     def __post_init__(self):
         if type(self.live_archive) is not bool:
@@ -28,6 +29,12 @@ class BrowserAssessment:
             raise ValueError(
                 "Live Archive and Archive replay are mutually exclusive"
             )
+        if type(self.live_aq) is not bool:
+            raise ValueError("LIVE_AQ must be boolean")
+        if self.live_aq and not self.live_archive:
+            raise ValueError("Live AQ requires live Archive TAP")
+        if self.live_aq and self.archive_array_evidence:
+            raise ValueError("Live AQ and captured AQ evidence are mutually exclusive")
 
     @property
     def archive_kind(self):
@@ -81,6 +88,11 @@ class BrowserAssessment:
             else None
         )
 
+        def fetch_archive_arrays(members):
+            # The shared entry calls this only after TAP retained linked Members.
+            from alma_duplicate.clients.archive_aq_client import ArchiveAqClient
+            return ArchiveAqClient().fetch_members(members)
+
         return assess_observation(
             document["request"],
             document["search_options"],
@@ -93,6 +105,10 @@ class BrowserAssessment:
                 archive_kind=archive_kind,
                 archive_provider=archive_provider if archive_kind else None,
                 queue_loader=loader,
+                archive_array_fetcher=(
+                    fetch_archive_arrays
+                    if self.live_aq and archive_kind == "LIVE" else None
+                ),
             ),
             # A browser form has no original input-file bytes to hash.
         )

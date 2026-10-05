@@ -11,12 +11,12 @@ report version or default Queue method changes in this extraction.
 - Application: validation and execution order; structured status and report.
 - CLI: strict JSON file decoding, SHA-256 of the original bytes, argument parsing,
   path protection, client/provider construction, report writing and exit codes.
-- Future UI: form/upload decoding, explicitly selecting formal Queue methods,
+- UI: form/upload decoding, explicitly selecting formal Queue methods,
   displaying effective configuration and the same report, download handling.
 
-The browser UI is not included in this increment. Direct application calls and
-CLI calls are compared using offline sources. A rendered UI agreement test
-remains part of the UI delivery, not a completed claim here.
+The original entry extraction preceded browser delivery. The current browser
+calls this entry; its [offline parity gate](ui_offline_assessment.md#offline-uicli-parity-gate)
+is implemented. The optional live AQ wiring below does not add browser controls.
 
 ## Lazy source contract
 
@@ -29,6 +29,11 @@ is `LIVE` or `REPLAY`, and must be supplied together with the provider. Neither
 is supplied when Archive input is unavailable. `queue_loader` is the existing
 lazy Queue loader accepted by candidate search. No default network client is
 created by the application module.
+
+Optional `archive_array_fetcher` runs only after completed TAP search with retained,
+linked Archive Members. It requires LIVE Archive input and cannot coexist with a
+preloaded catalog. The [live AQ assessment contract](live_aq_assessment.md) defines
+skips, acquisition failures, query provenance and no-fallback behavior.
 
 Invalid/non-search-ready requests return validation details and no document.
 Valid SUN returns an exemption before method checks or any source provider call,
@@ -44,7 +49,7 @@ as they did in the CLI; this increment does not redefine source failure semantic
 | REQUEST_NOT_SEARCH_READY | Validation/search readiness failed; no report | Diagnostics, exit 2 |
 | SOLAR_EXEMPTION | Valid SUN; no source access | Exemption report, exit 0 |
 | COMPLETED | Execution finished without unavailable selected sources | Report, exit 0 |
-| SOURCES_UNAVAILABLE | At least one source FAILED, INCOMPLETE or NOT_PROVIDED | Preserve report, exit 3 |
+| SOURCES_UNAVAILABLE | At least one selected source FAILED, INCOMPLETE or NOT_PROVIDED, or enabled live AQ acquisition failed/is incomplete | Preserve report, exit 3 for currently exposed CLI paths; no live AQ CLI switch yet |
 
 Exceptions remain exceptions; CLI maps its existing OSError/UnicodeError/ValueError
 set to exit 2. COMPLETED never means criteria passed or that no duplicate exists.

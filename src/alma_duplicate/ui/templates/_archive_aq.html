@@ -1,0 +1,35 @@
+{% set aq = source.get('array_evidence') %}
+{% if aq %}
+<section aria-label="Archive AQ evidence">
+<h3>Additional AQ evidence</h3>
+<p>Evidence provenance: {% if aq.scope == 'LIVE_OFFICIAL_AQ_SOURCE_LABELS' %}LIVE{% elif aq.scope == 'CAPTURED_OFFICIAL_AQ_SOURCE_LABELS' %}CAPTURED{% else %}{{ aq.scope | default('Not recorded') }}{% endif %}.</p>
+{% set acquisition = aq.get('acquisition') %}
+{% if acquisition %}
+<p><strong>AQ acquisition: {{ acquisition.status }}</strong></p>
+{% if acquisition.status == 'COMPLETED' %}
+<p>AQ retrieval completed. Returned source records: {{ aq.record_count }}. Exact source binding determines whether these records provide evidence for each candidate.</p>
+{% if aq.record_count == 0 %}<p>No source records were returned. This is not evidence of no duplication.</p>{% endif %}
+{% elif acquisition.status == 'FAILED' %}
+<p class="notice">Live AQ acquisition failed. Available TAP candidates and Queue results are retained; source-bound Archive array evidence is unresolved. No fallback was used.</p>
+{% elif acquisition.status == 'INCOMPLETE' %}
+<p class="notice">Live AQ acquisition was incomplete. No partial catalog was used. Available candidates remain in this report with unresolved Archive array evidence. No fallback was used.</p>
+{% elif acquisition.status == 'SKIPPED' %}
+<p>No live AQ lookup was performed for this run.</p>
+{% endif %}
+{% if acquisition.reason %}<p>Reason: <code>{{ acquisition.reason }}</code>.</p>{% endif %}
+{% if acquisition.error %}<p>Error code: <code>{{ acquisition.error.code }}</code>.{% if acquisition.error.member_ous_uid %} Failed Member: {{ acquisition.error.member_ous_uid }}.{% endif %}</p>{% endif %}
+<details><summary>AQ Member queries and provenance</summary>
+<p>Planned Members: {{ acquisition.requested_members | length }}. The planned list does not establish that every Member was contacted.</p>
+{% if acquisition.requested_members %}<ul>{% for member in acquisition.requested_members %}<li>{{ member }}</li>{% endfor %}</ul>{% endif %}
+{% if acquisition.started_at %}<p>Acquisition started: {{ acquisition.started_at }}. Finished: {{ acquisition.finished_at }}.</p>{% endif %}
+{% if acquisition.queries %}
+<div class="report-table-scroll" role="region" aria-label="Completed AQ query records" tabindex="0">
+<table class="comparison-table"><caption>Completed AQ query records, including zero-hit results</caption>
+<thead><tr><th scope="col">Member OUS</th><th scope="col">Total hits</th><th scope="col">Retrieved at</th><th scope="col">Endpoint and response SHA-256</th></tr></thead>
+<tbody>{% for query in acquisition.queries %}<tr><th scope="row">{{ query.member_ous_uid }}</th><td>{{ query.total_hits }}</td><td>{{ query.retrieved_at }}</td><td>{{ query.url }}<br><code>{{ query.response_sha256 }}</code></td></tr>{% endfor %}</tbody></table></div>
+{% else %}<p>No completed query records are available in this acquisition result. A failed batch does not retain partial query results.</p>{% endif %}
+{{ evidence(acquisition) }}</details>
+{% else %}<p>AQ acquisition status is not recorded in this report. The provenance label alone does not establish a live lookup during this run.</p>{% endif %}
+<details><summary>Complete AQ evidence metadata</summary>{{ evidence(aq) }}</details>
+</section>
+{% else %}<p>Additional AQ evidence: not recorded in this report. Consult the candidate methods for the array interpretation used.</p>{% endif %}

@@ -34,6 +34,7 @@ def create_app(config=None):
     app.config["REPORT_DIRECTORY"] = os.environ.get("ALMA_UI_REPORT_DIR")
     app.config["OFFLINE_ARCHIVE_REPLAY"] = os.environ.get("ALMA_UI_ARCHIVE_REPLAY")
     app.config["LIVE_ARCHIVE"] = _env_flag("ALMA_UI_LIVE_ARCHIVE")
+    app.config["LIVE_AQ"] = _env_flag("ALMA_UI_LIVE_ARCHIVE_AQ")
     app.config["OFFLINE_QUEUE_CSV"] = os.environ.get("ALMA_UI_QUEUE_CSV")
     app.config["ARCHIVE_ARRAY_EVIDENCE"] = os.environ.get("ALMA_UI_ARCHIVE_ARRAY_EVIDENCE")
     app.config["MAX_RETAINED_RUNS"] = 20
@@ -47,6 +48,7 @@ def create_app(config=None):
         queue_csv=app.config["OFFLINE_QUEUE_CSV"],
         archive_array_evidence=app.config["ARCHIVE_ARRAY_EVIDENCE"],
         live_archive=app.config["LIVE_ARCHIVE"],
+        live_aq=app.config["LIVE_AQ"],
     )
     runs = RunStore(
         app.config["MAX_RETAINED_RUNS"],

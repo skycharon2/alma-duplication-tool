@@ -36,6 +36,7 @@
 {% set replay = document.sources.get('ARCHIVE', {}).get('replay') %}{% if replay %}<p>Archive evidence: {{ replay.fixture_kind }} · Capture: {{ replay.capture_started_at }} to {{ replay.capture_finished_at }}.</p>{% endif %}
 {% if run.status == 'SOURCES_UNAVAILABLE' %}<p class="notice">One or more selected sources were unavailable or incomplete. Read their individual states below; the available results are retained.</p>{% endif %}
 {% endif %}
+{% if not run and document.assessment_status is defined %}<p>Execution status: {{ document.assessment_status }}</p>{% endif %}
 <p>{{ document.report_kind }} · report {{ document.report_version }} · generated {{ document.generated_at }}</p>
 <p class="report-downloads"><a href="{{ url_for(download_endpoint, report_id=report_id, kind='report') }}">Download complete original JSON</a> · <a href="{{ url_for(download_endpoint, report_id=report_id, kind='inspection') }}">Download inspection v3</a></p>
 <nav class="report-nav" aria-label="Report sections"><a href="#sources">Sources</a><a href="#candidates">Candidate results</a><a href="#comparisons">Parameter comparisons</a><a href="#evidence">Evidence gaps</a></nav>
@@ -44,7 +45,9 @@
 <p>Branch results apply only to their context. CRITERIA_MET means those branch criteria are met; CRITERIA_NOT_MET means they are not met in that context. INDETERMINATE means evidence or support is insufficient.</p>{% endif %}
 <p>Whole-search assessment: {{ document.assessment }}. No search-wide absence of duplication is inferred. A missing source is different from a completed empty source.</p></section>
 <section id="sources"><h2>Sources</h2><div class="source-states">{% for name, source in document.sources.items() %}<div><strong>{{ name }} — {{ source.status }}</strong>
-{% for reason in source.reasons %}<p>{{ reason }}</p>{% endfor %}<details><summary>Source metadata and search scope</summary>{{ evidence(source) }}</details></div>{% endfor %}</div></section>
+{% for reason in source.reasons %}<p>{{ reason }}</p>{% endfor %}
+{% if name == 'ARCHIVE' %}<p>Archive TAP status: {{ source.status }}</p>{% include '_archive_aq.html' %}{% endif %}
+<details><summary>Source metadata and search scope</summary>{{ evidence(source) }}</details></div>{% endfor %}</div></section>
 <section id="candidates"><h2>Candidate results</h2>
 <p>{{ document.context_evaluations | length }} contexts in this report. Browser page {{ page }} of {{ pages }} (20 per page). Backend display limits do not remove evaluated contexts from these pages or downloads.</p>
 {% if contexts %}<div class="report-table-scroll" role="region" aria-label="Candidate results" tabindex="0"><table class="candidate-table"><caption>Independent branch results for each coherent candidate context</caption>

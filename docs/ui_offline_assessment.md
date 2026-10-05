@@ -4,8 +4,9 @@ The browser can execute its current form against explicitly configured sources:
 form → shared validator → `assess_observation()` → independent report → exports.
 Archive access is `NONE`, replay or live TAP; Queue remains an optional local CSV.
 Scientific formulas, method versions, source association and aggregation remain
-owned by the existing backend. Live TAP uses the existing Archive client and does
-not add live AQ acquisition or new scientific scope.
+owned by the existing backend. Live TAP alone does not enable live AQ. An
+additional explicit operator flag enables the existing post-TAP AQ backend;
+no scientific scope is added.
 
 ## Run locally
 
@@ -48,6 +49,62 @@ one original candidate with both complete diameter paths when the backend
 returns mixed evidence, displays the binding provenance and exports the original
 report/inspection. TP's physical 12-m aperture does not remove its unsupported
 scientific scope. See the [array adapter](archive_array_evidence.md).
+
+### Explicit live AQ configuration
+
+For live TAP plus live AQ, start from a shell with no replay or captured AQ path:
+
+```bash
+unset ALMA_UI_ARCHIVE_REPLAY ALMA_UI_ARCHIVE_ARRAY_EVIDENCE
+export ALMA_UI_LIVE_ARCHIVE=1
+export ALMA_UI_LIVE_ARCHIVE_AQ=1
+python -m flask --app alma_duplicate.ui.app:create_app run --host 127.0.0.1 --port 5001
+```
+
+`ALMA_UI_LIVE_ARCHIVE_AQ` maps to Flask configuration `LIVE_AQ`. It uses the same
+explicit boolean parsing as `LIVE_ARCHIVE`; direct application configuration
+requires actual booleans. These are operator settings, not researcher form fields.
+
+| Archive mode | Additional AQ evidence | Allowed |
+| --- | --- | --- |
+| Live TAP | None, captured manifest, or live AQ (one route only) | Yes |
+| Replay TAP | None or captured manifest | Yes |
+| Replay TAP | Live AQ | No |
+| No live TAP | Live AQ | No |
+| Live TAP | Captured manifest and live AQ together | No |
+
+Conflicting settings fail during application construction without source access.
+An absent/false AQ flag preserves the previous TAP-only or captured-evidence
+behavior. The form displays the configured route without exposing local paths.
+
+The browser passes a lazy callback to the shared entry; it does not extract
+Members or interpret arrays. The AQ client is constructed inside that callback
+only after successful TAP search has retained linked Members. Startup, GET,
+validation, request export, invalid/unsupported requests, Solar, Queue-only runs,
+failed/incomplete TAP, empty retained results and no linked Members never create
+the AQ client. One batch call may make multiple HTTP requests internally.
+
+Report Sources show TAP status and AQ provenance/acquisition separately.
+COMPLETED with zero hits, FAILED, INCOMPLETE and SKIPPED have distinct messages.
+Skipped runs display the backend reason. AQ failure still produces an available
+report with retained candidates, unresolved Archive array evidence and independent
+Queue results. It is not the exception path that creates no report. Planned
+Members are not mislabeled as completed queries; failed batches retain no partial
+query results. No captured, TAP-label or replay fallback is added.
+
+Both saved reports and current runs render only their own provenance, even after
+operator configuration changes. Older reports without acquisition fields remain
+readable without claiming a live lookup. Query details include zero-hit records,
+timestamps, endpoint and response hash. External text is escaped. Report,
+inspection and request downloads retain original bytes; viewing, pagination and
+downloads never re-run acquisition. Each execution creates a separate catalog and
+run. No background worker, automatic retry or stage-progress estimate is added.
+
+`tests/ui/test_live_aq.py` verifies the matrix, lazy lifecycle, failure messages,
+stored-report compatibility, escaped values, run isolation and exact exports.
+Browser/shared-entry parity uses a fixed AQ clock and the existing normalization
+of execution timestamps. Real network access is forbidden in these tests. This
+does not establish live service availability or a reviewed real-proposal result.
 
 ### Guide B form check
 

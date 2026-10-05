@@ -48,3 +48,13 @@ Context branch counts still count each original observation once. Historical
 reports without this optional extension produce their original inspection output.
 Versions 1/2 also traverse variants if supplied, retaining their older within-pair
 location convention; they remain unchanged for historical flat reports.
+
+## Live AQ acquisition evidence
+
+For the [optional shared-entry AQ path](live_aq_assessment.md), inspection v3 adds
+one `ARCHIVE_AQ_FAILED` or `ARCHIVE_AQ_INCOMPLETE` source-level occurrence when
+acquisition fails or is incomplete, even when TAP status remains COMPLETED.
+It uses SOURCE_OR_SEARCH_INCOMPLETE and the location
+`sources/ARCHIVE/array_evidence/acquisition`. Successful empty queries and skipped
+acquisition do not produce a false acquisition failure. Existing candidate gaps
+are still reported. Historical reports and explicit v1/v2 behavior are unchanged.

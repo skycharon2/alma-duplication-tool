@@ -166,6 +166,15 @@ def inspect_report(document, *, inspection_version="3"):
 
     if kind == "CANDIDATE_EVALUATION":
         for name, source in document["sources"].items():
+            if inspection_version == "3" and name == "ARCHIVE":
+                acquisition = source.get("array_evidence", {}).get("acquisition", {})
+                if acquisition.get("status") in {"FAILED", "INCOMPLETE"}:
+                    add(
+                        "sources/ARCHIVE/array_evidence/acquisition",
+                        "ARCHIVE_AQ_" + acquisition["status"],
+                        source=name,
+                        category="SOURCE_OR_SEARCH_INCOMPLETE",
+                    )
             if source["status"] not in {"COMPLETED", "NOT_SELECTED"}:
                 add(
                     f"sources/{name}",
