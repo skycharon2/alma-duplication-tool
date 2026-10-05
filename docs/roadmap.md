@@ -155,8 +155,11 @@ added five real replay examples before live browser integration. The optional
 AQ labels, confirming the two 7-m science targets and evaluating complete D7/D12
 alternatives for explicitly mixed labels. TP retains its 12-m physical aperture;
 POS-SINGLE is evaluated with D=12 m, while broader CONTINUUM/LINE scientific
-applicability remains unresolved. Automatic live AQ acquisition, capture
-freshness and component-specific product evidence remain separate work. Live
+applicability remains unresolved. The independent
+[LIVE-AQ-2 HTTP client](archive_aq_client.md) is implemented in the working tree.
+Next: LIVE-AQ-3 connects retained TAP Members to acquisition and report provenance;
+LIVE-AQ-4 adds explicit browser selection. Capture freshness and
+component-specific product evidence remain separate work. Live
 execution must continue to show unresolved candidates explicitly.
 
 1. Report display and export — implemented as a [read-only viewer](ui_report_browser.md): consume existing acceptance reports; show each
