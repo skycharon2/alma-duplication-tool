@@ -19,6 +19,7 @@ from alma_duplicate.archive_array_evidence import (
     ArchiveArrayCatalog,
     archive_array_catalog_report_metadata,
 )
+from alma_duplicate.archive_array_acquisition import ArchiveArrayFetcher, acquire_archive_arrays
 
 
 class AssessmentStatus(StrEnum):
@@ -50,6 +51,7 @@ class AssessmentSources:
     archive_kind: str | None = None
     archive_provider: Callable[[], ArchiveInput] | None = None
     queue_loader: Callable[[], QueueCsvParseResult] | None = None
+    archive_array_fetcher: ArchiveArrayFetcher | None = None
 
 
 @dataclass(frozen=True)
@@ -98,6 +100,11 @@ def assess_observation(request: dict, search_options: dict, *,
         raise ValueError("--beam-decision-ref must not be blank")
     if sources.archive_kind == "REPLAY" and "ARCHIVE" not in selected:
         raise ValueError("--archive-replay requires ARCHIVE selection")
+    if sources.archive_array_fetcher is not None:
+        if sources.archive_kind != "LIVE" or "ARCHIVE" not in selected:
+            raise ValueError("Live AQ acquisition requires selected LIVE Archive input")
+        if not callable(sources.archive_array_fetcher):
+            raise ValueError("Archive array fetcher must be callable")
 
     validate_search_plan_configuration(
         validated,
@@ -107,26 +114,37 @@ def assess_observation(request: dict, search_options: dict, *,
     )
 
     archive = sources.archive_provider() if sources.archive_provider is not None else None
+    if (sources.archive_array_fetcher is not None and archive is not None
+            and archive.array_catalog is not None):
+        raise ValueError("An array catalog and live AQ fetcher are mutually exclusive")
     search = search_candidates(
         validated, archive_client=archive.client if archive else None,
         queue_loader=sources.queue_loader, beam_decision_ref=options.beam_decision_ref,
         aq_equivalent_filters=options.aq_equivalent_filters,
         queue_candidate_beam=options.queue_candidate_beam,
     )
+    acquisition = (acquire_archive_arrays(search.archive, sources.archive_array_fetcher)
+                   if sources.archive_array_fetcher is not None else None)
+    catalog = acquisition.catalog if acquisition is not None else archive.array_catalog if archive else None
     report = evaluate_candidate_search(
         search, queue_common=options.queue_common,
         queue_continuum=options.queue_continuum, queue_line=options.queue_line,
-        archive_arrays=archive.array_catalog if archive else None,
+        archive_arrays=catalog,
     )
     document = report_document(
         report, input_sha256=input_sha256,
         archive_replay_metadata=archive.replay_metadata if archive else None,
     )
-    if archive is not None and archive.array_catalog is not None:
+    if acquisition is not None:
+        document["sources"]["ARCHIVE"]["array_evidence"] = acquisition.metadata
+    elif catalog is not None:
         document["sources"]["ARCHIVE"]["array_evidence"] = (
-            archive_array_catalog_report_metadata(archive.array_catalog)
+            archive_array_catalog_report_metadata(catalog)
         )
     unavailable = any(source.status in {"FAILED", "INCOMPLETE", "NOT_PROVIDED"}
                       for source in (search.archive, search.queue))
+    unavailable = unavailable or (acquisition is not None and acquisition.unavailable)
     status = AssessmentStatus.SOURCES_UNAVAILABLE if unavailable else AssessmentStatus.COMPLETED
+    if acquisition is not None:
+        document["assessment_status"] = status.value
     return AssessmentResult(status, validated, document)

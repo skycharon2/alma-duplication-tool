@@ -156,9 +156,10 @@ AQ labels, confirming the two 7-m science targets and evaluating complete D7/D12
 alternatives for explicitly mixed labels. TP retains its 12-m physical aperture;
 POS-SINGLE is evaluated with D=12 m, while broader CONTINUUM/LINE scientific
 applicability remains unresolved. The independent
-[LIVE-AQ-2 HTTP client](archive_aq_client.md) is implemented in the working tree.
-Next: LIVE-AQ-3 connects retained TAP Members to acquisition and report provenance;
-LIVE-AQ-4 adds explicit browser selection. Capture freshness and
+[LIVE-AQ-2 HTTP client](archive_aq_client.md) is delivered in PR #124.
+[LIVE-AQ-3](live_aq_assessment.md) now connects retained TAP Members to acquisition,
+structured failure handling and report/inspection provenance in the working tree.
+Next: LIVE-AQ-4 adds explicit browser selection. Capture freshness and
 component-specific product evidence remain separate work. Live
 execution must continue to show unresolved candidates explicitly.
 
