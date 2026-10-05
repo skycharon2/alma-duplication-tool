@@ -5,6 +5,7 @@ import os
 from flask import Flask, Response, abort, redirect, render_template, request, url_for
 
 from alma_duplicate.ui.reports import load_reports
+from alma_duplicate.auto_retrieval import automatic_scope
 from alma_duplicate.ui.report_view import (
     criterion_view, pair_binding, context_identity, report_summary, display_number, STATUS_LABELS,
 )
@@ -206,7 +207,7 @@ def create_app(config=None):
                                pending_removal=pending_removal, edit_notice=edit_notice, added_row=added_row,
                                purpose_updated=purpose_updated,
                                scope_updated=scope_updated, assessment_supported=assessment_supported(values),
-                               configured=configured, execution_error=execution_error)
+                               configured=configured, execution_error=execution_error, auto_scope=automatic_scope())
 
     @app.get("/healthz")
     def healthz():

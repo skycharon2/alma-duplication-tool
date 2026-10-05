@@ -133,7 +133,7 @@ def test_type_specific_location_guidance(client):
     data = form()
     data["action"] = "scope"
     html = client.post("/proposed", data=data).get_data(as_text=True)
-    assert "search radius below controls candidate retrieval" in html
+    assert "search scope controls candidate retrieval" in html
     data["geometry"] = "MOSAIC"
     html = client.post("/proposed", data=data).get_data(as_text=True)
     assert "more than 50% of the proposed pointings" in html

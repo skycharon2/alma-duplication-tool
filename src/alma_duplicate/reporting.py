@@ -260,6 +260,7 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
         "request": _request_document(validation),
         "plan": {
             "version": search.plan.version,
+            **({"retrieval_policy": search.plan.retrieval_policy} if search.plan.retrieval_policy is not None else {}),
             "sources": search.plan.sources,
             "result_limit": search.plan.result_limit,
             "retrieval_radius_deg": search.plan.retrieval_radius_deg,

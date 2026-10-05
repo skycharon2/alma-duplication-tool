@@ -259,3 +259,26 @@ requirements and the other three SPWs did not. Exact source-bound 7-m evidence,
 per-pair criteria, request/inspection exports and repeated report bytes were
 verified. Neither live run establishes reviewed real-proposal acceptance or
 exhaustive search coverage. No production code changed during these checks.
+
+## Report presentation and AUTO retrieval (2026-10-05)
+
+The report viewer now leads with independent branch counts, target/source/SPW
+identities and readable comparison values. Technical evidence is expandable;
+display rounding does not change stored operands or decisions. LINE RMS displays
+the backend's comparable sensitivity where available. Legacy reports remain
+readable and their downloads preserve original bytes.
+
+[Automatic retrieval](automatic_retrieval.md) is the browser default. Validator
+8 and plan 4 resolve the versioned 7-m/35-GHz Archive centre envelope; Queue uses
+all supplied rows before optional explicit scalar filters. Old explicit-radius
+requests retain their selection semantics. The policy and limits are stored in
+report v4. Overflow/incomplete source handling remains explicit, with no reduced
+radius retry. Scientific position methods and inspection v3 are unchanged.
+
+Verification: full suite `1773 passed, 12 skipped`; offline acceptance `15/15 PASS`;
+Ruff F and diff whitespace checks passed. Browser interaction confirmed AUTO
+validation without radius entry, separate missing-science diagnostics and saved
+LINE report rendering. Desktop and 390-pixel report layouts were inspected; the
+narrow page has no document-wide horizontal overflow (tables scroll locally).
+AUTO acquisition tests use fake TAP/AQ; no live AUTO completeness or independent
+real-proposal scientific acceptance is claimed.

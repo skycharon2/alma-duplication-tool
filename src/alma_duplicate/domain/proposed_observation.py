@@ -137,6 +137,7 @@ class SearchOptions:
     result_limit: int | None
     predicates: tuple[CandidatePredicate, ...]
     raw_input: Mapping[str, object]
+    radius_mode: str = "EXPLICIT"
 
 
 @dataclass(frozen=True, slots=True)
@@ -147,7 +148,7 @@ class RequestValidationResult:
     search_options: SearchOptions | None
     issues: tuple[RequestIssue, ...]
     search_readiness: SearchReadiness
-    validation_version: str = "7"
+    validation_version: str = "8"
 
     @property
     def errors(self) -> tuple[RequestIssue, ...]:

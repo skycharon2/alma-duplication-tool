@@ -3,8 +3,9 @@
 ## Formula spatial strategy
 
 An explicit `beam_decision_ref` enables [coordinate retrieval and formula beam
-selection](primary_beam_search.md). Without it, the existing region strategy
-remains compatible. Region-specific descriptions below apply to that legacy
+selection](primary_beam_search.md). For EXPLICIT requests without it, the existing region strategy
+remains compatible. AUTO instead uses the [automatic retrieval contract](automatic_retrieval.md):
+Archive centre scope and no Queue radius prefilter. Region-specific descriptions below apply to that legacy
 strategy; formula search uses centers and separate local beam checks.
 
 

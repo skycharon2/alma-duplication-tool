@@ -73,7 +73,7 @@
 {% if target_kind != 'FIXED' %}<details><summary>Retained coordinates</summary>{% endif %}
 <div class="form-pair"><div class="coordinate-control"><div>{{ input('ra', 'Right ascension') }}</div><div>{{ select('ra_format', 'RA format', ['DEG','HMS'], 'DEG') }}</div></div><div class="coordinate-control"><div>{{ input('dec', 'Declination') }}</div><div>{{ select('dec_format', 'Dec format', ['DEG','DMS'], 'DEG') }}</div></div></div>
 <p class="field-note">ICRS coordinates. HMS / DMS accept colon-separated values. Coordinates do not substitute for moving-object name matching or a mosaic pointing list.</p>
-{% if target_kind != 'FIXED' %}</details>{% elif geometry == 'SINGLE_POINTING' %}<p class="field-note">For single-field interferometry, Appendix A compares this position with the other observation's half-power beam. The search radius below controls candidate retrieval, not this duplication boundary.</p>{% endif %}
+{% if target_kind != 'FIXED' %}</details>{% elif geometry == 'SINGLE_POINTING' %}<p class="field-note">For single-field interferometry, Appendix A compares this position with the other observation's half-power beam. The search scope controls candidate retrieval; the scientific position condition is evaluated separately.</p>{% endif %}
 <h3>Angular resolution</h3>
 {{ quantity('angular', 'Planned angular resolution', ['arcsec','mas'], 'arcsec') }}
 <p class="field-note">Appendix A requires the proposed angular resolution to differ from the other observation by a factor of ≤ 2.</p>
@@ -144,14 +144,25 @@
 <p class="field-note">Confirm only if the list is complete, including windows beyond the lines of interest. An incomplete list cannot establish an exhaustive negative LINE conclusion. This is separate from the continuum setup declaration.</p></details>
 </section>
 <section id="search"><h2>Data sources and search</h2><p>Selecting a source does not access it until you choose Run assessment.</p>
-<div class="form-pair">{{ quantity('radius', 'Search radius', ['arcsec','arcmin','deg'], 'arcsec') }}
+{% set radius_mode = values.get('radius_mode', 'EXPLICIT' if 'radius' in values else 'AUTO') %}
+{% if radius_mode == 'AUTO' %}
+<input type="hidden" name="radius_mode" value="AUTO">
+<p><strong>Automatic search scope.</strong> No search radius is required.</p>
+<details><summary>How the search area is selected</summary>
+<p>Archive uses a {{ '%.2f'|format(auto_scope.archive_radius_deg * 3600) }} arcsec centre radius for the supported fixed, single-point scope, based on 7 m dishes at 35 GHz. Queue uses all rows in the supplied file. Position is then checked using each candidate's evidence.</p>
+<p>Archive records with missing centres, lower or unknown frequencies outside this area, and extended mosaics are not covered by this bound. Results do not establish a search-wide absence of duplication. Retrieval limits never silently reduce this radius.</p>
+<p>Policy: {{ auto_scope.method_version }}. Explicit-radius requests remain supported by the request API.</p></details>
+{{ messages('radius') }}{{ messages('search') }}
+{% if values.get('radius', '') %}<p class="notice">This input contains an explicit radius that conflicts with automatic scope. Clear the value below to continue with AUTO.</p>{{ quantity('radius', 'Conflicting explicit radius', ['arcsec','arcmin','deg'], 'arcsec') }}{% endif %}
+{% else %}<input type="hidden" name="radius_mode" value="{{ radius_mode }}"><p>Explicit search scope retained from this request. Start a new observation to use automatic scope.</p>{{ quantity('radius', 'Search radius', ['arcsec','arcmin','deg'], 'arcsec') }}{% endif %}
+<div class="form-pair">
 <fieldset id="sources" class="choice-group"><legend>Sources</legend><div class="inline-choices">{% for source in ['ARCHIVE','QUEUE'] %}<label><input type="checkbox" name="sources" value="{{ source }}" {% if source in values.get('sources', []) %}checked{% endif %}>{{ source }}</label>{% endfor %}</div>{{ messages('sources') }}</fieldset></div>
 <div class="display-limit">{{ input('result_limit', 'Candidate display limit (optional positive integer)') }}</div><p class="field-note">Limits displayed candidates only; it does not limit retrieval or evaluation.</p>
 </section>
 {% if configured.enabled %}<section id="assessment-sources"><h2>Assessment sources</h2>
 <p>Archive TAP: {% if configured.archive_kind == 'LIVE' %}live{% elif configured.archive_kind == 'REPLAY' %}replay{% else %}not provided{% endif %}. Queue CSV: {{ 'configured' if configured.queue_csv else 'not provided' }}.</p>
 <p>Additional AQ evidence: {% if configured.live_aq %}live AQ enabled. After TAP retrieval, linked Members from retained candidates are queried for source-bound array evidence. Acquisition failures retain available candidates with unresolved array evidence; no fallback is used.{% elif configured.archive_array_evidence %}captured AQ manifest configured. A live TAP run does not perform a live AQ lookup; configured AQ evidence remains captured evidence.{% else %}not configured. A live TAP run does not perform a live AQ lookup; existing TAP-only array interpretation remains available.{% endif %}</p>
-{% if configured.archive_kind == 'REPLAY' %}<p>Archive replay requires the recorded coordinates and search radius. A different query can fail; it will not fall back to a live search. These reference files do not establish current Archive or Queue coverage.</p>{% elif configured.archive_kind == 'LIVE' %}<p>The live Archive client is created only for a search-ready Run assessment that selected ARCHIVE. Archive query failures are not replaced by replay results.</p>{% endif %}
+{% if configured.archive_kind == 'REPLAY' %}<p>Archive replay requires the exact recorded query, including search mode and radius. Older explicit-radius recordings cannot be replayed by an AUTO request. A different query can fail; it will not fall back to a live search. These reference files do not establish current Archive or Queue coverage.</p>{% elif configured.archive_kind == 'LIVE' %}<p>The live Archive client is created only for a search-ready Run assessment that selected ARCHIVE. Archive query failures are not replaced by replay results.</p>{% endif %}
 <p>When Queue is selected, common criteria and the formal methods for each selected purpose are explicitly enabled. The report shows the effective configuration.</p></section>{% endif %}
 {% if target_kind == 'SUN' %}</details>{% endif %}
 <div class="input-actions" id="form-actions">{% if configured.enabled and target_kind != 'SUN' %}<button class="button primary" type="submit" name="action" value="assess" {% if not assessment_supported %}disabled aria-describedby="scope-support"{% endif %}>Run assessment</button>{% endif %}<button class="button{% if not configured.enabled or not assessment_supported %} primary{% endif %}" type="submit" name="action" value="validate">Validate input</button> <button class="button" type="submit" name="action" value="download">Validate and download request JSON</button></div>

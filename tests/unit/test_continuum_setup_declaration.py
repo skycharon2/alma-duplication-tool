@@ -74,7 +74,7 @@ def test_validator_preserves_statement_and_other_missing_evidence():
     payload["continuum_setup_declaration"] = DECLARATION
     v = validate_proposed_observation(payload)
     assert v.is_valid
-    assert v.validation_version == "7" and v.request.model_version == "3"
+    assert v.validation_version == "8" and v.request.model_version == "3"
     assert v.request.continuum_setup_declaration == DECLARATION
     assert any(i.code == "CONTINUUM_SETUP_USER_DECLARED" and i.category == "EVIDENCE" for i in v.issues)
     assert not any(i.rule_id == "CONT-SETUP" and i.category == "MISSING" for i in v.issues)

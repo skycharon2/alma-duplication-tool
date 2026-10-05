@@ -163,8 +163,10 @@ LIVE-AQ-4 adds explicit operator configuration and report state display in the
 same PR, with offline lifecycle and parity tests. A bounded live TAP+AQ browser
 continuum smoke is [recorded](evidence/live_browser_aq_smoke_2026-10-05.md).
 A [scoped live LINE request](evidence/live_browser_line_aq_smoke_2026-10-05.md)
-also completed. Next, improve report identity/result presentation and define a
-backend-owned automatic retrieval policy before removing manual radius entry.
+also completed. Report summaries, candidate identities and comparison displays are implemented.
+The browser now defaults to the bounded [AUTO retrieval policy](automatic_retrieval.md).
+Next, run a separate live AUTO smoke and review retrieval completeness and
+report usability on representative public targets.
 Independent real-proposal acceptance remains separate. Capture freshness and
 component-specific product evidence remain separate work. Live
 execution must continue to show unresolved candidates explicitly.

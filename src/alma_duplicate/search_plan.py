@@ -6,6 +6,7 @@ from alma_duplicate.clients.archive_queries import (
 )
 from alma_duplicate.domain.proposed_observation import RequestValidationResult
 from alma_duplicate.domain.comparison import ComparisonContext
+from alma_duplicate.auto_retrieval import automatic_scope
 from alma_duplicate.domain.search import (
     PlannedPredicate, PredicateAction as A, QueryPlanBinding, SearchPlan, SourceSearchPlan, ScalarSelection,
 )
@@ -48,6 +49,8 @@ def validate_search_plan_configuration(
         raise ValueError("Search planning requires a valid request with search readiness")
     if type(queue_candidate_beam) is not bool:
         raise TypeError("queue_candidate_beam must be bool")
+    if validation.search_options.radius_mode == 'AUTO' and (beam_decision_ref is not None or queue_candidate_beam):
+        raise ValueError('AUTO retrieval cannot be combined with a legacy beam-selection strategy')
     if queue_candidate_beam and beam_decision_ref is not None:
         raise ValueError(
             "Candidate-beam profile cannot be mixed with the legacy request-beam strategy"
@@ -79,6 +82,7 @@ def build_search_plan(
         raise ValueError("Position, radius and selected sources are required")
     if request.position.frame != "ICRS" or options.radius.unit != "deg":
         raise ValueError("Planning requires canonical ICRS position and degree radius")
+    automatic = options.radius_mode == "AUTO"
     retrieval_radius = options.radius.value
     if beam_decision_ref is not None:
         if not isinstance(beam_decision_ref, str) or not beam_decision_ref.strip():
@@ -92,7 +96,7 @@ def build_search_plan(
     broad_query = ArchiveQuerySpec(
         request.position.ra_deg, request.position.dec_deg, min(180., retrieval_radius),
         science_only=archive_science_only,
-        spatial_strategy="CENTER" if beam_decision_ref is not None else "REGION",
+        spatial_strategy="CENTER" if automatic or beam_decision_ref is not None else "REGION",
     )
     plans = []
     for source in options.sources:
@@ -143,15 +147,22 @@ def build_search_plan(
             spatial = "QUEUE_CANDIDATE_PRIMARY_BEAM"
             limitations = ("QUEUE_PORTAL_FRAME_CONVENTION", "QUEUE_AMBIGUOUS_ARRAYS_RETAINED",
                           "QUEUE_SCOPE_IS_SUPPLIED_FILE_AND_SOURCE_DATE", "NOT_A_FORMAL_POSITION_CRITERION")
+        if automatic:
+            spatial = 'AUTO_ARCHIVE_CENTER' if source == 'ARCHIVE' else 'AUTO_QUEUE_ALL_ROWS'
+            # AUTO has no local spatial selector. Formal POS runs after acquisition.
+            predicates[:1] = ([PlannedPredicate('retrieval_scope', A.PLANNED_SERVER, 's_ra/s_dec')]
+                              if source == 'ARCHIVE' else [])
+            limitations = tuple(automatic_scope()['limitations'])
         plans.append(SourceSearchPlan(
             source, tuple(predicates), spatial, limitations,
             broad_query if source == "ARCHIVE" else None,
         ))
     return SearchPlan(validation, tuple(plans), options.result_limit,
-                      version="3" if queue_candidate_beam else ("2" if beam_decision_ref is not None else "1"),
+                      version="4" if automatic else ("3" if queue_candidate_beam else ("2" if beam_decision_ref is not None else "1")),
                       beam_decision_ref=beam_decision_ref, retrieval_radius_deg=min(180., retrieval_radius),
                       archive_filter_semantics=AQ_EQUIVALENT_FILTERS if aq_equivalent_filters else None,
-                      queue_candidate_beam=queue_candidate_beam)
+                      queue_candidate_beam=queue_candidate_beam,
+                      retrieval_policy=automatic_scope() if automatic else None)
 
 
 def bind_archive_query(plan: SearchPlan, result: ArchiveQueryResult) -> QueryPlanBinding:

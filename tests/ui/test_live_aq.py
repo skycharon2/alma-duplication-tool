@@ -302,3 +302,44 @@ def test_existing_configuration_matrix_is_preserved_without_startup_io(wired, li
     html = client.get("/proposed").get_data(as_text=True)
     assert ("captured AQ manifest configured" in html) is bool(captured)
     assert wired["events"] == []
+
+
+def test_auto_browser_acquisition_exports_and_saved_report(wired, tmp_path):
+    from tests.integration.test_auto_retrieval import auto_payload, bind, validate
+    from alma_duplicate.search_plan import build_search_plan
+    from alma_duplicate.auto_retrieval import automatic_scope
+    query = build_search_plan(validate(auto_payload())).for_source('ARCHIVE').archive_query
+    wired['source'] = bind(wired['source'], query)
+    client = create_app(config()).test_client()
+    data = line_form()
+    del data['radius']
+    data['radius_mode'] = 'AUTO'
+    post = client.post('/proposed', data=data)
+    assert post.status_code == 303
+    location = post.location
+    html = client.get(location).get_data(as_text=True)
+    assert 'Automatic retrieval:' in html and 'Archive centre radius' in html
+    assert 'Queue includes all supplied rows' not in html
+    assert 'auto_fixed_single_1' in html
+    exports = {kind: client.get(location + '/download/' + kind).data
+               for kind in ('report', 'inspection', 'request')}
+    doc = json.loads(exports['report'])
+    assert doc['plan']['retrieval_policy'] == automatic_scope()
+    assert len(doc['context_evaluations']) == 3
+    request = json.loads(exports['request'])
+    assert request['search_options']['radius_mode'] == 'AUTO'
+    assert 'radius' not in request['search_options']
+    assert json.loads(exports['inspection']) == inspect_report(doc)
+    events = deepcopy(wired['events'])
+    for _ in range(2):
+        assert client.get(location + '?page=1').status_code == 200
+        for kind, raw in exports.items():
+            assert client.get(location + '/download/' + kind).data == raw
+    case = tmp_path / 'auto'
+    case.mkdir()
+    (case / 'report.json').write_bytes(exports['report'])
+    saved = create_app(config(LIVE_ARCHIVE=False, LIVE_AQ=False, REPORT_DIRECTORY=tmp_path)).test_client()
+    html = saved.get('/reports/1').get_data(as_text=True)
+    assert 'Automatic retrieval:' in html and 'auto_fixed_single_1' in html
+    assert 'AQ retrieval completed' in html
+    assert wired['events'] == events

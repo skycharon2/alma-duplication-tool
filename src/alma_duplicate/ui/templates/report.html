@@ -35,6 +35,9 @@
 {% for count in summary.counts %}<p><strong>{{ 'Spectral line' if count.intent == 'LINE' else count.intent|title }}</strong>: {{ count.met }} meet conditions · {{ count.not_met }} do not meet conditions · {{ count.review }} need review{% if count.unreported %} · {{ count.unreported }} without a recorded result{% endif %}.</p>{% endfor %}
 <p>These results apply to the retrieved candidates. They do not establish that the entire Archive or Queue is free of duplication.</p>
 {% if document.assessment_status == 'SOURCES_UNAVAILABLE' or (run and run.status == 'SOURCES_UNAVAILABLE') %}<p class="notice">Some source evidence is unavailable or incomplete. <a href="#sources">Review source status before interpreting results.</a></p>{% endif %}
+{% set retrieval = (document.get('plan') or {}).get('retrieval_policy') %}
+{% if retrieval %}<p><strong>Automatic retrieval:</strong> {% if 'ARCHIVE' in document.request.search_options.sources %}Archive centre radius {{ display_number(retrieval.archive_radius_deg * 3600) }} arcsec. {% endif %}{% if 'QUEUE' in document.request.search_options.sources %}Queue includes all supplied rows before optional filters. {% endif %} This is a bounded single-point search, not complete coverage of unknown positions or extended mosaics.</p>
+<details><summary>Search scope, method and limitations</summary>{{ evidence(retrieval) }}</details>{% endif %}
 <a href="#candidates">Review candidate comparisons</a></section>
 <details class="report-technical"><summary>Execution details and input</summary>
 {% if run %}<div class="notice"><strong>Assessment run</strong><span>This assessment used your submitted input and configured sources. Source provenance is preserved in the report and downloads.</span></div>

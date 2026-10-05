@@ -1,6 +1,6 @@
 # Proposed observation input API
 
-Request model version: **3**. Validation report version: **7**.
+Request model version: **3**. Validation report version: **8**.
 
 Version 7 adds the explicit [continuum setup declaration](continuum_setup_declaration.md).
 The optional `continuum_setup_declaration` accepts only
@@ -28,7 +28,7 @@ Any ERROR produces `request=None`, `search_options=None`, and BLOCKED. The repor
 retains detached raw input and all diagnostics. A valid partial request is
 returned even if coordinates or search radius are missing; search stays BLOCKED
 until its spatial prerequisites exist. READY means fixed single-pointing ICRS
-position, explicit valid radius and at least one selected source. It does not
+position, a valid explicit radius or resolved AUTO scope, and at least one selected source. It does not
 mean every predicate is executable, a query was performed or a rule is satisfied.
 MOVING/MOSAIC return UNSUPPORTED without degrading into fixed single pointing;
 SUN returns NOT_APPLICABLE when no input errors exist. Radius and source selection
@@ -71,7 +71,7 @@ Empty windows may coexist with independent frequency, angular resolution and RMS
 | Origin | kind (USER_DECLARED/OT_COPIED/IMPORTED/UNKNOWN), raw_label, source, version, target, epoch |
 | Window | window_id, representation, center, bandwidth, bandwidth_kind, lower, upper, correlator_mode, mode_origin, channel_spacing, spectral_resolution |
 | Sensitivity | sensitivity_id, purpose, scope, setup_id, window_ids, rms, basis, aggregate_path, reference_frequency, bandwidth_used_for_sensitivity, bandwidth_meaning, bandwidth_origin, target_aggregate_bandwidth, smoothing_resolution, context |
-| Search options | radius, sources (ARCHIVE/QUEUE), result_limit, predicates |
+| Search options | radius_mode (EXPLICIT by default; AUTO optional), radius, sources (ARCHIVE/QUEUE), result_limit, predicates |
 | Predicate | field, operator, quantity, basis, context |
 
 Coordinates accept decimal numbers/numeric text, or colon-separated HMS/DMS.
@@ -209,3 +209,10 @@ Noise bandwidth and channel spacing never replace spectral resolution. Validatio
 An optional velocity noise bandwidth is retained as EVIDENCE, not used as the
 planned resolution. Actual candidate-dependent computation belongs to the
 [rule evaluator](rules.md#confirmed-archive-line-evaluation), not validation.
+
+## Automatic retrieval (validation version 8)
+
+[Automatic retrieval](automatic_retrieval.md) defines AUTO normalization, the
+versioned bounded envelope, conflicting-radius errors and legacy compatibility.
+The normalized radius describes retrieval only; scientific position methods
+continue to use candidate evidence.
