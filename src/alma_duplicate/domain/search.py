@@ -45,6 +45,7 @@ class SearchPlan:
     archive_filter_semantics: str | None = None
 
     queue_candidate_beam: bool = False
+    retrieval_policy: dict | None = None
 
     def for_source(self, name: str) -> SourceSearchPlan | None:
         return next((s for s in self.sources if s.source == name), None)

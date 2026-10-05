@@ -15,7 +15,7 @@ def new_row():
 
 
 def initial_form():
-    return {"setup_id": "setup-1"}, []
+    return {"setup_id": "setup-1", "radius_mode": "AUTO"}, []
 
 
 def assessment_supported(values):
@@ -137,6 +137,13 @@ def build_document(values, rows):
     limit = raw("result_limit", "search_options.result_limit")
     search = {"radius": quantity("radius", "search_options.radius", "arcsec"),
               "sources": values.get("sources", []), "predicates": []}
+    mode = values.get('radius_mode', 'EXPLICIT' if 'radius' in values else 'AUTO')
+    if mode != 'EXPLICIT':
+        search['radius_mode'] = mode
+        # Retain a supplied conflicting radius for backend diagnosis, never ignore it.
+        if search['radius'] is None:
+            search.pop('radius')
+    bindings['search_options.radius_mode'] = 'search'
     if limit.strip():
         # The backend expects an integer here, unlike quantity values.
         search["result_limit"] = int(limit) if re.fullmatch(r"[0-9]{1,9}", limit) else limit

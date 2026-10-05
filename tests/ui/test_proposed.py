@@ -363,3 +363,26 @@ def test_purpose_update_adds_only_one_blank_line_and_keeps_continuum_windows(cli
         html = client.post("/proposed", data=data).get_data(as_text=True)
         assert re.findall(r'name="rows" value="([a-z0-9]+)"', html) == rows
         assert f'name="{rows[0]}_id" value="retained-window"' in html
+
+
+def test_browser_defaults_auto_and_download_revalidates_without_hidden_radius(client):
+    html = client.get('/proposed').get_data(as_text=True)
+    assert 'name="radius_mode" value="AUTO"' in html
+    assert 'name="radius"' not in html
+    data = fields() | {'radius_mode': 'AUTO', 'action': 'download'}
+    del data['radius']
+    document = client.post('/proposed', data=data).get_json()
+    assert document['search_options']['radius_mode'] == 'AUTO'
+    assert 'radius' not in document['search_options']
+    result = validate_proposed_observation(document["request"], document["search_options"])
+    assert result.is_valid and result.can_search
+    data['action'] = 'validate'
+    html = client.post('/proposed', data=data).get_data(as_text=True)
+    assert 'Search readiness: <strong>READY</strong>' in html
+    assert 'name="radius"' not in html
+    data['radius'] = '30'
+    html = client.post('/proposed', data=data).get_data(as_text=True)
+    assert 'AUTO_RADIUS_CONFLICT' in html
+    assert 'Conflicting explicit radius' in html and 'value="30"' in html
+    data['radius'] = ''
+    assert 'Input valid: <strong>Yes</strong>' in client.post('/proposed', data=data).get_data(as_text=True)

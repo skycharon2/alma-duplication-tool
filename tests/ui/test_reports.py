@@ -180,7 +180,7 @@ def test_comparison_tables_keep_pairs_separate_and_escape_values(reports, tmp_pa
     parser.feed(html)
     candidate_table = parser.tables[0]
     assert "CONTINUUM" not in candidate_table  # Friendly column heading, no synthesized branch.
-    assert "No branch result" in candidate_table and "CRITERIA_MET" in candidate_table
+    assert "Not requested" in candidate_table and "CRITERIA_MET" in candidate_table
     pair_tables = [t for t in parser.tables if "Criteria for this LINE pair" in t]
     pairs = [p for c in doc["context_evaluations"] for p in c["line_pairs"]]
     assert len(pair_tables) == len(pairs)

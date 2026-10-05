@@ -15,6 +15,25 @@ from alma_duplicate.rules.evaluation_model import SolarExemptionReport
 from alma_duplicate.rules.confirmed import DECISION_REF
 
 
+def _display_identity(context):
+    """Retain source identity for report consumers without changing associations."""
+    from alma_duplicate.domain.comparison import ArchiveContextEvidence
+    evidence = context.evidence
+    if isinstance(evidence, ArchiveContextEvidence):
+        raw = evidence.prepared.raw_row
+        def label(key):
+            value = raw.get(key)
+            return value.strip() if isinstance(value, str) and value.strip() else None
+        association = evidence.row_link.association_key
+        return {'Target': label('target_name'), 'Project': label('proposal_id'),
+                'Member OUS': label('member_ous_uid'), 'ASDM': label('asdm_uid'),
+                'Observation ID': label('obs_id'),
+                'SPW': association.spw_token if association else None}
+    return {'Target': evidence.row.group_key.target_name,
+            'Project': evidence.row.group_key.project_code,
+            'Queue row': context.reference.raw_row_id}
+
+
 def json_value(value):
     """Convert supported evidence without silently stringifying unknown types."""
     if isinstance(value, Enum):
@@ -241,6 +260,7 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
         "request": _request_document(validation),
         "plan": {
             "version": search.plan.version,
+            **({"retrieval_policy": search.plan.retrieval_policy} if search.plan.retrieval_policy is not None else {}),
             "sources": search.plan.sources,
             "result_limit": search.plan.result_limit,
             "retrieval_radius_deg": search.plan.retrieval_radius_deg,
@@ -274,6 +294,7 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
             {
                 "context_id": item.candidate.context.context_id,
                 "reference": item.candidate.context.reference,
+                "display_identity": _display_identity(item.candidate.context),
                 "evidence_states": item.candidate.context.items,
                 **_context_results(item),
             }

@@ -329,3 +329,15 @@ summary { cursor: pointer; padding: .4rem; }
 .appendix-guide p, .appendix-guide li { max-width: 80ch; margin-block: 8px; }
 .solar-retained > summary { color: var(--blue-dark); padding: 12px; border: 1px solid var(--border); }
 .solar-retained > p { margin-block: 12px; }
+
+/* Scientific report overview and traceable identities. */
+.report-overview { border-top: 3px solid var(--blue); background: var(--blue-pale); padding: 18px 22px; margin-bottom: 18px; }
+.report-overview p { max-width: 80ch; margin-block: 8px; }
+.report-technical { margin-block: 14px; }
+.candidate-table th small { display: block; font-weight: 400; overflow-wrap: anywhere; margin-top: 4px; }
+.candidate-identity { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 18px; margin-block: 12px; }
+.candidate-identity dt { color: var(--muted); }
+.candidate-identity dd { margin: 0; overflow-wrap: anywhere; }
+.report-status small { display: block; font-size: 10px; font-weight: 400; }
+.report-number { font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .report-overview { padding: 14px; } .candidate-identity { grid-template-columns: 1fr; } }

@@ -3,8 +3,9 @@
 ## Strategy selection
 
 An explicit `beam_decision_ref` enables [coordinate retrieval and formula beam
-selection](primary_beam_search.md). Without it, the existing region strategy
-remains compatible. Region-specific descriptions below apply to that legacy
+selection](primary_beam_search.md). For EXPLICIT requests without it, the existing region strategy
+remains compatible. AUTO instead uses the [automatic retrieval contract](automatic_retrieval.md):
+Archive centre scope and no Queue radius prefilter. Region-specific descriptions below apply to that legacy
 strategy; formula search uses centers and separate local beam checks.
 
 
@@ -16,8 +17,8 @@ result limits or evaluate duplication. Existing
 ## Search plan
 
 `build_search_plan(validation, archive_science_only=False)` requires a valid
-request with spatial search readiness, canonical ICRS position, explicit degree
-radius and selected sources. It retains the validation result and SearchOptions.
+request with spatial search readiness, canonical ICRS position, a resolved degree
+radius (explicit or AUTO) and selected sources. It retains the validation result and SearchOptions.
 
 | Input / operation | Archive | Queue |
 | --- | --- | --- |

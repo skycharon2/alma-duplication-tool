@@ -727,8 +727,17 @@ class _Validator:
 
     def search(self, value):
         path = "search_options"
-        obj = self.obj(value, path, {"radius", "sources", "result_limit", "predicates"})
+        obj = self.obj(value, path, {"radius", "radius_mode", "sources", "result_limit", "predicates"})
         radius = self.quantity(obj.get("radius"), path + ".radius", "radius")
+        mode = obj.get('radius_mode', 'EXPLICIT')
+        if mode not in ('EXPLICIT', 'AUTO'):
+            self.error('INVALID_RADIUS_MODE', path + '.radius_mode', 'Choose AUTO or EXPLICIT search radius mode.')
+        if mode == 'AUTO':
+            if obj.get('radius') is not None:
+                self.error('AUTO_RADIUS_CONFLICT', path + '.radius', 'AUTO computes its own scope; omit radius or use EXPLICIT.')
+            from alma_duplicate.auto_retrieval import automatic_radius
+            radius = automatic_radius()
+
         if radius and radius.value > 180:
             self.error(
                 "INVALID_RADIUS",
@@ -808,7 +817,7 @@ class _Validator:
                     )
                 )
         return SearchOptions(
-            radius, sources, limit, tuple(predicates), MappingProxyType(dict(obj))
+            radius, sources, limit, tuple(predicates), MappingProxyType(dict(obj)), mode
         )
 
 
