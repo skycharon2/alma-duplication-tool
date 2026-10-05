@@ -94,3 +94,15 @@ complete-variant OR results. Two labeled sections display D=7 m and D=12 m, each
 with common/continuum criteria and its own LINE pair tables. Matching diameters
 are read from `mix_aggregation`, never computed by Jinja or JavaScript. Complete
 JSON exports retain both variants; inspection links refer to that full document.
+
+## Scientific result presentation
+
+The overview counts stored branch results across all contexts, not across beam
+variants or pair rows. It does not synthesize an observation-wide verdict.
+New report v4 documents include additive `display_identity` source labels;
+older reports use existing stored bindings where available and otherwise show
+an explicit missing identity. Rendering never queries sources for missing labels.
+Numeric display uses six significant digits; original values and method versions
+remain in expandable evidence and unchanged downloads. LINE RMS comparison uses
+the backend's stored comparable RMS; an unavailable comparable value never falls
+back to an RMS measured on a different basis. Source failures remain visible.

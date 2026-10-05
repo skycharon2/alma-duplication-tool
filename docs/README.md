@@ -40,7 +40,11 @@ For Archive antenna diameter, read the [array evidence boundary](archive_array_e
 and its five-case real-data review before interpreting mixed antenna names.
 
 [Live Archive smoke instructions](live_archive_smoke.md) describe opt-in source
-verification. The [form design](proposed_observation_form.md) is future interface
+verification. The [live browser TAP and AQ smoke](evidence/live_browser_aq_smoke_2026-10-05.md)
+records a successful public-target run and export checks after PR #125.
+The [LINE follow-up](evidence/live_browser_line_aq_smoke_2026-10-05.md) verifies
+live source binding, SPW pairing, criteria and browser downloads for one LINE input.
+The [form design](proposed_observation_form.md) is future interface
 design; the request API owns the accepted backend format. Historical statistics now live in the [snapshot register](evidence/exploration_snapshots.md);
 original ERDs and conceptual entities live in the [design document](design/conceptual_data_model.md).
 They are not current population counts or Python class definitions.

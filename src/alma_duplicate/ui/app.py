@@ -5,7 +5,9 @@ import os
 from flask import Flask, Response, abort, redirect, render_template, request, url_for
 
 from alma_duplicate.ui.reports import load_reports
-from alma_duplicate.ui.report_view import criterion_view, pair_binding
+from alma_duplicate.ui.report_view import (
+    criterion_view, pair_binding, context_identity, report_summary, display_number, STATUS_LABELS,
+)
 from alma_duplicate.ui.runs import BrowserAssessment, RunStore
 from alma_duplicate.ui.proposed import MAX_WINDOWS, assessment_supported, contributing_windows, initial_form, new_row, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
@@ -84,6 +86,8 @@ def create_app(config=None):
                                document=item.document, contexts=contexts[start:start + 20],
                                start=start, page=page, pages=pages, run=run,
                                criterion_view=criterion_view, pair_binding=pair_binding,
+                               context_identity=context_identity, summary=report_summary(item.document),
+                               display_number=display_number, status_labels=STATUS_LABELS,
                                view_endpoint="run_view" if run else "report_view",
                                download_endpoint="run_download" if run else "report_download")
 

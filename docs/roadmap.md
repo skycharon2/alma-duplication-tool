@@ -158,11 +158,14 @@ POS-SINGLE is evaluated with D=12 m, while broader CONTINUUM/LINE scientific
 applicability remains unresolved. The independent
 [LIVE-AQ-2 HTTP client](archive_aq_client.md) is delivered in PR #124.
 [LIVE-AQ-3](live_aq_assessment.md) now connects retained TAP Members to acquisition,
-structured failure handling and report/inspection provenance in the working tree.
-LIVE-AQ-4 now adds explicit operator configuration and report state display in
-the working tree, with offline lifecycle and parity tests. Next is a bounded live
-TAP+AQ browser smoke check with recorded provenance; it is separate from
-independent real-proposal acceptance. Capture freshness and
+structured failure handling and report/inspection provenance in PR #125.
+LIVE-AQ-4 adds explicit operator configuration and report state display in the
+same PR, with offline lifecycle and parity tests. A bounded live TAP+AQ browser
+continuum smoke is [recorded](evidence/live_browser_aq_smoke_2026-10-05.md).
+A [scoped live LINE request](evidence/live_browser_line_aq_smoke_2026-10-05.md)
+also completed. Next, improve report identity/result presentation and define a
+backend-owned automatic retrieval policy before removing manual radius entry.
+Independent real-proposal acceptance remains separate. Capture freshness and
 component-specific product evidence remain separate work. Live
 execution must continue to show unresolved candidates explicitly.
 

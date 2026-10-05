@@ -59,6 +59,11 @@ def criterion_view(record):
         if low is not None and high is not None:
             candidate = {"value": f"{low} – {high}", "unit": "GHz",
                          "semantics": "Candidate interval from backend"}
+    if record['criterion_id'] == 'LINE-RMS':
+        # Show the comparable backend result, including an explicit unavailable value.
+        key, unit = ('comparable_queue_rms_mjy', 'mJy') if 'comparable_queue_rms_mjy' in derived else ('sigma_comp_mjy_beam', 'mJy/beam')
+        candidate = {'value': derived.get(key), 'unit': unit,
+                     'semantics': 'At the requested spectral resolution and backend angular comparison basis'}
     return {
         "record": record, "label": LABELS.get(record["criterion_id"], record["criterion_id"]),
         "proposed": proposed, "candidate": candidate,
@@ -84,3 +89,67 @@ def pair_binding(pair):
     component = ref.get("candidate_component") or {}
     fields.extend((key, value) for key, value in component.items())
     return [(key, value) for key, value in fields if value is not None]
+
+
+STATUS_LABELS = {
+    'CRITERIA_MET': 'Meets these conditions',
+    'CRITERIA_NOT_MET': 'Does not meet these conditions',
+    'INDETERMINATE': 'Needs review',
+    'SATISFIED': 'Satisfied', 'NOT_SATISFIED': 'Not satisfied',
+    'Not computed': 'Not computed',
+}
+
+
+def display_number(value):
+    """Round only the display; original evidence and decisions remain untouched."""
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return format(value, '.6g')
+    return value
+
+
+def context_identity(context):
+    """Use stored exact identities, including old reports; never parse generated IDs."""
+    fields = {}
+
+    def add(label, value):
+        if value is not None and value != '':
+            fields.setdefault(label, [])
+            if str(value) not in fields[label]:
+                fields[label].append(str(value))
+
+    for label, value in (context.get('display_identity') or {}).items():
+        add(label, value)
+    for record in (context.get('array_evidence') or {}).get('records', []):
+        add('Target', record.get('source_name'))
+        add('Member OUS', record.get('member_ous_uid'))
+    for scope in context.get('beam_variants') or [context]:
+        for pair in scope.get('line_pairs', []):
+            ref = pair.get('attempt', {}).get('reference') or {}
+            association = ref.get('candidate_association') or {}
+            identity = association.get('context') or {}
+            add('Target', identity.get('source_name'))
+            add('Member OUS', identity.get('member_ous_uid'))
+            add('ASDM', identity.get('asdm_uid'))
+            add('SPW', association.get('spw_token'))
+            add('SPW', ref.get('spw_number'))
+            add('Queue row', ref.get('source_row_id'))
+    return [(label, ', '.join(values)) for label, values in fields.items()]
+
+
+def report_summary(document):
+    """Count stored context branch results; no new observation-level verdict."""
+    request = document.get('request') or {}
+    request = request.get('normalized') or request.get('raw') or {}
+    contexts = document.get('context_evaluations', [])
+    intents = request.get('intents') or list(dict.fromkeys(
+        b['branch'] for c in contexts for b in c.get('branches', [])))
+    counts = []
+    for intent in intents:
+        values = [b['status'] for c in contexts for b in c.get('branches', [])
+                  if b['branch'] == intent]
+        counts.append({'intent': intent, 'met': values.count('CRITERIA_MET'),
+                       'not_met': values.count('CRITERIA_NOT_MET'),
+                       'review': values.count('INDETERMINATE'),
+                       'unreported': len(contexts) - len(values)})
+    return {'target': request.get('target_name') or 'Unnamed target',
+            'intents': intents, 'counts': counts, 'total': len(contexts)}
