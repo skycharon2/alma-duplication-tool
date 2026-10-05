@@ -2,7 +2,9 @@
 
 LIVE-AQ-3 connects the independent AQ client to `assess_observation()` through
 an explicitly supplied `AssessmentSources.archive_array_fetcher`. No default AQ
-client is constructed. Existing CLI and browser configurations do not enable it.
+client is constructed by the shared entry. The browser now has an
+[explicit AQ flag](ui_offline_assessment.md#explicit-live-aq-configuration);
+the CLI has no live AQ switch yet.
 The [client](archive_aq_client.md) and [exact binder](archive_array_evidence.md)
 retain their existing scientific and transport contracts.
 
@@ -112,7 +114,7 @@ no fallback, source isolation, configuration guards, provider contract errors,
 complete beam alternatives, report serialization and inspection pair pointers.
 Existing report consumers can read the additive evidence; no UI control is added.
 
-LIVE-AQ-4 will add explicit browser configuration and render acquisition status
+LIVE-AQ-4 adds explicit browser configuration and renders acquisition status
 in the execution flow. A CLI switch remains separate work. Live-service smoke
 verification and real-proposal scientific acceptance are not claimed by these
 fake-HTTP tests.

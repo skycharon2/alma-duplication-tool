@@ -9,7 +9,8 @@ browser live-source configuration/execution delivered in PR #119. PR #119 adds
 no new scientific method or reviewed real-proposal scope; PR #117 retains its
 historical scientific-method provenance.
 The baseline also includes the independent LIVE-AQ-2 client in PR #124.
-LIVE-AQ-3 described below is a subsequent working-tree increment.
+LIVE-AQ-3 is committed locally as `00923e1`; LIVE-AQ-4 is a subsequent working-tree
+increment. Neither is included in the merged baseline above.
 This is the single capability summary;
 [roadmap](roadmap.md) owns remaining order. Contracts define exact behavior and
 [rule inputs](duplication_rule_inputs.md#7-scientific-decision-register) own approval scope.
@@ -209,7 +210,7 @@ document relative paths passed. The client tests include unchanged official
 response bytes replayed through fake HTTP. No live AQ request was made for this
 verification; skipped tests are not passes.
 
-## Post-TAP AQ assessment wiring (2026-10-05, working tree)
+## Post-TAP AQ assessment wiring (2026-10-05, local commit 00923e1)
 
 [LIVE-AQ-3](live_aq_assessment.md) adds an explicit lazy fetcher to the shared
 entry. All retained linked Archive Members participate independently of display
@@ -224,3 +225,20 @@ assessment/array regressions `63 passed`; full suite `1709 passed, 12 skipped`.
 Ruff F and `git diff --check` passed. Tests use fake TAP/HTTP and retain existing
 offline acceptance coverage. No live-service or real-proposal acceptance is
 claimed; skipped tests are not passes.
+
+## Explicit browser live AQ (2026-10-05, working tree)
+
+[LIVE-AQ-4](ui_offline_assessment.md#explicit-live-aq-configuration) adds the
+operator flag `ALMA_UI_LIVE_ARCHIVE_AQ`, requiring live TAP and excluding captured
+AQ. A lazy callback creates the client only when the shared entry needs linked
+Members after TAP. Report pages display stored AQ states and query provenance,
+including zero hits, skips and failures. Refresh/downloads do not acquire sources;
+separate executions retain independent results. No scientific rule, HTTP client
+contract, report version or inspection version changes.
+
+Local verification on 2026-10-05: 33 new offline browser tests; full suite
+`1742 passed, 12 skipped`. Ruff F and `git diff --check` passed. Fake TAP/HTTP
+tests cover lazy acquisition, configuration conflicts, stored report provenance,
+shared-entry parity, immutable downloads and run isolation. The local browser
+preview used a synthetic failed-AQ report. No live-service or real-proposal
+acceptance is claimed; skipped tests are not passes.

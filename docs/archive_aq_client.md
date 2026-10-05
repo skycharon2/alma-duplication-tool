@@ -3,7 +3,9 @@
 LIVE-AQ-2 provides an independent HTTP client. Import and construction perform no
 network access. Only an explicit `fetch_members()` call retrieves AQ records.
 The [assessment entry](live_aq_assessment.md) can now call an explicitly supplied
-fetcher after TAP search. CLI and browser configurations do not enable it yet.
+fetcher after TAP search. The browser can explicitly enable it through
+[operator configuration](ui_offline_assessment.md#explicit-live-aq-configuration);
+the CLI has no live AQ switch yet.
 
 ## Interface
 
@@ -80,8 +82,8 @@ restrictions; credentials; and all-or-nothing multi-Member acquisition.
 
 LIVE-AQ-3 now connects retained TAP candidates to unique-Member acquisition and
 carries query provenance through assessment/report assembly when explicitly
-configured by a Python caller. LIVE-AQ-4 will expose
-explicit browser configuration. These integrations must preserve failed versus
+configured by a Python caller. LIVE-AQ-4 now exposes
+explicit browser configuration. These integrations preserve failed versus
 empty acquisition, exact source binding, and independent TAP/AQ provenance.
 No scientific method, rule version, TP scope or historical capture is changed
 by this client increment.

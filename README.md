@@ -51,6 +51,10 @@ at `/proposed`, which validates inputs and exports request JSON. Configure the
 live Archive TAP and/or a Queue CSV and view each run's own report. Set
 `ALMA_UI_LIVE_ARCHIVE=1` to opt into live TAP access; live TAP and Archive replay
 are mutually exclusive, and live TAP never implies a live AQ lookup.
+To enable live AQ explicitly, also set `ALMA_UI_LIVE_ARCHIVE_AQ=1` and leave
+`ALMA_UI_ARCHIVE_ARRAY_EVIDENCE` unset. AQ runs after TAP retention; its status
+and query provenance appear separately in the report. See the
+[configuration matrix](docs/ui_offline_assessment.md#explicit-live-aq-configuration).
 The read-only [report browser](docs/ui_report_browser.md) displays backend reports
 and exports their original JSON plus inspection v3. To enable it, generate an
 acceptance run and set `ALMA_UI_REPORT_DIR` to its output directory before starting
