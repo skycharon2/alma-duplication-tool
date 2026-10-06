@@ -179,18 +179,36 @@ serialization failures do not become scientific outcomes.
 
 ## Temporary local retention
 
-Reports are process-local, with defaults of 20 runs and 32 MiB of total serialized
-request/report/inspection bytes. Flask configuration `MAX_RETAINED_RUNS` and
-`MAX_RETAINED_BYTES` control those bounds. Parsed-object overhead is additional;
-this is not a strict resident-memory cap. An oversized single report is rejected
-without evicting existing runs; otherwise oldest runs are evicted first.
+Generated runs are stored in a private temporary directory, with defaults of
+20 runs, a 1 GiB retained disk budget and a 24-hour lifetime. Flask configuration
+`MAX_RETAINED_RUNS`, `MAX_RETAINED_BYTES` and `MAX_RUN_AGE_SECONDS` control these
+limits. `RUN_STORAGE_PARENT` optionally selects an operator-managed parent;
+researchers do not need to supply a directory. Each application instance owns
+its directory (mode 0700), with files restricted to mode 0600.
 
-A restart clears all runs. Unknown/evicted IDs return 404 with an explanation.
-There are no disk writes or shared mutable "last report". There is no user-account
-isolation: run IDs are references, not authorization. Use one local process bound
-to 127.0.0.1; persistent/multi-user hosting is outside this increment. Refresh uses
-GET after a 303 redirect and does not rerun. Repeated POSTs create separate runs;
-job queues and duplicate-submission suppression are not implemented here.
+The budget includes original report, inspection and input JSON, context records
+and page indexes. Only descriptors remain in the run registry. Pages load summary
+metadata and the selected contexts; downloads stream the original files in 64 KiB
+chunks. Assessment and initial inspection still construct full Python documents;
+this change does not impose a hard memory bound on scientific execution.
+
+Writes are serialized and staged before publication. At most one additional
+staging run, bounded by the same disk budget, can coexist with retained runs.
+An oversized or failed write does not evict valid previous runs. Otherwise oldest
+runs are evicted first to meet count and disk limits. Active downloads keep their
+files until closed, and their bytes continue to count toward the retained budget.
+If those leases prevent a new run from fitting, storage returns an explicit error.
+
+Expired runs become inaccessible on the next request, which also removes their
+files unless a download is active. Normal application cleanup removes its private
+directory; abnormal process termination can leave temporary files for operator/OS
+cleanup. A restart loses the process-local index. Unknown, expired or evicted IDs
+return 404. This is temporary local retention, not a persistent report service or
+user-account isolation; keep this application bound to 127.0.0.1.
+
+Refresh follows a 303 redirect and does not rerun assessment. The form guards
+repeated submissions, but separate accepted POSTs still create separate runs.
+Existing `REPORT_DIRECTORY` artifacts remain independent and unchanged.
 
 ## Verification scope
 

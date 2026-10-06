@@ -1,16 +1,19 @@
 """Flask application factory for the thin browser interface."""
 
 import os
+import weakref
 
 from flask import Flask, Response, abort, redirect, render_template, request, url_for
 
 from alma_duplicate.ui.reports import load_reports
 from alma_duplicate.auto_retrieval import automatic_scope
 from alma_duplicate.ui.report_view import (
-    criterion_view, context_identity, report_summary, display_number, STATUS_LABELS, matching_contexts, member_groups,
-    criterion_explanation, criterion_status, pair_title, standalone_criteria, source_overview, attention_groups, PURPOSE_LABELS,
+    criterion_view, context_identity, display_number, STATUS_LABELS,
+    criterion_explanation, criterion_status, pair_title, standalone_criteria, PURPOSE_LABELS,
 )
 from alma_duplicate.ui.runs import BrowserAssessment, RunStore
+from alma_duplicate.ui.report_pages import report_page, report_projection
+from alma_duplicate.ui.run_store import DEFAULT_DISK_BYTES, DEFAULT_MAX_AGE
 from alma_duplicate.ui.proposed import MAX_WINDOWS, assessment_supported, contributing_windows, initial_form, new_row, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
 
@@ -42,7 +45,9 @@ def create_app(config=None):
     app.config["OFFLINE_QUEUE_CSV"] = os.environ.get("ALMA_UI_QUEUE_CSV")
     app.config["ARCHIVE_ARRAY_EVIDENCE"] = os.environ.get("ALMA_UI_ARCHIVE_ARRAY_EVIDENCE")
     app.config["MAX_RETAINED_RUNS"] = 20
-    app.config["MAX_RETAINED_BYTES"] = 32 * 1024 * 1024
+    app.config["MAX_RETAINED_BYTES"] = DEFAULT_DISK_BYTES
+    app.config["MAX_RUN_AGE_SECONDS"] = DEFAULT_MAX_AGE
+    app.config["RUN_STORAGE_PARENT"] = None
     if config is not None:
         app.config.from_mapping(config)
 
@@ -57,7 +62,15 @@ def create_app(config=None):
     runs = RunStore(
         app.config["MAX_RETAINED_RUNS"],
         app.config["MAX_RETAINED_BYTES"],
+        max_age=app.config["MAX_RUN_AGE_SECONDS"],
+        directory=app.config["RUN_STORAGE_PARENT"],
     )
+    app.extensions["assessment_runs"] = runs
+    weakref.finalize(app, runs.close)
+
+    @app.before_request
+    def expire_runs():
+        runs.prune()
 
     @app.after_request
     def private_response(response):
@@ -74,71 +87,64 @@ def create_app(config=None):
             abort(404)
         return reports[report_id]
 
-    def render_report(item, report_id, run=None):
+    def page_selection():
         page = request.args.get("page", "1")
         if not page.isdecimal() or len(page) > 8 or int(page) < 1:
             abort(400)
-        page = int(page)
-        result_view = request.args.get("view", "matches")
-        if result_view not in ("matches", "all"):
+        view = request.args.get("view", "matches")
+        if view not in ("matches", "all"):
             abort(400)
-        matches = matching_contexts(item.document)
-        groups = member_groups(matches)
-        entries = (list(enumerate(item.document["context_evaluations"]))
-                   if result_view == "all" else matches)
-        page_units = entries if result_view == "all" else groups
-        pages = max(1, (len(page_units) + 19) // 20)
-        if page > pages:
-            abort(404)
-        start = (page - 1) * 20
-        page_groups = groups[start:start + 20] if result_view == "matches" else []
-        page_entries = (entries[start:start + 20] if result_view == "all" else
-                        [entry for group in page_groups for child in group['children']
-                         for entry in child['entries']])
-        return render_template("report.html", item=item, report_id=report_id,
-                               document=item.document, contexts=[c for _, c in page_entries],
-                               context_indices=[i for i, _ in page_entries],
-                               member_groups=page_groups, group_count=len(groups),
-                               member_count=sum(g['member'] is not None for g in groups),
-                               queue_count=sum(g['source'] == 'QUEUE' for g in groups),
-                               ungrouped_count=sum(g['source'] != 'QUEUE' and g['member'] is None for g in groups),
-                               result_view=result_view, visible_count=len(entries), match_count=len(matches),
-                               start=start, page=page, pages=pages, run=run,
+        return int(page), view
+
+    def render_report(data, report_id):
+        is_run = data.get('run') is not None
+        return render_template("report.html", **data, report_id=report_id,
                                criterion_view=criterion_view, criterion_explanation=criterion_explanation,
                                criterion_status=criterion_status, pair_title=pair_title, standalone_criteria=standalone_criteria,
-                               source_overview=source_overview(item.document),
-                               attention=attention_groups(item.document, item.inspection),
-                               purpose_labels=PURPOSE_LABELS,
-                               context_identity=context_identity, summary=report_summary(item.document),
+                               purpose_labels=PURPOSE_LABELS, context_identity=context_identity,
                                display_number=display_number, status_labels=STATUS_LABELS,
-                               view_endpoint="run_view" if run else "report_view",
-                               download_endpoint="run_download" if run else "report_download")
+                               view_endpoint="run_view" if is_run else "report_view",
+                               download_endpoint="run_download" if is_run else "report_download")
 
     @app.get("/reports/<report_id>")
     def report_view(report_id):
-        return render_report(artifact(report_id), report_id)
+        item = artifact(report_id)
+        page, view = page_selection()
+        try:
+            data = report_page(report_projection(item.document, item.inspection), page, view,
+                               lambda i: item.document['context_evaluations'][i])
+        except IndexError:
+            abort(404)
+        data.update(item=item, run=None, disk_backed=False)
+        return render_report(data, report_id)
 
-    def retained_run(report_id):
-        run = runs.get(report_id)
-        if run is None:
-            abort(404, description="Run unavailable: unknown ID, application restarted, or retention limit reached.")
-        return run
+    def unavailable_run():
+        abort(404, description="Run unavailable: unknown ID, application restarted, expired, or retention limit reached.")
 
     @app.get("/runs/<report_id>")
     def run_view(report_id):
-        run = retained_run(report_id)
-        return render_report(run.artifact, report_id, run)
+        page, view = page_selection()
+        try:
+            data = runs.page(report_id, page, view)
+        except IndexError:
+            abort(404)
+        if data is None:
+            unavailable_run()
+        return render_report(data, report_id)
 
     @app.get("/runs/<report_id>/download/<kind>")
     def run_download(report_id, kind):
-        run = retained_run(report_id)
-        payloads = {"report": run.artifact.raw, "inspection": run.artifact.inspection_bytes,
-                    "request": run.request_bytes}
-        if kind not in payloads:
+        if kind not in {"report", "inspection", "request"}:
             abort(404)
-        return Response(payloads[kind], mimetype="application/json", headers={
+        download = runs.open_download(report_id, kind)
+        if download is None:
+            unavailable_run()
+        response = Response(download, mimetype="application/json", headers={
             "Content-Disposition": f'attachment; filename="{kind}-{report_id}.json"',
+            "Content-Length": str(download.size),
         })
+        response.call_on_close(download.close)
+        return response
 
     @app.get("/reports/<report_id>/download/<kind>")
     def report_download(report_id, kind):

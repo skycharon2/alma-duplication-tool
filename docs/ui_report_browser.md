@@ -206,3 +206,39 @@ use for both stored reports and temporary runs. In a browser with outbound
 requests disabled, the retained CASE1 report showed four Member OUS groups
 containing 16 matching comparisons. SPW disclosure showed the stored comparison
 values, and the 390-pixel viewport had no document-wide horizontal overflow.
+
+
+## Large generated Queue reports
+
+Temporary `/runs/<id>` reports use the indexed disk store described in
+[temporary local retention](ui_offline_assessment.md#temporary-local-retention).
+The viewer shares its grouping and pagination with `/reports/<id>`, but reads
+only contexts needed for the current page. Original context indices and Member,
+target and execution boundaries are preserved; no scientific outcomes are
+recomputed during presentation.
+
+Generated-run HTML excludes the full inspection and per-row source payloads.
+Their complete contents remain in the original JSON downloads under technical
+details. The page still presents summary counts, source status, provenance and
+information to review. No matching results with indeterminate candidates must
+continue to show uncertainty, not a conclusion of no duplication.
+
+`tests/ui/test_run_store.py` covers exact downloads, reports above the old 32 MiB
+limit, indexed pagination, private permissions, expiry, eviction, active download
+leases and failed-write isolation. The full 3200-row Queue engineering smoke on
+2026-10-06 produced a 180,891,463-byte report within the default 1 GiB budget;
+the result page was 34,767 bytes. Outcomes remained 0 criteria met, 110 not met
+and 3090 indeterminate. This verifies storage and presentation, not scientific
+acceptance of those indeterminate cases. Local replay artifacts are under
+`reports/queue-disk-smoke-2026-10-06/` (ignored generated output).
+
+
+## Queue scope explanations
+
+Information to review counts unique affected candidates within each group. Repeated
+criterion/beam diagnostics remain available under Technical records. For recorded
+Queue scope blockers, the viewer separates custom mosaic pointings, rectangular
+mosaics and spectral scans instead of telling every researcher to check the CSV.
+Groups can overlap and do not count duplicate observations. Unknown codes retain
+the existing fallback; the viewer never changes scientific results. See the
+[blank-Mosaic interpretation](queue_blank_mosaic.md) for newly supported offsets.

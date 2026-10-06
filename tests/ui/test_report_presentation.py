@@ -191,3 +191,23 @@ def test_legacy_explicit_association_can_supply_member_and_execution():
     assert group['children'][0]['target'] == 'S'
     assert group['children'][0]['execution'] == 'E'
     assert [i for i, _ in group['children'][0]['entries']] == [9, 15]
+
+
+def test_queue_scope_messages_group_variants_and_repeated_criteria_by_candidate():
+    from alma_duplicate.ui.report_view import attention_groups
+    contexts = []
+    gaps = []
+    for i, geometry in enumerate(('CUSTOM_POINTING', 'RECTANGULAR_MOSAIC', 'SINGLE_FIELD')):
+        contexts.append({'context_id': str(i), 'reference': {'source': 'QUEUE'},
+                         'beam_variants': [{'criteria': [{'details': [['queue_geometry', geometry]],
+                         'reasons': ['REGULAR_QUEUE_SETUP_REQUIRED'] if i == 2 else []}]}]})
+        for code, category in [('QUEUE_SINGLE_FIELD_REQUIRED', 'QUEUE_EVIDENCE_MISSING'),
+                               ('QUEUE_POSITION_SCOPE_UNRESOLVED', 'SCOPE_UNSUPPORTED')]:
+            gaps.extend([{'context_id': str(i), 'code': code, 'category': category}] * 4)
+    document, inspection = {'context_evaluations': contexts}, {'gap_occurrences': gaps}
+    before = deepcopy((document, inspection))
+    groups = attention_groups(document, inspection)
+    assert [g['title'] for g in groups] == ['Custom mosaic pointings', 'Rectangular mosaics', 'Spectral scan configuration']
+    assert [g['candidates'] for g in groups] == [[0], [1], [2]]
+    assert all(g['count'] == 8 and len(g['messages']) == 1 for g in groups)
+    assert (document, inspection) == before

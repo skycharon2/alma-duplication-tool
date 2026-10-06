@@ -378,17 +378,53 @@ def source_overview(document):
     return result
 
 
+QUEUE_SCOPE_CODES = {
+    'QUEUE_SINGLE_FIELD_REQUIRED', 'QUEUE_POSITION_SCOPE_UNRESOLVED',
+    'QUEUE_CONTINUUM_SCOPE_UNSUPPORTED', 'BRANCH_SCOPE_UNSUPPORTED',
+    'REGULAR_QUEUE_SETUP_REQUIRED', 'REGULAR_SPW_UNION_REQUIRED',
+}
+
+
+def queue_scope_help(context):
+    """Explain recorded scope, without changing or recomputing any verdict."""
+    if context.get('reference', {}).get('source') != 'QUEUE':
+        return None
+    criteria = list(context.get('criteria', []))
+    for variant in context.get('beam_variants', []):
+        criteria.extend(variant.get('criteria', []))
+    geometry = {dict(c.get('details', [])).get('queue_geometry') for c in criteria}
+    reasons = {r for c in criteria for r in c.get('reasons', [])}
+    if 'CUSTOM_POINTING' in geometry:
+        return ('QUEUE_CUSTOM', 'Custom mosaic pointings',
+                'These Queue rows describe pointings in custom mosaics. The current method does not establish their single-point comparison scope; this is not a missing proposal input.')
+    if 'RECTANGULAR_MOSAIC' in geometry:
+        return ('QUEUE_RECTANGLE', 'Rectangular mosaics',
+                'The current method does not evaluate rectangular mosaic coverage. These candidates remain unresolved.')
+    if 'REGULAR_QUEUE_SETUP_REQUIRED' in reasons:
+        return ('QUEUE_SCAN', 'Spectral scan configuration',
+                'The current Queue workflow requires regular spectral windows. Spectral scans remain outside that workflow, including its shared position and angular-resolution scope.')
+    if 'UNSPECIFIED_WITH_OFFSET' in geometry:
+        return ('QUEUE_OFFSET', 'Blank Mosaic with coordinate offsets',
+                'This report records unresolved geometry for a blank Mosaic value with offsets. A new assessment can use the documented blank-Mosaic interpretation; existing results are unchanged.')
+    return None
+
+
 def attention_groups(document, inspection):
     """Group existing inspection occurrences; counts are never observation verdicts."""
-    indices = {c['context_id']: i for i, c in enumerate(document.get('context_evaluations', []))}
+    contexts = document.get('context_evaluations', [])
+    indices = {c['context_id']: i for i, c in enumerate(contexts)}
+    scope_help = {c['context_id']: queue_scope_help(c) for c in contexts}
     groups = {}
     for gap in inspection.get('gap_occurrences', []):
         category = gap.get('category', 'UNCLASSIFIED')
         title, fallback = GAP_CATEGORIES.get(category, GAP_CATEGORIES['UNCLASSIFIED'])
+        help_text = scope_help.get(gap.get('context_id')) if gap['code'] in QUEUE_SCOPE_CODES else None
+        if help_text:
+            category, title, fallback = help_text
         group = groups.setdefault(category, {'title': title, 'count': 0, 'messages': [], 'candidates': []})
         group['count'] += 1
         # Unknown reason codes do not inherit user-input advice from a category.
-        message = REASON_HELP.get(gap['code'], fallback if category != 'USER_INPUT_MISSING'
+        message = fallback if help_text else REASON_HELP.get(gap['code'], fallback if category != 'USER_INPUT_MISSING'
                                   else 'The report identifies a proposed-input issue. Review the input diagnostics in technical records.')
         if message not in group['messages']:
             group['messages'].append(message)
