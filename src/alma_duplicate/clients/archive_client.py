@@ -11,6 +11,10 @@ from typing import Protocol
 from uuid import uuid4
 
 from pyvo.dal import TAPService
+from pyvo.utils.http import create_session
+from requests import RequestException
+from requests.adapters import HTTPAdapter
+from urllib3.exceptions import HTTPError as HttpTransportError
 from pyvo.dal.exceptions import (
     DALAccessError,
     DALFormatError,
@@ -50,6 +54,16 @@ from alma_duplicate.clients.archive_projection import plan_archive_projection
 
 ARCHIVE_CLIENT_VERSION = "7"
 DEFAULT_MAXREC = 10_000
+TAP_HTTP_TIMEOUT = (10, 60)
+
+
+class _TapTimeoutAdapter(HTTPAdapter):
+    """Bound connection and idle reads, including redirected/streamed requests."""
+
+    def send(self, request, **kwargs):
+        if kwargs.get("timeout") is None:
+            kwargs["timeout"] = TAP_HTTP_TIMEOUT
+        return super().send(request, **kwargs)
 
 
 @dataclass(frozen=True, slots=True)
@@ -156,7 +170,10 @@ class PyvoTapExecutor:
 
     def _get_service(self) -> _PyvoService:
         if self._service is None:
-            self._service = TAPService(self.endpoint)
+            session = create_session()
+            session.mount("https://", _TapTimeoutAdapter())
+            session.mount("http://", _TapTimeoutAdapter())
+            self._service = TAPService(self.endpoint, session=session)
         return self._service
 
     def execute(
@@ -182,13 +199,20 @@ class PyvoTapExecutor:
             ) from exc
         except DALFormatError as exc:
             raise TapExecutionError(
-                ArchiveQueryErrorKind.RESPONSE_FORMAT_ERROR,
+                ArchiveQueryErrorKind.SERVICE_ERROR
+                if isinstance(exc.cause, (RequestException, HttpTransportError))
+                else ArchiveQueryErrorKind.RESPONSE_FORMAT_ERROR,
                 str(exc),
             ) from exc
         except DALAccessError as exc:
             raise TapExecutionError(
                 ArchiveQueryErrorKind.SERVICE_ERROR,
                 str(exc),
+            ) from exc
+        except RequestException as exc:
+            raise TapExecutionError(
+                ArchiveQueryErrorKind.SERVICE_ERROR,
+                f"TAP HTTP request failed: {exc}",
             ) from exc
 
         try:

@@ -1,6 +1,9 @@
 # Queue common rules: row beam and component scope
 
-`--queue-common` selects `queue_pos_single_6` and `queue_angular_factor_7`.
+`--queue-common` selects `queue_pos_single_6` and `queue_angular_factor_7` for
+previously supported geometry. Newly interpreted blank-Mosaic offset rows use
+`queue_pos_single_7` and `queue_angular_factor_8`; see the
+[blank-Mosaic contract](queue_blank_mosaic.md).
 `--queue-continuum` and `--queue-line` include these common rules. The
 [current decision](evidence/queue_array_beam_inference_decision_2026-10-01.md)
 implements `QUEUE_ARRAY_BEAM_INFERENCE_2`. Archive methods and raw Queue records
@@ -31,7 +34,9 @@ but never create duplicate 12-m variants. An absent field keeps standalone UNKNO
 a 7-m-compatible inference never fabricates source-provided standalone status.
 
 The request must still be fixed celestial and single-point, and the candidate
-must have supported frame/centre, SINGLE_FIELD geometry and regular SPWs.
+must have supported frame/centre, effective single-field geometry and regular SPWs.
+The blank-Mosaic contract adds an explicit interpretation of blank offset rows
+without relabelling their raw or parsed source geometry.
 Mosaic, scans, moving/placeholder coordinates and conflicting interpretations
 remain unresolved. Resolving D alone does not pass these gates.
 

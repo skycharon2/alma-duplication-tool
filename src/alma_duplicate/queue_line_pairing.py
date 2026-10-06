@@ -10,11 +10,12 @@ from alma_duplicate.domain.comparison import ComparisonContext, QueueContextEvid
 from alma_duplicate.domain.line_evidence import ProposedLineEvidence
 from alma_duplicate.domain.proposed_observation import ProposedObservationRequest
 from alma_duplicate.domain.queue import (
-    QueueMosaicKind, QueueQuantity, QueueRowInput, QueueSensitivityRequest, QueueSpw,
+    QueueQuantity, QueueRowInput, QueueSensitivityRequest, QueueSpw,
     RegularSpwEvidence,
 )
 from alma_duplicate.proposed_line import prepare_line_window
 from alma_duplicate.queue_mode_adapter import classify_spw
+from alma_duplicate.queue_pointing_scope import is_queue_single_point, uses_blank_mosaic_interpretation
 
 
 def _row(context: ComparisonContext) -> QueueRowInput:
@@ -168,7 +169,7 @@ def build_queue_line_pairs(
     scope_reasons = []
     if request.target_kind != "FIXED" or request.geometry != "SINGLE_POINTING":
         scope_reasons.append("FIXED_SINGLE_POINT_REQUEST_REQUIRED")
-    if row.spatial.mosaic_kind is not QueueMosaicKind.SINGLE_FIELD:
+    if not is_queue_single_point(row):
         scope_reasons.append("QUEUE_SINGLE_FIELD_REQUIRED")
     reasons.extend(scope_reasons)
     attempts = []
@@ -189,5 +190,6 @@ def build_queue_line_pairs(
                 missing.append("QUEUE_USABLE_INTERVAL_REQUIRED")
             attempts.append(QueueLinePairAttempt(reference, proposed, candidate, tuple(dict.fromkeys(missing))))
     return QueueLinePairBuildResult(
-        context.context_id, tuple(attempts), complete, bool(numbers), tuple(reasons)
+        context.context_id, tuple(attempts), complete, bool(numbers), tuple(reasons),
+        builder_version="queue_line_pair_builder_2" if uses_blank_mosaic_interpretation(row) else "queue_line_pair_builder_1",
     )

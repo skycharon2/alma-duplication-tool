@@ -183,7 +183,7 @@ def run_form_parity(tmp_path, monkeypatch, inputs, data, expected_code):
     assert json.loads(inspection_bytes) == inspect_report(cli, inspection_version="3")
     contexts = document["context_evaluations"]
     for page in range(1, max(1, (len(contexts) + 19) // 20) + 1):
-        html = client.get(url + f"?page={page}").get_data(as_text=True)
+        html = client.get(url + f"?page={page}&view=all").get_data(as_text=True)
         assert "NOT_AGGREGATED" in html
         for context in contexts[(page - 1) * 20:page * 20]:
             assert context["context_id"] in html

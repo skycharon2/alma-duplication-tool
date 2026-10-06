@@ -189,3 +189,9 @@ candidate enumeration contributes UNKNOWN to the existential result, so a
 no-pass result with incomplete evidence remains INDETERMINATE. The standalone
 pairing CLI remains a preparation interface and continues to report
 `NOT_EVALUATED`.
+
+
+For blank Mosaic rows with nonzero offsets, formal pair preparation now uses the
+[documented single-point interpretation](queue_blank_mosaic.md) and records
+`queue_line_pair_builder_2`. Raw parsed geometry remains available; existing
+geometry keeps builder v1. Common criterion versions identify the expanded scope.

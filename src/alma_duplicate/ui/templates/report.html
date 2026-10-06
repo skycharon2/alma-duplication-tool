@@ -1,111 +1,95 @@
 {% extends "base.html" %}
 {% macro evidence(value) %}<pre class="report-json">{{ value | tojson(indent=2) }}</pre>{% endmacro %}
-{% macro status(value) %}<span class="report-status" data-status="{{ value }}">{{ status_labels.get(value, value) }}<small>{{ value }}</small></span>{% endmacro %}
-{% macro quantity(q) %}
-{% if q and q.value is not none %}<span class="report-number" title="Stored value: {{ q.value }}">{{ display_number(q.value) }} {{ q.unit or '' }}</span>
-
-{% if q.semantics == 'At the requested spectral resolution and backend angular comparison basis' %}<small>{{ q.semantics }}</small>{% endif %}
-{% else %}<span class="field-note">Not recorded here; see evidence below.</span>{% endif %}
-{% endmacro %}
+{% macro status(value) %}<span class="report-status" data-status="{{ value }}">{{ status_labels.get(value, 'Needs review') }}</span>{% endmacro %}
+{% macro quantity(q) %}{% if q and q.value is not none %}<span class="report-number" title="Stored value: {{ q.value }}">{{ display_number(q.value) }} {{ q.unit or '' }}</span>{% else %}<span class="field-note">Not available</span>{% endif %}{% endmacro %}
 {% macro comparison(records, caption) %}
 <div class="report-table-scroll" role="region" aria-label="{{ caption }}" tabindex="0"><table class="comparison-table">
-<caption>{{ caption }}</caption><thead><tr><th scope="col">Criterion</th><th scope="col">Proposed observation</th><th scope="col">Candidate evidence</th><th scope="col">Backend result</th></tr></thead>
-<tbody>{% for r in records %}{% set v = criterion_view(r) %}<tr>
-<th scope="row">{{ v.label }}<small>{{ r.criterion_id }}</small></th>
-{% if r.criterion_id == 'POS-SINGLE' %}<td colspan="2">{% for entry in v.derived if entry.key in ['separation_deg', 'candidate_radius_deg'] %}<p>{{ entry.label }}: <span class="report-number">{{ display_number(entry.value) if entry.value is not none else 'Not computed' }}{% if entry.value is not none %} {{ entry.unit }}{% endif %}</span></p>{% else %}Position evidence not recorded here; see reasons and method below.{% endfor %}</td>
-{% else %}<td>{{ quantity(v.proposed) }}</td><td>{% if r.criterion_id == 'CONT-SETUP' %}Applies to the proposed setup only.{% else %}{{ quantity(v.candidate) }}{% endif %}</td>{% endif %}
-<td>{{ status(r.outcome if r.outcome is not none else 'Not computed') }}<small>{{ r.evaluation }}</small>
-</td></tr>{% endfor %}</tbody></table></div>
-<div class="criterion-evidence">{% for r in records %}{% set v = criterion_view(r) %}
-<details><summary>{{ v.label }}: values, reasons and method</summary>
-<p>{% for reason in r.reasons %}<code>{{ reason }}</code> {% endfor %}</p>
-<p>Stored candidate field: {{ (r.candidate or {}).get('source_field', 'Not recorded') }}</p>
-<p>Method: <code>{{ r.method_version }}</code> · {{ r.approval }} · {{ r.applicability }}</p>
-<p>Eligible for formal aggregation: {{ r.eligible_for_formal_aggregation }}. A computed outcome alone does not establish eligibility.</p>
-{% for issue in r.issues %}<p>{{ issue.side }} · {{ issue.code }} · {{ issue.path }}: {{ issue.message }}</p>{% endfor %}
-{% if v.derived %}<dl class="derived-values">{% for entry in v.derived %}<dt>{{ entry.label }}<small>{{ entry.key }}</small></dt><dd>{% if entry.value is not none %}{{ entry.value }} {{ entry.unit }}{% else %}Not computed{% endif %}</dd>{% endfor %}</dl>{% endif %}
-<details><summary>Complete criterion record</summary>{{ evidence(r) }}</details></details>{% endfor %}</div>
+<caption>{{ caption }}</caption><thead><tr><th scope="col">Criterion</th><th scope="col">Your requirement</th><th scope="col">Candidate comparison</th><th scope="col">Result and explanation</th></tr></thead>
+<tbody>{% for r in records %}{% set v = criterion_view(r) %}<tr data-criterion="{{ r.criterion_id }}">
+<th scope="row">{{ v.label }}</th>
+{% if r.criterion_id == 'POS-SINGLE' %}<td colspan="2">{% for entry in v.derived if entry.key in ['separation_deg', 'candidate_radius_deg'] %}<p>{{ entry.label }}: <span class="report-number">{{ display_number(entry.value) if entry.value is not none else 'Not available' }}{% if entry.value is not none %} {{ entry.unit }}{% endif %}</span></p>{% else %}Position evidence is not available for comparison.{% endfor %}</td>
+{% elif r.criterion_id == 'CONT-SETUP' %}<td>At least two windows, each wider than 1.8 GHz.</td><td>Proposed setup only.{% for entry in v.derived if entry.key == 'qualifying_windows' %}<p>Qualifying windows: {{ display_number(entry.value) }}</p>{% endfor %}</td>
+{% else %}<td>{{ quantity(v.proposed) }}</td><td>{{ quantity(v.candidate) }}{% if r.criterion_id == 'LINE-RMS' %}<small>At the requested spectral resolution and the backend's angular comparison basis.</small>{% endif %}</td>{% endif %}
+<td><span class="report-status" data-status="{{ r.outcome if r.eligible_for_formal_aggregation else 'INDETERMINATE' }}">{{ criterion_status(r) }}</span><p class="criterion-explanation">{{ criterion_explanation(r) }}</p></td>
+</tr>{% endfor %}</tbody></table></div>
+{% endmacro %}
+{% macro record_fields(records) %}{% for r in records %}<p>{{ criterion_view(r).label }} · <code>{{ r.criterion_id }}</code> · Method <code>{{ r.method_version }}</code> · {{ r.evaluation }} · {{ r.approval }}. Stored candidate field: {{ (r.candidate or {}).get('source_field', 'Not recorded') }}.</p>{% endfor %}{% endmacro %}
+{% macro candidate_comparison(c, context_index, first=false, nested=false) %}
+<article class="report-context" id="context-{{ context_index }}">
+{% if not nested %}<h3>Candidate {{ context_index + 1 }} · {{ c.reference.source|title }}</h3>{% endif %}
+<details class="candidate-comparison"{% if first %} open{% endif %}><summary>{% if nested %}{% for label, value in context_identity(c) if label == 'SPW' %}SPW {{ value }} · {% endfor %}Comparison {{ context_index + 1 }} · {% endif %}View parameter comparison</summary><p class="candidate-caption">{% for label, value in context_identity(c) if label in ['Target', 'Project', 'SPW'] %}<span>{{ label }}: {{ value }}</span>{% else %}Identity details are available in the technical record.{% endfor %}</p>
+{% for b in c.branches %}<p class="branch-result"><strong>{{ purpose_labels.get(b.branch, 'Recorded purpose') }}</strong>: {{ status(b.status) }}</p>{% endfor %}
+
+{% if c.beam_variants %}<h4>{{ 'Queue' if c.reference.source == 'QUEUE' else 'Archive' }} beam hypotheses: 7 m + 12 m</h4><p>These are separate diameter calculations for one candidate. The recorded result combines complete branches, without mixing criteria between diameters.</p><p>Matching beam diameters (m): {{ c.mix_aggregation.matching_diameters_m | join(', ') or 'None' }}.</p>{% endif %}
+{% for scope in c.beam_variants or [c] %}{% set variant_index = loop.index0 %}{% if c.beam_variants %}<section class="beam-variant"><h4>Beam variant · D = {{ scope.diameter_m }} m</h4>{% for b in scope.branches %}<p>{{ purpose_labels.get(b.branch, 'Recorded purpose') }}: {{ status(b.status) }}</p>{% endfor %}{% endif %}
+{% set common = standalone_criteria(scope) %}{% if common %}{{ comparison(common, 'Candidate conditions') }}{% endif %}
+{% if scope.branches | selectattr('branch', 'equalto', 'CONTINUUM') | list %}<p>Continuum also requires the <a href="#setup-qualification">proposed setup qualification</a>.</p>{% endif %}
+{% for pair in scope.line_pairs %}<details class="line-pair" id="pair-{{ context_index }}-{% if c.beam_variants %}beam-{{ variant_index }}-{% endif %}{{ loop.index0 }}"{% if scope.line_pairs|length == 1 %} open{% endif %}><summary>Pair {{ loop.index }} · {{ pair_title(pair) }} · {{ status_labels.get(pair.status, 'Needs review') }}</summary><p>This comparison uses one proposed line and one candidate window. Values are not borrowed from other windows.</p>{{ comparison(pair.criteria, 'Criteria for this LINE pair') }}</details>{% endfor %}
+{% if c.beam_variants %}</section>{% endif %}{% endfor %}
+<p><a href="#candidates">Back to candidate results</a> · <a href="#technical-records">Technical records</a></p></details></article>
 {% endmacro %}
 {% block content %}
 <div class="report-page">
-<p><a href="{{ url_for('proposed') }}">Proposed observation</a> / <a href="{{ url_for('report_index') }}">Existing reports</a></p>
+<p class="report-breadcrumb"><a href="{{ url_for('proposed') }}">Proposed observation</a> / <a href="{{ url_for('report_index') }}">Existing reports</a></p>
 <div class="page-heading"><h1>Observation comparison</h1><p>{{ summary.target }}</p></div>
 <section class="report-overview" aria-label="Result summary"><h2>Results in this search</h2>
-<p>{{ summary.total }} candidate contexts evaluated. Counts refer to contexts, which may include several SPWs from one observation.</p>
-{% for count in summary.counts %}<p><strong>{{ 'Spectral line' if count.intent == 'LINE' else count.intent|title }}</strong>: {{ count.met }} meet conditions · {{ count.not_met }} do not meet conditions · {{ count.review }} need review{% if count.unreported %} · {{ count.unreported }} without a recorded result{% endif %}.</p>{% endfor %}
-<p>These results apply to the retrieved candidates. They do not establish that the entire Archive or Queue is free of duplication.</p>
-{% if document.assessment_status == 'SOURCES_UNAVAILABLE' or (run and run.status == 'SOURCES_UNAVAILABLE') %}<p class="notice">Some source evidence is unavailable or incomplete. <a href="#sources">Review source status before interpreting results.</a></p>{% endif %}
+{% if document.report_kind == 'SOLAR_EXEMPTION' %}<p><strong>Solar exemption: search not performed.</strong> Solar observations are exempt from duplication checking. This is not a completed search with zero matches.</p>
+{% else %}
+{% if source_overview | selectattr('attention') | list %}<p class="notice"><strong>Search or evidence is incomplete.</strong> Interpret the available comparisons within their recorded scope. <a href="#sources">Review source coverage</a>.</p>{% endif %}
+{% for finding in summary.findings %}<p class="result-finding"><strong>{{ purpose_labels.get(finding.intent, 'Recorded purpose') }}:</strong> {{ finding.text }}</p>{% endfor %}
+{% if summary.total == 0 %}<p>Check source coverage and the recorded search scope before running again. An empty result does not establish that there is no duplication.</p>{% endif %}
+<p><strong>{{ member_count }}</strong> Archive Member OUS with matching comparisons{% if queue_count %} · <strong>{{ queue_count }}</strong> matching Queue contexts{% endif %}{% if ungrouped_count %} · <strong>{{ ungrouped_count }}</strong> matching contexts without an unambiguous Member identity{% endif %}.</p>
+<p>{{ match_count }} matching comparisons in total. A Member group can contain several SPWs; this is not a verdict on the entire Member OUS.</p>
+{% if result_view == 'all' %}<p>{{ summary.total }} candidate comparisons evaluated. This optional audit view includes non-matches and unresolved results.</p>{% endif %}
+<div class="result-totals">{% for count in summary.counts %}<div><h3>{{ purpose_labels.get(count.intent, 'Recorded purpose') }}</h3><p><strong>{{ count.met }}</strong> meet conditions{% if result_view == 'all' %} · <strong>{{ count.not_met }}</strong> do not meet conditions{% endif %}{% if count.review or count.unreported %} · {{ count.review + count.unreported }} unresolved comparisons{% endif %}</p></div>{% endfor %}</div>
+<p>Results apply to the retrieved candidates. They do not establish that the entire Archive or Queue is free of duplication.</p>
+{% endif %}
+{% if document.assessment_status == 'SOURCES_UNAVAILABLE' or (run and run.status == 'SOURCES_UNAVAILABLE') %}<p class="notice">Some source evidence is unavailable or incomplete. Review source coverage below before interpreting results.</p>{% endif %}
+</section>
+{% if source_overview %}<section id="sources" aria-label="Source coverage"><h2>Source coverage</h2><div class="source-states">{% for source in source_overview %}<div{% if source.attention %} class="source-attention"{% endif %}><h3>{{ source.name }} — {{ source.label }}</h3>{% for note in source.notes %}<p>{{ note }}</p>{% endfor %}</div>{% endfor %}</div></section>{% endif %}
 {% set retrieval = (document.get('plan') or {}).get('retrieval_policy') %}
-{% if retrieval %}<p><strong>Automatic retrieval:</strong> {% if 'ARCHIVE' in document.request.search_options.sources %}Archive centre radius {{ display_number(retrieval.archive_radius_deg * 3600) }} arcsec. {% endif %}{% if 'QUEUE' in document.request.search_options.sources %}Queue includes all supplied rows before optional filters. {% endif %} This is a bounded single-point search, not complete coverage of unknown positions or extended mosaics.</p>
-<details><summary>Search scope, method and limitations</summary>{{ evidence(retrieval) }}</details>{% endif %}
-<a href="#candidates">Review candidate comparisons</a></section>
-<details class="report-technical"><summary>Execution details and input</summary>
-{% if run %}<div class="notice"><strong>Assessment run</strong><span>This assessment used your submitted input and configured sources. Source provenance is preserved in the report and downloads.</span></div>
-<p class="report-hash">Run ID: {{ report_id }} · Execution status: {{ run.status }}</p>
-<p>Reports are retained temporarily in this local process. Download to keep a copy; restarting or reaching retention limits removes older runs.</p>
-<p><a href="{{ url_for('proposed') }}">Enter another observation</a> · <a href="{{ url_for(download_endpoint, report_id=report_id, kind='request') }}">Download this run's input request</a></p>
+{% if retrieval %}<p class="search-scope-summary"><strong>Automatic retrieval:</strong> {% if 'ARCHIVE' in document.request.search_options.sources %}Archive centre radius {{ display_number(retrieval.archive_radius_deg * 3600) }} arcsec, bounded by 7 m dishes at 35 GHz. {% endif %}{% if 'QUEUE' in document.request.search_options.sources %}Queue includes all supplied rows before optional filters. {% endif %}This scope does not guarantee coverage of unknown positions, frequencies below the bound or extended mosaics. <a href="#technical-records">See the recorded scope and limitations.</a></p>{% endif %}
+<div class="report-actions"><a href="{{ url_for('proposed') }}">Enter another observation</a><a href="{{ url_for('report_index') }}">Existing reports</a></div>
+{% if run %}<p class="field-note">This report is stored temporarily on this server for up to {{ display_number(retention_hours) }} hours. It can become unavailable earlier after a restart or when retention limits are reached. Optional data exports are in <a href="#technical-records">Technical records</a>.</p>{% endif %}
+<nav class="report-nav" aria-label="Report sections"><a href="#candidates">Candidate results</a><a href="#comparisons">Parameter comparisons</a><a href="#evidence">Information to review</a><a href="#technical-records">Technical records</a></nav>
+{% if document.report_kind != 'SOLAR_EXEMPTION' %}
+<section id="candidates"><h2>{{ 'All candidate comparisons' if result_view == 'all' else 'Matching candidates' }}</h2><p>Page {{ page }} of {{ pages }} · {% if result_view == 'all' %}{{ visible_count }} recorded comparisons.{% else %}{{ group_count }} result groups · {{ visible_count }} matching comparisons. Each page holds up to 20 complete Member groups or independent source contexts.{% endif %}</p>
+{% if result_view == 'matches' %}<p>Only recorded matches are listed. Archive results are grouped by Member OUS, then by target and execution, with SPW comparisons nested below. Each group stays on one page.</p>{% else %}<p><a href="{{ url_for(view_endpoint, report_id=report_id) }}#candidates">Return to matching candidates only</a></p>{% endif %}
+{% if contexts %}{% if result_view == 'matches' %}
+<div class="report-table-scroll" role="region" aria-label="Matching Member results" tabindex="0"><table class="member-table"><caption>Member OUS and independent source contexts containing matching comparisons.</caption><thead><tr><th scope="col">Member OUS / source context</th><th scope="col">Project</th><th scope="col">Matching comparisons</th></tr></thead><tbody>
+{% for group in member_groups %}<tr><th scope="row"><a href="#{{ group.anchor }}">{{ group.label }}</a><small>{{ group.source|title }}</small></th><td>{{ group.projects|join(', ') or 'Not recorded' }}</td><td>{{ group.entries|length }}<small>Expand SPW comparisons below</small></td></tr>{% endfor %}
+</tbody></table></div>
+{% else %}<div class="report-table-scroll" role="region" aria-label="Candidate results" tabindex="0"><table class="candidate-table"><caption>Results for each candidate; spectral windows remain separate.</caption><thead><tr><th scope="col">Candidate</th><th scope="col">Source</th>{% for branch in summary.intents %}<th scope="col">{{ purpose_labels.get(branch, 'Recorded purpose') }}</th>{% endfor %}</tr></thead><tbody>
+{% for c in contexts %}<tr><th scope="row"><a href="#context-{{ context_indices[loop.index0] }}">Candidate {{ context_indices[loop.index0] + 1 }}</a>{% for label, value in context_identity(c) if label in ['Target', 'Project', 'SPW'] %}<small>{{ label }}: {{ value }}</small>{% endfor %}</th><td>{{ c.reference.source|title }}</td>{% for branch in summary.intents %}<td>{% for b in c.branches if b.branch == branch %}{{ status(b.status) }}{% else %}{{ 'Not requested' if branch not in summary.intents else 'No branch result' }}{% endfor %}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div>
+{% endif %}{% else %}<p>No matching candidates are available in this view. Review source coverage and unresolved evidence below; this does not establish an absence of duplication.</p>{% endif %}
+<nav aria-label="Report pages">{% if page > 1 %}<a href="{{ url_for(view_endpoint, report_id=report_id, page=page-1, view=result_view) }}">Previous</a>{% endif %} {% if page < pages %}<a href="{{ url_for(view_endpoint, report_id=report_id, page=page+1, view=result_view) }}">Next</a>{% endif %}</nav></section>
+{% if document.request_criteria %}<section id="setup-qualification"><h2>Proposed setup qualification</h2><p>This qualification applies to your continuum setup and is shared by the candidate comparisons.</p>
+{% for r in document.request_criteria %}{% if r.method_version == 'continuum_setup_declaration_1' %}<p class="notice">The continuum setup qualification uses a researcher declaration. Individual usable window widths have not necessarily been verified.</p>{% if 'CONTINUUM_SETUP_DECLARATION_CONFLICT' in r.reasons %}<p role="alert">The setup confirmation conflicts with the complete window list. Review the confirmation, list completeness and widths before relying on this criterion.</p>{% endif %}{% endif %}{% endfor %}{{ comparison(document.request_criteria, 'Proposed setup evidence') }}</section>{% endif %}
+{% if contexts %}<section id="comparisons"><h2>Parameter comparisons</h2><p>Compare your requirements with each listed candidate below. Each result uses the recorded scientific assessment. Values are displayed to six significant digits; full precision is available in technical records.</p>
+{% if result_view == 'matches' %}
+{% for group in member_groups %}<section class="member-result" id="{{ group.anchor }}">
+<h3>{{ 'Member OUS · ' if group.member else '' }}{{ group.label }}</h3>
+<p class="member-project">{% for project in group.projects %}Project: {{ project }}{{ ' · ' if not loop.last }}{% endfor %}</p>
+<p>{{ group.entries|length }} matching comparison{{ '' if group.entries|length == 1 else 's' }} shown. Results apply to the listed contexts, not every observation in this {{ 'Member OUS' if group.member else 'source record' }}.</p>
+{% if not group.member and group.source == 'ARCHIVE' %}<p class="field-note">Member identity is unavailable or ambiguous; this comparison is kept separate.</p>{% endif %}
+{% for child in group.children %}<section class="member-execution">
+<h4>Target: {{ child.target or 'Not unambiguously recorded' }}</h4>
+{% if group.source == 'ARCHIVE' %}<p class="execution-identity">Execution (ASDM): {{ child.execution or 'Not unambiguously recorded; context kept separate' }}</p>{% endif %}
+{% for index, c in child.entries %}{{ candidate_comparison(c, index, index == context_indices[0], true) }}{% endfor %}
+</section>{% endfor %}</section>{% endfor %}
+{% else %}{% for c in contexts %}{{ candidate_comparison(c, context_indices[loop.index0], loop.first) }}{% endfor %}{% endif %}</section>{% endif %}
+{% endif %}
+<section id="evidence"><h2>Information to review</h2><p>These reasons affect comparisons across the complete report, including other pages. Each group counts a candidate once; groups can overlap. These are not counts of duplicate observations.</p>
+{% for group in attention %}<div class="review-group"><h3>{{ group.title }}</h3><p>{% if group.candidates %}{{ group.candidates|length }} affected candidate comparison{{ '' if group.candidates|length == 1 else 's' }}.{% else %}Report-level issue; no individual candidate is identified.{% endif %}</p><ul>{% for message in group.messages %}<li>{{ message }}</li>{% endfor %}</ul>{% if group.candidates %}<p>Affected comparisons: {% for index in group.candidates[:8] %}<a href="{{ url_for(view_endpoint, report_id=report_id, page=index // 20 + 1, view='all') }}#context-{{ index }}">Candidate {{ index + 1 }}</a>{{ ', ' if not loop.last }}{% endfor %}{% if group.candidates|length > 8 %}. Another {{ group.candidates|length - 8 }} are listed in the complete inspection record.{% endif %}</p>{% endif %}</div>{% else %}<p>No evidence gaps were recorded by this report's inspection. This does not establish an absence of duplication.</p>{% endfor %}
+</section>
+<details id="technical-records" class="report-technical"><summary>Technical records — methods, source queries and original data</summary><p>Optional records for reproducibility and detailed verification. The comparison tables and explanations above can be read without downloading these files.</p><p><a href="{{ url_for(view_endpoint, report_id=report_id, view='all') }}#candidates">Inspect all {{ summary.total }} evaluated comparisons</a></p><div class="report-actions" aria-label="Technical downloads"><a href="{{ url_for(download_endpoint, report_id=report_id, kind='report') }}">Download complete original JSON</a><a href="{{ url_for(download_endpoint, report_id=report_id, kind='inspection') }}">Download inspection v3</a>{% if run %}<a href="{{ url_for(download_endpoint, report_id=report_id, kind='request') }}">Download this run's input request</a>{% endif %}</div><p>{{ document.report_kind }} · Report {{ document.report_version }} · Generated {{ document.generated_at }} · Whole-search assessment: {{ document.assessment }}.</p>
+{% if run %}<h3>Assessment run</h3><p>Run ID: {{ report_id }} · Execution status: {{ run.status }}.</p>{% endif %}
+{% if attention %}<details><summary>Diagnostic occurrence counts</summary><p>One candidate can produce the same reason in several criteria or beam variants. These counts overlap and are not candidate totals.</p><ul>{% for group in attention %}<li>{{ group.title }}: {{ group.count }} recorded issue occurrences; {{ group.candidates|length }} affected comparisons.</li>{% endfor %}</ul></details>{% endif %}
 {% if document.evaluation_configuration is defined %}<details><summary>Effective evaluation configuration</summary>{{ evidence(document.evaluation_configuration) }}</details>{% endif %}
-{% set replay = document.sources.get('ARCHIVE', {}).get('replay') %}{% if replay %}<p>Archive evidence: {{ replay.fixture_kind }} · Capture: {{ replay.capture_started_at }} to {{ replay.capture_finished_at }}.</p>{% endif %}
-{% if run.status == 'SOURCES_UNAVAILABLE' %}<p class="notice">One or more selected sources were unavailable or incomplete. Read their individual states below; the available results are retained.</p>{% endif %}
-{% endif %}
-{% if not run and document.assessment_status is defined %}<p>Execution status: {{ document.assessment_status }}</p>{% endif %}
-<p>{{ document.report_kind }} · report {{ document.report_version }} · generated {{ document.generated_at }}</p>
-</details>
-<p class="report-downloads"><a href="{{ url_for(download_endpoint, report_id=report_id, kind='report') }}">Download complete original JSON</a> · <a href="{{ url_for(download_endpoint, report_id=report_id, kind='inspection') }}">Download inspection v3</a></p>
-<nav class="report-nav" aria-label="Report sections"><a href="#sources">Sources</a><a href="#candidates">Candidate results</a><a href="#comparisons">Parameter comparisons</a><a href="#evidence">Evidence gaps</a></nav>
-<section id="result-guide"><h2>Interpretation</h2>
-{% if document.report_kind == 'SOLAR_EXEMPTION' %}<p>Solar exemption: search not performed; this is not a completed search with zero matches.</p>{% else %}
-<p>Branch results apply only to their context. CRITERIA_MET means those branch criteria are met; CRITERIA_NOT_MET means they are not met in that context. INDETERMINATE means evidence or support is insufficient.</p>{% endif %}
-<p>Whole-search assessment: {{ document.assessment }}. No search-wide absence of duplication is inferred. A missing source is different from a completed empty source.</p></section>
-<section id="candidates"><h2>Candidate results</h2>
-<p>{{ document.context_evaluations | length }} contexts in this report. Browser page {{ page }} of {{ pages }} (20 per page). Backend display limits do not remove evaluated contexts from these pages or downloads.</p>
-{% if contexts %}<div class="report-table-scroll" role="region" aria-label="Candidate results" tabindex="0"><table class="candidate-table"><caption>Independent branch results for each coherent candidate context</caption>
-<thead><tr><th scope="col">Candidate</th><th scope="col">Source</th><th scope="col">Continuum</th><th scope="col">Spectral line</th></tr></thead><tbody>
-{% for c in contexts %}<tr><th scope="row"><a href="#context-{{ start + loop.index0 }}">Candidate {{ start + loop.index }}</a>{% for label, value in context_identity(c) if label in ['Target', 'Project', 'SPW', 'Member OUS', 'Queue row'] %}<small>{{ label }}: {{ value }}</small>{% endfor %}</th><td>{{ c.reference.source }}</td>
-{% for branch in ['CONTINUUM', 'LINE'] %}<td>{% for b in c.branches if b.branch == branch %}{{ status(b.status) }}{% else %}{{ 'Not requested' if branch not in summary.intents else 'No branch result' }}{% endfor %}</td>{% endfor %}</tr>{% endfor %}
-</tbody></table></div>{% else %}<p>No evaluated contexts in this report. Consult source and search states; this is not proof of no duplication.</p>{% endif %}
-<nav aria-label="Report pages">{% if page > 1 %}<a href="{{ url_for(view_endpoint, report_id=report_id, page=page-1) }}">Previous</a>{% endif %} {% if page < pages %}<a href="{{ url_for(view_endpoint, report_id=report_id, page=page+1) }}">Next</a>{% endif %}</nav></section>
-{% if document.request_criteria %}<section id="setup-qualification"><h2>Proposed setup qualification</h2><p>This request-level qualification is shared by the continuum comparisons below.</p>
-{% for r in document.request_criteria %}{% if r.method_version == 'continuum_setup_declaration_1' %}<p class="notice">CONT-SETUP uses a researcher declaration. Individual usable widths have not necessarily been verified. This does not establish the other duplication criteria.</p>{% if 'CONTINUUM_SETUP_DECLARATION_CONFLICT' in r.reasons %}<p role="alert">The setup confirmation conflicts with the complete window list. Review the confirmation, list completeness and widths before relying on this criterion.</p>{% endif %}{% endif %}{% endfor %}
-{{ comparison(document.request_criteria, 'Proposed setup evidence') }}</section>{% endif %}
-<section id="comparisons"><h2>Parameter comparisons</h2>
-<p>Values and outcomes below are taken from this report. Display values are rounded to six significant digits; exact stored values are in the details and JSON. Units remain source-specific. Expand a criterion to inspect backend comparison values and its method.</p>
-{% for c in contexts %}{% set context_index = start + loop.index0 %}<article class="report-context" id="context-{{ context_index }}">
-<h3>Candidate {{ start + loop.index }} · {{ c.reference.source }}</h3>
-<dl class="candidate-identity">{% for label, value in context_identity(c) %}<dt>{{ label }}</dt><dd>{{ value }}</dd>{% else %}<dt>Identity</dt><dd>Not recorded in this report. See the context reference below.</dd>{% endfor %}</dl>
-<details><summary>Technical context reference</summary><p class="report-context-id">{{ c.context_id }}</p></details>
-{% for b in c.branches %}<div class="branch-result"><strong>{{ b.branch }} — {{ b.status }}</strong>{% for reason in b.reasons %}<p>{{ reason }}</p>{% endfor %}
-<details><summary>Branch method and aggregation scope</summary>{{ evidence(b) }}</details></div>{% endfor %}
-{% if c.beam_variants %}
-<h4>{{ 'Queue' if c.reference.source == 'QUEUE' else 'Archive' }} beam hypotheses: 7 m + 12 m</h4>
-<p>One source observation, evaluated independently with both diameters. The backend combines complete branch results; it does not combine criteria across variants.</p>
-<p>Matching beam diameters (m): {{ c.mix_aggregation.matching_diameters_m | join(', ') or 'None' }}.</p>
-<details><summary>Beam aggregation evidence</summary>{{ evidence(c.mix_aggregation) }}</details>
-{% endif %}
-{% if c.array_evidence %}<details><summary>Official Archive array evidence for this source</summary>
-<p>Physical dish diameter and observing mode are recorded separately. Total Power uses 12 m dishes; unsupported TP scientific comparisons remain indeterminate.</p>
-{{ evidence(c.array_evidence) }}</details>{% endif %}
-{% for scope in c.beam_variants or [c] %}{% set variant_index = loop.index0 %}
-{% if c.beam_variants %}<section class="beam-variant"><h4>Beam variant · D = {{ scope.diameter_m }} m</h4>
-<p class="report-context-id">{{ scope.variant_id }}</p>
-{% for b in scope.branches %}<p>{{ b.branch }} — {{ status(b.status) }}</p>{% endfor %}{% endif %}
-{% if scope.criteria %}{{ comparison(scope.criteria, 'Context criteria') }}{% endif %}
-{% if scope.branches | selectattr('branch', 'equalto', 'CONTINUUM') | list %}<p>Continuum also uses the <a href="#setup-qualification">proposed setup qualification</a> above.</p>{% endif %}
-{% if scope.line_pairs %}<p>Each LINE pair binds one proposed window to one candidate SPW/component. Read its criteria together; evidence is not combined across different pairs.</p>{% endif %}
-{% for pair in scope.line_pairs %}<details class="line-pair" id="pair-{{ context_index }}-{% if c.beam_variants %}beam-{{ variant_index }}-{% endif %}{{ loop.index0 }}"><summary>LINE pair {{ loop.index }} — {{ pair.status }} · Proposed window {{ (pair.attempt.reference or {}).get('proposed_window_id', 'Not recorded') }}</summary>
-<h4>Proposed window and candidate SPW binding</h4><dl class="pair-binding">{% for key, value in pair_binding(pair) if key in ['Proposed setup', 'Proposed window', 'spw_token', 'spw_number'] %}<dt>{{ key }}</dt><dd>{{ value }}</dd>{% endfor %}</dl>
-<details><summary>Full binding identity</summary><dl class="pair-binding">{% for key, value in pair_binding(pair) %}<dt>{{ key }}</dt><dd>{{ value }}</dd>{% endfor %}</dl></details>
-{% for reason in pair.reasons %}<p>{{ reason }}</p>{% endfor %}
-{{ comparison(pair.criteria, 'Criteria for this LINE pair') }}
-<details><summary>Complete pair record</summary>{{ evidence(pair) }}</details></details>{% endfor %}
-{% if c.beam_variants %}</section>{% endif %}{% endfor %}
-<details><summary>Complete context record</summary>{{ evidence(c) }}</details><p><a href="#candidates">Back to candidate results</a></p></article>{% endfor %}</section>
-<section id="sources"><h2>Sources</h2><div class="source-states">{% for name, source in document.sources.items() %}<div><strong>{{ name }} — {{ source.status }}</strong>
-{% for reason in source.reasons %}<p>{{ reason }}</p>{% endfor %}
-{% if name == 'ARCHIVE' %}<p>Archive TAP status: {{ source.status }}</p>{% include '_archive_aq.html' %}{% endif %}
-<details><summary>Source metadata and search scope</summary>{{ evidence(source) }}</details></div>{% endfor %}</div></section>
-<section id="evidence"><h2>Evidence gaps — inspection v3</h2><p>Occurrences overlap and are not counts of duplicate observations. Locations refer to the complete downloaded report.</p><details><summary>Complete inspection record</summary>{{ evidence(item.inspection) }}</details></section>
-<details><summary>Request, configuration and search scope</summary>{% for key, value in document.items() %}{% if key not in ['context_evaluations', 'sources'] %}<h3>{{ key }}</h3>{{ evidence(value) }}{% endif %}{% endfor %}</details>
-<p class="report-hash">Original SHA-256: {{ item.sha256 }}</p>
+{% if retrieval %}<h3>Recorded automatic retrieval policy</h3>{{ evidence(retrieval) }}{% endif %}
+{% for name, source in document.sources.items() %}<h3>{{ name }} — {{ source.status }}</h3>{% if name == 'ARCHIVE' %}<p>Archive TAP status: {{ source.status }}</p>{% include '_archive_aq.html' %}{% endif %}<details><summary>Source metadata and search scope</summary>{{ evidence(source) }}</details>{% endfor %}
+<details><summary>Criterion methods for this page</summary>{{ record_fields(document.request_criteria) }}{% for c in contexts %}<h3>Candidate {{ context_indices[loop.index0] + 1 }}</h3><p>{{ c.context_id }}</p>{% for scope in c.beam_variants or [c] %}{{ record_fields(scope.criteria) }}{% for pair in scope.line_pairs %}{{ record_fields(pair.criteria) }}{% endfor %}{% endfor %}{% endfor %}</details>
+{% if disk_backed %}<p>Full inspection and per-row retrieval records are retained in the original downloads. Only the current page of comparisons is loaded here.</p>{% else %}<details><summary>Complete inspection record</summary>{{ evidence(item.inspection) }}</details>{% endif %}<details><summary>Request and run metadata</summary>{% for key, value in document.items() if key not in ['context_evaluations', 'sources'] %}<h3>{{ key }}</h3>{{ evidence(value) }}{% endfor %}</details>
+<details><summary>Complete candidate records on this page</summary><p>This preview contains only the current page. The original report download contains every candidate.</p>{{ evidence({'context_evaluations': contexts}) }}</details><p class="report-hash">Original SHA-256: {{ item.sha256 }}</p></details>
 </div>
 {% endblock %}

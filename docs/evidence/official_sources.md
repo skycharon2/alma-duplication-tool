@@ -169,3 +169,11 @@ methods. Current behavior is specified by [rules](../rules.md),
 [Archive client](../archive_client_contract.md) and [Queue contract](../queue_csv_contract.md).
 [Status](../status.md) distinguishes implemented Archive branch aggregation from
 the intentionally absent search-wide verdict; [roadmap](../roadmap.md) owns tasks.
+
+
+### 2026-10-06 blank-Mosaic follow-up
+
+The captured script hash was reverified. Its `isObsMosaic` function also treats
+missing Mosaic values as non-mosaic. The [new formal interpretation](../queue_blank_mosaic.md)
+therefore supports blank values with coordinate offsets without changing the
+parser classification or historical source records described above.

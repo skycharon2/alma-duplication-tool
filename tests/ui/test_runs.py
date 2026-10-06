@@ -88,6 +88,14 @@ def test_real_dual_source_run_retains_exact_report_and_input(monkeypatch, purpos
     location = response.location
     assert location.startswith("/runs/")
     html = client.get(location).get_data(as_text=True)
+    from tests.ui.test_reports import DefaultVisibleText
+    visible = DefaultVisibleText()
+    visible.feed(html)
+    text = ' '.join(visible.text)
+    assert "Download this run's input request" not in text
+    assert 'Download complete original JSON' not in text
+    assert 'Optional data exports' in text
+    assert 'Criteria for this LINE pair' in text if 'LINE' in purposes else 'Candidate conditions' in text
     assert "Assessment run" in html and "SYNTHETIC" in html
     assert "Execution status: COMPLETED" in html
     assert "Effective evaluation configuration" in html
@@ -96,6 +104,9 @@ def test_real_dual_source_run_retains_exact_report_and_input(monkeypatch, purpos
     assert hashlib.sha256(report.data).hexdigest() in html
     doc = report.get_json()
     assert doc["report_version"] == "4" and doc["input_sha256"] is None
+    for index, context in enumerate(doc['context_evaluations']):
+        positive = any(b['status'] == 'CRITERIA_MET' and b['branch'] in purposes for b in context['branches'])
+        assert (f'id="context-{index}"' in html) == positive
     assert len(doc["context_evaluations"]) > 1  # The display cap never drops contexts.
     assert all(doc["sources"][source]["status"] == "COMPLETED" for source in ("ARCHIVE", "QUEUE"))
     assert client.get(location + "/download/inspection").get_json() == inspect_report(doc, inspection_version="3")
@@ -240,7 +251,7 @@ def test_declared_continuum_report_matches_cli_and_preserves_provenance(tmp_path
     assert req["request"]["continuum_setup_declaration"] == CONTINUUM_SETUP_DECLARATION
     assert req["request"]["spectral_windows"] == [] and req["request"]["setup_complete"] is False
     assert doc["request"]["normalized"]["continuum_setup_declaration"] == CONTINUUM_SETUP_DECLARATION
-    assert b"CONT-SETUP uses a researcher declaration" in client.get(response.location).data
+    assert b"continuum setup qualification uses a researcher declaration" in client.get(response.location).data
     assert any(c["branches"][0]["status"] == "CRITERIA_MET" for c in doc["context_evaluations"])
     path = tmp_path / "request.json"
     path.write_text(json.dumps(req))

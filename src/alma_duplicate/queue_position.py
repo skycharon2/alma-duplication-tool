@@ -12,6 +12,7 @@ from alma_duplicate.domain.spatial import PositionInterpretation, SkyPosition, S
 from alma_duplicate.primary_beam import at_boundary, covers
 from alma_duplicate.geometry import angular_separation_deg, primary_beam_fwhm_deg
 from alma_duplicate.spatial_evidence import adapt_spatial
+from alma_duplicate.queue_pointing_scope import is_queue_single_point, uses_blank_mosaic_interpretation
 
 PROFILE = "QUEUE_PORTAL_CANDIDATE_1"
 SOURCE_REF = "docs/evidence/official_sources.md#queue-position-profile"
@@ -86,8 +87,13 @@ def adapt_queue_position(context, source_record, *, row_beam=False, beam_diamete
         return replace(evidence, selection_status=S.UNRESOLVED,
                        reasons=tuple(reasons) + ("QUEUE_OFFSET_FRAME_UNSUPPORTED",),
                        adapter_version=profile)
-    # No upgrade of rectangle/custom or blank-with-offset geometry to single field.
-    if spatial.mosaic_kind is not QueueMosaicKind.SINGLE_FIELD:
+    # Only the current row-beam workflow adopts the documented blank-Mosaic
+    # convention. Legacy retrieval keeps its original conservative geometry.
+    blank_pointing = row_beam and uses_blank_mosaic_interpretation(row)
+    if blank_pointing:
+        reasons = [r for r in reasons if r != "QUEUE_GEOMETRY_UNSUPPORTED"]
+        reasons.append("PORTAL_BLANK_MOSAIC_SINGLE_POINTING")
+    if not (row_beam and is_queue_single_point(row)) and spatial.mosaic_kind is not QueueMosaicKind.SINGLE_FIELD:
         return replace(evidence, reasons=tuple(reasons), adapter_version=profile)
     dx, dy = spatial.long_offset_arcsec.value, spatial.lat_offset_arcsec.value
     if not all(math.isfinite(v) for v in (dx, dy)) or math.hypot(dx, dy) >= 90 * 3600:

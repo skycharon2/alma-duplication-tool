@@ -255,3 +255,48 @@ def test_executor_rejects_invalid_local_arguments() -> None:
 
     with pytest.raises(ValueError, match="maxrec"):
         executor.execute("SELECT 1", maxrec=0)
+
+
+@pytest.mark.parametrize('method', ['GET', 'POST'])
+def test_live_transport_has_finite_connect_and_read_timeout(monkeypatch, method):
+    from requests.adapters import HTTPAdapter
+    from requests.exceptions import ReadTimeout
+    from alma_duplicate.clients.archive_client import TAP_HTTP_TIMEOUT
+
+    calls = []
+
+    def fail(self, request, **kwargs):
+        calls.append((request.method, kwargs['timeout']))
+        raise ReadTimeout('offline stalled response')
+
+    monkeypatch.setattr(HTTPAdapter, 'send', fail)
+    executor = PyvoTapExecutor('https://example.invalid/tap')
+    session = executor._get_service()._session
+    with pytest.raises(ReadTimeout):
+        session.request(method, 'https://example.invalid/tap/sync', timeout=None)
+    assert calls == [(method, TAP_HTTP_TIMEOUT)]
+
+
+def test_tap_timeout_returns_service_error_instead_of_hanging(monkeypatch):
+    from requests.adapters import HTTPAdapter
+    from requests.exceptions import ReadTimeout
+
+    def fail(self, request, **kwargs):
+        assert kwargs['timeout'] == (10, 60)
+        raise ReadTimeout('offline stalled response')
+
+    monkeypatch.setattr(HTTPAdapter, 'send', fail)
+    executor = PyvoTapExecutor('https://example.invalid/tap')
+    with pytest.raises(TapExecutionError) as caught:
+        executor.execute('SELECT TOP 1 * FROM ivoa.obscore', maxrec=1)
+    assert caught.value.kind is ArchiveQueryErrorKind.SERVICE_ERROR
+
+
+def test_stream_read_timeout_wrapped_by_pyvo_is_service_error():
+    from pyvo.dal.exceptions import DALFormatError
+    from urllib3.exceptions import ReadTimeoutError
+    executor = PyvoTapExecutor('https://example.invalid/tap', service=_FakeService(
+        error=DALFormatError(ReadTimeoutError(None, '/sync', 'stalled stream'))))
+    with pytest.raises(TapExecutionError) as caught:
+        executor.execute('SELECT 1', maxrec=1)
+    assert caught.value.kind is ArchiveQueryErrorKind.SERVICE_ERROR

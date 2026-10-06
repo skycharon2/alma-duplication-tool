@@ -305,9 +305,15 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
 
 def report_json_text(document):
     """Serialize an already JSON-native report document for publication."""
-    return json.dumps(
-        document, indent=2, ensure_ascii=False, allow_nan=False
-    ) + "\n"
+    return ''.join(report_json_chunks(document))
+
+
+def report_json_chunks(document):
+    """Stream the same publication format without materializing the full text."""
+    yield from json.JSONEncoder(
+        indent=2, ensure_ascii=False, allow_nan=False,
+    ).iterencode(document)
+    yield '\n'
 
 
 def write_report(path, document, *, overwrite=False):

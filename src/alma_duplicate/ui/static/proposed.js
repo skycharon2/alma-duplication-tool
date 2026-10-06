@@ -1,6 +1,36 @@
 /* Presentation only. All scientific validation remains on the server. */
 const form = document.querySelector('.proposed-form');
 if (form) {
+  let assessing = false;
+  const busyMessage = document.getElementById('assessment-busy');
+  const resetAssessment = () => {
+    assessing = false;
+    form.removeAttribute('aria-busy');
+    if (busyMessage) busyMessage.hidden = true;
+    for (const button of form.querySelectorAll('[data-assessment-pending]')) {
+      button.removeAttribute('aria-disabled');
+      button.removeAttribute('data-assessment-pending');
+    }
+  };
+  window.addEventListener('pageshow', resetAssessment);
+  form.addEventListener('submit', event => {
+    if (assessing) {
+      event.preventDefault();
+      return;
+    }
+    if (event.submitter?.value !== 'assess') return;
+    assessing = true;
+    form.setAttribute('aria-busy', 'true');
+    if (busyMessage) busyMessage.hidden = false;
+    // Keep the submitter enabled so action=assess remains in the POST data.
+    for (const button of form.querySelectorAll('button[type="submit"], button:not([type])')) {
+      button.setAttribute('aria-disabled', 'true');
+      button.setAttribute('data-assessment-pending', '');
+    }
+  });
+  form.addEventListener('click', event => {
+    if (assessing && event.target.closest('button')) event.preventDefault();
+  });
   const updatePurpose = form.querySelector('[data-update-purpose]');
   updatePurpose.hidden = true;
   const updateScope = form.querySelector('[data-update-scope]');
