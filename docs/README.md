@@ -177,6 +177,7 @@ review gate, persistent multi-user lifecycle and broader-mode scope.
 
 - [Queue mode evidence adapter](queue_mode_adapter.md): typed row/SPW mode evidence, exact-first reviewed compatibility, and separate single-point applicability.
 
+- [Blank Queue Mosaic interpretation](queue_blank_mosaic.md): source evidence, scoped offset support, retained raw geometry and spectral-scan limitations.
 - [Queue common rules](queue_common.md): opt-in Queue array/beam inference and complete MIX variants, shared row-level angular conditions and versioned provenance.
 
 - [Queue continuum](queue_continuum.md): opt-in row-level frequency, usable-union RMS and branch contract.

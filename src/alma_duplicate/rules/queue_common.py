@@ -3,7 +3,10 @@
 from dataclasses import replace
 
 from alma_duplicate.domain.comparison import QueueContextEvidence
-from alma_duplicate.domain.queue import QueueMosaicKind, RegularSpwEvidence
+from alma_duplicate.domain.queue import RegularSpwEvidence
+from alma_duplicate.queue_pointing_scope import (
+    DECISION_REF as BLANK_MOSAIC_REF, is_queue_single_point, uses_blank_mosaic_interpretation,
+)
 from alma_duplicate.domain.spatial import SkyPosition, SpatialStatus
 from alma_duplicate.geometry import angular_separation_deg, primary_beam_fwhm_deg
 from alma_duplicate.queue_position import (
@@ -33,7 +36,8 @@ def queue_common_scope_supported(common):
     return (
         len(common) == 2
         and {r.method_version for r in common}
-        == {"queue_angular_factor_7", "queue_pos_single_6"}
+        in ({"queue_angular_factor_7", "queue_pos_single_6"},
+            {"queue_angular_factor_8", "queue_pos_single_7"})
         and all(dict(r.details).get("common_scope") == "SUPPORTED" for r in common)
     )
 
@@ -48,6 +52,8 @@ def evaluate_queue_common(request, context, spatial_evidence, *, beam_diameter_m
         raise TypeError("Queue common methods require a Queue context")
     row = context.evidence.row
     issues = []
+    blank_pointing = uses_blank_mosaic_interpretation(row)
+    geometry_refs = (BLANK_MOSAIC_REF,) if blank_pointing else ()
 
     def issue(code, path, side=S.CANDIDATE):
         issues.append(CriterionIssue(side, code, path, code))
@@ -58,7 +64,7 @@ def evaluate_queue_common(request, context, spatial_evidence, *, beam_diameter_m
         or request.position is None
     ):
         issue("FIXED_SINGLE_POINT_REQUEST_REQUIRED", "request", S.PROPOSED)
-    if row.spatial.mosaic_kind is not QueueMosaicKind.SINGLE_FIELD:
+    if not is_queue_single_point(row):
         issue("QUEUE_SINGLE_FIELD_REQUIRED", "context.spatial.mosaic_kind")
     if not isinstance(row.spectral, RegularSpwEvidence):
         issue("REGULAR_QUEUE_SETUP_REQUIRED", "context.spectral")
@@ -109,15 +115,19 @@ def evaluate_queue_common(request, context, spatial_evidence, *, beam_diameter_m
         ("offset_frame_raw", row.spatial.coordinate_system_raw),
         ("array_scope", "ROW_BEAM_NOT_COMPONENT_MEMBERSHIP"),
         ("array_evidence_method", "QUEUE_ARRAY_BEAM_INFERENCE_2"),
-    ) + beam.details(row)
+    ) + ((
+        ("mosaic_raw", row.raw_row.value("Mosaic")),
+        ("effective_queue_geometry", "SINGLE_FIELD"),
+        ("geometry_interpretation", "PORTAL_BLANK_MOSAIC_SINGLE_POINTING"),
+    ) if blank_pointing else ()) + beam.details(row)
     # ANGULAR has its own missing-value/unit diagnostics. Beam frequency is not
     # its dependency; a missing candidate beam must not erase a valid ratio.
     angular = evaluate_angular_resolution(request, context)
     angular = replace(
         angular,
-        method_version="queue_angular_factor_7",
+        method_version="queue_angular_factor_8" if blank_pointing else "queue_angular_factor_7",
         approval=MethodApproval.APPROVED,
-        decision_refs=angular.decision_refs + (DECISION_REF, ROW_DECISION_REF,),
+        decision_refs=angular.decision_refs + (DECISION_REF, ROW_DECISION_REF,) + geometry_refs,
         details=angular.details + details,
     )
     angular_issues = issues
@@ -189,7 +199,7 @@ def evaluate_queue_common(request, context, spatial_evidence, *, beam_diameter_m
     position = CriterionResult(
         criterion_id="POS-SINGLE",
         policy_ref=f"{POLICY_DOCUMENT}, Position",
-        method_version="queue_pos_single_6",
+        method_version="queue_pos_single_7" if blank_pointing else "queue_pos_single_6",
         approval=MethodApproval.APPROVED,
         applicability=A.UNRESOLVED if position_issues else A.APPLICABLE,
         evaluation=E.INSUFFICIENT_INFORMATION if position_issues else E.EVALUATED,
@@ -220,7 +230,7 @@ def evaluate_queue_common(request, context, spatial_evidence, *, beam_diameter_m
             ("frequency_role", "POSITION_ONLY_NOT_CONT_FREQ"),
         ),
         issues=tuple(position_issues),
-        decision_refs=(ROW_DECISION_REF, SOURCE_REF),
+        decision_refs=(ROW_DECISION_REF, SOURCE_REF) + geometry_refs,
         reasons=tuple(i.code for i in position_issues)
         + notes
         + (
