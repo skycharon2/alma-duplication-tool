@@ -3,5 +3,5 @@
 <div class="page-heading"><h1>Existing reports</h1>
 <p>These reports are independent of the observation currently being entered.</p></div>
 <p>Read-only reports selected by the operator. No new assessment or source query is performed.</p>
-<ul>{% for id, item in reports.items() %}<li><a href="{{ url_for('report_view', report_id=id) }}">{{ item.name }}</a> — {{ item.document.report_kind }}</li>{% else %}<li>No reports configured. This does not mean that no duplicates exist.</li>{% endfor %}</ul>
+<ul>{% for id, item in reports.items() %}<li><a href="{{ url_for('report_view', report_id=id) }}">{{ item.name }}</a> — {{ 'Solar exemption — no search' if item.document.report_kind == 'SOLAR_EXEMPTION' else 'Observation comparison' }}</li>{% else %}<li>No reports configured. This does not mean that no duplicates exist.</li>{% endfor %}</ul>
 {% endblock %}

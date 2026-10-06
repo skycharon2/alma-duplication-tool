@@ -333,6 +333,8 @@ summary { cursor: pointer; padding: .4rem; }
 /* Scientific report overview and traceable identities. */
 .report-overview { border-top: 3px solid var(--blue); background: var(--blue-pale); padding: 18px 22px; margin-bottom: 18px; }
 .report-overview p { max-width: 80ch; margin-block: 8px; }
+.report-overview .notice { display: block; background: #fff8e5; border-color: #a2771a; color: #554216; }
+.report-overview .notice strong { white-space: normal; }
 .report-technical { margin-block: 14px; }
 .candidate-table th small { display: block; font-weight: 400; overflow-wrap: anywhere; margin-top: 4px; }
 .candidate-identity { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 18px; margin-block: 12px; }
@@ -341,3 +343,47 @@ summary { cursor: pointer; padding: .4rem; }
 .report-status small { display: block; font-size: 10px; font-weight: 400; }
 .report-number { font-variant-numeric: tabular-nums; }
 @media (max-width: 640px) { .report-overview { padding: 14px; } .candidate-identity { grid-template-columns: 1fr; } }
+
+/* Researcher-facing comparisons; raw records stay behind one audit disclosure. */
+.report-breadcrumb { font-size: 13px; }
+.result-finding { font-size: 17px; line-height: 1.6; }
+.result-totals { display: flex; flex-wrap: wrap; gap: 12px 36px; }
+.result-totals h3 { margin-bottom: 4px; }
+.report-actions { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-block: 18px; font-size: 14px; }
+.source-states h3 { margin-block: 0 8px; }
+.source-states p { font-size: 14px; }
+.source-states > .source-attention { border-color: #a2771a; background: #fff8e5; }
+.search-scope-summary { max-width: 95ch; font-size: 14px; color: var(--muted); }
+.candidate-caption { display: flex; flex-wrap: wrap; gap: 6px 20px; overflow-wrap: anywhere; }
+.candidate-comparison { padding: 12px 16px; border: 1px solid var(--border); }
+.candidate-comparison > summary { font-weight: 500; }
+.criterion-explanation { font-size: 13px; line-height: 1.6; }
+.review-group { padding: 10px 18px; margin-block: 12px; border-left: 3px solid #a2771a; background: #fffaf0; }
+.review-group p, .review-group li { max-width: 85ch; font-size: 14px; }
+.report-technical { border: 1px solid var(--border); padding: 14px 18px; scroll-margin-top: 16px; }
+.report-technical > summary { font-weight: 500; }
+.report-status[data-status="INDETERMINATE"] { color: #755a11; }
+.source-states > div:only-child { grid-column: 1 / -1; }
+.report-page .comparison-table p { padding: 0; margin-block: 6px; }
+.report-page .comparison-table thead th:nth-child(1) { width: 18%; }
+.report-page .comparison-table thead th:nth-child(2) { width: 20%; }
+.report-page .comparison-table thead th:nth-child(3) { width: 26%; }
+.report-page .comparison-table thead th:nth-child(4) { width: 36%; }
+
+/* Member groups preserve source, execution and SPW boundaries. */
+.report-page .member-result { border: 1px solid var(--border); padding: 18px; }
+.member-result > h3 { margin: -18px -18px 12px; padding: 14px 18px; background: var(--blue-pale); overflow-wrap: anywhere; }
+.member-project, .execution-identity { overflow-wrap: anywhere; font-size: 13px; }
+.member-execution { border-left: 3px solid var(--border); padding-left: 16px; }
+.member-execution h4 { margin-block: 10px; color: var(--blue-dark); overflow-wrap: anywhere; }
+.member-execution .report-context { margin-block: 8px; padding: 0; border: 0; scroll-margin-top: 16px; }
+.member-execution .candidate-comparison { margin: 0; }
+.report-page .member-table { min-width: 480px; }
+.member-table th:first-child { width: 42%; }
+.candidate-comparison > summary { overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .report-page .member-result { padding: 12px; }
+  .member-result > h3 { margin: -12px -12px 10px; padding: 12px; }
+  .member-execution { padding-left: 8px; }
+  .member-execution .candidate-comparison { padding: 10px; }
+}

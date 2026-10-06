@@ -7,7 +7,8 @@ from flask import Flask, Response, abort, redirect, render_template, request, ur
 from alma_duplicate.ui.reports import load_reports
 from alma_duplicate.auto_retrieval import automatic_scope
 from alma_duplicate.ui.report_view import (
-    criterion_view, pair_binding, context_identity, report_summary, display_number, STATUS_LABELS,
+    criterion_view, context_identity, report_summary, display_number, STATUS_LABELS, matching_contexts, member_groups,
+    criterion_explanation, criterion_status, pair_title, standalone_criteria, source_overview, attention_groups, PURPOSE_LABELS,
 )
 from alma_duplicate.ui.runs import BrowserAssessment, RunStore
 from alma_duplicate.ui.proposed import MAX_WINDOWS, assessment_supported, contributing_windows, initial_form, new_row, read_form, validate_form
@@ -78,15 +79,36 @@ def create_app(config=None):
         if not page.isdecimal() or len(page) > 8 or int(page) < 1:
             abort(400)
         page = int(page)
-        contexts = item.document["context_evaluations"]
-        pages = max(1, (len(contexts) + 19) // 20)
+        result_view = request.args.get("view", "matches")
+        if result_view not in ("matches", "all"):
+            abort(400)
+        matches = matching_contexts(item.document)
+        groups = member_groups(matches)
+        entries = (list(enumerate(item.document["context_evaluations"]))
+                   if result_view == "all" else matches)
+        page_units = entries if result_view == "all" else groups
+        pages = max(1, (len(page_units) + 19) // 20)
         if page > pages:
             abort(404)
         start = (page - 1) * 20
+        page_groups = groups[start:start + 20] if result_view == "matches" else []
+        page_entries = (entries[start:start + 20] if result_view == "all" else
+                        [entry for group in page_groups for child in group['children']
+                         for entry in child['entries']])
         return render_template("report.html", item=item, report_id=report_id,
-                               document=item.document, contexts=contexts[start:start + 20],
+                               document=item.document, contexts=[c for _, c in page_entries],
+                               context_indices=[i for i, _ in page_entries],
+                               member_groups=page_groups, group_count=len(groups),
+                               member_count=sum(g['member'] is not None for g in groups),
+                               queue_count=sum(g['source'] == 'QUEUE' for g in groups),
+                               ungrouped_count=sum(g['source'] != 'QUEUE' and g['member'] is None for g in groups),
+                               result_view=result_view, visible_count=len(entries), match_count=len(matches),
                                start=start, page=page, pages=pages, run=run,
-                               criterion_view=criterion_view, pair_binding=pair_binding,
+                               criterion_view=criterion_view, criterion_explanation=criterion_explanation,
+                               criterion_status=criterion_status, pair_title=pair_title, standalone_criteria=standalone_criteria,
+                               source_overview=source_overview(item.document),
+                               attention=attention_groups(item.document, item.inspection),
+                               purpose_labels=PURPOSE_LABELS,
                                context_identity=context_identity, summary=report_summary(item.document),
                                display_number=display_number, status_labels=STATUS_LABELS,
                                view_endpoint="run_view" if run else "report_view",

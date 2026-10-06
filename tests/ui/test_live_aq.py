@@ -279,7 +279,7 @@ def test_pagination_and_external_text_are_safe_without_acquisition(wired, tmp_pa
     events = list(wired["events"])
     viewer = create_app(config(REPORT_DIRECTORY=tmp_path)).test_client()
     for page in (1, 2):
-        response_ = viewer.get(f"/reports/1?page={page}")
+        response_ = viewer.get(f"/reports/1?page={page}&view=all")
         assert response_.status_code == 200
         html = response_.get_data(as_text=True)
         assert "<script>" not in html and "&lt;script&gt;" in html
