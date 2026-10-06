@@ -248,3 +248,21 @@ replay/live mutual exclusion, lazy construction, no replay fallback, no implicit
 live AQ lookup and shared-entry execution are tested with real network access
 forbidden. Live service availability, browser JavaScript interaction and
 independent real-proposal review remain separate verification.
+
+### Waiting for live sources
+
+The form displays a running message and prevents repeat submissions while an
+assessment is pending. The submitted action remains `assess`; returning via
+browser history resets the form's busy state. This is presentation feedback, not
+live per-stage progress or server-side cross-tab deduplication.
+
+Live TAP HTTP requests use a 10-second connection timeout and a 60-second idle
+read timeout, including redirected requests and streamed responses. Network
+failures wrapped by PyVO as format errors are classified as service errors.
+There is no automatic retry or reduction of the search radius. These timeouts
+are per request, not a deadline for the complete TAP/AQ/evaluation workflow.
+AQ retains its existing per-request timeouts. Source failure must remain
+unavailable evidence rather than a no-duplication conclusion.
+
+An already-running server must be restarted to load these protections. Reloading
+or closing a browser page does not reliably cancel its running backend request.
