@@ -133,7 +133,7 @@
 <input type="hidden" name="{{ row }}_mode" value="{{ values.get(row + '_mode', 'UNKNOWN') }}">
 </div>{% endif %}
 <div class="form-pair">{{ quantity(row + '_bandwidth', 'Usable or nominal bandwidth', ['MHz','GHz','kHz','Hz'], 'MHz') }}<div>{{ select(row + '_bandwidth_kind', 'Bandwidth interpretation', ['UNKNOWN','USABLE','NOMINAL'], 'UNKNOWN') }}</div></div>
-<p class="field-note">For your proposed setup, enter USABLE widths when known. Unit conversion alone does not turn NOMINAL into USABLE; a nominal width may leave setup qualification unresolved. Separately, Queue candidate widths are mapped automatically by the backend's supported nominal-to-usable method, with overlapping coverage counted once for aggregate RMS. You do not need to enter candidate widths here.</p>
+<p class="field-note">Choose NOMINAL for a nominal correlator bandwidth, or USABLE for an already usable width. During assessment, the backend applies the project-approved nominal-to-usable mapping to supported proposed widths and records the conversion. Unrecognized wide nominal values remain unresolved. Queue candidate widths are processed separately, including overlap removal for aggregate RMS; do not enter candidate widths here.</p>
 <details><summary>Window identity</summary>{{ input(row + '_id', 'Window ID (automatic)', true) }}</details>
 {% if line_layout %}<p><a href="#{{ row }}">Frequency and sensitivity for requested window {{ loop.index }}</a></p>{% endif %}
 <button class="button" type="submit" name="action" value="remove:{{ row }}">Remove Window {{ loop.index }}</button></fieldset>{% endfor %}

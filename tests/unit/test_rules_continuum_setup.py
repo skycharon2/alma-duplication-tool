@@ -98,6 +98,34 @@ def test_unknown_conversion_name_is_rejected():
         evaluate_continuum_setup(request([]), nominal_conversion="GUESS")
 
 
+@pytest.mark.parametrize('width,expected_usable,outcome', [
+    (2.0, 1.875, O.SATISFIED), (1.9, 1.875, O.SATISFIED),
+    (1.875, 1.875, O.SATISFIED), (1.0, .9375, O.NOT_SATISFIED),
+    (1.8, None, O.NOT_SATISFIED), (2.1, None, None),
+])
+def test_formal_nominal_mapping_records_operands_and_missing_values(width, expected_usable, outcome):
+    import json
+    from alma_duplicate.rules.continuum_setup import NOMINAL_METHOD, NOMINAL_DECISION_REF
+    from alma_duplicate.rules.model import MethodApproval
+    r = evaluate_continuum_setup(request([window('a', width, kind='NOMINAL'),
+                                          window('b', width, kind='NOMINAL')]),
+                                 nominal_conversion=PORTAL_SCRIPT_V1)
+    assert r.method_version == NOMINAL_METHOD and r.approval is MethodApproval.APPROVED
+    assert NOMINAL_DECISION_REF in r.decision_refs
+    assert r.outcome is outcome
+    entries = json.loads(dict(r.details)['window_bandwidth_evidence_json'])
+    assert [e['window_id'] for e in entries] == ['a', 'b']
+    assert all(e['usable_bandwidth_ghz'] == expected_usable and e['width_ghz'] == width for e in entries)
+    assert r.eligible_for_formal_aggregation is (outcome is not None)
+
+
+def test_formal_mapping_preserves_unknown_semantics_and_incomplete_list():
+    for windows in ([window('a', 2, kind='UNKNOWN'), window('b', 2, kind='UNKNOWN')],
+                    [window('a', 2, kind='NOMINAL')]):
+        r = evaluate_continuum_setup(request(windows, complete=False), nominal_conversion=PORTAL_SCRIPT_V1)
+        assert r.outcome is None
+
+
 def bounds(window_id, lower, upper, kind="USABLE"):
     return {"window_id": window_id, "representation": "BOUNDS", "bandwidth_kind": kind,
             "lower": {"value": lower, "unit": "GHz", "kind": "SKY", "frame": "UNKNOWN"},

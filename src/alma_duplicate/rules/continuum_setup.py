@@ -13,7 +13,7 @@ docs/evidence/scientific_feedback.md:
   qualify; canonical decimal values are compared without an equality band.
 * A usable width cannot exceed its nominal width under this interpretation.
   NOMINAL width <= 1.8 GHz does not qualify; a larger width is unresolved
-  unless the caller explicitly selects a provisional conversion; ``nominal_conversion=
+  unless the caller explicitly selects the project-approved conversion; ``nominal_conversion=
   "PORTAL_SCRIPT_V1"`` applies the portal-script mapping used by the Queue
   adapter and records that choice.
 * Two or more distinct qualifying windows give SATISFIED even for an incomplete
@@ -23,10 +23,15 @@ docs/evidence/scientific_feedback.md:
 """
 from __future__ import annotations
 
+import json
+
 from alma_duplicate.domain.proposed_observation import (
     CONTINUUM_SETUP_DECLARATION, ProposedObservationRequest, ProposedWindow,
 )
-from alma_duplicate.queue_normalization import QueueFrequencyDerivationError, map_nominal_to_usable_mhz
+from alma_duplicate.queue_normalization import (
+    QueueFrequencyDerivationError, map_nominal_to_usable_mhz,
+    QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION,
+)
 from alma_duplicate.rules.model import (
     POLICY_DOCUMENT, CriterionOutcome as O, CriterionResult, EvidenceSide, MethodApproval, CriterionIssue,
     EvaluationStatus as E, MethodApplicability as A,
@@ -42,6 +47,8 @@ MIN_QUALIFYING_WINDOWS = 2
 DECLARATION_METHOD = "continuum_setup_declaration_1"
 DECLARATION_REF = "docs/continuum_setup_declaration.md"
 PORTAL_SCRIPT_V1 = "PORTAL_SCRIPT_V1"
+NOMINAL_METHOD = "continuum_setup_4"
+NOMINAL_DECISION_REF = "docs/evidence/proposed_usable_bandwidth_decision_2026-10-07.md"
 DECISION_REFS = ("scientific-feedback-Q2:usable-bandwidth-for-1.8-GHz-threshold",)
 
 QUALIFIED, NOT_QUALIFIED, UNRESOLVED = "QUALIFIED", "NOT_QUALIFIED", "UNRESOLVED"
@@ -63,6 +70,20 @@ def _portal_usable_ghz(width_ghz: float) -> float | None:
     except QueueFrequencyDerivationError:
         return None
     return None if usable_mhz is None else usable_mhz / 1000.0
+
+
+def _width_evidence(window, status, reason):
+    """Record conversion operands alongside the unchanged original request."""
+    width = window.bandwidth
+    interval = window.interval
+    value = width.value if width else interval.span_ghz if interval else None
+    kind = window.bandwidth_kind if width else interval.kind if interval else 'UNKNOWN'
+    usable = (value if kind == 'USABLE' else _portal_usable_ghz(value)
+              if kind == 'NOMINAL' and value is not None else None)
+    return dict(window_id=window.window_id, input_value=width.raw_value if width else None,
+                input_unit=width.raw_unit if width else None, width_ghz=value,
+                bandwidth_kind=kind, usable_bandwidth_ghz=usable,
+                qualification=status, reason=reason)
 
 
 def qualify_window(window: ProposedWindow, *, nominal_conversion: str | None = None) -> tuple[str, str]:
@@ -139,6 +160,14 @@ def evaluate_continuum_setup(
                      *((window_id, f"{status}:{reason}") for window_id, status, reason in direct)),
         )
     details = tuple((window_id, f"{status}:{reason}") for window_id, status, reason in per_window)
+    if nominal_conversion == PORTAL_SCRIPT_V1:
+        details += (
+            ('nominal_mapping_version', QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION),
+            ('window_bandwidth_evidence_json', json.dumps([
+                _width_evidence(w, status, reason)
+                for w, (_, status, reason) in zip(request.spectral_windows, per_window)
+            ], allow_nan=False)),
+        )
     # Distinct identities only; the validator already rejects duplicate IDs.
     qualified = len({window_id for window_id, status, _ in per_window if status == QUALIFIED})
     unresolved = sum(status == UNRESOLVED for _, status, _ in per_window)
@@ -156,6 +185,8 @@ def evaluate_continuum_setup(
         ) if present)
         outcome = None
     refs = DECISION_REFS + ((f"nominal-conversion:{nominal_conversion}",) if nominal_conversion else ())
+    if nominal_conversion == PORTAL_SCRIPT_V1:
+        refs += (NOMINAL_DECISION_REF,)
     issues = tuple(CriterionIssue(EvidenceSide.PROPOSED,
                     "INVALID_EVIDENCE" if reason == "WINDOW_WIDTH_INVALID" else
                     "INCOMPATIBLE_UNIT" if reason == "WINDOW_WIDTH_UNIT_INCOMPATIBLE" else
@@ -166,8 +197,9 @@ def evaluate_continuum_setup(
         issues += (CriterionIssue(EvidenceSide.PROPOSED, "INCOMPLETE_ENUMERATION",
                                   "request.setup_complete", "Not all windows are declared"),)
     return CriterionResult(
-        criterion_id=CRITERION_ID, policy_ref=POLICY_REF, method_version=METHOD_VERSION,
-        approval=MethodApproval.PROVISIONAL,
+        criterion_id=CRITERION_ID, policy_ref=POLICY_REF,
+        method_version=NOMINAL_METHOD if nominal_conversion == PORTAL_SCRIPT_V1 else METHOD_VERSION,
+        approval=MethodApproval.APPROVED if nominal_conversion == PORTAL_SCRIPT_V1 else MethodApproval.PROVISIONAL,
         applicability=A.APPLICABLE if outcome is not None else A.UNRESOLVED,
         evaluation=E.EVALUATED if outcome is not None else E.INSUFFICIENT_INFORMATION,
         outcome=outcome, context_id=None, proposed=None, candidate=None, derived=derived,

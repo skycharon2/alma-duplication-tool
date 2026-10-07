@@ -54,7 +54,7 @@ method needs uncertainty bounds, it must define and version them explicitly.
 | --- | --- | --- |
 | ANGULAR | `archive_angular_factor_3` (approved Archive); `queue_angular_factor_7` (supported Queue), `queue_angular_factor_8` (blank-Mosaic offset interpretation); `angular_factor_2` (legacy) | Symmetric max/min <= 2, inclusive. Uses source-specific Archive or Queue angular evidence in canonical arcsec. Missing/invalid/unit-unsafe evidence remains explicit. |
 | POS-SINGLE | `queue_pos_single_6` (supported Queue), `queue_pos_single_7` (blank-Mosaic offset interpretation); `queue_pos_single_1` (legacy) | The supported Queue row-beam method is defined in [Queue common](queue_common.md); legacy reports retain their original method identity. Structured issues preserve proposed, candidate and method limitations. |
-| CONT-SETUP | `continuum_setup_3` (approved without nominal conversion); `continuum_setup_2` (legacy) | At least two distinct proposed windows with USABLE width strictly > 1.8 GHz. Exactly 1.8 does not qualify; 1.8000000005 does. UNKNOWN width semantics remain unresolved, including narrow widths. |
+| CONT-SETUP | `continuum_setup_3` (direct usable); `continuum_setup_4` (approved nominal conversion); `continuum_setup_2` (legacy) | At least two distinct proposed windows with usable width strictly > 1.8 GHz. Exactly 1.8 does not qualify. Unknown semantics and unmapped wide nominal widths remain unresolved. |
 | CONT-SETUP declaration | `continuum_setup_declaration_1` | Explicit researcher confirmation of that same qualification; accepted project evidence with USER_DECLARED provenance. A contradictory complete list leaves the outcome unresolved. Ordinary CONTINUUM intent does not qualify. See the [declaration contract](continuum_setup_declaration.md). |
 | Archive POS-SINGLE | `archive_pos_single_3` (source-bound AQ); `archive_pos_single_1` (legacy TAP-only) | Candidate `frequency`, source-bound or otherwise supported physical diameter, spherical separation <= half-power radius; inclusive float64 boundary. TP uses D=12 m for this geometric criterion under the dated project decision; broader TP science scope remains separate. |
 | CONT-FREQ | `archive_cont_freq_1`; `queue_cont_freq_2` | Archive uses its source frequency estimate; supported Queue continuum uses the coherent row reference SKY frequency. Both use the versioned factor-1.3 contract without cross-source substitution. |
@@ -68,11 +68,11 @@ For ANGULAR, 2.000000001 exceeds the limit. The exact factor is saved in details
 if its display float overflows, `derived.factor` is null without changing the
 exact condition result.
 
-A NOMINAL width <= 1.8 GHz bounds its usable width and cannot qualify under this
-provisional interpretation. Larger nominal widths require usable evidence or
-explicit `nominal_conversion="PORTAL_SCRIPT_V1"`. This existing opt-in mapping
-is recorded, remains provisional, and is not automatically applied to Archive
-windows. Its source-specific applicability still requires confirmation.
+A NOMINAL width <= 1.8 GHz bounds its usable width and cannot qualify.
+Larger nominal widths use the approved `nominal_conversion="PORTAL_SCRIPT_V1"`
+mapping when selected; unmapped widths remain unresolved. Shared assessment
+selects it by default for proposed continuum NOMINAL evidence. Candidate Archive
+windows are unchanged. See the [adoption decision](evidence/proposed_usable_bandwidth_decision_2026-10-07.md).
 See the central [scientific decision register](duplication_rule_inputs.md#7-scientific-decision-register);
 historical reported feedback remains preserved in [its evidence record](evidence/scientific_feedback.md).
 
@@ -191,9 +191,11 @@ An approved explicit failure can make a supported continuum branch or line pair 
 even when another condition is unknown. Unapproved results do not supply formal
 truth. Empty results, source failure and filter exclusion never imply absence.
 
-The optional `nominal_conversion` argument is forwarded only to CONT-SETUP. Its
-existing explicit, provisional interpretation is unchanged and recorded by that
-rule. This entry point does not infer conversions for candidates.
+The optional `nominal_conversion` argument is forwarded only to CONT-SETUP.
+`PORTAL_SCRIPT_V1` now selects approved `continuum_setup_4` and records per-window
+conversion evidence. The low-level evaluator still defaults to no conversion;
+the shared application selects the supported mapping for nominal proposals.
+This entry point does not infer conversions for candidates.
 
 Run the offline example:
 

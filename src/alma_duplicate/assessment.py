@@ -14,6 +14,7 @@ from alma_duplicate.reporting import report_document
 from alma_duplicate.request_validation import validate_proposed_observation
 from alma_duplicate.search_plan import validate_search_plan_configuration
 from alma_duplicate.rules.evaluation import evaluate_candidate_search
+from alma_duplicate.rules.continuum_setup import PORTAL_SCRIPT_V1
 from alma_duplicate.rules.evaluation_model import SolarExemptionReport
 from alma_duplicate.archive_array_evidence import (
     ArchiveArrayCatalog,
@@ -37,6 +38,7 @@ class AssessmentOptions:
     queue_common: bool = False
     queue_continuum: bool = False
     queue_line: bool = False
+    nominal_conversion: str | None = PORTAL_SCRIPT_V1
 
 
 @dataclass(frozen=True)
@@ -82,6 +84,8 @@ def assess_observation(request: dict, search_options: dict, *,
         return AssessmentResult(AssessmentStatus.REQUEST_NOT_SEARCH_READY, validated, None)
 
     selected = validated.search_options.sources
+    if options.nominal_conversion not in (None, PORTAL_SCRIPT_V1):
+        raise ValueError('Unknown proposed nominal bandwidth conversion')
     if (options.queue_common or options.queue_continuum or options.queue_line) and "QUEUE" not in selected:
         raise ValueError("--queue-common/--queue-continuum/--queue-line requires QUEUE selection")
     if options.queue_continuum and "CONTINUUM" not in validated.request.intents:
@@ -130,6 +134,13 @@ def assess_observation(request: dict, search_options: dict, *,
         search, queue_common=options.queue_common,
         queue_continuum=options.queue_continuum, queue_line=options.queue_line,
         archive_arrays=catalog,
+        nominal_conversion=(options.nominal_conversion
+                            if 'CONTINUUM' in validated.request.intents
+                            and validated.request.continuum_setup_declaration is None
+                            and any(w.bandwidth_kind == 'NOMINAL' or
+                                    (w.interval is not None and w.interval.kind == 'NOMINAL')
+                                    for w in validated.request.spectral_windows)
+                            else None),
     )
     document = report_document(
         report, input_sha256=input_sha256,

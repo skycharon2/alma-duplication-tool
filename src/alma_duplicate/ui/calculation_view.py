@@ -35,6 +35,7 @@ def calculation_view(record):
              for key, value in derived.items() if key in DERIVED]
     notes = []
     windows = []
+    proposed_windows = []
     if criterion == 'LINE-RMS' and 'sigma_at_plan_mjy_beam' in derived:
         notes = [
             'Archive RMS is first scaled from its 10 km/s reference to the planned spectral resolution, then adjusted to the angular comparison basis.',
@@ -68,7 +69,11 @@ def calculation_view(record):
         facts = [fact('Proposed correlator mode', details.get('proposed_mode')),
                  fact('Candidate correlator mode', details.get('candidate_mode', details.get('queue_mode')))]
         notes = ['The LINE check requires FDM evidence for both sides. Selecting a scientific purpose alone does not establish correlator mode.']
-    return {'facts': facts, 'notes': notes, 'windows': windows}
+    elif criterion == 'CONT-SETUP' and record.get('method_version') == 'continuum_setup_4':
+        notes = ['Proposed NOMINAL widths use the project-approved nominal-to-usable mapping. At least two distinct windows must each have usable bandwidth strictly greater than 1.8 GHz. Unrecognized wide nominal values remain unresolved; a nominal width at or below the threshold cannot qualify.']
+        proposed_windows = _json_rows(details.get('window_bandwidth_evidence_json'))
+        facts.append(fact('Nominal-to-usable mapping version', details.get('nominal_mapping_version')))
+    return {'facts': facts, 'notes': notes, 'windows': windows, 'proposed_windows': proposed_windows}
 
 
 def line_preparation(pair, request):

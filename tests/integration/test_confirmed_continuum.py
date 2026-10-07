@@ -202,7 +202,7 @@ def test_explicit_conflicting_position_interpretation_blocks_position():
     assert 'CONFLICTING_POSITION_INTERPRETATION' in result.reasons
 
 
-def test_nominal_conversion_remains_provisional_and_cannot_make_positive_branch():
+def test_approved_nominal_conversion_can_support_positive_branch():
     p=payload()
     for w in p['request']['spectral_windows']:
         w['bandwidth_kind']='NOMINAL';w['bandwidth']['value']=1.9
@@ -212,8 +212,9 @@ def test_nominal_conversion_remains_provisional_and_cannot_make_positive_branch(
     report=evaluate_candidate_search(search,nominal_conversion='PORTAL_SCRIPT_V1')
     assert report.evaluation_configuration.nominal_conversion == 'PORTAL_SCRIPT_V1'
     assert report.request_criteria[0].outcome is O.SATISFIED
-    assert report.request_criteria[0].approval is MethodApproval.PROVISIONAL
-    assert report.context_evaluations[0].branches[0].truth is T.UNKNOWN
+    assert report.request_criteria[0].approval is MethodApproval.APPROVED
+    assert report.request_criteria[0].method_version == 'continuum_setup_4'
+    assert report.context_evaluations[0].branches[0].truth is T.TRUE
 
 
 def test_all_required_false_branches_covered_without_short_circuit():
