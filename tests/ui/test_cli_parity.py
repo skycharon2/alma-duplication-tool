@@ -201,6 +201,40 @@ def test_catalog_form_cli_parity(tmp_path, monkeypatch, cases, case_id):
     run_form_parity(tmp_path, monkeypatch, inputs, data, case["expected_exit_code"])
 
 
+@pytest.mark.parametrize('width,unit,outcome', [
+    ('2', 'GHz', 'SATISFIED'), ('2000', 'MHz', 'SATISFIED'),
+    ('1875', 'MHz', 'SATISFIED'), ('1800', 'MHz', 'NOT_SATISFIED'),
+    ('2100', 'MHz', None),
+])
+def test_proposed_nominal_mapping_form_cli_and_both_sources(tmp_path, monkeypatch, cases, width, unit, outcome):
+    _, inputs = cases['dual-source-continuum']
+    data = form_for(json.loads(inputs['request'].read_bytes()))
+    for row in data.getlist('rows'):
+        data[row + '_bandwidth'] = width
+        data[row + '_bandwidth_unit'] = unit
+        data[row + '_bandwidth_kind'] = 'NOMINAL'
+    document, client, url = run_form_parity(tmp_path, monkeypatch, inputs, data, 0)
+    setup = document['request_criteria'][0]
+    assert setup['method_version'] == 'continuum_setup_4'
+    assert setup['approval'] == 'APPROVED' and setup['outcome'] == outcome
+    assert document['evaluation_configuration']['nominal_conversion'] == 'PORTAL_SCRIPT_V1'
+    assert {c['reference']['source'] for c in document['context_evaluations']} == {'ARCHIVE', 'QUEUE'}
+    if outcome == 'SATISFIED':
+        for source in ('ARCHIVE', 'QUEUE'):
+            assert any(c['reference']['source'] == source and c['branches'][0]['status'] == 'CRITERIA_MET'
+                       for c in document['context_evaluations'])
+    elif outcome is None:
+        assert all(c['branches'][0]['status'] != 'CRITERIA_MET' for c in document['context_evaluations'])
+    html = client.get(url).get_data(as_text=True).split('<details id="technical-records"')[0]
+    assert 'Proposed window bandwidth qualification' in html
+    assert 'NOMINAL' in html
+    if outcome == 'SATISFIED':
+        assert '1.875' in html
+    exported = client.get(url + '/download/request').get_json()['request']
+    assert all(w['bandwidth_kind'] == 'NOMINAL' and w['bandwidth']['value'] == width
+               for w in exported['spectral_windows'])
+
+
 @pytest.mark.parametrize("variant", ["dual-mixed", "declaration", "declaration-conflict", "equivalent-units"])
 def test_additional_form_contracts(tmp_path, monkeypatch, cases, variant):
     case_id = "dual-source-continuum" if variant.startswith("declaration") else "dual-source-line"

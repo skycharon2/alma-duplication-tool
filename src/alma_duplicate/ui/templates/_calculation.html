@@ -13,6 +13,9 @@
 {% if steps.windows %}<table class="usable-windows"><caption>Queue candidate windows used as bandwidth evidence</caption>
 <thead><tr><th scope="col">SPW</th><th scope="col">Sky centre (GHz)</th><th scope="col">Nominal width (MHz)</th><th scope="col">Usable width (GHz)</th></tr></thead>
 <tbody>{% for window in steps.windows %}<tr>{% for key in ['spw_number', 'sky_frequency_ghz', 'nominal_bandwidth_mhz', 'usable_bandwidth_ghz'] %}<td>{{ display_number(window[key]) if window.get(key) is not none else 'Not available' }}</td>{% endfor %}</tr>{% endfor %}</tbody></table>{% endif %}
+{% if steps.proposed_windows %}<table class="usable-windows"><caption>Proposed window bandwidth qualification</caption><thead><tr><th scope="col">Window</th><th scope="col">Entered bandwidth</th><th scope="col">Usable width (GHz)</th><th scope="col">Qualification</th></tr></thead><tbody>
+{% for window in steps.proposed_windows %}<tr><th scope="row">{{ window.window_id }}</th><td>{% if window.input_value is not none %}{{ display_number(window.input_value) }} {{ window.input_unit }}{% else %}{{ display_number(window.width_ghz) if window.width_ghz is not none else 'Not available' }}{% if window.width_ghz is not none %} GHz (interval span){% endif %}{% endif %}<small>{{ window.bandwidth_kind }}</small></td><td>{{ display_number(window.usable_bandwidth_ghz) if window.usable_bandwidth_ghz is not none else 'Not available' }}</td><td>{{ {'QUALIFIED': 'Qualifies', 'NOT_QUALIFIED': 'Does not qualify', 'UNRESOLVED': 'Needs usable-width evidence'}.get(window.qualification, 'Needs review') }}</td></tr>{% endfor %}
+</tbody></table>{% endif %}
 <p class="field-note">Values and the result come from this stored backend comparison. Missing steps stay unavailable; the page does not recalculate them.</p>
 </details>{% endif %}
 {% endmacro %}

@@ -109,7 +109,9 @@ Candidate `CANDIDATE_EVALUATION` report v4 records the effective evaluator
 selection in `evaluation_configuration`. `queue_common` is the effective value,
 so it is true when either `queue_continuum` or `queue_line` implies the common
 Queue methods. `nominal_conversion` records the evaluator-level continuum
-conversion selection; the current production CLI leaves it null. This metadata
+conversion selection. The CLI defaults to `PORTAL_SCRIPT_V1` for proposed
+CONTINUUM inputs with NOMINAL widths and no setup declaration; other paths
+record null. `--nominal-conversion NONE` explicitly disables conversion. This metadata
 records execution configuration only and does not create a search-wide or
 cross-source assessment.
 

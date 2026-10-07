@@ -32,6 +32,12 @@ Proposed observation from Existing reports; reports are independent of the curre
 
 ## Observation type and support
 
+During assessment, proposed NOMINAL widths use the shared entry's approved
+nominal-to-usable mapping for CONTINUUM setup qualification. The report records
+input and usable widths; unknown wider values remain unresolved. Validation and
+request export do not run scientific evaluation or replace NOMINAL inputs.
+See [the method decision](evidence/proposed_usable_bandwidth_decision_2026-10-07.md).
+
 Target type offers Fixed target, Moving target and Sun; geometry separately offers
 Single pointing and Mosaic. Defaults remain FIXED / SINGLE_POINTING, including
 older form submissions that omit these fields. Explicit unknown values are kept

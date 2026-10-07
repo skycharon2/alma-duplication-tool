@@ -11,6 +11,7 @@ from alma_duplicate.assessment import (
 from alma_duplicate.clients.queue_csv_client import QueueCsvClient
 from alma_duplicate.cli.json_input import load_request_document
 from alma_duplicate.reporting import json_value, write_report
+from alma_duplicate.rules.continuum_setup import PORTAL_SCRIPT_V1
 
 
 def main(argv=None, *, archive_client_factory=None):
@@ -34,6 +35,9 @@ def main(argv=None, *, archive_client_factory=None):
                         help="Evaluate scoped Queue continuum; includes Queue common rules")
     parser.add_argument("--queue-line", action="store_true",
                         help="Evaluate fixed single-field regular-SPW Queue LINE pairs")
+    parser.add_argument('--nominal-conversion', choices=(PORTAL_SCRIPT_V1, 'NONE'),
+                        default=PORTAL_SCRIPT_V1,
+                        help='Proposed continuum nominal-to-usable mapping; NONE retains unconverted evidence')
     args = parser.parse_args(argv)
 
     try:
@@ -84,6 +88,7 @@ def main(argv=None, *, archive_client_factory=None):
                 queue_common=args.queue_common,
                 queue_continuum=args.queue_continuum,
                 queue_line=args.queue_line,
+                nominal_conversion=None if args.nominal_conversion == 'NONE' else args.nominal_conversion,
             ),
             sources=AssessmentSources(archive_kind, archive_provider if archive_kind else None, loader),
             input_sha256=hashlib.sha256(raw).hexdigest(),

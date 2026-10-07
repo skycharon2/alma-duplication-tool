@@ -74,6 +74,7 @@ def test_invalid_request_has_no_report_or_source_access():
 
 
 @pytest.mark.parametrize('options,sources', [
+    (AssessmentOptions(nominal_conversion='GUESS'), AssessmentSources('LIVE', forbidden)),
     (AssessmentOptions(queue_line=True), AssessmentSources('LIVE', forbidden)),
     (AssessmentOptions(beam_decision_ref=' '), AssessmentSources('LIVE', forbidden)),
     (AssessmentOptions(), AssessmentSources('INVALID', forbidden)),

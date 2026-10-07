@@ -57,6 +57,13 @@ Read context branches, pair criteria, source states and scope from the document.
 
 ## Method selection and provenance
 
+`AssessmentOptions.nominal_conversion` defaults to `PORTAL_SCRIPT_V1`. It is
+selected only for CONTINUUM with NOMINAL windows and no explicit setup
+declaration; `None` disables it. Unknown names fail before source access.
+The [project adoption](evidence/proposed_usable_bandwidth_decision_2026-10-07.md)
+versions this proposed conversion as approved `continuum_setup_4`. Browser and
+CLI share this default and retain the original request values in reports.
+
 `AssessmentOptions` exposes the existing beam/filter options and explicit
 `queue_common`, `queue_continuum`, `queue_line` booleans. Their defaults remain
 False. Selecting Queue alone never enables formal Queue science. A UI must

@@ -41,12 +41,12 @@ aggregate usable bandwidth. Missing evidence cannot produce a partial aggregate
 RMS. The main comparison now shows stored `aggregate_rms_mjy`, rather than
 the original `Req.Sensitivity` at its reference width.
 
-**Proposed** nominal widths have a separate contract. The browser does not enable
-the provisional `PORTAL_SCRIPT_V1` proposed conversion. Researchers can supply
-known USABLE widths or explicitly confirm the supported continuum setup
-declaration. Selecting CONTINUUM alone does not qualify a setup. Extending the
-proposed conversion to a formal path requires a method/applicability decision;
-candidate conversion does not establish that decision.
+**Proposed** nominal widths now use the approved `continuum_setup_4` mapping
+through shared assessment, following the [2026-10-07 adoption](evidence/proposed_usable_bandwidth_decision_2026-10-07.md).
+The report shows entered values, derived usable widths and qualifications.
+Unrecognized wide nominal values remain unresolved. Researchers can also supply
+known USABLE widths or explicitly confirm the setup declaration. Selecting
+CONTINUUM alone does not qualify a setup. Candidate conversion remains separate.
 
 ## Reading the calculations
 

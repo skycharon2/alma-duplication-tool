@@ -27,11 +27,11 @@ that an arbitrary proposed setup belongs to its applicable configuration.
 The handbook establishes 15/16 for its FDM sub-band construction, not arbitrary
 bandwidths or processors. Rounded table entries are not exact ratios.
 
-The integrated evaluation defaults to no nominal conversion. A caller-selected
-mapping remains provisional. Before introducing an applicability gate, specify
-what configuration evidence the caller must provide and which unresolved reason
-is returned when that evidence is absent. Do not invent new scientific metadata
-merely to make the current examples pass.
+The [2026-10-07 project adoption](evidence/proposed_usable_bandwidth_decision_2026-10-07.md)
+approves the existing versioned mapping for proposed CONT-SETUP as
+`continuum_setup_4`. Shared assessment selects it for nominal continuum inputs;
+unknown wider widths remain unresolved. Broader conversions outside that
+mapping require a separate decision. No hardware metadata is invented.
 
 ## Integration acceptance and scientific acceptance
 
