@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from '_calculation.html' import facts, calculation with context %}
 {% macro evidence(value) %}<pre class="report-json">{{ value | tojson(indent=2) }}</pre>{% endmacro %}
 {% macro status(value) %}<span class="report-status" data-status="{{ value }}">{{ status_labels.get(value, 'Needs review') }}</span>{% endmacro %}
 {% macro quantity(q) %}{% if q and q.value is not none %}<span class="report-number" title="Stored value: {{ q.value }}">{{ display_number(q.value) }} {{ q.unit or '' }}</span>{% else %}<span class="field-note">Not available</span>{% endif %}{% endmacro %}
@@ -11,7 +12,7 @@
 {% elif r.criterion_id == 'CONT-SETUP' %}<td>At least two windows, each wider than 1.8 GHz.</td><td>Proposed setup only.{% for entry in v.derived if entry.key == 'qualifying_windows' %}<p>Qualifying windows: {{ display_number(entry.value) }}</p>{% endfor %}</td>
 {% else %}<td>{{ quantity(v.proposed) }}</td><td>{{ quantity(v.candidate) }}{% if r.criterion_id == 'LINE-RMS' %}<small>At the requested spectral resolution and the backend's angular comparison basis.</small>{% endif %}</td>{% endif %}
 <td><span class="report-status" data-status="{{ r.outcome if r.eligible_for_formal_aggregation else 'INDETERMINATE' }}">{{ criterion_status(r) }}</span><p class="criterion-explanation">{{ criterion_explanation(r) }}</p></td>
-</tr>{% endfor %}</tbody></table></div>
+</tr><tr class="calculation-row"><td colspan="4">{{ calculation(r) }}</td></tr>{% endfor %}</tbody></table></div>
 {% endmacro %}
 {% macro record_fields(records) %}{% for r in records %}<p>{{ criterion_view(r).label }} · <code>{{ r.criterion_id }}</code> · Method <code>{{ r.method_version }}</code> · {{ r.evaluation }} · {{ r.approval }}. Stored candidate field: {{ (r.candidate or {}).get('source_field', 'Not recorded') }}.</p>{% endfor %}{% endmacro %}
 {% macro candidate_comparison(c, context_index, first=false, nested=false) %}
@@ -24,7 +25,9 @@
 {% for scope in c.beam_variants or [c] %}{% set variant_index = loop.index0 %}{% if c.beam_variants %}<section class="beam-variant"><h4>Beam variant · D = {{ scope.diameter_m }} m</h4>{% for b in scope.branches %}<p>{{ purpose_labels.get(b.branch, 'Recorded purpose') }}: {{ status(b.status) }}</p>{% endfor %}{% endif %}
 {% set common = standalone_criteria(scope) %}{% if common %}{{ comparison(common, 'Candidate conditions') }}{% endif %}
 {% if scope.branches | selectattr('branch', 'equalto', 'CONTINUUM') | list %}<p>Continuum also requires the <a href="#setup-qualification">proposed setup qualification</a>.</p>{% endif %}
-{% for pair in scope.line_pairs %}<details class="line-pair" id="pair-{{ context_index }}-{% if c.beam_variants %}beam-{{ variant_index }}-{% endif %}{{ loop.index0 }}"{% if scope.line_pairs|length == 1 %} open{% endif %}><summary>Pair {{ loop.index }} · {{ pair_title(pair) }} · {{ status_labels.get(pair.status, 'Needs review') }}</summary><p>This comparison uses one proposed line and one candidate window. Values are not borrowed from other windows.</p>{{ comparison(pair.criteria, 'Criteria for this LINE pair') }}</details>{% endfor %}
+{% for pair in scope.line_pairs %}<details class="line-pair" id="pair-{{ context_index }}-{% if c.beam_variants %}beam-{{ variant_index }}-{% endif %}{{ loop.index0 }}"{% if scope.line_pairs|length == 1 %} open{% endif %}><summary>Pair {{ loop.index }} · {{ pair_title(pair) }} · {{ status_labels.get(pair.status, 'Needs review') }}</summary><p>This comparison uses one proposed line and one candidate window. Values are not borrowed from other windows.</p>
+<details class="line-preparation"><summary>Input and frequency preparation for this line</summary><p>For a REST input the backend uses νsky = νrest / (1 + z). Unit normalization and spectral-resolution conversion use this line's prepared frequency. A velocity convention is distinct from a reference frame; no missing frame is inferred.</p>{{ facts(line_preparation(pair, document.request)) }}</details>
+{{ comparison(pair.criteria, 'Criteria for this LINE pair') }}</details>{% endfor %}
 {% if c.beam_variants %}</section>{% endif %}{% endfor %}
 <p><a href="#candidates">Back to candidate results</a> · <a href="#technical-records">Technical records</a></p></details></article>
 {% endmacro %}

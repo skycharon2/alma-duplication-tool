@@ -381,6 +381,14 @@ summary { cursor: pointer; padding: .4rem; }
 .report-page .member-table { min-width: 480px; }
 .member-table th:first-child { width: 42%; }
 .candidate-comparison > summary { overflow-wrap: anywhere; }
+.report-page .calculation-row > td { padding-block: 0 10px; background: #f7fafc; }
+.calculation-details, .line-preparation { padding: 10px 12px; margin-block: 4px 12px; border-left: 2px solid var(--border); }
+.calculation-details > summary, .line-preparation > summary { color: var(--blue-dark); cursor: pointer; }
+.calculation-facts { margin-block: 12px; }
+.calculation-facts > div { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(140px, 1fr); gap: 8px 20px; padding-block: 5px; border-bottom: 1px solid var(--border); }
+.calculation-facts dt { color: var(--text-muted, #52616b); }
+.calculation-facts dd { margin: 0; overflow-wrap: anywhere; }
+.report-page .usable-windows { min-width: 420px; }
 @media (max-width: 600px) {
   .report-page .member-result { padding: 12px; }
   .member-result > h3 { margin: -12px -12px 10px; padding: 12px; }

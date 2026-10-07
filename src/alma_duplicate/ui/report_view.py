@@ -64,6 +64,10 @@ def criterion_view(record):
         key, unit = ('comparable_queue_rms_mjy', 'mJy') if 'comparable_queue_rms_mjy' in derived else ('sigma_comp_mjy_beam', 'mJy/beam')
         candidate = {'value': derived.get(key), 'unit': unit,
                      'semantics': 'At the requested spectral resolution and backend angular comparison basis'}
+    if record['criterion_id'] == 'CONT-RMS' and 'aggregate_rms_mjy' in derived:
+        # Req.Sensitivity is a reference-width RMS, not the aggregate operand.
+        candidate = {'value': derived['aggregate_rms_mjy'], 'unit': 'mJy',
+                     'semantics': 'Queue RMS over the aggregate usable bandwidth'}
     return {
         "record": record, "label": LABELS.get(record["criterion_id"], "Additional criterion"),
         "proposed": proposed, "candidate": candidate,

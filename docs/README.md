@@ -56,6 +56,8 @@ For running the browser end to end, start with
 [browser assessment sources](ui_offline_assessment.md).
 For optional SPWs and explicit researcher confirmation, see the
 [continuum setup declaration](continuum_setup_declaration.md).
+The [scientific workflow map](ui_scientific_workflow.md) connects the handwritten
+design to researcher inputs, candidate conversions and readable report steps.
 
 Read [status](status.md), [thin-interface contract](thin_interface_contract.md),
 [shared assessment entry](assessment_entry.md), [request API](proposed_observation_api.md),

@@ -8,6 +8,16 @@ explicitly configured Archive replay/live TAP and Queue CSV sources. Existing
 reports are not results of the current form. Both report routes use the same
 comparison view. The viewer displays the methods supplied by each report.
 
+## Scientific calculation steps
+
+Criterion rows expand into labelled stored operands and calculation explanations.
+LINE pairs additionally show the bound original inputs and prepared frequency
+and resolution. Queue continuum compares the stored aggregate RMS, with its
+reference RMS and nominal/usable window evidence available underneath. Missing
+aggregate RMS stays unavailable rather than falling back to reference RMS.
+See the [scientific workflow map](ui_scientific_workflow.md) for the relationship
+to the handwritten design, supported conversions and remaining limits.
+
 ## Run locally
 
 ```bash
