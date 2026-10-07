@@ -6,6 +6,7 @@ import weakref
 from flask import Flask, Response, abort, redirect, render_template, request, url_for
 
 from alma_duplicate.ui.reports import load_reports
+from alma_duplicate.ui.calculation_view import calculation_view, line_preparation
 from alma_duplicate.auto_retrieval import automatic_scope
 from alma_duplicate.ui.report_view import (
     criterion_view, context_identity, display_number, STATUS_LABELS,
@@ -103,6 +104,7 @@ def create_app(config=None):
                                criterion_status=criterion_status, pair_title=pair_title, standalone_criteria=standalone_criteria,
                                purpose_labels=PURPOSE_LABELS, context_identity=context_identity,
                                display_number=display_number, status_labels=STATUS_LABELS,
+                               calculation_view=calculation_view, line_preparation=line_preparation,
                                view_endpoint="run_view" if is_run else "report_view",
                                download_endpoint="run_download" if is_run else "report_download")
 

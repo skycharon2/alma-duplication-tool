@@ -1,0 +1,18 @@
+{% macro facts(entries) %}
+<dl class="calculation-facts">{% for entry in entries %}
+<div><dt>{{ entry.label }}</dt><dd>{% if entry.value is not none %}<span class="report-number" title="Stored value: {{ entry.value }}">{{ display_number(entry.value) }} {{ entry.unit }}</span>{% else %}<span class="field-note">Not available in this record</span>{% endif %}</dd></div>
+{% endfor %}</dl>
+{% endmacro %}
+
+{% macro calculation(record) %}
+{% set steps = calculation_view(record) %}
+{% if steps.facts or steps.notes or steps.windows %}
+<details class="calculation-details"><summary>How this comparison was made</summary>
+{% for note in steps.notes %}<p>{{ note }}</p>{% endfor %}
+{{ facts(steps.facts) }}
+{% if steps.windows %}<table class="usable-windows"><caption>Queue candidate windows used as bandwidth evidence</caption>
+<thead><tr><th scope="col">SPW</th><th scope="col">Sky centre (GHz)</th><th scope="col">Nominal width (MHz)</th><th scope="col">Usable width (GHz)</th></tr></thead>
+<tbody>{% for window in steps.windows %}<tr>{% for key in ['spw_number', 'sky_frequency_ghz', 'nominal_bandwidth_mhz', 'usable_bandwidth_ghz'] %}<td>{{ display_number(window[key]) if window.get(key) is not none else 'Not available' }}</td>{% endfor %}</tr>{% endfor %}</tbody></table>{% endif %}
+<p class="field-note">Values and the result come from this stored backend comparison. Missing steps stay unavailable; the page does not recalculate them.</p>
+</details>{% endif %}
+{% endmacro %}
