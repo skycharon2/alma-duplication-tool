@@ -12,12 +12,29 @@ from threading import Lock
 import time
 from uuid import uuid4
 
+from alma_duplicate.progress import emit_progress
 from alma_duplicate.reporting import report_json_chunks
 from alma_duplicate.report_inspection import inspect_report
 from alma_duplicate.ui.report_pages import report_page, report_projection
 
 DEFAULT_DISK_BYTES = 1024 * 1024 * 1024
 DEFAULT_MAX_AGE = 24 * 60 * 60
+
+
+def _utf8_blocks(chunks):
+    """Batch encoder tokens; bound each block to 64 Ki characters (256 KiB)."""
+    limit = 64 * 1024
+    pending, length = [], 0
+    for text in chunks:
+        for start in range(0, len(text), limit):
+            part = text[start:start + limit]
+            if length + len(part) > limit:
+                yield ''.join(pending).encode('utf-8')
+                pending, length = [], 0
+            pending.append(part)
+            length += len(part)
+    if pending:
+        yield ''.join(pending).encode('utf-8')
 
 
 @dataclass(frozen=True)
@@ -110,6 +127,7 @@ class RunStore:
     def add(self, request_document, result):
         # One staging run at a time bounds temporary space, and close waits for
         # publication/rollback before removing the private root directory.
+        emit_progress("storage_wait")
         with self._write_lock:
             with self._lock:
                 if self._closed:
@@ -120,6 +138,7 @@ class RunStore:
         if result.document is None:
             raise ValueError('An assessment without a report cannot be retained')
         document = result.document
+        emit_progress('inspection')
         inspection = inspect_report(document, inspection_version='3')
         for context in document['context_evaluations']:
             for field in ('reference', 'criteria', 'branches', 'line_pairs'):
@@ -129,18 +148,19 @@ class RunStore:
         staging = self.directory / ('.pending-' + run_id)
         staging.mkdir(mode=0o700)
         size = 0
+        emit_progress('storage', 0, unit='bytes')
 
         def write(name, chunks):
             nonlocal size
             digest, length = hashlib.sha256(), 0
             with (staging / name).open('xb') as stream:
                 os.chmod(stream.name, 0o600)
-                for text in chunks:
-                    raw = text.encode('utf-8')
+                for raw in _utf8_blocks(chunks):
                     size += len(raw)
                     if size > self._max_bytes:
                         raise ValueError("Report exceeds this application's disk retention limit")
                     stream.write(raw)
+                    emit_progress("storage", size, unit="bytes")
                     digest.update(raw)
                     length += len(raw)
             return length, digest.hexdigest()

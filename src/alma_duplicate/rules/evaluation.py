@@ -5,6 +5,7 @@ The request is taken from the original plan; no substitute request is accepted.
 """
 from __future__ import annotations
 
+from alma_duplicate.progress import emit_progress
 from alma_duplicate.domain.candidate_search import CandidateSearchResult, SearchSourceStatus
 from alma_duplicate.rules.line import evaluate_line
 from alma_duplicate.rules.position_single import evaluate_position_single
@@ -73,6 +74,7 @@ Programming/contract errors propagate; they are not scientific missing evidence.
     setup = (approve_setup(evaluate_continuum_setup(request, nominal_conversion=nominal_conversion),
                            nominal_conversion=nominal_conversion) if continuum else None)
     contexts = []
+    emit_progress("evaluation", 0, search_result.total_retained, "candidates")
     for source in (search_result.archive, search_result.queue):
         for row in source.retained_rows:
             from alma_duplicate.queue_row_beam import resolve_queue_beam_interpretation
@@ -94,6 +96,7 @@ Programming/contract errors propagate; they are not scientific missing evidence.
                     beam_variants=variants, array_evidence=array_evidence))
             else:
                 contexts.append(_evaluate_context(row, request, setup, configuration, array_evidence=array_evidence))
+            emit_progress("evaluation", len(contexts), search_result.total_retained, "candidates")
     return EvaluationReport(
         search_result=search_result,
         request_criteria=() if setup is None else (setup,),

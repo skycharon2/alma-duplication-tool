@@ -273,7 +273,7 @@ def test_initial_form_has_no_required_window_rows(client):
     html = client.get("/proposed").get_data(as_text=True)
     assert 'name="rows"' not in html
     assert 'Spectral line requirements' in html
-    assert 'Observation geometry: Single pointing.' in html
+    assert 'Single-pointing assessment available.' in html
     assert html.index('id="line-requirements"') < html.index('id="sensitivities"') < html.index('id="windows"')
     html = client.post("/proposed", data={"setup_id": "setup-1", "intents": "LINE", "action": "purpose"}).get_data(as_text=True)
     rows = re.findall(r'name="rows" value="([a-z0-9]+)"', html)

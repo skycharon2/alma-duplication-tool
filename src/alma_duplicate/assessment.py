@@ -10,6 +10,7 @@ from typing import Callable
 from alma_duplicate.candidate_search import ArchiveSearcher, search_candidates
 from alma_duplicate.domain.queue import QueueCsvParseResult
 from alma_duplicate.domain.proposed_observation import RequestValidationResult
+from alma_duplicate.progress import emit_progress
 from alma_duplicate.reporting import report_document
 from alma_duplicate.request_validation import validate_proposed_observation
 from alma_duplicate.search_plan import validate_search_plan_configuration
@@ -142,6 +143,7 @@ def assess_observation(request: dict, search_options: dict, *,
                                     for w in validated.request.spectral_windows)
                             else None),
     )
+    emit_progress("report")
     document = report_document(
         report, input_sha256=input_sha256,
         archive_replay_metadata=archive.replay_metadata if archive else None,

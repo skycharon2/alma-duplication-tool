@@ -269,10 +269,46 @@ independent real-proposal review remain separate verification.
 
 ### Waiting for live sources
 
-The form displays a running message and prevents repeat submissions while an
-assessment is pending. The submitted action remains `assess`; returning via
-browser history resets the form's busy state. This is presentation feedback, not
-live per-stage progress or server-side cross-tab deduplication.
+The bottom action area polls execution-local progress for an assessment submitted
+with JavaScript. TAP acquisition and CSV loading have no known total and remain
+indeterminate. After source preparation, the page shows each source's retained
+candidate count. AQ reports completed, fully validated Member queries over unique
+requested Members, including successful zero-hit responses. Candidate evaluation
+reports completed retained contexts over all retained contexts, regardless of the
+display limit. These percentages describe the current stage, never the fraction of
+total elapsed time. AQ acquisition failures still discard partial catalogs.
+
+Report assembly and inspection remain indeterminate. Storage reports bytes
+actually written across report artifacts, without inventing a final byte total.
+The report opens only after successful retention. The elapsed timer is waiting
+time, not server progress. Reduced-motion preferences disable bar animation.
+
+The POST still performs the assessment; this is not a detached background job.
+JavaScript sends a fresh random 128-bit progress token, polls
+`/assessment-progress/<token>` and uses the successful response's report URL.
+Polling never queries sources or reruns evaluation. Without JavaScript the
+existing POST/303 flow remains available. Invalid input and execution errors
+retain the form; progress connection loss never automatically resubmits it.
+
+Progress is in memory in the serving process, like the run store. Use one process
+with concurrent request threads; a single blocking worker cannot serve polls, and
+multiple processes require a shared progress/run store before deployment. Up to
+four progress-enabled runs may be active, with 64 progress records retained.
+Finished records expire after 30 minutes and may be evicted earlier. Active
+records are not expired while their POST is running; source timeouts still apply.
+Only a random token retrieves a snapshot, which contains stage names and counts,
+not proposal values, candidate identities or credentials. Reusing a token cannot
+start another assessment. Validation and request download do not create progress.
+
+Telemetry observers are request-local and optional. Their failures do not change
+scientific evaluation, report v4, inspection or downloads. Returning to a restored
+form resets its timer and busy state. No progress status is a scientific verdict.
+
+Run storage batches small JSON encoder tokens into bounded UTF-8 blocks before
+hashing and writing them. Original JSON bytes, hashes, evaluation scope and disk
+budget checks are preserved. This reduces write overhead; it does not reduce
+TAP/AQ latency or the size of a large report. The known full-CSV LINE retention
+limit remains a separate issue.
 
 Live TAP HTTP requests use a 10-second connection timeout and a 60-second idle
 read timeout, including redirected requests and streamed responses. Network

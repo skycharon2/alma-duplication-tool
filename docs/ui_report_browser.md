@@ -8,6 +8,12 @@ explicitly configured Archive replay/live TAP and Queue CSV sources. Existing
 reports are not results of the current form. Both report routes use the same
 comparison view. The viewer displays the methods supplied by each report.
 
+Normal source coverage and retrieval details are collapsed; source problems open
+the coverage section automatically and retain the warning in the result summary.
+Member scope is explained once in the overview. Review groups keep their reasons
+visible, with affected-candidate links expandable. Empty review sections are omitted.
+Parameter tables, scientific calculations, provenance and exports remain available.
+
 ## Scientific calculation steps
 
 Criterion rows expand into labelled stored operands and calculation explanations.

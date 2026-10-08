@@ -26,4 +26,4 @@ def test_index_opens_working_observation_form():
     assert "ALMA Duplication Assessment" in html
     assert "Visual preview" not in html
     assert 'action="/proposed"' in html
-    assert "No assessment has been run" in html
+    assert "No assessment source is configured" in html
