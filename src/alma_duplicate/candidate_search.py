@@ -5,6 +5,7 @@ from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Callable, Iterable, Protocol
 
+from alma_duplicate.progress import emit_progress
 from alma_duplicate.clients.archive_contract import ArchiveQueryResult
 from alma_duplicate.clients.archive_queries import ArchiveQuerySpec
 from alma_duplicate.comparison import build_archive_contexts, build_queue_contexts
@@ -109,6 +110,7 @@ def _run_source(plan, name, *, archive_client, queue_loader, supplied, interpret
     source_plan = plan.for_source(name)
     if source_plan is None:
         return SourceSearchExecution(name, S.NOT_SELECTED, "NONE", None)
+    emit_progress("archive_search" if name == "ARCHIVE" else "queue_load")
     mode = "CLIENT" if name == "ARCHIVE" and archive_client is not None else "SUPPLIED_RESULT"
     if name == "QUEUE" and queue_loader is not None:
         mode = "LOADER"
@@ -197,12 +199,16 @@ def search_candidates(
                              aq_equivalent_filters=aq_equivalent_filters,
                              queue_candidate_beam=queue_candidate_beam)
     started = datetime.now(UTC)
-    results = {
-        name: _run_source(plan, name, archive_client=archive_client, queue_loader=queue_loader,
-                          supplied=archive_result if name == "ARCHIVE" else queue_result,
-                          interpretations=interpretation_map)
-        for name in ("ARCHIVE", "QUEUE")
-    }
+    results = {}
+    for name in ("ARCHIVE", "QUEUE"):
+        result = _run_source(plan, name, archive_client=archive_client, queue_loader=queue_loader,
+                             supplied=archive_result if name == "ARCHIVE" else queue_result,
+                             interpretations=interpretation_map)
+        results[name] = result
+        if result.status == S.COMPLETED:
+            count = len(result.retained_rows)
+            emit_progress("archive_ready" if name == "ARCHIVE" else "queue_ready",
+                          count, count, "candidates")
     # Deterministic display order: requested source order, then context ID.
     retained = tuple(row for source in plan.sources for row in results[source.source].retained_rows)
     shown = retained if plan.result_limit is None else retained[:plan.result_limit]

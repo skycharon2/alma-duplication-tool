@@ -12,6 +12,8 @@ from urllib.parse import urlsplit
 
 import requests
 
+from alma_duplicate.progress import emit_progress
+
 from alma_duplicate.archive_array_evidence import (
     ArchiveArrayCatalog, ArchiveArrayCatalogMode, ArchiveArrayCatalogProvenance,
     ArrayRecord,
@@ -117,6 +119,7 @@ class ArchiveAqClient:
             raise ValueError("Invalid Member OUS UID")
         members = tuple(dict.fromkeys(members))
         records, queries = [], []
+        emit_progress("aq", 0, len(members), "members")
         if members:
             properties, _, _ = self._read("GET", PROPERTIES_URL)
             try:
@@ -143,6 +146,7 @@ class ArchiveAqClient:
                                                source.get("array"), digest, retrieved, endpoint))
                 queries.append(ArchiveAqMemberQuery(member, endpoint, retrieved, digest,
                                                    len(hits), self._max_hits))
+                emit_progress("aq", len(queries), len(members), "members")
         catalog = ArchiveArrayCatalog(tuple(records),
             ArchiveArrayCatalogProvenance(ArchiveArrayCatalogMode.LIVE))
         return ArchiveAqFetchResult(catalog, tuple(queries))

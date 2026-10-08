@@ -417,7 +417,7 @@ def test_member_pages_keep_interleaved_contexts_together_and_escape_identity(rep
     assert 'page=1&amp;view=matches' in second
     assert escape('uid://Member/0/<script>') in first
     assert 'uid://Member/0/<script>' not in first
-    assert 'not every observation in this Member OUS' in first
+    assert 'this is not a verdict on the entire Member OUS' in first
     assert client.get('/reports/1?page=3').status_code == 404
     assert client.get('/reports/1/download/report').data == raw
     assert client.get('/reports/1/download/inspection').get_json() == inspect_report(deepcopy(doc))

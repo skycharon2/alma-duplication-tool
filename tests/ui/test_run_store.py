@@ -11,7 +11,7 @@ import pytest
 
 from alma_duplicate.reporting import report_json_text, report_json_chunks
 from alma_duplicate.report_inspection import inspect_report
-from alma_duplicate.ui.run_store import RunStore
+from alma_duplicate.ui.run_store import RunStore, _utf8_blocks
 from alma_duplicate.ui.runs import BrowserAssessment
 
 ROOT = Path(__file__).parents[2]
@@ -62,6 +62,17 @@ def test_streaming_serializer_preserves_unicode_and_rejects_invalid_numbers():
     assert ''.join(report_json_chunks(doc)) == json.dumps(doc, indent=2, ensure_ascii=False, allow_nan=False) + '\n'
     with pytest.raises(ValueError):
         ''.join(report_json_chunks({'invalid': float('inf')}))
+
+
+def test_batched_utf8_preserves_bytes_across_unicode_and_large_tokens():
+    document = {'label': '谱线 🔭', 'large': 'µ🌌' * 100_000,
+                'values': list(range(10_000))}
+    blocks = list(_utf8_blocks(report_json_chunks(document)))
+    assert b''.join(blocks) == report_json_text(document).encode('utf-8')
+    assert all(0 < len(block) <= 256 * 1024 for block in blocks)
+    assert list(_utf8_blocks(iter(['', '']))) == []
+    with pytest.raises(ValueError):
+        list(_utf8_blocks(report_json_chunks({'invalid': float('nan')})))
 
 
 def test_large_report_exceeds_old_limit_but_default_store_and_small_page_work(store, assessment, monkeypatch):

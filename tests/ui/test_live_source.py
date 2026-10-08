@@ -301,7 +301,7 @@ def test_live_archive_environment_flag_is_explicit(
         assert "Archive TAP: live" in html
         assert 'value="assess"' in html
     else:
-        assert "No assessment has been run" in html
+        assert "No assessment source is configured" in html
         assert 'value="assess"' not in html
 
 

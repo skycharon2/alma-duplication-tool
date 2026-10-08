@@ -1,10 +1,14 @@
 """Flask application factory for the thin browser interface."""
 
 import os
+import re
+from contextlib import nullcontext
 import weakref
 
 from flask import Flask, Response, abort, redirect, render_template, request, url_for
 
+from alma_duplicate.progress import observe_progress
+from alma_duplicate.ui.progress import ProgressStore
 from alma_duplicate.ui.reports import load_reports
 from alma_duplicate.ui.calculation_view import calculation_view, line_preparation
 from alma_duplicate.auto_retrieval import automatic_scope
@@ -68,6 +72,8 @@ def create_app(config=None):
     )
     app.extensions["assessment_runs"] = runs
     weakref.finalize(app, runs.close)
+    progress = ProgressStore()
+    app.extensions["assessment_progress"] = progress
 
     @app.before_request
     def expire_runs():
@@ -158,6 +164,15 @@ def create_app(config=None):
             "Content-Disposition": f'attachment; filename="{kind}-{report_id}.json"',
         })
 
+    @app.get("/assessment-progress/<token>")
+    def assessment_progress(token):
+        if re.fullmatch(r"[a-f0-9]{32}", token) is None:
+            abort(404)
+        state = progress.get(token)
+        if state is None:
+            abort(404)
+        return state
+
     @app.route("/proposed", methods=["GET", "POST"])
     def proposed():
         values, rows = initial_form()
@@ -210,15 +225,28 @@ def create_app(config=None):
                     elif not configured.enabled:
                         execution_error = "Assessment sources are not configured. You can still validate and download the request."
                     elif result.is_valid and result.can_search:
+                        token = request.headers.get("X-Assessment-Progress")
+                        if token and re.fullmatch(r"[a-f0-9]{32}", token) is None:
+                            abort(400)
+                        if token and not progress.begin(token):
+                            return Response("Assessment already submitted or server busy. Wait before trying again.", status=429)
+                        report_url = None
                         try:
-                            assessment = configured.assess(document)
-                            if assessment.document is not None:
-                                run_id = runs.add(document, assessment)
-                                return redirect(url_for("run_view", report_id=run_id), code=303)
-                            execution_error = "Assessment returned no report. Review input readiness."
+                            observer = (observe_progress(lambda event: progress.update(token, event))
+                                        if token else nullcontext())
+                            with observer:
+                                assessment = configured.assess(document)
+                                if assessment.document is not None:
+                                    run_id = runs.add(document, assessment)
+                                    report_url = url_for("run_view", report_id=run_id)
+                                    return {"report_url": report_url} if token else redirect(report_url, code=303)
+                                execution_error = "Assessment returned no report. Review input readiness."
                         except (OSError, UnicodeError, ValueError, TypeError) as exc:
                             app.logger.warning("Browser assessment failed: %s", exc)
                             execution_error = "Assessment could not be completed. Check the configured sources and server log. No report was created."
+                        finally:
+                            if token:
+                                progress.finish(token, report_url=report_url)
                     else:
                         execution_error = "Assessment was not run. Correct invalid inputs and supply the search information shown below."
                 if action == "download" and result.is_valid:

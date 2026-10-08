@@ -223,3 +223,15 @@ def test_captured_official_response_bytes_replay_through_http_interface():
     identity = lambda r: (r.observation_id, r.member_ous_uid, r.source_name, r.raw_label, r.response_sha256)
     assert [identity(r) for r in result.catalog.records] == [identity(r) for r in captured.records]
     assert len(result.queries) == 5
+
+
+def test_progress_counts_validated_members_only_and_retains_no_partial_catalog():
+    from alma_duplicate.progress import observe_progress
+    events = []
+    incomplete = response([])
+    incomplete['timed_out'] = True
+    http = Http(Reply({'elasticsearchUrl': BASE}), Reply(response([])), Reply(incomplete))
+    with observe_progress(events.append), pytest.raises(ArchiveAqError, match='INCOMPLETE'):
+        ArchiveAqClient(request=http).fetch_members([MEMBER, MEMBER, OTHER])
+    assert [(e['completed'], e['total']) for e in events] == [(0, 2), (1, 2)]
+    assert all(e['stage'] == 'aq' and e['unit'] == 'members' for e in events)

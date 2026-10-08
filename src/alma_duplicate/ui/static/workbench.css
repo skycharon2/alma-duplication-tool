@@ -82,6 +82,17 @@ summary:hover { text-decoration: underline; text-underline-offset: 3px; }
 details[open] > summary { color: var(--blue-dark); }
 details p { padding: 8px 0; color: var(--muted); max-width: 75ch; }
 .input-actions { padding-block: 16px; }
+.assessment-progress { margin-top: 20px; padding: 14px 16px; background: var(--blue-pale); border-left: 3px solid var(--blue); }
+.assessment-progress-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; color: var(--blue-dark); }
+.assessment-elapsed { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.assessment-progress-track { height: 6px; margin-block: 12px; overflow: hidden; background: #cadde7; }
+.assessment-progress-track > span { display: block; width: 35%; height: 100%; background: var(--blue); animation: assessment-wait 1.8s ease-in-out infinite; }
+.assessment-progress p { margin-top: 8px; max-width: 75ch; font-size: 13px; }
+.button[aria-disabled="true"] { opacity: .65; cursor: wait; }
+@keyframes assessment-wait { from { transform: translateX(-100%); } to { transform: translateX(286%); } }
+@media (prefers-reduced-motion: reduce) {
+  .assessment-progress-track > span { animation: none; width: 100%; opacity: .55; }
+}
 .button { border: 1px solid #a9bac7; border-radius: 3px; background: white; color: var(--blue); padding: 6px 11px; font-size: 12px; line-height: 1.5; }
 .button:disabled { color: #687783; background: #f1f4f6; border-color: var(--border); cursor: not-allowed; }
 .primary { width: 100%; font-size: 14px; padding: 9px 14px; }
@@ -325,6 +336,15 @@ summary { cursor: pointer; padding: .4rem; }
 .scope-support { padding: 12px 14px; border-left: 3px solid var(--blue); background: var(--info); }
 .scope-support.scope-unavailable { border-left-color: #a47b18; background: var(--warning); }
 .scope-support p { margin-top: 5px; }
+.scope-support.scope-supported { padding: 0; border: 0; background: transparent; color: var(--muted); font-size: 13px; }
+.proposed-form .field-help { font-size: 13px; margin-block: 10px; }
+.proposed-form .field-help > summary, .input-export > summary { color: var(--blue-dark); padding: 5px 0; }
+.proposed-form .field-help p { max-width: 75ch; margin-block: 8px; color: var(--muted); }
+.proposed-form .input-export { padding-bottom: 12px; font-size: 13px; }
+.source-coverage > summary { color: var(--blue-dark); font-weight: 500; }
+.assessment-progress-track.is-determinate > span { animation: none; transform: none; transition: width .2s linear; }
+.assessment-progress .progress-count { font-variant-numeric: tabular-nums; font-weight: 500; }
+@media (prefers-reduced-motion: reduce) { .assessment-progress-track.is-determinate > span { transition: none; } }
 .appendix-guide { padding: 8px 12px; background: var(--info); border: 1px solid var(--border); }
 .appendix-guide p, .appendix-guide li { max-width: 80ch; margin-block: 8px; }
 .solar-retained > summary { color: var(--blue-dark); padding: 12px; border: 1px solid var(--border); }

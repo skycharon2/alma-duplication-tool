@@ -30,6 +30,14 @@ geometry are explicit; candidate geometry remains independently checked by the b
 The home route redirects to this working input page. Global navigation separates
 Proposed observation from Existing reports; reports are independent of the current form.
 
+The default view prioritizes fields and short entry hints. Appendix A explanations,
+bandwidth conversion notes, source configuration and display limits are available
+in expandable help. Run assessment and Validate input remain the primary actions;
+request download is under Export input. Errors, missing evidence and unsupported
+observation types remain visible. Links from diagnostics expand the containing
+section before focusing the affected control. Collapsing help does not remove
+inputs from submissions or change scientific validation.
+
 ## Observation type and support
 
 During assessment, proposed NOMINAL widths use the shared entry's approved
