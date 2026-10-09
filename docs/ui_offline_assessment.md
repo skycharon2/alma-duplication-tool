@@ -123,7 +123,7 @@ does not establish live service availability or a reviewed real-proposal result.
 | Candidate display limit | 1 |
 
 Window and setup identities are supplied by the form. Click Run assessment.
-The response redirects to `/runs/<id>`. Expect report v4, separate source states,
+The response redirects to `/runs/<id>`. Expect [matching-detail report v5](matching_report.md), separate source states,
 independent branch/pair evidence and explicit effective evaluation configuration.
 This is a new computation using the entered fields, not a saved acceptance report.
 
@@ -168,7 +168,7 @@ Validation and request download continue to call only the shared validator. Run
 assessment validates current values, then calls the shared application entry.
 The report's `input_sha256` stays null: a form has no original input-file bytes.
 The separately retained request download is the wire mapping submitted by the
-form; no fabricated original-file digest is inserted into report v4.
+form; no fabricated original-file digest is inserted into the report.
 
 `ui/reports.py` builds one viewer artifact from exact report bytes and derives
 inspection v3 once. `/runs/<id>` reuses the existing report template/pagination.
@@ -301,7 +301,7 @@ not proposal values, candidate identities or credentials. Reusing a token cannot
 start another assessment. Validation and request download do not create progress.
 
 Telemetry observers are request-local and optional. Their failures do not change
-scientific evaluation, report v4, inspection or downloads. Returning to a restored
+scientific evaluation, report content, inspection or downloads. Returning to a restored
 form resets its timer and busy state. No progress status is a scientific verdict.
 
 Run storage batches small JSON encoder tokens into bounded UTF-8 blocks before

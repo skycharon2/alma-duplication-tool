@@ -1,5 +1,9 @@
 # Shared assessment application entry
 
+Report retention is selected separately with `report_detail='full'` (default v4)
+or `'matches'` ([v5 contract](matching_report.md), browser default). All retained
+contexts are evaluated in either mode; scientific options are unchanged.
+
 `alma_duplicate.assessment.assess_observation(request, search_options, ...)`
 accepts the existing request dictionaries and returns `AssessmentResult`.
 It owns validation, valid SUN exemption, method/source selection checks,

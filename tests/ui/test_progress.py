@@ -61,7 +61,7 @@ def test_real_progress_counts_all_contexts_and_keeps_exports(monkeypatch):
     state = client.get('/assessment-progress/' + TOKEN)
     assert state.json['status'] == 'COMPLETED' and state.json['report_url'] == report_url
     assert state.headers['Cache-Control'] == 'no-store'
-    assert 'stages' not in report and report['report_version'] == '4'
+    assert 'stages' not in report and report['report_version'] == '5'
     # Polls, page reads and downloads never restart the assessment.
     count = len(events)
     client.get(report_url)

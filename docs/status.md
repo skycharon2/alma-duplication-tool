@@ -35,8 +35,9 @@ Completed correctness fixes: PR #91 preserves shared LINE exact decision operand
 context-level common-condition counting ([contract](report_inspection.md)).
 The shared assessment entry is implemented; PR #100 validates search-plan
 configuration before source access, including conflicting beam strategies.
-Current report version is 4, evaluation version is 5 and default inspection
-version is 3. Explicit inspection v1/v2 reproduce historical behavior.
+The shared entry and CLI default to full report v4; new browser runs use
+[matching-detail report v5](matching_report.md). Evaluation version is 5 and
+default inspection version is 3. Explicit inspection v1/v2 reproduce historical behavior.
 
 Recorded pre-UI review on 2026-09-28 for `3f7f3156d450e5b6164053c34b17e873309989ef` (PR #100) (supplied local review,
 not re-executed by this documentation-only change):

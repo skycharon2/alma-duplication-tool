@@ -100,6 +100,61 @@ def _context_results(item):
         data["array_evidence"] = json_value(item.array_evidence)
     return data
 
+
+def _summary_criterion(result):
+    """Keep decisions and diagnostics without traversing calculation evidence."""
+    data = {f.name: getattr(result, f.name) for f in fields(result)
+            if f.name not in {'derived', 'details'}}
+    # This small scope label supports existing human-readable Queue diagnostics.
+    data['details'] = tuple((k, v) for k, v in result.details if k == 'queue_geometry')
+    data['has_computed_outcome'] = result.has_computed_outcome
+    data['eligible_for_formal_aggregation'] = result.eligible_for_formal_aggregation
+    return data
+
+
+def _summary_results(item):
+    """Preserve pair/beam identities and all decisions, not prepared payloads."""
+    data = {
+        'criteria': [_summary_criterion(r) for r in item.criteria],
+        'branches': item.branches,
+        'line_pairs': [],
+    }
+    for pair in item.line_pairs:
+        attempt = pair.attempt
+        data['line_pairs'].append({
+            'attempt': {f.name: getattr(attempt, f.name) for f in fields(attempt)
+                        if f.name not in {'proposed', 'candidate', 'candidate_mode'}},
+            'criteria': [_summary_criterion(r) for r in pair.criteria],
+            'truth': pair.truth, 'status': pair.status, 'reasons': pair.reasons,
+            'method_version': pair.method_version, 'decision_refs': pair.decision_refs,
+            'scope': pair.scope,
+        })
+    if item.beam_variants:
+        data['beam_variants'] = [
+            {'variant_id': v.variant_id, 'diameter_m': v.diameter_m,
+             'context_id': item.candidate.context.context_id,
+             **_summary_results(v.evaluation)} for v in item.beam_variants
+        ]
+    return data
+
+
+def _reported_context(item, detail):
+    full = detail == 'full' or any(b.status == 'CRITERIA_MET' for b in item.branches)
+    data = {
+        'context_id': item.candidate.context.context_id,
+        'reference': item.candidate.context.reference,
+        'display_identity': _display_identity(item.candidate.context),
+    }
+    if full:
+        data.update(evidence_states=item.candidate.context.items, **_context_results(item))
+    else:
+        data.update(_summary_results(item))
+        if item.array_evidence is not None:
+            data['array_evidence'] = item.array_evidence
+    if detail == 'matches':
+        data['detail_level'] = 'FULL' if full else 'SUMMARY'
+    return data
+
 def _spatial(evidence):
     """Export row-local geometry without repeating its full source table."""
     if evidence is None:
@@ -238,13 +293,15 @@ def _solar_document(report, input_sha256):
     })
 
 
-def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
+def report_document(report, *, input_sha256=None, archive_replay_metadata=None, detail='full'):
+    if detail not in {'full', 'matches'}:
+        raise ValueError('Report detail must be full or matches')
     if isinstance(report, SolarExemptionReport):
         return _solar_document(report, input_sha256)
     search = report.search_result
     validation = search.plan.validation
-    return json_value({
-        "report_version": "4",
+    document = {
+        "report_version": "4" if detail == 'full' else "5",
         "report_kind": "CANDIDATE_EVALUATION",
         "search_execution": search.execution,
         "generated_at": datetime.now(UTC),
@@ -290,17 +347,24 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None):
         "request_criteria": [
             _criterion(result) for result in report.request_criteria
         ],
-        "context_evaluations": [
-            {
-                "context_id": item.candidate.context.context_id,
-                "reference": item.candidate.context.reference,
-                "display_identity": _display_identity(item.candidate.context),
-                "evidence_states": item.candidate.context.items,
-                **_context_results(item),
-            }
-            for item in report.context_evaluations
-        ],
-    })
+    }
+    if detail == 'matches':
+        document['report_detail'] = {
+            'mode': 'MATCHES_FULL_OTHER_SUMMARIES', 'version': '1',
+            'full_contexts': sum(any(b.status == 'CRITERIA_MET' for b in item.branches)
+                                 for item in report.context_evaluations),
+            'summary_contexts': sum(not any(b.status == 'CRITERIA_MET' for b in item.branches)
+                                    for item in report.context_evaluations),
+            'omitted_from_summaries': ['evidence_states', 'line_pairing',
+                                      'prepared_pair_payloads', 'derived_calculations',
+                                      'calculation_details'],
+        }
+    document = json_value(document)
+    # Convert each selected representation once. Never build a full nonmatch
+    # document merely to discard it after serialization.
+    document['context_evaluations'] = [json_value(_reported_context(item, detail))
+                                       for item in report.context_evaluations]
+    return document
 
 
 def report_json_text(document):

@@ -54,6 +54,8 @@ They are not current population counts or Python class definitions.
 
 For running the browser end to end, start with
 [browser assessment sources](ui_offline_assessment.md).
+Use [assessment performance measurements](assessment_performance.md) to time
+source access, scientific evaluation and report storage separately.
 For optional SPWs and explicit researcher confirmation, see the
 [continuum setup declaration](continuum_setup_declaration.md).
 The [scientific workflow map](ui_scientific_workflow.md) connects the handwritten
@@ -187,6 +189,8 @@ review gate, persistent multi-user lifecycle and broader-mode scope.
 - [Queue LINE pairing and evaluation](queue_line_pairing.md): same-row/SPW evidence preparation, formal FDM/coverage/resolution/RMS evaluation, provenance checks and aggregation boundaries.
 
 - [Shared assessment entry](assessment_entry.md): callable orchestration, lazy sources and execution statuses; browser replay/live TAP execution consumes this entry.
+
+- [Matching-detail reports](matching_report.md): browser v5 retains full matching evidence and other candidate decision summaries.
 
 - [Read-only report browser](ui_report_browser.md): configure reports, read evidence, export originals.
 

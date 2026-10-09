@@ -139,7 +139,7 @@ def cli_run(tmp_path, request_bytes, inputs, *, suffix=""):
     output = tmp_path / f"report{suffix}.json"
     request_path.write_bytes(request_bytes)
     document = json.loads(request_bytes)
-    args = ["--request", str(request_path), "--output", str(output)]
+    args = ["--request", str(request_path), "--output", str(output), '--report-detail', 'matches']
     for key, flag in (("archive_replay", "--archive-replay"), ("queue_csv", "--queue-csv")):
         if key in inputs:
             args += [flag, str(inputs[key])]

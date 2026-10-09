@@ -12,6 +12,7 @@ from threading import Lock
 import time
 from uuid import uuid4
 
+from alma_duplicate.performance import measure_stage
 from alma_duplicate.progress import emit_progress
 from alma_duplicate.reporting import report_json_chunks
 from alma_duplicate.report_inspection import inspect_report
@@ -139,7 +140,8 @@ class RunStore:
             raise ValueError('An assessment without a report cannot be retained')
         document = result.document
         emit_progress('inspection')
-        inspection = inspect_report(document, inspection_version='3')
+        with measure_stage("inspection"):
+            inspection = inspect_report(document, inspection_version='3')
         for context in document['context_evaluations']:
             for field in ('reference', 'criteria', 'branches', 'line_pairs'):
                 if field not in context:
@@ -168,7 +170,8 @@ class RunStore:
         try:
             downloads = {}
             for kind, data in [('report', document), ('inspection', inspection), ('request', request_document)]:
-                downloads[kind] = write(kind + '.json', report_json_chunks(data))
+                with measure_stage('write_' + kind):
+                    downloads[kind] = write(kind + '.json', report_json_chunks(data))
             offsets = []
 
             def context_lines():
@@ -180,10 +183,13 @@ class RunStore:
                     position += length
                     yield line
 
-            write('contexts.jsonl', context_lines())
-            projection = report_projection(document, inspection, compact=True)
+            with measure_stage('write_context_index'):
+                write('contexts.jsonl', context_lines())
+            with measure_stage("view_projection"):
+                projection = report_projection(document, inspection, compact=True)
             projection['offsets'] = offsets
-            write('view.json', report_json_chunks(projection))
+            with measure_stage('write_view'):
+                write('view.json', report_json_chunks(projection))
             with self._lock:
                 if self._closed:
                     raise ValueError('Run store is closed')

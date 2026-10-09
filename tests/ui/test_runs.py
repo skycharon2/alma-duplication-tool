@@ -103,7 +103,7 @@ def test_real_dual_source_run_retains_exact_report_and_input(monkeypatch, purpos
     assert report.data == captured[0][1]
     assert hashlib.sha256(report.data).hexdigest() in html
     doc = report.get_json()
-    assert doc["report_version"] == "4" and doc["input_sha256"] is None
+    assert doc["report_version"] == "5" and doc["input_sha256"] is None
     for index, context in enumerate(doc['context_evaluations']):
         positive = any(b['status'] == 'CRITERIA_MET' and b['branch'] in purposes for b in context['branches'])
         assert (f'id="context-{index}"' in html) == positive
@@ -257,7 +257,8 @@ def test_declared_continuum_report_matches_cli_and_preserves_provenance(tmp_path
     path.write_text(json.dumps(req))
     output = tmp_path / "report.json"
     assert main(["--request", str(path), "--archive-replay", str(archive),
-                 "--queue-csv", str(queue), "--queue-continuum", "--output", str(output)]) == 0
+                 "--queue-csv", str(queue), "--queue-continuum", "--output", str(output),
+                 '--report-detail', 'matches']) == 0
     cli = json.loads(output.read_text())
     for key in ("request_criteria", "context_evaluations", "evaluation_configuration"):
         assert doc[key] == cli[key]
