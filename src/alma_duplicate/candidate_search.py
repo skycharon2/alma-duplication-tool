@@ -5,6 +5,7 @@ from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Callable, Iterable, Protocol
 
+from alma_duplicate.performance import measure_stage
 from alma_duplicate.progress import emit_progress
 from alma_duplicate.clients.archive_contract import ArchiveQueryResult
 from alma_duplicate.clients.archive_queries import ArchiveQuerySpec
@@ -121,9 +122,11 @@ def _run_source(plan, name, *, archive_client, queue_loader, supplied, interpret
     try:
         if name == "ARCHIVE" and archive_client is not None:
             assert source_plan.archive_query is not None
-            result = archive_client.search(source_plan.archive_query)
+            with measure_stage("tap_acquisition"):
+                result = archive_client.search(source_plan.archive_query)
         if name == "QUEUE" and queue_loader is not None:
-            result = queue_loader()
+            with measure_stage("csv_load"):
+                result = queue_loader()
         if result is None:
             if mode in {"CLIENT", "LOADER"}:
                 raise TypeError("Source provider returned None instead of a result")
@@ -133,21 +136,24 @@ def _run_source(plan, name, *, archive_client, queue_loader, supplied, interpret
             if not isinstance(result, ArchiveQueryResult):
                 raise TypeError("Archive search must return ArchiveQueryResult")
             stage = "BIND"
-            binding = bind_archive_query(plan, result)
+            with measure_stage("archive_binding"):
+                binding = bind_archive_query(plan, result)
             if binding.status != "MATCHED":
                 return SourceSearchExecution(name, S.FAILED, mode, source_plan, result,
                                              query_binding=binding, reasons=("QUERY_BINDING_FAILED", *binding.reasons))
         elif not isinstance(result, QueueCsvParseResult):
             raise TypeError("Queue input must be QueueCsvParseResult")
         stage = "CONSTRUCT"
-        comparison = build_archive_contexts(result) if name == "ARCHIVE" else build_queue_contexts(result)
+        with measure_stage(name.lower() + "_contexts"):
+            comparison = build_archive_contexts(result) if name == "ARCHIVE" else build_queue_contexts(result)
         if comparison.status is not SourceStatus.COMPLETE:
             status = S.INCOMPLETE if comparison.status is SourceStatus.INCOMPLETE else S.FAILED
             return SourceSearchExecution(name, status, mode, source_plan, result, comparison,
                                          binding, reasons=comparison.reasons)
         stage = "FILTER"
-        rows = tuple(_evaluate_row(plan, context, result, interpretations)
-                     for context in sorted(comparison.contexts, key=lambda c: c.context_id))
+        with measure_stage(name.lower() + "_filter"):
+            rows = tuple(_evaluate_row(plan, context, result, interpretations)
+                         for context in sorted(comparison.contexts, key=lambda c: c.context_id))
         server = tuple(i for i, p in enumerate(source_plan.predicates)
                        if p.action == "PLANNED_SERVER") if name == "ARCHIVE" else ()
         return SourceSearchExecution(name, S.COMPLETED, mode, source_plan, result, comparison,

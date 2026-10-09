@@ -219,7 +219,7 @@ def test_browser_and_shared_entry_have_same_science_and_provenance(monkeypatch, 
     location = client.post("/proposed", data=line_form()).location
     document = client.get(location + "/download/report").get_json()
     request = client.get(location + "/download/request").get_json()
-    direct = assess_observation(**request, sources=AssessmentSources(
+    direct = assess_observation(**request, report_detail='matches', sources=AssessmentSources(
         "LIVE", lambda: ArchiveInput(archive_client.ArchiveClient("https://almascience.eso.org/tap")),
         archive_array_fetcher=lambda members: archive_aq_client.ArchiveAqClient().fetch_members(members)))
     assert normalized(document) == normalized(direct.document)

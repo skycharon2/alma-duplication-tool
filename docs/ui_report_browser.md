@@ -1,6 +1,8 @@
 # Read-only backend report browser
 
-This increment consumes report v4 and inspection v3. It does not submit a proposal,
+The viewer consumes full report v4, [matching-detail report v5](matching_report.md)
+and inspection v3. New browser runs use v5; existing v4 reports remain unchanged.
+The viewer does not submit a proposal,
 query sources, or implement scientific calculations. The
 [proposed form](ui_proposed_form.md) validates input and exports request JSON;
 [browser assessment](ui_offline_assessment.md) creates temporary runs using

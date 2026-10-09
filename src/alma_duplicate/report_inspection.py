@@ -114,8 +114,21 @@ def inspect_report(document, *, inspection_version="3"):
     """
     if inspection_version not in {"1", "2", "3"}:
         raise ValueError("Inspection version must be 1, 2 or 3")
-    if document.get("report_version") != "4":
-        raise ValueError("Inspection requires report version 4")
+    if document.get("report_version") not in {"4", "5"}:
+        raise ValueError("Inspection requires report version 4 or 5")
+    if document['report_version'] == '5':
+        detail = document.get('report_detail') or {}
+        if detail.get('mode') != 'MATCHES_FULL_OTHER_SUMMARIES' or detail.get('version') != '1':
+            raise ValueError('Unknown report detail policy')
+        full = 0
+        for context in document['context_evaluations']:
+            matched = any(b['status'] == 'CRITERIA_MET' for b in context['branches'])
+            if context.get('detail_level') != ('FULL' if matched else 'SUMMARY'):
+                raise ValueError('Context detail level disagrees with recorded branches')
+            full += matched
+        if (detail.get('full_contexts') != full
+                or detail.get('summary_contexts') != len(document['context_evaluations']) - full):
+            raise ValueError('Report detail counts disagree with contexts')
     kind = document.get("report_kind")
     if kind not in {"CANDIDATE_EVALUATION", "SOLAR_EXEMPTION"}:
         raise ValueError("Unknown report kind")
@@ -289,7 +302,7 @@ def inspect_report(document, *, inspection_version="3"):
     )
     return {
         "inspection_version": inspection_version,
-        "report_version": "4",
+        "report_version": document['report_version'],
         "report_kind": kind,
         "assessment": document["assessment"],
         "search_assessment": document["search_assessment"],

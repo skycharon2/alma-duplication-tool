@@ -17,8 +17,11 @@ class BrowserAssessment:
     archive_array_evidence: str | None = None
     live_archive: bool = False
     live_aq: bool = False
+    report_detail: str = 'matches'
 
     def __post_init__(self):
+        if self.report_detail not in {'full', 'matches'}:
+            raise ValueError('Report detail must be full or matches')
         if type(self.live_archive) is not bool:
             raise ValueError("LIVE_ARCHIVE must be boolean")
         if self.live_archive and self.archive_replay:
@@ -92,6 +95,7 @@ class BrowserAssessment:
         return assess_observation(
             document["request"],
             document["search_options"],
+            report_detail=self.report_detail,
             options=AssessmentOptions(
                 queue_common=queue,
                 queue_continuum=queue and "CONTINUUM" in intents,

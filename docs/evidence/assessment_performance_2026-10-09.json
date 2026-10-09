@@ -1,0 +1,1312 @@
+{
+  "schema_version": 1,
+  "code_baseline": "016d784",
+  "instrumentation": "Opt-in stage measurements delivered with this record; no science changes.",
+  "runs": [
+    {
+      "name": "queue-continuum",
+      "request_document": {
+        "request": {
+          "target_kind": "FIXED",
+          "geometry": "SINGLE_POINTING",
+          "target_name": "NGC6240 Queue self-match",
+          "position": {
+            "ra": "253.24541666666667",
+            "dec": "2.4010972222222224",
+            "ra_format": "DEG",
+            "dec_format": "DEG",
+            "frame": "ICRS"
+          },
+          "setup_id": "self-check",
+          "setup_complete": true,
+          "intents": [
+            "CONTINUUM"
+          ],
+          "angular_resolution": {
+            "value": "0.4",
+            "unit": "arcsec"
+          },
+          "representative_frequency": {
+            "value": "338.5",
+            "unit": "GHz",
+            "kind": "SKY",
+            "frame": "UNKNOWN"
+          },
+          "spectral_windows": [
+            {
+              "window_id": "spw-1",
+              "center": {
+                "value": "350.4999999999",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "UNKNOWN",
+              "representation": "CENTER_BANDWIDTH",
+              "bandwidth": {
+                "value": "1875.0",
+                "unit": "MHz"
+              },
+              "bandwidth_kind": "NOMINAL"
+            },
+            {
+              "window_id": "spw-2",
+              "center": {
+                "value": "348.5000000001",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "UNKNOWN",
+              "representation": "CENTER_BANDWIDTH",
+              "bandwidth": {
+                "value": "1875.0",
+                "unit": "MHz"
+              },
+              "bandwidth_kind": "NOMINAL"
+            },
+            {
+              "window_id": "spw-3",
+              "center": {
+                "value": "338.4999999999",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "UNKNOWN",
+              "representation": "CENTER_BANDWIDTH",
+              "bandwidth": {
+                "value": "1875.0",
+                "unit": "MHz"
+              },
+              "bandwidth_kind": "NOMINAL"
+            },
+            {
+              "window_id": "spw-4",
+              "center": {
+                "value": "336.5000000001",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "UNKNOWN",
+              "representation": "CENTER_BANDWIDTH",
+              "bandwidth": {
+                "value": "1875.0",
+                "unit": "MHz"
+              },
+              "bandwidth_kind": "NOMINAL"
+            }
+          ],
+          "sensitivities": [
+            {
+              "sensitivity_id": "aggregate",
+              "purpose": "CONTINUUM",
+              "scope": "SETUP",
+              "setup_id": "self-check",
+              "basis": "AGGREGATE",
+              "aggregate_path": "DIRECT_DECLARATION",
+              "rms": {
+                "value": "0.008",
+                "unit": "mJy/beam"
+              },
+              "window_ids": [
+                "spw-1",
+                "spw-2",
+                "spw-3",
+                "spw-4"
+              ]
+            }
+          ]
+        },
+        "search_options": {
+          "sources": [
+            "QUEUE"
+          ],
+          "predicates": [],
+          "radius_mode": "AUTO"
+        }
+      },
+      "measurement": {
+        "schema_version": 1,
+        "started_at": "2026-10-08T09:58:37.436321+00:00",
+        "python": "3.12.11",
+        "platform": "macOS-26.4.1-x86_64-i386-64bit",
+        "storage_budget_bytes": 1073741824,
+        "execution": "COMPLETED",
+        "files": {
+          "request.json": 2811,
+          "report.json": 183452292,
+          "contexts.jsonl": 101163039,
+          "view.json": 213176,
+          "inspection.json": 16157704
+        },
+        "wall_seconds": 22.665958374738693,
+        "thread_cpu_seconds": 0.534146606,
+        "stages": [
+          {
+            "name": "validation",
+            "wall_seconds": 0.0027272081933915615,
+            "thread_cpu_seconds": 4.9554000000000265e-05,
+            "failed": false
+          },
+          {
+            "name": "source_initialization",
+            "wall_seconds": 1.375097781419754e-06,
+            "thread_cpu_seconds": 3.400000000292058e-08,
+            "failed": false
+          },
+          {
+            "name": "csv_load",
+            "wall_seconds": 0.7290651248767972,
+            "thread_cpu_seconds": 0.017358691000000002,
+            "failed": false
+          },
+          {
+            "name": "queue_contexts",
+            "wall_seconds": 0.2687866250053048,
+            "thread_cpu_seconds": 0.006450940000000002,
+            "failed": false
+          },
+          {
+            "name": "queue_filter",
+            "wall_seconds": 1.8300350001081824,
+            "thread_cpu_seconds": 0.043911325,
+            "failed": false
+          },
+          {
+            "name": "aq_acquisition",
+            "wall_seconds": 2.040993422269821e-06,
+            "thread_cpu_seconds": 4.2999999991244486e-08,
+            "failed": false
+          },
+          {
+            "name": "scientific_evaluation",
+            "wall_seconds": 5.519039541948587,
+            "thread_cpu_seconds": 0.131887886,
+            "failed": false
+          },
+          {
+            "name": "report_assembly",
+            "wall_seconds": 5.521310708019882,
+            "thread_cpu_seconds": 0.13008572899999998,
+            "failed": false
+          },
+          {
+            "name": "inspection",
+            "wall_seconds": 0.13316262513399124,
+            "thread_cpu_seconds": 0.002890018999999966,
+            "failed": false
+          },
+          {
+            "name": "write_report",
+            "wall_seconds": 6.548015916720033,
+            "thread_cpu_seconds": 0.152531034,
+            "failed": false
+          },
+          {
+            "name": "write_inspection",
+            "wall_seconds": 0.566790749784559,
+            "thread_cpu_seconds": 0.013298232000000021,
+            "failed": false
+          },
+          {
+            "name": "write_request",
+            "wall_seconds": 0.0005619172006845474,
+            "thread_cpu_seconds": 1.3488999999977658e-05,
+            "failed": false
+          },
+          {
+            "name": "write_context_index",
+            "wall_seconds": 0.9628587081097066,
+            "thread_cpu_seconds": 0.022362585999999962,
+            "failed": false
+          },
+          {
+            "name": "view_projection",
+            "wall_seconds": 0.5212563751265407,
+            "thread_cpu_seconds": 0.01191940299999994,
+            "failed": false
+          },
+          {
+            "name": "write_view",
+            "wall_seconds": 0.013916874770075083,
+            "thread_cpu_seconds": 0.00033401700000001977,
+            "failed": false
+          },
+          {
+            "name": "first_page_projection",
+            "wall_seconds": 0.0021505001932382584,
+            "thread_cpu_seconds": 5.160499999989909e-05,
+            "failed": false
+          }
+        ],
+        "unattributed_wall_seconds": 0.046277083456516266,
+        "assessment_status": "COMPLETED",
+        "retained_contexts": 3200,
+        "sources": {
+          "ARCHIVE": "NOT_SELECTED",
+          "QUEUE": "COMPLETED"
+        },
+        "branch_outcomes": {
+          "CONTINUUM:INDETERMINATE": 3081,
+          "CONTINUUM:CRITERIA_NOT_MET": 118,
+          "CONTINUUM:CRITERIA_MET": 1
+        },
+        "input_sha256": {
+          "request": "97ef145102c8f8997311858b50acfc748596105a50ac44ffd2e1ec679ccebf88",
+          "queue_csv": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5"
+        },
+        "source_modes": {
+          "archive": null,
+          "live_aq": false,
+          "queue_csv": true
+        }
+      }
+    },
+    {
+      "name": "queue-line-diagnostic",
+      "request_document": {
+        "request": {
+          "target_kind": "FIXED",
+          "geometry": "SINGLE_POINTING",
+          "target_name": "circinus_galaxy LINE self-match",
+          "position": {
+            "ra": "213.291275",
+            "dec": "-65.339019",
+            "ra_format": "DEG",
+            "dec_format": "DEG",
+            "frame": "ICRS"
+          },
+          "setup_id": "line-self-check",
+          "setup_complete": true,
+          "intents": [
+            "LINE"
+          ],
+          "angular_resolution": {
+            "value": "0.15",
+            "unit": "arcsec"
+          },
+          "representative_frequency": null,
+          "spectral_windows": [
+            {
+              "window_id": "line-1",
+              "center": {
+                "value": "182.5870779652115",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "FDM"
+            }
+          ],
+          "sensitivities": [
+            {
+              "sensitivity_id": "line-w000000000000",
+              "purpose": "LINE",
+              "scope": "WINDOW",
+              "window_ids": [
+                "line-1"
+              ],
+              "basis": "SMOOTHED",
+              "rms": {
+                "value": "5.5",
+                "unit": "mJy/beam"
+              },
+              "smoothing_resolution": {
+                "value": "0.564453125",
+                "unit": "MHz"
+              }
+            }
+          ]
+        },
+        "search_options": {
+          "sources": [
+            "QUEUE"
+          ],
+          "predicates": [],
+          "radius_mode": "AUTO"
+        }
+      },
+      "measurement": {
+        "schema_version": 1,
+        "started_at": "2026-10-08T09:59:30.892025+00:00",
+        "python": "3.12.11",
+        "platform": "macOS-26.4.1-x86_64-i386-64bit",
+        "storage_budget_bytes": 4294967296,
+        "execution": "COMPLETED",
+        "files": {
+          "request.json": 1303,
+          "report.json": 1695650984,
+          "contexts.jsonl": 814743060,
+          "view.json": 229122,
+          "inspection.json": 15896840
+        },
+        "wall_seconds": 202.17574187507853,
+        "thread_cpu_seconds": 4.430532695,
+        "stages": [
+          {
+            "name": "validation",
+            "wall_seconds": 0.0011937501840293407,
+            "thread_cpu_seconds": 2.8659000000000323e-05,
+            "failed": false
+          },
+          {
+            "name": "source_initialization",
+            "wall_seconds": 1.125037670135498e-06,
+            "thread_cpu_seconds": 2.699999999966618e-08,
+            "failed": false
+          },
+          {
+            "name": "csv_load",
+            "wall_seconds": 0.6486057080328465,
+            "thread_cpu_seconds": 0.015566575999999999,
+            "failed": false
+          },
+          {
+            "name": "queue_contexts",
+            "wall_seconds": 0.2648395001888275,
+            "thread_cpu_seconds": 0.0063559870000000004,
+            "failed": false
+          },
+          {
+            "name": "queue_filter",
+            "wall_seconds": 1.8201807499863207,
+            "thread_cpu_seconds": 0.043670482000000004,
+            "failed": false
+          },
+          {
+            "name": "aq_acquisition",
+            "wall_seconds": 1.7499551177024841e-06,
+            "thread_cpu_seconds": 3.500000000933312e-08,
+            "failed": false
+          },
+          {
+            "name": "scientific_evaluation",
+            "wall_seconds": 27.156178624834865,
+            "thread_cpu_seconds": 0.611689039,
+            "failed": false
+          },
+          {
+            "name": "report_assembly",
+            "wall_seconds": 89.31738362507895,
+            "thread_cpu_seconds": 1.915616511,
+            "failed": false
+          },
+          {
+            "name": "inspection",
+            "wall_seconds": 0.8573582922108471,
+            "thread_cpu_seconds": 0.014856532000000033,
+            "failed": false
+          },
+          {
+            "name": "write_report",
+            "wall_seconds": 69.51768291695043,
+            "thread_cpu_seconds": 1.5756318299999998,
+            "failed": false
+          },
+          {
+            "name": "write_inspection",
+            "wall_seconds": 0.698051624931395,
+            "thread_cpu_seconds": 0.014194778000000241,
+            "failed": false
+          },
+          {
+            "name": "write_request",
+            "wall_seconds": 0.013067666906863451,
+            "thread_cpu_seconds": 1.9249999999360057e-05,
+            "failed": false
+          },
+          {
+            "name": "write_context_index",
+            "wall_seconds": 10.90666904207319,
+            "thread_cpu_seconds": 0.21478625100000048,
+            "failed": false
+          },
+          {
+            "name": "view_projection",
+            "wall_seconds": 0.6150485407561064,
+            "thread_cpu_seconds": 0.012948458000000329,
+            "failed": false
+          },
+          {
+            "name": "write_view",
+            "wall_seconds": 0.015583332628011703,
+            "thread_cpu_seconds": 0.0003740140000001446,
+            "failed": false
+          },
+          {
+            "name": "first_page_projection",
+            "wall_seconds": 0.07375916605815291,
+            "thread_cpu_seconds": 0.00014754399999983292,
+            "failed": false
+          }
+        ],
+        "unattributed_wall_seconds": 0.27013645926490426,
+        "assessment_status": "COMPLETED",
+        "retained_contexts": 3200,
+        "sources": {
+          "ARCHIVE": "NOT_SELECTED",
+          "QUEUE": "COMPLETED"
+        },
+        "branch_outcomes": {
+          "LINE:INDETERMINATE": 3081,
+          "LINE:CRITERIA_NOT_MET": 118,
+          "LINE:CRITERIA_MET": 1
+        },
+        "input_sha256": {
+          "request": "8f468672344f597109c84408619e8d33e73e9eeb7deee5cc42e971b028fa7d64",
+          "queue_csv": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5"
+        },
+        "source_modes": {
+          "archive": null,
+          "live_aq": false,
+          "queue_csv": true
+        }
+      }
+    },
+    {
+      "name": "archive-continuum-live",
+      "request_document": {
+        "request": {
+          "target_kind": "FIXED",
+          "geometry": "SINGLE_POINTING",
+          "target_name": "CASE1 continuum engineering check",
+          "position": {
+            "ra": "18:33:39.920",
+            "dec": "-21:03:39.900",
+            "ra_format": "HMS",
+            "dec_format": "DMS",
+            "frame": "ICRS"
+          },
+          "setup_id": "self-check",
+          "setup_complete": false,
+          "intents": [
+            "CONTINUUM"
+          ],
+          "angular_resolution": {
+            "value": "0.23",
+            "unit": "arcsec"
+          },
+          "representative_frequency": {
+            "value": "290.420",
+            "unit": "GHz",
+            "kind": "SKY",
+            "frame": "UNKNOWN"
+          },
+          "spectral_windows": [],
+          "sensitivities": [
+            {
+              "sensitivity_id": "aggregate",
+              "purpose": "CONTINUUM",
+              "scope": "SETUP",
+              "setup_id": "self-check",
+              "basis": "AGGREGATE",
+              "aggregate_path": "DIRECT_DECLARATION",
+              "rms": {
+                "value": "0.02",
+                "unit": "mJy/beam"
+              },
+              "window_ids": []
+            }
+          ],
+          "continuum_setup_declaration": "AT_LEAST_TWO_USABLE_WINDOWS_GT_1_8_GHZ"
+        },
+        "search_options": {
+          "sources": [
+            "ARCHIVE"
+          ],
+          "predicates": [],
+          "radius_mode": "AUTO"
+        }
+      },
+      "measurement": {
+        "schema_version": 1,
+        "started_at": "2026-10-08T10:03:28.343783+00:00",
+        "python": "3.12.11",
+        "platform": "macOS-26.4.1-x86_64-i386-64bit",
+        "storage_budget_bytes": 1073741824,
+        "execution": "COMPLETED",
+        "files": {
+          "request.json": 1199,
+          "report.json": 5924085,
+          "contexts.jsonl": 3008363,
+          "view.json": 79649,
+          "inspection.json": 2325
+        },
+        "wall_seconds": 113.01364529179409,
+        "thread_cpu_seconds": 0.07997515399999999,
+        "stages": [
+          {
+            "name": "validation",
+            "wall_seconds": 0.001200708094984293,
+            "thread_cpu_seconds": 2.884599999999904e-05,
+            "failed": false
+          },
+          {
+            "name": "source_initialization",
+            "wall_seconds": 4.112487658858299e-05,
+            "thread_cpu_seconds": 9.889999999998511e-07,
+            "failed": false
+          },
+          {
+            "name": "tap_acquisition",
+            "wall_seconds": 97.00178345758468,
+            "thread_cpu_seconds": 0.008531673,
+            "failed": false
+          },
+          {
+            "name": "archive_binding",
+            "wall_seconds": 0.0004397919401526451,
+            "thread_cpu_seconds": 3.4809999999996233e-06,
+            "failed": false
+          },
+          {
+            "name": "archive_contexts",
+            "wall_seconds": 0.45307391695678234,
+            "thread_cpu_seconds": 0.010808034999999994,
+            "failed": false
+          },
+          {
+            "name": "archive_filter",
+            "wall_seconds": 0.020852125249803066,
+            "thread_cpu_seconds": 0.0004326970000000027,
+            "failed": false
+          },
+          {
+            "name": "aq_acquisition",
+            "wall_seconds": 14.882417959161103,
+            "thread_cpu_seconds": 0.045486755000000004,
+            "failed": false
+          },
+          {
+            "name": "scientific_evaluation",
+            "wall_seconds": 0.17504520807415247,
+            "thread_cpu_seconds": 0.0034720440000000075,
+            "failed": false
+          },
+          {
+            "name": "report_assembly",
+            "wall_seconds": 0.15096116717904806,
+            "thread_cpu_seconds": 0.0035921660000000077,
+            "failed": false
+          },
+          {
+            "name": "inspection",
+            "wall_seconds": 0.0012762919068336487,
+            "thread_cpu_seconds": 2.6524999999999466e-05,
+            "failed": false
+          },
+          {
+            "name": "write_report",
+            "wall_seconds": 0.27897079195827246,
+            "thread_cpu_seconds": 0.006585510000000003,
+            "failed": false
+          },
+          {
+            "name": "write_inspection",
+            "wall_seconds": 0.0004366249777376652,
+            "thread_cpu_seconds": 1.0494999999999255e-05,
+            "failed": false
+          },
+          {
+            "name": "write_request",
+            "wall_seconds": 0.0002360418438911438,
+            "thread_cpu_seconds": 5.669999999999287e-06,
+            "failed": false
+          },
+          {
+            "name": "write_context_index",
+            "wall_seconds": 0.02948824968189001,
+            "thread_cpu_seconds": 0.0007076910000000103,
+            "failed": false
+          },
+          {
+            "name": "view_projection",
+            "wall_seconds": 0.0005905842408537865,
+            "thread_cpu_seconds": 1.417600000000463e-05,
+            "failed": false
+          },
+          {
+            "name": "write_view",
+            "wall_seconds": 0.004003375303000212,
+            "thread_cpu_seconds": 9.608999999999313e-05,
+            "failed": false
+          },
+          {
+            "name": "first_page_projection",
+            "wall_seconds": 0.0014779157936573029,
+            "thread_cpu_seconds": 3.546699999999736e-05,
+            "failed": false
+          }
+        ],
+        "unattributed_wall_seconds": 0.011349956970661879,
+        "assessment_status": "COMPLETED",
+        "retained_contexts": 336,
+        "sources": {
+          "ARCHIVE": "COMPLETED",
+          "QUEUE": "NOT_SELECTED"
+        },
+        "branch_outcomes": {
+          "CONTINUUM:CRITERIA_NOT_MET": 320,
+          "CONTINUUM:CRITERIA_MET": 16
+        },
+        "input_sha256": {
+          "request": "56bfbd3a197af9ffb347079d36750fc745d05000fd587213ed1e014fd7585cc8"
+        },
+        "source_modes": {
+          "archive": "LIVE",
+          "live_aq": true,
+          "queue_csv": false
+        }
+      }
+    },
+    {
+      "name": "archive-line-live",
+      "request_document": {
+        "request": {
+          "target_kind": "FIXED",
+          "geometry": "SINGLE_POINTING",
+          "target_name": "IRAS_09245-5228 LINE self-match",
+          "position": {
+            "ra": "141.5461103909849",
+            "dec": "-52.70729721185924",
+            "ra_format": "DEG",
+            "dec_format": "DEG",
+            "frame": "ICRS"
+          },
+          "setup_id": "line-self-check",
+          "setup_complete": true,
+          "intents": [
+            "LINE"
+          ],
+          "angular_resolution": {
+            "value": "3.573980180426332",
+            "unit": "arcsec"
+          },
+          "representative_frequency": null,
+          "spectral_windows": [
+            {
+              "window_id": "line-1",
+              "center": {
+                "value": "230.53800141830845",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "FDM"
+            }
+          ],
+          "sensitivities": [
+            {
+              "sensitivity_id": "line-w000000000000",
+              "purpose": "LINE",
+              "scope": "WINDOW",
+              "window_ids": [
+                "line-1"
+              ],
+              "basis": "SMOOTHED",
+              "rms": {
+                "value": "19.92234925906079",
+                "unit": "mJy/beam"
+              },
+              "smoothing_resolution": {
+                "value": "1",
+                "unit": "km/s"
+              }
+            }
+          ]
+        },
+        "search_options": {
+          "sources": [
+            "ARCHIVE"
+          ],
+          "predicates": [],
+          "radius_mode": "AUTO"
+        }
+      },
+      "measurement": {
+        "schema_version": 1,
+        "started_at": "2026-10-08T10:05:52.156828+00:00",
+        "python": "3.12.11",
+        "platform": "macOS-26.4.1-x86_64-i386-64bit",
+        "storage_budget_bytes": 1073741824,
+        "execution": "COMPLETED",
+        "files": {
+          "request.json": 1339,
+          "report.json": 17877,
+          "contexts.jsonl": 0,
+          "view.json": 19939,
+          "inspection.json": 2295
+        },
+        "wall_seconds": 29.262657750863582,
+        "thread_cpu_seconds": 0.002905036999999999,
+        "stages": [
+          {
+            "name": "validation",
+            "wall_seconds": 0.001718292012810707,
+            "thread_cpu_seconds": 2.471199999999965e-05,
+            "failed": false
+          },
+          {
+            "name": "source_initialization",
+            "wall_seconds": 4.245806485414505e-05,
+            "thread_cpu_seconds": 1.0239999999987759e-06,
+            "failed": false
+          },
+          {
+            "name": "tap_acquisition",
+            "wall_seconds": 29.130184167064726,
+            "thread_cpu_seconds": 0.0024293049999999997,
+            "failed": false
+          },
+          {
+            "name": "archive_binding",
+            "wall_seconds": 0.0012534172274172306,
+            "thread_cpu_seconds": 6.702000000000791e-06,
+            "failed": false
+          },
+          {
+            "name": "archive_contexts",
+            "wall_seconds": 0.001721791923046112,
+            "thread_cpu_seconds": 4.514000000000601e-06,
+            "failed": false
+          },
+          {
+            "name": "aq_acquisition",
+            "wall_seconds": 0.00013129180297255516,
+            "thread_cpu_seconds": 3.1459999999990107e-06,
+            "failed": false
+          },
+          {
+            "name": "scientific_evaluation",
+            "wall_seconds": 0.0006698747165501118,
+            "thread_cpu_seconds": 7.869000000000625e-06,
+            "failed": false
+          },
+          {
+            "name": "report_assembly",
+            "wall_seconds": 0.04939041705802083,
+            "thread_cpu_seconds": 0.00017231600000000222,
+            "failed": false
+          },
+          {
+            "name": "inspection",
+            "wall_seconds": 0.011793333105742931,
+            "thread_cpu_seconds": 2.422600000000219e-05,
+            "failed": false
+          },
+          {
+            "name": "write_report",
+            "wall_seconds": 0.02052675001323223,
+            "thread_cpu_seconds": 5.940299999999954e-05,
+            "failed": false
+          },
+          {
+            "name": "write_inspection",
+            "wall_seconds": 0.0004166672006249428,
+            "thread_cpu_seconds": 1.0000999999999066e-05,
+            "failed": false
+          },
+          {
+            "name": "write_request",
+            "wall_seconds": 0.000260000117123127,
+            "thread_cpu_seconds": 6.247000000000891e-06,
+            "failed": false
+          },
+          {
+            "name": "write_context_index",
+            "wall_seconds": 0.00010145781561732292,
+            "thread_cpu_seconds": 2.4349999999985494e-06,
+            "failed": false
+          },
+          {
+            "name": "view_projection",
+            "wall_seconds": 0.0024133753031492233,
+            "thread_cpu_seconds": 3.1960000000004485e-06,
+            "failed": false
+          },
+          {
+            "name": "write_view",
+            "wall_seconds": 0.0013230838812887669,
+            "thread_cpu_seconds": 3.1289000000000317e-05,
+            "failed": false
+          },
+          {
+            "name": "first_page_projection",
+            "wall_seconds": 0.01644920790567994,
+            "thread_cpu_seconds": 5.574100000000151e-05,
+            "failed": false
+          }
+        ],
+        "unattributed_wall_seconds": 0.024262165650725365,
+        "assessment_status": "SOURCES_UNAVAILABLE",
+        "retained_contexts": 0,
+        "sources": {
+          "ARCHIVE": "FAILED",
+          "QUEUE": "NOT_SELECTED"
+        },
+        "branch_outcomes": {},
+        "input_sha256": {
+          "request": "09d923949484c934c0482083b95b8b30148dcc1be179fe27b5d49df0adfd6aa9"
+        },
+        "source_modes": {
+          "archive": "LIVE",
+          "live_aq": true,
+          "queue_csv": false
+        }
+      }
+    },
+    {
+      "name": "archive-line-live-followup",
+      "request_document": {
+        "request": {
+          "target_kind": "FIXED",
+          "geometry": "SINGLE_POINTING",
+          "target_name": "IRAS_09245-5228 LINE self-match",
+          "position": {
+            "ra": "141.5461103909849",
+            "dec": "-52.70729721185924",
+            "ra_format": "DEG",
+            "dec_format": "DEG",
+            "frame": "ICRS"
+          },
+          "setup_id": "line-self-check",
+          "setup_complete": true,
+          "intents": [
+            "LINE"
+          ],
+          "angular_resolution": {
+            "value": "3.573980180426332",
+            "unit": "arcsec"
+          },
+          "representative_frequency": null,
+          "spectral_windows": [
+            {
+              "window_id": "line-1",
+              "center": {
+                "value": "230.53800141830845",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "FDM"
+            }
+          ],
+          "sensitivities": [
+            {
+              "sensitivity_id": "line-w000000000000",
+              "purpose": "LINE",
+              "scope": "WINDOW",
+              "window_ids": [
+                "line-1"
+              ],
+              "basis": "SMOOTHED",
+              "rms": {
+                "value": "19.92234925906079",
+                "unit": "mJy/beam"
+              },
+              "smoothing_resolution": {
+                "value": "1",
+                "unit": "km/s"
+              }
+            }
+          ]
+        },
+        "search_options": {
+          "sources": [
+            "ARCHIVE"
+          ],
+          "predicates": [],
+          "radius_mode": "AUTO"
+        }
+      },
+      "measurement": {
+        "schema_version": 1,
+        "started_at": "2026-10-09T07:02:13.222272+00:00",
+        "python": "3.12.11",
+        "platform": "macOS-26.4.1-x86_64-i386-64bit",
+        "storage_budget_bytes": 1073741824,
+        "execution": "COMPLETED",
+        "files": {
+          "request.json": 1339,
+          "report.json": 17884,
+          "contexts.jsonl": 0,
+          "view.json": 19888,
+          "inspection.json": 2295
+        },
+        "wall_seconds": 0.11083841603249311,
+        "thread_cpu_seconds": 0.0011734850000000019,
+        "stages": [
+          {
+            "name": "validation",
+            "wall_seconds": 0.0014264588244259357,
+            "thread_cpu_seconds": 2.3733000000004945e-05,
+            "failed": false
+          },
+          {
+            "name": "source_initialization",
+            "wall_seconds": 5.6208111345767975e-05,
+            "thread_cpu_seconds": 1.3539999999950814e-06,
+            "failed": false
+          },
+          {
+            "name": "tap_acquisition",
+            "wall_seconds": 0.10381604172289371,
+            "thread_cpu_seconds": 0.001021633000000001,
+            "failed": false
+          },
+          {
+            "name": "archive_binding",
+            "wall_seconds": 3.27499583363533e-05,
+            "thread_cpu_seconds": 7.869999999951527e-07,
+            "failed": false
+          },
+          {
+            "name": "archive_contexts",
+            "wall_seconds": 2.2458843886852264e-05,
+            "thread_cpu_seconds": 5.420000000061487e-07,
+            "failed": false
+          },
+          {
+            "name": "aq_acquisition",
+            "wall_seconds": 3.0125025659799576e-05,
+            "thread_cpu_seconds": 7.220000000016102e-07,
+            "failed": false
+          },
+          {
+            "name": "scientific_evaluation",
+            "wall_seconds": 3.7624966353178024e-05,
+            "thread_cpu_seconds": 9.060000000019053e-07,
+            "failed": false
+          },
+          {
+            "name": "report_assembly",
+            "wall_seconds": 0.0005712918937206268,
+            "thread_cpu_seconds": 1.3724999999999155e-05,
+            "failed": false
+          },
+          {
+            "name": "inspection",
+            "wall_seconds": 0.00022229226306080818,
+            "thread_cpu_seconds": 5.33400000000267e-06,
+            "failed": false
+          },
+          {
+            "name": "write_report",
+            "wall_seconds": 0.0012082918547093868,
+            "thread_cpu_seconds": 2.8684000000001042e-05,
+            "failed": false
+          },
+          {
+            "name": "write_inspection",
+            "wall_seconds": 0.0005081668496131897,
+            "thread_cpu_seconds": 8.951000000000098e-06,
+            "failed": false
+          },
+          {
+            "name": "write_request",
+            "wall_seconds": 0.00034791696816682816,
+            "thread_cpu_seconds": 6.0139999999986316e-06,
+            "failed": false
+          },
+          {
+            "name": "write_context_index",
+            "wall_seconds": 9.629130363464355e-05,
+            "thread_cpu_seconds": 2.3119999999973717e-06,
+            "failed": false
+          },
+          {
+            "name": "view_projection",
+            "wall_seconds": 3.7791673094034195e-05,
+            "thread_cpu_seconds": 9.099999999997999e-07,
+            "failed": false
+          },
+          {
+            "name": "write_view",
+            "wall_seconds": 0.0010882499627768993,
+            "thread_cpu_seconds": 2.612200000000342e-05,
+            "failed": false
+          },
+          {
+            "name": "first_page_projection",
+            "wall_seconds": 0.0005515418015420437,
+            "thread_cpu_seconds": 1.3169000000000375e-05,
+            "failed": false
+          }
+        ],
+        "unattributed_wall_seconds": 0.0007849140092730522,
+        "assessment_status": "SOURCES_UNAVAILABLE",
+        "retained_contexts": 0,
+        "sources": {
+          "ARCHIVE": "FAILED",
+          "QUEUE": "NOT_SELECTED"
+        },
+        "source_diagnostics": {
+          "ARCHIVE": {
+            "reasons": [
+              "ERROR"
+            ],
+            "upstream_status": "ERROR",
+            "error_kind": "SERVICE_ERROR",
+            "missing_columns": [],
+            "aq_status": "SKIPPED",
+            "aq_reason": "TAP_NOT_COMPLETED",
+            "aq_error": null
+          },
+          "QUEUE": {
+            "reasons": [],
+            "upstream_status": null,
+            "error_kind": null,
+            "missing_columns": [],
+            "aq_status": null,
+            "aq_reason": null,
+            "aq_error": null
+          }
+        },
+        "branch_outcomes": {},
+        "input_sha256": {
+          "request": "09d923949484c934c0482083b95b8b30148dcc1be179fe27b5d49df0adfd6aa9"
+        },
+        "source_modes": {
+          "archive": "LIVE",
+          "live_aq": true,
+          "queue_csv": false
+        }
+      }
+    },
+    {
+      "name": "archive-line-live-network",
+      "request_document": {
+        "request": {
+          "target_kind": "FIXED",
+          "geometry": "SINGLE_POINTING",
+          "target_name": "IRAS_09245-5228 LINE self-match",
+          "position": {
+            "ra": "141.5461103909849",
+            "dec": "-52.70729721185924",
+            "ra_format": "DEG",
+            "dec_format": "DEG",
+            "frame": "ICRS"
+          },
+          "setup_id": "line-self-check",
+          "setup_complete": true,
+          "intents": [
+            "LINE"
+          ],
+          "angular_resolution": {
+            "value": "3.573980180426332",
+            "unit": "arcsec"
+          },
+          "representative_frequency": null,
+          "spectral_windows": [
+            {
+              "window_id": "line-1",
+              "center": {
+                "value": "230.53800141830845",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "FDM"
+            }
+          ],
+          "sensitivities": [
+            {
+              "sensitivity_id": "line-w000000000000",
+              "purpose": "LINE",
+              "scope": "WINDOW",
+              "window_ids": [
+                "line-1"
+              ],
+              "basis": "SMOOTHED",
+              "rms": {
+                "value": "19.92234925906079",
+                "unit": "mJy/beam"
+              },
+              "smoothing_resolution": {
+                "value": "1",
+                "unit": "km/s"
+              }
+            }
+          ]
+        },
+        "search_options": {
+          "sources": [
+            "ARCHIVE"
+          ],
+          "predicates": [],
+          "radius_mode": "AUTO"
+        }
+      },
+      "measurement": {
+        "schema_version": 1,
+        "started_at": "2026-10-09T07:02:50.274759+00:00",
+        "python": "3.12.11",
+        "platform": "macOS-26.4.1-x86_64-i386-64bit",
+        "storage_budget_bytes": 1073741824,
+        "execution": "COMPLETED",
+        "files": {
+          "request.json": 1339,
+          "report.json": 168411,
+          "contexts.jsonl": 74379,
+          "view.json": 33934,
+          "inspection.json": 6550
+        },
+        "wall_seconds": 97.83696329081431,
+        "thread_cpu_seconds": 0.0069894,
+        "stages": [
+          {
+            "name": "validation",
+            "wall_seconds": 0.0014034169726073742,
+            "thread_cpu_seconds": 2.3272000000001264e-05,
+            "failed": false
+          },
+          {
+            "name": "source_initialization",
+            "wall_seconds": 4.329206421971321e-05,
+            "thread_cpu_seconds": 1.0419999999997098e-06,
+            "failed": false
+          },
+          {
+            "name": "tap_acquisition",
+            "wall_seconds": 97.19852637499571,
+            "thread_cpu_seconds": 0.004457461999999999,
+            "failed": false
+          },
+          {
+            "name": "archive_binding",
+            "wall_seconds": 0.00019145803526043892,
+            "thread_cpu_seconds": 1.4639999999996323e-06,
+            "failed": false
+          },
+          {
+            "name": "archive_contexts",
+            "wall_seconds": 0.01418145839124918,
+            "thread_cpu_seconds": 0.00017638599999999713,
+            "failed": false
+          },
+          {
+            "name": "archive_filter",
+            "wall_seconds": 0.004185709170997143,
+            "thread_cpu_seconds": 1.7111999999999683e-05,
+            "failed": false
+          },
+          {
+            "name": "aq_acquisition",
+            "wall_seconds": 0.5755321667529643,
+            "thread_cpu_seconds": 0.0016492700000000013,
+            "failed": false
+          },
+          {
+            "name": "scientific_evaluation",
+            "wall_seconds": 0.016288540791720152,
+            "thread_cpu_seconds": 0.00016550000000000245,
+            "failed": false
+          },
+          {
+            "name": "report_assembly",
+            "wall_seconds": 0.00566770788282156,
+            "thread_cpu_seconds": 0.00012960900000000275,
+            "failed": false
+          },
+          {
+            "name": "inspection",
+            "wall_seconds": 0.0005799173377454281,
+            "thread_cpu_seconds": 6.8619999999998404e-06,
+            "failed": false
+          },
+          {
+            "name": "write_report",
+            "wall_seconds": 0.008357416838407516,
+            "thread_cpu_seconds": 0.00020051000000000097,
+            "failed": false
+          },
+          {
+            "name": "write_inspection",
+            "wall_seconds": 0.0009488328360021114,
+            "thread_cpu_seconds": 1.4962999999999782e-05,
+            "failed": false
+          },
+          {
+            "name": "write_request",
+            "wall_seconds": 0.0002650842070579529,
+            "thread_cpu_seconds": 6.3660000000007044e-06,
+            "failed": false
+          },
+          {
+            "name": "write_context_index",
+            "wall_seconds": 0.0009012920781970024,
+            "thread_cpu_seconds": 2.163600000000196e-05,
+            "failed": false
+          },
+          {
+            "name": "view_projection",
+            "wall_seconds": 6.616674363613129e-05,
+            "thread_cpu_seconds": 1.589999999999231e-06,
+            "failed": false
+          },
+          {
+            "name": "write_view",
+            "wall_seconds": 0.0017338749021291733,
+            "thread_cpu_seconds": 4.161600000000126e-05,
+            "failed": false
+          },
+          {
+            "name": "first_page_projection",
+            "wall_seconds": 0.0004326249472796917,
+            "thread_cpu_seconds": 1.0382999999999226e-05,
+            "failed": false
+          }
+        ],
+        "unattributed_wall_seconds": 0.00765795586630702,
+        "assessment_status": "COMPLETED",
+        "retained_contexts": 4,
+        "sources": {
+          "ARCHIVE": "COMPLETED",
+          "QUEUE": "NOT_SELECTED"
+        },
+        "source_diagnostics": {
+          "ARCHIVE": {
+            "reasons": [
+              "FIXED_SINGLE_POINTING_ONLY",
+              "ARCHIVE_BOUND_COVERS_FREQUENCY_GE_35_GHZ_AND_DIAMETER_GE_7_M",
+              "ARCHIVE_UNKNOWN_OR_LOWER_FREQUENCY_OUTSIDE_CONE_NOT_COVERED",
+              "ARCHIVE_MISSING_CENTERS_AND_MOSAIC_EXTENTS_NOT_COVERED",
+              "QUEUE_SCOPE_IS_SUPPLIED_FILE",
+              "POSITION_IS_EVALUATED_SEPARATELY_WITH_CANDIDATE_EVIDENCE",
+              "NO_SEARCH_WIDE_ABSENCE_VERDICT"
+            ],
+            "upstream_status": "COMPLETE",
+            "error_kind": null,
+            "missing_columns": [],
+            "aq_status": "COMPLETED",
+            "aq_reason": null,
+            "aq_error": null
+          },
+          "QUEUE": {
+            "reasons": [],
+            "upstream_status": null,
+            "error_kind": null,
+            "missing_columns": [],
+            "aq_status": null,
+            "aq_reason": null,
+            "aq_error": null
+          }
+        },
+        "branch_outcomes": {
+          "LINE:CRITERIA_NOT_MET": 3,
+          "LINE:CRITERIA_MET": 1
+        },
+        "input_sha256": {
+          "request": "09d923949484c934c0482083b95b8b30148dcc1be179fe27b5d49df0adfd6aa9"
+        },
+        "source_modes": {
+          "archive": "LIVE",
+          "live_aq": true,
+          "queue_csv": false
+        }
+      }
+    }
+  ]
+}

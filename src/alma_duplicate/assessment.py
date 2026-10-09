@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Callable
 
+from alma_duplicate.performance import measure_stage
 from alma_duplicate.candidate_search import ArchiveSearcher, search_candidates
 from alma_duplicate.domain.queue import QueueCsvParseResult
 from alma_duplicate.domain.proposed_observation import RequestValidationResult
@@ -67,14 +68,18 @@ class AssessmentResult:
 def assess_observation(request: dict, search_options: dict, *,
                        options: AssessmentOptions = AssessmentOptions(),
                        sources: AssessmentSources = AssessmentSources(),
-                       input_sha256: str | None = None) -> AssessmentResult:
+                       input_sha256: str | None = None,
+                       report_detail: str = 'full') -> AssessmentResult:
     """Run one assessment, preserving missing-source and independent branch states.
 
     COMPLETED describes execution only, never a search-wide duplication verdict.
     Queue science remains explicitly selected; callers must supply the intended
     options and display the report's effective evaluation_configuration.
     """
-    validated = validate_proposed_observation(request, search_options)
+    if report_detail not in {'full', 'matches'}:
+        raise ValueError('Report detail must be full or matches')
+    with measure_stage("validation"):
+        validated = validate_proposed_observation(request, search_options)
     if validated.is_valid and validated.request.target_kind == "SUN":
         return AssessmentResult(
             AssessmentStatus.SOLAR_EXEMPTION, validated,
@@ -118,7 +123,8 @@ def assess_observation(request: dict, search_options: dict, *,
         queue_candidate_beam=options.queue_candidate_beam,
     )
 
-    archive = sources.archive_provider() if sources.archive_provider is not None else None
+    with measure_stage("source_initialization"):
+        archive = sources.archive_provider() if sources.archive_provider is not None else None
     if (sources.archive_array_fetcher is not None and archive is not None
             and archive.array_catalog is not None):
         raise ValueError("An array catalog and live AQ fetcher are mutually exclusive")
@@ -128,26 +134,30 @@ def assess_observation(request: dict, search_options: dict, *,
         aq_equivalent_filters=options.aq_equivalent_filters,
         queue_candidate_beam=options.queue_candidate_beam,
     )
-    acquisition = (acquire_archive_arrays(search.archive, sources.archive_array_fetcher)
-                   if sources.archive_array_fetcher is not None else None)
+    with measure_stage("aq_acquisition"):
+        acquisition = (acquire_archive_arrays(search.archive, sources.archive_array_fetcher)
+                       if sources.archive_array_fetcher is not None else None)
     catalog = acquisition.catalog if acquisition is not None else archive.array_catalog if archive else None
-    report = evaluate_candidate_search(
-        search, queue_common=options.queue_common,
-        queue_continuum=options.queue_continuum, queue_line=options.queue_line,
-        archive_arrays=catalog,
-        nominal_conversion=(options.nominal_conversion
-                            if 'CONTINUUM' in validated.request.intents
-                            and validated.request.continuum_setup_declaration is None
-                            and any(w.bandwidth_kind == 'NOMINAL' or
-                                    (w.interval is not None and w.interval.kind == 'NOMINAL')
-                                    for w in validated.request.spectral_windows)
-                            else None),
-    )
+    with measure_stage("scientific_evaluation"):
+        report = evaluate_candidate_search(
+            search, queue_common=options.queue_common,
+            queue_continuum=options.queue_continuum, queue_line=options.queue_line,
+            archive_arrays=catalog,
+            nominal_conversion=(options.nominal_conversion
+                                if 'CONTINUUM' in validated.request.intents
+                                and validated.request.continuum_setup_declaration is None
+                                and any(w.bandwidth_kind == 'NOMINAL' or
+                                        (w.interval is not None and w.interval.kind == 'NOMINAL')
+                                        for w in validated.request.spectral_windows)
+                                else None),
+        )
     emit_progress("report")
-    document = report_document(
-        report, input_sha256=input_sha256,
-        archive_replay_metadata=archive.replay_metadata if archive else None,
-    )
+    with measure_stage("report_assembly"):
+        document = report_document(
+            report, input_sha256=input_sha256,
+            archive_replay_metadata=archive.replay_metadata if archive else None,
+            detail=report_detail,
+        )
     if acquisition is not None:
         document["sources"]["ARCHIVE"]["array_evidence"] = acquisition.metadata
     elif catalog is not None:

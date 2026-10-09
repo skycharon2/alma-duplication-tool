@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "implementation": "Report v5 matching details; all retained contexts evaluated.",
+  "baseline_record": "assessment_performance_2026-10-09.json: queue-line-diagnostic",
+  "measurement": {
+    "schema_version": 1,
+    "started_at": "2026-10-09T07:14:39.425407+00:00",
+    "python": "3.12.11",
+    "platform": "macOS-26.4.1-x86_64-i386-64bit",
+    "storage_budget_bytes": 1073741824,
+    "execution": "COMPLETED",
+    "files": {
+      "request.json": 1303,
+      "report.json": 430900954,
+      "contexts.jsonl": 243766059,
+      "view.json": 225476,
+      "inspection.json": 15896840
+    },
+    "wall_seconds": 55.3398806671612,
+    "thread_cpu_seconds": 1.30367836,
+    "stages": [
+      {
+        "name": "validation",
+        "wall_seconds": 0.001763707958161831,
+        "thread_cpu_seconds": 2.535199999999932e-05,
+        "failed": false
+      },
+      {
+        "name": "source_initialization",
+        "wall_seconds": 1.1669471859931946e-06,
+        "thread_cpu_seconds": 2.699999999966618e-08,
+        "failed": false
+      },
+      {
+        "name": "csv_load",
+        "wall_seconds": 0.6561084170825779,
+        "thread_cpu_seconds": 0.015729082999999998,
+        "failed": false
+      },
+      {
+        "name": "queue_contexts",
+        "wall_seconds": 0.28272095788270235,
+        "thread_cpu_seconds": 0.006769512999999998,
+        "failed": false
+      },
+      {
+        "name": "queue_filter",
+        "wall_seconds": 1.864839666057378,
+        "thread_cpu_seconds": 0.044719535000000005,
+        "failed": false
+      },
+      {
+        "name": "aq_acquisition",
+        "wall_seconds": 1.834239810705185e-06,
+        "thread_cpu_seconds": 3.19999999970344e-08,
+        "failed": false
+      },
+      {
+        "name": "scientific_evaluation",
+        "wall_seconds": 24.05601954087615,
+        "thread_cpu_seconds": 0.566357475,
+        "failed": false
+      },
+      {
+        "name": "report_assembly",
+        "wall_seconds": 7.394276457838714,
+        "thread_cpu_seconds": 0.17716240900000002,
+        "failed": false
+      },
+      {
+        "name": "inspection",
+        "wall_seconds": 0.16143204178661108,
+        "thread_cpu_seconds": 0.0037876100000000523,
+        "failed": false
+      },
+      {
+        "name": "write_report",
+        "wall_seconds": 17.088939916808158,
+        "thread_cpu_seconds": 0.40391819399999995,
+        "failed": false
+      },
+      {
+        "name": "write_inspection",
+        "wall_seconds": 0.5897592082619667,
+        "thread_cpu_seconds": 0.01378605200000016,
+        "failed": false
+      },
+      {
+        "name": "write_request",
+        "wall_seconds": 0.00046000024303793907,
+        "thread_cpu_seconds": 1.1066999999975735e-05,
+        "failed": false
+      },
+      {
+        "name": "write_context_index",
+        "wall_seconds": 2.60606791684404,
+        "thread_cpu_seconds": 0.05672643399999999,
+        "failed": false
+      },
+      {
+        "name": "view_projection",
+        "wall_seconds": 0.4191431659273803,
+        "thread_cpu_seconds": 0.009884305000000149,
+        "failed": false
+      },
+      {
+        "name": "write_view",
+        "wall_seconds": 0.015233292244374752,
+        "thread_cpu_seconds": 0.0003561579999999953,
+        "failed": false
+      },
+      {
+        "name": "first_page_projection",
+        "wall_seconds": 0.007413249928504229,
+        "thread_cpu_seconds": 0.00011626800000019699,
+        "failed": false
+      }
+    ],
+    "unattributed_wall_seconds": 0.195700126234442,
+    "assessment_status": "COMPLETED",
+    "retained_contexts": 3200,
+    "sources": {
+      "ARCHIVE": "NOT_SELECTED",
+      "QUEUE": "COMPLETED"
+    },
+    "source_diagnostics": {
+      "ARCHIVE": {
+        "reasons": [],
+        "upstream_status": null,
+        "error_kind": null,
+        "missing_columns": [],
+        "aq_status": null,
+        "aq_reason": null,
+        "aq_error": null
+      },
+      "QUEUE": {
+        "reasons": [
+          "FIXED_SINGLE_POINTING_ONLY",
+          "ARCHIVE_BOUND_COVERS_FREQUENCY_GE_35_GHZ_AND_DIAMETER_GE_7_M",
+          "ARCHIVE_UNKNOWN_OR_LOWER_FREQUENCY_OUTSIDE_CONE_NOT_COVERED",
+          "ARCHIVE_MISSING_CENTERS_AND_MOSAIC_EXTENTS_NOT_COVERED",
+          "QUEUE_SCOPE_IS_SUPPLIED_FILE",
+          "POSITION_IS_EVALUATED_SEPARATELY_WITH_CANDIDATE_EVIDENCE",
+          "NO_SEARCH_WIDE_ABSENCE_VERDICT"
+        ],
+        "upstream_status": "COMPLETE_WITH_WARNINGS",
+        "error_kind": null,
+        "missing_columns": [],
+        "aq_status": null,
+        "aq_reason": null,
+        "aq_error": null
+      }
+    },
+    "branch_outcomes": {
+      "LINE:INDETERMINATE": 3081,
+      "LINE:CRITERIA_NOT_MET": 118,
+      "LINE:CRITERIA_MET": 1
+    },
+    "input_sha256": {
+      "request": "8f468672344f597109c84408619e8d33e73e9eeb7deee5cc42e971b028fa7d64",
+      "queue_csv": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5"
+    },
+    "report_detail": "matches",
+    "source_modes": {
+      "archive": null,
+      "live_aq": false,
+      "queue_csv": true
+    }
+  }
+}

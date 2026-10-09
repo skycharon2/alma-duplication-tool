@@ -19,6 +19,8 @@ def main(argv=None, *, archive_client_factory=None):
     parser.add_argument("--request", type=Path, required=True)
     parser.add_argument("--queue-csv", type=Path)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument('--report-detail', choices=('full', 'matches'), default='full',
+                        help='Full v4 report or v5 matching details with other candidate summaries')
     archive_input = parser.add_mutually_exclusive_group()
     archive_input.add_argument("--live-archive", action="store_true")
     archive_input.add_argument("--archive-replay", type=Path, help="Replay a captured TAP manifest offline")
@@ -92,6 +94,7 @@ def main(argv=None, *, archive_client_factory=None):
             ),
             sources=AssessmentSources(archive_kind, archive_provider if archive_kind else None, loader),
             input_sha256=hashlib.sha256(raw).hexdigest(),
+            report_detail=args.report_detail,
         )
         if result.status == AssessmentStatus.REQUEST_NOT_SEARCH_READY:
             print(json.dumps({

@@ -20,7 +20,10 @@ ROOT = Path(__file__).parents[2]
 @pytest.fixture(scope='module')
 def assessment():
     request = json.loads((ROOT / 'examples/confirmed_line/request.json').read_bytes())
-    result = BrowserAssessment(archive_replay=ROOT / 'examples/confirmed_line/archive/manifest.json').assess(request)
+    # Storage tests also cover legacy full v4 documents, including synthetic
+    # mutations unrelated to the v5 detail-policy contract.
+    result = BrowserAssessment(archive_replay=ROOT / 'examples/confirmed_line/archive/manifest.json',
+                               report_detail='full').assess(request)
     return request, result
 
 

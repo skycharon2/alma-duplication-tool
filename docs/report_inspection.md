@@ -1,5 +1,10 @@
 # Report inspection v3: pair identity
 
+The reader also accepts [matching-detail report v5](matching_report.md). Summary
+contexts preserve all criterion diagnostics and pair references; omission of
+calculation payloads is explicit and does not create a missing-evidence issue.
+The inspection's `report_version` identifies its actual input version.
+
 `inspect_report(document)` now defaults to inspection version `3`. Report v4
 and scientific evaluator methods are unchanged. This is a report-consumer fix,
 not a new duplication decision or a change to scientific evidence.
