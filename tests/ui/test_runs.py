@@ -312,3 +312,46 @@ def test_declaration_does_not_fill_line_evidence_or_run_unselected_branch():
     doc = client.get(response.location + "/download/report").get_json()
     assert doc["request_criteria"] == []
     assert all(b["status"] == "INDETERMINATE" for c in doc["context_evaluations"] for b in c["branches"])
+
+
+@pytest.mark.parametrize('unit,value', [('GHz', '460'), ('MHz', '460000')])
+def test_continuum_rest_browser_to_dual_source_report(unit, value):
+    client = create_app(config(
+        OFFLINE_ARCHIVE_REPLAY=ROOT / 'examples/confirmed_continuum/archive/manifest.json',
+        OFFLINE_QUEUE_CSV=ROOT / 'examples/queue_continuum/queue.csv',
+    )).test_client()
+    base = MultiDict({'setup_id': 'setup-1', 'ra': '201.365', 'dec': '-43.019',
+                      'radius': '30', 'angular': '0.3', 'intents': 'CONTINUUM',
+                      'aggregate': '0.1', 'continuum_setup_declaration': 'on',
+                      'action': 'assess'})
+    base.setlist('sources', ['ARCHIVE', 'QUEUE'])
+    reports = []
+    for kind, frequency, z, frequency_unit in [('SKY', '230', '1', 'GHz'), ('REST', value, '1', unit)]:
+        data = base.copy()
+        data.update({'representative': frequency, 'representative_kind': kind,
+                     'representative_unit': frequency_unit, 'redshift': z})
+        response = client.post('/proposed', data=data)
+        assert response.status_code == 303
+        location = response.location
+        doc = client.get(location + '/download/report').get_json()
+        reports.append(doc)
+        raw = client.get(location + '/download/request').get_json()['request']
+        assert raw['representative_frequency']['kind'] == kind
+        assert raw['representative_frequency']['value'] == frequency
+        assert raw['source_redshift'] == z
+        if kind == 'REST':
+            html = client.get(location).get_data(as_text=True)
+            assert 'REST preparation: νsky = νrest / (1 + z)' in html
+            assert 'Entered representative frequency' in html
+            assert 'Source redshift z' in html
+        assert {c['reference']['source'] for c in doc['context_evaluations']} == {'ARCHIVE', 'QUEUE'}
+    from alma_duplicate.report_summary import resolve_context_summary
+    for direct, converted in zip(reports[0]['context_evaluations'], reports[1]['context_evaluations'], strict=True):
+        direct = resolve_context_summary(direct, reports[0])
+        converted = resolve_context_summary(converted, reports[1])
+        assert direct['branches'] == converted['branches']
+        for left, right in zip(direct['criteria'], converted['criteria'], strict=True):
+            assert left['outcome'] == right['outcome']
+            if left['criterion_id'] == 'CONT-RMS':
+                assert left == right  # frequency conversion never rescales sensitivity
+    assert client.get(location + '/download/inspection').status_code == 200

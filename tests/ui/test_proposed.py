@@ -386,3 +386,57 @@ def test_browser_defaults_auto_and_download_revalidates_without_hidden_radius(cl
     assert 'Conflicting explicit radius' in html and 'value="30"' in html
     data['radius'] = ''
     assert 'Input valid: <strong>Yes</strong>' in client.post('/proposed', data=data).get_data(as_text=True)
+
+
+def test_continuum_rest_redshift_is_visible_and_missing_links_to_shared_control(client):
+    data = {"setup_id": "setup-1", "ra": "201.365", "dec": "-43.019", "radius": "30",
+            "sources": "ARCHIVE", "intents": "CONTINUUM", "representative": "460",
+            "representative_kind": "REST", "redshift": "", "action": "validate"}
+    html = client.post('/proposed', data=data).get_data(as_text=True)
+    assert html.count('id="redshift"') == 1
+    assert html.index('id="redshift"') < html.index('<section id="line-requirements"')
+    assert 'href="#redshift"' in html and 'SOURCE_REDSHIFT_REQUIRED' in html
+    data['redshift'] = '1'
+    html = client.post('/proposed', data=data).get_data(as_text=True)
+    assert 'SOURCE_REDSHIFT_REQUIRED' not in html
+    assert 'Continuum comparison requires SKY.' not in html
+    assert '<section id="line-requirements" hidden>' in html
+
+
+@pytest.mark.parametrize("purposes", [["LINE"], ["CONTINUUM"], ["LINE", "CONTINUUM"]])
+def test_workbench_keeps_unique_shared_and_window_controls(client, purposes):
+    from html.parser import HTMLParser
+
+    class Controls(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.ids = []
+            self.inputs = {}
+
+        def handle_starttag(self, tag, attrs):
+            attrs = dict(attrs)
+            if attrs.get("id"):
+                self.ids.append(attrs["id"])
+            if tag == "input" and attrs.get("name"):
+                self.inputs.setdefault(attrs["name"], []).append(attrs.get("value", ""))
+
+    data = MultiDict(fields())
+    data.setlist("intents", purposes)
+    data.setlist("rows", [ROW, OTHER])
+    data.update({OTHER + "_id": "line-1", OTHER + "_center": "240",
+                 OTHER + "_rms": "0.7", OTHER + "_resolution": "30",
+                 "representative": "460", "representative_kind": "REST",
+                 "target_name": '<img src=x onerror="alert(1)">'})
+    html = client.post("/proposed", data=data).get_data(as_text=True)
+    controls = Controls()
+    controls.feed(html)
+    assert len(controls.ids) == len(set(controls.ids))
+    assert controls.inputs["redshift"] == ["0.024"]
+    assert controls.inputs["representative"] == ["460"]
+    assert controls.inputs[ROW + "_rms"] == ["0.3"]
+    assert controls.inputs[OTHER + "_rms"] == ["0.7"]
+    assert '<img src=x' not in html
+    assert 'aria-controls="field-guide"' in html
+    for asset in ("proposal-workbench.css", "proposal-workbench.js"):
+        assert f'/static/{asset}' in html
+        assert client.get(f'/static/{asset}').status_code == 200

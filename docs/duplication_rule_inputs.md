@@ -138,7 +138,7 @@ coherent evidence from the same candidate context, as defined in section 6.
 | SOLAR: Sun; A final sentence | Explicit target kind | Candidate matching unnecessary for exemption | Same | `NOT_APPLICABLE` assessment, distinct from unavailable implementation | Never extend exemption to all Solar System objects |
 | ANGULAR: applicable candidate comparison; A/resolution | Positive angular resolution with `REQUESTED_VALUE` meaning | `spatial_resolution` canonical evidence; optional `s_resolution` stays separate | `Req. Ang. Res.` | Convert supported units, preserve requested-versus-estimated semantics; policy comparison after context validation | Missing request or candidate quantity blocks this rule, not spatial retrieval |
 | CONT-SETUP: continuum applicability; A/spectral definition | Distinct `window_id`s, per-window bandwidth kind and setup completeness; alternatively the explicit [researcher declaration](continuum_setup_declaration.md) | Not a substitute for proposed setup | Not a substitute for proposed setup | Direct USABLE-width path or separately versioned USER_DECLARED qualification; contradictory complete lists remain unresolved. Supported nominal conversion uses approved `continuum_setup_4` | Intent alone never establishes qualification; no imputed width or mode |
-| CONT-FREQ: continuum; A/spectral | Independent setup representative frequency, optional representative-window link and reference/origin | `frequency`, full parsed support, canonical interval | `Ref.Frequency`, SPW frequencies, `Is Sky Freq?`, velocity evidence | Archive: confirmed proposed representative SKY frequency versus candidate frequency. Queue: implemented same-row reference SKY frequency mapping; [Queue continuum](queue_continuum.md) owns scope and provenance. Beam fallback is not CONT-FREQ evidence | Broad spatial retrieval permitted; frequency assessment unavailable |
+| CONT-FREQ: continuum; A/spectral | Independent setup representative frequency, optional representative-window link and reference/origin | `frequency`, full parsed support, canonical interval | `Ref.Frequency`, SPW frequencies, `Is Sky Freq?`, velocity evidence | Archive: prepared proposed representative SKY frequency (direct or REST + redshift) versus candidate frequency. Queue: implemented same-row reference SKY frequency mapping; [Queue continuum](queue_continuum.md) owns scope and provenance. Beam fallback is not CONT-FREQ evidence | Broad spatial retrieval permitted; frequency assessment unavailable |
 | CONT-RMS: continuum; A/spectral | Direct aggregate RMS with declared basis/setup scope, or reference RMS with conversion inputs | `cont_sensitivity_bandwidth`, parsed component sensitivities with their bases | `Req.Sensitivity` plus `Ref.Frequency` and `Ref.Freq.Width` | Archive: approved direct aggregate RMS comparison. Queue: implemented adopted same-row reference-width/usable-union mapping in [Queue continuum](queue_continuum.md); no automatic Archive sensitivity or beam-unit substitution | Missing metadata limits affected operations, not request storage; candidate gaps remain candidate-side |
 | LINE-FDM: line; A/spectral | Proposed window correlator-mode evidence | Versioned association-bound operational em_xel interpretation for the exact candidate component | Same-row/SPW mode evidence with supported interpretation; census results remain experimental | Independent condition in the [Archive pair evaluator](line_pairing_design.md); Queue [mode adapter](queue_mode_adapter.md) and [formal pair evaluator](queue_line_pairing.md) are implemented in their adopted scope | Missing/conflicting mode stays unresolved; known non-FDM can fail this condition without hiding coverage |
 | LINE-COVERAGE: line; A/spectral | Requested SPW centre with supported SKY/REST preparation; width not generally required | Assigned component interval | Associated SPW interval with supported frequency reference and usable-width interpretation | Compare requested centre with candidate coverage, not whole-window containment; mode is assessed separately by LINE-FDM | Missing width alone does not block centre coverage; missing interval/reference blocks coverage |
@@ -177,14 +177,16 @@ Window center, setup `representative_frequency` and sensitivity
 Each also has `origin` with kind USER_DECLARED/OT_COPIED/IMPORTED/UNKNOWN, raw
 label, source/version and optional source target/epoch. None is a fallback for
 another. Representative frequency exists independently of sensitivity entries.
-Archive continuum uses the declared setup representative SKY frequency; multiple
+Archive continuum uses the declared setup representative frequency, prepared as
+SKY directly or from REST + redshift; multiple
 RMS entries must not cause arbitrary selection. No equality-to-center constraint
 is imposed. Queue comparison roles remain source-specific.
 
 Frequency kind/frame and origin fields use the [API representation](proposed_observation_api.md#wire-format).
 These preserve declarations rather than establishing execution-time reference
 frames; an OT Sky label alone does not establish topocentric frequency. Archive
-continuum requires the declared representative SKY frequency. Archive line accepts
+continuum accepts representative SKY or REST + redshift through the
+[shared preparation contract](proposed_frequency.md). Archive line accepts
 SKY centres or REST centres with explicit redshift through the implemented
 [line preparation contract](line_pairing_design.md). Unknown references remain
 unresolved where required and are distinct from known incompatibility. Queue
@@ -361,7 +363,7 @@ confirmation dated 2026-09-17 and implementation clarifications dated 2026-09-21
 | --- | --- | --- |
 | ANGULAR/Q1 | CONFIRMED and implemented | Archive estimated angular resolution; candidate frequency and unique diameter; inclusive candidate beam |
 | Q2 | CONFIRMED for direct usable widths and the adopted proposed nominal mapping | `continuum_setup_4` records the [2026-10-07 adoption](evidence/proposed_usable_bandwidth_decision_2026-10-07.md); no arbitrary conversion outside that mapping |
-| Q3 | CONFIRMED and implemented | User representative SKY frequency, not window average |
+| Q3 | CONFIRMED and implemented | User representative frequency, SKY or REST + redshift; not window average |
 | Q4 | CONFIRMED and implemented for line formula | Same-component 10km/s smoothing and angular correction; coarse resolution blocks RMS; no continuum smoothing/correction |
 | Q5 | CONFIRMED and implemented for direct Archive continuum | Candidate estimated aggregate RMS <=2 times proposed RMS; Queue mapping excluded |
 | Q6 | CONFIRMED operational em_xel/UI mapping | Versioned association-bound evidence and unknown/conflict gates implemented |

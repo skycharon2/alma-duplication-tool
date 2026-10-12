@@ -36,7 +36,18 @@ def calculation_view(record):
     notes = []
     windows = []
     proposed_windows = []
-    if criterion == 'LINE-RMS' and 'sigma_at_plan_mjy_beam' in derived:
+    if criterion == 'CONT-FREQ' and details.get('frequency_preparation_version') == 'proposed_sky_frequency_1':
+        facts.insert(0, fact('Entered representative frequency', details.get('input_frequency_value'),
+                             details.get('input_frequency_unit', '')))
+        facts.insert(1, fact('Frequency reference', details.get('input_frequency_kind')))
+        facts.insert(2, fact('Declared frequency frame', details.get('input_frequency_frame')))
+        notes = ['The prepared observed representative frequency is compared with the candidate frequency using the symmetric factor limit of 1.3.']
+        if details.get('input_frequency_kind') == 'REST':
+            notes.append('REST preparation: νsky = νrest / (1 + z). The entered frequency and redshift are retained. Missing conversion evidence leaves this comparison unresolved.')
+        elif details.get('input_frequency_kind') == 'SKY':
+            notes.append('The entered SKY frequency is used directly; redshift is not applied again.')
+        notes.append('This preparation does not infer an observing frame or scale the aggregate RMS or SPW bandwidths.')
+    elif criterion == 'LINE-RMS' and 'sigma_at_plan_mjy_beam' in derived:
         notes = [
             'Archive RMS is first scaled from its 10 km/s reference to the planned spectral resolution, then adjusted to the angular comparison basis.',
             'Spectral scaling: σplan = σ10 × √(10 km/s / Δvplan). Angular correction: σcomparison = σplan × (θproposed / θcandidate)².',

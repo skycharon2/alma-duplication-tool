@@ -14,8 +14,9 @@ is unknown. All five approved conditions must pass for CRITERIA_MET.
 
 ## Evidence and arithmetic
 
-CONT-FREQ uses only a positive Ref.Frequency and declared representative SKY
-frequency, with max/min <= 1.3. The position-only SPW fallback is not used here.
+CONT-FREQ (`queue_cont_freq_3`) uses a positive Ref.Frequency and the proposed
+representative SKY frequency, supplied directly or prepared from REST + redshift
+by the [shared frequency method](proposed_frequency.md), with max/min <= 1.3. The position-only SPW fallback is not used here.
 
 CONT-RMS uses one row's reference sensitivity and width, and every regular SPW
 in its setup. The existing nominal-to-usable mapping is reused with its exact

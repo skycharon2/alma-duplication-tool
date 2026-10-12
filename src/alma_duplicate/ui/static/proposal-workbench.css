@@ -1,0 +1,150 @@
+/* The observation workbench shares the existing form and backend contract. */
+.proposal-page .proposal-intro { margin: 0 0 16px; padding: 8px 12px; border: 1px solid var(--border); background: white; }
+.proposal-page .proposal-layout { grid-template-columns: minmax(0, 1fr) 248px; gap: 22px; }
+.proposal-page .proposal-summary { display: block; top: 16px; max-height: calc(100vh - 32px); scrollbar-width: thin; }
+.proposal-page .proposed-form section { padding: 14px 20px; margin: 0; border: 1px solid var(--border); }
+.proposal-page .proposal-fields > section + section { border-top: 0; }
+.proposal-page .proposal-fields > section:first-child { border-radius: 6px 6px 0 0; }
+.proposal-page .proposed-form h2 { font-size: 18px; font-weight: 600; color: var(--ink); }
+.proposal-page .proposal-fields > section > h2, .proposal-page .solar-retained > section > h2 { background: none; margin: 0 0 12px; padding: 0; border: 0; }
+.proposal-page .section-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.proposal-page .section-title h2 { margin: 0; }
+.proposal-page .proposed-form h3 { border: 0; padding: 0; font-size: 14px; margin: 0 0 10px; }
+.proposal-page .proposed-form label, .proposal-page .choice-group legend { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.proposal-page .control-label { display: flex; gap: 5px; align-items: center; min-height: 28px; margin-bottom: 4px; }
+.proposal-page .control-label label { margin: 0; }
+.proposal-page .proposed-form input[type="text"], .proposal-page .proposed-form select { min-width: 0; min-height: 36px; height: 36px; margin: 0; padding: 8px 10px; border: 1px solid var(--control-border); border-radius: 4px; color: var(--ink); font-size: 14px; background: white; font-variant-numeric: tabular-nums; transition: border-color 120ms, box-shadow 120ms; }
+.proposal-page .proposed-form input[type="text"]:hover, .proposal-page .proposed-form select:hover { border-color: #769caf; }
+.proposal-page .proposed-form input:focus-visible, .proposal-page .proposed-form select:focus-visible { outline: 2px solid #007bb1; outline-offset: 2px; }
+.proposal-page .proposed-form input[aria-invalid="true"] { border-color: #a42828; background: #fff9f9; }
+.proposal-page .proposed-form input[readonly] { background: #f2f6f8; }
+.proposal-page input[type="checkbox"] { accent-color: var(--blue); width: 17px; height: 17px; flex-shrink: 0; }
+.proposal-page .proposed-form .form-pair { margin: 10px 0; gap: 10px 16px; }
+.proposal-page .proposed-form .quantity-grid { grid-template-columns: minmax(0, 1fr) 104px; gap: 0; margin: 0; }
+.proposal-page .quantity-grid > div:first-child > .control-label { grid-area: 1 / 1 / 2 / 3; }
+.proposal-page .quantity-grid > div:first-child > input { border-radius: 4px 0 0 4px; position: relative; z-index: 1; }
+.proposal-page .quantity-grid > div:last-child > label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.proposal-page .quantity-grid > div:last-child > select { background: #f1f6f9; border-left: 0; border-radius: 0 4px 4px 0; padding-inline: 6px; }
+.proposal-page .coordinate-control { margin: 0; grid-template-columns: minmax(0, 1fr) 85px; align-items: start; }
+.proposal-page .coordinate-control > div:last-child > label { display: flex; align-items: center; min-height: 28px; margin-bottom: 4px; }
+.proposal-page .field-note { font-size: 12px; line-height: 1.6; margin-block: 6px; color: var(--muted); }
+.proposal-page .line-frequency-grid, .proposal-page .continuum-frequency-grid { display: grid; grid-template-columns: minmax(200px, 1.6fr) minmax(120px, 1fr) minmax(110px, .9fr) minmax(120px, 1fr); gap: 12px; align-items: start; margin-block: 6px 10px; }
+.proposal-page .line-frequency-grid > div > label, .proposal-page .continuum-frequency-grid > div > label { display: flex; align-items: center; min-height: 28px; margin-bottom: 4px; }
+.proposal-page .continuum-frequency-grid { grid-template-columns: minmax(200px, 1.4fr) minmax(150px, 1fr); }
+.proposal-page #shared-redshift { max-width: 360px; }
+.proposal-page .line-frequency-grid #shared-redshift, .proposal-page .continuum-frequency-grid #shared-redshift { max-width: none; }
+.proposal-page #shared-redshift .field-note { font-size: 11px; }
+.proposal-page .proposed-form .mode-control { max-width: none; }
+.proposal-page .proposed-form .spectral-window { padding: 12px 0; margin: 0; border: 0; border-top: 1px solid var(--border); border-radius: 0; }
+.proposal-page .spectral-window > legend { font-weight: 600; }
+.proposal-page .proposed-form .choice-group { margin: 0; padding: 0; }
+.proposal-page .inline-choices { display: flex; gap: 8px; flex-wrap: wrap; }
+.proposal-page .inline-choices label { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 4px; margin: 0; cursor: pointer; font-weight: 500; background: white; }
+.proposal-page .inline-choices label:has(input:checked) { border-color: #65a5c6; background: var(--info); color: #00618d; }
+.proposal-page .setup-evidence { background: #f1f7fb; border-left: 3px solid #6aa9cb; padding: 12px 14px; margin: 12px 0; }
+.proposal-page .complete-choice { display: flex; align-items: start; gap: 8px; margin-top: 8px; font-weight: 400; }
+.proposal-page .complete-choice input { margin-top: 3px; }
+.proposal-page details { margin-block: 12px; }
+.proposal-page summary { color: var(--blue-dark); cursor: pointer; font-size: 13px; padding-block: 5px; }
+.proposal-page summary:hover { color: #00486b; }
+.proposal-page .additional-line > summary { padding: 10px; background: #f2f7fa; border-radius: 3px; }
+.proposal-page .proposed-form .input-actions { position: sticky; bottom: 0; z-index: 5; justify-content: flex-end; padding: 14px 20px; background: rgba(250, 252, 253, .97); border: 1px solid var(--border); box-shadow: 0 -4px 12px rgb(36 65 85 / 4%); }
+.proposal-page .input-actions .primary { order: 1; }
+.proposal-page .button { border-radius: 4px; font-weight: 600; padding: 9px 14px; background: white; transition: background 130ms, border-color 130ms, box-shadow 130ms; }
+.proposal-page .button:hover:not(:disabled) { background: #eaf4fa; border-color: #669dbb; }
+.proposal-page .button.primary { background: var(--blue); border-color: var(--blue); color: white; }
+.proposal-page .button.primary:hover:not(:disabled) { background: #00668f; box-shadow: 0 2px 6px #007bb126; }
+.proposal-page .button:disabled { opacity: .55; cursor: not-allowed; }
+.proposal-page .input-export { padding: 4px 20px; }
+.proposal-page :is(input, select, button, section, fieldset, details) { scroll-margin-block: 30px 110px; }
+.proposal-page .proposal-summary section { border-radius: 5px; margin-bottom: 16px; padding: 18px; }
+.proposal-page .proposal-summary #validation { padding: 16px 18px; background: white; border: 1px solid var(--border); border-top: 3px solid #66a6c8; }
+.proposal-page .proposal-summary h2 { font-size: 16px; }
+.proposal-page .summary-name { font-weight: 600; overflow-wrap: anywhere; }
+.proposal-page .summary-values { margin: 8px 0; }
+.proposal-page .summary-values > div { padding: 7px 0; border-bottom: 1px solid #e5edf2; }
+.proposal-page .summary-values dt { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+.proposal-page .summary-values dd { margin: 0; font-size: 12px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.proposal-page .proposal-sections { border: 0; }
+.proposal-page .proposal-sections a { font-size: 12px; padding: 6px 12px; }
+.proposal-page .field-help-button { display: none; flex: 0 0 26px; align-items: center; justify-content: center; width: 26px; height: 26px; padding: 0; border: 1px solid #adc8d9; border-radius: 50%; color: #0073a6; background: white; cursor: pointer; font-weight: 600; }
+.proposal-page [data-workbench-ready] .field-help-button { display: inline-flex; }
+.proposal-page .field-help-button:hover, .proposal-page .field-help-button[aria-expanded="true"] { background: #e4f2fa; border-color: #007bb1; }
+.proposal-page .help-popover { position: fixed; z-index: 30; background: white; border: 1px solid #c5d0d9; border-radius: 6px; box-shadow: 0 12px 40px rgb(22 48 68 / 17%); display: flex; flex-direction: column; }
+.proposal-page .help-popover[hidden] { display: none; }
+.proposal-page .popover-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 14px 10px 18px; background: #f0f4f7; border-bottom: 1px solid #dbe3e9; border-radius: 6px 6px 0 0; }
+.proposal-page .popover-header h2 { font-size: 16px; font-weight: 600; margin: 0; }
+.proposal-page .popover-header button { font-size: 22px; min-width: 32px; height: 32px; border: 0; background: transparent; cursor: pointer; color: var(--muted); }
+.proposal-page #guide-content { padding: 18px; overflow-y: auto; font-size: 13px; }
+.proposal-page .popover-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.proposal-page .popover-facts h3 { font-size: 12px; margin: 0 0 4px; }
+.proposal-page .popover-facts p { margin: 0; }
+.proposal-page .popover-note { font-size: 12px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); color: var(--muted); }
+.proposal-page .has-illustration .help-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.proposal-page .help-figure { margin: 0; padding-left: 18px; border-left: 1px solid var(--border); }
+.proposal-page .help-figure figcaption { font-size: 12px; font-weight: 600; }
+.proposal-page .help-figure figcaption span { float: right; color: var(--muted); font-size: 10px; font-weight: 400; }
+.proposal-page .help-figure svg { width: 100%; height: auto; }
+.proposal-page .figure-caption { font-size: 11px; color: var(--muted); }
+.proposal-page .proposed-form .target-identity-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+.proposal-page .target-identity-grid > div > label { display: flex; align-items: center; min-height: 28px; margin-bottom: 4px; }
+.proposal-page .science-shared { padding-bottom: 8px; border-bottom: 1px solid #e6edf2; }
+.proposal-page .continuum-frequency-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+.proposal-page .proposal-fields .form-pair > div, .proposal-page .line-frequency-grid > div, .proposal-page .continuum-frequency-grid > div { min-width: 0; }
+/* Three visual groups: target, science and sources. Stable anchors remain for diagnostics. */
+.proposal-page .proposal-fields #observation-type { padding-bottom: 4px; border-bottom: 0; }
+.proposal-page .proposal-fields #position { padding-top: 4px; }
+.proposal-page .proposal-fields #requirements { padding-bottom: 6px; border-bottom: 0; }
+.proposal-page .proposal-fields #line-requirements,
+.proposal-page .proposal-fields #sensitivities { padding-top: 10px; padding-bottom: 10px; border-block: 0; }
+.proposal-page .proposal-fields #windows { display: flow-root; padding-top: 0; padding-bottom: 6px; border-block: 0; }
+.proposal-page .proposal-fields .section-title h2 { font-size: 16px; }
+.proposal-page .proposal-fields .appendix-guide { margin: 0; padding: 2px 20px 10px; border: 1px solid var(--border); border-top: 0; background: white; }
+.proposal-page .proposal-fields .appendix-guide > summary { padding: 0; background: none; font-weight: 400; }
+.proposal-page #line-requirements > .spectral-window { padding: 0; border: 0; }
+.proposal-page [data-workbench-ready] .secondary-guidance { display: none; }
+.proposal-page [data-workbench-ready] .scope-supported { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.proposal-page .window-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; font-size: 12px; }
+.proposal-page .window-tools .button { min-height: 32px; padding: 4px 8px; font-size: 11px; background: transparent; border-color: transparent; color: var(--muted); font-weight: 400; }
+.proposal-page .detail-context { margin-left: 8px; color: var(--muted); font-size: 11px; }
+.proposal-page .mode-control { position: relative; }
+.proposal-page .mode-control .field-help-button { position: absolute; right: 0; top: 0; }
+.proposal-page .mode-control > label { padding-right: 28px; }
+.proposal-page #search > .form-pair { display: block; margin: 0 0 8px; }
+.proposal-page #sources > legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.proposal-page #sources .inline-choices { display: grid; grid-template-columns: 1fr 1fr; }
+.proposal-page .proposal-summary .observation-summary { margin-bottom: 0; border-radius: 5px 5px 0 0; padding-bottom: 6px; }
+.proposal-page .proposal-summary #validation { border-top: 0; border-radius: 0 0 5px 5px; padding: 8px 18px 14px; }
+.proposal-page .proposal-sections a[aria-current="location"] { border-left-color: var(--blue); background: var(--info); color: var(--blue-dark); }
+.proposal-page .proposal-summary #validation:not([data-validated]) { font-size: 12px; color: var(--muted); }
+.proposal-page .proposed-form .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); }
+@media (max-width: 1180px) {
+  .proposal-page .line-frequency-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .proposal-page .proposal-layout { grid-template-columns: minmax(0, 1fr) 230px; gap: 16px; }
+  .proposal-page .proposed-form section { padding: 14px 18px; }
+}
+@media (max-width: 850px) {
+  .proposal-page .proposal-layout { grid-template-columns: 1fr; }
+  .proposal-page .proposal-summary { position: static; max-height: none; display: block; }
+  .proposal-page .proposal-summary section { margin: 0; }
+  .proposal-page .proposal-sections { display: none; }
+}
+@media (max-width: 600px) {
+  .proposal-page .proposed-form section { padding: 16px; }
+  .proposal-page .proposed-form .form-pair, .proposal-page .proposed-form .target-identity-grid, .proposal-page .line-frequency-grid, .proposal-page .continuum-frequency-grid, .proposal-page .proposal-summary { grid-template-columns: 1fr; }
+  .proposal-page .proposed-form .quantity-grid { grid-template-columns: minmax(0, 1fr) 108px; }
+  .proposal-page .proposed-form input[type="text"], .proposal-page .proposed-form select { min-height: 44px; height: 44px; font-size: 16px; }
+  .proposal-page .proposed-form .spectral-window { padding: 12px; }
+  .proposal-page .proposed-form .input-actions { padding: 10px; gap: 8px; }
+  .proposal-page .proposed-form .input-actions .button { width: auto; flex: 1; font-size: 12px; }
+  .proposal-page .has-illustration .help-layout { grid-template-columns: 1fr; }
+  .proposal-page .help-figure { padding: 14px 0 0; border-left: 0; border-top: 1px solid var(--border); }
+  .proposal-page .help-figure svg { max-height: 160px; }
+  .proposal-page .field-help-button { flex-basis: 30px; width: 30px; height: 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .proposal-page *, .proposal-page *::before, .proposal-page *::after { transition: none !important; animation: none !important; }
+}
+@media (forced-colors: active) {
+  .proposal-page .inline-choices label:has(input:checked) { outline: 2px solid Highlight; }
+}

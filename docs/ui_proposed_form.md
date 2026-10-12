@@ -14,7 +14,8 @@ row identities, clears stale validation results, and never queries or assesses.
 Selecting LINE with no rows creates one blank entry, with no assumed mode or
 scientific values. Each entry is a requested correlator window, not an individual
 spectral feature. Its central frequency, reference, planned resolution, RMS and mode
-appear in Spectral line requirements. Redshift is shared by REST frequencies.
+appear in Spectral line requirements. Redshift is a single shared input. With JavaScript it sits beside the first visible LINE frequency, or the continuum frequency when no LINE panel is visible; without JavaScript it remains in shared scientific requirements. Both LINE and
+CONTINUUM REST frequencies use it through [backend preparation](proposed_frequency.md).
 Additional bandwidth evidence and IDs are in a separate optional section, linked
 to the same entries. Controls are not duplicated between sections.
 
@@ -37,6 +38,39 @@ request download is under Export input. Errors, missing evidence and unsupported
 observation types remain visible. Links from diagnostics expand the containing
 section before focusing the affected control. Collapsing help does not remove
 inputs from submissions or change scientific validation.
+
+## Workbench layout and help
+
+The working Flask form visually groups Target, Scientific requirements and Data
+sources, with stable anchors retained for field diagnostics. LINE, CONTINUUM and
+window evidence sit within the science group. Optional explanations use floating
+help or collapsed details; errors and missing-evidence diagnostics stay visible.
+
+The form uses a compact main column and a right-hand observation
+summary on desktop; small screens place the summary after the form. This is the
+assessment form, not a static preview. The summary displays entered values only,
+while the separate input-status panel reports the shared validator's result.
+Target name, target type and geometry share a desktop row, followed by the
+coordinate pair. Parameter columns use compact 36-pixel controls; phone layouts
+stack the fields and retain 44-pixel controls for touch input.
+Typography, page width, header and photograph attribution belong to the shared
+workbench stylesheet so report pages retain the same visual shell. The proposal
+stylesheet contains only form-specific layout and interactions.
+
+Field help opens in a floating panel on mouse hover or click, with keyboard
+activation and Escape-to-close. Closing with the keyboard returns focus to the
+help button. Frequency and bandwidth diagrams are labelled illustrations, not
+candidate data. Help text and diagrams perform no scientific calculations.
+Without JavaScript, inline explanations and server form actions remain available.
+
+The first requested LINE window stays visible. Additional requested windows are
+expandable, retain distinct values and IDs, and open when a diagnostic targets
+them. For continuum-only input, window centres are under optional frequency
+evidence; individual bandwidths and the shared representative frequency remain
+separate. All controls, including collapsed inputs, keep their existing wire
+names. Switching purposes, adding windows and validation responses preserve
+values. The browser reinitializes help and the summary after an assessment POST
+returns validation errors.
 
 ## Observation type and support
 
@@ -94,7 +128,7 @@ spectral alternatives or introduce a search-wide verdict.
   1.8 GHz, plus frequency and aggregate sensitivity conditions. The UI explicitly
   separates that policy wording from the project's usable-bandwidth interpretation
   and researcher-declaration evidence route. Nominal-to-usable interpretation is
-  not unit conversion and is not enabled by this browser configuration.
+  not unit conversion; the browser assessment uses the approved backend mapping described above.
 - LINE entries supply requested window centres. FDM is required on both sides;
   one qualifying window can meet the spectral-line condition. The UI explains
   sensitivity comparison after smoothing to the same spectral resolution, without

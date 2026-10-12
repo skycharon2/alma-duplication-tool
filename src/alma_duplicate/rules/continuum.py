@@ -8,7 +8,8 @@ from alma_duplicate.rules.model import (
     CriterionOutcome as O, MethodApproval, MethodApplicability as A,
     EvaluationStatus as E, EvidenceSide as S,
 )
-from alma_duplicate.rules.numeric import positive_canonical, symmetric_factor
+from alma_duplicate.rules.numeric import positive_canonical
+from alma_duplicate.proposed_frequency import prepare_frequency, FREQUENCY_PREPARATION_VERSION
 
 
 def _quantity_issue(value, unit, side, path):
@@ -35,7 +36,7 @@ def _candidate(context, name):
     return value, issues
 
 
-def _result(criterion, context, proposed, candidate, issues, ratio=None, limit=None, details=()):
+def _result(criterion, context, proposed, candidate, issues, ratio=None, limit=None, details=(), frequency_derived=()):
     outcome = None if issues else (O.SATISFIED if ratio <= positive_canonical(limit) else O.NOT_SATISFIED)
     try:
         numeric = None if ratio is None else float(ratio)
@@ -45,34 +46,56 @@ def _result(criterion, context, proposed, candidate, issues, ratio=None, limit=N
         numeric = None
     return CriterionResult(
         criterion_id=criterion, policy_ref=f"{POLICY_DOCUMENT}, Spectral windows",
-        method_version=("archive_cont_rms_2" if criterion == "CONT-RMS" else "archive_cont_freq_1"),
+        method_version=("archive_cont_rms_2" if criterion == "CONT-RMS" else "archive_cont_freq_2"),
         approval=MethodApproval.APPROVED,
         applicability=A.UNRESOLVED if issues else A.APPLICABLE,
         evaluation=E.INSUFFICIENT_INFORMATION if issues else E.EVALUATED,
         outcome=outcome, context_id=context.context_id, proposed=proposed, candidate=candidate,
         issues=tuple(issues), reasons=tuple(i.code for i in issues) if issues else
         ("WITHIN_INCLUSIVE_LIMIT" if outcome is O.SATISFIED else "EXCEEDS_LIMIT",),
-        derived=(("factor", numeric), ("max_factor", limit)),
+        derived=(("factor", numeric), ("max_factor", limit)) + frequency_derived,
         details=details + (() if ratio is None else (("factor_exact", str(ratio)),)),
-        decision_refs=(DECISION_REF,),
+        decision_refs=(DECISION_REF,) + (("docs/proposed_frequency.md",) if criterion == "CONT-FREQ" else ()),
     )
 
 
-def evaluate_continuum_frequency(request, context):
+def prepare_representative_frequency(request):
+    """One shared proposed operand for both candidate sources, with provenance."""
     f = request.representative_frequency
-    proposed = None if f is None else CriterionValue(
-        f.quantity.value, f.quantity.unit, "representative_frequency", "USER_SETUP_REPRESENTATIVE_SKY")
-    candidate, issues = _candidate(context, "frequency")
-    if f is not None and f.kind != "SKY":
-        issues.append(CriterionIssue(S.PROPOSED, "REPRESENTATIVE_SKY_FREQUENCY_REQUIRED",
-                                     "request.representative_frequency.kind", "No REST/mean-window fallback"))
-    for value, side, path in ((proposed, S.PROPOSED, "request.representative_frequency"),
-                              (candidate, S.CANDIDATE, "context.frequency")):
-        issue = _quantity_issue(value, "GHz", side, path)
-        if issue:
-            issues.append(issue)
-    ratio = None if issues else symmetric_factor(proposed.value, candidate.value)
-    return _result("CONT-FREQ", context, proposed, candidate, issues, ratio, 1.3)
+    prepared = prepare_frequency(f, request.source_redshift)
+    proposed = None if prepared.sky_ghz is None else CriterionValue(
+        prepared.sky_ghz, "GHz", "representative_frequency",
+        "USER_SETUP_REPRESENTATIVE_SKY" if f.kind == "SKY" else "USER_SETUP_REST_REDSHIFT_TO_SKY")
+    issues = [CriterionIssue(
+        S.PROPOSED, reason,
+        "request.source_redshift" if reason == "SOURCE_REDSHIFT_REQUIRED"
+        else "request.representative_frequency",
+        "A SKY representative frequency or REST representative frequency with valid redshift is required.",
+    ) for reason in prepared.reasons]
+    details = (("frequency_preparation_version", FREQUENCY_PREPARATION_VERSION),
+               ("sky_frequency_ghz_exact", str(prepared.sky_ghz_exact) if prepared.sky_ghz_exact is not None else "UNAVAILABLE"))
+    derived = (("sky_frequency_ghz", prepared.sky_ghz),)
+    if f is not None:
+        details += (("input_frequency_value", str(f.quantity.raw_value)),
+                    ("input_frequency_unit", f.quantity.raw_unit),
+                    ("input_frequency_kind", f.kind),
+                    ("input_frequency_frame", f.frame))
+        if f.kind == "REST":
+            derived += (("source_redshift", request.source_redshift),)
+    return prepared.sky_ghz_exact, proposed, issues, details, derived
+
+
+def evaluate_continuum_frequency(request, context):
+    exact, proposed, issues, details, derived = prepare_representative_frequency(request)
+    candidate, candidate_issues = _candidate(context, "frequency")
+    issues.extend(candidate_issues)
+    issue = _quantity_issue(candidate, "GHz", S.CANDIDATE, "context.frequency")
+    if issue:
+        issues.append(issue)
+    cf = None if issues else positive_canonical(candidate.value)
+    ratio = None if issues else max(exact, cf) / min(exact, cf)
+    return _result("CONT-FREQ", context, proposed, candidate, issues, ratio, 1.3,
+                   details, derived)
 
 
 def evaluate_continuum_rms(request, context):
