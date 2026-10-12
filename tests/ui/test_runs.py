@@ -94,7 +94,8 @@ def test_real_dual_source_run_retains_exact_report_and_input(monkeypatch, purpos
     text = ' '.join(visible.text)
     assert "Download this run's input request" not in text
     assert 'Download complete original JSON' not in text
-    assert 'Optional data exports' in text
+    assert 'Optional data exports' not in text
+    assert 'Temporary report' in text
     assert 'Criteria for this LINE pair' in text if 'LINE' in purposes else 'Candidate conditions' in text
     assert "Assessment run" in html and "SYNTHETIC" in html
     assert "Execution status: COMPLETED" in html
