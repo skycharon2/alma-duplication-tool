@@ -4,7 +4,7 @@ from copy import deepcopy
 from alma_duplicate.report_summary import resolve_context_summary
 
 from alma_duplicate.ui.report_view import (
-    attention_groups, matching_contexts, member_groups, report_summary, source_overview,
+    attention_groups, group_title, matching_contexts, member_groups, report_summary, source_overview,
 )
 
 
@@ -48,6 +48,8 @@ def report_page(projection, page, view, load_context):
                [index for group in page_groups for child in group['children'] for index in child['entries']])
     contexts = {index: resolve_context_summary(load_context(index), projection['document']) for index in indices}
     for group in page_groups:
+        # Derive headings at read time so existing view indexes also benefit.
+        group['title'] = group_title(group)
         for child in group['children']:
             child['entries'] = [(index, contexts[index]) for index in child['entries']]
     return {

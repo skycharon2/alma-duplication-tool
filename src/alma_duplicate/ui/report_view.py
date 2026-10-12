@@ -151,6 +151,14 @@ def context_identity(context):
     return [(label, ', '.join(values)) for label, values in _identity_values(context).items()]
 
 
+def group_title(group):
+    """Name an existing group without changing its identity or membership."""
+    targets = list(dict.fromkeys(child['target'] for child in group['children']
+                                if child.get('target')))
+    parts = [', '.join(targets), ', '.join(group.get('projects', []))]
+    return ' · '.join(part for part in parts if part) or group['label']
+
+
 def member_groups(entries):
     """Group presentation only; keep every context and its original index intact.
 
