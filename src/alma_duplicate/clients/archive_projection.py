@@ -1,5 +1,7 @@
 """Resolve optional raw evidence columns before building science ADQL."""
 
+from alma_duplicate.performance import measure_stage
+
 from alma_duplicate.clients.archive_contract import (
     ArchiveOptionalColumnEvidence,
     ArchiveOptionalColumnStatus as Status,
@@ -42,7 +44,8 @@ def plan_archive_projection(
             f"    AND column_name IN ({names})"
         )
         try:
-            response = executor.execute(adql, maxrec=len(requested) + 1)
+            with measure_stage('tap_projection_metadata'):
+                response = executor.execute(adql, maxrec=len(requested) + 1)
             rows = response.rows
             warnings = response.warnings
             raw_status = (

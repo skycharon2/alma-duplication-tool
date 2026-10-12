@@ -28,8 +28,9 @@
 <p class="field-note">Decision summary: this candidate has no recorded matching branch. Detailed calculations were not retained; unresolved results remain unresolved.</p>
 {% for scope in c.beam_variants or [c] %}
 {% if c.beam_variants %}<h4>Beam variant · D = {{ scope.diameter_m }} m</h4>{% for b in scope.branches %}<p>{{ purpose_labels.get(b.branch, 'Recorded purpose') }}: {{ status(b.status) }}</p>{% endfor %}{% endif %}
-{{ decision_summary(standalone_criteria(scope)) }}
-{% for pair in scope.line_pairs %}<details class="line-pair"><summary>{{ pair_title(pair) }} · {{ status_labels.get(pair.status, 'Needs review') }}</summary>{{ decision_summary(pair.criteria) }}</details>{% endfor %}
+{{ decision_summary(scope.criteria) }}
+{% if scope.line_pairs %}<p>{{ scope.line_pairs|length }} spectral-window comparisons evaluated. Repeated condition summaries are grouped below; pair identities remain in the technical record.</p>
+{% for item in summary_line_conditions(scope) %}{{ decision_summary([item.record]) }}<p class="field-note">Recorded for {{ item.count }} spectral-window comparison{{ '' if item.count == 1 else 's' }}.</p>{% endfor %}{% endif %}
 {% endfor %}
 {% else %}
 {% if c.beam_variants %}<h4>{{ 'Queue' if c.reference.source == 'QUEUE' else 'Archive' }} beam hypotheses: 7 m + 12 m</h4><p>These are separate diameter calculations for one candidate. The recorded result combines complete branches, without mixing criteria between diameters.</p><p>Matching beam diameters (m): {{ c.mix_aggregation.matching_diameters_m | join(', ') or 'None' }}.</p>{% endif %}

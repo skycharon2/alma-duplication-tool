@@ -123,7 +123,7 @@ does not establish live service availability or a reviewed real-proposal result.
 | Candidate display limit | 1 |
 
 Window and setup identities are supplied by the form. Click Run assessment.
-The response redirects to `/runs/<id>`. Expect [matching-detail report v5](matching_report.md), separate source states,
+The response redirects to `/runs/<id>`. Expect [matching-detail report v6](matching_report.md), separate source states,
 independent branch/pair evidence and explicit effective evaluation configuration.
 This is a new computation using the entered fields, not a saved acceptance report.
 
@@ -334,3 +334,12 @@ unavailable evidence rather than a no-duplication conclusion.
 
 An already-running server must be restarted to load these protections. Reloading
 or closing a browser page does not reliably cancel its running backend request.
+
+### Live TAP completeness and latency
+
+The live browser provider uses the backend `STATUS_THEN_COUNT` policy. A fully
+parsed, explicitly successful, schema-valid result below MAXREC can omit the
+separate COUNT query. Other responses retain COUNT reconciliation; overflow and
+unresolved completeness still block reconstruction. The actual policy and COUNT
+execution are recorded in source provenance. Replay and direct client defaults
+remain COUNT-first. See the [TAP client contract](archive_client_contract.md#browser-retrieval-first-policy).

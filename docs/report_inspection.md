@@ -1,6 +1,6 @@
 # Report inspection v3: pair identity
 
-The reader also accepts [matching-detail report v5](matching_report.md). Summary
+The reader also accepts [matching-detail reports v5/v6](matching_report.md). Summary
 contexts preserve all criterion diagnostics and pair references; omission of
 calculation payloads is explicit and does not create a missing-evidence issue.
 The inspection's `report_version` identifies its actual input version.
@@ -11,12 +11,17 @@ not a new duplication decision or a change to scientific evidence.
 
 Each pair-specific gap has:
 
-- `location`: a JSON Pointer to its exact criterion in the input report, such as
+- `location`: a JSON Pointer to its exact criterion occurrence in the input report, such as
   `/context_evaluations/0/line_pairs/2/criteria/5`;
 - `pair_identity.context_id`, `proposed_window_id` and `pair_index`;
 - `pair_identity.reference`: the original source-specific pairing reference.
   Queue includes the row/SPW identity; Archive includes its assigned component.
   Unresolved Archive attempts retain a null reference and their report location.
+
+In v6 SUMMARY contexts the criterion occurrence is an integer reference, rather
+than an inline criterion. `criterion_record_location` then points to the actual
+record in `/summary_criteria/<index>`. Shared storage does not merge occurrence
+identities or diagnostic counts. V4/v5 and v6 FULL contexts keep inline records.
 
 Indices locate occurrences within this report, not across reports or reorderings.
 Use the pairing reference for scientific source identity. No identity is guessed

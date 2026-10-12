@@ -13,6 +13,7 @@ from urllib.parse import urlsplit
 import requests
 
 from alma_duplicate.progress import emit_progress
+from alma_duplicate.performance import measure_stage
 
 from alma_duplicate.archive_array_evidence import (
     ArchiveArrayCatalog, ArchiveArrayCatalogMode, ArchiveArrayCatalogProvenance,
@@ -121,7 +122,8 @@ class ArchiveAqClient:
         records, queries = [], []
         emit_progress("aq", 0, len(members), "members")
         if members:
-            properties, _, _ = self._read("GET", PROPERTIES_URL)
+            with measure_stage('aq_discovery'):
+                properties, _, _ = self._read("GET", PROPERTIES_URL)
             try:
                 endpoint = _endpoint(properties["elasticsearchUrl"])
                 key = properties.get("elasticsearchApiKey")
@@ -137,9 +139,10 @@ class ArchiveAqClient:
                 body = {"size": self._max_hits, "track_total_hits": True,
                         "_source": ["mous", "sourceName", "array"],
                         "query": {"term": {"mous": member}}}
-                payload, digest, retrieved = self._read(
-                    "POST", endpoint, member=member, headers=headers, body=body)
-                hits = self._validate(payload, member)
+                with measure_stage('aq_member'):
+                    payload, digest, retrieved = self._read(
+                        "POST", endpoint, member=member, headers=headers, body=body)
+                    hits = self._validate(payload, member)
                 for hit in hits:
                     source = hit["_source"]
                     records.append(ArrayRecord(hit["_id"], source["mous"], source["sourceName"],

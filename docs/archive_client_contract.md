@@ -4,7 +4,7 @@
 
 The Archive client retrieves candidate evidence from the ALMA Science Archive
 without applying duplication-policy decisions. It converts one spatial search
-into a traceable COUNT-and-retrieval run, verifies that the response is usable,
+into a traceable retrieval run, verifies that the response is usable,
 and permits normalization and reconstruction only when completeness is proven.
 
 An incomplete or technically invalid Archive response must never support a
@@ -13,7 +13,7 @@ cannot be validated may still support structural reconstruction, but its
 affected values cannot enter scientific comparison.
 
 Current entry point: `ArchiveClient.search(ArchiveQuerySpec)`. Client version
-**7**, required-column schema version **3**, and projection version **1** are
+**8**, required-column schema version **3**, and projection version **1** are
 independent provenance fields; see the projection section below.
 
 ## Raw row snapshot boundary
@@ -42,7 +42,7 @@ support would require a separate immutable representation contract.
 
 This is an in-memory snapshot of the selected columns, not disk persistence
 or a guarantee that all Archive metadata columns were queried. This snapshot
-boundary was introduced in client version 6 and is retained in client version 7; it is independent of parser and reconstruction versions.
+boundary was introduced in client version 6 and is retained in subsequent client versions; it is independent of parser and reconstruction versions.
 
 ## Scope
 
@@ -70,7 +70,8 @@ The client does not:
 
 ## Query sequence
 
-One `ArchiveClient.search()` call performs:
+By default (`completeness_policy="COUNT_FIRST"`), one
+`ArchiveClient.search()` call performs:
 
 1. local validation of `ArchiveQuerySpec`;
 2. when numeric bounds were requested, a prefilter-specific `TAP_SCHEMA`
@@ -88,6 +89,45 @@ One `ArchiveClient.search()` call performs:
 
 The retrieval query uses an explicit projection. It does not use `SELECT *` or
 Notebook-style exploratory `TOP` limits.
+
+## Browser retrieval-first policy
+
+Client version 8 adds `completeness_policy="STATUS_THEN_COUNT"`. The browser's
+live Archive provider selects it; direct/CLI clients and captured replays retain
+`COUNT_FIRST`. Both policies use identical ADQL predicates, projection and MAXREC.
+Neither changes the AUTO radius, candidate selection or scientific rules.
+
+The browser retrieves first. It omits COUNT only when all of these hold:
+
+- the complete parsed VOTable has one results resource and one table;
+- that resource explicitly reports OK, including any trailing QUERY_STATUS;
+- the executor's effective QUERY_STATUS is OK;
+- every required column is present; and
+- the returned row count is strictly less than the configured MAXREC.
+
+This relies on the service complying with
+[TAP 1.1 sections 2.7.4 and 3.4](https://www.ivoa.net/documents/TAP/20190927/REC-TAP-1.1.html):
+truncation at a client or service limit must be reported as overflow. It does not
+independently detect a server that silently drops rows while reporting success.
+Callers needing an independent COUNT reconciliation retain `COUNT_FIRST`.
+The flag `TapResponse.explicit_success` defaults to false for custom executors;
+only an executor that checks explicit status should set it to true.
+
+If any condition fails, COUNT runs against the same predicate, after retrieval.
+At exactly MAXREC, matching COUNT plus OK can establish completeness. OVERFLOW
+remains incomplete even if counts agree; a mismatch, unknown status, missing
+column or failed COUNT cannot permit reconstruction. Diagnostic rows are retained.
+A retrieval exception ends the run without COUNT. Empty valid responses can skip
+COUNT under the same rules; an empty response alone proves nothing.
+
+Provenance records `completeness_policy` and `count_attempted`. When COUNT is
+omitted, `count_attempted` is false and `expected_count` /
+`count_query_status_raw` are null. `count_adql` retains the planned query for exact
+query-to-request binding; it does not assert that the query was executed;
+`retrieved_count` remains the actual count. No independent total is fabricated.
+The policy contributes to the query hash. Older records have their original
+COUNT provenance and require no migration. AQ still runs only after TAP has
+passed the shared completeness gate and retained linked Members.
 
 ## Broad candidate prefilters
 
@@ -125,12 +165,12 @@ after retrieval never authorizes unsafe server-side arithmetic.
 
 | Status | Meaning | May enter reconstruction? |
 |---|---|---:|
-| `COMPLETE` | `QUERY_STATUS=OK` and expected count equals retrieved count | Yes |
+| `COMPLETE` | Schema/status checks pass and either COUNT reconciles or the explicit-success below-MAXREC policy applies | Yes |
 | `OVERFLOW` | TAP explicitly reported a truncated retrieval | No |
 | `COUNT_MISMATCH` | TAP reported OK but COUNT and retrieval differ | No |
 | `ERROR` | Service, query, response, count, schema, or status validation failed | No |
 
-A valid empty result is:
+A valid empty result under COUNT reconciliation is:
 
 ```text
 expected_count = 0
@@ -306,7 +346,7 @@ Every success and failure path records:
 
 - query-run identifier;
 - endpoint;
-- COUNT ADQL;
+- planned COUNT ADQL, completeness policy and whether COUNT was attempted;
 - retrieval ADQL;
 - normalized parameters;
 - configured MAXREC;
@@ -321,7 +361,8 @@ Every success and failure path records:
 - schema version.
 
 The query hash identifies the endpoint, exact COUNT/retrieval text, both
-unit-gate statuses, and captured arithmetic-field descriptors. It is technical
+unit-gate statuses, captured arithmetic-field descriptors and the nondefault
+completeness policy. It is technical
 provenance, not an Archive entity identifier.
 
 ## TAP boundary

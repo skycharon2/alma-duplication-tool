@@ -51,8 +51,9 @@ from alma_duplicate.clients.archive_queries import (
 )
 
 from alma_duplicate.clients.archive_projection import plan_archive_projection
+from alma_duplicate.performance import measure_stage
 
-ARCHIVE_CLIENT_VERSION = "7"
+ARCHIVE_CLIENT_VERSION = "8"
 DEFAULT_MAXREC = 10_000
 TAP_HTTP_TIMEOUT = (10, 60)
 
@@ -238,6 +239,7 @@ class PyvoTapExecutor:
                     None,
                 ),
                 warnings=_extract_info_warnings(result),
+                explicit_success=_explicit_votable_success(result),
             )
         except (AttributeError, KeyError, TypeError, ValueError) as exc:
             raise TapExecutionError(
@@ -246,6 +248,23 @@ class PyvoTapExecutor:
             ) from exc
 
         return response
+
+
+def _explicit_votable_success(result: _PyvoResult) -> bool:
+    """Do not treat PyVO's default OK for absent QUERY_STATUS as evidence.
+
+    Require the complete parsed VOTable's single results resource, a table,
+    and only explicit OK status records (including any trailing record).
+    PyVO separately rejects query errors and malformed/truncated XML.
+    """
+    votable = getattr(result, "votable", None)
+    resources = [r for r in getattr(votable, "resources", ())
+                 if getattr(r, "type", None) == "results"]
+    if len(resources) != 1 or len(resources[0].tables) != 1:
+        return False
+    statuses = [info.value for info in resources[0].infos
+                if str(info.name).casefold() == "query_status"]
+    return bool(statuses) and all(value == "OK" for value in statuses)
 
 
 def _extract_info_warnings(
@@ -473,7 +492,7 @@ def _query_units_are_exact(
 
 
 class ArchiveClient:
-    """Execute COUNT and retrieval as one safe Archive query run."""
+    """Retrieve Archive rows under an explicit completeness policy."""
 
     def __init__(
         self,
@@ -483,6 +502,7 @@ class ArchiveClient:
         maxrec: int = DEFAULT_MAXREC,
         clock: Callable[[], datetime] | None = None,
         run_id_factory: Callable[[], str] | None = None,
+        completeness_policy: str = "COUNT_FIRST",
     ) -> None:
         normalized_endpoint = endpoint.strip().rstrip("/")
         if not normalized_endpoint:
@@ -490,6 +510,9 @@ class ArchiveClient:
         if maxrec <= 0:
             raise ValueError("maxrec must be positive")
 
+        if completeness_policy not in {"COUNT_FIRST", "STATUS_THEN_COUNT"}:
+            raise ValueError("Unknown TAP completeness policy")
+        self.completeness_policy = completeness_policy
         self.endpoint = normalized_endpoint
         self.maxrec = maxrec
         self._executor = executor or PyvoTapExecutor(
@@ -526,10 +549,11 @@ class ArchiveClient:
             )
 
         try:
-            response = self._executor.execute(
-                build_query_unit_metadata_adql(requested_units),
-                maxrec=len(requested_units),
-            )
+            with measure_stage('tap_unit_metadata'):
+                response = self._executor.execute(
+                    build_query_unit_metadata_adql(requested_units),
+                    maxrec=len(requested_units),
+                )
         except TapExecutionError as exc:
             effective_spec = spec
             if frequency_requested:
@@ -774,78 +798,48 @@ class ArchiveClient:
             ).encode("utf-8")
         ).hexdigest()
 
+        if self.completeness_policy != "COUNT_FIRST":
+            query_hash = sha256(
+                (query_hash + "\0" + self.completeness_policy).encode("utf-8")
+            ).hexdigest()
+
         count_response: TapResponse | None = None
         retrieval_response: TapResponse | None = None
         expected_count: int | None = None
 
-        try:
-            count_response = self._executor.execute(
-                count_adql,
-                maxrec=1,
-            )
-        except TapExecutionError as exc:
-            return self._error_result(
-                kind=exc.kind,
-                message=str(exc),
-                rows=(),
-                missing_columns=(),
-                query_run_id=query_run_id,
-                count_adql=count_adql,
-                retrieval_adql=retrieval_adql,
-                normalized_parameters=normalized_parameters,
-                query_hash=query_hash,
-                started_at=started_at,
-                expected_count=None,
-                count_response=None,
-                retrieval_response=None,
-                prefilter_plan=prefilter_plan,
-            )
+        steps = (
+            ("count", "retrieval")
+            if self.completeness_policy == "COUNT_FIRST"
+            else ("retrieval", "count")
+        )
+        for step in steps:
+            if step == "count" and self._may_skip_count(retrieval_response):
+                continue
+            try:
+                if step == "count":
+                    with measure_stage("tap_count"):
+                        count_response = self._executor.execute(
+                            count_adql, maxrec=1,
+                        )
+                    expected_count = _extract_expected_count(count_response)
+                else:
+                    with measure_stage("tap_retrieval"):
+                        retrieval_response = self._executor.execute(
+                            retrieval_adql, maxrec=self.maxrec,
+                        )
+            except (TapExecutionError, _CountResponseError) as exc:
+                return self._error_result(
+                    kind=exc.kind, message=str(exc),
+                    rows=retrieval_response.rows if retrieval_response is not None else (),
+                    missing_columns=(), query_run_id=query_run_id,
+                    count_adql=count_adql, retrieval_adql=retrieval_adql,
+                    normalized_parameters=normalized_parameters, query_hash=query_hash,
+                    started_at=started_at, expected_count=expected_count,
+                    count_response=count_response, retrieval_response=retrieval_response,
+                    prefilter_plan=prefilter_plan,
+                )
 
-        try:
-            expected_count = _extract_expected_count(
-                count_response
-            )
-        except _CountResponseError as exc:
-            return self._error_result(
-                kind=exc.kind,
-                message=str(exc),
-                rows=(),
-                missing_columns=(),
-                query_run_id=query_run_id,
-                count_adql=count_adql,
-                retrieval_adql=retrieval_adql,
-                normalized_parameters=normalized_parameters,
-                query_hash=query_hash,
-                started_at=started_at,
-                expected_count=None,
-                count_response=count_response,
-                retrieval_response=None,
-                prefilter_plan=prefilter_plan,
-            )
-
-        try:
-            retrieval_response = self._executor.execute(
-                retrieval_adql,
-                maxrec=self.maxrec,
-            )
-        except TapExecutionError as exc:
-            return self._error_result(
-                kind=exc.kind,
-                message=str(exc),
-                rows=(),
-                missing_columns=(),
-                query_run_id=query_run_id,
-                count_adql=count_adql,
-                retrieval_adql=retrieval_adql,
-                normalized_parameters=normalized_parameters,
-                query_hash=query_hash,
-                started_at=started_at,
-                expected_count=expected_count,
-                count_response=count_response,
-                retrieval_response=None,
-                prefilter_plan=prefilter_plan,
-            )
-
+        assert retrieval_response is not None
         rows = retrieval_response.rows
         retrieved_count = len(rows)
         missing_columns = _missing_required_columns(
@@ -903,6 +897,8 @@ class ArchiveClient:
 
         if retrieval_status == "OVERFLOW":
             status = ArchiveQueryStatus.OVERFLOW
+        elif self._may_skip_count(retrieval_response):
+            status = ArchiveQueryStatus.COMPLETE
         elif expected_count != retrieved_count:
             status = ArchiveQueryStatus.COUNT_MISMATCH
         else:
@@ -927,6 +923,16 @@ class ArchiveClient:
             rows=rows,
             provenance=provenance,
             field_metadata=retrieval_response.field_metadata,
+        )
+
+    def _may_skip_count(self, response: TapResponse | None) -> bool:
+        return (
+            self.completeness_policy == "STATUS_THEN_COUNT"
+            and response is not None
+            and response.explicit_success is True
+            and _status_text(response.query_status_raw) == "OK"
+            and len(response.rows) < self.maxrec
+            and not _missing_required_columns(response.declared_columns)
         )
 
     def _error_result(
@@ -1039,6 +1045,12 @@ class ArchiveClient:
             ),
             query_hash=query_hash,
             client_version=ARCHIVE_CLIENT_VERSION,
+            completeness_policy=self.completeness_policy,
+            count_attempted=(
+                self.completeness_policy == "COUNT_FIRST"
+                or (retrieval_response is not None
+                    and not self._may_skip_count(retrieval_response))
+            ),
             schema_version=ARCHIVE_SCHEMA_VERSION,
             frequency_prefilter_status=(
                 prefilter_plan.frequency_status

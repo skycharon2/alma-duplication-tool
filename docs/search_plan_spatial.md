@@ -49,7 +49,8 @@ replace query binding.
 ## Binding existing queries to a plan
 
 `bind_archive_query(plan, result)` checks current-builder normalized parameters,
-COUNT ADQL and retrieval ADQL with its recorded projection. An extra hidden
+planned COUNT ADQL and retrieval ADQL with its recorded projection.
+`count_attempted` separately records whether COUNT actually ran. An extra hidden
 project filter, changed cone or additional prefilter yields MISMATCH. A source
 not selected by the plan yields SOURCE_NOT_SELECTED.
 

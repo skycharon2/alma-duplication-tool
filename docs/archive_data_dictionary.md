@@ -112,8 +112,8 @@ Source-native correlator telemetry remains unavailable through this path.
 
 ## Implementation boundary
 
-The production Archive client v7/schema v3 (projection v1) preserves row values, selected column names,
-query status, warnings, COUNT/retrieval reconciliation, query provenance, and
+The production Archive client v8/schema v3 (projection v1) preserves row values, selected column names,
+query status, warnings, the explicit completeness policy, query provenance, and
 the ordered retrieval VOTable field descriptors. For every projected field,
 the runtime contract retains `name`, `datatype`, `arraysize`, `unit`, `ucd`,
 `utype`, `xtype`, and `description`; absent optional attributes remain `None`.
@@ -131,7 +131,8 @@ column order or applying scientific-value normalization to their text.
    and ordered retrieval field metadata before normalization.
 2. Give every raw row an internal surrogate `raw_row_id`.
 3. Keep raw, normalized, parsed, and derived values separate.
-4. Reconcile `COUNT(*)`, retrieved row count, and `QUERY_STATUS`; incomplete
+4. Enforce the [client completeness policy](archive_client_contract.md#browser-retrieval-first-policy):
+   COUNT reconciliation or explicit successful retrieval below MAXREC. Incomplete
    results cannot support a negative duplication conclusion.
 5. Store only observed Source-Execution-SPW associations. Never synthesize a
    Source × SPW Cartesian product.

@@ -15,6 +15,7 @@ from alma_duplicate.auto_retrieval import automatic_scope
 from alma_duplicate.ui.report_view import (
     criterion_view, context_identity, display_number, STATUS_LABELS,
     criterion_explanation, criterion_status, pair_title, standalone_criteria, PURPOSE_LABELS,
+    summary_line_conditions,
 )
 from alma_duplicate.ui.runs import BrowserAssessment, RunStore
 from alma_duplicate.ui.report_pages import report_page, report_projection
@@ -108,6 +109,7 @@ def create_app(config=None):
         return render_template("report.html", **data, report_id=report_id,
                                criterion_view=criterion_view, criterion_explanation=criterion_explanation,
                                criterion_status=criterion_status, pair_title=pair_title, standalone_criteria=standalone_criteria,
+                               summary_line_conditions=summary_line_conditions,
                                purpose_labels=PURPOSE_LABELS, context_identity=context_identity,
                                display_number=display_number, status_labels=STATUS_LABELS,
                                calculation_view=calculation_view, line_preparation=line_preparation,

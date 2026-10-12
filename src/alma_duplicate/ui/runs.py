@@ -73,7 +73,8 @@ class BrowserAssessment:
                 from alma_duplicate.clients.archive_client import ArchiveClient
 
                 return ArchiveInput(
-                    ArchiveClient("https://almascience.eso.org/tap"),
+                    ArchiveClient("https://almascience.eso.org/tap",
+                                  completeness_policy="STATUS_THEN_COUNT"),
                     array_catalog=catalog,
                 )
 

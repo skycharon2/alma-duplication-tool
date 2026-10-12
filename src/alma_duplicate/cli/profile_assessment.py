@@ -11,6 +11,7 @@ from time import perf_counter, thread_time
 
 from alma_duplicate.cli.json_input import load_request_document
 from alma_duplicate.performance import PerformanceRecorder, measure_stage
+from alma_duplicate.report_size import analyze_report
 from alma_duplicate.ui.runs import BrowserAssessment, RunStore
 
 
@@ -21,7 +22,7 @@ def file_hash(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
-def profile(document, configured, *, max_bytes=1024**3):
+def profile(document, configured, *, max_bytes=1024**3, analyze_size=False):
     """One sequential run; cleanup and input hashing are outside the timed scope.
 
     Source stages include parsing/materialization, not solely network transit.
@@ -29,7 +30,7 @@ def profile(document, configured, *, max_bytes=1024**3):
     """
     recorder = PerformanceRecorder()
     result = None
-    output = {'schema_version': 1, 'started_at': datetime.now(timezone.utc).isoformat(),
+    output = {'schema_version': 2, 'started_at': datetime.now(timezone.utc).isoformat(),
               'python': platform.python_version(), 'platform': platform.platform(),
               'storage_budget_bytes': max_bytes, 'execution': 'FAILED', 'files': {}}
     with_store = RunStore(max_bytes=max_bytes)
@@ -52,7 +53,8 @@ def profile(document, configured, *, max_bytes=1024**3):
         output['thread_cpu_seconds'] = thread_time() - cpu
         with_store.close()
     output['stages'] = [asdict(s) for s in recorder.stages]
-    output['unattributed_wall_seconds'] = max(0, output['wall_seconds'] - sum(s.wall_seconds for s in recorder.stages))
+    output['unattributed_wall_seconds'] = max(0, output['wall_seconds'] - sum(
+        s.wall_seconds for s in recorder.stages if s.parent_id is None))
     if result is not None:
         output['assessment_status'] = str(result.status)
         if result.document is not None:
@@ -74,6 +76,10 @@ def profile(document, configured, *, max_bytes=1024**3):
                 }
             output['branch_outcomes'] = dict(Counter(
                 b['branch'] + ':' + b['status'] for c in contexts for b in c['branches']))
+            if analyze_size:
+                started = perf_counter()
+                output['report_size'] = analyze_report(result.document)
+                output['size_analysis_wall_seconds'] = perf_counter() - started
     return output
 
 
@@ -88,6 +94,8 @@ def main(argv=None):
     parser.add_argument('--archive-array-evidence', type=Path)
     parser.add_argument('--storage-mib', type=int, default=1024)
     parser.add_argument('--report-detail', choices=('full', 'matches'), default='matches')
+    parser.add_argument('--analyze-size', action='store_true',
+                        help='Analyze report fields after timing; includes extra diagnostic work')
     parser.add_argument('--output', type=Path, required=True, help='New timing JSON; never overwrite an existing record')
     args = parser.parse_args(argv)
     if args.storage_mib < 1:
@@ -103,7 +111,8 @@ def main(argv=None):
         'request': args.request, 'queue_csv': args.queue_csv,
         'archive_replay': args.archive_replay,
         'archive_array_evidence': args.archive_array_evidence}.items() if path is not None}
-    result = profile(document, configured, max_bytes=args.storage_mib * 1024**2)
+    result = profile(document, configured, max_bytes=args.storage_mib * 1024**2,
+                     analyze_size=args.analyze_size)
     result['input_sha256'] = hashes
     result['report_detail'] = args.report_detail
     result['source_modes'] = {'archive': configured.archive_kind,
@@ -115,7 +124,8 @@ def main(argv=None):
     print(f"{result['execution']}: {result['wall_seconds']:.3f} s wall; {args.output}")
     print(f"  assessment: {result.get('assessment_status', 'unavailable')}; sources: {result.get('sources', {})}")
     for stage in result['stages']:
-        print(f"  {stage['name']}: {stage['wall_seconds']:.3f} s" + (' (failed)' if stage['failed'] else ''))
+        print(f"  {stage['name']}: {stage['wall_seconds']:.3f} s inclusive; "
+              f"{stage['self_wall_seconds']:.3f} s self" + (' (failed)' if stage['failed'] else ''))
     return 0 if result['execution'] == 'COMPLETED' else 1
 
 

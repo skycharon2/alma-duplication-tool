@@ -1,0 +1,723 @@
+{
+  "schema_version": 2,
+  "started_at": "2026-10-12T07:54:25.815975+00:00",
+  "python": "3.12.11",
+  "platform": "macOS-26.4.1-x86_64-i386-64bit",
+  "storage_budget_bytes": 1073741824,
+  "execution": "COMPLETED",
+  "files": {
+    "request.json": 1309,
+    "report.json": 71075300,
+    "view.json": 256260,
+    "inspection.json": 17552348
+  },
+  "wall_seconds": 33.70955141633749,
+  "thread_cpu_seconds": 0.797632502,
+  "stages": [
+    {
+      "name": "validation",
+      "wall_seconds": 0.0017916657961905003,
+      "thread_cpu_seconds": 3.007599999999694e-05,
+      "failed": false,
+      "stage_id": 0,
+      "parent_id": null,
+      "self_wall_seconds": 0.0017916657961905003,
+      "self_thread_cpu_seconds": 3.007599999999694e-05
+    },
+    {
+      "name": "source_initialization",
+      "wall_seconds": 4.082918167114258e-06,
+      "thread_cpu_seconds": 1.030000000012965e-07,
+      "failed": false,
+      "stage_id": 1,
+      "parent_id": null,
+      "self_wall_seconds": 4.082918167114258e-06,
+      "self_thread_cpu_seconds": 1.030000000012965e-07
+    },
+    {
+      "name": "csv_load",
+      "wall_seconds": 0.6980791250243783,
+      "thread_cpu_seconds": 0.016636947999999995,
+      "failed": false,
+      "stage_id": 2,
+      "parent_id": null,
+      "self_wall_seconds": 0.6980791250243783,
+      "self_thread_cpu_seconds": 0.016636947999999995
+    },
+    {
+      "name": "queue_contexts",
+      "wall_seconds": 0.2720669168047607,
+      "thread_cpu_seconds": 0.0065281969999999995,
+      "failed": false,
+      "stage_id": 3,
+      "parent_id": null,
+      "self_wall_seconds": 0.2720669168047607,
+      "self_thread_cpu_seconds": 0.0065281969999999995
+    },
+    {
+      "name": "queue_filter",
+      "wall_seconds": 1.835068667307496,
+      "thread_cpu_seconds": 0.043977171999999995,
+      "failed": false,
+      "stage_id": 4,
+      "parent_id": null,
+      "self_wall_seconds": 1.835068667307496,
+      "self_thread_cpu_seconds": 0.043977171999999995
+    },
+    {
+      "name": "aq_acquisition",
+      "wall_seconds": 4.292000085115433e-06,
+      "thread_cpu_seconds": 9.59999999911032e-08,
+      "failed": false,
+      "stage_id": 5,
+      "parent_id": null,
+      "self_wall_seconds": 4.292000085115433e-06,
+      "self_thread_cpu_seconds": 9.59999999911032e-08
+    },
+    {
+      "name": "scientific_evaluation",
+      "wall_seconds": 23.63043887494132,
+      "thread_cpu_seconds": 0.5656346210000001,
+      "failed": false,
+      "stage_id": 6,
+      "parent_id": null,
+      "self_wall_seconds": 23.63043887494132,
+      "self_thread_cpu_seconds": 0.5656346210000001
+    },
+    {
+      "name": "report_assembly",
+      "wall_seconds": 3.0783391250297427,
+      "thread_cpu_seconds": 0.06692316399999998,
+      "failed": false,
+      "stage_id": 7,
+      "parent_id": null,
+      "self_wall_seconds": 3.0783391250297427,
+      "self_thread_cpu_seconds": 0.06692316399999998
+    },
+    {
+      "name": "inspection",
+      "wall_seconds": 0.27697762474417686,
+      "thread_cpu_seconds": 0.006596436000000039,
+      "failed": false,
+      "stage_id": 8,
+      "parent_id": null,
+      "self_wall_seconds": 0.27697762474417686,
+      "self_thread_cpu_seconds": 0.006596436000000039
+    },
+    {
+      "name": "write_report",
+      "wall_seconds": 2.690883624833077,
+      "thread_cpu_seconds": 0.062441786000000055,
+      "failed": false,
+      "stage_id": 9,
+      "parent_id": null,
+      "self_wall_seconds": 2.690883624833077,
+      "self_thread_cpu_seconds": 0.062441786000000055
+    },
+    {
+      "name": "write_inspection",
+      "wall_seconds": 0.6089144577272236,
+      "thread_cpu_seconds": 0.014418224000000035,
+      "failed": false,
+      "stage_id": 10,
+      "parent_id": null,
+      "self_wall_seconds": 0.6089144577272236,
+      "self_thread_cpu_seconds": 0.014418224000000035
+    },
+    {
+      "name": "write_request",
+      "wall_seconds": 0.0005530421622097492,
+      "thread_cpu_seconds": 1.3278999999921659e-05,
+      "failed": false,
+      "stage_id": 11,
+      "parent_id": null,
+      "self_wall_seconds": 0.0005530421622097492,
+      "self_thread_cpu_seconds": 1.3278999999921659e-05
+    },
+    {
+      "name": "view_projection",
+      "wall_seconds": 0.3554075830616057,
+      "thread_cpu_seconds": 0.008528674000000014,
+      "failed": false,
+      "stage_id": 12,
+      "parent_id": null,
+      "self_wall_seconds": 0.3554075830616057,
+      "self_thread_cpu_seconds": 0.008528674000000014
+    },
+    {
+      "name": "write_view",
+      "wall_seconds": 0.015828334260731936,
+      "thread_cpu_seconds": 0.00037989000000004935,
+      "failed": false,
+      "stage_id": 13,
+      "parent_id": null,
+      "self_wall_seconds": 0.015828334260731936,
+      "self_thread_cpu_seconds": 0.00037989000000004935
+    },
+    {
+      "name": "first_page_projection",
+      "wall_seconds": 0.005537999793887138,
+      "thread_cpu_seconds": 9.775400000000545e-05,
+      "failed": false,
+      "stage_id": 14,
+      "parent_id": null,
+      "self_wall_seconds": 0.005537999793887138,
+      "self_thread_cpu_seconds": 9.775400000000545e-05
+    }
+  ],
+  "unattributed_wall_seconds": 0.23965599993243814,
+  "assessment_status": "COMPLETED",
+  "retained_contexts": 3200,
+  "sources": {
+    "ARCHIVE": "NOT_SELECTED",
+    "QUEUE": "COMPLETED"
+  },
+  "source_diagnostics": {
+    "ARCHIVE": {
+      "reasons": [],
+      "upstream_status": null,
+      "error_kind": null,
+      "missing_columns": [],
+      "aq_status": null,
+      "aq_reason": null,
+      "aq_error": null
+    },
+    "QUEUE": {
+      "reasons": [
+        "FIXED_SINGLE_POINTING_ONLY",
+        "ARCHIVE_BOUND_COVERS_FREQUENCY_GE_35_GHZ_AND_DIAMETER_GE_7_M",
+        "ARCHIVE_UNKNOWN_OR_LOWER_FREQUENCY_OUTSIDE_CONE_NOT_COVERED",
+        "ARCHIVE_MISSING_CENTERS_AND_MOSAIC_EXTENTS_NOT_COVERED",
+        "QUEUE_SCOPE_IS_SUPPLIED_FILE",
+        "POSITION_IS_EVALUATED_SEPARATELY_WITH_CANDIDATE_EVIDENCE",
+        "NO_SEARCH_WIDE_ABSENCE_VERDICT"
+      ],
+      "upstream_status": "COMPLETE_WITH_WARNINGS",
+      "error_kind": null,
+      "missing_columns": [],
+      "aq_status": null,
+      "aq_reason": null,
+      "aq_error": null
+    }
+  },
+  "branch_outcomes": {
+    "LINE:INDETERMINATE": 3081,
+    "LINE:CRITERIA_NOT_MET": 118,
+    "LINE:CRITERIA_MET": 1
+  },
+  "report_size": {
+    "schema_version": 1,
+    "format": "UTF-8; ensure_ascii=False; indent=2; trailing newline",
+    "formatted_bytes": 71075300,
+    "compact_bytes": 42955400,
+    "root_value_bytes": {
+      "report_version": 3,
+      "report_kind": 22,
+      "search_execution": 10,
+      "generated_at": 34,
+      "input_sha256": 4,
+      "evaluation_version": 3,
+      "evaluation_configuration": 116,
+      "execution": 10,
+      "assessment": 16,
+      "search_assessment": 15,
+      "search_service_version": 3,
+      "search_started_at": 34,
+      "search_finished_at": 34,
+      "request": 6566,
+      "plan": 1586,
+      "sources": 5463897,
+      "evaluation_scope": 325,
+      "request_criteria": 2,
+      "report_detail": 389,
+      "context_evaluations": 65570790,
+      "summary_criteria": 30972
+    },
+    "root_structure_bytes": 469,
+    "largest_field_groups": [
+      {
+        "path": "/context_evaluations",
+        "occurrences": 1,
+        "bytes": 65570790
+      },
+      {
+        "path": "/context_evaluations/*",
+        "occurrences": 3200,
+        "bytes": 65551586
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants",
+        "occurrences": 3089,
+        "bytes": 59545380
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*",
+        "occurrences": 6178,
+        "bytes": 59458888
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs",
+        "occurrences": 6178,
+        "bytes": 51577962
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*",
+        "occurrences": 31514,
+        "bytes": 51062630
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/attempt",
+        "occurrences": 31514,
+        "bytes": 28687866
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/attempt/reference",
+        "occurrences": 31514,
+        "bytes": 21068210
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/branches",
+        "occurrences": 6178,
+        "bytes": 5598134
+      },
+      {
+        "path": "/sources",
+        "occurrences": 1,
+        "bytes": 5463897
+      },
+      {
+        "path": "/sources/QUEUE",
+        "occurrences": 1,
+        "bytes": 5463297
+      },
+      {
+        "path": "/sources/QUEUE/rows",
+        "occurrences": 1,
+        "bytes": 5448137
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/branches/*",
+        "occurrences": 6178,
+        "bytes": 5437506
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/reasons",
+        "occurrences": 31514,
+        "bytes": 5416812
+      },
+      {
+        "path": "/sources/QUEUE/rows/*",
+        "occurrences": 3200,
+        "bytes": 5416129
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/criteria",
+        "occurrences": 31514,
+        "bytes": 4100138
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/reasons/*",
+        "occurrences": 97436,
+        "bytes": 3158964
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/decision_refs",
+        "occurrences": 31514,
+        "bytes": 2615662
+      },
+      {
+        "path": "/sources/QUEUE/rows/*/spatial_evidence",
+        "occurrences": 3200,
+        "bytes": 2586161
+      },
+      {
+        "path": "/context_evaluations/*/branches",
+        "occurrences": 3200,
+        "bytes": 2416241
+      },
+      {
+        "path": "/context_evaluations/*/branches/*",
+        "occurrences": 3200,
+        "bytes": 2358641
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/attempt/reasons",
+        "occurrences": 31514,
+        "bytes": 2104808
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/decision_refs/*",
+        "occurrences": 31514,
+        "bytes": 1544186
+      },
+      {
+        "path": "/sources/QUEUE/rows/*/reference",
+        "occurrences": 3200,
+        "bytes": 1480584
+      },
+      {
+        "path": "/context_evaluations/*/reference",
+        "occurrences": 3200,
+        "bytes": 1352584
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/branches/*/required_criteria",
+        "occurrences": 6178,
+        "bytes": 1303558
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/scope",
+        "occurrences": 31514,
+        "bytes": 1229046
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/branches/*/reasons",
+        "occurrences": 6178,
+        "bytes": 910840
+      },
+      {
+        "path": "/context_evaluations/*/line_pairs",
+        "occurrences": 3200,
+        "bytes": 736603
+      },
+      {
+        "path": "/context_evaluations/*/line_pairs/*",
+        "occurrences": 459,
+        "bytes": 724953
+      }
+    ],
+    "repeated_containers": [
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2247/beam_variants/0/line_pairs",
+          "/context_evaluations/2247/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2248/beam_variants/0/line_pairs",
+          "/context_evaluations/2248/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2249/beam_variants/0/line_pairs",
+          "/context_evaluations/2249/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2250/beam_variants/0/line_pairs",
+          "/context_evaluations/2250/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2251/beam_variants/0/line_pairs",
+          "/context_evaluations/2251/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2252/beam_variants/0/line_pairs",
+          "/context_evaluations/2252/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2253/beam_variants/0/line_pairs",
+          "/context_evaluations/2253/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2254/beam_variants/0/line_pairs",
+          "/context_evaluations/2254/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2256/beam_variants/0/line_pairs",
+          "/context_evaluations/2256/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2257/beam_variants/0/line_pairs",
+          "/context_evaluations/2257/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2258/beam_variants/0/line_pairs",
+          "/context_evaluations/2258/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2259/beam_variants/0/line_pairs",
+          "/context_evaluations/2259/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2260/beam_variants/0/line_pairs",
+          "/context_evaluations/2260/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2261/beam_variants/0/line_pairs",
+          "/context_evaluations/2261/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2262/beam_variants/0/line_pairs",
+          "/context_evaluations/2262/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2263/beam_variants/0/line_pairs",
+          "/context_evaluations/2263/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2264/beam_variants/0/line_pairs",
+          "/context_evaluations/2264/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2265/beam_variants/0/line_pairs",
+          "/context_evaluations/2265/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2267/beam_variants/0/line_pairs",
+          "/context_evaluations/2267/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2268/beam_variants/0/line_pairs",
+          "/context_evaluations/2268/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2269/beam_variants/0/line_pairs",
+          "/context_evaluations/2269/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2270/beam_variants/0/line_pairs",
+          "/context_evaluations/2270/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2271/beam_variants/0/line_pairs",
+          "/context_evaluations/2271/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2272/beam_variants/0/line_pairs",
+          "/context_evaluations/2272/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2273/beam_variants/0/line_pairs",
+          "/context_evaluations/2273/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2274/beam_variants/0/line_pairs",
+          "/context_evaluations/2274/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2275/beam_variants/0/line_pairs",
+          "/context_evaluations/2275/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2276/beam_variants/0/line_pairs",
+          "/context_evaluations/2276/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2278/beam_variants/0/line_pairs",
+          "/context_evaluations/2278/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 22980,
+        "compact_bytes_per_copy": 6779,
+        "example_paths": [
+          "/context_evaluations/2279/beam_variants/0/line_pairs",
+          "/context_evaluations/2279/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 6779
+      }
+    ],
+    "repetition_min_compact_bytes": 4096,
+    "note": "Nested field groups and repeated containers overlap; do not sum them. Repeated compact bytes measure identical ordered content, not achievable storage savings. References and schema changes would have their own costs. No raw field values are included."
+  },
+  "size_analysis_wall_seconds": 6.023063499946147,
+  "baseline": "a920761 plus profiling and compact summaries in the working tree",
+  "input_sha256": {
+    "request": "fedaff4c06f9059a4decaef2bf1e2fbaad25183afca9e51a57a7f9bfab73a867",
+    "queue_csv": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5"
+  },
+  "parity": {
+    "all_context_branches": true,
+    "matching_context_full_details": true,
+    "all_retained_summary_decisions": true,
+    "pair_order_and_identity": true,
+    "inspection_counts_and_occurrences": true
+  },
+  "summary_record_count": 28,
+  "measurement_scope": "Browser backend, storage and first-page projection via CLI; additional size analysis and parity verification excluded.",
+  "browser_verification": "Read-only saved report on localhost:5150; matching SPW 3 detail and nonmatching common/LINE summaries verified in browser.",
+  "test_results": {
+    "full_suite": "1906 passed, 12 skipped",
+    "final_presentation_and_parity": "94 passed",
+    "ruff_f": "passed"
+  },
+  "comparison": {
+    "prior_record": "assessment_stage_size_2026-10-12.json",
+    "prior_report_bytes": 431316785,
+    "prior_wall_seconds": 51.87568875029683,
+    "report_reduction_fraction": 0.8352132296451203,
+    "elapsed_reduction_fraction": 0.35018594975002415,
+    "caveat": "Single runs, not a guaranteed speedup; prior local test activity was not controlled."
+  }
+}

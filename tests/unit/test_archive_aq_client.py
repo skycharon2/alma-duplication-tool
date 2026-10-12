@@ -9,6 +9,7 @@ import requests
 
 from alma_duplicate.archive_array_evidence import ArchiveArrayCatalogMode
 from alma_duplicate.clients.archive_aq_client import ArchiveAqClient, ArchiveAqError
+from alma_duplicate.performance import PerformanceRecorder, measure_stage
 
 BASE = "https://almascience.eso.org/aq/service/api/search"
 MEMBER = "uid://A001/X123/X456"
@@ -48,6 +49,19 @@ class Http:
 
 def http_for(payload, properties=None):
     return Http(Reply(properties or {"elasticsearchUrl": BASE}), Reply(payload))
+
+
+def test_member_timings_preserve_failure_and_do_not_capture_credentials():
+    http = Http(Reply({'elasticsearchUrl': BASE, 'elasticsearchApiKey': SECRET}),
+                Reply(response()), requests.Timeout())
+    with PerformanceRecorder().record() as recorder:
+        with pytest.raises(ArchiveAqError) as error, measure_stage('aq_acquisition'):
+            ArchiveAqClient(request=http).fetch_members([MEMBER, OTHER])
+    assert error.value.code == 'TRANSPORT_ERROR'
+    assert [s.name for s in recorder.stages] == ['aq_discovery', 'aq_member', 'aq_member', 'aq_acquisition']
+    assert [s.failed for s in recorder.stages] == [False, False, True, True]
+    assert SECRET not in repr(recorder.stages)
+    assert len(http.calls) == 3
 
 
 @pytest.fixture(autouse=True)

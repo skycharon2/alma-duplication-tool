@@ -349,6 +349,21 @@ def standalone_criteria(scope):
     return [r for r in records if not all(r in p.get('criteria', []) for p in pairs)]
 
 
+def summary_line_conditions(scope):
+    """Group equal recorded summaries for display; no combination of verdicts."""
+    result = []
+    for pair in scope.get('line_pairs', []):
+        for record in pair.get('criteria', []):
+            if record.get('criterion_id') in {'POS-SINGLE', 'ANGULAR'}:
+                continue
+            entry = next((item for item in result if item['record'] == record), None)
+            if entry is None:
+                result.append({'record': record, 'count': 1})
+            else:
+                entry['count'] += 1
+    return result
+
+
 def source_overview(document):
     result = []
     descriptions = {
@@ -395,13 +410,15 @@ QUEUE_SCOPE_CODES = {
 }
 
 
-def queue_scope_help(context):
+def queue_scope_help(context, document=None):
     """Explain recorded scope, without changing or recomputing any verdict."""
     if context.get('reference', {}).get('source') != 'QUEUE':
         return None
     criteria = list(context.get('criteria', []))
     for variant in context.get('beam_variants', []):
         criteria.extend(variant.get('criteria', []))
+    from alma_duplicate.report_summary import criterion_record
+    criteria = [criterion_record(r, document or {}) for r in criteria]
     geometry = {dict(c.get('details', [])).get('queue_geometry') for c in criteria}
     reasons = {r for c in criteria for r in c.get('reasons', [])}
     if 'CUSTOM_POINTING' in geometry:
@@ -423,7 +440,7 @@ def attention_groups(document, inspection):
     """Group existing inspection occurrences; counts are never observation verdicts."""
     contexts = document.get('context_evaluations', [])
     indices = {c['context_id']: i for i, c in enumerate(contexts)}
-    scope_help = {c['context_id']: queue_scope_help(c) for c in contexts}
+    scope_help = {c['context_id']: queue_scope_help(c, document) for c in contexts}
     groups = {}
     for gap in inspection.get('gap_occurrences', []):
         category = gap.get('category', 'UNCLASSIFIED')

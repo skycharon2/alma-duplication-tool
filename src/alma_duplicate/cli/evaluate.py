@@ -20,7 +20,7 @@ def main(argv=None, *, archive_client_factory=None):
     parser.add_argument("--queue-csv", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument('--report-detail', choices=('full', 'matches'), default='full',
-                        help='Full v4 report or v5 matching details with other candidate summaries')
+                        help='Full v4 report or v6 matching details with shared nonmatching summaries')
     archive_input = parser.add_mutually_exclusive_group()
     archive_input.add_argument("--live-archive", action="store_true")
     archive_input.add_argument("--archive-replay", type=Path, help="Replay a captured TAP manifest offline")

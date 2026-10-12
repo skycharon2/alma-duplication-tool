@@ -103,7 +103,7 @@ def test_real_dual_source_run_retains_exact_report_and_input(monkeypatch, purpos
     assert report.data == captured[0][1]
     assert hashlib.sha256(report.data).hexdigest() in html
     doc = report.get_json()
-    assert doc["report_version"] == "5" and doc["input_sha256"] is None
+    assert doc["report_version"] == "6" and doc["input_sha256"] is None
     for index, context in enumerate(doc['context_evaluations']):
         positive = any(b['status'] == 'CRITERIA_MET' and b['branch'] in purposes for b in context['branches'])
         assert (f'id="context-{index}"' in html) == positive
