@@ -64,6 +64,12 @@ def criterion_view(record):
         key, unit = ('comparable_queue_rms_mjy', 'mJy') if 'comparable_queue_rms_mjy' in derived else ('sigma_comp_mjy_beam', 'mJy/beam')
         candidate = {'value': derived.get(key), 'unit': unit,
                      'semantics': 'At the requested spectral resolution and backend angular comparison basis'}
+    if (record['criterion_id'] == 'LINE-RESOLUTION-COMPATIBILITY'
+            and candidate and candidate.get('unit') == 'MHz'
+            and derived.get('planned_resolution_mhz') is not None):
+        # Use the backend's common comparison unit; never convert in the viewer.
+        proposed = {'value': derived['planned_resolution_mhz'], 'unit': 'MHz',
+                    'semantics': 'Planned resolution at the line frequency, recorded by the backend'}
     if record['criterion_id'] == 'CONT-RMS' and 'aggregate_rms_mjy' in derived:
         # Req.Sensitivity is a reference-width RMS, not the aggregate operand.
         candidate = {'value': derived['aggregate_rms_mjy'], 'unit': 'mJy',

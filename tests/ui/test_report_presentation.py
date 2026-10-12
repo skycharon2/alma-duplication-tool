@@ -26,6 +26,27 @@ def test_stored_identity_zero_spw_and_legacy_fallback():
     assert context_identity({'reference': {'component_index': 3}}) == []
 
 
+def test_queue_resolution_uses_stored_common_unit_without_conversion():
+    record = {'criterion_id': 'LINE-RESOLUTION-COMPATIBILITY',
+              'proposed': {'value': 0.9267840400062302, 'unit': 'km/s'},
+              'candidate': {'value': 0.564453125, 'unit': 'MHz'},
+              'derived': [['planned_resolution_mhz', 0.564453125]]}
+    original = deepcopy(record)
+    view = criterion_view(record)
+    assert view['proposed']['value'] == view['candidate']['value'] == 0.564453125
+    assert view['proposed']['unit'] == view['candidate']['unit'] == 'MHz'
+    assert record == original
+    # Trust stored evidence, including inconsistent records, rather than computing.
+    record['derived'] = [['planned_resolution_mhz', 123]]
+    assert criterion_view(record)['proposed']['value'] == 123
+    for missing in ([], [['planned_resolution_mhz', None]]):
+        record['derived'] = missing
+        assert criterion_view(record)['proposed'] == record['proposed']
+    record['candidate']['unit'] = 'km/s'
+    record['derived'] = [['planned_resolution_mhz', 0.564453125]]
+    assert criterion_view(record)['proposed'] == record['proposed']
+
+
 def test_summary_counts_context_branches_not_beam_variants_or_pair_rows():
     context = {'branches': [{'branch': 'LINE', 'status': 'CRITERIA_MET'}],
                'beam_variants': [{'branches': [{'branch': 'LINE', 'status': 'CRITERIA_NOT_MET'}]}],
