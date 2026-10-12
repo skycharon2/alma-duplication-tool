@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · ALMA Duplication Assessment{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<p role="status">{{ explanation }}</p>
+<p>No new search has been run. This concerns report availability and does not change the previous scientific result.</p>
+<p><a href="{{ url_for('proposed') }}">Enter an observation for a new assessment</a></p>
+{% endblock %}

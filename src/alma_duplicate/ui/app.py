@@ -126,8 +126,21 @@ def create_app(config=None):
         data.update(item=item, run=None, disk_backed=False)
         return render_report(data, report_id)
 
-    def unavailable_run():
-        abort(404, description="Run unavailable: unknown ID, application restarted, expired, or retention limit reached.")
+    def unavailable_run(report_id):
+        reason = runs.unavailable_reason(report_id)
+        notices = {
+            'EXPIRED': ('Report expired', 'The retention period for this report has ended.'),
+            'EVICTED': ('Report removed to free storage',
+                        'The server reached its report count or storage retention limit. This earlier report was removed to make room for a newer run.'),
+            'OTHER_SESSION': ('Report belongs to another server session',
+                              'This link identifies a different server session. Restarting the application ends access to its temporary reports.'),
+            'CLOSED': ('Report session ended', 'The server session that stored this report has ended.'),
+        }
+        title, explanation = notices.get(reason, (
+            'Report unavailable',
+            'This server has no retained record for this link. Check the URL. Older reports may have expired, been removed, or belonged to a previous server session.',
+        ))
+        return render_template('run_unavailable.html', title=title, explanation=explanation), 404
 
     @app.get("/runs/<report_id>")
     def run_view(report_id):
@@ -137,7 +150,7 @@ def create_app(config=None):
         except IndexError:
             abort(404)
         if data is None:
-            unavailable_run()
+            return unavailable_run(report_id)
         return render_report(data, report_id)
 
     @app.get("/runs/<report_id>/download/<kind>")
@@ -146,7 +159,7 @@ def create_app(config=None):
             abort(404)
         download = runs.open_download(report_id, kind)
         if download is None:
-            unavailable_run()
+            return unavailable_run(report_id)
         response = Response(download, mimetype="application/json", headers={
             "Content-Disposition": f'attachment; filename="{kind}-{report_id}.json"',
             "Content-Length": str(download.size),

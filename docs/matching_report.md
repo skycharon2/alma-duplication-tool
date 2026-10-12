@@ -50,7 +50,10 @@ acceptance result.
 Selection happens on typed evaluator results **before** full evidence conversion.
 The serializer never builds full nonmatching context documents and then discards
 them. Full and summary records enter the same immutable browser storage path,
-including the indexed context file and original-byte downloads.
+including byte offsets into the original report and original-byte downloads.
+The browser stores each context once in `report.json`; page selection reads its
+indexed byte range without loading the entire report. Storage layout does not
+change the v5 retention policy or remove any additional evidence.
 
 Inspection v3 accepts v4 and v5 and reports the actual input report version.
 Gap counts, source statuses, branch counts and pair identities are unchanged for
@@ -102,3 +105,36 @@ comparison shows the observed reduction, not a change to retrieval or evaluation
 Full regression: **1875 passed, 12 skipped**. Ruff `--select F` and
 `git diff --check` passed. Browser checks used offline fixtures to confirm
 matching comparison tables and nonmatching decision summaries render correctly.
+
+## Single-copy browser storage (2026-10-12)
+
+The browser now writes context byte offsets while publishing `report.json` and
+uses that same file for pagination. Report, inspection and request downloads
+retain their original bytes. This changes temporary storage only, not report
+version, matching selection, scientific methods or evidence retention.
+
+The same complete CSV LINE sample was assessed once and its exact result object
+was saved by both the PR #131 store and the new store. The
+[measurement record](evidence/indexed_report_storage_2026-10-12.json) records input
+hashes, file sizes and download hashes. All three exports matched byte for byte
+as verified by SHA-256. Both stores displayed the same matching comparison.
+
+| Metric | PR #131 storage | Indexed original report |
+| --- | ---: | ---: |
+| Total retained bytes per run | 690,790,632 | 447,028,283 |
+| Separate context file | 243,766,059 bytes | None |
+| Store operation, including inspection and projection | 26.16 s | 21.36 s |
+
+Storage falls by approximately 35.3%. Two runs now occupy 894,056,566 bytes and
+remain readable together under the unchanged 1 GiB budget; their repeated exports
+were also verified. This is one sequential comparison on the same machine,
+excluding source access, scientific evaluation and browser rendering. It does
+not establish a general query-time improvement. Large matching reports can still
+reach the budget, and process-local reports remain temporary.
+
+Verification for this storage increment: **1887 passed, 12 skipped**; Ruff
+`--select F` and `git diff --check` passed. Tests cover Unicode byte offsets,
+unchanged v4/v5 exports, indexed pagination, consecutive runs, expiry, count/byte
+eviction, interrupted writes and active download leases. Local browser review
+checked the normal report and distinct expiry, eviction and other-session pages
+using offline fixtures. No live Archive acquisition was needed for this change.

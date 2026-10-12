@@ -196,11 +196,42 @@ def test_separate_runs_restart_and_count_retention():
     assert first != second
     assert client.get(first + "/download/report").data == original
     assert client.get(second + "/download/request").get_json()["request"]["sensitivities"][0]["rms"]["value"] == "0.7"
-    assert create_app(cfg).test_client().get(second).status_code == 404
+    restarted = create_app(cfg).test_client()
+    for suffix in ['', '/download/report', '/download/inspection', '/download/request']:
+        response = restarted.get(second + suffix)
+        assert response.status_code == 404
+        assert b'Report belongs to another server session' in response.data
+        assert b'No new search has been run' in response.data
     assert client.post("/proposed", data=data).status_code == 303
     assert b"retention limit" in client.get(first).data
     assert client.get(first).status_code == 404
     assert client.get(second).status_code == 200
+
+
+def test_expiry_notice_and_remaining_time_do_not_extend_lifetime(monkeypatch):
+    app = create_app(config(MAX_RUN_AGE_SECONDS=120))
+    store = app.extensions['assessment_runs']
+    now = [100.]
+    monkeypatch.setattr(store, '_clock', lambda: now[0])
+    client = app.test_client()
+    url = client.post('/proposed', data=line_form()).location
+    def forbidden(*args, **kwargs):
+        pytest.fail('reading a report must not repeat assessment')
+    monkeypatch.setattr(execution, 'assess_observation', forbidden)
+    assert b'2 minutes remaining' in client.get(url).data
+    now[0] = 160.
+    assert b'1 minute remaining' in client.get(url).data
+    for kind in ['report', 'inspection', 'request']:
+        assert client.get(url + '/download/' + kind).status_code == 200
+    now[0] = 220.
+    for suffix in ['', '/download/report', '/download/inspection', '/download/request']:
+        response = client.get(url + suffix)
+        assert response.status_code == 404
+        assert b'Report expired' in response.data
+        assert b'No new search has been run' in response.data
+    unknown = client.get('/runs/unknown')
+    assert unknown.status_code == 404
+    assert b'no retained record' in unknown.data
 
 
 def test_byte_budget_and_unselected_sources(monkeypatch):

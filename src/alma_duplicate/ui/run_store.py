@@ -4,8 +4,10 @@ from collections import OrderedDict
 from dataclasses import dataclass
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
+import re
 import shutil
 from tempfile import TemporaryDirectory
 from threading import Lock
@@ -20,6 +22,49 @@ from alma_duplicate.ui.report_pages import report_page, report_projection
 
 DEFAULT_DISK_BYTES = 1024 * 1024 * 1024
 DEFAULT_MAX_AGE = 24 * 60 * 60
+MAX_REMOVAL_NOTICES = 1024
+
+
+def _indexed_report_blocks(document, offsets):
+    """Write the publication JSON once, recording UTF-8 context byte ranges.
+
+    Only the root object and its context array are framed here. The standard
+    encoder handles every value, including escaped strings and nested objects.
+    Indentation matches report_json_chunks exactly; offsets exclude separators.
+    """
+    encoder = json.JSONEncoder(indent=2, ensure_ascii=False, allow_nan=False)
+    position = 0
+
+    def emit(chunks):
+        nonlocal position
+        for block in _utf8_blocks(chunks):
+            position += len(block)
+            yield block
+
+    def emit_value(value, indent):
+        nonlocal position
+        # Reindent batched bytes rather than visiting every encoder token twice.
+        # JSON strings contain escaped newlines, so literal LF is formatting only.
+        for block in _utf8_blocks(encoder.iterencode(value)):
+            block = block.replace(b'\n', b'\n' + indent)
+            position += len(block)
+            yield block
+
+    yield from emit(['{'])
+    for index, (key, value) in enumerate(document.items()):
+        yield from emit([',\n' if index else '\n', '  ', encoder.encode(key), ': '])
+        if key == 'context_evaluations' and value:
+            yield from emit(['[\n    '])
+            for context_index, context in enumerate(value):
+                if context_index:
+                    yield from emit([',\n    '])
+                start = position
+                yield from emit_value(context, b'    ')
+                offsets.append((start, position - start))
+            yield from emit(['\n  ]'])
+        else:
+            yield from emit_value(value, b'  ')
+    yield from emit(['\n}\n' if document else '}\n'])
 
 
 def _utf8_blocks(chunks):
@@ -89,6 +134,8 @@ class RunStore:
         self._temporary = TemporaryDirectory(prefix='alma-ui-runs-', dir=directory)
         self.directory = Path(self._temporary.name)
         self._runs, self._retired, self._leases = OrderedDict(), {}, {}
+        self._session_id = uuid4().hex
+        self._removal_notices = OrderedDict()
         self._size, self._closed = 0, False
         self._lock = Lock()
         self._write_lock = Lock()
@@ -97,8 +144,11 @@ class RunStore:
         shutil.rmtree(item.directory)
         self._size -= item.byte_size
 
-    def _retire(self, run_id):
+    def _retire(self, run_id, reason):
         item = self._runs.pop(run_id)
+        self._removal_notices[run_id] = reason
+        while len(self._removal_notices) > MAX_REMOVAL_NOTICES:
+            self._removal_notices.popitem(last=False)
         if self._leases.get(run_id):
             self._retired[run_id] = item
         else:
@@ -108,7 +158,20 @@ class RunStore:
         now = self._clock()
         for run_id, item in list(self._runs.items()):
             if now >= item.expires_at:
-                self._retire(run_id)
+                self._retire(run_id, 'EXPIRED')
+
+    def unavailable_reason(self, run_id):
+        """Explain known removals without guessing why an unknown ID is absent."""
+        with self._lock:
+            self._prune_locked()
+            if run_id in self._runs:
+                return None
+            if run_id in self._removal_notices:
+                return self._removal_notices[run_id]
+            if (re.fullmatch(r'[a-f0-9]{32}\.[a-f0-9]{32}', run_id)
+                    and run_id.split('.')[0] != self._session_id):
+                return 'OTHER_SESSION'
+            return 'UNKNOWN'
 
     def prune(self):
         with self._lock:
@@ -121,7 +184,7 @@ class RunStore:
                 return
             self._closed = True
             for run_id in list(self._runs):
-                self._retire(run_id)
+                self._retire(run_id, 'CLOSED')
             if not self._leases:
                 self._temporary.cleanup()
 
@@ -146,18 +209,18 @@ class RunStore:
             for field in ('reference', 'criteria', 'branches', 'line_pairs'):
                 if field not in context:
                     raise ValueError(f'Missing context field: {field}')
-        run_id = uuid4().hex
+        run_id = self._session_id + '.' + uuid4().hex
         staging = self.directory / ('.pending-' + run_id)
         staging.mkdir(mode=0o700)
         size = 0
         emit_progress('storage', 0, unit='bytes')
 
-        def write(name, chunks):
+        def write(name, blocks):
             nonlocal size
             digest, length = hashlib.sha256(), 0
             with (staging / name).open('xb') as stream:
                 os.chmod(stream.name, 0o600)
-                for raw in _utf8_blocks(chunks):
+                for raw in blocks:
                     size += len(raw)
                     if size > self._max_bytes:
                         raise ValueError("Report exceeds this application's disk retention limit")
@@ -169,27 +232,17 @@ class RunStore:
 
         try:
             downloads = {}
-            for kind, data in [('report', document), ('inspection', inspection), ('request', request_document)]:
-                with measure_stage('write_' + kind):
-                    downloads[kind] = write(kind + '.json', report_json_chunks(data))
             offsets = []
-
-            def context_lines():
-                position = 0
-                for context in document['context_evaluations']:
-                    line = json.dumps(context, ensure_ascii=False, allow_nan=False, separators=(',', ':')) + '\n'
-                    length = len(line.encode('utf-8'))
-                    offsets.append((position, length))
-                    position += length
-                    yield line
-
-            with measure_stage('write_context_index'):
-                write('contexts.jsonl', context_lines())
+            with measure_stage('write_report'):
+                downloads['report'] = write('report.json', _indexed_report_blocks(document, offsets))
+            for kind, data in [('inspection', inspection), ('request', request_document)]:
+                with measure_stage('write_' + kind):
+                    downloads[kind] = write(kind + '.json', _utf8_blocks(report_json_chunks(data)))
             with measure_stage("view_projection"):
                 projection = report_projection(document, inspection, compact=True)
             projection['offsets'] = offsets
             with measure_stage('write_view'):
-                write('view.json', report_json_chunks(projection))
+                write('view.json', _utf8_blocks(report_json_chunks(projection)))
             with self._lock:
                 if self._closed:
                     raise ValueError('Run store is closed')
@@ -211,7 +264,7 @@ class RunStore:
                 item = StoredRun(target, str(result.status), downloads['report'][1], size,
                                  self._clock() + self.max_age, downloads)
                 for old_id in victims:
-                    self._retire(old_id)
+                    self._retire(old_id, 'EVICTED')
                 self._runs[run_id] = item
                 self._size += size
             return run_id
@@ -226,13 +279,14 @@ class RunStore:
             if item is None:
                 return None
             projection = json.loads((item.directory / 'view.json').read_bytes())
-            with (item.directory / 'contexts.jsonl').open('rb') as stream:
+            with (item.directory / 'report.json').open('rb') as stream:
                 def context(index):
                     offset, length = projection['offsets'][index]
                     stream.seek(offset)
                     return json.loads(stream.read(length))
                 data = report_page(projection, page, view, context)
-            data.update(item=item, run=item, disk_backed=True, retention_hours=self.max_age / 3600)
+            data.update(item=item, run=item, disk_backed=True, retention_hours=self.max_age / 3600,
+                        remaining_minutes=max(0, math.ceil((item.expires_at - self._clock()) / 60)))
             return data
 
     def open_download(self, run_id, kind):

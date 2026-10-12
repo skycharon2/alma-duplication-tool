@@ -186,10 +186,13 @@ limits. `RUN_STORAGE_PARENT` optionally selects an operator-managed parent;
 researchers do not need to supply a directory. Each application instance owns
 its directory (mode 0700), with files restricted to mode 0600.
 
-The budget includes original report, inspection and input JSON, context records
-and page indexes. Only descriptors remain in the run registry. Pages load summary
-metadata and the selected contexts; downloads stream the original files in 64 KiB
-chunks. Assessment and initial inspection still construct full Python documents;
+The budget includes original report, inspection and input JSON and page indexes.
+Contexts are stored once in `report.json`. During the same write, the store records
+each context's UTF-8 byte offset and length in `view.json`; there is no duplicate
+`contexts.jsonl`. Pages seek into the original report and decode only the selected
+contexts. Its formatting, bytes and SHA-256 remain identical to the shared report
+serializer, for both v4 and v5. Only descriptors remain in the run registry.
+Downloads stream the original files in 64 KiB chunks. Assessment and initial inspection still construct full Python documents;
 this change does not impose a hard memory bound on scientific execution.
 
 Writes are serialized and staged before publication. At most one additional
@@ -202,8 +205,19 @@ If those leases prevent a new run from fitting, storage returns an explicit erro
 Expired runs become inaccessible on the next request, which also removes their
 files unless a download is active. Normal application cleanup removes its private
 directory; abnormal process termination can leave temporary files for operator/OS
-cleanup. A restart loses the process-local index. Unknown, expired or evicted IDs
-return 404. This is temporary local retention, not a persistent report service or
+cleanup. A restart loses the process-local index. The report page displays the
+configured lifetime and approximate remaining minutes; access does not extend it.
+Unknown, expired or evicted IDs return 404 with a readable page, including download
+URLs. The store retains the latest 1024 removal reasons (IDs and reasons only),
+distinguishing expiry from count/byte-limit eviction. After those bounded notices
+are discarded, the page explicitly reports that the reason is unknown.
+
+New opaque run IDs include a random application-session identifier. A link from
+a different session is explained as such, with restart as a possible cause; it
+does not prove that an arbitrary supplied ID ever existed. Legacy unscoped IDs
+and malformed/unknown links receive the generic explanation. No state is persisted
+to infer earlier expiry or eviction across restarts. These IDs are not
+authentication tokens. This is temporary local retention, not a persistent report service or
 user-account isolation; keep this application bound to 127.0.0.1.
 
 Refresh follows a 303 redirect and does not rerun assessment. The form guards
