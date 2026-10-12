@@ -86,13 +86,9 @@ details p { padding: 8px 0; color: var(--muted); max-width: 75ch; }
 .assessment-progress-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; color: var(--blue-dark); }
 .assessment-elapsed { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
 .assessment-progress-track { height: 6px; margin-block: 12px; overflow: hidden; background: #cadde7; }
-.assessment-progress-track > span { display: block; width: 35%; height: 100%; background: var(--blue); animation: assessment-wait 1.8s ease-in-out infinite; }
+.assessment-progress-track > span { display: block; width: 0; height: 100%; background: var(--blue); }
 .assessment-progress p { margin-top: 8px; max-width: 75ch; font-size: 13px; }
 .button[aria-disabled="true"] { opacity: .65; cursor: wait; }
-@keyframes assessment-wait { from { transform: translateX(-100%); } to { transform: translateX(286%); } }
-@media (prefers-reduced-motion: reduce) {
-  .assessment-progress-track > span { animation: none; width: 100%; opacity: .55; }
-}
 .button { border: 1px solid #a9bac7; border-radius: 3px; background: white; color: var(--blue); padding: 6px 11px; font-size: 12px; line-height: 1.5; }
 .button:disabled { color: #687783; background: #f1f4f6; border-color: var(--border); cursor: not-allowed; }
 .primary { width: 100%; font-size: 14px; padding: 9px 14px; }
@@ -419,3 +415,12 @@ summary { cursor: pointer; padding: .4rem; }
   .member-execution { padding-left: 8px; }
   .member-execution .candidate-comparison { padding: 10px; }
 }
+
+/* Report navigation is separate from scientific content and audit records. */
+.report-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.report-heading .report-actions { margin: 0; gap: 10px; }
+.report-actions .button { display: inline-flex; align-items: center; min-height: 44px; padding: 9px 14px; text-decoration: none; background: var(--paper); border-radius: 4px; font-weight: 600; }
+.report-actions .button:hover { background: var(--blue-pale); border-color: var(--blue); }
+.report-retention { font-size: 12px; color: var(--muted); }
+.report-retention > summary { color: var(--muted); }
+@media (max-width: 700px) { .report-heading { align-items: flex-start; flex-direction: column; } }

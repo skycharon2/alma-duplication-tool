@@ -285,17 +285,19 @@ independent real-proposal review remain separate verification.
 
 The bottom action area polls execution-local progress for an assessment submitted
 with JavaScript. TAP acquisition and CSV loading have no known total and remain
-indeterminate. After source preparation, the page shows each source's retained
+text-only, with no animated or percentage bar. After source preparation, the page shows each source's retained
 candidate count. AQ reports completed, fully validated Member queries over unique
 requested Members, including successful zero-hit responses. Candidate evaluation
 reports completed retained contexts over all retained contexts, regardless of the
 display limit. These percentages describe the current stage, never the fraction of
 total elapsed time. AQ acquisition failures still discard partial catalogs.
 
-Report assembly and inspection remain indeterminate. Storage reports bytes
+Report assembly and inspection also show stage text only. Storage reports bytes
 actually written across report artifacts, without inventing a final byte total.
 The report opens only after successful retention. The elapsed timer is waiting
-time, not server progress. Reduced-motion preferences disable bar animation.
+time, not server progress. A solid progress bar appears only when the backend
+provides completed and total counts for the current stage. Reduced-motion
+preferences disable transitions between measured values.
 
 The POST still performs the assessment; this is not a detached background job.
 JavaScript sends a fresh random 128-bit progress token, polls

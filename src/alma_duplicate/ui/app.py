@@ -107,6 +107,7 @@ def create_app(config=None):
     def render_report(data, report_id):
         is_run = data.get('run') is not None
         return render_template("report.html", **data, report_id=report_id,
+                               show_technical=request.args.get('technical') == '1',
                                criterion_view=criterion_view, criterion_explanation=criterion_explanation,
                                criterion_status=criterion_status, pair_title=pair_title, standalone_criteria=standalone_criteria,
                                summary_line_conditions=summary_line_conditions,

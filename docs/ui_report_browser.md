@@ -65,7 +65,7 @@ This is not the future per-user assessment storage service.
 - Each LINE pair has its own six-criterion table and setup/window/SPW binding.
   Full identity (Archive association/component or Queue snapshot/row/SPW) remains
   expandable. Pair membership is never rebuilt or combined by the viewer.
-- Open Technical records for backend-derived values, issues, method and eligibility.
+- In the operator view (`technical=1`), open Technical records for raw values, issues, method and eligibility.
   Archive RMS stays in mJy/beam; Queue reference/scaled RMS stays in mJy. Missing
   derived RMS stays "Not computed", with the original dependency reason.
   `ui/report_view.py` labels known fields and rounds display numbers to six
@@ -153,13 +153,19 @@ back to an RMS measured on a different basis. Source failures remain visible.
 
 ## Researcher report layout
 
-The default reading order is plain-language findings, source coverage, matching candidates,
-expandable comparisons, information to review, then one Technical records
-section. No raw JSON, internal outcome/reason/method codes or hashes are visible
-until that technical section is opened. All original report, inspection and input
-request download links also live inside that section; reading the findings does
-not require an export. The primary actions are entering another observation and
-opening existing reports. Temporary runs retain an explicit retention notice.
+The default reading order is plain-language findings, source coverage, matching
+candidates, expandable comparisons and information to review. Technical records
+and their navigation links are hidden in the researcher view. Operators can add
+`technical=1` to a report URL to reveal the existing technical disclosure and
+original report, inspection and input exports. This is a display option, not an
+access-control boundary; technical records remain in the HTML and download routes
+remain unchanged. Rendering and navigation do not run a new assessment.
+
+The report header has normal links styled as buttons for entering another
+observation and opening existing reports. The latter lists operator-configured
+saved reports, not a history of temporary runs. Temporary runs show their
+retention period in a compact disclosure; expiry and restart limitations remain
+available. Storage-detail wording is omitted from the primary reading flow.
 The first candidate comparison on each page opens by default.
 
 Findings describe the stored results separately for each requested purpose.

@@ -39,6 +39,7 @@ function initializeForm(form) {
     const {completed, total, unit} = current;
     const determined = Number.isInteger(total) && total > 0 && Number.isInteger(completed);
     track?.classList.toggle('is-determinate', determined);
+    if (track) track.hidden = !determined;
     if (determined) {
       const percent = Math.min(100, Math.max(0, completed / total * 100));
       track.setAttribute('aria-valuemin', '0');
@@ -49,9 +50,9 @@ function initializeForm(form) {
       countLabel.textContent = `${completed.toLocaleString()} / ${total.toLocaleString()} ${unit} · ${Math.floor(percent)}% of this stage`;
     } else {
       for (const attribute of ['aria-valuemin', 'aria-valuemax', 'aria-valuenow', 'aria-valuetext']) track?.removeAttribute(attribute);
-      if (fill) fill.style.width = '';
+      if (fill) fill.style.width = '0%';
       if (countLabel) countLabel.textContent = unit === 'bytes' && Number.isInteger(completed)
-        ? `${(completed / 1048576).toFixed(1)} MiB written` : (total === 0 ? `0 ${unit}` : '');
+        ? `${(completed / 1048576).toFixed(1)} MiB written` : (total === 0 ? `0 ${unit}` : 'Waiting for this stage to finish; no measurable total is available yet.');
     }
     track?.setAttribute('aria-label', stages[state.stage] || 'Assessment in progress');
     if (retrievedLabel) {
@@ -119,7 +120,6 @@ function initializeForm(form) {
       waitingNote.hidden = false;
       waitingNote.textContent = message;
     };
-    track.hidden = false;
     document.getElementById('assessment-progress-description').hidden = false;
     let missedPolls = 0;
     const poll = async () => {

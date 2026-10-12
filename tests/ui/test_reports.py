@@ -256,7 +256,7 @@ class DefaultVisibleText(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         if tag not in {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'}:
-            self.stack.append((tag, tag == 'details' and 'open' not in dict(attrs)))
+            self.stack.append((tag, tag == 'details' and 'open' not in dict(attrs), 'hidden' in dict(attrs)))
 
     def handle_endtag(self, tag):
         for i in range(len(self.stack) - 1, -1, -1):
@@ -265,7 +265,9 @@ class DefaultVisibleText(HTMLParser):
                 return
 
     def handle_data(self, data):
-        for i, (_, closed) in enumerate(self.stack):
+        for i, (_, closed, hidden) in enumerate(self.stack):
+            if hidden:
+                return
             if closed and (i + 1 == len(self.stack) or self.stack[i + 1][0] != 'summary'):
                 return
         self.text.append(data)
@@ -327,6 +329,16 @@ def test_matching_pairs_are_visible_with_stable_anchors_and_original_exports(
     audit = client.get(base + '?view=all').get_data(as_text=True)
     assert [audit.index(f'id="pair-0-{i}"') for i in range(4)] == sorted(
         audit.index(f'id="pair-0-{i}"') for i in range(4))
+    assert 'id="technical-records" class="report-technical" hidden' in html
+    assert 'Technical records' not in text
+    assert 'Full comparison details are retained' not in text
+    actions = html.split('<nav class="report-actions" aria-label="Report actions">')[1].split('</nav>')[0]
+    assert 'href="/proposed"' in actions and 'href="/reports"' in actions
+    assert client.get('/proposed').status_code == 200
+    assert client.get('/reports').status_code == 200
+    technical = client.get(base + '?technical=1').get_data(as_text=True)
+    assert 'id="technical-records" class="report-technical" hidden' not in technical
+    assert '<details id="technical-records" class="report-technical">' in technical
     assert client.get(base + '/download/report').data == raw
     assert client.get(base + '/download/inspection').get_json() == inspect_report(doc)
     assert doc == original
@@ -354,7 +366,8 @@ def test_default_view_has_no_raw_records_and_keeps_source_failures_visible(repor
             assert code in client.get('/reports/1?view=all').get_data(as_text=True)  # Full audit view.
     assert 'Array evidence retrieval failed' in visible
     assert 'Enter the planned RMS for this proposed line.' in visible
-    assert 'Technical records' in visible
+    assert 'Technical records' not in visible
+    assert 'id="technical-records" class="report-technical" hidden' in html
     assert client.get('/reports/1/download/report').data == raw
     assert client.get('/reports/1/download/inspection').get_json() == inspect_report(doc)
 
