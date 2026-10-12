@@ -214,6 +214,17 @@ def test_legacy_explicit_association_can_supply_member_and_execution():
     assert [i for i, _ in group['children'][0]['entries']] == [9, 15]
 
 
+def test_group_titles_preserve_missing_and_multiple_identities_in_old_indexes():
+    from alma_duplicate.ui.report_view import group_title
+    group = {'label': 'Queue comparison 3168', 'projects': ['P1'],
+             'children': [{'target': 'circinus'}, {'target': 'circinus'}, {'target': 'other'}]}
+    original = deepcopy(group)
+    assert group_title(group) == 'circinus, other · P1'
+    assert group == original
+    assert group_title({'label': 'M1', 'projects': [], 'children': []}) == 'M1'
+    assert group_title({'label': 'M1', 'projects': ['P'], 'children': [{'target': None}]}) == 'P'
+
+
 def test_queue_scope_messages_group_variants_and_repeated_criteria_by_candidate():
     from alma_duplicate.ui.report_view import attention_groups
     contexts = []

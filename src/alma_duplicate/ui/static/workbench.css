@@ -320,6 +320,11 @@ summary { cursor: pointer; padding: .4rem; }
 .derived-values dt, .pair-binding dt { background: var(--surface); }
 .line-pair { padding: 8px 14px; border: 1px solid var(--border); margin-block: 14px; }
 .line-pair > summary { font-weight: 500; color: var(--blue-dark); overflow-wrap: anywhere; }
+.other-pairs { margin-block: 16px; }
+.other-pairs > summary { color: var(--muted); }
+.unresolved-notice { padding-left: 12px; border-left: 3px solid #a2771a; }
+.matching-sources { color: var(--blue-dark); }
+.review-group > summary { font-weight: 500; overflow-wrap: anywhere; }
 @media (max-width: 600px) {
   .source-states { grid-template-columns: 1fr; gap: 10px; }
   .line-pair { padding: 6px; }

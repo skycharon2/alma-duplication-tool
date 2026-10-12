@@ -1,6 +1,7 @@
 """Real offline reports, original exports and source/pair presentation."""
 
 import json
+from copy import deepcopy
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -268,6 +269,67 @@ class DefaultVisibleText(HTMLParser):
             if closed and (i + 1 == len(self.stack) or self.stack[i + 1][0] != 'summary'):
                 return
         self.text.append(data)
+
+
+@pytest.mark.parametrize('temporary_run', [False, True])
+def test_matching_pairs_are_visible_with_stable_anchors_and_original_exports(
+        reports, tmp_path, temporary_run):
+    from types import SimpleNamespace
+
+    doc = json.loads((reports / 'dual-source-line/report.json').read_bytes())
+    context = next(c for c in doc['context_evaluations'] if c['reference']['source'] == 'QUEUE')
+    context['display_identity'] = {'Target': '<script>circinus</script>', 'Project': 'P1'}
+    pair = context['line_pairs'][0]
+    context['line_pairs'] = [deepcopy(pair) for _ in range(4)]
+    for i, (p, status) in enumerate(zip(context['line_pairs'], [
+            'CRITERIA_NOT_MET', 'INDETERMINATE', 'CRITERIA_MET', 'CRITERIA_NOT_MET'])):
+        p['status'] = status
+        p['attempt']['reference']['spw_number'] = i + 1
+    for branch in context['branches']:
+        branch['status'] = 'CRITERIA_MET'
+    doc['context_evaluations'] = [context]
+    doc['sources']['ARCHIVE']['status'] = 'NOT_SELECTED'
+    original = deepcopy(doc)
+    case = tmp_path / 'readable'
+    case.mkdir()
+    raw = json.dumps(doc).encode()
+    (case / 'report.json').write_bytes(raw)
+    app = create_app({'TESTING': True, 'REPORT_DIRECTORY': tmp_path})
+    client = app.test_client()
+    if temporary_run:
+        from alma_duplicate.reporting import report_json_text
+        store = app.extensions['assessment_runs']
+        result = SimpleNamespace(document=doc, status='COMPLETED', inspection=inspect_report(doc))
+        run_id = store.add({}, result)
+        base = '/runs/' + run_id
+        raw = report_json_text(doc).encode()
+        # A view index written before this presentation increment has no title.
+        index_path = store._runs[run_id].directory / 'view.json'
+        index = json.loads(index_path.read_text())
+        assert 'title' not in index['groups'][0]
+    else:
+        base = '/reports/1'
+    html = client.get(base).get_data(as_text=True)
+    visible = DefaultVisibleText()
+    visible.feed(html)
+    text = ' '.join(visible.text)
+    assert '<script>circinus</script> · P1' in text
+    assert '<script>circinus</script>' not in html  # Escaped, even in headings.
+    assert '0 Archive' not in text
+    assert 'Queue comparison 1' not in text
+    assert 'Other evaluated window pairs (3)' in text
+    assert 'id="pair-0-2" open' in html
+    for i in (0, 1, 3):
+        assert f'id="pair-0-{i}" open' not in html
+        assert html.count(f'id="pair-0-{i}"') == 1
+    assert html.index('id="pair-0-2"') < html.index('class="other-pairs"')
+    assert 'Criteria for this LINE pair' in text
+    audit = client.get(base + '?view=all').get_data(as_text=True)
+    assert [audit.index(f'id="pair-0-{i}"') for i in range(4)] == sorted(
+        audit.index(f'id="pair-0-{i}"') for i in range(4))
+    assert client.get(base + '/download/report').data == raw
+    assert client.get(base + '/download/inspection').get_json() == inspect_report(doc)
+    assert doc == original
 
 
 def test_default_view_has_no_raw_records_and_keeps_source_failures_visible(reports, tmp_path):

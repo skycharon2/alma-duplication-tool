@@ -13,8 +13,11 @@ comparison view. The viewer displays the methods supplied by each report.
 
 Normal source coverage and retrieval details are collapsed; source problems open
 the coverage section automatically and retain the warning in the result summary.
-Member scope is explained once in the overview. Review groups keep their reasons
-visible, with affected-candidate links expandable. Empty review sections are omitted.
+Member scope is explained once in the overview. With matching results, review
+groups show their categories and affected-comparison counts in collapsed sections.
+Proposed-input guidance and review groups when no matches exist remain open.
+Unresolved totals and source-failure warnings remain visible in the overview.
+Empty review sections are omitted.
 Parameter tables, scientific calculations, provenance and exports remain available.
 
 ## Scientific calculation steps
@@ -261,3 +264,32 @@ mosaics and spectral scans instead of telling every researcher to check the CSV.
 Groups can overlap and do not count duplicate observations. Unknown codes retain
 the existing fallback; the viewer never changes scientific results. See the
 [blank-Mosaic interpretation](queue_blank_mosaic.md) for newly supported offsets.
+
+
+## Matching-result reading order
+
+Result headings use stored target names and project codes. Archive Member OUS
+identifiers remain visible beside each group; grouping, pagination, target and
+execution boundaries are unchanged. Missing identities use the existing fallback
+label. Headings are derived when a page is read, including from existing disk
+indexes, without modifying reports or indexes.
+
+In the matching view, LINE pairs recorded as `CRITERIA_MET` appear first and open
+by default within their candidate. Other pairs are retained under **Other evaluated
+window pairs**, with their original outcomes and original pair anchors. Each beam
+variant keeps its own pairs. The all-comparisons view retains original pair order.
+No pair outcome becomes a new context or whole-Member verdict.
+
+The overview gives one matching-comparison count per requested purpose, plus
+matching source groups and unresolved counts. It omits empty source-group counts
+such as zero Archive Members on a Queue-only result. Retrieval failures, empty
+results and the limit on search-wide conclusions remain explicit.
+
+Verification on 2026-10-12: 244 UI tests passed, including unchanged report and
+inspection exports, matching-pair disclosure and stable anchors in both stored
+reports and temporary runs. Ruff F and whitespace checks passed. The four saved
+Archive/Queue CONTINUUM/LINE reports from the post-PR #134 regression were opened
+in a fresh browser preview with outbound source requests blocked. Their results
+remained unchanged; the Queue LINE matching pair was expanded and its other
+three pairs could be opened separately. This verifies presentation, not a new
+live-source or scientific acceptance run.
