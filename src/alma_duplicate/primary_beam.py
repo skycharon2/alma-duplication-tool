@@ -1,7 +1,6 @@
 """Explicit request-frequency beam approximation; never a duplication verdict."""
-import math
-from numbers import Real
 
+from alma_duplicate.proposed_frequency import prepare_frequency
 from alma_duplicate.geometry import angular_separation_deg
 from alma_duplicate.geometry import primary_beam_fwhm_deg as primary_beam_fwhm_deg
 
@@ -28,13 +27,7 @@ def covers(separation_deg: float, radius_deg: float) -> bool:
 
 
 def requested_beam_frequency(request):
-    f = request.representative_frequency
-    if f is None or f.kind != "SKY" or f.quantity.unit != "GHz":
-        return None
-    value = f.quantity.value
-    if isinstance(value, bool) or not isinstance(value, Real) or not math.isfinite(value) or value <= 0:
-        return None
-    return value
+    return prepare_frequency(request.representative_frequency, request.source_redshift).sky_ghz
 
 
 def evaluate_primary_beam(plan, evidence):

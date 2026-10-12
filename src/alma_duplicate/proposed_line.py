@@ -1,7 +1,10 @@
 """Derive planned line coordinates and resolution without candidate calculations."""
 
-import math
 from fractions import Fraction
+
+from alma_duplicate.proposed_frequency import (
+    _positive, _finite_float, exact_request_quantity, prepare_frequency,
+)
 
 from alma_duplicate.domain.line_evidence import ProposedLineEvidence
 from alma_duplicate.domain.proposed_observation import (
@@ -10,29 +13,6 @@ from alma_duplicate.domain.proposed_observation import (
 )
 
 C_KMS = Fraction("299792.458")
-
-
-def _positive(value):
-    if isinstance(value, bool):
-        raise ValueError("Boolean quantity")
-    value = Fraction(str(value))
-    if value <= 0:
-        raise ValueError("Nonpositive quantity")
-    return value
-
-
-def exact_request_quantity(quantity):
-    """Recover decimal input before float unit normalization, for LINE only."""
-    scales = {
-        "GHz": {"GHz": "1", "MHz": "0.001", "kHz": "0.000001", "Hz": "0.000000001"},
-        "MHz": {"GHz": "1000", "MHz": "1", "kHz": "0.001", "Hz": "0.000001"},
-        "km/s": {"km/s": "1", "m/s": "0.001"},
-    }
-    try:
-        scale = Fraction(scales[quantity.unit][quantity.raw_unit])
-    except KeyError as exc:
-        raise ValueError("Unsupported LINE input unit") from exc
-    return _positive(quantity.raw_value) * scale
 
 
 def exact_prepared(value):
@@ -45,14 +25,6 @@ def exact_prepared(value):
         return None
 
 
-def _finite_float(value):
-    try:
-        rounded = float(value)
-    except OverflowError:
-        return None
-    return rounded if math.isfinite(rounded) and rounded > 0 else None
-
-
 def prepare_line_window(
     window: ProposedWindow,
     sensitivities: tuple[ProposedSensitivity, ...],
@@ -63,34 +35,13 @@ def prepare_line_window(
     Both resolution declarations, when present, must agree in exact canonical
     arithmetic. Channel spacing and noise bandwidth never fill this role.
     """
-    reasons = []
-    sky = None
-    center = window.center
-    if center is None or center.kind not in {"REST", "SKY"}:
-        reasons.append("LINE_CENTER_REQUIRED")
-    else:
-        try:
-            if center.quantity.unit != "GHz":
-                raise ValueError("Canonical GHz required")
-            sky = exact_request_quantity(center.quantity)
-            if center.kind == "REST":
-                if source_redshift is None:
-                    reasons.append("SOURCE_REDSHIFT_REQUIRED")
-                    sky = None
-                else:
-                    if isinstance(source_redshift, bool):
-                        raise ValueError("Boolean redshift")
-                    denominator = 1 + Fraction(str(source_redshift))
-                    if denominator <= 0:
-                        raise ValueError("Invalid redshift")
-                    sky /= denominator
-        except (ValueError, ZeroDivisionError):
-            sky = None
-            reasons.append("INVALID_LINE_FREQUENCY_INPUT")
-    sky_value = _finite_float(sky) if sky is not None else None
-    if sky is not None and sky_value is None:
-        reasons.append("SKY_FREQUENCY_UNREPRESENTABLE")
-        sky = None
+    frequency = prepare_frequency(window.center, source_redshift)
+    reasons = [{
+        "FREQUENCY_REFERENCE_REQUIRED": "LINE_CENTER_REQUIRED",
+        "INVALID_FREQUENCY_INPUT": "INVALID_LINE_FREQUENCY_INPUT",
+    }.get(reason, reason) for reason in frequency.reasons]
+    sky = frequency.sky_ghz_exact
+    sky_value = frequency.sky_ghz
     matches = [
         s
         for s in sensitivities

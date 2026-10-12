@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}ALMA Duplication Assessment{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='workbench.css') }}">
+  {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
   <a class="skip-link" href="#main">Skip to assessment</a>
   <header class="site-header">
     <div class="masthead-photo">

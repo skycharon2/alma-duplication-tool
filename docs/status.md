@@ -283,3 +283,10 @@ LINE report rendering. Desktop and 390-pixel report layouts were inspected; the
 narrow page has no document-wide horizontal overflow (tables scroll locally).
 AUTO acquisition tests use fake TAP/AQ; no live AUTO completeness or independent
 real-proposal scientific acceptance is claimed.
+
+## Proposed frequency input closure
+
+[Shared REST/SKY preparation](proposed_frequency.md) now serves LINE and both
+Archive/Queue CONT-FREQ paths. Continuum accepts REST + explicit redshift; the
+browser exposes one shared redshift and reports retain the conversion operands.
+This adds engineering regression coverage, not a new live scientific acceptance case.

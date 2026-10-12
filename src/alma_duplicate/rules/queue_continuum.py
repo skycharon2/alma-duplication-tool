@@ -10,7 +10,7 @@ from fractions import Fraction
 
 from alma_duplicate.domain.comparison import QueueContextEvidence
 from alma_duplicate.queue_normalization import QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION
-from alma_duplicate.rules.continuum import prepare_aggregate_rms, _quantity_issue
+from alma_duplicate.rules.continuum import prepare_aggregate_rms, prepare_representative_frequency, _quantity_issue
 from alma_duplicate.rules.model import (
     POLICY_DOCUMENT,
     CriterionResult,
@@ -73,7 +73,7 @@ def _result(name, context, proposed, candidate, issues, passed, derived, details
     return CriterionResult(
         criterion_id=name,
         policy_ref=f"{POLICY_DOCUMENT}, Spectral windows",
-        method_version="queue_cont_freq_2"
+        method_version="queue_cont_freq_3"
         if name == "CONT-FREQ"
         else "queue_cont_rms_portal_2",
         approval=MethodApproval.APPROVED,
@@ -89,7 +89,7 @@ def _result(name, context, proposed, candidate, issues, passed, derived, details
         else ("WITHIN_INCLUSIVE_LIMIT" if passed else "EXCEEDS_LIMIT",),
         derived=tuple(derived),
         details=tuple(details),
-        decision_refs=(DECISION_REF,),
+        decision_refs=(DECISION_REF,) + (("docs/proposed_frequency.md",) if name == "CONT-FREQ" else ()),
     )
 
 
@@ -117,31 +117,8 @@ def evaluate_queue_continuum(request, context, common):
     fissues = list(base)
     fq = None if sensitivity is None else sensitivity.reference_frequency_ghz
     cf = _quantity(fq, "GHz", "Ref.Frequency", fissues)
-    f = request.representative_frequency
-    proposed = (
-        None
-        if f is None
-        else CriterionValue(
-            f.quantity.value,
-            f.quantity.unit,
-            "representative_frequency",
-            "USER_SETUP_REPRESENTATIVE_SKY",
-        )
-    )
-    if f is not None and f.kind != "SKY":
-        fissues.append(
-            _issue(
-                "REPRESENTATIVE_SKY_FREQUENCY_REQUIRED",
-                "request.representative_frequency",
-                S.PROPOSED,
-            )
-        )
-    issue = _quantity_issue(
-        proposed, "GHz", S.PROPOSED, "request.representative_frequency"
-    )
-    if issue:
-        fissues.append(issue)
-    pf = None if fissues else positive_canonical(proposed.value)
+    pf, proposed, proposed_issues, frequency_details, frequency_derived = prepare_representative_frequency(request)
+    fissues.extend(proposed_issues)
     ratio = None if fissues else max(pf, cf) / min(pf, cf)
     candidate = (
         None
@@ -160,8 +137,8 @@ def evaluate_queue_continuum(request, context, common):
         candidate,
         fissues,
         ratio is not None and ratio <= Fraction(13, 10),
-        [("factor", None if ratio is None else _number(ratio)), ("max_factor", 1.3)],
-        details + [("frequency_fallback", "NONE")],
+        [("factor", None if ratio is None else _number(ratio)), ("max_factor", 1.3)] + list(frequency_derived),
+        details + [("frequency_fallback", "NONE")] + list(frequency_details),
     )
 
     proposed, pissues, declarations = prepare_aggregate_rms(request)

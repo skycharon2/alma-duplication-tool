@@ -13,6 +13,7 @@ import re
 from types import MappingProxyType
 
 from alma_duplicate.proposed_line import prepare_line_window
+from alma_duplicate.proposed_frequency import prepare_frequency
 
 from alma_duplicate.domain.proposed_observation import (
     CONTINUUM_SETUP_DECLARATION,
@@ -251,7 +252,7 @@ class _Validator:
         origin = self.origin(obj.get("origin"), path + ".origin")
         if kind == "REST":
             self.issue("EVIDENCE", "REST_FREQUENCY_RETAINED", path,
-                       "REST frequency retained without conversion.")
+                       "Original REST frequency retained; scientific preparation uses the supplied redshift.")
         elif kind == "UNKNOWN" or frame == "UNKNOWN":
             self.issue("EVIDENCE", "FREQUENCY_REFERENCE_UNSPECIFIED", path,
                        "Frequency kind or frame is unspecified; retained as supplied.")
@@ -1022,10 +1023,12 @@ def validate_proposed_observation(
                     "No independent setup frequency supplied.",
                     "CONT-FREQ",
                 )
-            if representative is not None and representative.kind != "SKY":
-                v.missing("request.representative_frequency.kind",
-                          "Continuum comparison requires the user representative SKY frequency.",
-                          "CONT-FREQ")
+            if representative is not None:
+                for reason in prepare_frequency(representative, redshift).reasons:
+                    path = "request.source_redshift" if reason == "SOURCE_REDSHIFT_REQUIRED" else "request.representative_frequency"
+                    v.issue("MISSING", reason, path,
+                            "Continuum frequency needs SKY or REST with a valid source redshift.",
+                            "CONT-FREQ")
             if declaration is None and (not windows or any(w.bandwidth is None and w.interval is None for w in windows)):
                 v.missing(
                     "request.spectral_windows",

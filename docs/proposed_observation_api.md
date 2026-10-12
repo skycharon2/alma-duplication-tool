@@ -40,8 +40,8 @@ ERROR covers malformed supplied input even for an unselected branch. MISSING
 covers selected-branch/search prerequisites; CAPABILITY identifies relevant
 unimplemented methods such as aggregate noise-bandwidth conversion. EVIDENCE preserves
 raw provenance limitations and unselected-branch notes, with no active rule ID.
-REST frequencies and unknown frames remain raw evidence notes; selected continuum
-requires a representative SKY kind. UNKNOWN frame alone does not contradict the
+REST frequencies and unknown frames remain raw evidence notes. Selected continuum
+accepts representative SKY or REST + redshift through [shared preparation](proposed_frequency.md). UNKNOWN frame alone does not contradict the
 confirmed CONT-FREQ comparison. Unsupported RMS units such as K remain errors.
 There are no EVALUABLE or duplicate flags in this API.
 

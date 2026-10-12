@@ -16,6 +16,7 @@ Start with the [candidate-search service](candidate_search.md) for execution,
 retention, filtering and completeness; the following contracts define its inputs.
 
 1. [Request API](proposed_observation_api.md): accepted wire fields, units and validation.
+   [REST/SKY preparation](proposed_frequency.md) defines the shared LINE/CONTINUUM frequency input method.
    [Automatic retrieval](automatic_retrieval.md) defines the browser default and explicit-radius compatibility.
 2. [Search plans and spatial evidence](search_plan_spatial.md): offline planning, query binding and limited individual selectors.
 3. [Comparison contexts](comparison_contexts.md): source/row/component identity and evidence states.
