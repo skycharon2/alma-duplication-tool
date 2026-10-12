@@ -1,0 +1,57 @@
+{
+  "baseline_commit": "75ff2f9d2b5652e94cd535fde62f498401f957f1",
+  "scope": "One offline Queue LINE assessment; identical result object stored by baseline and new store. Storage times exclude assessment and export verification.",
+  "input_sha256": {
+    "request": "8f468672344f597109c84408619e8d33e73e9eeb7deee5cc42e971b028fa7d64",
+    "queue_csv": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5"
+  },
+  "assessment_seconds": 43.243375584017485,
+  "retained_contexts": 3200,
+  "branch_outcomes": {
+    "INDETERMINATE": 3081,
+    "CRITERIA_NOT_MET": 118,
+    "CRITERIA_MET": 1
+  },
+  "baseline": {
+    "store_seconds": 26.15808608289808,
+    "bytes": 690790632,
+    "files": {
+      "request.json": 1303,
+      "report.json": 430900954,
+      "contexts.jsonl": 243766059,
+      "view.json": 225476,
+      "inspection.json": 15896840
+    },
+    "download_sha256": {
+      "report": "d2f29b7f3b6ff88d8906df5a4f865f8270c332992bc066225e576788ce9d19c9",
+      "inspection": "ff28d9fa04d606c2dc8c963aa6686287b49c5960e1148bc1a2c5493f72427013",
+      "request": "cb9d3dcedf4c26d1459e0f78525088089a43cc82874ff1af7e6c6b96f1671638"
+    },
+    "match_count": 1
+  },
+  "indexed": {
+    "store_seconds": 21.361433750018477,
+    "bytes": 447028283,
+    "files": {
+      "request.json": 1303,
+      "report.json": 430900954,
+      "view.json": 229186,
+      "inspection.json": 15896840
+    },
+    "download_sha256": {
+      "report": "d2f29b7f3b6ff88d8906df5a4f865f8270c332992bc066225e576788ce9d19c9",
+      "inspection": "ff28d9fa04d606c2dc8c963aa6686287b49c5960e1148bc1a2c5493f72427013",
+      "request": "cb9d3dcedf4c26d1459e0f78525088089a43cc82874ff1af7e6c6b96f1671638"
+    },
+    "match_count": 1
+  },
+  "two_runs": {
+    "both_available": true,
+    "retained_bytes": 894056566,
+    "budget_bytes": 1073741824,
+    "downloads_identical": true
+  },
+  "date": "2026-10-12",
+  "implementation": "Single report file with UTF-8 context ranges; report and science versions unchanged.",
+  "verification": "SHA-256 compared for report, inspection and request; both indexed runs readable with identical exports under default 1 GiB budget."
+}

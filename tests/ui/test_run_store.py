@@ -11,7 +11,7 @@ import pytest
 
 from alma_duplicate.reporting import report_json_text, report_json_chunks
 from alma_duplicate.report_inspection import inspect_report
-from alma_duplicate.ui.run_store import RunStore, _utf8_blocks
+from alma_duplicate.ui.run_store import RunStore, _utf8_blocks, _indexed_report_blocks
 from alma_duplicate.ui.runs import BrowserAssessment
 
 ROOT = Path(__file__).parents[2]
@@ -54,6 +54,10 @@ def test_exact_exports_private_files_and_only_descriptors_retained(store, assess
     assert store.directory.stat().st_mode & 0o777 == 0o700
     assert all(p.stat().st_mode & 0o777 == 0o600 for p in item.directory.iterdir())
     assert item.sha256 == hashlib.sha256(download(store, run_id, 'report')).hexdigest()
+    assert {p.name for p in item.directory.iterdir()} == {
+        'report.json', 'inspection.json', 'request.json', 'view.json',
+    }
+    assert item.byte_size == sum(p.stat().st_size for p in item.directory.iterdir())
     assert result.document == before
     root = store.directory
     store.close()
@@ -76,6 +80,54 @@ def test_batched_utf8_preserves_bytes_across_unicode_and_large_tokens():
     assert list(_utf8_blocks(iter(['', '']))) == []
     with pytest.raises(ValueError):
         list(_utf8_blocks(report_json_chunks({'invalid': float('nan')})))
+
+
+@pytest.mark.parametrize('contexts', [[], [{}], [
+    {'label': '谱线 🌌 \\ " \n\t', 'nested': {'context_evaluations': [1, 2]},
+     'values': [None, True, False, 1.25, -0.0, {'x': []}], 'large': 'µ🌌' * 40_000},
+    {'context_id': 'next', 'empty': {}},
+]])
+@pytest.mark.parametrize('placement', [0, 1, 2])
+def test_indexed_publication_is_byte_identical_and_ranges_decode(contexts, placement):
+    items = [('before', {'名字': ['α', 3]}), ('after', [1, {}])]
+    items.insert(placement, ('context_evaluations', contexts))
+    document = dict(items)
+    offsets = []
+    raw = b''.join(_indexed_report_blocks(document, offsets))
+    assert raw == report_json_text(document).encode('utf-8')
+    assert len(offsets) == len(contexts)
+    for (start, length), context in zip(offsets, contexts, strict=True):
+        assert json.loads(raw[start:start + length]) == context
+    with pytest.raises(ValueError):
+        b''.join(_indexed_report_blocks({'context_evaluations': [{'x': float('nan')}]}, []))
+
+
+def test_two_runs_fit_budget_without_duplicate_context_files(tmp_path, assessment):
+    request, result = assessment
+    # Distinct evidence checks both isolation and Unicode byte offsets.
+    document = deepcopy(result.document)
+    document['context_evaluations'][0]['storage_test_label'] = '另一次观测 🌌'
+    changed = replace(result, document=document)
+    with_store = RunStore(directory=tmp_path)
+    try:
+        first = with_store.add(request, result)
+        second = with_store.add(request, changed)
+        budget = with_store._size
+    finally:
+        with_store.close()
+    store = RunStore(directory=tmp_path, max_bytes=budget)
+    try:
+        first = store.add(request, result)
+        second = store.add(request, changed)
+        assert store.page(first, view='all')['contexts'] == result.document['context_evaluations']
+        assert store.page(second, view='all')['contexts'] == document['context_evaluations']
+        for _ in range(2):
+            assert download(store, first, 'report') == report_json_text(result.document).encode()
+            assert download(store, second, 'report') == report_json_text(document).encode()
+        assert store._size == budget
+        assert not list(store.directory.rglob('contexts.jsonl'))
+    finally:
+        store.close()
 
 
 def test_large_report_exceeds_old_limit_but_default_store_and_small_page_work(store, assessment, monkeypatch):
@@ -135,6 +187,7 @@ def test_expiry_and_active_download_finish_before_files_are_deleted(tmp_path, as
     lease = store.open_download(run_id, 'report')
     now[0] = 110
     assert store.page(run_id) is None
+    assert store.unavailable_reason(run_id) == 'EXPIRED'
     assert store.open_download(run_id, 'report') is None
     assert directory.exists()
     assert b''.join(lease) == report_json_text(result.document).encode()
@@ -150,6 +203,7 @@ def test_count_and_byte_eviction_do_not_truncate_active_download(tmp_path, asses
     old_dir = store._runs[first].directory
     second = store.add(request, result)
     assert store.page(first) is None and store.page(second) is not None
+    assert store.unavailable_reason(first) == 'EVICTED'
     assert old_dir.exists()
     lease.close()  # Also supports a response closed before iteration starts.
     assert not old_dir.exists()
@@ -157,6 +211,7 @@ def test_count_and_byte_eviction_do_not_truncate_active_download(tmp_path, asses
     store._max_bytes = size + 1024
     third = store.add(request, result)
     assert store.page(second) is None and store.page(third) is not None
+    assert store.unavailable_reason(second) == 'EVICTED'
     assert store._size <= store._max_bytes
     store.close()
 
@@ -213,6 +268,26 @@ def test_invalid_ids_never_become_paths_and_bad_reports_never_publish(store, ass
     with pytest.raises((ValueError, KeyError)):
         store.add(request, replace(result, document=broken))
     assert not list(store.directory.iterdir())
+
+
+def test_removal_notices_are_bounded_and_session_identity_is_explicit(tmp_path, assessment, monkeypatch):
+    from alma_duplicate.ui import run_store
+    monkeypatch.setattr(run_store, 'MAX_REMOVAL_NOTICES', 2)
+    request, result = assessment
+    store = RunStore(max_runs=1, directory=tmp_path)
+    other = RunStore(directory=tmp_path)
+    try:
+        ids = [store.add(request, result) for _ in range(4)]
+        assert store.unavailable_reason(ids[-1]) is None
+        assert store.unavailable_reason(ids[0]) == 'UNKNOWN'
+        assert store.unavailable_reason(ids[1]) == 'EVICTED'
+        assert len(store._removal_notices) == 2
+        assert other.unavailable_reason(ids[-1]) == 'OTHER_SESSION'
+        for invalid in ['../../outside', 'a' * 32, 'invalid.' + 'b' * 32]:
+            assert other.unavailable_reason(invalid) == 'UNKNOWN'
+    finally:
+        store.close()
+        other.close()
 
 
 def test_close_waits_for_staged_write_and_rejects_later_add(store, assessment, monkeypatch):

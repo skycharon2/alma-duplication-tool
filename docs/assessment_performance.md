@@ -57,6 +57,9 @@ exception text. They omit raw rows and HTTP response bodies.
 - `report_assembly`: building the JSON-native report, including evidence conversion.
 - `inspection`: report inspection and evidence diagnostics.
 - `write_*`: serialization, hashing and file writes together; not pure disk latency.
+- Current browser storage records context byte ranges during `write_report` and
+  stores them in `view.json`. It no longer writes a separate context file, so
+  `write_context_index` appears only in older measurements.
 - `view_projection` / `first_page_projection`: preparing the report index and
   loading its first page. The remaining bookkeeping is reported as unattributed time.
 
