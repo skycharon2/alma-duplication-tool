@@ -1,0 +1,253 @@
+{
+  "date": "2026-10-12",
+  "baseline": "986faa6",
+  "source_mode": "Real browser submissions; Archive live TAP + live AQ, Queue complete local official snapshot",
+  "queue_source_as_of": "2026-03-03",
+  "queue_sha256": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5",
+  "timing_caveat": "Single sequential run per scenario. Click times and one-second server log timestamps; continuum Archive completion is bounded by report generation and later browser observation. Export timings are separate. Downloads and page checks occurred during later runs.",
+  "cases": {
+    "archive-continuum": {
+      "contexts": 336,
+      "counts": {
+        "CRITERIA_NOT_MET": 320,
+        "CRITERIA_MET": 16
+      },
+      "sources": {
+        "ARCHIVE": "COMPLETED",
+        "QUEUE": "NOT_SELECTED"
+      },
+      "expected_identities": [
+        {
+          "Target": "PKS1830-211",
+          "Project": "2021.A.00028.S",
+          "Member OUS": "uid://A001/X2df9/X1b",
+          "ASDM": "uid://A002/Xfd251c/X7ba5",
+          "Observation ID": "uid://A001/X2df9/X1b.source.PKS1830-211.spw.25",
+          "SPW": "25"
+        },
+        {
+          "Target": "PKS1830-211",
+          "Project": "2021.A.00028.S",
+          "Member OUS": "uid://A001/X2df9/X1b",
+          "ASDM": "uid://A002/Xfd251c/X7ba5",
+          "Observation ID": "uid://A001/X2df9/X1b.source.PKS1830-211.spw.27",
+          "SPW": "27"
+        },
+        {
+          "Target": "PKS1830-211",
+          "Project": "2021.A.00028.S",
+          "Member OUS": "uid://A001/X2df9/X1b",
+          "ASDM": "uid://A002/Xfd251c/X7ba5",
+          "Observation ID": "uid://A001/X2df9/X1b.source.PKS1830-211.spw.29",
+          "SPW": "29"
+        },
+        {
+          "Target": "PKS1830-211",
+          "Project": "2021.A.00028.S",
+          "Member OUS": "uid://A001/X2df9/X1b",
+          "ASDM": "uid://A002/Xfd251c/X7ba5",
+          "Observation ID": "uid://A001/X2df9/X1b.source.PKS1830-211.spw.31",
+          "SPW": "31"
+        }
+      ],
+      "request_valid": true,
+      "inspection_matches_report": true,
+      "generated_at": "2026-10-12T07:16:11.708086+00:00",
+      "downloads": {
+        "url": "http://127.0.0.1:5148/runs/1cb4f9c9c5cd419a82fb37ba1cc8221d.b18b3c18ea4c472ba296695a57503edb",
+        "downloads": {
+          "request": {
+            "sha256": "d6220d3c5f4581ece1e110d62549dd4422eb26bb6413311515c5bf74f4247748",
+            "bytes": 1193,
+            "seconds": 0.013
+          },
+          "report": {
+            "sha256": "18c8304f21e8fdcee0f77ff972eea47a389eaa5178a8ff47e90a8c3e0f92912c",
+            "bytes": 3770977,
+            "seconds": 0.015
+          },
+          "inspection": {
+            "sha256": "5234f0ce24376f93eb6f65a9e41e688a34b8e429eecbbfdb419564f3b484f06d",
+            "bytes": 2325,
+            "seconds": 0.003
+          }
+        }
+      },
+      "timing": {
+        "started_at": "2026-10-12T07:14:17.833Z",
+        "observed_complete_within_seconds": 132.073,
+        "report_generated_after_seconds": 113.875
+      },
+      "repeat_downloads_unchanged": true,
+      "old_report_and_pagination_http_200": true,
+      "numerical_checks_passed": true
+    },
+    "archive-line": {
+      "contexts": 4,
+      "counts": {
+        "CRITERIA_NOT_MET": 3,
+        "CRITERIA_MET": 1
+      },
+      "sources": {
+        "ARCHIVE": "COMPLETED",
+        "QUEUE": "NOT_SELECTED"
+      },
+      "expected_identities": [
+        {
+          "Target": "IRAS_09245-5228",
+          "Project": "2024.1.00408.S",
+          "Member OUS": "uid://A001/X3788/Xc194",
+          "ASDM": "uid://A002/X11e3e46/Xff4a",
+          "Observation ID": "uid://A001/X3788/Xc194.source.IRAS_09245-5228.spw.28",
+          "SPW": "28"
+        }
+      ],
+      "request_valid": true,
+      "inspection_matches_report": true,
+      "generated_at": "2026-10-12T07:18:10.891317+00:00",
+      "downloads": {
+        "url": "http://127.0.0.1:5148/runs/1cb4f9c9c5cd419a82fb37ba1cc8221d.0c032646a31a4f33aa9ff046b4cc7718",
+        "downloads": {
+          "request": {
+            "sha256": "86198d3d35406c895f90cf2479b752afa95cce564628bb55419d2d39d768075c",
+            "bytes": 1345,
+            "seconds": 0.036
+          },
+          "report": {
+            "sha256": "797a8df6e5bcc0472f4464781274daef53e27be0bbbe129ce6bd2812bb899b17",
+            "bytes": 119457,
+            "seconds": 0.004
+          },
+          "inspection": {
+            "sha256": "c2a4212cd8191c43c8f648c236df95739c562b98816cc7d3eb90e99a9f938ed1",
+            "bytes": 6568,
+            "seconds": 0.002
+          }
+        }
+      },
+      "timing": {
+        "started_at": "2026-10-12T07:16:31.576Z",
+        "observed_complete_within_seconds": 111.432,
+        "report_generated_after_seconds": 99.315,
+        "first_report_http_200_seconds_interval": [
+          98.424,
+          99.424
+        ]
+      },
+      "repeat_downloads_unchanged": true,
+      "old_report_and_pagination_http_200": true,
+      "numerical_checks_passed": true
+    },
+    "queue-continuum": {
+      "contexts": 3200,
+      "counts": {
+        "INDETERMINATE": 3081,
+        "CRITERIA_NOT_MET": 118,
+        "CRITERIA_MET": 1
+      },
+      "sources": {
+        "ARCHIVE": "NOT_SELECTED",
+        "QUEUE": "COMPLETED"
+      },
+      "expected_identities": [
+        {
+          "Target": "NGC6240",
+          "Project": "2024.1.00750.S",
+          "Queue row": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5:42"
+        }
+      ],
+      "request_valid": true,
+      "inspection_matches_report": true,
+      "generated_at": "2026-10-12T07:18:32.206148+00:00",
+      "downloads": {
+        "url": "http://127.0.0.1:5148/runs/1cb4f9c9c5cd419a82fb37ba1cc8221d.3d321835ca184e5b804d2204478c3264",
+        "downloads": {
+          "request": {
+            "sha256": "5c719e153dc8e2d57f27c1e16f18ebb151e0a57df5c7ac618f7b225240d5026f",
+            "bytes": 2861,
+            "seconds": 0.051
+          },
+          "report": {
+            "sha256": "7909f6fd6af838ceddbcece06e400d24f3ba637aee283a21c7f9a64b8e57b590",
+            "bytes": 68036485,
+            "seconds": 14.289
+          },
+          "inspection": {
+            "sha256": "d682c653a363c609c66b9b096deaa1faac85cdaf0a1564db66923cbd69b2bb29",
+            "bytes": 16157704,
+            "seconds": 4.434
+          }
+        }
+      },
+      "timing": {
+        "started_at": "2026-10-12T07:18:23.401Z",
+        "observed_complete_within_seconds": 36.021,
+        "report_generated_after_seconds": 8.805,
+        "first_report_http_200_seconds_interval": [
+          13.599,
+          14.599
+        ]
+      },
+      "repeat_downloads_unchanged": true,
+      "old_report_and_pagination_http_200": true,
+      "numerical_checks_passed": true
+    },
+    "queue-line": {
+      "contexts": 3200,
+      "counts": {
+        "INDETERMINATE": 3081,
+        "CRITERIA_NOT_MET": 118,
+        "CRITERIA_MET": 1
+      },
+      "sources": {
+        "ARCHIVE": "NOT_SELECTED",
+        "QUEUE": "COMPLETED"
+      },
+      "expected_identities": [
+        {
+          "Target": "circinus_galaxy",
+          "Project": "2025.1.00344.S",
+          "Queue row": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5:97"
+        }
+      ],
+      "request_valid": true,
+      "inspection_matches_report": true,
+      "generated_at": "2026-10-12T07:19:33.721162+00:00",
+      "downloads": {
+        "url": "http://127.0.0.1:5148/runs/1cb4f9c9c5cd419a82fb37ba1cc8221d.d458c5dd284c4b6a9a59552dbf88c4ea",
+        "downloads": {
+          "request": {
+            "sha256": "fedaff4c06f9059a4decaef2bf1e2fbaad25183afca9e51a57a7f9bfab73a867",
+            "bytes": 1309,
+            "seconds": 0.038
+          },
+          "report": {
+            "sha256": "6589e6925285a89bb364d1ebec6baab58b6ffbb8378e0e98cc7895b70b5934dd",
+            "bytes": 431316785,
+            "seconds": 1.365
+          },
+          "inspection": {
+            "sha256": "1d3799451d7b5d42090dbdd08f44ea33977da008444fcf63df7894a9b9f82bac",
+            "bytes": 15918014,
+            "seconds": 0.056
+          }
+        }
+      },
+      "timing": {
+        "started_at": "2026-10-12T07:19:06.378Z",
+        "observed_complete_within_seconds": 82.347,
+        "report_generated_after_seconds": 27.343,
+        "first_report_http_200_seconds_interval": [
+          53.622,
+          54.622
+        ]
+      },
+      "repeat_downloads_unchanged": true,
+      "old_report_and_pagination_http_200": true,
+      "numerical_checks_passed": true
+    }
+  },
+  "browser_request_download_exact": true,
+  "local_evidence": "reports/pre-supervisor-2026-10-12/",
+  "tests": "75 passed; Ruff --select F passed"
+}
