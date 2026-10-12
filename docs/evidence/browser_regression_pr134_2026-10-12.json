@@ -1,0 +1,557 @@
+{
+  "baseline": "3fff6a8a3b3d09dd5d8b567c4e562f071ae8ef8b",
+  "date": "2026-10-12",
+  "execution": "Real browser form submission; live TAP and AQ; existing official Queue snapshot as of 2026-03-03",
+  "timing_basis": "Browser Date.now immediately before Run assessment click to completed view.json filesystem mtime; excludes first HTML rendering and subsequent download interaction. One sample per workflow.",
+  "cases": {
+    "archive-continuum": {
+      "run_id": "d80f525f62cf46458d7d7a10b4b20a97.7259168e69434d89a2a3327e0738dc95",
+      "click_epoch_ms": 1791793879160,
+      "click_to_view_file_seconds": 65.995,
+      "files": {
+        "request.json": {
+          "bytes": 1165,
+          "sha256": "7f1181954f66446020bdad9a0c07ae6e0eba525d9bfecf14f9803a4d3f19715e"
+        },
+        "report.json": {
+          "bytes": 2136148,
+          "sha256": "3a4ff21955a9810194ee5e52489711dfdf4a3fdc3610eeda3aea121b7450560c"
+        },
+        "view.json": {
+          "bytes": 85530,
+          "sha256": "a08c7f2ba9fa09c7879e11e457a1f13f09f975a08501d9e6c195d6692872632b"
+        },
+        "inspection.json": {
+          "bytes": 2325,
+          "sha256": "a57f3ae4264d29c46277f333c4793b400ee3854fb040495cda6a8b1dbd153526"
+        }
+      },
+      "counts": {
+        "CRITERIA_NOT_MET": 320,
+        "CRITERIA_MET": 16
+      },
+      "contexts": 336,
+      "expected_identities": [
+        {
+          "Target": "PKS1830-211",
+          "Project": "2021.A.00028.S",
+          "Member OUS": "uid://A001/X2df9/X1b",
+          "ASDM": "uid://A002/Xfd251c/X7ba5",
+          "Observation ID": "uid://A001/X2df9/X1b.source.PKS1830-211.spw.25",
+          "SPW": "25"
+        },
+        {
+          "Target": "PKS1830-211",
+          "Project": "2021.A.00028.S",
+          "Member OUS": "uid://A001/X2df9/X1b",
+          "ASDM": "uid://A002/Xfd251c/X7ba5",
+          "Observation ID": "uid://A001/X2df9/X1b.source.PKS1830-211.spw.27",
+          "SPW": "27"
+        },
+        {
+          "Target": "PKS1830-211",
+          "Project": "2021.A.00028.S",
+          "Member OUS": "uid://A001/X2df9/X1b",
+          "ASDM": "uid://A002/Xfd251c/X7ba5",
+          "Observation ID": "uid://A001/X2df9/X1b.source.PKS1830-211.spw.29",
+          "SPW": "29"
+        },
+        {
+          "Target": "PKS1830-211",
+          "Project": "2021.A.00028.S",
+          "Member OUS": "uid://A001/X2df9/X1b",
+          "ASDM": "uid://A002/Xfd251c/X7ba5",
+          "Observation ID": "uid://A001/X2df9/X1b.source.PKS1830-211.spw.31",
+          "SPW": "31"
+        }
+      ],
+      "sources": {
+        "ARCHIVE": "COMPLETED",
+        "QUEUE": "NOT_SELECTED"
+      },
+      "input": {
+        "request": {
+          "target_kind": "FIXED",
+          "geometry": "SINGLE_POINTING",
+          "target_name": "CASE1",
+          "position": {
+            "ra": "18:33:39.920",
+            "dec": "-21:03:39.900",
+            "ra_format": "HMS",
+            "dec_format": "DMS",
+            "frame": "ICRS"
+          },
+          "setup_id": "setup-1",
+          "setup_complete": false,
+          "intents": [
+            "CONTINUUM"
+          ],
+          "angular_resolution": {
+            "value": "0.23",
+            "unit": "arcsec"
+          },
+          "representative_frequency": {
+            "value": "290.420",
+            "unit": "GHz",
+            "kind": "SKY",
+            "frame": "UNKNOWN"
+          },
+          "spectral_windows": [],
+          "sensitivities": [
+            {
+              "sensitivity_id": "aggregate",
+              "purpose": "CONTINUUM",
+              "scope": "SETUP",
+              "setup_id": "setup-1",
+              "basis": "AGGREGATE",
+              "aggregate_path": "DIRECT_DECLARATION",
+              "rms": {
+                "value": "0.02",
+                "unit": "mJy/beam"
+              },
+              "window_ids": []
+            }
+          ],
+          "continuum_setup_declaration": "AT_LEAST_TWO_USABLE_WINDOWS_GT_1_8_GHZ"
+        },
+        "search_options": {
+          "sources": [
+            "ARCHIVE"
+          ],
+          "predicates": [],
+          "radius_mode": "AUTO"
+        }
+      },
+      "same_context_identity_and_branch_status_as_prior": true,
+      "request_valid": true,
+      "inspection_matches_report": true,
+      "tap": {
+        "completeness_policy": "STATUS_THEN_COUNT",
+        "count_attempted": false,
+        "expected_count": null,
+        "retrieved_count": 336,
+        "retrieval_query_status_raw": "OK",
+        "started_at": "2026-10-12T08:31:19.611342+00:00",
+        "finished_at": "2026-10-12T08:32:09.010517+00:00",
+        "query_hash": "c29eb2531a82b2d5d4d4b6f18ea4855a4801b301d802dcdcd9656c4e6cc573ce"
+      },
+      "aq": {
+        "status": "COMPLETED",
+        "started_at": "2026-10-12T08:32:09.509932+00:00",
+        "finished_at": "2026-10-12T08:32:24.520179+00:00",
+        "queries": 68
+      },
+      "stored_files_unchanged_after_revisit": true
+    },
+    "archive-line": {
+      "run_id": "d80f525f62cf46458d7d7a10b4b20a97.48536f8b99b242ab830803818c2fb527",
+      "click_epoch_ms": 1791793960550,
+      "click_to_view_file_seconds": 53.24,
+      "files": {
+        "request.json": {
+          "bytes": 1329,
+          "sha256": "55f881d6ae1be2e06b1b218945412109e1a92454e948d84683ca355600563be9"
+        },
+        "report.json": {
+          "bytes": 92426,
+          "sha256": "4886847b76bc6ab7e955ecd16c8c2a609738e1ca051be4fd736dcb4e19d275d0"
+        },
+        "view.json": {
+          "bytes": 39288,
+          "sha256": "ed2e6cdae783760ef0ee3b4932ddd345f9bb249842d4eaa3b9bb31f11471bb66"
+        },
+        "inspection.json": {
+          "bytes": 6742,
+          "sha256": "d8d3acdc25ce643f4ef81b2b8e4fc502fe1a7ad04c903a935f49d6e569490680"
+        }
+      },
+      "counts": {
+        "CRITERIA_NOT_MET": 3,
+        "CRITERIA_MET": 1
+      },
+      "contexts": 4,
+      "expected_identities": [
+        {
+          "Target": "IRAS_09245-5228",
+          "Project": "2024.1.00408.S",
+          "Member OUS": "uid://A001/X3788/Xc194",
+          "ASDM": "uid://A002/X11e3e46/Xff4a",
+          "Observation ID": "uid://A001/X3788/Xc194.source.IRAS_09245-5228.spw.28",
+          "SPW": "28"
+        }
+      ],
+      "sources": {
+        "ARCHIVE": "COMPLETED",
+        "QUEUE": "NOT_SELECTED"
+      },
+      "input": {
+        "request": {
+          "target_kind": "FIXED",
+          "geometry": "SINGLE_POINTING",
+          "target_name": "IRAS_09245-5228",
+          "position": {
+            "ra": "141.5461103909849",
+            "dec": "-52.70729721185924",
+            "ra_format": "DEG",
+            "dec_format": "DEG",
+            "frame": "ICRS"
+          },
+          "setup_id": "setup-1",
+          "setup_complete": true,
+          "intents": [
+            "LINE"
+          ],
+          "angular_resolution": {
+            "value": "3.573980180426332",
+            "unit": "arcsec"
+          },
+          "representative_frequency": null,
+          "spectral_windows": [
+            {
+              "window_id": "w5bce41a66484",
+              "center": {
+                "value": "230.53800141830845",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "FDM"
+            }
+          ],
+          "sensitivities": [
+            {
+              "sensitivity_id": "line-w5bce41a66484",
+              "purpose": "LINE",
+              "scope": "WINDOW",
+              "window_ids": [
+                "w5bce41a66484"
+              ],
+              "basis": "SMOOTHED",
+              "rms": {
+                "value": "19.92234925906079",
+                "unit": "mJy/beam"
+              },
+              "smoothing_resolution": {
+                "value": "1",
+                "unit": "km/s"
+              }
+            }
+          ]
+        },
+        "search_options": {
+          "sources": [
+            "ARCHIVE"
+          ],
+          "predicates": [],
+          "radius_mode": "AUTO"
+        }
+      },
+      "same_context_identity_and_branch_status_as_prior": true,
+      "request_valid": true,
+      "inspection_matches_report": true,
+      "tap": {
+        "completeness_policy": "STATUS_THEN_COUNT",
+        "count_attempted": false,
+        "expected_count": null,
+        "retrieved_count": 4,
+        "retrieval_query_status_raw": "OK",
+        "started_at": "2026-10-12T08:32:41.114602+00:00",
+        "finished_at": "2026-10-12T08:33:33.207115+00:00",
+        "query_hash": "8b1aaf6d55c41ce4dda13961a41d216d897bb12162d9c3734dfbc2f2641dfb00"
+      },
+      "aq": {
+        "status": "COMPLETED",
+        "started_at": "2026-10-12T08:33:33.225601+00:00",
+        "finished_at": "2026-10-12T08:33:33.764378+00:00",
+        "queries": 1
+      },
+      "stored_files_unchanged_after_revisit": true
+    },
+    "queue-continuum": {
+      "run_id": "d80f525f62cf46458d7d7a10b4b20a97.3d8561a366604972a9bfaa7b535908df",
+      "click_epoch_ms": 1791794073379,
+      "click_to_view_file_seconds": 11.719,
+      "files": {
+        "request.json": {
+          "bytes": 2844,
+          "sha256": "8be8113205c606c3492cef96aebdd3c4a4f2992582ce6fc8cf039056ad92dc07"
+        },
+        "report.json": {
+          "bytes": 19368472,
+          "sha256": "873d3c11c845fe351a801987fc52bb8ab987d0b77c72b18b5b2385a1ed4e5a99"
+        },
+        "view.json": {
+          "bytes": 240397,
+          "sha256": "a83be97b0a11592d1f7c4f34fa59951fcac833773b5cc2b0be91eba4219f0de6"
+        },
+        "inspection.json": {
+          "bytes": 18301860,
+          "sha256": "b6baa5a3211feb29abceeb2c546c4f7b0e11e57fad744a1059d8899a219888c9"
+        }
+      },
+      "counts": {
+        "INDETERMINATE": 3081,
+        "CRITERIA_NOT_MET": 118,
+        "CRITERIA_MET": 1
+      },
+      "contexts": 3200,
+      "expected_identities": [
+        {
+          "Target": "NGC6240",
+          "Project": "2024.1.00750.S",
+          "Queue row": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5:42"
+        }
+      ],
+      "sources": {
+        "ARCHIVE": "NOT_SELECTED",
+        "QUEUE": "COMPLETED"
+      },
+      "input": {
+        "request": {
+          "target_kind": "FIXED",
+          "geometry": "SINGLE_POINTING",
+          "target_name": "NGC6240",
+          "position": {
+            "ra": "253.24541666666667",
+            "dec": "2.4010972222222224",
+            "ra_format": "DEG",
+            "dec_format": "DEG",
+            "frame": "ICRS"
+          },
+          "setup_id": "setup-1",
+          "setup_complete": true,
+          "intents": [
+            "CONTINUUM"
+          ],
+          "angular_resolution": {
+            "value": "0.4",
+            "unit": "arcsec"
+          },
+          "representative_frequency": {
+            "value": "338.5",
+            "unit": "GHz",
+            "kind": "SKY",
+            "frame": "UNKNOWN"
+          },
+          "spectral_windows": [
+            {
+              "window_id": "w1e031b8969f3",
+              "center": {
+                "value": "350.4999999999",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "UNKNOWN",
+              "representation": "CENTER_BANDWIDTH",
+              "bandwidth": {
+                "value": "1875",
+                "unit": "MHz"
+              },
+              "bandwidth_kind": "NOMINAL"
+            },
+            {
+              "window_id": "w422ec6a410c3",
+              "center": {
+                "value": "348.5000000001",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "UNKNOWN",
+              "representation": "CENTER_BANDWIDTH",
+              "bandwidth": {
+                "value": "1875",
+                "unit": "MHz"
+              },
+              "bandwidth_kind": "NOMINAL"
+            },
+            {
+              "window_id": "w8dbd48c72f31",
+              "center": {
+                "value": "338.4999999999",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "UNKNOWN",
+              "representation": "CENTER_BANDWIDTH",
+              "bandwidth": {
+                "value": "1875",
+                "unit": "MHz"
+              },
+              "bandwidth_kind": "NOMINAL"
+            },
+            {
+              "window_id": "w1abaebd0ebcf",
+              "center": {
+                "value": "336.5000000001",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "UNKNOWN",
+              "representation": "CENTER_BANDWIDTH",
+              "bandwidth": {
+                "value": "1875",
+                "unit": "MHz"
+              },
+              "bandwidth_kind": "NOMINAL"
+            }
+          ],
+          "sensitivities": [
+            {
+              "sensitivity_id": "aggregate",
+              "purpose": "CONTINUUM",
+              "scope": "SETUP",
+              "setup_id": "setup-1",
+              "basis": "AGGREGATE",
+              "aggregate_path": "DIRECT_DECLARATION",
+              "rms": {
+                "value": "0.008",
+                "unit": "mJy/beam"
+              },
+              "window_ids": [
+                "w1e031b8969f3",
+                "w422ec6a410c3",
+                "w8dbd48c72f31",
+                "w1abaebd0ebcf"
+              ]
+            }
+          ]
+        },
+        "search_options": {
+          "sources": [
+            "QUEUE"
+          ],
+          "predicates": [],
+          "radius_mode": "AUTO"
+        }
+      },
+      "same_context_identity_and_branch_status_as_prior": true,
+      "request_valid": true,
+      "inspection_matches_report": true,
+      "stored_files_unchanged_after_revisit": true
+    },
+    "queue-line": {
+      "run_id": "d80f525f62cf46458d7d7a10b4b20a97.5a8daef072814811afde62c1f516748b",
+      "click_epoch_ms": 1791794283657,
+      "click_to_view_file_seconds": 36.728,
+      "files": {
+        "request.json": {
+          "bytes": 1293,
+          "sha256": "871a1563f8340acc6daf474fdf5cdc8b5549bbee27c1fc71c1b124ade7b58e93"
+        },
+        "report.json": {
+          "bytes": 71075252,
+          "sha256": "c55e5966fd0f9b2074aae18355c0ff46d2c63f3580d3441ce7c4e3585901f8a5"
+        },
+        "view.json": {
+          "bytes": 256196,
+          "sha256": "010e25bb5e1e15101c1a76511967a98a629259e64b181dc2f8903654e0035524"
+        },
+        "inspection.json": {
+          "bytes": 17552348,
+          "sha256": "236b50d8541e381ff381481f959579be6a308d1f8a3aeac8104d573e68b6c32e"
+        }
+      },
+      "counts": {
+        "INDETERMINATE": 3081,
+        "CRITERIA_NOT_MET": 118,
+        "CRITERIA_MET": 1
+      },
+      "contexts": 3200,
+      "expected_identities": [
+        {
+          "Target": "circinus_galaxy",
+          "Project": "2025.1.00344.S",
+          "Queue row": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5:97"
+        }
+      ],
+      "sources": {
+        "ARCHIVE": "NOT_SELECTED",
+        "QUEUE": "COMPLETED"
+      },
+      "input": {
+        "request": {
+          "target_kind": "FIXED",
+          "geometry": "SINGLE_POINTING",
+          "target_name": "circinus_galaxy",
+          "position": {
+            "ra": "213.291275",
+            "dec": "-65.339019",
+            "ra_format": "DEG",
+            "dec_format": "DEG",
+            "frame": "ICRS"
+          },
+          "setup_id": "setup-1",
+          "setup_complete": true,
+          "intents": [
+            "LINE"
+          ],
+          "angular_resolution": {
+            "value": "0.15",
+            "unit": "arcsec"
+          },
+          "representative_frequency": null,
+          "spectral_windows": [
+            {
+              "window_id": "w7ac2a8ee76e5",
+              "center": {
+                "value": "182.5870779652115",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "FDM"
+            }
+          ],
+          "sensitivities": [
+            {
+              "sensitivity_id": "line-w7ac2a8ee76e5",
+              "purpose": "LINE",
+              "scope": "WINDOW",
+              "window_ids": [
+                "w7ac2a8ee76e5"
+              ],
+              "basis": "SMOOTHED",
+              "rms": {
+                "value": "5.5",
+                "unit": "mJy/beam"
+              },
+              "smoothing_resolution": {
+                "value": "0.564453125",
+                "unit": "MHz"
+              }
+            }
+          ]
+        },
+        "search_options": {
+          "sources": [
+            "QUEUE"
+          ],
+          "predicates": [],
+          "radius_mode": "AUTO"
+        }
+      },
+      "same_context_identity_and_branch_status_as_prior": true,
+      "request_valid": true,
+      "inspection_matches_report": true,
+      "stored_files_unchanged_after_revisit": true
+    }
+  },
+  "browser_checks": {
+    "all_four_inputs_valid_ready": true,
+    "archive_all_comparisons_pages": [
+      1,
+      2
+    ],
+    "queue_line_all_comparisons_pages": [
+      1,
+      2
+    ],
+    "all_reports_revisited_after_later_runs": true,
+    "queue_line_request_download_byte_identical": true,
+    "no_source_or_configuration_changes": true
+  }
+}
