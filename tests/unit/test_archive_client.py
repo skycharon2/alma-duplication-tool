@@ -22,6 +22,7 @@ from alma_duplicate.clients.archive_queries import (
     ArchiveQuerySpec,
 )
 from tests.fakes import FakeTapExecutor
+from alma_duplicate.performance import PerformanceRecorder, measure_stage
 
 NOW = datetime(
     2026,
@@ -209,6 +210,20 @@ def _client(
     return client, executor
 
 
+def test_query_stages_preserve_complete_result():
+    responses = [_query_unit_response(), _count_response(1), _retrieval_response(1)]
+    ordinary, _ = _client(responses)
+    measured, _ = _client(responses)
+    expected = ordinary.search(_frequency_spec())
+    with PerformanceRecorder().record() as recorder, measure_stage('tap_acquisition'):
+        actual = measured.search(_frequency_spec())
+    assert actual == expected
+    assert [s.name for s in recorder.stages] == [
+        'tap_projection_metadata', 'tap_unit_metadata', 'tap_count',
+        'tap_retrieval', 'tap_acquisition']
+    assert all(s.parent_id == recorder.stages[-1].stage_id for s in recorder.stages[:-1])
+
+
 def test_complete_result_reconciles_count_and_rows() -> None:
     client, executor = _client(
         [
@@ -228,7 +243,7 @@ def test_complete_result_reconciles_count_and_rows() -> None:
         "query-run-001"
     )
     assert len(result.provenance.query_hash) == 64
-    assert result.provenance.client_version == "7"
+    assert result.provenance.client_version == "8"
     assert result.provenance.frequency_prefilter_status is (
         ArchiveFrequencyPrefilterStatus.NOT_REQUESTED
     )

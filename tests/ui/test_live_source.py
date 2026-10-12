@@ -84,7 +84,8 @@ def test_live_archive_is_lazy_until_selected_search_ready_assess(
     constructed = []
 
     class UnavailableLiveClient:
-        def __init__(self, endpoint):
+        def __init__(self, endpoint, *, completeness_policy="COUNT_FIRST"):
+            assert completeness_policy == "STATUS_THEN_COUNT"
             constructed.append(endpoint)
             raise OSError(
                 "synthetic live construction failure"
@@ -180,7 +181,8 @@ def test_live_archive_uses_shared_entry_without_replay_or_live_aq(
     class RecordedTransportLiveClient:
         """Use recorded TAP bytes while exercising the LIVE provider path."""
 
-        def __init__(self, endpoint):
+        def __init__(self, endpoint, *, completeness_policy="COUNT_FIRST"):
+            assert completeness_policy == "STATUS_THEN_COUNT"
             endpoints.append(endpoint)
             self._client = ReplayClient(
                 ARCHIVE_REPLAY

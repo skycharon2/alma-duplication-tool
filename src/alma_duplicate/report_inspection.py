@@ -1,6 +1,7 @@
-"""Read report v4 without recomputing criteria or inferring a search verdict."""
+"""Read versioned reports without recomputing criteria or inferring a search verdict."""
 
 from collections import Counter
+from alma_duplicate.report_summary import criterion_record
 
 CATEGORIES_V1 = (
     "USER_INPUT_MISSING",
@@ -114,12 +115,22 @@ def inspect_report(document, *, inspection_version="3"):
     """
     if inspection_version not in {"1", "2", "3"}:
         raise ValueError("Inspection version must be 1, 2 or 3")
-    if document.get("report_version") not in {"4", "5"}:
-        raise ValueError("Inspection requires report version 4 or 5")
-    if document['report_version'] == '5':
+    if document.get("report_version") not in {"4", "5", "6"}:
+        raise ValueError("Inspection requires report version 4, 5 or 6")
+    if document['report_version'] in {'5', '6'}:
         detail = document.get('report_detail') or {}
-        if detail.get('mode') != 'MATCHES_FULL_OTHER_SUMMARIES' or detail.get('version') != '1':
+        expected_policy = '2' if document['report_version'] == '6' else '1'
+        if detail.get('mode') != 'MATCHES_FULL_OTHER_SUMMARIES' or detail.get('version') != expected_policy:
             raise ValueError('Unknown report detail policy')
+        if document['report_version'] == '6':
+            table = document.get('summary_criteria')
+            required = {'criterion_id', 'method_version', 'approval', 'applicability',
+                        'evaluation', 'outcome', 'issues', 'reasons', 'decision_refs',
+                        'eligible_for_formal_aggregation', 'has_computed_outcome'}
+            if (detail.get('summary_encoding') != 'SHARED_CRITERIA_REFERENCES'
+                    or not isinstance(table, list)
+                    or any(not isinstance(r, dict) or not required <= r.keys() for r in table)):
+                raise ValueError('Invalid shared criterion summary table')
         full = 0
         for context in document['context_evaluations']:
             matched = any(b['status'] == 'CRITERIA_MET' for b in context['branches'])
@@ -138,7 +149,8 @@ def inspect_report(document, *, inspection_version="3"):
     occurrences = []
     seen = set()
 
-    def add(location, code, *, side=None, source=None, context=None, category=None, pair_identity=None):
+    def add(location, code, *, side=None, source=None, context=None, category=None,
+            pair_identity=None, criterion_record_location=None):
         key = (location, code, side)
         if key in seen:
             return
@@ -151,16 +163,21 @@ def inspect_report(document, *, inspection_version="3"):
                 "source": source,
                 "context_id": context,
                 **({"pair_identity": pair_identity} if pair_identity is not None else {}),
+                **({'criterion_record_location': criterion_record_location}
+                   if criterion_record_location is not None else {}),
                 "category": category
                 or _category(code, side, source, inspection_version),
             }
         )
 
     def criterion(r, location, context=None, source=None, pair_identity=None):
+        record_location = f'/summary_criteria/{r}' if type(r) is int and inspection_version == '3' else None
+        r = criterion_record(r, document)
         if r["evaluation"] == "NOT_APPLICABLE":
             return
         if r["approval"] != "APPROVED":
-            add(location, "METHOD_UNAPPROVED", source=source, context=context, pair_identity=pair_identity)
+            add(location, "METHOD_UNAPPROVED", source=source, context=context, pair_identity=pair_identity,
+                criterion_record_location=record_location)
         if r["outcome"] is not None:
             return
         if r["issues"]:
@@ -172,10 +189,12 @@ def inspect_report(document, *, inspection_version="3"):
                     source=source,
                     context=context,
                     pair_identity=pair_identity,
+                    criterion_record_location=record_location,
                 )
         else:
             for reason in r["reasons"] or ["UNSPECIFIED_MISSING_EVIDENCE"]:
-                add(location, reason, source=source, context=context, pair_identity=pair_identity)
+                add(location, reason, source=source, context=context, pair_identity=pair_identity,
+                    criterion_record_location=record_location)
 
     if kind == "CANDIDATE_EVALUATION":
         for name, source in document["sources"].items():
@@ -230,12 +249,17 @@ def inspect_report(document, *, inspection_version="3"):
             ):
                 raise ValueError("Invalid coherent source beam variants")
             for variant_index, scope in enumerate(variants or [c]):
+                if document['report_version'] == '6':
+                    records = list(scope['criteria']) + [r for p in scope['line_pairs'] for r in p['criteria']]
+                    expected = int if c['detail_level'] == 'SUMMARY' else dict
+                    if any(type(r) is not expected for r in records):
+                        raise ValueError('Criterion encoding disagrees with context detail level')
                 scope_id = scope["variant_id"] if variants else cid
                 pointer = f"/context_evaluations/{context_index}"
                 if variants:
                     pointer += f"/beam_variants/{variant_index}"
                 for r in scope["criteria"]:
-                    criterion(r, f"{scope_id}/criteria/{r['criterion_id']}", cid, source)
+                    criterion(r, f"{scope_id}/criteria/{criterion_record(r, document)['criterion_id']}", cid, source)
                 for pair_index, pair in enumerate(scope["line_pairs"]):
                     attempt = pair["attempt"]
                     if "proposed_window_id" in attempt:
@@ -260,12 +284,13 @@ def inspect_report(document, *, inspection_version="3"):
                             "reference": attempt.get("reference"),
                         }
                     for criterion_index, r in enumerate(pair["criteria"]):
-                        if r["criterion_id"] not in {"POS-SINGLE", "ANGULAR"}:
+                        record = criterion_record(r, document)
+                        if record["criterion_id"] not in {"POS-SINGLE", "ANGULAR"}:
                             criterion(
                                 r,
                                 (f"{pointer}/line_pairs/{pair_index}/criteria/{criterion_index}"
                                  if inspection_version == "3"
-                                 else f"{scope_id}/line_pairs/{wid}/{r['criterion_id']}"),
+                                 else f"{scope_id}/line_pairs/{wid}/{record['criterion_id']}"),
                                 cid,
                                 source,
                                 identity,

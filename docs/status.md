@@ -36,7 +36,7 @@ context-level common-condition counting ([contract](report_inspection.md)).
 The shared assessment entry is implemented; PR #100 validates search-plan
 configuration before source access, including conflicting beam strategies.
 The shared entry and CLI default to full report v4; new browser runs use
-[matching-detail report v5](matching_report.md). Evaluation version is 5 and
+[matching-detail report v6](matching_report.md). Evaluation version is 5 and
 default inspection version is 3. Explicit inspection v1/v2 reproduce historical behavior.
 
 Recorded pre-UI review on 2026-09-28 for `3f7f3156d450e5b6164053c34b17e873309989ef` (PR #100) (supplied local review,

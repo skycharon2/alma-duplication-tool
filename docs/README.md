@@ -58,7 +58,11 @@ They are not current population counts or Python class definitions.
 For running the browser end to end, start with
 [browser assessment sources](ui_offline_assessment.md).
 Use [assessment performance measurements](assessment_performance.md) to time
-source access, scientific evaluation and report storage separately.
+source access, scientific evaluation and report storage separately, and to analyze
+report field sizes. The [2026-10-12 measurements](evidence/assessment_stage_size_2026-10-12.md)
+locate the current Queue LINE and live Archive bottlenecks.
+The [TAP retrieval-first comparison](evidence/tap_retrieval_first_2026-10-12.md)
+records the subsequent live CASE1 optimization and completeness checks.
 For optional SPWs and explicit researcher confirmation, see the
 [continuum setup declaration](continuum_setup_declaration.md).
 The [scientific workflow map](ui_scientific_workflow.md) connects the handwritten

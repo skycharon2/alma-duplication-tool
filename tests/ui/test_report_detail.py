@@ -8,6 +8,7 @@ import pytest
 from alma_duplicate import assessment, reporting
 from alma_duplicate.cli.acceptance import load_catalog
 from alma_duplicate.report_inspection import inspect_report
+from alma_duplicate.report_summary import resolve_context_summary
 from alma_duplicate.rules.evaluation import evaluate_candidate_search
 from alma_duplicate.ui.runs import BrowserAssessment
 
@@ -16,11 +17,12 @@ CASES = load_catalog(ROOT / 'examples/acceptance/catalog.json')[1]
 
 
 def assert_preserved(full, compact):
-    assert full['report_version'] == '4' and compact['report_version'] == '5'
+    assert full['report_version'] == '4' and compact['report_version'] == '6'
     for key in ('evaluation_scope', 'request_criteria', 'sources', 'evaluation_configuration'):
         assert full[key] == compact[key]
     assert len(full['context_evaluations']) == len(compact['context_evaluations'])
     for before, after in zip(full['context_evaluations'], compact['context_evaluations'], strict=True):
+        after = resolve_context_summary(after, compact)
         for key in ('context_id', 'reference', 'display_identity', 'branches'):
             assert before[key] == after[key]
         matched = any(b['status'] == 'CRITERIA_MET' for b in before['branches'])
@@ -32,8 +34,16 @@ def assert_preserved(full, compact):
             for a, b in zip(before.get('beam_variants') or [before],
                             after.get('beam_variants') or [after], strict=True):
                 assert a['branches'] == b['branches']
+                def check_records(old, new):
+                    for x, y in zip(old, new, strict=True):
+                        expected = {k: v for k, v in x.items() if k not in {
+                            'proposed', 'candidate', 'context_id', 'derived', 'details'}}
+                        expected['details'] = [v for v in x.get('details', []) if v[0] == 'queue_geometry']
+                        assert y == expected
+                check_records(a['criteria'], b['criteria'])
                 assert len(a['line_pairs']) == len(b['line_pairs'])
                 for x, y in zip(a['line_pairs'], b['line_pairs'], strict=True):
+                    check_records(x['criteria'], y['criteria'])
                     for key in ('status', 'truth', 'method_version', 'reasons'):
                         assert x[key] == y[key]
                     assert x['attempt'].get('reference') == y['attempt'].get('reference')
@@ -41,6 +51,8 @@ def assert_preserved(full, compact):
     # Pair identity, missing evidence, source failures and diagnostic counts agree.
     a, b = inspect_report(full), inspect_report(compact)
     b['report_version'] = '4'
+    for gap in b['gap_occurrences']:
+        gap.pop('criterion_record_location', None)
     assert a == b
 
 
@@ -109,3 +121,82 @@ def test_reader_rejects_mislabelled_compact_records():
             bad['context_evaluations'][0]['detail_level'] = 'missing'
         with pytest.raises(ValueError):
             inspect_report(bad)
+
+
+@pytest.fixture
+def summary_document():
+    from tests.integration.test_queue_beam_variants import mixed
+    _, report, _ = mixed(offset=25, intents=('CONTINUUM', 'LINE'))
+    document = reporting.report_document(report, detail='matches')
+    assert document['context_evaluations'][0]['detail_level'] == 'SUMMARY'
+    return document
+
+
+@pytest.mark.parametrize('mutation', ['negative', 'outside', 'boolean', 'inline', 'missing_table', 'bad_record'])
+def test_invalid_shared_references_are_rejected(summary_document, mutation):
+    doc = deepcopy(summary_document)
+    criteria = doc['context_evaluations'][0]['beam_variants'][0]['criteria']
+    if mutation == 'missing_table':
+        del doc['summary_criteria']
+    elif mutation == 'bad_record':
+        doc['summary_criteria'][criteria[0]].pop('method_version')
+    else:
+        criteria[0] = {'negative': -1, 'outside': len(doc['summary_criteria']),
+                       'boolean': True, 'inline': doc['summary_criteria'][criteria[0]]}[mutation]
+    with pytest.raises(ValueError):
+        inspect_report(doc)
+
+
+def test_summary_records_are_shared_but_each_pair_gap_remains_traceable(summary_document):
+    doc = summary_document
+    view = inspect_report(doc)
+    references = [r for c in doc['context_evaluations'] for scope in c.get('beam_variants', [c])
+                  for pair in scope['line_pairs'] for r in pair['criteria']]
+    assert len(references) > len(set(references))
+    for record in doc['summary_criteria']:
+        assert not {'context_id', 'proposed', 'candidate', 'derived'} & record.keys()
+    for gap in view['gap_occurrences']:
+        if 'criterion_record_location' not in gap:
+            continue
+        index = int(gap['criterion_record_location'].rsplit('/', 1)[1])
+        assert doc['summary_criteria'][index]['method_version']
+        if 'pair_identity' in gap:
+            node = doc
+            for part in gap['location'].split('/')[1:]:
+                node = node[int(part)] if isinstance(node, list) else node[part]
+            assert node == index
+
+
+def test_current_and_legacy_summary_pages_and_downloads(summary_document, tmp_path):
+    from alma_duplicate.ui import create_app
+    from alma_duplicate.ui.report_pages import report_page, report_projection
+    from alma_duplicate.ui.report_view import summary_line_conditions
+
+    doc = summary_document
+    before = deepcopy(doc)
+    projection = report_projection(doc, inspect_report(doc), compact=True)
+    page = report_page(projection, 1, 'all', lambda i: doc['context_evaluations'][i])
+    scope = page['contexts'][0]['beam_variants'][0]
+    assert summary_line_conditions(scope)
+    assert all(isinstance(r, dict) for r in scope['criteria'])
+    assert doc == before
+    # Legacy v5 retains inline summaries; the viewer accepts it without migration.
+    legacy = deepcopy(doc)
+    legacy['context_evaluations'] = [resolve_context_summary(c, doc) for c in doc['context_evaluations']]
+    legacy['report_version'] = '5'
+    legacy['report_detail']['version'] = '1'
+    legacy['report_detail'].pop('summary_encoding')
+    legacy.pop('summary_criteria')
+    for name, document in [('current', doc), ('legacy', legacy)]:
+        case = tmp_path / name
+        case.mkdir()
+        (case / 'report.json').write_text(reporting.report_json_text(document))
+    client = create_app({'TESTING': True, 'REPORT_DIRECTORY': tmp_path}).test_client()
+    for index, name in enumerate(['current', 'legacy'], 1):
+        response = client.get(f'/reports/{index}?view=all')
+        assert response.status_code == 200
+        assert b'Repeated condition summaries are grouped' in response.data
+        assert b'<strong>Position:</strong>' in response.data
+        assert b'<strong>Angular resolution:</strong>' in response.data
+        assert client.get(f'/reports/{index}/download/report').data == (tmp_path / name / 'report.json').read_bytes()
+        assert client.get(f'/reports/{index}/download/inspection').status_code == 200

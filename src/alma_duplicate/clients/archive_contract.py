@@ -139,7 +139,7 @@ class ArchiveQueryColumnUnit:
 
 @dataclass(frozen=True, slots=True)
 class ArchiveQueryProvenance:
-    """Traceable evidence for one COUNT-and-retrieval run."""
+    """Traceable evidence for one retrieval run and its completeness policy."""
 
     query_run_id: str
     endpoint: str
@@ -167,6 +167,8 @@ class ArchiveQueryProvenance:
     warnings: tuple[str, ...] = ()
     # None for legacy/direct results whose projection was not recorded.
     projection: ArchiveProjectionEvidence | None = None
+    completeness_policy: str = "COUNT_FIRST"
+    count_attempted: bool = True
 
     def __post_init__(self) -> None:
         if not self.query_run_id.strip():
@@ -199,6 +201,8 @@ class TapResponse:
     field_metadata: tuple[TapFieldMetadata, ...]
     query_status_raw: object | None
     warnings: tuple[str, ...] = ()
+    # True only when an executor checked explicit success in the results resource.
+    explicit_success: bool = False
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "rows", snapshot_archive_rows(self.rows))

@@ -36,7 +36,8 @@ def wired(monkeypatch):
     state = {"source": source, "events": [], "mode": "success", "label": "7m"}
 
     class Tap:
-        def __init__(self, endpoint):
+        def __init__(self, endpoint, *, completeness_policy="COUNT_FIRST"):
+            assert completeness_policy in {"COUNT_FIRST", "STATUS_THEN_COUNT"}
             state["events"].append("TAP_INIT")
 
         def search(self, query):

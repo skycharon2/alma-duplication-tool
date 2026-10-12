@@ -1,0 +1,551 @@
+{
+  "evidence_version": 1,
+  "date": "2026-10-12",
+  "baseline": "a920761 plus uncommitted profiling, compact report, and TAP completeness changes",
+  "request": {
+    "request": {
+      "target_kind": "FIXED",
+      "geometry": "SINGLE_POINTING",
+      "target_name": "CASE1 continuum engineering check",
+      "position": {
+        "ra": "18:33:39.920",
+        "dec": "-21:03:39.900",
+        "ra_format": "HMS",
+        "dec_format": "DMS",
+        "frame": "ICRS"
+      },
+      "setup_id": "setup-1",
+      "setup_complete": false,
+      "intents": [
+        "CONTINUUM"
+      ],
+      "angular_resolution": {
+        "value": "0.23",
+        "unit": "arcsec"
+      },
+      "representative_frequency": {
+        "value": "290.420",
+        "unit": "GHz",
+        "kind": "SKY",
+        "frame": "UNKNOWN"
+      },
+      "spectral_windows": [],
+      "sensitivities": [
+        {
+          "sensitivity_id": "aggregate",
+          "purpose": "CONTINUUM",
+          "scope": "SETUP",
+          "setup_id": "setup-1",
+          "basis": "AGGREGATE",
+          "aggregate_path": "DIRECT_DECLARATION",
+          "rms": {
+            "value": "0.02",
+            "unit": "mJy/beam"
+          },
+          "window_ids": []
+        }
+      ],
+      "continuum_setup_declaration": "AT_LEAST_TWO_USABLE_WINDOWS_GT_1_8_GHZ"
+    },
+    "search_options": {
+      "sources": [
+        "ARCHIVE"
+      ],
+      "predicates": [],
+      "radius_mode": "AUTO"
+    }
+  },
+  "runs": {
+    "count_first": {
+      "started_at": "2026-10-12T08:17:08.723245+00:00",
+      "python": "3.12.11",
+      "platform": "macOS-26.4.1-x86_64-i386-64bit",
+      "wall_seconds": 110.79647524980828,
+      "execution": "COMPLETED",
+      "assessment_status": "COMPLETED",
+      "retained_contexts": 336,
+      "sources": {
+        "ARCHIVE": "COMPLETED",
+        "QUEUE": "NOT_SELECTED"
+      },
+      "branch_outcomes": {
+        "CONTINUUM:CRITERIA_NOT_MET": 320,
+        "CONTINUUM:CRITERIA_MET": 16
+      },
+      "input_sha256": {
+        "request": "d6220d3c5f4581ece1e110d62549dd4422eb26bb6413311515c5bf74f4247748"
+      },
+      "files": {
+        "request.json": 1193,
+        "report.json": 2136501,
+        "view.json": 85917,
+        "inspection.json": 2325
+      },
+      "stages": [
+        {
+          "name": "validation",
+          "wall_seconds": 0.0013697920367121696,
+          "thread_cpu_seconds": 3.289899999999943e-05,
+          "failed": false,
+          "stage_id": 0,
+          "parent_id": null,
+          "self_wall_seconds": 0.0013697920367121696,
+          "self_thread_cpu_seconds": 3.289899999999943e-05
+        },
+        {
+          "name": "source_initialization",
+          "wall_seconds": 5.583418533205986e-05,
+          "thread_cpu_seconds": 1.3499999999971868e-06,
+          "failed": false,
+          "stage_id": 1,
+          "parent_id": null,
+          "self_wall_seconds": 5.583418533205986e-05,
+          "self_thread_cpu_seconds": 1.3499999999971868e-06
+        },
+        {
+          "name": "tap_projection_metadata",
+          "wall_seconds": 0.5097466669976711,
+          "thread_cpu_seconds": 0.0018442159999999992,
+          "failed": false,
+          "stage_id": 3,
+          "parent_id": 2,
+          "self_wall_seconds": 0.5097466669976711,
+          "self_thread_cpu_seconds": 0.0018442159999999992
+        },
+        {
+          "name": "tap_count",
+          "wall_seconds": 47.0403171251528,
+          "thread_cpu_seconds": 0.0005533900000000008,
+          "failed": false,
+          "stage_id": 4,
+          "parent_id": 2,
+          "self_wall_seconds": 47.0403171251528,
+          "self_thread_cpu_seconds": 0.0005533900000000008
+        },
+        {
+          "name": "tap_retrieval",
+          "wall_seconds": 47.35785754118115,
+          "thread_cpu_seconds": 0.004865214999999996,
+          "failed": false,
+          "stage_id": 5,
+          "parent_id": 2,
+          "self_wall_seconds": 47.35785754118115,
+          "self_thread_cpu_seconds": 0.004865214999999996
+        },
+        {
+          "name": "tap_acquisition",
+          "wall_seconds": 94.91845520818606,
+          "thread_cpu_seconds": 0.007511878,
+          "failed": false,
+          "stage_id": 2,
+          "parent_id": null,
+          "self_wall_seconds": 0.010533874854445457,
+          "self_thread_cpu_seconds": 0.0002490570000000039
+        },
+        {
+          "name": "archive_binding",
+          "wall_seconds": 6.533320993185043e-05,
+          "thread_cpu_seconds": 1.5709999999988233e-06,
+          "failed": false,
+          "stage_id": 6,
+          "parent_id": null,
+          "self_wall_seconds": 6.533320993185043e-05,
+          "self_thread_cpu_seconds": 1.5709999999988233e-06
+        },
+        {
+          "name": "archive_contexts",
+          "wall_seconds": 0.45895212469622493,
+          "thread_cpu_seconds": 0.011003580999999998,
+          "failed": false,
+          "stage_id": 7,
+          "parent_id": null,
+          "self_wall_seconds": 0.45895212469622493,
+          "self_thread_cpu_seconds": 0.011003580999999998
+        },
+        {
+          "name": "archive_filter",
+          "wall_seconds": 0.017654708120971918,
+          "thread_cpu_seconds": 0.0004237379999999999,
+          "failed": false,
+          "stage_id": 8,
+          "parent_id": null,
+          "self_wall_seconds": 0.017654708120971918,
+          "self_thread_cpu_seconds": 0.0004237379999999999
+        },
+        {
+          "name": "aq_discovery",
+          "wall_seconds": 0.3023747908882797,
+          "thread_cpu_seconds": 0.0010218989999999997,
+          "failed": false,
+          "stage_id": 10,
+          "parent_id": 9,
+          "self_wall_seconds": 0.3023747908882797,
+          "self_thread_cpu_seconds": 0.0010218989999999997
+        },
+        {
+          "name": "aq_acquisition",
+          "wall_seconds": 15.102415124885738,
+          "thread_cpu_seconds": 0.05763707800000001,
+          "failed": false,
+          "stage_id": 9,
+          "parent_id": null,
+          "self_wall_seconds": 0.00976479472592473,
+          "self_thread_cpu_seconds": 0.00022319200000001788
+        },
+        {
+          "name": "scientific_evaluation",
+          "wall_seconds": 0.14920154213905334,
+          "thread_cpu_seconds": 0.003476787000000009,
+          "failed": false,
+          "stage_id": 79,
+          "parent_id": null,
+          "self_wall_seconds": 0.14920154213905334,
+          "self_thread_cpu_seconds": 0.003476787000000009
+        },
+        {
+          "name": "report_assembly",
+          "wall_seconds": 0.04202070785686374,
+          "thread_cpu_seconds": 0.001008340999999996,
+          "failed": false,
+          "stage_id": 80,
+          "parent_id": null,
+          "self_wall_seconds": 0.04202070785686374,
+          "self_thread_cpu_seconds": 0.001008340999999996
+        },
+        {
+          "name": "inspection",
+          "wall_seconds": 0.0019341660663485527,
+          "thread_cpu_seconds": 4.642200000000429e-05,
+          "failed": false,
+          "stage_id": 81,
+          "parent_id": null,
+          "self_wall_seconds": 0.0019341660663485527,
+          "self_thread_cpu_seconds": 4.642200000000429e-05
+        },
+        {
+          "name": "write_report",
+          "wall_seconds": 0.0928850406780839,
+          "thread_cpu_seconds": 0.0022108049999999962,
+          "failed": false,
+          "stage_id": 82,
+          "parent_id": null,
+          "self_wall_seconds": 0.0928850406780839,
+          "self_thread_cpu_seconds": 0.0022108049999999962
+        },
+        {
+          "name": "write_inspection",
+          "wall_seconds": 0.00036675017327070236,
+          "thread_cpu_seconds": 8.805000000000618e-06,
+          "failed": false,
+          "stage_id": 83,
+          "parent_id": null,
+          "self_wall_seconds": 0.00036675017327070236,
+          "self_thread_cpu_seconds": 8.805000000000618e-06
+        },
+        {
+          "name": "write_request",
+          "wall_seconds": 0.0005259159952402115,
+          "thread_cpu_seconds": 5.620000000011727e-06,
+          "failed": false,
+          "stage_id": 84,
+          "parent_id": null,
+          "self_wall_seconds": 0.0005259159952402115,
+          "self_thread_cpu_seconds": 5.620000000011727e-06
+        },
+        {
+          "name": "view_projection",
+          "wall_seconds": 0.0004597920924425125,
+          "thread_cpu_seconds": 1.1038000000004877e-05,
+          "failed": false,
+          "stage_id": 85,
+          "parent_id": null,
+          "self_wall_seconds": 0.0004597920924425125,
+          "self_thread_cpu_seconds": 1.1038000000004877e-05
+        },
+        {
+          "name": "write_view",
+          "wall_seconds": 0.003988665994256735,
+          "thread_cpu_seconds": 9.573599999999904e-05,
+          "failed": false,
+          "stage_id": 86,
+          "parent_id": null,
+          "self_wall_seconds": 0.003988665994256735,
+          "self_thread_cpu_seconds": 9.573599999999904e-05
+        },
+        {
+          "name": "first_page_projection",
+          "wall_seconds": 0.0015904582105576992,
+          "thread_cpu_seconds": 3.8173000000002455e-05,
+          "failed": false,
+          "stage_id": 87,
+          "parent_id": null,
+          "self_wall_seconds": 0.0015904582105576992,
+          "self_thread_cpu_seconds": 3.8173000000002455e-05
+        }
+      ],
+      "aq_member_calls": 68,
+      "completeness_provenance": {
+        "completeness_policy": "COUNT_FIRST",
+        "count_attempted": true,
+        "expected_count": 336,
+        "retrieved_count": 336,
+        "count_query_status_raw": "OK",
+        "retrieval_query_status_raw": "OK",
+        "query_hash": "91712f5f1759b8095c147e61e8a0d8493abbab70cb48fff5d477ad5a92b99ca4"
+      },
+      "saved_report_sha256": "cd60da8108201e75a4709cba16ecf7282c94d3976889f80f5fdfd551fa318ed6"
+    },
+    "status_then_count": {
+      "started_at": "2026-10-12T08:18:59.644101+00:00",
+      "python": "3.12.11",
+      "platform": "macOS-26.4.1-x86_64-i386-64bit",
+      "wall_seconds": 61.42884279182181,
+      "execution": "COMPLETED",
+      "assessment_status": "COMPLETED",
+      "retained_contexts": 336,
+      "sources": {
+        "ARCHIVE": "COMPLETED",
+        "QUEUE": "NOT_SELECTED"
+      },
+      "branch_outcomes": {
+        "CONTINUUM:CRITERIA_NOT_MET": 320,
+        "CONTINUUM:CRITERIA_MET": 16
+      },
+      "input_sha256": {
+        "request": "d6220d3c5f4581ece1e110d62549dd4422eb26bb6413311515c5bf74f4247748"
+      },
+      "files": {
+        "request.json": 1193,
+        "report.json": 2136232,
+        "view.json": 85642,
+        "inspection.json": 2325
+      },
+      "stages": [
+        {
+          "name": "validation",
+          "wall_seconds": 0.00019849976524710655,
+          "thread_cpu_seconds": 4.768000000002215e-06,
+          "failed": false,
+          "stage_id": 0,
+          "parent_id": null,
+          "self_wall_seconds": 0.00019849976524710655,
+          "self_thread_cpu_seconds": 4.768000000002215e-06
+        },
+        {
+          "name": "source_initialization",
+          "wall_seconds": 1.9791070371866226e-05,
+          "thread_cpu_seconds": 4.759999999992548e-07,
+          "failed": false,
+          "stage_id": 1,
+          "parent_id": null,
+          "self_wall_seconds": 1.9791070371866226e-05,
+          "self_thread_cpu_seconds": 4.759999999992548e-07
+        },
+        {
+          "name": "tap_projection_metadata",
+          "wall_seconds": 0.21196241723373532,
+          "thread_cpu_seconds": 0.000360166000000009,
+          "failed": false,
+          "stage_id": 3,
+          "parent_id": 2,
+          "self_wall_seconds": 0.21196241723373532,
+          "self_thread_cpu_seconds": 0.000360166000000009
+        },
+        {
+          "name": "tap_retrieval",
+          "wall_seconds": 47.2738271667622,
+          "thread_cpu_seconds": 0.003518233999999995,
+          "failed": false,
+          "stage_id": 4,
+          "parent_id": 2,
+          "self_wall_seconds": 47.2738271667622,
+          "self_thread_cpu_seconds": 0.003518233999999995
+        },
+        {
+          "name": "tap_acquisition",
+          "wall_seconds": 47.49593525007367,
+          "thread_cpu_seconds": 0.004121727999999991,
+          "failed": false,
+          "stage_id": 2,
+          "parent_id": null,
+          "self_wall_seconds": 0.01014566607773304,
+          "self_thread_cpu_seconds": 0.0002433279999999871
+        },
+        {
+          "name": "archive_binding",
+          "wall_seconds": 0.00012229103595018387,
+          "thread_cpu_seconds": 2.9369999999945273e-06,
+          "failed": false,
+          "stage_id": 5,
+          "parent_id": null,
+          "self_wall_seconds": 0.00012229103595018387,
+          "self_thread_cpu_seconds": 2.9369999999945273e-06
+        },
+        {
+          "name": "archive_contexts",
+          "wall_seconds": 0.47685037506744266,
+          "thread_cpu_seconds": 0.011422113999999997,
+          "failed": false,
+          "stage_id": 6,
+          "parent_id": null,
+          "self_wall_seconds": 0.47685037506744266,
+          "self_thread_cpu_seconds": 0.011422113999999997
+        },
+        {
+          "name": "archive_filter",
+          "wall_seconds": 0.01765404175966978,
+          "thread_cpu_seconds": 0.00042372200000001525,
+          "failed": false,
+          "stage_id": 7,
+          "parent_id": null,
+          "self_wall_seconds": 0.01765404175966978,
+          "self_thread_cpu_seconds": 0.00042372200000001525
+        },
+        {
+          "name": "aq_discovery",
+          "wall_seconds": 0.3186928746290505,
+          "thread_cpu_seconds": 0.0010632389999999936,
+          "failed": false,
+          "stage_id": 9,
+          "parent_id": 8,
+          "self_wall_seconds": 0.3186928746290505,
+          "self_thread_cpu_seconds": 0.0010632389999999936
+        },
+        {
+          "name": "aq_acquisition",
+          "wall_seconds": 13.094373291824013,
+          "thread_cpu_seconds": 0.01962261599999998,
+          "failed": false,
+          "stage_id": 8,
+          "parent_id": null,
+          "self_wall_seconds": 0.002933499403297901,
+          "self_thread_cpu_seconds": 6.659099999997697e-05
+        },
+        {
+          "name": "scientific_evaluation",
+          "wall_seconds": 0.16310966573655605,
+          "thread_cpu_seconds": 0.003708474999999989,
+          "failed": false,
+          "stage_id": 78,
+          "parent_id": null,
+          "self_wall_seconds": 0.16310966573655605,
+          "self_thread_cpu_seconds": 0.003708474999999989
+        },
+        {
+          "name": "report_assembly",
+          "wall_seconds": 0.046823457814753056,
+          "thread_cpu_seconds": 0.0011163969999999912,
+          "failed": false,
+          "stage_id": 79,
+          "parent_id": null,
+          "self_wall_seconds": 0.046823457814753056,
+          "self_thread_cpu_seconds": 0.0011163969999999912
+        },
+        {
+          "name": "inspection",
+          "wall_seconds": 0.0020876661874353886,
+          "thread_cpu_seconds": 4.941300000002591e-05,
+          "failed": false,
+          "stage_id": 80,
+          "parent_id": null,
+          "self_wall_seconds": 0.0020876661874353886,
+          "self_thread_cpu_seconds": 4.941300000002591e-05
+        },
+        {
+          "name": "write_report",
+          "wall_seconds": 0.11911920784041286,
+          "thread_cpu_seconds": 0.002737326999999984,
+          "failed": false,
+          "stage_id": 81,
+          "parent_id": null,
+          "self_wall_seconds": 0.11911920784041286,
+          "self_thread_cpu_seconds": 0.002737326999999984
+        },
+        {
+          "name": "write_inspection",
+          "wall_seconds": 0.0003820830024778843,
+          "thread_cpu_seconds": 9.173000000001208e-06,
+          "failed": false,
+          "stage_id": 82,
+          "parent_id": null,
+          "self_wall_seconds": 0.0003820830024778843,
+          "self_thread_cpu_seconds": 9.173000000001208e-06
+        },
+        {
+          "name": "write_request",
+          "wall_seconds": 0.0002277079038321972,
+          "thread_cpu_seconds": 5.470000000007413e-06,
+          "failed": false,
+          "stage_id": 83,
+          "parent_id": null,
+          "self_wall_seconds": 0.0002277079038321972,
+          "self_thread_cpu_seconds": 5.470000000007413e-06
+        },
+        {
+          "name": "view_projection",
+          "wall_seconds": 0.0005413750186562538,
+          "thread_cpu_seconds": 1.2996999999986825e-05,
+          "failed": false,
+          "stage_id": 84,
+          "parent_id": null,
+          "self_wall_seconds": 0.0005413750186562538,
+          "self_thread_cpu_seconds": 1.2996999999986825e-05
+        },
+        {
+          "name": "write_view",
+          "wall_seconds": 0.004415666684508324,
+          "thread_cpu_seconds": 0.00010598200000000446,
+          "failed": false,
+          "stage_id": 85,
+          "parent_id": null,
+          "self_wall_seconds": 0.004415666684508324,
+          "self_thread_cpu_seconds": 0.00010598200000000446
+        },
+        {
+          "name": "first_page_projection",
+          "wall_seconds": 0.0018823747523128986,
+          "thread_cpu_seconds": 4.4600000000005746e-05,
+          "failed": false,
+          "stage_id": 86,
+          "parent_id": null,
+          "self_wall_seconds": 0.0018823747523128986,
+          "self_thread_cpu_seconds": 4.4600000000005746e-05
+        }
+      ],
+      "aq_member_calls": 68,
+      "completeness_provenance": {
+        "completeness_policy": "STATUS_THEN_COUNT",
+        "count_attempted": false,
+        "expected_count": null,
+        "retrieved_count": 336,
+        "count_query_status_raw": null,
+        "retrieval_query_status_raw": "OK",
+        "query_hash": "5d187028dc262d006689aaf40504684b7242c6947e507c268216fa5044df4850"
+      },
+      "saved_report_sha256": "af1251b76cad8029970723125c7df09b0c32e35483454b0d833b8284b8387b5a"
+    }
+  },
+  "parity": {
+    "raw_row_multiset": true,
+    "candidate_decisions": false,
+    "branch_outcomes": true,
+    "candidate_decisions_normalized": true,
+    "normalization": [
+      "replace each report query_run_id with a common token",
+      "omit AQ retrieved_at timestamps and response_sha256 transport hashes"
+    ],
+    "matched_member_count": 4
+  },
+  "validation": {
+    "pytest_passed": 1932,
+    "pytest_skipped": 12,
+    "ruff_F": "PASS",
+    "diff_check": "PASS"
+  },
+  "limits": [
+    "One sequential pair, not a repeated benchmark or broad scientific acceptance.",
+    "CLI profiler invokes browser backend/store; excludes HTTP, Jinja rendering and browser painting.",
+    "Local regression tests ran during portions of the investigation; server load and caches were uncontrolled.",
+    "Protocol-based completeness relies on truthful server QUERY_STATUS; COUNT_FIRST remains available."
+  ]
+}

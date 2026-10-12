@@ -1,0 +1,2339 @@
+{
+  "date": "2026-10-12",
+  "baseline": "a920761",
+  "working_tree": "Instrumentation and report-size analyzer in this change; no scientific or storage changes.",
+  "scope": "CLI using the browser assessment and temporary storage; not HTTP or browser rendering.",
+  "limitations": [
+    "One run per input; not a speedup benchmark.",
+    "Local test processes ran during parts of the Queue diagnostic session; resource contention was not controlled.",
+    "Size analysis is additional work after the measured workflow.",
+    "Nested timing stages and nested report fields must not be summed together."
+  ],
+  "cases": {
+    "queue-line": {
+      "schema_version": 2,
+      "started_at": "2026-10-12T07:37:03.009045+00:00",
+      "python": "3.12.11",
+      "platform": "macOS-26.4.1-x86_64-i386-64bit",
+      "storage_budget_bytes": 1073741824,
+      "execution": "COMPLETED",
+      "files": {
+        "request.json": 1309,
+        "report.json": 431316785,
+        "view.json": 229204,
+        "inspection.json": 15918014
+      },
+      "wall_seconds": 51.87568875029683,
+      "thread_cpu_seconds": 1.224109117,
+      "stages": [
+        {
+          "name": "validation",
+          "wall_seconds": 0.0009714579209685326,
+          "thread_cpu_seconds": 2.3336999999998276e-05,
+          "failed": false,
+          "stage_id": 0,
+          "parent_id": null,
+          "self_wall_seconds": 0.0009714579209685326,
+          "self_thread_cpu_seconds": 2.3336999999998276e-05
+        },
+        {
+          "name": "source_initialization",
+          "wall_seconds": 3.5832636058330536e-06,
+          "thread_cpu_seconds": 9.399999999909481e-08,
+          "failed": false,
+          "stage_id": 1,
+          "parent_id": null,
+          "self_wall_seconds": 3.5832636058330536e-06,
+          "self_thread_cpu_seconds": 9.399999999909481e-08
+        },
+        {
+          "name": "csv_load",
+          "wall_seconds": 0.6724595408886671,
+          "thread_cpu_seconds": 0.016108232999999996,
+          "failed": false,
+          "stage_id": 2,
+          "parent_id": null,
+          "self_wall_seconds": 0.6724595408886671,
+          "self_thread_cpu_seconds": 0.016108232999999996
+        },
+        {
+          "name": "queue_contexts",
+          "wall_seconds": 0.2691990830935538,
+          "thread_cpu_seconds": 0.006460138000000004,
+          "failed": false,
+          "stage_id": 3,
+          "parent_id": null,
+          "self_wall_seconds": 0.2691990830935538,
+          "self_thread_cpu_seconds": 0.006460138000000004
+        },
+        {
+          "name": "queue_filter",
+          "wall_seconds": 1.8212028751149774,
+          "thread_cpu_seconds": 0.043705010999999995,
+          "failed": false,
+          "stage_id": 4,
+          "parent_id": null,
+          "self_wall_seconds": 1.8212028751149774,
+          "self_thread_cpu_seconds": 0.043705010999999995
+        },
+        {
+          "name": "aq_acquisition",
+          "wall_seconds": 4.791654646396637e-06,
+          "thread_cpu_seconds": 1.0599999999971743e-07,
+          "failed": false,
+          "stage_id": 5,
+          "parent_id": null,
+          "self_wall_seconds": 4.791654646396637e-06,
+          "self_thread_cpu_seconds": 1.0599999999971743e-07
+        },
+        {
+          "name": "scientific_evaluation",
+          "wall_seconds": 22.978582083247602,
+          "thread_cpu_seconds": 0.5500985540000001,
+          "failed": false,
+          "stage_id": 6,
+          "parent_id": null,
+          "self_wall_seconds": 22.978582083247602,
+          "self_thread_cpu_seconds": 0.5500985540000001
+        },
+        {
+          "name": "report_assembly",
+          "wall_seconds": 8.27388370782137,
+          "thread_cpu_seconds": 0.18940061399999997,
+          "failed": false,
+          "stage_id": 7,
+          "parent_id": null,
+          "self_wall_seconds": 8.27388370782137,
+          "self_thread_cpu_seconds": 0.18940061399999997
+        },
+        {
+          "name": "inspection",
+          "wall_seconds": 0.15162329096347094,
+          "thread_cpu_seconds": 0.0036375760000000312,
+          "failed": false,
+          "stage_id": 8,
+          "parent_id": null,
+          "self_wall_seconds": 0.15162329096347094,
+          "self_thread_cpu_seconds": 0.0036375760000000312
+        },
+        {
+          "name": "write_report",
+          "wall_seconds": 16.54485462512821,
+          "thread_cpu_seconds": 0.3873068570000001,
+          "failed": false,
+          "stage_id": 9,
+          "parent_id": null,
+          "self_wall_seconds": 16.54485462512821,
+          "self_thread_cpu_seconds": 0.3873068570000001
+        },
+        {
+          "name": "write_inspection",
+          "wall_seconds": 0.585757290944457,
+          "thread_cpu_seconds": 0.013697089000000107,
+          "failed": false,
+          "stage_id": 10,
+          "parent_id": null,
+          "self_wall_seconds": 0.585757290944457,
+          "self_thread_cpu_seconds": 0.013697089000000107
+        },
+        {
+          "name": "write_request",
+          "wall_seconds": 0.0007852502167224884,
+          "thread_cpu_seconds": 1.319799999999205e-05,
+          "failed": false,
+          "stage_id": 11,
+          "parent_id": null,
+          "self_wall_seconds": 0.0007852502167224884,
+          "self_thread_cpu_seconds": 1.319799999999205e-05
+        },
+        {
+          "name": "view_projection",
+          "wall_seconds": 0.41765133291482925,
+          "thread_cpu_seconds": 0.00986774300000004,
+          "failed": false,
+          "stage_id": 12,
+          "parent_id": null,
+          "self_wall_seconds": 0.41765133291482925,
+          "self_thread_cpu_seconds": 0.00986774300000004
+        },
+        {
+          "name": "write_view",
+          "wall_seconds": 0.01441608415916562,
+          "thread_cpu_seconds": 0.0003460060000000098,
+          "failed": false,
+          "stage_id": 13,
+          "parent_id": null,
+          "self_wall_seconds": 0.01441608415916562,
+          "self_thread_cpu_seconds": 0.0003460060000000098
+        },
+        {
+          "name": "first_page_projection",
+          "wall_seconds": 0.0030430839397013187,
+          "thread_cpu_seconds": 7.303600000008181e-05,
+          "failed": false,
+          "stage_id": 14,
+          "parent_id": null,
+          "self_wall_seconds": 0.0030430839397013187,
+          "self_thread_cpu_seconds": 7.303600000008181e-05
+        }
+      ],
+      "unattributed_wall_seconds": 0.1412506690248847,
+      "assessment_status": "COMPLETED",
+      "retained_contexts": 3200,
+      "sources": {
+        "ARCHIVE": "NOT_SELECTED",
+        "QUEUE": "COMPLETED"
+      },
+      "source_diagnostics": {
+        "ARCHIVE": {
+          "reasons": [],
+          "upstream_status": null,
+          "error_kind": null,
+          "missing_columns": [],
+          "aq_status": null,
+          "aq_reason": null,
+          "aq_error": null
+        },
+        "QUEUE": {
+          "reasons": [
+            "FIXED_SINGLE_POINTING_ONLY",
+            "ARCHIVE_BOUND_COVERS_FREQUENCY_GE_35_GHZ_AND_DIAMETER_GE_7_M",
+            "ARCHIVE_UNKNOWN_OR_LOWER_FREQUENCY_OUTSIDE_CONE_NOT_COVERED",
+            "ARCHIVE_MISSING_CENTERS_AND_MOSAIC_EXTENTS_NOT_COVERED",
+            "QUEUE_SCOPE_IS_SUPPLIED_FILE",
+            "POSITION_IS_EVALUATED_SEPARATELY_WITH_CANDIDATE_EVIDENCE",
+            "NO_SEARCH_WIDE_ABSENCE_VERDICT"
+          ],
+          "upstream_status": "COMPLETE_WITH_WARNINGS",
+          "error_kind": null,
+          "missing_columns": [],
+          "aq_status": null,
+          "aq_reason": null,
+          "aq_error": null
+        }
+      },
+      "branch_outcomes": {
+        "LINE:INDETERMINATE": 3081,
+        "LINE:CRITERIA_NOT_MET": 118,
+        "LINE:CRITERIA_MET": 1
+      },
+      "report_size": {
+        "schema_version": 1,
+        "format": "UTF-8; ensure_ascii=False; indent=2; trailing newline",
+        "formatted_bytes": 431316785,
+        "compact_bytes": 247813322,
+        "root_value_bytes": {
+          "report_version": 3,
+          "report_kind": 22,
+          "search_execution": 10,
+          "generated_at": 34,
+          "input_sha256": 4,
+          "evaluation_version": 3,
+          "evaluation_configuration": 116,
+          "execution": 10,
+          "assessment": 16,
+          "search_assessment": 15,
+          "search_service_version": 3,
+          "search_started_at": 34,
+          "search_finished_at": 34,
+          "request": 6566,
+          "plan": 1586,
+          "sources": 5463897,
+          "evaluation_scope": 325,
+          "request_criteria": 2,
+          "report_detail": 298,
+          "context_evaluations": 425843362
+        },
+        "root_structure_bytes": 445,
+        "largest_field_groups": [
+          {
+            "path": "/context_evaluations",
+            "occurrences": 1,
+            "bytes": 425843362
+          },
+          {
+            "path": "/context_evaluations/*",
+            "occurrences": 3200,
+            "bytes": 425824158
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants",
+            "occurrences": 3089,
+            "bytes": 415635842
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*",
+            "occurrences": 6178,
+            "bytes": 415549350
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/line_pairs",
+            "occurrences": 6178,
+            "bytes": 380586258
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/line_pairs/*",
+            "occurrences": 31514,
+            "bytes": 380070926
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/criteria",
+            "occurrences": 31514,
+            "bytes": 333108434
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/criteria/*",
+            "occurrences": 189084,
+            "bytes": 329200698
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/attempt",
+            "occurrences": 31514,
+            "bytes": 28687866
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/criteria",
+            "occurrences": 6178,
+            "bytes": 27342238
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/criteria/*",
+            "occurrences": 12356,
+            "bytes": 27095118
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/attempt/reference",
+            "occurrences": 31514,
+            "bytes": 21068210
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/criteria/*/issues",
+            "occurrences": 12356,
+            "bytes": 6486412
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/criteria/*/issues/*",
+            "occurrences": 24616,
+            "bytes": 5846300
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/branches",
+            "occurrences": 6178,
+            "bytes": 5598134
+          },
+          {
+            "path": "/sources",
+            "occurrences": 1,
+            "bytes": 5463897
+          },
+          {
+            "path": "/sources/QUEUE",
+            "occurrences": 1,
+            "bytes": 5463297
+          },
+          {
+            "path": "/sources/QUEUE/rows",
+            "occurrences": 1,
+            "bytes": 5448137
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/branches/*",
+            "occurrences": 6178,
+            "bytes": 5437506
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/reasons",
+            "occurrences": 31514,
+            "bytes": 5416812
+          },
+          {
+            "path": "/sources/QUEUE/rows/*",
+            "occurrences": 3200,
+            "bytes": 5416129
+          },
+          {
+            "path": "/context_evaluations/*/line_pairs",
+            "occurrences": 3200,
+            "bytes": 4605256
+          },
+          {
+            "path": "/context_evaluations/*/line_pairs/*",
+            "occurrences": 459,
+            "bytes": 4593606
+          },
+          {
+            "path": "/context_evaluations/*/line_pairs/*/criteria",
+            "occurrences": 459,
+            "bytes": 4008705
+          },
+          {
+            "path": "/context_evaluations/*/line_pairs/*/criteria/*",
+            "occurrences": 2754,
+            "bytes": 3964641
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/reasons/*",
+            "occurrences": 97436,
+            "bytes": 3158964
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/criteria/*/reasons",
+            "occurrences": 12356,
+            "bytes": 3136742
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/criteria/*/decision_refs",
+            "occurrences": 12356,
+            "bytes": 2681252
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/decision_refs",
+            "occurrences": 31514,
+            "bytes": 2615662
+          },
+          {
+            "path": "/sources/QUEUE/rows/*/spatial_evidence",
+            "occurrences": 3200,
+            "bytes": 2586161
+          }
+        ],
+        "repeated_containers": [
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168962,
+            "compact_bytes_per_copy": 48078,
+            "example_paths": [
+              "/context_evaluations/2274/beam_variants/0/line_pairs",
+              "/context_evaluations/2274/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48078
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168962,
+            "compact_bytes_per_copy": 48078,
+            "example_paths": [
+              "/context_evaluations/2275/beam_variants/0/line_pairs",
+              "/context_evaluations/2275/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48078
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2247/beam_variants/0/line_pairs",
+              "/context_evaluations/2247/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2248/beam_variants/0/line_pairs",
+              "/context_evaluations/2248/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2249/beam_variants/0/line_pairs",
+              "/context_evaluations/2249/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2250/beam_variants/0/line_pairs",
+              "/context_evaluations/2250/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2251/beam_variants/0/line_pairs",
+              "/context_evaluations/2251/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2252/beam_variants/0/line_pairs",
+              "/context_evaluations/2252/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2253/beam_variants/0/line_pairs",
+              "/context_evaluations/2253/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2254/beam_variants/0/line_pairs",
+              "/context_evaluations/2254/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2264/beam_variants/0/line_pairs",
+              "/context_evaluations/2264/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2265/beam_variants/0/line_pairs",
+              "/context_evaluations/2265/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2267/beam_variants/0/line_pairs",
+              "/context_evaluations/2267/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2268/beam_variants/0/line_pairs",
+              "/context_evaluations/2268/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2269/beam_variants/0/line_pairs",
+              "/context_evaluations/2269/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2270/beam_variants/0/line_pairs",
+              "/context_evaluations/2270/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2271/beam_variants/0/line_pairs",
+              "/context_evaluations/2271/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2272/beam_variants/0/line_pairs",
+              "/context_evaluations/2272/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2273/beam_variants/0/line_pairs",
+              "/context_evaluations/2273/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2276/beam_variants/0/line_pairs",
+              "/context_evaluations/2276/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2278/beam_variants/0/line_pairs",
+              "/context_evaluations/2278/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2279/beam_variants/0/line_pairs",
+              "/context_evaluations/2279/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2280/beam_variants/0/line_pairs",
+              "/context_evaluations/2280/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2281/beam_variants/0/line_pairs",
+              "/context_evaluations/2281/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2282/beam_variants/0/line_pairs",
+              "/context_evaluations/2282/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2283/beam_variants/0/line_pairs",
+              "/context_evaluations/2283/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168948,
+            "compact_bytes_per_copy": 48071,
+            "example_paths": [
+              "/context_evaluations/2284/beam_variants/0/line_pairs",
+              "/context_evaluations/2284/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48071
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168934,
+            "compact_bytes_per_copy": 48064,
+            "example_paths": [
+              "/context_evaluations/2256/beam_variants/0/line_pairs",
+              "/context_evaluations/2256/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48064
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168934,
+            "compact_bytes_per_copy": 48064,
+            "example_paths": [
+              "/context_evaluations/2257/beam_variants/0/line_pairs",
+              "/context_evaluations/2257/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48064
+          },
+          {
+            "occurrences": 2,
+            "total_formatted_bytes": 168934,
+            "compact_bytes_per_copy": 48064,
+            "example_paths": [
+              "/context_evaluations/2258/beam_variants/0/line_pairs",
+              "/context_evaluations/2258/beam_variants/1/line_pairs"
+            ],
+            "repeated_compact_bytes": 48064
+          }
+        ],
+        "repetition_min_compact_bytes": 4096,
+        "note": "Nested field groups and repeated containers overlap; do not sum them. Repeated compact bytes measure identical ordered content, not achievable storage savings. References and schema changes would have their own costs. No raw field values are included."
+      },
+      "size_analysis_wall_seconds": 32.43060158286244,
+      "input_sha256": {
+        "request": "fedaff4c06f9059a4decaef2bf1e2fbaad25183afca9e51a57a7f9bfab73a867",
+        "queue_csv": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5"
+      },
+      "report_detail": "matches",
+      "source_modes": {
+        "archive": null,
+        "live_aq": false,
+        "queue_csv": true
+      }
+    },
+    "archive-continuum": {
+      "schema_version": 2,
+      "started_at": "2026-10-12T07:39:17.620076+00:00",
+      "python": "3.12.11",
+      "platform": "macOS-26.4.1-x86_64-i386-64bit",
+      "storage_budget_bytes": 1073741824,
+      "execution": "COMPLETED",
+      "files": {
+        "request.json": 1193,
+        "report.json": 3770977,
+        "view.json": 80113,
+        "inspection.json": 2325
+      },
+      "wall_seconds": 109.83101300010458,
+      "thread_cpu_seconds": 0.074748054,
+      "stages": [
+        {
+          "name": "validation",
+          "wall_seconds": 0.0009306669235229492,
+          "thread_cpu_seconds": 2.235499999999821e-05,
+          "failed": false,
+          "stage_id": 0,
+          "parent_id": null,
+          "self_wall_seconds": 0.0009306669235229492,
+          "self_thread_cpu_seconds": 2.235499999999821e-05
+        },
+        {
+          "name": "source_initialization",
+          "wall_seconds": 5.0208065658807755e-05,
+          "thread_cpu_seconds": 1.2099999999980182e-06,
+          "failed": false,
+          "stage_id": 1,
+          "parent_id": null,
+          "self_wall_seconds": 5.0208065658807755e-05,
+          "self_thread_cpu_seconds": 1.2099999999980182e-06
+        },
+        {
+          "name": "tap_projection_metadata",
+          "wall_seconds": 0.3856164999306202,
+          "thread_cpu_seconds": 0.0015053759999999992,
+          "failed": false,
+          "stage_id": 3,
+          "parent_id": 2,
+          "self_wall_seconds": 0.3856164999306202,
+          "self_thread_cpu_seconds": 0.0015053759999999992
+        },
+        {
+          "name": "tap_count",
+          "wall_seconds": 46.88287045806646,
+          "thread_cpu_seconds": 0.000618498999999998,
+          "failed": false,
+          "stage_id": 4,
+          "parent_id": 2,
+          "self_wall_seconds": 46.88287045806646,
+          "self_thread_cpu_seconds": 0.000618498999999998
+        },
+        {
+          "name": "tap_retrieval",
+          "wall_seconds": 47.330032708123326,
+          "thread_cpu_seconds": 0.005244301,
+          "failed": false,
+          "stage_id": 5,
+          "parent_id": 2,
+          "self_wall_seconds": 47.330032708123326,
+          "self_thread_cpu_seconds": 0.005244301
+        },
+        {
+          "name": "tap_acquisition",
+          "wall_seconds": 94.61174475029111,
+          "thread_cpu_seconds": 0.007628069000000001,
+          "failed": false,
+          "stage_id": 2,
+          "parent_id": null,
+          "self_wall_seconds": 0.01322508417069912,
+          "self_thread_cpu_seconds": 0.0002598930000000041
+        },
+        {
+          "name": "archive_binding",
+          "wall_seconds": 5.3874682635068893e-05,
+          "thread_cpu_seconds": 1.293000000002903e-06,
+          "failed": false,
+          "stage_id": 6,
+          "parent_id": null,
+          "self_wall_seconds": 5.3874682635068893e-05,
+          "self_thread_cpu_seconds": 1.293000000002903e-06
+        },
+        {
+          "name": "archive_contexts",
+          "wall_seconds": 0.45649454090744257,
+          "thread_cpu_seconds": 0.010923430000000005,
+          "failed": false,
+          "stage_id": 7,
+          "parent_id": null,
+          "self_wall_seconds": 0.45649454090744257,
+          "self_thread_cpu_seconds": 0.010923430000000005
+        },
+        {
+          "name": "archive_filter",
+          "wall_seconds": 0.017523833084851503,
+          "thread_cpu_seconds": 0.0004205170000000022,
+          "failed": false,
+          "stage_id": 8,
+          "parent_id": null,
+          "self_wall_seconds": 0.017523833084851503,
+          "self_thread_cpu_seconds": 0.0004205170000000022
+        },
+        {
+          "name": "aq_discovery",
+          "wall_seconds": 0.1847597500309348,
+          "thread_cpu_seconds": 0.0005614389999999969,
+          "failed": false,
+          "stage_id": 10,
+          "parent_id": 9,
+          "self_wall_seconds": 0.1847597500309348,
+          "self_thread_cpu_seconds": 0.0005614389999999969
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.28643149975687265,
+          "thread_cpu_seconds": 0.0008092570000000007,
+          "failed": false,
+          "stage_id": 11,
+          "parent_id": 9,
+          "self_wall_seconds": 0.28643149975687265,
+          "self_thread_cpu_seconds": 0.0008092570000000007
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.18096483265981078,
+          "thread_cpu_seconds": 0.000861762000000002,
+          "failed": false,
+          "stage_id": 12,
+          "parent_id": 9,
+          "self_wall_seconds": 0.18096483265981078,
+          "self_thread_cpu_seconds": 0.000861762000000002
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.25448545766994357,
+          "thread_cpu_seconds": 0.0007788749999999983,
+          "failed": false,
+          "stage_id": 13,
+          "parent_id": 9,
+          "self_wall_seconds": 0.25448545766994357,
+          "self_thread_cpu_seconds": 0.0007788749999999983
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.17445308296009898,
+          "thread_cpu_seconds": 0.0006701839999999973,
+          "failed": false,
+          "stage_id": 14,
+          "parent_id": 9,
+          "self_wall_seconds": 0.17445308296009898,
+          "self_thread_cpu_seconds": 0.0006701839999999973
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.17812199983745813,
+          "thread_cpu_seconds": 0.000717335999999999,
+          "failed": false,
+          "stage_id": 15,
+          "parent_id": 9,
+          "self_wall_seconds": 0.17812199983745813,
+          "self_thread_cpu_seconds": 0.000717335999999999
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.22762041632086039,
+          "thread_cpu_seconds": 0.0005124810000000021,
+          "failed": false,
+          "stage_id": 16,
+          "parent_id": 9,
+          "self_wall_seconds": 0.22762041632086039,
+          "self_thread_cpu_seconds": 0.0005124810000000021
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.17515495792031288,
+          "thread_cpu_seconds": 0.0008064819999999973,
+          "failed": false,
+          "stage_id": 17,
+          "parent_id": 9,
+          "self_wall_seconds": 0.17515495792031288,
+          "self_thread_cpu_seconds": 0.0008064819999999973
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.18054200010374188,
+          "thread_cpu_seconds": 0.0006191409999999967,
+          "failed": false,
+          "stage_id": 18,
+          "parent_id": 9,
+          "self_wall_seconds": 0.18054200010374188,
+          "self_thread_cpu_seconds": 0.0006191409999999967
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.22829362470656633,
+          "thread_cpu_seconds": 0.0006335349999999976,
+          "failed": false,
+          "stage_id": 19,
+          "parent_id": 9,
+          "self_wall_seconds": 0.22829362470656633,
+          "self_thread_cpu_seconds": 0.0006335349999999976
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.1582309170626104,
+          "thread_cpu_seconds": 0.00039951100000000517,
+          "failed": false,
+          "stage_id": 20,
+          "parent_id": 9,
+          "self_wall_seconds": 0.1582309170626104,
+          "self_thread_cpu_seconds": 0.00039951100000000517
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.2532707923091948,
+          "thread_cpu_seconds": 0.0006988870000000022,
+          "failed": false,
+          "stage_id": 21,
+          "parent_id": 9,
+          "self_wall_seconds": 0.2532707923091948,
+          "self_thread_cpu_seconds": 0.0006988870000000022
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.18041987484320998,
+          "thread_cpu_seconds": 0.0007181859999999957,
+          "failed": false,
+          "stage_id": 22,
+          "parent_id": 9,
+          "self_wall_seconds": 0.18041987484320998,
+          "self_thread_cpu_seconds": 0.0007181859999999957
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.15930945798754692,
+          "thread_cpu_seconds": 0.000623905000000001,
+          "failed": false,
+          "stage_id": 23,
+          "parent_id": 9,
+          "self_wall_seconds": 0.15930945798754692,
+          "self_thread_cpu_seconds": 0.000623905000000001
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.24414829164743423,
+          "thread_cpu_seconds": 0.0007450059999999994,
+          "failed": false,
+          "stage_id": 24,
+          "parent_id": 9,
+          "self_wall_seconds": 0.24414829164743423,
+          "self_thread_cpu_seconds": 0.0007450059999999994
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.26214279187843204,
+          "thread_cpu_seconds": 0.000465989,
+          "failed": false,
+          "stage_id": 25,
+          "parent_id": 9,
+          "self_wall_seconds": 0.26214279187843204,
+          "self_thread_cpu_seconds": 0.000465989
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.24428579211235046,
+          "thread_cpu_seconds": 0.0003334860000000009,
+          "failed": false,
+          "stage_id": 26,
+          "parent_id": 9,
+          "self_wall_seconds": 0.24428579211235046,
+          "self_thread_cpu_seconds": 0.0003334860000000009
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.1603432078845799,
+          "thread_cpu_seconds": 0.00037141100000000205,
+          "failed": false,
+          "stage_id": 27,
+          "parent_id": 9,
+          "self_wall_seconds": 0.1603432078845799,
+          "self_thread_cpu_seconds": 0.00037141100000000205
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.1581692500039935,
+          "thread_cpu_seconds": 0.0003479580000000024,
+          "failed": false,
+          "stage_id": 28,
+          "parent_id": 9,
+          "self_wall_seconds": 0.1581692500039935,
+          "self_thread_cpu_seconds": 0.0003479580000000024
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.22406883304938674,
+          "thread_cpu_seconds": 0.0005312690000000009,
+          "failed": false,
+          "stage_id": 29,
+          "parent_id": 9,
+          "self_wall_seconds": 0.22406883304938674,
+          "self_thread_cpu_seconds": 0.0005312690000000009
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.18284945795312524,
+          "thread_cpu_seconds": 0.0007596590000000028,
+          "failed": false,
+          "stage_id": 30,
+          "parent_id": 9,
+          "self_wall_seconds": 0.18284945795312524,
+          "self_thread_cpu_seconds": 0.0007596590000000028
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.16100774984806776,
+          "thread_cpu_seconds": 0.0005885929999999984,
+          "failed": false,
+          "stage_id": 31,
+          "parent_id": 9,
+          "self_wall_seconds": 0.16100774984806776,
+          "self_thread_cpu_seconds": 0.0005885929999999984
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.2350312089547515,
+          "thread_cpu_seconds": 0.0006688720000000009,
+          "failed": false,
+          "stage_id": 32,
+          "parent_id": 9,
+          "self_wall_seconds": 0.2350312089547515,
+          "self_thread_cpu_seconds": 0.0006688720000000009
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.17563370894640684,
+          "thread_cpu_seconds": 0.0005832710000000033,
+          "failed": false,
+          "stage_id": 33,
+          "parent_id": 9,
+          "self_wall_seconds": 0.17563370894640684,
+          "self_thread_cpu_seconds": 0.0005832710000000033
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.23453858261927962,
+          "thread_cpu_seconds": 0.0008348759999999983,
+          "failed": false,
+          "stage_id": 34,
+          "parent_id": 9,
+          "self_wall_seconds": 0.23453858261927962,
+          "self_thread_cpu_seconds": 0.0008348759999999983
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.16134945815429091,
+          "thread_cpu_seconds": 0.000462422000000004,
+          "failed": false,
+          "stage_id": 35,
+          "parent_id": 9,
+          "self_wall_seconds": 0.16134945815429091,
+          "self_thread_cpu_seconds": 0.000462422000000004
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.15887799998745322,
+          "thread_cpu_seconds": 0.0003975289999999937,
+          "failed": false,
+          "stage_id": 36,
+          "parent_id": 9,
+          "self_wall_seconds": 0.15887799998745322,
+          "self_thread_cpu_seconds": 0.0003975289999999937
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.26996883330866694,
+          "thread_cpu_seconds": 0.0005744970000000002,
+          "failed": false,
+          "stage_id": 37,
+          "parent_id": 9,
+          "self_wall_seconds": 0.26996883330866694,
+          "self_thread_cpu_seconds": 0.0005744970000000002
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.1956273326650262,
+          "thread_cpu_seconds": 0.0004909380000000033,
+          "failed": false,
+          "stage_id": 38,
+          "parent_id": 9,
+          "self_wall_seconds": 0.1956273326650262,
+          "self_thread_cpu_seconds": 0.0004909380000000033
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.26397995790466666,
+          "thread_cpu_seconds": 0.0007497870000000018,
+          "failed": false,
+          "stage_id": 39,
+          "parent_id": 9,
+          "self_wall_seconds": 0.26397995790466666,
+          "self_thread_cpu_seconds": 0.0007497870000000018
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.17853941675275564,
+          "thread_cpu_seconds": 0.0008054519999999982,
+          "failed": false,
+          "stage_id": 40,
+          "parent_id": 9,
+          "self_wall_seconds": 0.17853941675275564,
+          "self_thread_cpu_seconds": 0.0008054519999999982
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.17746437527239323,
+          "thread_cpu_seconds": 0.0006037769999999998,
+          "failed": false,
+          "stage_id": 41,
+          "parent_id": 9,
+          "self_wall_seconds": 0.17746437527239323,
+          "self_thread_cpu_seconds": 0.0006037769999999998
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.273885500151664,
+          "thread_cpu_seconds": 0.0008353219999999995,
+          "failed": false,
+          "stage_id": 42,
+          "parent_id": 9,
+          "self_wall_seconds": 0.273885500151664,
+          "self_thread_cpu_seconds": 0.0008353219999999995
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.1791269169189036,
+          "thread_cpu_seconds": 0.000834399999999999,
+          "failed": false,
+          "stage_id": 43,
+          "parent_id": 9,
+          "self_wall_seconds": 0.1791269169189036,
+          "self_thread_cpu_seconds": 0.000834399999999999
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.2388547919690609,
+          "thread_cpu_seconds": 0.0008345370000000032,
+          "failed": false,
+          "stage_id": 44,
+          "parent_id": 9,
+          "self_wall_seconds": 0.2388547919690609,
+          "self_thread_cpu_seconds": 0.0008345370000000032
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.19577291700989008,
+          "thread_cpu_seconds": 0.0007636650000000036,
+          "failed": false,
+          "stage_id": 45,
+          "parent_id": 9,
+          "self_wall_seconds": 0.19577291700989008,
+          "self_thread_cpu_seconds": 0.0007636650000000036
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.17764837481081486,
+          "thread_cpu_seconds": 0.0006315249999999939,
+          "failed": false,
+          "stage_id": 46,
+          "parent_id": 9,
+          "self_wall_seconds": 0.17764837481081486,
+          "self_thread_cpu_seconds": 0.0006315249999999939
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.26120441732928157,
+          "thread_cpu_seconds": 0.0007177210000000045,
+          "failed": false,
+          "stage_id": 47,
+          "parent_id": 9,
+          "self_wall_seconds": 0.26120441732928157,
+          "self_thread_cpu_seconds": 0.0007177210000000045
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.18234287481755018,
+          "thread_cpu_seconds": 0.0007532080000000052,
+          "failed": false,
+          "stage_id": 48,
+          "parent_id": 9,
+          "self_wall_seconds": 0.18234287481755018,
+          "self_thread_cpu_seconds": 0.0007532080000000052
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.283481374848634,
+          "thread_cpu_seconds": 0.0006772159999999944,
+          "failed": false,
+          "stage_id": 49,
+          "parent_id": 9,
+          "self_wall_seconds": 0.283481374848634,
+          "self_thread_cpu_seconds": 0.0006772159999999944
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.17783399997279048,
+          "thread_cpu_seconds": 0.0006894830000000046,
+          "failed": false,
+          "stage_id": 50,
+          "parent_id": 9,
+          "self_wall_seconds": 0.17783399997279048,
+          "self_thread_cpu_seconds": 0.0006894830000000046
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.18109770817682147,
+          "thread_cpu_seconds": 0.000880123999999996,
+          "failed": false,
+          "stage_id": 51,
+          "parent_id": 9,
+          "self_wall_seconds": 0.18109770817682147,
+          "self_thread_cpu_seconds": 0.000880123999999996
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.24944912502542138,
+          "thread_cpu_seconds": 0.0007443859999999997,
+          "failed": false,
+          "stage_id": 52,
+          "parent_id": 9,
+          "self_wall_seconds": 0.24944912502542138,
+          "self_thread_cpu_seconds": 0.0007443859999999997
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.18290383275598288,
+          "thread_cpu_seconds": 0.0007433810000000013,
+          "failed": false,
+          "stage_id": 53,
+          "parent_id": 9,
+          "self_wall_seconds": 0.18290383275598288,
+          "self_thread_cpu_seconds": 0.0007433810000000013
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.25179283367469907,
+          "thread_cpu_seconds": 0.000695361999999991,
+          "failed": false,
+          "stage_id": 54,
+          "parent_id": 9,
+          "self_wall_seconds": 0.25179283367469907,
+          "self_thread_cpu_seconds": 0.000695361999999991
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.17789895832538605,
+          "thread_cpu_seconds": 0.00044639300000000326,
+          "failed": false,
+          "stage_id": 55,
+          "parent_id": 9,
+          "self_wall_seconds": 0.17789895832538605,
+          "self_thread_cpu_seconds": 0.00044639300000000326
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.18423424987122416,
+          "thread_cpu_seconds": 0.0006109890000000062,
+          "failed": false,
+          "stage_id": 56,
+          "parent_id": 9,
+          "self_wall_seconds": 0.18423424987122416,
+          "self_thread_cpu_seconds": 0.0006109890000000062
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.23576633259654045,
+          "thread_cpu_seconds": 0.0006698420000000038,
+          "failed": false,
+          "stage_id": 57,
+          "parent_id": 9,
+          "self_wall_seconds": 0.23576633259654045,
+          "self_thread_cpu_seconds": 0.0006698420000000038
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.16030650027096272,
+          "thread_cpu_seconds": 0.0004176060000000009,
+          "failed": false,
+          "stage_id": 58,
+          "parent_id": 9,
+          "self_wall_seconds": 0.16030650027096272,
+          "self_thread_cpu_seconds": 0.0004176060000000009
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.24370154179632664,
+          "thread_cpu_seconds": 0.0004684080000000035,
+          "failed": false,
+          "stage_id": 59,
+          "parent_id": 9,
+          "self_wall_seconds": 0.24370154179632664,
+          "self_thread_cpu_seconds": 0.0004684080000000035
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.19196687499061227,
+          "thread_cpu_seconds": 0.0006751869999999938,
+          "failed": false,
+          "stage_id": 60,
+          "parent_id": 9,
+          "self_wall_seconds": 0.19196687499061227,
+          "self_thread_cpu_seconds": 0.0006751869999999938
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.18958200002089143,
+          "thread_cpu_seconds": 0.0008237390000000039,
+          "failed": false,
+          "stage_id": 61,
+          "parent_id": 9,
+          "self_wall_seconds": 0.18958200002089143,
+          "self_thread_cpu_seconds": 0.0008237390000000039
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.25978774996474385,
+          "thread_cpu_seconds": 0.0008191180000000076,
+          "failed": false,
+          "stage_id": 62,
+          "parent_id": 9,
+          "self_wall_seconds": 0.25978774996474385,
+          "self_thread_cpu_seconds": 0.0008191180000000076
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.19200404081493616,
+          "thread_cpu_seconds": 0.0008434469999999972,
+          "failed": false,
+          "stage_id": 63,
+          "parent_id": 9,
+          "self_wall_seconds": 0.19200404081493616,
+          "self_thread_cpu_seconds": 0.0008434469999999972
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.2647923748008907,
+          "thread_cpu_seconds": 0.0005321489999999957,
+          "failed": false,
+          "stage_id": 64,
+          "parent_id": 9,
+          "self_wall_seconds": 0.2647923748008907,
+          "self_thread_cpu_seconds": 0.0005321489999999957
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.18040991574525833,
+          "thread_cpu_seconds": 0.0006895110000000038,
+          "failed": false,
+          "stage_id": 65,
+          "parent_id": 9,
+          "self_wall_seconds": 0.18040991574525833,
+          "self_thread_cpu_seconds": 0.0006895110000000038
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.2888738331384957,
+          "thread_cpu_seconds": 0.0008666599999999913,
+          "failed": false,
+          "stage_id": 66,
+          "parent_id": 9,
+          "self_wall_seconds": 0.2888738331384957,
+          "self_thread_cpu_seconds": 0.0008666599999999913
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.15566000016406178,
+          "thread_cpu_seconds": 0.0004811170000000031,
+          "failed": false,
+          "stage_id": 67,
+          "parent_id": 9,
+          "self_wall_seconds": 0.15566000016406178,
+          "self_thread_cpu_seconds": 0.0004811170000000031
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.1561502912081778,
+          "thread_cpu_seconds": 0.0003042389999999978,
+          "failed": false,
+          "stage_id": 68,
+          "parent_id": 9,
+          "self_wall_seconds": 0.1561502912081778,
+          "self_thread_cpu_seconds": 0.0003042389999999978
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.2120648343116045,
+          "thread_cpu_seconds": 0.0006035989999999963,
+          "failed": false,
+          "stage_id": 69,
+          "parent_id": 9,
+          "self_wall_seconds": 0.2120648343116045,
+          "self_thread_cpu_seconds": 0.0006035989999999963
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.17309154197573662,
+          "thread_cpu_seconds": 0.0008765660000000092,
+          "failed": false,
+          "stage_id": 70,
+          "parent_id": 9,
+          "self_wall_seconds": 0.17309154197573662,
+          "self_thread_cpu_seconds": 0.0008765660000000092
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.18453562492504716,
+          "thread_cpu_seconds": 0.000874653000000003,
+          "failed": false,
+          "stage_id": 71,
+          "parent_id": 9,
+          "self_wall_seconds": 0.18453562492504716,
+          "self_thread_cpu_seconds": 0.000874653000000003
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.2830439591780305,
+          "thread_cpu_seconds": 0.0009441790000000033,
+          "failed": false,
+          "stage_id": 72,
+          "parent_id": 9,
+          "self_wall_seconds": 0.2830439591780305,
+          "self_thread_cpu_seconds": 0.0009441790000000033
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.17854666709899902,
+          "thread_cpu_seconds": 0.0008177310000000021,
+          "failed": false,
+          "stage_id": 73,
+          "parent_id": 9,
+          "self_wall_seconds": 0.17854666709899902,
+          "self_thread_cpu_seconds": 0.0008177310000000021
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.23204141715541482,
+          "thread_cpu_seconds": 0.0007987650000000068,
+          "failed": false,
+          "stage_id": 74,
+          "parent_id": 9,
+          "self_wall_seconds": 0.23204141715541482,
+          "self_thread_cpu_seconds": 0.0007987650000000068
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.22166533302515745,
+          "thread_cpu_seconds": 0.0007264409999999943,
+          "failed": false,
+          "stage_id": 75,
+          "parent_id": 9,
+          "self_wall_seconds": 0.22166533302515745,
+          "self_thread_cpu_seconds": 0.0007264409999999943
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.19106545811519027,
+          "thread_cpu_seconds": 0.0008125199999999971,
+          "failed": false,
+          "stage_id": 76,
+          "parent_id": 9,
+          "self_wall_seconds": 0.19106545811519027,
+          "self_thread_cpu_seconds": 0.0008125199999999971
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.24643008410930634,
+          "thread_cpu_seconds": 0.0007571380000000044,
+          "failed": false,
+          "stage_id": 77,
+          "parent_id": 9,
+          "self_wall_seconds": 0.24643008410930634,
+          "self_thread_cpu_seconds": 0.0007571380000000044
+        },
+        {
+          "name": "aq_member",
+          "wall_seconds": 0.1670056669972837,
+          "thread_cpu_seconds": 0.0006638870000000019,
+          "failed": false,
+          "stage_id": 78,
+          "parent_id": 9,
+          "self_wall_seconds": 0.1670056669972837,
+          "self_thread_cpu_seconds": 0.0006638870000000019
+        },
+        {
+          "name": "aq_acquisition",
+          "wall_seconds": 14.324127917177975,
+          "thread_cpu_seconds": 0.046234245,
+          "failed": false,
+          "stage_id": 9,
+          "parent_id": null,
+          "self_wall_seconds": 0.008023086003959179,
+          "self_thread_cpu_seconds": 0.0001842579999999719
+        },
+        {
+          "name": "scientific_evaluation",
+          "wall_seconds": 0.17618020763620734,
+          "thread_cpu_seconds": 0.0037027770000000043,
+          "failed": false,
+          "stage_id": 79,
+          "parent_id": null,
+          "self_wall_seconds": 0.17618020763620734,
+          "self_thread_cpu_seconds": 0.0037027770000000043
+        },
+        {
+          "name": "report_assembly",
+          "wall_seconds": 0.06307608401402831,
+          "thread_cpu_seconds": 0.0015134030000000104,
+          "failed": false,
+          "stage_id": 80,
+          "parent_id": null,
+          "self_wall_seconds": 0.06307608401402831,
+          "self_thread_cpu_seconds": 0.0015134030000000104
+        },
+        {
+          "name": "inspection",
+          "wall_seconds": 0.0009535406716167927,
+          "thread_cpu_seconds": 2.2863999999997442e-05,
+          "failed": false,
+          "stage_id": 81,
+          "parent_id": null,
+          "self_wall_seconds": 0.0009535406716167927,
+          "self_thread_cpu_seconds": 2.2863999999997442e-05
+        },
+        {
+          "name": "write_report",
+          "wall_seconds": 0.16720699984580278,
+          "thread_cpu_seconds": 0.0039764330000000014,
+          "failed": false,
+          "stage_id": 82,
+          "parent_id": null,
+          "self_wall_seconds": 0.16720699984580278,
+          "self_thread_cpu_seconds": 0.0039764330000000014
+        },
+        {
+          "name": "write_inspection",
+          "wall_seconds": 0.0004425831139087677,
+          "thread_cpu_seconds": 1.0632999999996007e-05,
+          "failed": false,
+          "stage_id": 83,
+          "parent_id": null,
+          "self_wall_seconds": 0.0004425831139087677,
+          "self_thread_cpu_seconds": 1.0632999999996007e-05
+        },
+        {
+          "name": "write_request",
+          "wall_seconds": 0.00024570804089307785,
+          "thread_cpu_seconds": 5.8979999999903e-06,
+          "failed": false,
+          "stage_id": 84,
+          "parent_id": null,
+          "self_wall_seconds": 0.00024570804089307785,
+          "self_thread_cpu_seconds": 5.8979999999903e-06
+        },
+        {
+          "name": "view_projection",
+          "wall_seconds": 0.0006308751180768013,
+          "thread_cpu_seconds": 1.5145999999993665e-05,
+          "failed": false,
+          "stage_id": 85,
+          "parent_id": null,
+          "self_wall_seconds": 0.0006308751180768013,
+          "self_thread_cpu_seconds": 1.5145999999993665e-05
+        },
+        {
+          "name": "write_view",
+          "wall_seconds": 0.0042859590612351894,
+          "thread_cpu_seconds": 0.00010286700000000648,
+          "failed": false,
+          "stage_id": 86,
+          "parent_id": null,
+          "self_wall_seconds": 0.0042859590612351894,
+          "self_thread_cpu_seconds": 0.00010286700000000648
+        },
+        {
+          "name": "first_page_projection",
+          "wall_seconds": 0.00174325006082654,
+          "thread_cpu_seconds": 4.184000000000132e-05,
+          "failed": false,
+          "stage_id": 87,
+          "parent_id": null,
+          "self_wall_seconds": 0.00174325006082654,
+          "self_thread_cpu_seconds": 4.184000000000132e-05
+        }
+      ],
+      "unattributed_wall_seconds": 0.005322001408785582,
+      "assessment_status": "COMPLETED",
+      "retained_contexts": 336,
+      "sources": {
+        "ARCHIVE": "COMPLETED",
+        "QUEUE": "NOT_SELECTED"
+      },
+      "source_diagnostics": {
+        "ARCHIVE": {
+          "reasons": [
+            "FIXED_SINGLE_POINTING_ONLY",
+            "ARCHIVE_BOUND_COVERS_FREQUENCY_GE_35_GHZ_AND_DIAMETER_GE_7_M",
+            "ARCHIVE_UNKNOWN_OR_LOWER_FREQUENCY_OUTSIDE_CONE_NOT_COVERED",
+            "ARCHIVE_MISSING_CENTERS_AND_MOSAIC_EXTENTS_NOT_COVERED",
+            "QUEUE_SCOPE_IS_SUPPLIED_FILE",
+            "POSITION_IS_EVALUATED_SEPARATELY_WITH_CANDIDATE_EVIDENCE",
+            "NO_SEARCH_WIDE_ABSENCE_VERDICT"
+          ],
+          "upstream_status": "COMPLETE",
+          "error_kind": null,
+          "missing_columns": [],
+          "aq_status": "COMPLETED",
+          "aq_reason": null,
+          "aq_error": null
+        },
+        "QUEUE": {
+          "reasons": [],
+          "upstream_status": null,
+          "error_kind": null,
+          "missing_columns": [],
+          "aq_status": null,
+          "aq_reason": null,
+          "aq_error": null
+        }
+      },
+      "branch_outcomes": {
+        "CONTINUUM:CRITERIA_NOT_MET": 320,
+        "CONTINUUM:CRITERIA_MET": 16
+      },
+      "report_size": {
+        "schema_version": 1,
+        "format": "UTF-8; ensure_ascii=False; indent=2; trailing newline",
+        "formatted_bytes": 3770977,
+        "compact_bytes": 2516833,
+        "root_value_bytes": {
+          "report_version": 3,
+          "report_kind": 22,
+          "search_execution": 10,
+          "generated_at": 34,
+          "input_sha256": 4,
+          "evaluation_version": 3,
+          "evaluation_configuration": 118,
+          "execution": 10,
+          "assessment": 16,
+          "search_assessment": 15,
+          "search_service_version": 3,
+          "search_started_at": 34,
+          "search_finished_at": 34,
+          "request": 5760,
+          "plan": 2171,
+          "sources": 1067959,
+          "evaluation_scope": 322,
+          "request_criteria": 1291,
+          "report_detail": 298,
+          "context_evaluations": 2692389,
+          "assessment_status": 11
+        },
+        "root_structure_bytes": 470,
+        "largest_field_groups": [
+          {
+            "path": "/context_evaluations",
+            "occurrences": 1,
+            "bytes": 2692389
+          },
+          {
+            "path": "/context_evaluations/*",
+            "occurrences": 336,
+            "bytes": 2690369
+          },
+          {
+            "path": "/context_evaluations/*/criteria",
+            "occurrences": 336,
+            "bytes": 1694401
+          },
+          {
+            "path": "/context_evaluations/*/criteria/*",
+            "occurrences": 1312,
+            "bytes": 1678641
+          },
+          {
+            "path": "/sources",
+            "occurrences": 1,
+            "bytes": 1067959
+          },
+          {
+            "path": "/sources/ARCHIVE",
+            "occurrences": 1,
+            "bytes": 1067359
+          },
+          {
+            "path": "/sources/ARCHIVE/rows",
+            "occurrences": 1,
+            "bytes": 1017339
+          },
+          {
+            "path": "/sources/ARCHIVE/rows/*",
+            "occurrences": 336,
+            "bytes": 1013971
+          },
+          {
+            "path": "/sources/ARCHIVE/rows/*/spatial_evidence",
+            "occurrences": 336,
+            "bytes": 591297
+          },
+          {
+            "path": "/context_evaluations/*/array_evidence",
+            "occurrences": 336,
+            "bytes": 316156
+          },
+          {
+            "path": "/sources/ARCHIVE/rows/*/spatial_evidence/array_classification",
+            "occurrences": 336,
+            "bytes": 312106
+          },
+          {
+            "path": "/context_evaluations/*/branches",
+            "occurrences": 336,
+            "bytes": 214264
+          },
+          {
+            "path": "/context_evaluations/*/branches/*",
+            "occurrences": 336,
+            "bytes": 208216
+          },
+          {
+            "path": "/context_evaluations/*/criteria/*/candidate",
+            "occurrences": 1312,
+            "bytes": 187104
+          },
+          {
+            "path": "/context_evaluations/*/criteria/*/decision_refs",
+            "occurrences": 1312,
+            "bytes": 185648
+          },
+          {
+            "path": "/context_evaluations/*/criteria/*/proposed",
+            "occurrences": 1312,
+            "bytes": 172200
+          },
+          {
+            "path": "/context_evaluations/*/array_evidence/records",
+            "occurrences": 336,
+            "bytes": 165264
+          },
+          {
+            "path": "/context_evaluations/*/array_evidence/records/*",
+            "occurrences": 336,
+            "bytes": 157872
+          },
+          {
+            "path": "/context_evaluations/*/criteria/*/decision_refs/*",
+            "occurrences": 1968,
+            "bytes": 142352
+          },
+          {
+            "path": "/sources/ARCHIVE/rows/*/reference",
+            "occurrences": 336,
+            "bytes": 137802
+          },
+          {
+            "path": "/sources/ARCHIVE/rows/*/spatial_evidence/array_classification/raw_value",
+            "occurrences": 336,
+            "bytes": 124568
+          },
+          {
+            "path": "/context_evaluations/*/reference",
+            "occurrences": 336,
+            "bytes": 124362
+          },
+          {
+            "path": "/context_evaluations/*/criteria/*/policy_ref",
+            "occurrences": 1312,
+            "bytes": 117424
+          },
+          {
+            "path": "/sources/ARCHIVE/rows/*/filters",
+            "occurrences": 336,
+            "bytes": 115584
+          },
+          {
+            "path": "/sources/ARCHIVE/rows/*/filters/*",
+            "occurrences": 336,
+            "bytes": 106848
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants",
+            "occurrences": 8,
+            "bytes": 104930
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*",
+            "occurrences": 16,
+            "bytes": 104706
+          },
+          {
+            "path": "/context_evaluations/*/display_identity",
+            "occurrences": 336,
+            "bytes": 89224
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/criteria",
+            "occurrences": 16,
+            "bytes": 88674
+          },
+          {
+            "path": "/context_evaluations/*/beam_variants/*/criteria/*",
+            "occurrences": 64,
+            "bytes": 87586
+          }
+        ],
+        "repeated_containers": [],
+        "repetition_min_compact_bytes": 4096,
+        "note": "Nested field groups and repeated containers overlap; do not sum them. Repeated compact bytes measure identical ordered content, not achievable storage savings. References and schema changes would have their own costs. No raw field values are included."
+      },
+      "size_analysis_wall_seconds": 0.41840670770034194,
+      "input_sha256": {
+        "request": "d6220d3c5f4581ece1e110d62549dd4422eb26bb6413311515c5bf74f4247748"
+      },
+      "report_detail": "matches",
+      "source_modes": {
+        "archive": "LIVE",
+        "live_aq": true,
+        "queue_csv": false
+      }
+    }
+  },
+  "saved_queue_line_analysis": {
+    "schema_version": 1,
+    "format": "UTF-8; ensure_ascii=False; indent=2; trailing newline",
+    "formatted_bytes": 431316785,
+    "compact_bytes": 247813322,
+    "root_value_bytes": {
+      "report_version": 3,
+      "report_kind": 22,
+      "search_execution": 10,
+      "generated_at": 34,
+      "input_sha256": 4,
+      "evaluation_version": 3,
+      "evaluation_configuration": 116,
+      "execution": 10,
+      "assessment": 16,
+      "search_assessment": 15,
+      "search_service_version": 3,
+      "search_started_at": 34,
+      "search_finished_at": 34,
+      "request": 6566,
+      "plan": 1586,
+      "sources": 5463897,
+      "evaluation_scope": 325,
+      "request_criteria": 2,
+      "report_detail": 298,
+      "context_evaluations": 425843362
+    },
+    "root_structure_bytes": 445,
+    "largest_field_groups": [
+      {
+        "path": "/context_evaluations",
+        "occurrences": 1,
+        "bytes": 425843362
+      },
+      {
+        "path": "/context_evaluations/*",
+        "occurrences": 3200,
+        "bytes": 425824158
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants",
+        "occurrences": 3089,
+        "bytes": 415635842
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*",
+        "occurrences": 6178,
+        "bytes": 415549350
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs",
+        "occurrences": 6178,
+        "bytes": 380586258
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*",
+        "occurrences": 31514,
+        "bytes": 380070926
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/criteria",
+        "occurrences": 31514,
+        "bytes": 333108434
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/criteria/*",
+        "occurrences": 189084,
+        "bytes": 329200698
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/attempt",
+        "occurrences": 31514,
+        "bytes": 28687866
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/criteria",
+        "occurrences": 6178,
+        "bytes": 27342238
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/criteria/*",
+        "occurrences": 12356,
+        "bytes": 27095118
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/attempt/reference",
+        "occurrences": 31514,
+        "bytes": 21068210
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/criteria/*/issues",
+        "occurrences": 12356,
+        "bytes": 6486412
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/criteria/*/issues/*",
+        "occurrences": 24616,
+        "bytes": 5846300
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/branches",
+        "occurrences": 6178,
+        "bytes": 5598134
+      },
+      {
+        "path": "/sources",
+        "occurrences": 1,
+        "bytes": 5463897
+      },
+      {
+        "path": "/sources/QUEUE",
+        "occurrences": 1,
+        "bytes": 5463297
+      },
+      {
+        "path": "/sources/QUEUE/rows",
+        "occurrences": 1,
+        "bytes": 5448137
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/branches/*",
+        "occurrences": 6178,
+        "bytes": 5437506
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/reasons",
+        "occurrences": 31514,
+        "bytes": 5416812
+      },
+      {
+        "path": "/sources/QUEUE/rows/*",
+        "occurrences": 3200,
+        "bytes": 5416129
+      },
+      {
+        "path": "/context_evaluations/*/line_pairs",
+        "occurrences": 3200,
+        "bytes": 4605256
+      },
+      {
+        "path": "/context_evaluations/*/line_pairs/*",
+        "occurrences": 459,
+        "bytes": 4593606
+      },
+      {
+        "path": "/context_evaluations/*/line_pairs/*/criteria",
+        "occurrences": 459,
+        "bytes": 4008705
+      },
+      {
+        "path": "/context_evaluations/*/line_pairs/*/criteria/*",
+        "occurrences": 2754,
+        "bytes": 3964641
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/reasons/*",
+        "occurrences": 97436,
+        "bytes": 3158964
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/criteria/*/reasons",
+        "occurrences": 12356,
+        "bytes": 3136742
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/criteria/*/decision_refs",
+        "occurrences": 12356,
+        "bytes": 2681252
+      },
+      {
+        "path": "/context_evaluations/*/beam_variants/*/line_pairs/*/decision_refs",
+        "occurrences": 31514,
+        "bytes": 2615662
+      },
+      {
+        "path": "/sources/QUEUE/rows/*/spatial_evidence",
+        "occurrences": 3200,
+        "bytes": 2586161
+      }
+    ],
+    "repeated_containers": [
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168962,
+        "compact_bytes_per_copy": 48078,
+        "example_paths": [
+          "/context_evaluations/2274/beam_variants/0/line_pairs",
+          "/context_evaluations/2274/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48078
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168962,
+        "compact_bytes_per_copy": 48078,
+        "example_paths": [
+          "/context_evaluations/2275/beam_variants/0/line_pairs",
+          "/context_evaluations/2275/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48078
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2247/beam_variants/0/line_pairs",
+          "/context_evaluations/2247/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2248/beam_variants/0/line_pairs",
+          "/context_evaluations/2248/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2249/beam_variants/0/line_pairs",
+          "/context_evaluations/2249/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2250/beam_variants/0/line_pairs",
+          "/context_evaluations/2250/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2251/beam_variants/0/line_pairs",
+          "/context_evaluations/2251/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2252/beam_variants/0/line_pairs",
+          "/context_evaluations/2252/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2253/beam_variants/0/line_pairs",
+          "/context_evaluations/2253/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2254/beam_variants/0/line_pairs",
+          "/context_evaluations/2254/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2264/beam_variants/0/line_pairs",
+          "/context_evaluations/2264/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2265/beam_variants/0/line_pairs",
+          "/context_evaluations/2265/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2267/beam_variants/0/line_pairs",
+          "/context_evaluations/2267/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2268/beam_variants/0/line_pairs",
+          "/context_evaluations/2268/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2269/beam_variants/0/line_pairs",
+          "/context_evaluations/2269/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2270/beam_variants/0/line_pairs",
+          "/context_evaluations/2270/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2271/beam_variants/0/line_pairs",
+          "/context_evaluations/2271/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2272/beam_variants/0/line_pairs",
+          "/context_evaluations/2272/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2273/beam_variants/0/line_pairs",
+          "/context_evaluations/2273/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2276/beam_variants/0/line_pairs",
+          "/context_evaluations/2276/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2278/beam_variants/0/line_pairs",
+          "/context_evaluations/2278/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2279/beam_variants/0/line_pairs",
+          "/context_evaluations/2279/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2280/beam_variants/0/line_pairs",
+          "/context_evaluations/2280/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2281/beam_variants/0/line_pairs",
+          "/context_evaluations/2281/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2282/beam_variants/0/line_pairs",
+          "/context_evaluations/2282/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2283/beam_variants/0/line_pairs",
+          "/context_evaluations/2283/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168948,
+        "compact_bytes_per_copy": 48071,
+        "example_paths": [
+          "/context_evaluations/2284/beam_variants/0/line_pairs",
+          "/context_evaluations/2284/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48071
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168934,
+        "compact_bytes_per_copy": 48064,
+        "example_paths": [
+          "/context_evaluations/2256/beam_variants/0/line_pairs",
+          "/context_evaluations/2256/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48064
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168934,
+        "compact_bytes_per_copy": 48064,
+        "example_paths": [
+          "/context_evaluations/2257/beam_variants/0/line_pairs",
+          "/context_evaluations/2257/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48064
+      },
+      {
+        "occurrences": 2,
+        "total_formatted_bytes": 168934,
+        "compact_bytes_per_copy": 48064,
+        "example_paths": [
+          "/context_evaluations/2258/beam_variants/0/line_pairs",
+          "/context_evaluations/2258/beam_variants/1/line_pairs"
+        ],
+        "repeated_compact_bytes": 48064
+      }
+    ],
+    "repetition_min_compact_bytes": 4096,
+    "note": "Nested field groups and repeated containers overlap; do not sum them. Repeated compact bytes measure identical ordered content, not achievable storage savings. References and schema changes would have their own costs. No raw field values are included.",
+    "analysis_including_load_seconds": 35.732298207934946,
+    "input_sha256": "6589e6925285a89bb364d1ebec6baab58b6ffbb8378e0e98cc7895b70b5934dd",
+    "input_bytes": 431316785,
+    "input_size_matches_publication_format": true
+  }
+}
