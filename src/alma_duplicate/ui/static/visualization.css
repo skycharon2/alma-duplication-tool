@@ -1,0 +1,38 @@
+.visual-page { padding: 1.5rem 0 2rem; }
+.visual-heading { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1.2rem; }
+.visual-heading h1 { margin:0 0 .35rem; font-size:1.7rem; overflow-wrap:anywhere; }
+.visual-heading p { margin:.25rem 0; }
+.visual-eyebrow { font-size:.72rem; letter-spacing:.08em; color:#527088; font-weight:600; }
+.visual-scope { display:flex; flex-wrap:wrap; justify-content:space-between; gap:.75rem; padding:.8rem 0; font-size:.85rem; }
+.visual-legend { display:flex; gap:1rem; flex-wrap:wrap; }
+.legend-proposed { color:#983b64; }.legend-archive { color:#17689e; }.legend-queue { color:#a45b15; }
+.visual-panels { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:1rem; }
+.visual-panel { border:1px solid #cedce6; background:#fff; border-radius:5px; min-width:0; overflow:hidden; }
+.visual-panel > header { padding:.85rem 1rem; border-bottom:1px solid #d9e4ec; background:#f5f9fc; display:flex; align-items:center; justify-content:space-between; gap:.6rem; }
+.visual-panel h2 { margin:0; font-size:1.05rem; }.visual-panel header p { margin:.2rem 0 0; font-size:.75rem; color:#546b7e; }
+.chart-tools { display:flex; flex-shrink:0; gap:3px; }
+.chart-tools button { padding:.22rem .5rem; min-height:30px; background:white; color:#235778; border:1px solid #c4d5e0; border-radius:3px; cursor:pointer; }
+.chart-tools button:hover { background:#e6f2f9; }.chart-tools button:focus-visible,.visual-select:focus-visible { outline:2px solid #007cb0; outline-offset:-2px; }
+#spatial-chart { display:block; width:100%; max-height:460px; }
+.frequency-scroll { min-height:320px; height:460px; overflow:auto; }
+#spectral-chart { display:block; width:100%; min-width:430px; }
+.chart-caption { margin:.7rem 1rem; font-size:.78rem; line-height:1.5; color:#546b7e; }
+.visual-page > .chart-caption { margin:.7rem 0; }
+.visual-selection-hint { font-size:.82rem; color:#546b7e; margin:.8rem 0; }
+.visual-bottom { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:1rem; }
+.visual-list { max-height:480px; overflow:auto; }
+.visual-candidate { display:flex; align-items:center; border-bottom:1px solid #e2eaf0; }
+.visual-candidate > a { font-size:.75rem; white-space:nowrap; margin:0 .6rem; }
+.visual-select { display:flex; align-items:center; gap:.6rem; width:100%; text-align:left; border:0; border-left:3px solid transparent; border-radius:0; background:transparent; padding:.7rem .6rem; color:#27475d; cursor:pointer; }
+.visual-select:hover { background:#f1f7fb; }.visual-select[aria-pressed="true"] { background:#e9f4fa; border-left-color:#007cb0; }
+.visual-select strong { display:block; font-size:.85rem; overflow-wrap:anywhere; }.visual-select small { display:block; font-size:.73rem; margin-top:.3rem; color:#546b7e; }
+.visual-row-number { min-width:1.4rem; font-size:.75rem; font-variant-numeric:tabular-nums; }
+#visual-detail-body { padding:.8rem 1rem; font-size:.85rem; overflow-wrap:anywhere; }
+#visual-detail-body h3 { margin:0 0 .5rem; font-size:1rem; }#visual-detail-body p { margin:.4rem 0; }
+#visual-detail-body dl { display:grid; grid-template-columns:7.5rem 1fr; gap:.25rem .7rem; margin:.7rem 0; font-size:.78rem; }
+#visual-detail-body dt { color:#546b7e; }#visual-detail-body dd { margin:0; }
+.visual-condition { border-top:1px solid #e2eaf0; padding:.4rem 0; }.visual-condition summary { font-size:.82rem; }.visual-condition p { font-size:.78rem; }
+.visual-pagination { display:flex; gap:.6rem; flex-wrap:wrap; margin:1rem 0; }
+.visual-page svg text { font-family:inherit; fill:#526b7e; font-size:10px; }.visual-page svg [role="button"] { cursor:pointer; outline:none; }.visual-page svg [role="button"]:focus-visible { outline:2px solid #007cb0; }
+@media(max-width:850px) { .visual-panels,.visual-bottom { grid-template-columns:1fr; }.visual-heading { align-items:flex-start; flex-direction:column; }.frequency-scroll { height:360px; }.visual-panel > header { flex-wrap:wrap; } }
+@media(prefers-reduced-motion:no-preference) { .visual-select,.chart-tools button { transition:background-color 120ms ease; } }

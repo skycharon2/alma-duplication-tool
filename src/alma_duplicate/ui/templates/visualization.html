@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Explore report · ALMA Duplication Assessment{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='visualization.css') }}">
+<script src="{{ url_for('static', filename='visualization.js') }}" defer></script>
+{% endblock %}
+{% block content %}
+<div class="visual-page">
+<header class="visual-heading"><div><p class="visual-eyebrow">SINGLE POINTING · REPORT EXPLORER</p><h1>{{ summary.target }}</h1><p>Position and frequency evidence for recorded matching comparisons.</p></div><a class="button" href="{{ report_url }}">Back to text report</a></header>
+{% if source_overview | selectattr('attention') | list %}<p class="notice">Source coverage or evidence is incomplete. <a href="{{ report_url }}#sources">Review the report’s source status</a> before interpreting these matches.</p>{% endif %}
+{% if not visual.supported %}<p class="notice">This view supports fixed targets with single-pointing requests. No geometry is inferred for other observation types.</p>
+{% elif not visual.rows %}<p class="notice">No matching comparison is available to plot on this report page. This does not establish that no duplicates exist. <a href="{{ report_url }}">Review results and missing evidence</a>.</p>
+{% else %}
+<div class="visual-scope"><span>Report page <strong>{{ page }} / {{ pages }}</strong> · Comparisons <strong>{{ visual.start }}–{{ visual.stop }}</strong> of {{ visual.total }} on this page</span><span class="visual-legend"><span class="legend-proposed">◆ Your observation</span><span class="legend-archive">● Archive</span><span class="legend-queue">● Queue</span></span></div>
+{% if visual.continuum_declaration %}<p class="chart-caption">Continuum setup qualification uses a researcher confirmation. <a href="{{ report_url }}#setup-qualification">Review setup evidence</a>.</p>{% endif %}
+<div class="visual-panels">
+<section class="visual-panel" aria-labelledby="spatial-title"><header><div><h2 id="spatial-title">Position</h2><p>Candidate half-power boundaries</p></div><div class="chart-tools" aria-label="Position zoom"><button type="button" data-zoom="spatial:in" aria-label="Zoom in position">+</button><button type="button" data-zoom="spatial:out" aria-label="Zoom out position">−</button><button type="button" data-zoom="spatial:reset">Reset</button></div></header>
+<svg id="spatial-chart" viewBox="0 0 460 460" role="group" aria-label="Position comparison, east to the left and north up"></svg>
+<p class="chart-caption">{{ visual.spatial_available }} / {{ visual.rows|length }} comparisons have position evidence. Offsets from your target in arcsec · East ← · North ↑. Boundaries use the candidate radius recorded by the backend.</p></section>
+<section class="visual-panel" aria-labelledby="spectral-title"><header><div><h2 id="spectral-title">Frequency</h2><p>LINE windows · CONTINUUM representative frequencies</p></div><div class="chart-tools" aria-label="Frequency zoom"><button type="button" data-zoom="spectral:in" aria-label="Zoom in frequency">+</button><button type="button" data-zoom="spectral:out" aria-label="Zoom out frequency">−</button><button type="button" data-zoom="spectral:reset">Reset</button></div></header>
+<div class="frequency-scroll" tabindex="0" role="region" aria-label="Frequency comparisons"><svg id="spectral-chart" role="group" aria-label="Recorded frequency comparisons in GHz"></svg></div>
+<p class="chart-caption">{{ visual.spectral_available }} / {{ visual.rows|length }} comparisons have frequency evidence. ◆ Requested SKY frequency; bars show LINE candidate intervals. CONTINUUM uses two markers, not a coverage interval.</p></section>
+</div>
+<p class="visual-selection-hint">Select a row or a plotted comparison to highlight it in both panels. Overlapping positions remain separate comparisons.</p>
+<div class="visual-bottom">
+<section class="visual-panel visual-candidates" aria-labelledby="selection-title"><header><h2 id="selection-title">Matching comparisons</h2><span>{{ visual.rows|length }} shown</span></header>
+<div class="visual-list">{% for row in visual.rows %}<div class="visual-candidate" data-row="{{ row.id }}"><button type="button" class="visual-select" data-select="{{ row.id }}" aria-pressed="{{ 'true' if loop.first else 'false' }}"><span class="visual-row-number">{{ loop.index + visual.start - 1 }}</span><span><strong>{{ row.label }}</strong><small>{{ row.source|title }} · {{ row.intent }} · SPW {{ row.spw }}{% if row.window %} · requested {{ row.window }}{% endif %}{% if row.beam_variant is not none %} · beam path {{ row.beam_variant + 1 }}{% endif %}</small></span></button><a href="{{ report_url }}#{{ row.anchor }}" aria-label="Text comparison {{ loop.index + visual.start - 1 }}">Details ↗</a></div>{% endfor %}</div>
+</section>
+<section class="visual-panel visual-detail" aria-labelledby="detail-title"><header><h2 id="detail-title">Selected comparison</h2></header><p id="visual-selection-status" class="sr-only" aria-live="polite"></p><div id="visual-detail-body"><p>Select a comparison to inspect its recorded evidence.</p></div><noscript><p>Enable JavaScript for interactive charts. Each Details link opens the full text comparison.</p></noscript></section>
+</div>
+{% endif %}
+<nav class="visual-pagination" aria-label="Visualization pages">
+{% if page > 1 %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page-1) }}">Previous result groups</a>{% endif %}
+{% if visual.plot_page > 1 %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page, plot_page=visual.plot_page-1) }}">Previous comparisons</a>{% endif %}
+{% if visual.plot_page < visual.plot_pages %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page, plot_page=visual.plot_page+1) }}">Next comparisons</a>{% endif %}
+{% if page < pages %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page+1) }}">Next result groups</a>{% endif %}
+</nav>
+<p class="chart-caption">Plots explain this saved report; they do not perform a new search or change its decisions. Only the listed comparisons meet the conditions, not necessarily the entire Member OUS. Up to 30 comparisons are drawn at once.</p>
+<script id="visual-data" type="application/json">{{ visual|tojson }}</script>
+</div>
+{% endblock %}

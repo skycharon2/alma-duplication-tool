@@ -19,6 +19,7 @@ from alma_duplicate.ui.report_view import (
 )
 from alma_duplicate.ui.runs import BrowserAssessment, RunStore
 from alma_duplicate.ui.report_pages import report_page, report_projection
+from alma_duplicate.ui.visualization import visualization_data
 from alma_duplicate.ui.run_store import DEFAULT_DISK_BYTES, DEFAULT_MAX_AGE
 from alma_duplicate.ui.proposed import MAX_WINDOWS, assessment_supported, contributing_windows, initial_form, new_row, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
@@ -108,6 +109,8 @@ def create_app(config=None):
         is_run = data.get('run') is not None
         return render_template("report.html", **data, report_id=report_id,
                                show_technical=request.args.get('technical') == '1',
+                               visualization_url=url_for("run_visualization" if is_run else "report_visualization",
+                                                         report_id=report_id, page=data["page"] if data["result_view"] == "matches" else 1),
                                criterion_view=criterion_view, criterion_explanation=criterion_explanation,
                                criterion_status=criterion_status, pair_title=pair_title, standalone_criteria=standalone_criteria,
                                summary_line_conditions=summary_line_conditions,
@@ -155,6 +158,44 @@ def create_app(config=None):
         if data is None:
             return unavailable_run(report_id)
         return render_report(data, report_id)
+
+    def render_visualization(data, report_id, is_run):
+        plot_page = request.args.get("plot_page", "1")
+        if not plot_page.isdecimal() or len(plot_page) > 8 or int(plot_page) < 1:
+            abort(400)
+        try:
+            visual = visualization_data(data, int(plot_page))
+        except IndexError:
+            abort(404)
+        endpoint = "run_visualization" if is_run else "report_visualization"
+        return render_template(
+            "visualization.html", **data, visual=visual, report_id=report_id,
+            visual_endpoint=endpoint,
+            visualization_url=url_for(endpoint, report_id=report_id, page=data["page"]),
+            report_url=url_for("run_view" if is_run else "report_view", report_id=report_id, page=data["page"]),
+        )
+
+    @app.get("/reports/<report_id>/visualization")
+    def report_visualization(report_id):
+        item = artifact(report_id)
+        page, _ = page_selection()
+        try:
+            data = report_page(report_projection(item.document, item.inspection), page, "matches",
+                               lambda i: item.document['context_evaluations'][i])
+        except IndexError:
+            abort(404)
+        return render_visualization(data, report_id, False)
+
+    @app.get("/runs/<report_id>/visualization")
+    def run_visualization(report_id):
+        page, _ = page_selection()
+        try:
+            data = runs.page(report_id, page, "matches")
+        except IndexError:
+            abort(404)
+        if data is None:
+            return unavailable_run(report_id)
+        return render_visualization(data, report_id, True)
 
     @app.get("/runs/<report_id>/download/<kind>")
     def run_download(report_id, kind):
