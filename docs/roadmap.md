@@ -1,217 +1,78 @@
 # Engineering delivery roadmap
 
-The reviewed implementation baseline and current verification conditions are
-maintained in [status](status.md).
-Archive and supported Queue continuum/LINE dual-source engineering acceptance is
-delivered in the supported fixed single-field scope. No independently reviewed
-real-proposal case is claimed.
-This is the sole owner of remaining engineering order and exit gates.
-[Status](status.md) owns the capability matrix; [rule inputs](duplication_rule_inputs.md)
-own scientific decisions. An experiment being delivered does not approve its method.
+[Status](status.md) owns the reviewed implementation baseline, supported scope
+and verification register. This page owns remaining engineering order and exit
+gates. The project plan remains the long-term design; scientific decisions belong
+to [rule inputs](duplication_rule_inputs.md).
 
 ## Completed increments
 
-| Delivery | Scope | Boundary |
-| --- | --- | --- |
-| PR #70 | Archive continuum and branch aggregation | Confirmed fixed-target, single-point scope |
-| PR #71 | Continuum input/report closure and Solar exemption | No retrospective approval of older reports |
-| PR #72 | Archive line request preparation, mode evidence and pair builder | Exact Source–SPW associations |
-| PR #73 | Archive line numerical rules and pair/branch reports | No search-wide absence verdict |
-| PR #74 | Reproducible acceptance catalog and thin-interface contract | No independently reviewed real-proposal labels claimed |
-| PR #75 | Queue mode/configuration census v1 | Conditional diagnostic, not formal LINE-FDM |
-| PR #76 | Queue processor-equivalence experiment | Conditional TPS mapping; incomplete enumeration; formal mode UNKNOWN |
-| PR #77 | Documentation ownership and Queue mapping table | No runtime or scientific approval change |
-| PR #91 | Shared LINE precision contract and both-source boundary regression | Exact decision operands; no global epsilon |
-| PR #92 | Inspection v3 pair identities and common-condition deduplication | Report consumer only; explicit historical v1/v2 retained |
+- Supported Archive/Queue single-pointing CONTINUUM and LINE evaluation,
+  coherent pair binding and dual-source engineering acceptance.
+- Shared assessment entry, input validation, REST/SKY preparation, explicit
+  continuum setup confirmation and supported unit/bandwidth mappings.
+- Browser form-to-report execution, live TAP with optional post-TAP AQ,
+  configured Queue snapshots, source-state visibility and offline UI/CLI parity.
+- Bounded AUTO retrieval, stage progress, matching-detail v6 reports and indexed
+  temporary disk storage. Live AUTO and four-workflow browser checks are already
+  [recorded](evidence/browser_regression_pr134_2026-10-12.md).
+- Readable Member-grouped reports and the independent
+  [single-pointing explorer](ui_report_browser.md#single-pointing-report-explorer).
 
-## Bounded maintenance increments
-
-These small commits support the thin UI; they are not a new prerequisite
-rearchitecture phase. DOC-BASE, LINE-HELPERS, GEOMETRY, SPATIAL-EVIDENCE,
-MODE-REFERENCE and APP-ENTRY are delivered. Configuration preflight is also
-implemented (PR #100). The thin browser interface, offline UI/CLI parity gate
-and explicit live-source configuration/execution feedback are delivered.
-
-| Commit | Scope | Exit gate |
-| --- | --- | --- |
-| DOC-BASE — delivered in PR #93 | Align architecture, current status, interface versions and this order | Current vs historical state is explicit; relative links resolve; no runtime change or new test required |
-| LINE-HELPERS — delivered | Extract shared rational display and explicit unit conversion into numerical helpers, criterion truth into aggregation | First verify equivalent behavior; boundary tests and acceptance retain numbers, reasons, methods and outcomes; keep source-specific result/evidence/RMS implementations |
-| GEOMETRY — delivered (3A) | Extract pure separation and beam formulas | Preserve spherical/offset/placeholder and boundary behavior; keep legacy boundary conventions in strategies; do not claim all cycles removed yet |
-| SPATIAL-EVIDENCE — delivered (3B) | Separate spatial evidence adaptation from strategy dispatch | Queue strategy depends on adaptation rather than dispatch; remove target reverse imports; preserve retention, formal POS and explicit legacy paths, with compatibility exports where needed |
-| MODE-REFERENCE — delivered | Separate reference configurations/mappings from experiment report generation | Formal adapter no longer consumes experiment report dictionaries; configuration IDs, matches, N16 allowance, mode results and historical CLIs unchanged |
-| APP-ENTRY — backend entry delivered | Shared application orchestration used by CLI and directly callable by frontends | Offline direct-call/CLI report agreement delivered here; browser integration and parity are now delivered separately |
-
-LINE-HELPERS verification on 2026-09-28: 29 helper contract cases plus 116
-existing LINE regressions passed; full suite with the pinned Queue snapshot was
-1370 passed, 9 skipped; Ruff F passed. Before/after acceptance each passed all
-15 cases. Full report comparison differed only at `generated_at`,
-`search_started_at`, `search_finished_at` and Queue snapshot `parsed_at`;
-all 15 inspection documents were identical. No scientific version or pinned
-catalog/reference changed. Live TAP was not run.
-
-GEOMETRY verification on 2026-09-28: 267 targeted tests passed (including
-9 new pure-helper/import checks); full suite with pinned Queue snapshot was
-1379 passed, 9 skipped; Ruff F passed. The extracted function bodies were checked
-against the baseline AST. Before/after acceptance each passed 15 cases; report
-comparison excluded only the same four execution timestamp paths listed above,
-and all inspection documents were identical. No method or report versions
-changed. Source adaptation remains a separate 3B increment; UI need not wait.
-Live TAP was not run.
-
-SPATIAL-EVIDENCE verification on 2026-09-28: 300 targeted tests passed,
-including 10 compatibility/import-boundary cases. Full suite with pinned Queue
-snapshot was 1389 passed, 9 skipped; Ruff F passed. The five moved functions and
-retained dispatcher are AST-identical to the baseline. Before/after acceptance
-passed all 15 cases; complete reports differed only at the four execution
-timestamp paths above and all inspections were identical. No scientific method,
-report, evidence schema or fixed reference changed. Live TAP was not run.
-
-MODE-REFERENCE verification on 2026-09-28: full suite with pinned Queue
-snapshot passed 1393 tests, with 9 skipped; Ruff F passed. All 3498 reference
-configuration records and their formal/experimental outputs were byte-identical.
-The adapter, processor census and original mode census produced byte-identical
-artifacts for all 16216 snapshot SPWs. Before/after acceptance passed 15 cases;
-reports differed only at the four timestamp paths above, inspections were
-identical. No scientific method, N16 allowance, catalog or report version changed.
-Live TAP was not run.
-
-APP-ENTRY verification on 2026-09-28: 11 direct-entry regressions cover
-CLI/application report agreement, Solar/invalid-request no-source access,
-configuration checks and failed-source reporting. Full suite with pinned Queue
-snapshot passed 1404 tests, with 9 skipped; Ruff F passed. Before/after acceptance
-passed all 15 cases; only the same four execution timestamps differed and all
-inspection documents were identical. Browser rendering and UI-specific method
-selection remain to be delivered. Live TAP was not run.
-
-Each code increment runs affected tests and the pinned acceptance catalog, then
-full regression before merge. Compare reports allowing only identified dynamic
-execution fields, never ignoring methods, reasons, associations or outcomes.
-Function relocation alone does not bump scientific method versions. Record and
-fix discovered behavior defects separately. Keep dated reports and reference
-hashes intact; retain the recorded baseline described in [status](status.md).
-
-## Current browser increment
-
-Explicit researcher confirmation of continuum setup qualification is implemented
-as a [separate evidence route](continuum_setup_declaration.md), including backend
-conflict handling and CLI/browser scientific-result parity for the new path.
-
-The [browser form-to-report flow](ui_offline_assessment.md) is implemented:
-current input, explicit Queue methods, shared assessment entry, independent run
-identity, original report/inspection downloads and explicit Archive replay/live
-TAP configuration. The
-[offline UI/CLI parity gate](ui_offline_assessment.md#offline-uicli-parity-gate)
-remains the deterministic parity gate; live browser wiring has separate no-network
-regressions for configuration, laziness and provenance boundaries. The local
-in-memory lifecycle is not a multi-user service.
+Earlier increment IDs, test counts and extraction records are retained in
+[delivery history](history/delivery_notes.md). They are not an active task list.
 
 ## Remaining delivery order
 
-| Increment | Work | Exit gate |
+| Step | Work | Exit gate |
 | --- | --- | --- |
-| QUEUE-COMMON — coherent single-field row scope delivered | Scoped single-point position and angular-resolution evidence | Supported geometry/frame/array interpretation, boundaries and missing/conflict behavior explicit; independent numerical cases and method status recorded |
-| QUEUE-CONTINUUM — coherent single-field row scope delivered | Queue frequency/RMS mappings and independent continuum branch | Same-context/setup evidence, positive/negative/boundary/unknown cases; source-specific sensitivity semantics; no FDM/TDM prerequisite |
-| QUEUE-LINE — fixed single-field regular-SPW scope delivered | Mode applicability, coherent same-window coverage/resolution/RMS and pair reports | Supported configuration/profile evidence; no cross-SPW borrowing; coarse-resolution blocking; independent intermediate-value and pair aggregation acceptance |
-| Thin browser interface — delivered | Input, candidates, independent branches, pair evidence and export using the backend report | UI/CLI agreement, no duplicate formulas, no UNKNOWN/empty-source-to-negative conversion |
-| LIVE-SOURCE — delivered | Explicit live-source configuration and execution feedback through the shared application entry | Live versus replay configuration is explicit; source failures/provenance remain visible; no implicit fallback, live AQ acquisition or new scientific scope |
-| Broader modes — deferred | Mosaic, moving targets, TP scientific evaluation, mixed setups and broader conversions | Separate scope, evidence and acceptance decisions |
+| 1. Verify newly generated reports | Restart on the reviewed code; submit new single-pointing requests, then open text reports and their explorers. Cover Archive/Queue and LINE/CONTINUUM. | Exact context/Member/target/execution/SPW and beam identities agree; units and plot operands match the saved report; selection, pagination, repeat reads and missing-evidence states work without new queries. Record runtime and data provenance. |
+| 2. Prepare a restricted supervisor preview | Define intended users, hosting, access control, source configuration, Queue snapshot freshness and temporary report retention. Document and test the chosen runtime. | An authorized supervisor can submit a case and review results; access boundaries, concurrent progress polling, expiry/restart behavior, source failures and data removal are tested. No public Flask development-server deployment. |
+| 3. Review supervisor cases | Collect actual proposals and expected judgments, distinguish self-retrieval from independent scientific review, and investigate discrepancies. | Record input provenance, reviewed labels, criterion-level explanations and known gaps; fix each confirmed defect in a bounded change with regression coverage. |
 
-The [first Queue common increment](queue_common.md) supplies opt-in coherent
-single-field row-beam position, including the supported 7 m/12 m
-`standAlone_ACA` interpretation, and separately scoped angular criteria. [Queue continuum](queue_continuum.md)
-and [Queue LINE](queue_line_pairing.md) now complete the supported fixed
-single-field branches. Formal same-request Archive+Queue continuum/LINE
-acceptance, cross-source/SPW isolation and source-state completeness are also
-delivered. The bounded preparatory increments, thin browser interface and
-explicit live-source execution are complete. Persistent multi-user lifecycle and
-broader component-specific or mixed-array interpretations remain separate
-extensions.
+Step 1 verifies the new form-to-explorer path after the UI changes; it does not
+repeat an earlier live AUTO smoke as if that work were missing. Saved-report
+visualization checks remain useful but do not replace this execution check.
 
-Independent review of an actual proposal remains an external validation gate.
-No genuine proposal input is currently available, so
-`reviewed_real_proposal_cases` remains zero. Do not synthesize or relabel a case
-to satisfy that gate.
+A restricted preview does not automatically require a database or a general
+multi-user platform. The current progress/index state is process-local and report
+artifacts are on temporary disk. A single serving process needs concurrent
+request handling so progress polls can run alongside assessment. Multiple
+processes or persistent reports require a separate shared-state design and tests.
+Operational requirements should determine that scope before deployment.
 
-These are engineering increment IDs, not scientific Q1–Q8 question IDs. The
-[mapping table](queue_single_point_mapping.md) owns detailed fields, units,
-associations and evidence gaps; this table owns order and exit gates only.
+## Deferred extensions
 
-Queue mode work must resolve applicability and alternative interpretations within
-the supported scope. Exact processor identity is required only where the method
-needs it; exact configuration uniqueness is not the same as mode consensus.
-The [mode evidence adapter](queue_mode_adapter.md) supplies source-bound
-exact-first classification and the reviewed N16 allowance to formal Queue LINE.
-Geometry/array applicability remains independently scoped, and broader array or
-mode interpretation remains a separate extension.
-The 76 export signatures and 14 all-family TP mapping gaps are tracked in the
-[dated experiment results](evidence/queue_processor_consensus_2026-09-23.md).
-Do not make all-family experimental closure a blanket prerequisite for Queue continuum.
+- Mosaic and moving-target scientific inputs, methods and acceptance.
+- Broader TP geometry and scientific applicability; physical D=12 m alone does
+  not establish the complete branch. Existing supported mixed-beam alternatives
+  remain implemented; broader component interpretations are separate work.
+- Additional observation/configuration scope and source evidence outside the
+  current confirmed contracts.
+- Persistent multi-user report storage and shared execution state, if needed.
+- Richer sky layers, spectral products and visualization exports after the
+  first explorer has received user feedback.
 
-## Thin UI delivery increments
+Directory migration and module extraction are optional maintenance decisions,
+not prerequisites for supervisor testing. A long Python file alone is not a
+reason to split a scientifically tested path.
 
-The [Archive array evidence review](evidence/archive_array_review_2026-10-02.md)
-added five real replay examples before live browser integration. The optional
-[source-bound adapter](archive_array_evidence.md) now consumes captured official
-AQ labels, confirming the two 7-m science targets and evaluating complete D7/D12
-alternatives for explicitly mixed labels. TP retains its 12-m physical aperture;
-POS-SINGLE is evaluated with D=12 m, while broader CONTINUUM/LINE scientific
-applicability remains unresolved. The independent
-[LIVE-AQ-2 HTTP client](archive_aq_client.md) is delivered in PR #124.
-[LIVE-AQ-3](live_aq_assessment.md) now connects retained TAP Members to acquisition,
-structured failure handling and report/inspection provenance in PR #125.
-LIVE-AQ-4 adds explicit operator configuration and report state display in the
-same PR, with offline lifecycle and parity tests. A bounded live TAP+AQ browser
-continuum smoke is [recorded](evidence/live_browser_aq_smoke_2026-10-05.md).
-A [scoped live LINE request](evidence/live_browser_line_aq_smoke_2026-10-05.md)
-also completed. Report summaries, candidate identities and comparison displays are implemented.
-The browser now defaults to the bounded [AUTO retrieval policy](automatic_retrieval.md).
-Next, run a separate live AUTO smoke and review retrieval completeness and
-report usability on representative public targets.
-Independent real-proposal acceptance remains separate. Capture freshness and
-component-specific product evidence remain separate work. Live
-execution must continue to show unresolved candidates explicitly.
+## Change and verification gates
 
-1. Report display and export — implemented as a [read-only viewer](ui_report_browser.md): consume existing acceptance reports; show each
-   source status, independent continuum/LINE branches and context/window/SPW
-   evidence. Export the same complete report, optionally with inspection v3.
-2. Minimal form — validation and offline execution implemented at `/proposed`:
-   one fixed single-point setup, multiple windows, both intents and explicit units.
-   Configured Archive replay and Queue CSV providers call the shared entry with
-   explicit AssessmentOptions. Missing/invalid input, execution errors and usable
-   partial-source reports remain distinct. Solar is supported by the execution
-   adapter and report viewer. The form now exposes target type and geometry with
-   support notices and server-side execution guards. Moving/Mosaic and Sun
-   selections support validation/export only; dedicated scientific inputs and
-   broader execution remain separate increments.
-3. Browser/CLI agreement — implemented in `tests/ui/test_cli_parity.py`: catalog
-   inputs cover mixed intents, missing RMS, coarse resolution, multiple pairs and
-   source failure/missing/empty results. Additional cases cover declarations,
-   conflicting evidence, equivalent units, pagination/display truncation and the
-   Solar adapter/viewer boundary. Same-run downloads preserve original bytes.
-   Separate runs compare complete reports and inspection v3. Only four execution
-   timestamps are normalized; the CLI input-file hash and absent form-file hash
-   are separately asserted. See the [gate contract](ui_offline_assessment.md#offline-uicli-parity-gate)
-   for configuration and provenance boundaries.
-4. Explicit live Archive source — implemented in `tests/ui/test_live_source.py`
-   and `ui/runs.py`: `ALMA_UI_LIVE_ARCHIVE` selects live TAP, mutually exclusive
-   with Archive replay. Client construction stays lazy and source-selected; failed
-   live execution does not fall back to replay. Captured AQ array evidence remains
-   a separate configured artifact and is never auto-refreshed by live TAP. The
-   regression suite forbids real network access, so service availability is not a
-   delivery claim.
+For documentation-only changes, check current claims against their contracts,
+relative paths/anchors and diff whitespace. Preserve dated evidence and pinned
+reference bytes. Run the acceptance checks if their references are affected.
 
-Independent real-proposal review continues separately; broader modes do not
-become a blanket prerequisite for these UI increments.
+For runtime changes, run affected tests and the applicable acceptance/parity
+gates. Scientific refactoring must preserve values, reasons, methods,
+associations and outcomes; code relocation alone does not change a scientific
+method version. The [UI/CLI parity contract](ui_offline_assessment.md#offline-uicli-parity-gate)
+specifies permitted execution-time normalization and input-hash handling.
+Keep source acquisitions opt-in and distinguish fake-source tests from live checks.
 
 ## Weekly report measures
 
 Record retained/assessed contexts by source; evaluable/pass/fail/unknown counts;
 blocking reasons; independent numerical versus reviewed real cases; source and
-retrieval completeness; and method versions. More passing tests alone do not
-establish scientific acceptance.
-
-## Earlier plan
-
-The [pre-cleanup plan](https://github.com/skycharon2/alma-duplication-tool/blob/13c41d5b5cef9ebabce803dad16101a650c8c087/docs/pr_plan_2026-09-21.md)
-retains the original delivery gates and dated measurements. Historical Q1–Q8
-question IDs are distinct from the old engineering Q0/Q1 increment labels.
+retrieval completeness; and method versions. Record data freshness and stage
+runtime separately. More passing tests alone do not establish scientific acceptance.

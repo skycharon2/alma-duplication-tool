@@ -1,5 +1,13 @@
 # Proposed input form and shared validation
 
+This document owns the current form controls and request mapping. Use
+[browser assessment](ui_offline_assessment.md) for startup and source configuration,
+[the scientific workflow](ui_scientific_workflow.md) for backend calculations and
+[the report browser](ui_report_browser.md) for results and visualization.
+[Status](status.md) owns the implementation baseline and verification register.
+
+## Input scope and structure
+
 `/proposed` executes assessments for fixed ICRS targets, single pointing, one
 setup and up to 32 windows. Other target/geometry choices are available for
 selection, validation and valid-request export only. The initial form has no window rows. Detailed SPW input is optional;
@@ -99,7 +107,7 @@ or mosaic-pattern editor is provided. Retained coordinates do not define either.
 
 Validation and request download use the existing backend contract. Valid moving
 or mosaic requests report UNSUPPORTED. Valid Sun requests report NOT_APPLICABLE:
-the backend already recognizes Solar exemption, but this increment does not enable
+the backend already recognizes Solar exemption, but the form does not enable
 the browser Solar report flow. Sun takes the existing backend exemption path even
 when its selected geometry is Mosaic. No choice creates a duplication verdict.
 
@@ -140,9 +148,9 @@ spectral alternatives or introduce a search-wide verdict.
 The expandable policy summary is explanatory. Thresholds, scientific methods,
 pair association, approval states and aggregation continue to belong to the backend.
 
-Install `.[test,ui]` and start the existing Flask application, then open
-http://127.0.0.1:5000/proposed. `ALMA_UI_REPORT_DIR` is optional and independent:
-existing reports may be browsed, but form validation never selects or updates one.
+Follow [Run locally](ui_offline_assessment.md#run-locally) for a configured
+assessment form. `ALMA_UI_REPORT_DIR` is optional and independent: existing
+reports may be browsed, but form validation never selects or updates one.
 
 ## Ownership
 
@@ -180,15 +188,27 @@ missing counterpart evidence remains diagnosable. No aggregate or neighboring
 window RMS substitutes for it. Frequency and velocity resolution units use the
 backend's current accepted units. Channel spacing and effective noise bandwidth
 are distinct and are not inferred or exposed by this limited form. Kelvin,
-interval endpoint entry, arbitrary predicates, mosaics, moving targets and
-request-file import are outside this increment; the existing backend API remains
+interval endpoint entry, arbitrary predicates, mosaic/moving-target execution and
+request-file import are outside the current form; the existing backend API remains
 available for its wider supported input contract.
 
 Purpose checkboxes declare the intended branches; they do not qualify a setup.
 Continuum representative frequency and aggregate RMS can be entered without any
 window rows or contribution list. The separate [setup declaration](continuum_setup_declaration.md)
 can supply CONT-SETUP evidence without SPW details. Without it, missing widths
-retain the backend CONT-SETUP missing-evidence diagnostic. For LINE, omitted centres/resolution/RMS likewise
+can leave CONT-SETUP unresolved; the backend evaluates supplied widths during
+assessment. Two distinct qualifying widths can establish the condition without
+per-window centre frequencies or a complete list. Fewer than two qualifying
+widths do not establish a negative result unless the remaining evidence and list
+completeness justify it. A declaration does not override a contradictory complete
+list. These rules belong to the [setup contract](continuum_setup_declaration.md)
+and [rule methods](rules.md), not to form validation.
+
+For LINE, the proposed window bandwidth is not required for the central-frequency
+coverage check. The candidate's usable coverage is separate source evidence.
+Requested centre/reference, FDM evidence, planned resolution and RMS are still
+needed for the corresponding LINE criteria; REST also needs shared redshift.
+Omitted centres/resolution/RMS
 remain missing evidence. Position, resolved search scope and source selection can still permit
 candidate search. The interface does not invent windows, widths or sensitivities.
 
@@ -231,7 +251,8 @@ Tests cover LINE REST input, missing redshift, equivalent units with exact share
 operands, continuum usable widths, mixed intents, per-window sensitivity binding,
 row editing, duplicate references, invalid quantities, partial search readiness,
 backend diagnostic parity, escaped values, transport limits and request export.
-Existing report browser/acceptance tests remain unchanged.
+These tests verify engineering behavior; current recorded verification baselines
+are listed in [status](status.md#verification-register).
 
 The [browser assessment increment](ui_offline_assessment.md) connects inputs to
 explicit AssessmentOptions and `assess_observation()`, with independent run IDs.

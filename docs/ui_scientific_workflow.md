@@ -4,6 +4,10 @@ This map follows `ノート 3.pdf` (17 pages; scientific content on pages 3–17
 It describes implementation, not a new scientific policy. The notes remain
 unchanged. The [request contract](proposed_observation_api.md),
 [Queue mapping](queue_csv_contract.md) and versioned rule decisions own semantics.
+The [form contract](ui_proposed_form.md) owns visible inputs;
+[browser assessment](ui_offline_assessment.md) owns source configuration;
+[report presentation](ui_report_browser.md) owns tables and plots.
+[Status](status.md) records current capabilities and verification baselines.
 
 ## Researcher inputs and candidate evidence
 
@@ -15,11 +19,11 @@ to re-enter candidate windows, reference noise widths or array flags.
 | Notes | Input / source evidence | Backend | Browser |
 | --- | --- | --- | --- |
 | 3, 7–8 | RA/Dec, fixed target, single pointing | Validation, retrieval and candidate position rules | Position inputs; separation, candidate frequency, diameter and half-power radius |
-| 4, 7 | REST/lab frequency and redshift, or SKY frequency | `proposed_line.prepare_line_window()` | Line frequency/reference/redshift inputs; per-pair input/preparation panel |
+| 4, 7 | Requested window REST/lab centre and redshift, or SKY centre | `proposed_line.prepare_line_window()` with shared `proposed_frequency.prepare_frequency()` | LINE frequency/reference and shared redshift; per-pair preparation panel |
 | 5, 7 | Planned spectral resolution in velocity or frequency units | Shared preparation and LINE resolution compatibility | Resolution input; entered units, prepared km/s and candidate resolution |
 | 5–7 | Planned LINE RMS and angular resolution | Archive per-SPW 10 km/s RMS, spectral scaling and angular correction in `rules/line.py` | LINE RMS and angular inputs; source RMS, RMS at planned resolution and corrected RMS |
 | 5–6 | Same target, execution and SPW; FDM on both sides | Exact Archive pairing and mode evidence | Member → target/execution → SPW comparisons; mode criterion |
-| 9 | Representative SKY frequency, aggregate RMS, setup qualification | Confirmed continuum and setup/declaration rules | Continuum inputs; setup, frequency and aggregate RMS comparisons |
+| 9 | Representative SKY frequency or REST frequency with shared redshift; aggregate RMS and setup qualification | Shared frequency preparation and source-specific continuum/setup rules | One representative frequency/reference for the setup; separate aggregate RMS, declaration and optional SPW widths |
 | 10–12 | Candidate nominal width, resolution, polarization and response | `queue_normalization.py`, `queue_mode_adapter.py` | Automatic preparation; recorded mode criterion. Unknown mode stays unresolved |
 | 13 | Queue geometry, candidate array, position, angular resolution | `rules/queue_common.py` and candidate beam paths | Common criteria; separate 7 m / 12 m hypotheses where recorded |
 | 14 | Queue nominal widths → usable intervals → union; reference RMS/width | `rules/queue_continuum.py` | Aggregate RMS, expandable nominal/usable SPW table, union bandwidth and reference RMS |
@@ -31,6 +35,27 @@ or frequency units, angular resolution arcsec/mas, and RMS mJy/beam or Jy/beam.
 These are passed to the existing validator. JavaScript does not convert science
 quantities. Queue mJy values retain their source unit; the comparison uses the
 documented requested-flux-density interpretation, not measured image RMS.
+
+## Frequency and window evidence
+
+Both purposes accept SKY directly or REST with an explicit shared redshift.
+The [frequency contract](proposed_frequency.md) owns conversion and its evidence;
+missing redshift is not assumed to be zero. Frequency frame remains UNKNOWN;
+redshift preparation does not infer an observing reference frame.
+
+For CONTINUUM, one representative frequency describes the proposed setup.
+Individual SPW widths can establish CONT-SETUP without their centre frequencies.
+Alternatively, the separate researcher declaration supplies setup-qualification
+evidence. Neither route establishes frequency or RMS compatibility with a
+candidate. The aggregate RMS is supplied directly; selecting contributing
+windows records its association and does not combine or rescale their noise.
+
+For LINE, enter the requested correlator windows relevant to the check, each with
+its own centre, mode, planned resolution and RMS. There is no required four-SPW
+list and no copying of one window's sensitivity to another. Proposed bandwidth
+is optional for the centre-in-candidate-coverage criterion; candidate coverage
+still needs usable interval evidence. Incomplete requested lists limit negative
+conclusions. Detailed field mapping belongs to the form contract.
 
 ## Usable bandwidth: two paths
 
@@ -56,9 +81,14 @@ units and missing values. They do not evaluate formulas, supply missing evidence
 borrow another window's RMS, change a verdict or fetch source data. Raw inputs
 appear only when setup/window/sensitivity identities bind unambiguously.
 
-Matching-only results and Member grouping remain unchanged. A matching SPW is
-not a verdict on every observation in its Member. Historical reports with absent
-evidence remain readable; original exports retain their bytes.
+The default results view shows recorded matching contexts, grouped by Archive
+Member where identity is unambiguous. A matching SPW is not a verdict on every
+observation in its Member. The [report explorer](ui_report_browser.md#single-pointing-report-explorer)
+plots the same stored position and frequency evidence without new calculations.
+Historical reports with absent evidence remain readable. In
+[matching-detail v6](matching_report.md), other contexts retain decision summaries;
+omitted calculation details are not new missing-science diagnostics. Exports
+preserve the saved report, not a reconstructed full-evidence report.
 
 ## Clarifications when transcribing the notes
 

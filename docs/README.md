@@ -8,6 +8,16 @@ the request API or comparison model are unimplemented are historical.
 Read the short [runtime architecture overview](architecture.md) for module
 boundaries and the current evaluation boundary.
 
+## Start here
+
+- What works and what remains limited: [current status](status.md).
+- What to do next: [active roadmap](roadmap.md).
+- Run the browser and configure sources: [browser assessment](ui_offline_assessment.md).
+- Enter a proposal: [current form](ui_proposed_form.md).
+- Read results and explore them: [report browser](ui_report_browser.md) and
+  [single-pointing explorer](ui_report_browser.md#single-pointing-report-explorer).
+- Earlier delivery notes and test counts: [history](history/delivery_notes.md).
+
 ## Reading paths
 
 For candidate-search use and development:
@@ -52,8 +62,9 @@ checks, consecutive runs, pagination and unchanged downloads after PR #132.
 The [post-PR #134 browser regression](evidence/browser_regression_pr134_2026-10-12.md)
 repeats all four workflows after the performance changes and records outcome
 parity, retrieval-first provenance, saved-view timings and retained file sizes.
-The [form design](proposed_observation_form.md) is future interface
-design; the request API owns the accepted backend format. Historical statistics now live in the [snapshot register](evidence/exploration_snapshots.md);
+The [form sketch](proposed_observation_form.md) is a historical design reference;
+the [implemented form](ui_proposed_form.md) owns current input mapping, and the
+request API owns the accepted backend format. Historical statistics now live in the [snapshot register](evidence/exploration_snapshots.md);
 original ERDs and conceptual entities live in the [design document](design/conceptual_data_model.md).
 They are not current population counts or Python class definitions.
 
@@ -127,7 +138,7 @@ The table below defines result meanings, not an additional task list.
 | Axis / value | Current meaning | Does not establish |
 | --- | --- | --- |
 | Request `is_valid=True` | No ERROR issues; partial scientific evidence is allowed | Search readiness or candidate comparability; there is no VALID/INVALID enum |
-| Request `SearchReadiness.READY` | Valid fixed single-pointing ICRS position, explicit valid radius and selected source(s) | Query execution, executable filters or rule readiness |
+| Request `SearchReadiness.READY` | Valid fixed single-pointing ICRS position, a valid explicit radius or resolved AUTO scope, and selected source(s) | Query execution, executable filters or rule readiness |
 | Context source `COMPLETE` | Construction succeeded for the supplied complete query/file | Agreement with the current plan, all-sky completeness or complete Queue policy coverage |
 | Query binding `MATCHED` | Recorded Archive query agrees with the current builder's plan | Successful/complete remote retrieval; a matching overflow remains incomplete |
 | Spatial evidence `AVAILABLE` | The relevant supported evidence is available in `SpatialStatus` | A selection result, general STC-S support or approved beam coverage |
@@ -152,13 +163,16 @@ behavior belong to the [search/spatial contract](search_plan_spatial.md).
 5. Read [census v1](queue_mode_census.md) and the [processor experiment](experiments/queue_processor_consensus.md) as needed for diagnostic assumptions and limitations.
 6. [Roadmap](roadmap.md): the single owner of engineering order.
 
+<a id="next-delivery"></a>
+
 ## Delivery status and remaining work
 
 The [acceptance catalog](acceptance_cases.md) pins inputs and independently documented
 reference values; its runner saves reports, differences and evidence-gap counts.
 [Inspection v3](report_inspection.md) preserves candidate pair identities in those counts.
-The [thin-interface contract](thin_interface_contract.md) defines the first UI
-against report v4. No delivered case is falsely labelled as a reviewed real proposal.
+The [thin-interface contract](thin_interface_contract.md) defines browser
+consumption of backend reports: new non-solar runs use v6, while full v4 and
+historical v5 remain readable. No delivered case is falsely labelled as a reviewed real proposal.
 
 
 The [remaining PR plan](roadmap.md) owns implementation order and gates.
@@ -201,8 +215,8 @@ review gate, persistent multi-user lifecycle and broader-mode scope.
 
 - [Shared assessment entry](assessment_entry.md): callable orchestration, lazy sources and execution statuses; browser replay/live TAP execution consumes this entry.
 
-- [Matching-detail reports](matching_report.md): browser v5 retains full matching evidence and other candidate decision summaries.
+- [Matching-detail reports](matching_report.md): browser v6 retains full matching evidence and shared decision summaries for other candidates; full v4 remains the shared-entry/CLI default.
 
-- [Read-only report browser](ui_report_browser.md): configure reports, read evidence, export originals.
+- [Report browser and explorer](ui_report_browser.md): read saved evidence, inspect linked single-pointing charts and export original artifacts.
 
 - [Proposed form validation](ui_proposed_form.md): field mapping, per-window RMS, request export.

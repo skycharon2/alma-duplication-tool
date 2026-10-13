@@ -1,8 +1,18 @@
 # Proposed-observation form sketch
 
-Form design version 0.4; the browser form is not implemented.
-The [offline request API](proposed_observation_api.md) is implemented.
-The form remains a design sketch over the implemented report v4 / evaluation v5 backend.
+**Historical design sketch (version 0.4).** The browser form is now implemented.
+This document preserves the earlier panel proposal and its original field/default
+choices; it does not specify today's layout, required inputs or execution scope.
+Use the [current form contract](ui_proposed_form.md),
+[scientific workflow map](ui_scientific_workflow.md) and
+[request API](proposed_observation_api.md) for current behavior. In particular,
+[AUTO retrieval](automatic_retrieval.md) replaces manual radius entry as the
+browser default, and [matching-detail v6](matching_report.md) is the current
+non-solar browser report representation.
+
+## Original design
+
+The following sketch describes its original report v4 / evaluation v5 baseline.
 Goal: describe a proposed observation, retrieve Archive/Queue candidates and
 explain applicable conditions using coherent evidence. Users do not supply
 expected project IDs, Member UIDs or duplicate labels.
