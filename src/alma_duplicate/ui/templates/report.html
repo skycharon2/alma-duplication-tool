@@ -54,7 +54,7 @@
 {% block content %}
 <div class="report-page">
 <div class="page-heading report-heading"><div><h1>Observation comparison</h1><p>{{ summary.target }}</p></div>
-<nav class="report-actions" aria-label="Report actions"><a class="button" href="{{ url_for('proposed') }}">Enter another observation</a><a class="button" href="{{ url_for('report_index') }}">Existing reports</a></nav></div>
+<nav class="report-actions" aria-label="Report actions">{% if document.report_kind != 'SOLAR_EXEMPTION' %}<a class="button" href="{{ visualization_url }}">Explore this report</a>{% endif %}<a class="button" href="{{ url_for('proposed') }}">Enter another observation</a><a class="button" href="{{ url_for('report_index') }}">Existing reports</a></nav></div>
 <section class="report-overview" aria-label="Result summary"><h2>Results in this search</h2>
 {% if document.report_kind == 'SOLAR_EXEMPTION' %}<p><strong>Solar exemption: search not performed.</strong> Solar observations are exempt from duplication checking. This is not a completed search with zero matches.</p>
 {% else %}

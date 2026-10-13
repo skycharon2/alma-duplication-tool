@@ -299,3 +299,67 @@ in a fresh browser preview with outbound source requests blocked. Their results
 remained unchanged; the Queue LINE matching pair was expanded and its other
 three pairs could be opened separately. This verifies presentation, not a new
 live-source or scientific acceptance run.
+
+## Single-pointing report explorer
+
+The report action **Explore this report** and the contextual **Explore report**
+navigation open `/reports/<id>/visualization` or `/runs/<id>/visualization`.
+The explorer reads that exact report. It does not search, acquire AQ evidence,
+convert scientific inputs, or recompute decisions. Downloads remain unchanged.
+
+The desktop layout places position and frequency panels side by side, with a
+comparison selector and recorded evidence below. On narrow screens the panels
+stack. Selecting a plot or list row highlights the same comparison in both
+panels. Zoom and Reset change only display bounds. Hover titles and the detail
+panel expose values; selection also supports keyboard activation. The text-report
+links remain usable without JavaScript.
+
+### What is drawn
+
+- Fixed-target, single-pointing requests only. Only recorded matching branches
+  and matching LINE pairs appear. Different targets, executions, SPWs, requested
+  windows and beam variants remain separate. A plotted match does not make the
+  entire Member OUS a duplicate.
+- Position uses the proposed ICRS origin, the candidate center, and the candidate
+  half-power radius stored in its eligible POS-SINGLE result. It does not derive
+  a beam from diameter/frequency, draw an invented proposed beam, or treat an
+  Archive footprint as the duplication boundary. Coordinates use an azimuthal
+  equidistant display projection with east left and north up, including RA wrap
+  and polar positions. Boundaries are sampled spherical small circles; drawing
+  precision never changes the backend's inclusion decision.
+- Archive centers are bound using the exact context ID and source reference,
+  single-field geometry and the confirmed fixed-ICRS position interpretation.
+  Ambiguous duplicate bindings are unavailable. Queue centers come from the
+  POS-SINGLE operands. No geometry is borrowed across contexts or diameters.
+- LINE draws the recorded prepared SKY frequency and candidate coverage interval.
+  CONTINUUM draws requested and candidate representative frequencies as markers;
+  it does not imply that continuum requires interval overlap. Shared CONT-SETUP
+  evidence remains visible, including the researcher-declaration basis.
+- Missing geometry or frequency evidence produces an explicit unavailable state.
+  Available counts describe the displayed comparisons. Old temporary indexes
+  without the new center index remain readable; their Archive position panel
+  can be unavailable while the spectral panel remains usable.
+
+### Pagination and storage
+
+`page` selects the existing matching-result page of up to 20 Member groups or
+independent Queue contexts. `plot_page` selects at most 30 individual comparisons
+within that page. Both levels expose navigation and counts. This display limit
+never changes retrieval, evaluation, or report contents.
+
+The existing disk projection now retains a small exact-context center index for
+matching contexts. Source rows remain in the original report; full contexts are
+still read through their existing byte offsets. Temporary explorer URLs share
+the report's expiry, eviction and server-session lifecycle.
+
+Verification covers saved Archive LINE and CONTINUUM reports, synthetic Queue
+CONTINUUM, and offline dual-source LINE runs. Tests cover immutable exports,
+run isolation, source-free reads, stale indexes, ambiguous centers, polar/RA-wrap
+projection, pair/beam identity, unsupported scope and pagination. This verifies
+presentation against stored evidence, not a new scientific acceptance run.
+
+Verification on 2026-10-13: 271 UI tests passed; Ruff F, JavaScript syntax and
+whitespace checks passed. Browser checks exercised the saved Archive LINE case,
+the CASE1 continuum report (4 Members / 16 comparisons), and a clearly labeled
+synthetic Queue continuum report. Selection, zoom, text-report navigation and
+a 390 px stacked layout were checked without new source queries.

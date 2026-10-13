@@ -24,7 +24,21 @@ def report_projection(document, inspection, *, compact=False):
                    if key not in {'rows', 'omitted_candidate_ids'}}
             for name, source in document['sources'].items()
         }
+    # A small exact-context geometry index survives compact source metadata.
+    # Duplicate bindings are ambiguous, even if their coordinates look alike.
+    matched_ids = {context['context_id'] for _, context in matches}
+    spatial = {}
+    for source in document.get('sources', {}).values():
+        for row in source.get('rows', []):
+            key = row.get('context_id')
+            if key in matched_ids:
+                evidence = row.get('spatial_evidence') or {}
+                spatial[key] = None if key in spatial else {
+                    'reference': row.get('reference'), 'context_id': evidence.get('context_id'),
+                    'center': evidence.get('center'), 'geometry': evidence.get('geometry'),
+                }
     return {
+        'spatial': spatial,
         'document': metadata, 'summary': report_summary(document),
         'source_overview': source_overview(document),
         'attention': attention_groups(document, inspection),
@@ -55,6 +69,8 @@ def report_page(projection, page, view, load_context):
     return {
         'document': projection['document'], 'summary': projection['summary'],
         'source_overview': projection['source_overview'], 'attention': projection['attention'],
+        'spatial': {c['context_id']: projection.get('spatial', {}).get(c['context_id'])
+                    for c in contexts.values()},
         'contexts': [contexts[index] for index in indices], 'context_indices': indices,
         'member_groups': page_groups, 'group_count': len(groups),
         'member_count': sum(g['member'] is not None for g in groups),
