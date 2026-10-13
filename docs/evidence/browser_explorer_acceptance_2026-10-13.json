@@ -1,0 +1,3162 @@
+{
+  "baseline": "f3e15f568f5f014789dd023bd236e5c270f9e096",
+  "merged_pr": 139,
+  "date": "2026-10-13",
+  "scope": "Fresh browser form -> live Archive TAP/AQ or official Queue snapshot -> assessment -> text report -> single-pointing explorer",
+  "configuration": {
+    "live_archive": true,
+    "live_aq": true,
+    "queue_snapshot_date": "2026-03-03",
+    "queue_snapshot_sha256": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5",
+    "auto_retrieval": true,
+    "run_storage_max_bytes": 1073741824,
+    "run_storage_max_runs": 20,
+    "run_ttl_hours": 24
+  },
+  "tests": {
+    "command": "python -m pytest -q tests/ui",
+    "passed": 271,
+    "duration_seconds": 26.5
+  },
+  "workflows": {
+    "archive-continuum": {
+      "input": {
+        "request": {
+          "target_kind": "FIXED",
+          "geometry": "SINGLE_POINTING",
+          "target_name": "CASE1 continuum engineering check",
+          "position": {
+            "ra": "18:33:39.920",
+            "dec": "-21:03:39.900",
+            "ra_format": "HMS",
+            "dec_format": "DMS",
+            "frame": "ICRS"
+          },
+          "setup_id": "setup-1",
+          "setup_complete": false,
+          "intents": [
+            "CONTINUUM"
+          ],
+          "angular_resolution": {
+            "value": "0.23",
+            "unit": "arcsec"
+          },
+          "representative_frequency": {
+            "value": "290.420",
+            "unit": "GHz",
+            "kind": "SKY",
+            "frame": "UNKNOWN"
+          },
+          "spectral_windows": [],
+          "sensitivities": [
+            {
+              "sensitivity_id": "aggregate",
+              "purpose": "CONTINUUM",
+              "scope": "SETUP",
+              "setup_id": "setup-1",
+              "basis": "AGGREGATE",
+              "aggregate_path": "DIRECT_DECLARATION",
+              "rms": {
+                "value": "0.02",
+                "unit": "mJy/beam"
+              },
+              "window_ids": []
+            }
+          ],
+          "continuum_setup_declaration": "AT_LEAST_TWO_USABLE_WINDOWS_GT_1_8_GHZ"
+        },
+        "search_options": {
+          "sources": [
+            "ARCHIVE"
+          ],
+          "predicates": [],
+          "radius_mode": "AUTO"
+        }
+      },
+      "temporary_run_id": "ee4e22b936a7479ea9676e3924fe8780.81b38b8f9c1c4571b34184f372230021",
+      "metrics": {
+        "click_to_saved_view_seconds": 64.55706453323364,
+        "bytes": 2247735,
+        "files": {
+          "request.json": {
+            "size": 1193,
+            "sha256": "d6220d3c5f4581ece1e110d62549dd4422eb26bb6413311515c5bf74f4247748"
+          },
+          "report.json": {
+            "size": 2147460,
+            "sha256": "d689c73d3f1b19215d98ffe80ebc2452c64a71ae514eb36163dda391cc474589"
+          },
+          "view.json": {
+            "size": 96757,
+            "sha256": "957952a52fec6f9b373bb7fefa2729b3486fc258f3cfb364035a42ff7d287de0"
+          },
+          "inspection.json": {
+            "size": 2325,
+            "sha256": "a57f3ae4264d29c46277f333c4793b400ee3854fb040495cda6a8b1dbd153526"
+          }
+        }
+      },
+      "sources": {
+        "ARCHIVE": {
+          "status": "COMPLETED",
+          "tap_provenance": {
+            "query_run_id": "d94cfd3b-7d7b-4b79-a741-6dbb8a1b9a5f",
+            "endpoint": "https://almascience.eso.org/tap",
+            "count_adql": "SELECT COUNT(*) AS total_matches\nFROM ivoa.obscore\nWHERE 1 = CONTAINS(POINT('ICRS', s_ra, s_dec), CIRCLE('ICRS', 278.416333333333, -21.0610833333333, 0.0396119023))",
+            "retrieval_adql": "SELECT\n    proposal_id,\n    obs_publisher_did,\n    group_ous_uid,\n    member_ous_uid,\n    asdm_uid,\n    obs_id,\n    target_name,\n    s_ra,\n    s_dec,\n    s_region,\n    frequency,\n    bandwidth,\n    em_xel,\n    frequency_support,\n    spectral_resolution,\n    spatial_resolution,\n    sensitivity_10kms,\n    cont_sensitivity_bandwidth,\n    antenna_arrays,\n    is_mosaic,\n    science_observation,\n    qa2_passed,\n    obs_release_date,\n    lastModified,\n    s_resolution,\n    s_fov,\n    t_min,\n    t_max,\n    band_list,\n    pol_states\nFROM ivoa.obscore\nWHERE 1 = CONTAINS(POINT('ICRS', s_ra, s_dec), CIRCLE('ICRS', 278.416333333333, -21.0610833333333, 0.0396119023))",
+            "normalized_parameters": [
+              [
+                "spatial_strategy",
+                "CENTER"
+              ],
+              [
+                "ra_deg",
+                278.41633333333334
+              ],
+              [
+                "dec_deg",
+                -21.061083333333332
+              ],
+              [
+                "radius_deg",
+                0.0396119023
+              ],
+              [
+                "science_only",
+                false
+              ],
+              [
+                "frequency_min_ghz",
+                null
+              ],
+              [
+                "frequency_max_ghz",
+                null
+              ],
+              [
+                "angular_resolution_min_arcsec",
+                null
+              ],
+              [
+                "angular_resolution_max_arcsec",
+                null
+              ]
+            ],
+            "configured_maxrec": 10000,
+            "started_at": "2026-10-13T08:11:11.395200+00:00",
+            "finished_at": "2026-10-13T08:12:00.447300+00:00",
+            "expected_count": null,
+            "retrieved_count": 336,
+            "count_query_status_raw": null,
+            "retrieval_query_status_raw": "OK",
+            "query_hash": "67bc53c0d0699063038e0ec2d08dc1f3d7cbba32aeece88e0a77540d156c08e2",
+            "client_version": "8",
+            "schema_version": "3",
+            "frequency_prefilter_status": "NOT_REQUESTED",
+            "angular_resolution_prefilter_status": "NOT_REQUESTED",
+            "query_unit_contract_version": "2",
+            "query_unit_metadata": [],
+            "warnings": [
+              "QUERY=SELECT\n    proposal_id,\n    obs_publisher_did,\n    group_ous_uid,\n    member_ous_uid,\n    asdm_uid,\n    obs_id,\n    target_name,\n    s_ra,\n    s_dec,\n    s_region,\n    frequency,\n    bandwidth,\n    em_xel,\n    frequency_support,\n    spectral_resolution,\n    spatial_resolution,\n    sensitivity_10kms,\n    cont_sensitivity_bandwidth,\n    antenna_arrays,\n    is_mosaic,\n    science_observation,\n    qa2_passed,\n    obs_release_date,\n    lastModified,\n    s_resolution,\n    s_fov,\n    t_min,\n    t_max,\n    band_list,\n    pol_states\nFROM ivoa.obscore\nWHERE 1 = CONTAINS(POINT('ICRS', s_ra, s_dec), CIRCLE('ICRS', 278.416333333333, -21.0610833333333, 0.0396119023))",
+              "QUERY_TIMESTAMP=2026-10-13T08:11:59.885",
+              "placeholder=ignore",
+              "QUERY=SELECT column_name\nFROM TAP_SCHEMA.columns\nWHERE table_name = 'ivoa.obscore'\n    AND column_name IN ('s_resolution', 's_fov', 't_min', 't_max', 'band_list', 'pol_states')",
+              "QUERY_TIMESTAMP=2026-10-13T08:11:12.478",
+              "placeholder=ignore"
+            ],
+            "projection": {
+              "version": "1",
+              "selected_columns": [
+                "proposal_id",
+                "obs_publisher_did",
+                "group_ous_uid",
+                "member_ous_uid",
+                "asdm_uid",
+                "obs_id",
+                "target_name",
+                "s_ra",
+                "s_dec",
+                "s_region",
+                "frequency",
+                "bandwidth",
+                "em_xel",
+                "frequency_support",
+                "spectral_resolution",
+                "spatial_resolution",
+                "sensitivity_10kms",
+                "cont_sensitivity_bandwidth",
+                "antenna_arrays",
+                "is_mosaic",
+                "science_observation",
+                "qa2_passed",
+                "obs_release_date",
+                "lastModified",
+                "s_resolution",
+                "s_fov",
+                "t_min",
+                "t_max",
+                "band_list",
+                "pol_states"
+              ],
+              "optional_columns": [
+                {
+                  "column_name": "s_resolution",
+                  "status": "SELECTED",
+                  "returned": true
+                },
+                {
+                  "column_name": "s_fov",
+                  "status": "SELECTED",
+                  "returned": true
+                },
+                {
+                  "column_name": "t_min",
+                  "status": "SELECTED",
+                  "returned": true
+                },
+                {
+                  "column_name": "t_max",
+                  "status": "SELECTED",
+                  "returned": true
+                },
+                {
+                  "column_name": "band_list",
+                  "status": "SELECTED",
+                  "returned": true
+                },
+                {
+                  "column_name": "pol_states",
+                  "status": "SELECTED",
+                  "returned": true
+                }
+              ],
+              "probe_adql": "SELECT column_name\nFROM TAP_SCHEMA.columns\nWHERE table_name = 'ivoa.obscore'\n    AND column_name IN ('s_resolution', 's_fov', 't_min', 't_max', 'band_list', 'pol_states')",
+              "probe_status_raw": "OK",
+              "probe_rows": [
+                {
+                  "column_name": "band_list"
+                },
+                {
+                  "column_name": "pol_states"
+                },
+                {
+                  "column_name": "s_fov"
+                },
+                {
+                  "column_name": "s_resolution"
+                },
+                {
+                  "column_name": "t_max"
+                },
+                {
+                  "column_name": "t_min"
+                }
+              ],
+              "probe_error": null,
+              "warnings": [
+                "QUERY=SELECT column_name\nFROM TAP_SCHEMA.columns\nWHERE table_name = 'ivoa.obscore'\n    AND column_name IN ('s_resolution', 's_fov', 't_min', 't_max', 'band_list', 'pol_states')",
+                "QUERY_TIMESTAMP=2026-10-13T08:11:12.478",
+                "placeholder=ignore"
+              ]
+            },
+            "completeness_policy": "STATUS_THEN_COUNT",
+            "count_attempted": false
+          },
+          "aq_acquisition": {
+            "status": "COMPLETED",
+            "reason": null,
+            "requested_members": [
+              "uid://A001/X888/X17b",
+              "uid://A002/X36d874/X7c",
+              "uid://A002/X36d874/X7e",
+              "uid://A002/X36d874/X80",
+              "uid://A002/X36d874/X7a",
+              "uid://A001/X87d/X71e",
+              "uid://A001/X2df9/X1b",
+              "uid://A001/X888/X180",
+              "uid://A001/X879/X426",
+              "uid://A002/X82316f/X7",
+              "uid://A001/X2d1/X2b",
+              "uid://A002/X79f8ed/X3f",
+              "uid://A002/X5d7935/X2fb",
+              "uid://A001/X133d/X1415",
+              "uid://A002/X6444ba/X118",
+              "uid://A002/X6444ba/X120",
+              "uid://A002/X6444ba/X114",
+              "uid://A001/X1234/X1dc",
+              "uid://A001/X1234/X1d8",
+              "uid://A001/X2fe/X48f",
+              "uid://A001/X2fe/X497",
+              "uid://A001/X2fe/X853",
+              "uid://A001/X2fe/X856",
+              "uid://A001/X2fe/X85f",
+              "uid://A001/X2fe/X86e",
+              "uid://A001/X2fe/X874",
+              "uid://A001/X2fe/X85c",
+              "uid://A001/X2fe/X859",
+              "uid://A001/X2fe/X865",
+              "uid://A001/X2fe/X87a",
+              "uid://A001/X13e/X16e",
+              "uid://A001/X13e/X166",
+              "uid://A001/X13e/X16a",
+              "uid://A001/X2fe/X87d",
+              "uid://A001/X2fe/X877",
+              "uid://A001/X2fe/X871",
+              "uid://A001/X2fe/X850",
+              "uid://A001/X2fe/X86b",
+              "uid://A001/X2fe/X862",
+              "uid://A001/X2fe/X868",
+              "uid://A002/X7d1738/X45",
+              "uid://A002/X7d1738/X42",
+              "uid://A001/X2d6/X169",
+              "uid://A002/X7d1738/X3f",
+              "uid://A001/X122/X52e",
+              "uid://A001/X122/X532",
+              "uid://A001/X122/X51a",
+              "uid://A001/X122/X522",
+              "uid://A001/X122/X539",
+              "uid://A001/X122/X52a",
+              "uid://A001/X122/X526",
+              "uid://A001/X122/X51e",
+              "uid://A001/X885/X2cc",
+              "uid://A001/X885/X2c3",
+              "uid://A001/X1288/X10db",
+              "uid://A001/X1288/X10d3",
+              "uid://A001/X1288/X10cf",
+              "uid://A001/X1288/X10d7",
+              "uid://A001/X3578/X1ba",
+              "uid://A001/X2d1f/X82",
+              "uid://A002/X684eb5/X8e",
+              "uid://A001/X2d1f/X8a",
+              "uid://A001/X133d/X5e5",
+              "uid://A001/X133d/X5da",
+              "uid://A001/X133d/X5e1",
+              "uid://A001/X133d/X5de",
+              "uid://A001/X133d/X5d6",
+              "uid://A001/X1590/X3558"
+            ],
+            "queries": [
+              {
+                "member_ous_uid": "uid://A001/X888/X17b",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:01.599358+00:00",
+                "response_sha256": "bbcb66884d8400b36c647653a12f67a71ebb4d436e8bf0cad9608b0e0b6e141a",
+                "total_hits": 5,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A002/X36d874/X7c",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:01.785004+00:00",
+                "response_sha256": "1803e07ae499f3766b8fd0b6e22331d2ec7d1545dab8d2fbcc399bcfba2e8300",
+                "total_hits": 6,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A002/X36d874/X7e",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:01.974771+00:00",
+                "response_sha256": "18d51ae10496350306ab2b400044d5a0977986f6e8353539c081e8ba6b16a312",
+                "total_hits": 6,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A002/X36d874/X80",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:02.212695+00:00",
+                "response_sha256": "1481e383639f9d213230afa0dd6a4dace9c69b99c936522feddb1d5cb4efd598",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A002/X36d874/X7a",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:02.373724+00:00",
+                "response_sha256": "49aa5c87a2190c17c1e5c74514d954e85984ccecf4db21d8c2e953641955d800",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X87d/X71e",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:02.546115+00:00",
+                "response_sha256": "b06f65eff213ce43d10dcd24957b1b413ef6dcaa66bfec93a63e63493b15cbc1",
+                "total_hits": 6,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2df9/X1b",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:02.806778+00:00",
+                "response_sha256": "a8079b636262c20e02d01611eab5ee9207ba339186e6383af2640780d12ef3d8",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X888/X180",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:02.963051+00:00",
+                "response_sha256": "66393969c8b8fda0c299327d76f910c6f5377a69b55277452a83267d95b6ff3d",
+                "total_hits": 5,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X879/X426",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:03.213713+00:00",
+                "response_sha256": "e9b63f4c11f22fc210d100f07d439001edbf030e68bbe4160d952be691593f4a",
+                "total_hits": 8,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A002/X82316f/X7",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:03.394617+00:00",
+                "response_sha256": "29d923e45c9b9dc7a117b05f45150059432f3018fc577b1a31c9a51ea11fc068",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2d1/X2b",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:03.563620+00:00",
+                "response_sha256": "20914cb803c9bb48143a1c5a8e57e578e6ed1a6c1864b616d20c33633b71a0ab",
+                "total_hits": 8,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A002/X79f8ed/X3f",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:03.806513+00:00",
+                "response_sha256": "37d129249e9c8d765b573bb5f6460c07a88e85962f3548cfc1f39287d6463d2b",
+                "total_hits": 6,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A002/X5d7935/X2fb",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:03.980484+00:00",
+                "response_sha256": "5a9e093b13cff0c6245cd110d0a3457155435ec7489b18517df0e267072a173b",
+                "total_hits": 8,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X133d/X1415",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:04.223012+00:00",
+                "response_sha256": "fc98fe7e54091cb1042ca8f6e453a455ea2a1da7534bacfd88e63947431a45a6",
+                "total_hits": 5,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A002/X6444ba/X118",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:04.391730+00:00",
+                "response_sha256": "3e89f4ec2b5b8e6f55123902b97d0b847c18072d9564b2ac4d37f5625d895a31",
+                "total_hits": 5,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A002/X6444ba/X120",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:04.560631+00:00",
+                "response_sha256": "da5e584972524199fa4dc3b613ecf3715f92963df36c7ca0c2ccb396ac5b33e1",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A002/X6444ba/X114",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:04.797422+00:00",
+                "response_sha256": "067b3a69e90202c75b7b8072bf667255013aca10f843e4e521c4ae12fe8213e7",
+                "total_hits": 6,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X1234/X1dc",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:04.976736+00:00",
+                "response_sha256": "0528098ba8f6fcb0bce9a4e6a21631d74b41f6c274a5923990257ed3b66e2b5f",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X1234/X1d8",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:05.144199+00:00",
+                "response_sha256": "b21b8d934053aa8e659a566ef9e91a6e1e59a7ce1cc46fa4c38c129bc3e0e7a8",
+                "total_hits": 5,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X48f",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:05.381548+00:00",
+                "response_sha256": "4ba227dab3aadf5993d6b4a60477413f8f14245cab4ca3570dc082696aed9c76",
+                "total_hits": 8,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X497",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:05.548660+00:00",
+                "response_sha256": "5831518b45d4381c074b1481a6c949d966c365b13a5fa4e0d17fa6cda7861702",
+                "total_hits": 5,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X853",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:05.790507+00:00",
+                "response_sha256": "f0705d173c3754f3777d0f012065ac7e3851994c0c5f2f9e63857aa61d220dcc",
+                "total_hits": 3,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X856",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:05.958707+00:00",
+                "response_sha256": "1726b0bb8192ec772415fedcad787500e83d30be61ad45a75adb943f25edb044",
+                "total_hits": 3,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X85f",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:06.127464+00:00",
+                "response_sha256": "eb44df6a929197532246620a891b698e1b5606dc9cef1ff6f020812d79617534",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X86e",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:06.365498+00:00",
+                "response_sha256": "d7152804102ba8c31648c5072b33953e314ebbec0a6d3ee0a53837ec560292ec",
+                "total_hits": 3,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X874",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:06.524308+00:00",
+                "response_sha256": "71056bb103850720ee4c0b9307c0b4d2a4036503b7981277f88b9549dadd530b",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X85c",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:06.697897+00:00",
+                "response_sha256": "fd9097a7cdf132e52d26e0e2ac18309cbccbf8324fbbb1c77c2868bd7abdad11",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X859",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:06.966939+00:00",
+                "response_sha256": "8adb28af4d390f0db5cb6257a1d9b807dc67449705280b2225314edbde4bad35",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X865",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:07.134524+00:00",
+                "response_sha256": "ddf03cdd2ee30a08fcd3b11e84ff640c7b4673dd2fa51be87056fe869ed725a4",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X87a",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:07.365725+00:00",
+                "response_sha256": "c9bfc672df56b84e3827e08e88002b001c618bff446ed2f8ba99c15fb4fa7768",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X13e/X16e",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:07.557505+00:00",
+                "response_sha256": "f030c344d238b7ca2f310c1f9def7138544beb20c727391b913178a0c81f4b19",
+                "total_hits": 5,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X13e/X166",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:07.743856+00:00",
+                "response_sha256": "c9eeccc797feec8637ba30eaf45bafd5cb76f10f53b5683323535b669ff0f7d2",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X13e/X16a",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:08.011029+00:00",
+                "response_sha256": "d38c625c1ced25f8a93153144f488cb6747894658dbe405391e3e1fa7c7a222f",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X87d",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:08.193396+00:00",
+                "response_sha256": "67c44ccf2091477e61967ea392458d2b56ba6e1309db6cc9bc893352939c71e5",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X877",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:08.458801+00:00",
+                "response_sha256": "a263f0d45f0cf3befe600a186e10eb7b7110d81e77b6f7ea68e5fd3a4394fca8",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X871",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:08.625287+00:00",
+                "response_sha256": "c0bf550793f5a427cc9042570832e276464778ee558bdf4f8816d6a4d567ef94",
+                "total_hits": 3,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X850",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:08.807107+00:00",
+                "response_sha256": "a06ffc6719412d0c7784be139fe6f21b47781fde52223db56e10d8e1e8a36594",
+                "total_hits": 3,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X86b",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:09.055363+00:00",
+                "response_sha256": "90cc95c527b33c48387f81772284fa899ecd35909861e8937b0d38b52e68f15e",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X862",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:09.210791+00:00",
+                "response_sha256": "b3d1fad3fa41054d21cc3762cda26785cc4669de9f0ae5b147ccc4bbe1a36e36",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2fe/X868",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:09.458996+00:00",
+                "response_sha256": "bdd4fee53b3a15e784636d98595dbf15377be3281c454d3abd0013666e95aab0",
+                "total_hits": 3,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A002/X7d1738/X45",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:09.624579+00:00",
+                "response_sha256": "968b77df655fffcc7125783a13f6841138da34a4fe18726fa26aad2deeaea889",
+                "total_hits": 6,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A002/X7d1738/X42",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:09.806341+00:00",
+                "response_sha256": "06a3b54e82f4322ea17b371ce42266dbafb4674008b2b5ccb39c7864e1326673",
+                "total_hits": 6,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2d6/X169",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:10.038705+00:00",
+                "response_sha256": "6d22dad9852d0fca64223ba5e4ec61c460203ce9d3e8d14acfce4edbaa5782e7",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A002/X7d1738/X3f",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:10.209146+00:00",
+                "response_sha256": "b13ce54ab753f9eea81fcb3dccf475069664a0f3ae2691b0f01b27272c0d45e0",
+                "total_hits": 6,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X122/X52e",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:10.368797+00:00",
+                "response_sha256": "f955a472b1b7cb0457da5220ac29ad91ee36f9075acff3aeee19923f06bb38b4",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X122/X532",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:10.636181+00:00",
+                "response_sha256": "63d09ebc52c0d944ca651dd52070f0fd74397d8fb29104e233ad4b337d9c5bd6",
+                "total_hits": 5,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X122/X51a",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:10.821921+00:00",
+                "response_sha256": "b6a0c660f7f1c77a7f521bddd01257b52f8dd33631269b1e3cd2c959229918d3",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X122/X522",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:11.082543+00:00",
+                "response_sha256": "ea1f3325830a894982db7fdb7e63523f05b468192d6018ee1f000dd452eba7c3",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X122/X539",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:11.263787+00:00",
+                "response_sha256": "817cec4f56981ed7c29ec01636b3e34c8c224761f81ea02993ed81baa81d6b21",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X122/X52a",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:11.444987+00:00",
+                "response_sha256": "e1404d1e5eff8069d33ed5d39231ec12cf1344a25b3d04fffc79a8587af2bc7a",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X122/X526",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:11.690175+00:00",
+                "response_sha256": "c11dfcd077580a88bd60967474537c06bc18a9ce7d605b5505c94d7ca2c66f4b",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X122/X51e",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:11.880286+00:00",
+                "response_sha256": "0e2defdca2030b584b97ecb4bce8f1355470fde43e79c84e41d5b73ed29b9c3b",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X885/X2cc",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:12.139679+00:00",
+                "response_sha256": "72e1d91ea3a3c40f4bd8684ba072a9eb360899927766885f2ab19e6dec2d600c",
+                "total_hits": 52,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X885/X2c3",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:12.319511+00:00",
+                "response_sha256": "fc3a0c5912f17e7fb1ad4ad365787b24fc127073f2e8b8b3938b6370975e7b2b",
+                "total_hits": 25,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X1288/X10db",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:12.497730+00:00",
+                "response_sha256": "29c6d2d415af512e68021ba4e8d164fb2e527c5ebb06a3b6116f44d76d53e123",
+                "total_hits": 3,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X1288/X10d3",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:12.717183+00:00",
+                "response_sha256": "2432b1856907cba34489fdf26155a9ec3b469b26b220f089adb473aaebf19df1",
+                "total_hits": 3,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X1288/X10cf",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:12.880874+00:00",
+                "response_sha256": "70270f3c670a458b17e3ab87f3f34a1d8fed44a0abf24e978255f667c4b6aa19",
+                "total_hits": 3,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X1288/X10d7",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:13.130646+00:00",
+                "response_sha256": "3a2fedfe40adac6f14f58ce8b6732a2cd6067bb25e70737caf1a1e47a39a1329",
+                "total_hits": 3,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X3578/X1ba",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:13.306758+00:00",
+                "response_sha256": "57d5f0edc272c0c253a6c6b51177ab097654fbc3669a557ce0238ea028675cca",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2d1f/X82",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:13.479324+00:00",
+                "response_sha256": "83eeb3b1bcc0ce290431746b4038afcac5ab52aa5fd0c2d5661bf4dd3ae8ca43",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A002/X684eb5/X8e",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:13.711218+00:00",
+                "response_sha256": "182f3be5ae5f292b50159d52dbe0d3dd6d57751c52a567cf04c7254d17d6bc60",
+                "total_hits": 5,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X2d1f/X8a",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:13.889206+00:00",
+                "response_sha256": "a28f1e32fb9eb21f2dc9f591d67ddbe86384d08dc7b0729832e1acf31768bc36",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X133d/X5e5",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:14.065191+00:00",
+                "response_sha256": "a9903b00994559f412cc9ca2124e3115856bdbef56be93ac41a547c8bb7f3854",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X133d/X5da",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:14.282614+00:00",
+                "response_sha256": "31d72aa42c10461f8c93f33b687b51f271d0be01919260f8a9a9d8d529e0680c",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X133d/X5e1",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:14.465729+00:00",
+                "response_sha256": "c28e2a291c26279917415ce5c97667674fb48c06695d6f5de9c5f4f38c9c725e",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X133d/X5de",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:14.701127+00:00",
+                "response_sha256": "cb8cb3bb44dc957062c1be79d408828d24374b0067438bee1a720b1168b7cdce",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X133d/X5d6",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:14.869014+00:00",
+                "response_sha256": "54fc44da0288844733f98cfc771cbcca6ab0ded34e985b150026f2e05a01ad52",
+                "total_hits": 4,
+                "max_hits": 100
+              },
+              {
+                "member_ous_uid": "uid://A001/X1590/X3558",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:12:15.034710+00:00",
+                "response_sha256": "33a94a693f2f650d2bf040dccbcf6ccbdf88804eb50d997847948a9af12eedb2",
+                "total_hits": 4,
+                "max_hits": 100
+              }
+            ],
+            "error": null,
+            "started_at": "2026-10-13T08:12:00.978444+00:00",
+            "finished_at": "2026-10-13T08:12:15.038931+00:00",
+            "properties_url": "https://almascience.eso.org/aq/service/api/v1/properties"
+          }
+        },
+        "QUEUE": {
+          "status": "NOT_SELECTED"
+        }
+      },
+      "checks": {
+        "contexts": 336,
+        "counts": {
+          "CRITERIA_NOT_MET": 320,
+          "CRITERIA_MET": 16
+        },
+        "sources": {
+          "ARCHIVE": "COMPLETED",
+          "QUEUE": "NOT_SELECTED"
+        },
+        "expected_identities": [
+          {
+            "Target": "PKS1830-211",
+            "Project": "2021.A.00028.S",
+            "Member OUS": "uid://A001/X2df9/X1b",
+            "ASDM": "uid://A002/Xfd251c/X7ba5",
+            "Observation ID": "uid://A001/X2df9/X1b.source.PKS1830-211.spw.25",
+            "SPW": "25"
+          },
+          {
+            "Target": "PKS1830-211",
+            "Project": "2021.A.00028.S",
+            "Member OUS": "uid://A001/X2df9/X1b",
+            "ASDM": "uid://A002/Xfd251c/X7ba5",
+            "Observation ID": "uid://A001/X2df9/X1b.source.PKS1830-211.spw.27",
+            "SPW": "27"
+          },
+          {
+            "Target": "PKS1830-211",
+            "Project": "2021.A.00028.S",
+            "Member OUS": "uid://A001/X2df9/X1b",
+            "ASDM": "uid://A002/Xfd251c/X7ba5",
+            "Observation ID": "uid://A001/X2df9/X1b.source.PKS1830-211.spw.29",
+            "SPW": "29"
+          },
+          {
+            "Target": "PKS1830-211",
+            "Project": "2021.A.00028.S",
+            "Member OUS": "uid://A001/X2df9/X1b",
+            "ASDM": "uid://A002/Xfd251c/X7ba5",
+            "Observation ID": "uid://A001/X2df9/X1b.source.PKS1830-211.spw.31",
+            "SPW": "31"
+          }
+        ],
+        "numerical_checks": [
+          {
+            "criterion": "ANGULAR",
+            "outcome": "SATISFIED",
+            "method": "archive_angular_factor_3",
+            "proposed": {
+              "value": 0.23,
+              "unit": "arcsec",
+              "source_field": "angular_resolution",
+              "semantics": "PROPOSED_REQUESTED"
+            },
+            "candidate": {
+              "value": 0.22935347707094672,
+              "unit": "arcsec",
+              "source_field": "spatial_resolution",
+              "semantics": "ARCHIVE_ESTIMATED_ROBUST_0.5"
+            },
+            "derived": {
+              "factor": 1.0028188930785353,
+              "max_factor": 2.0
+            }
+          },
+          {
+            "criterion": "POS-SINGLE",
+            "outcome": "SATISFIED",
+            "method": "archive_pos_single_3",
+            "proposed": null,
+            "candidate": null,
+            "derived": {
+              "separation_deg": 0.00016662855440257378,
+              "candidate_radius_deg": 0.0029030021322508635,
+              "candidate_frequency_ghz": 278.58849826734263,
+              "antenna_diameter_m": 12.0
+            }
+          },
+          {
+            "criterion": "CONT-FREQ",
+            "outcome": "SATISFIED",
+            "method": "archive_cont_freq_2",
+            "proposed": {
+              "value": 290.42,
+              "unit": "GHz",
+              "source_field": "representative_frequency",
+              "semantics": "USER_SETUP_REPRESENTATIVE_SKY"
+            },
+            "candidate": {
+              "value": 278.58849826734263,
+              "unit": "GHz",
+              "source_field": "frequency",
+              "semantics": "ARCHIVE_SKY_FREQUENCY"
+            },
+            "derived": {
+              "factor": 1.04246945515067,
+              "max_factor": 1.3,
+              "sky_frequency_ghz": 290.42
+            }
+          },
+          {
+            "criterion": "CONT-RMS",
+            "outcome": "SATISFIED",
+            "method": "archive_cont_rms_2",
+            "proposed": {
+              "value": 0.02,
+              "unit": "mJy/beam",
+              "source_field": "aggregate",
+              "semantics": "PROPOSED_REQUESTED_AGGREGATE_RMS"
+            },
+            "candidate": {
+              "value": 0.017882957961035565,
+              "unit": "mJy / beam",
+              "source_field": "cont_sensitivity_bandwidth",
+              "semantics": "ARCHIVE_ESTIMATED_AGGREGATE_RMS"
+            },
+            "derived": {
+              "factor": 0.8941478980517783,
+              "max_factor": 2.0
+            }
+          },
+          {
+            "criterion": "ANGULAR",
+            "outcome": "SATISFIED",
+            "method": "archive_angular_factor_3",
+            "proposed": {
+              "value": 0.23,
+              "unit": "arcsec",
+              "source_field": "angular_resolution",
+              "semantics": "PROPOSED_REQUESTED"
+            },
+            "candidate": {
+              "value": 0.22935347707094672,
+              "unit": "arcsec",
+              "source_field": "spatial_resolution",
+              "semantics": "ARCHIVE_ESTIMATED_ROBUST_0.5"
+            },
+            "derived": {
+              "factor": 1.0028188930785353,
+              "max_factor": 2.0
+            }
+          },
+          {
+            "criterion": "POS-SINGLE",
+            "outcome": "SATISFIED",
+            "method": "archive_pos_single_3",
+            "proposed": null,
+            "candidate": null,
+            "derived": {
+              "separation_deg": 0.00016662855440257378,
+              "candidate_radius_deg": 0.0028843665978783486,
+              "candidate_frequency_ghz": 280.38842395607696,
+              "antenna_diameter_m": 12.0
+            }
+          },
+          {
+            "criterion": "CONT-FREQ",
+            "outcome": "SATISFIED",
+            "method": "archive_cont_freq_2",
+            "proposed": {
+              "value": 290.42,
+              "unit": "GHz",
+              "source_field": "representative_frequency",
+              "semantics": "USER_SETUP_REPRESENTATIVE_SKY"
+            },
+            "candidate": {
+              "value": 280.38842395607696,
+              "unit": "GHz",
+              "source_field": "frequency",
+              "semantics": "ARCHIVE_SKY_FREQUENCY"
+            },
+            "derived": {
+              "factor": 1.0357774258380028,
+              "max_factor": 1.3,
+              "sky_frequency_ghz": 290.42
+            }
+          },
+          {
+            "criterion": "CONT-RMS",
+            "outcome": "SATISFIED",
+            "method": "archive_cont_rms_2",
+            "proposed": {
+              "value": 0.02,
+              "unit": "mJy/beam",
+              "source_field": "aggregate",
+              "semantics": "PROPOSED_REQUESTED_AGGREGATE_RMS"
+            },
+            "candidate": {
+              "value": 0.017882957961035565,
+              "unit": "mJy / beam",
+              "source_field": "cont_sensitivity_bandwidth",
+              "semantics": "ARCHIVE_ESTIMATED_AGGREGATE_RMS"
+            },
+            "derived": {
+              "factor": 0.8941478980517783,
+              "max_factor": 2.0
+            }
+          },
+          {
+            "criterion": "ANGULAR",
+            "outcome": "SATISFIED",
+            "method": "archive_angular_factor_3",
+            "proposed": {
+              "value": 0.23,
+              "unit": "arcsec",
+              "source_field": "angular_resolution",
+              "semantics": "PROPOSED_REQUESTED"
+            },
+            "candidate": {
+              "value": 0.22935347707094672,
+              "unit": "arcsec",
+              "source_field": "spatial_resolution",
+              "semantics": "ARCHIVE_ESTIMATED_ROBUST_0.5"
+            },
+            "derived": {
+              "factor": 1.0028188930785353,
+              "max_factor": 2.0
+            }
+          },
+          {
+            "criterion": "POS-SINGLE",
+            "outcome": "SATISFIED",
+            "method": "archive_pos_single_3",
+            "proposed": null,
+            "candidate": null,
+            "derived": {
+              "separation_deg": 0.00016662855440257378,
+              "candidate_radius_deg": 0.0027824556852943964,
+              "candidate_frequency_ghz": 290.65799996922254,
+              "antenna_diameter_m": 12.0
+            }
+          },
+          {
+            "criterion": "CONT-FREQ",
+            "outcome": "SATISFIED",
+            "method": "archive_cont_freq_2",
+            "proposed": {
+              "value": 290.42,
+              "unit": "GHz",
+              "source_field": "representative_frequency",
+              "semantics": "USER_SETUP_REPRESENTATIVE_SKY"
+            },
+            "candidate": {
+              "value": 290.65799996922254,
+              "unit": "GHz",
+              "source_field": "frequency",
+              "semantics": "ARCHIVE_SKY_FREQUENCY"
+            },
+            "derived": {
+              "factor": 1.0008195026830884,
+              "max_factor": 1.3,
+              "sky_frequency_ghz": 290.42
+            }
+          },
+          {
+            "criterion": "CONT-RMS",
+            "outcome": "SATISFIED",
+            "method": "archive_cont_rms_2",
+            "proposed": {
+              "value": 0.02,
+              "unit": "mJy/beam",
+              "source_field": "aggregate",
+              "semantics": "PROPOSED_REQUESTED_AGGREGATE_RMS"
+            },
+            "candidate": {
+              "value": 0.017882957961035565,
+              "unit": "mJy / beam",
+              "source_field": "cont_sensitivity_bandwidth",
+              "semantics": "ARCHIVE_ESTIMATED_AGGREGATE_RMS"
+            },
+            "derived": {
+              "factor": 0.8941478980517783,
+              "max_factor": 2.0
+            }
+          },
+          {
+            "criterion": "ANGULAR",
+            "outcome": "SATISFIED",
+            "method": "archive_angular_factor_3",
+            "proposed": {
+              "value": 0.23,
+              "unit": "arcsec",
+              "source_field": "angular_resolution",
+              "semantics": "PROPOSED_REQUESTED"
+            },
+            "candidate": {
+              "value": 0.22935347707094672,
+              "unit": "arcsec",
+              "source_field": "spatial_resolution",
+              "semantics": "ARCHIVE_ESTIMATED_ROBUST_0.5"
+            },
+            "derived": {
+              "factor": 1.0028188930785353,
+              "max_factor": 2.0
+            }
+          },
+          {
+            "criterion": "POS-SINGLE",
+            "outcome": "SATISFIED",
+            "method": "archive_pos_single_3",
+            "proposed": null,
+            "candidate": null,
+            "derived": {
+              "separation_deg": 0.00016662855440257378,
+              "candidate_radius_deg": 0.0027653311247120183,
+              "candidate_frequency_ghz": 292.4579256579569,
+              "antenna_diameter_m": 12.0
+            }
+          },
+          {
+            "criterion": "CONT-FREQ",
+            "outcome": "SATISFIED",
+            "method": "archive_cont_freq_2",
+            "proposed": {
+              "value": 290.42,
+              "unit": "GHz",
+              "source_field": "representative_frequency",
+              "semantics": "USER_SETUP_REPRESENTATIVE_SKY"
+            },
+            "candidate": {
+              "value": 292.4579256579569,
+              "unit": "GHz",
+              "source_field": "frequency",
+              "semantics": "ARCHIVE_SKY_FREQUENCY"
+            },
+            "derived": {
+              "factor": 1.0070171670613488,
+              "max_factor": 1.3,
+              "sky_frequency_ghz": 290.42
+            }
+          },
+          {
+            "criterion": "CONT-RMS",
+            "outcome": "SATISFIED",
+            "method": "archive_cont_rms_2",
+            "proposed": {
+              "value": 0.02,
+              "unit": "mJy/beam",
+              "source_field": "aggregate",
+              "semantics": "PROPOSED_REQUESTED_AGGREGATE_RMS"
+            },
+            "candidate": {
+              "value": 0.017882957961035565,
+              "unit": "mJy / beam",
+              "source_field": "cont_sensitivity_bandwidth",
+              "semantics": "ARCHIVE_ESTIMATED_AGGREGATE_RMS"
+            },
+            "derived": {
+              "factor": 0.8941478980517783,
+              "max_factor": 2.0
+            }
+          }
+        ],
+        "request_valid": true,
+        "inspection_matches_report": true,
+        "generated_at": "2026-10-13T08:12:15.396923+00:00",
+        "downloads": {
+          "request.json": {
+            "size": 1193,
+            "sha256": "d6220d3c5f4581ece1e110d62549dd4422eb26bb6413311515c5bf74f4247748"
+          },
+          "report.json": {
+            "size": 2147460,
+            "sha256": "d689c73d3f1b19215d98ffe80ebc2452c64a71ae514eb36163dda391cc474589"
+          },
+          "view.json": {
+            "size": 96757,
+            "sha256": "957952a52fec6f9b373bb7fefa2729b3486fc258f3cfb364035a42ff7d287de0"
+          },
+          "inspection.json": {
+            "size": 2325,
+            "sha256": "a57f3ae4264d29c46277f333c4793b400ee3854fb040495cda6a8b1dbd153526"
+          }
+        },
+        "visualization": {
+          "rows": 16,
+          "operands_match_saved_criteria": true,
+          "identities_and_pair_spws_match": true
+        },
+        "same_context_identities_and_branch_outcomes_as_pr134": true,
+        "saved_files_unchanged_after_revisits": true,
+        "browser_downloads_byte_identical": [
+          "report"
+        ]
+      }
+    },
+    "archive-line": {
+      "input": {
+        "request": {
+          "target_kind": "FIXED",
+          "geometry": "SINGLE_POINTING",
+          "target_name": "IRAS_09245-5228 LINE self-match",
+          "position": {
+            "ra": "141.5461103909849",
+            "dec": "-52.70729721185924",
+            "ra_format": "DEG",
+            "dec_format": "DEG",
+            "frame": "ICRS"
+          },
+          "setup_id": "setup-1",
+          "setup_complete": true,
+          "intents": [
+            "LINE"
+          ],
+          "angular_resolution": {
+            "value": "3.573980180426332",
+            "unit": "arcsec"
+          },
+          "representative_frequency": null,
+          "spectral_windows": [
+            {
+              "window_id": "wb6d12adc04e7",
+              "center": {
+                "value": "230.53800141830845",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "FDM"
+            }
+          ],
+          "sensitivities": [
+            {
+              "sensitivity_id": "line-wb6d12adc04e7",
+              "purpose": "LINE",
+              "scope": "WINDOW",
+              "window_ids": [
+                "wb6d12adc04e7"
+              ],
+              "basis": "SMOOTHED",
+              "rms": {
+                "value": "19.92234925906079",
+                "unit": "mJy/beam"
+              },
+              "smoothing_resolution": {
+                "value": "1",
+                "unit": "km/s"
+              }
+            }
+          ]
+        },
+        "search_options": {
+          "sources": [
+            "ARCHIVE"
+          ],
+          "predicates": [],
+          "radius_mode": "AUTO"
+        }
+      },
+      "temporary_run_id": "ee4e22b936a7479ea9676e3924fe8780.76bbfbf7afb04642898ec04588856973",
+      "metrics": {
+        "click_to_saved_view_seconds": 49.84091258049011,
+        "bytes": 140633,
+        "files": {
+          "request.json": {
+            "size": 1345,
+            "sha256": "672015a26dae9cff6c83ebeae63ac97302562b230736614f0780bc06de7fa7bb"
+          },
+          "report.json": {
+            "size": 92474,
+            "sha256": "90d3fdb453ab950f3d89ad064978734f81c1f100dce76e24a46f3e7970a5c490"
+          },
+          "view.json": {
+            "size": 40072,
+            "sha256": "a928cb9a7e922dc4eaade19921cbc3904dab5a48cb0a1679737460adf6a6dd46"
+          },
+          "inspection.json": {
+            "size": 6742,
+            "sha256": "70a2a4e4197bab5790d173e715c3057b1baac357e9d37c3dbcd65c29b9e100f9"
+          }
+        }
+      },
+      "sources": {
+        "ARCHIVE": {
+          "status": "COMPLETED",
+          "tap_provenance": {
+            "query_run_id": "bb1e1734-0fec-46dc-a3a1-2bb4ca6e9fe7",
+            "endpoint": "https://almascience.eso.org/tap",
+            "count_adql": "SELECT COUNT(*) AS total_matches\nFROM ivoa.obscore\nWHERE 1 = CONTAINS(POINT('ICRS', s_ra, s_dec), CIRCLE('ICRS', 141.546110390985, -52.7072972118592, 0.0396119023))",
+            "retrieval_adql": "SELECT\n    proposal_id,\n    obs_publisher_did,\n    group_ous_uid,\n    member_ous_uid,\n    asdm_uid,\n    obs_id,\n    target_name,\n    s_ra,\n    s_dec,\n    s_region,\n    frequency,\n    bandwidth,\n    em_xel,\n    frequency_support,\n    spectral_resolution,\n    spatial_resolution,\n    sensitivity_10kms,\n    cont_sensitivity_bandwidth,\n    antenna_arrays,\n    is_mosaic,\n    science_observation,\n    qa2_passed,\n    obs_release_date,\n    lastModified,\n    s_resolution,\n    s_fov,\n    t_min,\n    t_max,\n    band_list,\n    pol_states\nFROM ivoa.obscore\nWHERE 1 = CONTAINS(POINT('ICRS', s_ra, s_dec), CIRCLE('ICRS', 141.546110390985, -52.7072972118592, 0.0396119023))",
+            "normalized_parameters": [
+              [
+                "spatial_strategy",
+                "CENTER"
+              ],
+              [
+                "ra_deg",
+                141.5461103909849
+              ],
+              [
+                "dec_deg",
+                -52.70729721185924
+              ],
+              [
+                "radius_deg",
+                0.0396119023
+              ],
+              [
+                "science_only",
+                false
+              ],
+              [
+                "frequency_min_ghz",
+                null
+              ],
+              [
+                "frequency_max_ghz",
+                null
+              ],
+              [
+                "angular_resolution_min_arcsec",
+                null
+              ],
+              [
+                "angular_resolution_max_arcsec",
+                null
+              ]
+            ],
+            "configured_maxrec": 10000,
+            "started_at": "2026-10-13T08:15:56.199028+00:00",
+            "finished_at": "2026-10-13T08:16:45.268476+00:00",
+            "expected_count": null,
+            "retrieved_count": 4,
+            "count_query_status_raw": null,
+            "retrieval_query_status_raw": "OK",
+            "query_hash": "780be8737c366f3dedac9804e5d208e0b442e786faf3735e03a9e6b8bb90e414",
+            "client_version": "8",
+            "schema_version": "3",
+            "frequency_prefilter_status": "NOT_REQUESTED",
+            "angular_resolution_prefilter_status": "NOT_REQUESTED",
+            "query_unit_contract_version": "2",
+            "query_unit_metadata": [],
+            "warnings": [
+              "QUERY=SELECT\n    proposal_id,\n    obs_publisher_did,\n    group_ous_uid,\n    member_ous_uid,\n    asdm_uid,\n    obs_id,\n    target_name,\n    s_ra,\n    s_dec,\n    s_region,\n    frequency,\n    bandwidth,\n    em_xel,\n    frequency_support,\n    spectral_resolution,\n    spatial_resolution,\n    sensitivity_10kms,\n    cont_sensitivity_bandwidth,\n    antenna_arrays,\n    is_mosaic,\n    science_observation,\n    qa2_passed,\n    obs_release_date,\n    lastModified,\n    s_resolution,\n    s_fov,\n    t_min,\n    t_max,\n    band_list,\n    pol_states\nFROM ivoa.obscore\nWHERE 1 = CONTAINS(POINT('ICRS', s_ra, s_dec), CIRCLE('ICRS', 141.546110390985, -52.7072972118592, 0.0396119023))",
+              "QUERY_TIMESTAMP=2026-10-13T08:16:45.116",
+              "placeholder=ignore",
+              "QUERY=SELECT column_name\nFROM TAP_SCHEMA.columns\nWHERE table_name = 'ivoa.obscore'\n    AND column_name IN ('s_resolution', 's_fov', 't_min', 't_max', 'band_list', 'pol_states')",
+              "QUERY_TIMESTAMP=2026-10-13T08:15:56.683",
+              "placeholder=ignore"
+            ],
+            "projection": {
+              "version": "1",
+              "selected_columns": [
+                "proposal_id",
+                "obs_publisher_did",
+                "group_ous_uid",
+                "member_ous_uid",
+                "asdm_uid",
+                "obs_id",
+                "target_name",
+                "s_ra",
+                "s_dec",
+                "s_region",
+                "frequency",
+                "bandwidth",
+                "em_xel",
+                "frequency_support",
+                "spectral_resolution",
+                "spatial_resolution",
+                "sensitivity_10kms",
+                "cont_sensitivity_bandwidth",
+                "antenna_arrays",
+                "is_mosaic",
+                "science_observation",
+                "qa2_passed",
+                "obs_release_date",
+                "lastModified",
+                "s_resolution",
+                "s_fov",
+                "t_min",
+                "t_max",
+                "band_list",
+                "pol_states"
+              ],
+              "optional_columns": [
+                {
+                  "column_name": "s_resolution",
+                  "status": "SELECTED",
+                  "returned": true
+                },
+                {
+                  "column_name": "s_fov",
+                  "status": "SELECTED",
+                  "returned": true
+                },
+                {
+                  "column_name": "t_min",
+                  "status": "SELECTED",
+                  "returned": true
+                },
+                {
+                  "column_name": "t_max",
+                  "status": "SELECTED",
+                  "returned": true
+                },
+                {
+                  "column_name": "band_list",
+                  "status": "SELECTED",
+                  "returned": true
+                },
+                {
+                  "column_name": "pol_states",
+                  "status": "SELECTED",
+                  "returned": true
+                }
+              ],
+              "probe_adql": "SELECT column_name\nFROM TAP_SCHEMA.columns\nWHERE table_name = 'ivoa.obscore'\n    AND column_name IN ('s_resolution', 's_fov', 't_min', 't_max', 'band_list', 'pol_states')",
+              "probe_status_raw": "OK",
+              "probe_rows": [
+                {
+                  "column_name": "band_list"
+                },
+                {
+                  "column_name": "pol_states"
+                },
+                {
+                  "column_name": "s_fov"
+                },
+                {
+                  "column_name": "s_resolution"
+                },
+                {
+                  "column_name": "t_max"
+                },
+                {
+                  "column_name": "t_min"
+                }
+              ],
+              "probe_error": null,
+              "warnings": [
+                "QUERY=SELECT column_name\nFROM TAP_SCHEMA.columns\nWHERE table_name = 'ivoa.obscore'\n    AND column_name IN ('s_resolution', 's_fov', 't_min', 't_max', 'band_list', 'pol_states')",
+                "QUERY_TIMESTAMP=2026-10-13T08:15:56.683",
+                "placeholder=ignore"
+              ]
+            },
+            "completeness_policy": "STATUS_THEN_COUNT",
+            "count_attempted": false
+          },
+          "aq_acquisition": {
+            "status": "COMPLETED",
+            "reason": null,
+            "requested_members": [
+              "uid://A001/X3788/Xc194"
+            ],
+            "queries": [
+              {
+                "member_ous_uid": "uid://A001/X3788/Xc194",
+                "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+                "retrieved_at": "2026-10-13T08:16:45.617122+00:00",
+                "response_sha256": "6321fe80d7307cd4b541911bbe870e7ba152d8df75394c5e33d7144a528de908",
+                "total_hits": 4,
+                "max_hits": 100
+              }
+            ],
+            "error": null,
+            "started_at": "2026-10-13T08:16:45.286262+00:00",
+            "finished_at": "2026-10-13T08:16:45.619561+00:00",
+            "properties_url": "https://almascience.eso.org/aq/service/api/v1/properties"
+          }
+        },
+        "QUEUE": {
+          "status": "NOT_SELECTED"
+        }
+      },
+      "checks": {
+        "contexts": 4,
+        "counts": {
+          "CRITERIA_NOT_MET": 3,
+          "CRITERIA_MET": 1
+        },
+        "sources": {
+          "ARCHIVE": "COMPLETED",
+          "QUEUE": "NOT_SELECTED"
+        },
+        "expected_identities": [
+          {
+            "Target": "IRAS_09245-5228",
+            "Project": "2024.1.00408.S",
+            "Member OUS": "uid://A001/X3788/Xc194",
+            "ASDM": "uid://A002/X11e3e46/Xff4a",
+            "Observation ID": "uid://A001/X3788/Xc194.source.IRAS_09245-5228.spw.28",
+            "SPW": "28"
+          }
+        ],
+        "numerical_checks": [
+          {
+            "criterion": "ANGULAR",
+            "outcome": "SATISFIED",
+            "method": "archive_angular_factor_3",
+            "proposed": {
+              "value": 3.573980180426332,
+              "unit": "arcsec",
+              "source_field": "angular_resolution",
+              "semantics": "PROPOSED_REQUESTED"
+            },
+            "candidate": {
+              "value": 3.573980180426332,
+              "unit": "arcsec",
+              "source_field": "spatial_resolution",
+              "semantics": "ARCHIVE_ESTIMATED_ROBUST_0.5"
+            },
+            "derived": {
+              "factor": 1.0,
+              "max_factor": 2.0
+            }
+          },
+          {
+            "criterion": "POS-SINGLE",
+            "outcome": "SATISFIED",
+            "method": "archive_pos_single_3",
+            "proposed": null,
+            "candidate": null,
+            "derived": {
+              "separation_deg": 0.0,
+              "candidate_radius_deg": 0.00601383099791523,
+              "candidate_frequency_ghz": 230.53800141830845,
+              "antenna_diameter_m": 7.0
+            }
+          },
+          {
+            "criterion": "POS-SINGLE",
+            "outcome": "SATISFIED",
+            "method": "archive_pos_single_3",
+            "proposed": null,
+            "candidate": null,
+            "derived": {
+              "separation_deg": 0.0,
+              "candidate_radius_deg": 0.00601383099791523,
+              "candidate_frequency_ghz": 230.53800141830845,
+              "antenna_diameter_m": 7.0
+            }
+          },
+          {
+            "criterion": "ANGULAR",
+            "outcome": "SATISFIED",
+            "method": "archive_angular_factor_3",
+            "proposed": {
+              "value": 3.573980180426332,
+              "unit": "arcsec",
+              "source_field": "angular_resolution",
+              "semantics": "PROPOSED_REQUESTED"
+            },
+            "candidate": {
+              "value": 3.573980180426332,
+              "unit": "arcsec",
+              "source_field": "spatial_resolution",
+              "semantics": "ARCHIVE_ESTIMATED_ROBUST_0.5"
+            },
+            "derived": {
+              "factor": 1.0,
+              "max_factor": 2.0
+            }
+          },
+          {
+            "criterion": "LINE-FDM",
+            "outcome": "SATISFIED",
+            "method": "archive_line_fdm_1",
+            "proposed": null,
+            "candidate": null,
+            "derived": {}
+          },
+          {
+            "criterion": "LINE-COVERAGE",
+            "outcome": "SATISFIED",
+            "method": "archive_line_coverage_2",
+            "proposed": {
+              "value": 230.53800141830845,
+              "unit": "GHz",
+              "source_field": "wb6d12adc04e7",
+              "semantics": "PREPARED_SKY_CENTER"
+            },
+            "candidate": null,
+            "derived": {
+              "sky_frequency_ghz": 230.53800141830845,
+              "interval_low_ghz": 230.48,
+              "interval_high_ghz": 230.6
+            }
+          },
+          {
+            "criterion": "LINE-RESOLUTION-COMPATIBILITY",
+            "outcome": "SATISFIED",
+            "method": "archive_line_resolution_compatibility_2",
+            "proposed": {
+              "value": 1.0,
+              "unit": "km/s",
+              "source_field": "wb6d12adc04e7",
+              "semantics": "PREPARED_PLANNED_RESOLUTION"
+            },
+            "candidate": {
+              "value": 0.09175648138849564,
+              "unit": "km/s",
+              "source_field": "frequency_support.assigned_component.resolution",
+              "semantics": "AT_PROPOSED_SKY_CENTER"
+            },
+            "derived": {
+              "archive_resolution_kms": 0.09175648138849564,
+              "planned_resolution_kms": 1.0
+            }
+          },
+          {
+            "criterion": "LINE-RMS",
+            "outcome": "SATISFIED",
+            "method": "archive_line_rms_2",
+            "proposed": {
+              "value": 19.92234925906079,
+              "unit": "mJy/beam",
+              "source_field": "line-wb6d12adc04e7",
+              "semantics": "REQUESTED_AT_PLANNED_RESOLUTION"
+            },
+            "candidate": {
+              "value": 6.3,
+              "unit": "mJy/beam",
+              "source_field": "frequency_support.assigned_component.sensitivity@10km/s",
+              "semantics": "ARCHIVE_ESTIMATED_10KMS_RMS"
+            },
+            "derived": {
+              "archive_resolution_kms": 0.09175648138849564,
+              "planned_resolution_kms": 1.0,
+              "sigma_10kms_mjy_beam": 6.3,
+              "theta_plan_arcsec": 3.573980180426332,
+              "theta_archive_arcsec": 3.573980180426332,
+              "sigma_at_plan_mjy_beam": 19.92234925906079,
+              "sigma_comp_mjy_beam": 19.92234925906079,
+              "sigma_requested_mjy_beam": 19.92234925906079,
+              "max_factor": 2.0
+            }
+          }
+        ],
+        "request_valid": true,
+        "inspection_matches_report": true,
+        "generated_at": "2026-10-13T08:16:45.629914+00:00",
+        "downloads": {
+          "request.json": {
+            "size": 1345,
+            "sha256": "672015a26dae9cff6c83ebeae63ac97302562b230736614f0780bc06de7fa7bb"
+          },
+          "report.json": {
+            "size": 92474,
+            "sha256": "90d3fdb453ab950f3d89ad064978734f81c1f100dce76e24a46f3e7970a5c490"
+          },
+          "view.json": {
+            "size": 40072,
+            "sha256": "a928cb9a7e922dc4eaade19921cbc3904dab5a48cb0a1679737460adf6a6dd46"
+          },
+          "inspection.json": {
+            "size": 6742,
+            "sha256": "70a2a4e4197bab5790d173e715c3057b1baac357e9d37c3dbcd65c29b9e100f9"
+          }
+        },
+        "visualization": {
+          "rows": 1,
+          "operands_match_saved_criteria": true,
+          "identities_and_pair_spws_match": true
+        },
+        "same_context_identities_and_branch_outcomes_as_pr134": true,
+        "saved_files_unchanged_after_revisits": true,
+        "browser_downloads_byte_identical": []
+      }
+    },
+    "queue-continuum": {
+      "input": {
+        "request": {
+          "target_kind": "FIXED",
+          "geometry": "SINGLE_POINTING",
+          "target_name": "NGC6240 Queue self-match",
+          "position": {
+            "ra": "253.24541666666667",
+            "dec": "2.4010972222222224",
+            "ra_format": "DEG",
+            "dec_format": "DEG",
+            "frame": "ICRS"
+          },
+          "setup_id": "setup-1",
+          "setup_complete": true,
+          "intents": [
+            "CONTINUUM"
+          ],
+          "angular_resolution": {
+            "value": "0.4",
+            "unit": "arcsec"
+          },
+          "representative_frequency": {
+            "value": "338.5",
+            "unit": "GHz",
+            "kind": "SKY",
+            "frame": "UNKNOWN"
+          },
+          "spectral_windows": [
+            {
+              "window_id": "w9fec7a3ac8a7",
+              "center": {
+                "value": "350.4999999999",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "UNKNOWN",
+              "representation": "CENTER_BANDWIDTH",
+              "bandwidth": {
+                "value": "1875",
+                "unit": "MHz"
+              },
+              "bandwidth_kind": "NOMINAL"
+            },
+            {
+              "window_id": "we3efffab6dba",
+              "center": {
+                "value": "348.5000000001",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "UNKNOWN",
+              "representation": "CENTER_BANDWIDTH",
+              "bandwidth": {
+                "value": "1875",
+                "unit": "MHz"
+              },
+              "bandwidth_kind": "NOMINAL"
+            },
+            {
+              "window_id": "w7ec6502cb591",
+              "center": {
+                "value": "338.4999999999",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "UNKNOWN",
+              "representation": "CENTER_BANDWIDTH",
+              "bandwidth": {
+                "value": "1875",
+                "unit": "MHz"
+              },
+              "bandwidth_kind": "NOMINAL"
+            },
+            {
+              "window_id": "wcd62190d83ea",
+              "center": {
+                "value": "336.5000000001",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "UNKNOWN",
+              "representation": "CENTER_BANDWIDTH",
+              "bandwidth": {
+                "value": "1875",
+                "unit": "MHz"
+              },
+              "bandwidth_kind": "NOMINAL"
+            }
+          ],
+          "sensitivities": [
+            {
+              "sensitivity_id": "aggregate",
+              "purpose": "CONTINUUM",
+              "scope": "SETUP",
+              "setup_id": "setup-1",
+              "basis": "AGGREGATE",
+              "aggregate_path": "DIRECT_DECLARATION",
+              "rms": {
+                "value": "0.008",
+                "unit": "mJy/beam"
+              },
+              "window_ids": [
+                "w9fec7a3ac8a7",
+                "we3efffab6dba",
+                "w7ec6502cb591",
+                "wcd62190d83ea"
+              ]
+            }
+          ]
+        },
+        "search_options": {
+          "sources": [
+            "QUEUE"
+          ],
+          "predicates": [],
+          "radius_mode": "AUTO"
+        }
+      },
+      "temporary_run_id": "ee4e22b936a7479ea9676e3924fe8780.0713b8c0fb7145d0b9d59c68ea40a7ae",
+      "metrics": {
+        "click_to_saved_view_seconds": 13.036770820617676,
+        "bytes": 37915446,
+        "files": {
+          "request.json": {
+            "size": 2861,
+            "sha256": "41058b12d114868b26cb9f66fdb1711cfa13e7a0821ed52c8da971233bf7b531"
+          },
+          "report.json": {
+            "size": 19369328,
+            "sha256": "f26fd70d481927a1ba16bb46d95abcaf475e295d1708266dd2d5c479dacb96ed"
+          },
+          "view.json": {
+            "size": 241397,
+            "sha256": "3859fc8b817a50373652934efd4db807358b2500a9bb2e63b1f159f0344ca306"
+          },
+          "inspection.json": {
+            "size": 18301860,
+            "sha256": "b6baa5a3211feb29abceeb2c546c4f7b0e11e57fad744a1059d8899a219888c9"
+          }
+        }
+      },
+      "sources": {
+        "ARCHIVE": {
+          "status": "NOT_SELECTED"
+        },
+        "QUEUE": {
+          "status": "COMPLETED",
+          "snapshot": {
+            "source_url": "https://almascience.eso.org/proposing/duplications",
+            "snapshot_sha256": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5",
+            "captured_at": null,
+            "byte_length": 1448241,
+            "encoding": "utf-8-sig",
+            "description_raw": "This spreadsheet lists the metadata for ongoing observations for Grade A projects that are in the observing queue as of 2026 March 3.",
+            "operational_columns": [
+              "Project Code",
+              "Target Name",
+              "RA",
+              "Dec",
+              "RA_HMS",
+              "Dec_DMS",
+              "Long Offset",
+              "Lat Offset",
+              "Velocity",
+              "Vel. Frame",
+              "Vel. Convention",
+              "Mosaic",
+              "Mos. Length",
+              "Mos. Width",
+              "Mos. PA",
+              "Mos. Spacing",
+              "Mos. Coord.",
+              "Band",
+              "Req. Ang. Res.",
+              "Req. LAS",
+              "Use 7-m?",
+              "Use TP?",
+              "Polarization",
+              "Ref.Frequency",
+              "Ref.Freq.Width",
+              "Req.Sensitivity",
+              "Is Sky Freq?",
+              "SPS Start Freq.",
+              "SPS End Freq.",
+              "SPS Bandwidth",
+              "SPS Spec. Res.",
+              "Freq SPW 1",
+              "Freq SPW 2",
+              "Freq SPW 3",
+              "Freq SPW 4",
+              "Freq SPW 5",
+              "Freq SPW 6",
+              "Freq SPW 7",
+              "Freq SPW 8",
+              "Freq SPW 9",
+              "Freq SPW 10",
+              "Freq SPW 11",
+              "Freq SPW 12",
+              "Freq SPW 13",
+              "Freq SPW 14",
+              "Freq SPW 15",
+              "Freq SPW 16",
+              "Bandwidth SPW 1",
+              "Bandwidth SPW 2",
+              "Bandwidth SPW 3",
+              "Bandwidth SPW 4",
+              "Bandwidth SPW 5",
+              "Bandwidth SPW 6",
+              "Bandwidth SPW 7",
+              "Bandwidth SPW 8",
+              "Bandwidth SPW 9",
+              "Bandwidth SPW 10",
+              "Bandwidth SPW 11",
+              "Bandwidth SPW 12",
+              "Bandwidth SPW 13",
+              "Bandwidth SPW 14",
+              "Bandwidth SPW 15",
+              "Bandwidth SPW 16",
+              "Spec.Res. SPW 1",
+              "Spec.Res. SPW 2",
+              "Spec.Res. SPW 3",
+              "Spec.Res. SPW 4",
+              "Spec.Res. SPW 5",
+              "Spec.Res. SPW 6",
+              "Spec.Res. SPW 7",
+              "Spec.Res. SPW 8",
+              "Spec.Res. SPW 9",
+              "Spec.Res. SPW 10",
+              "Spec.Res. SPW 11",
+              "Spec.Res. SPW 12",
+              "Spec.Res. SPW 13",
+              "Spec.Res. SPW 14",
+              "Spec.Res. SPW 15",
+              "Spec.Res. SPW 16"
+            ],
+            "secondary_header_row": [
+              "",
+              "",
+              "[deg]",
+              "[deg]",
+              "",
+              "",
+              "[arcsec]",
+              "[arcsec]",
+              "[kms/s]",
+              "",
+              "",
+              "",
+              "[arcsec]",
+              "[arcsec]",
+              "[deg]",
+              "[arcsec]",
+              "Ref. Sys.",
+              "",
+              "[arcsec]",
+              "[arcsec]",
+              "",
+              "",
+              "",
+              "[GHz]",
+              "[MHz]",
+              "[mJy]",
+              "",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[MHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]"
+            ],
+            "dictionary_entries": [
+              {
+                "physical_start_line": 4,
+                "source_name": "Project Code",
+                "declaration": "string",
+                "description": "ALMA Project code."
+              },
+              {
+                "physical_start_line": 5,
+                "source_name": "Target Name",
+                "declaration": "string",
+                "description": "Name of the science target."
+              },
+              {
+                "physical_start_line": 6,
+                "source_name": "RA",
+                "declaration": "[deg]",
+                "description": "Target right ascension, in decimal degrees (0 for solar system targets)."
+              },
+              {
+                "physical_start_line": 7,
+                "source_name": "Dec",
+                "declaration": "[deg]",
+                "description": "Target declination, in decimal degress (0 for solar system targets)."
+              },
+              {
+                "physical_start_line": 8,
+                "source_name": "RA_HMS",
+                "declaration": "[h:m:s]",
+                "description": "Target right ascension, in Hr,Min,Sec."
+              },
+              {
+                "physical_start_line": 9,
+                "source_name": "Dec_DMS",
+                "declaration": "[d:m:s]",
+                "description": "Target declination, in Deg, Min, Sec."
+              },
+              {
+                "physical_start_line": 10,
+                "source_name": "Long Offset",
+                "declaration": "[\"]",
+                "description": "Right Ascension/galactic-longitude offset in arcsec. Offset is in RA unless Mos.Coord.Ref.Sys is \"galactic\"."
+              },
+              {
+                "physical_start_line": 11,
+                "source_name": "Lat Offset",
+                "declaration": "[\"]",
+                "description": "Declination/galactic-latitude offset in arcsec. Offset is in declination unless Mos.Coord.Ref.Sys is \"galactic\"."
+              },
+              {
+                "physical_start_line": 12,
+                "source_name": "Velocity",
+                "declaration": "[km/s]",
+                "description": "Target velocity"
+              },
+              {
+                "physical_start_line": 13,
+                "source_name": "Vel. Frame",
+                "declaration": "string",
+                "description": "Target velocity reference frame."
+              },
+              {
+                "physical_start_line": 14,
+                "source_name": "Vel. Convention",
+                "declaration": "string",
+                "description": "Velocity convention (radio, optical, or relativistic)."
+              },
+              {
+                "physical_start_line": 15,
+                "source_name": "Mosaic",
+                "declaration": "[boolean]",
+                "description": "Type of mosaic, either Rectangle, Custom, or N/A; N/A implies there is a single pointing for the target."
+              },
+              {
+                "physical_start_line": 16,
+                "source_name": "Mos. Length",
+                "declaration": "[\"]",
+                "description": "If a rectangular mosaic was requested: Length of rectangular area to be mapped as defined in the ALMA Observing Tool (OT)."
+              },
+              {
+                "physical_start_line": 17,
+                "source_name": "Mos. Width",
+                "declaration": "[\"]",
+                "description": "If a rectangular mosaic was requested: Width of rectangular area to be mapped as defined in the ALMA Observing Tool (OT)."
+              },
+              {
+                "physical_start_line": 18,
+                "source_name": "Mos. PA",
+                "declaration": "[deg]",
+                "description": "If a rectangular mosaic was requested: Position Angle of rectangular area to be mapped as defined in the ALMA Observing Tool (OT)."
+              },
+              {
+                "physical_start_line": 19,
+                "source_name": "Mos. Spacing",
+                "declaration": "[\"]",
+                "description": "If a rectangular mosaic was requested: Spacing betweeng pointings."
+              },
+              {
+                "physical_start_line": 20,
+                "source_name": "Mos. Coord. Ref. Sys",
+                "declaration": "string",
+                "description": "If the target is a mosaic, this field gives the coordinate system sed to define the mosaic."
+              },
+              {
+                "physical_start_line": 21,
+                "source_name": "Band",
+                "declaration": "string",
+                "description": "ALMA Observing Band, in format \"ALMA_RB\" followed by Band ID."
+              },
+              {
+                "physical_start_line": 22,
+                "source_name": "Req. Ang. Res.",
+                "declaration": "[\"]",
+                "description": "Requested angular resolution"
+              },
+              {
+                "physical_start_line": 23,
+                "source_name": "Req.LAS",
+                "declaration": "[\"]",
+                "description": "Requested largest angular scale"
+              },
+              {
+                "physical_start_line": 24,
+                "source_name": "Use 7-m?",
+                "declaration": "[boolean]",
+                "description": "Indicates if  observations with ACA 7-m Array are requested."
+              },
+              {
+                "physical_start_line": 25,
+                "source_name": "Use TP?",
+                "declaration": "[boolean]",
+                "description": "Indicates if observations with ACA Total Power Array are requested."
+              },
+              {
+                "physical_start_line": 26,
+                "source_name": "standAlone_ACA",
+                "declaration": "[boolean]",
+                "description": "Indicates if observations are ACA 7-m Array only."
+              },
+              {
+                "physical_start_line": 27,
+                "source_name": "Polarization",
+                "declaration": "[FULL/DOUBLE/SINGLE]",
+                "description": "Polarization products: Full, Dual or Single-X."
+              },
+              {
+                "physical_start_line": 28,
+                "source_name": "Ref.Frequency",
+                "declaration": "[GHz]",
+                "description": "Reference frequency for user-requested sensitivity."
+              },
+              {
+                "physical_start_line": 29,
+                "source_name": "Ref.Freq.Width",
+                "declaration": "[MHz]",
+                "description": "Reference bandwidth for user-requested sensitivity."
+              },
+              {
+                "physical_start_line": 30,
+                "source_name": "Req.Sensitivity",
+                "declaration": "[mJy]",
+                "description": "User-requested sensitivity"
+              },
+              {
+                "physical_start_line": 31,
+                "source_name": "Is Sky Freq?",
+                "declaration": "[boolean]",
+                "description": "Indicates if the frequencies for the spectral scan and spectral windows  are sky frequencies; If False,  the frequencies represent rest frequencies."
+              },
+              {
+                "physical_start_line": 32,
+                "source_name": "SPS Start Freq.",
+                "declaration": "[GHz]",
+                "description": "If the observation is a spectral scan: Start frequency of the spectral scan."
+              },
+              {
+                "physical_start_line": 33,
+                "source_name": "SPS End Freq.",
+                "declaration": "[GHz]",
+                "description": "If the observation is a spectral scan: End frequency of the spectral scan."
+              },
+              {
+                "physical_start_line": 34,
+                "source_name": "SPS Bandwidth",
+                "declaration": "[MHz]",
+                "description": "If the observation is a spectral scan: bandwidth of each window in the spectral scan."
+              },
+              {
+                "physical_start_line": 35,
+                "source_name": "SPS Spec. Res.",
+                "declaration": "[MHz]",
+                "description": "If the observation is a spectral scan: spectral resolution of the spectral scan."
+              },
+              {
+                "physical_start_line": 36,
+                "source_name": "Freq SPW [N]",
+                "declaration": "[GHz]",
+                "description": "Central  frequency in GHz for Spectral Window #N (where N = 1-16)."
+              },
+              {
+                "physical_start_line": 37,
+                "source_name": "Bandwidth SPW [N]",
+                "declaration": "[MHz]",
+                "description": "Bandwidth of spectral window #N (where N= 1-16)."
+              },
+              {
+                "physical_start_line": 38,
+                "source_name": "Spec.Res SPW [N]",
+                "declaration": "[MHz]",
+                "description": "Spectral resolution spectral Window #N (where N = 1-16)."
+              }
+            ],
+            "schema_version": "cycle13-queue-csv-v1",
+            "parser_version": "7",
+            "retrieved_at": null,
+            "parsed_at": "2026-10-13T08:19:15.652332+00:00",
+            "source_as_of": "2026-03-03",
+            "source_as_of_raw": "2026 March 3",
+            "source_as_of_status": "PARSED",
+            "source_url_kind": "SOURCE_PAGE",
+            "provenance_version": "2"
+          }
+        }
+      },
+      "checks": {
+        "contexts": 3200,
+        "counts": {
+          "INDETERMINATE": 3081,
+          "CRITERIA_NOT_MET": 118,
+          "CRITERIA_MET": 1
+        },
+        "sources": {
+          "ARCHIVE": "NOT_SELECTED",
+          "QUEUE": "COMPLETED"
+        },
+        "expected_identities": [
+          {
+            "Target": "NGC6240",
+            "Project": "2024.1.00750.S",
+            "Queue row": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5:42"
+          }
+        ],
+        "numerical_checks": [
+          {
+            "criterion": "ANGULAR",
+            "outcome": "SATISFIED",
+            "method": "queue_angular_factor_7",
+            "proposed": {
+              "value": 0.4,
+              "unit": "arcsec",
+              "source_field": "angular_resolution",
+              "semantics": "PROPOSED_REQUESTED"
+            },
+            "candidate": {
+              "value": 0.4,
+              "unit": "arcsec",
+              "source_field": "Req. Ang. Res.",
+              "semantics": "QUEUE_REQUESTED"
+            },
+            "derived": {
+              "factor": 1.0,
+              "max_factor": 2.0
+            }
+          },
+          {
+            "criterion": "POS-SINGLE",
+            "outcome": "SATISFIED",
+            "method": "queue_pos_single_6",
+            "proposed": null,
+            "candidate": null,
+            "derived": {
+              "separation_deg": 0.0,
+              "candidate_radius_deg": 0.0023891964682146577,
+              "candidate_fwhm_deg": 0.004778392936429315,
+              "candidate_frequency_ghz": 338.5,
+              "antenna_diameter_m": 12.0,
+              "candidate_ra_deg": 253.24541666666667,
+              "candidate_dec_deg": 2.4010972222222224,
+              "proposal_ra_deg": 253.24541666666667,
+              "proposal_dec_deg": 2.4010972222222224
+            }
+          },
+          {
+            "criterion": "CONT-FREQ",
+            "outcome": "SATISFIED",
+            "method": "queue_cont_freq_3",
+            "proposed": {
+              "value": 338.5,
+              "unit": "GHz",
+              "source_field": "representative_frequency",
+              "semantics": "USER_SETUP_REPRESENTATIVE_SKY"
+            },
+            "candidate": {
+              "value": 338.5,
+              "unit": "GHz",
+              "source_field": "Ref.Frequency",
+              "semantics": "QUEUE_REQUESTED_REFERENCE_SKY"
+            },
+            "derived": {
+              "factor": 1.0,
+              "max_factor": 1.3,
+              "sky_frequency_ghz": 338.5
+            }
+          },
+          {
+            "criterion": "CONT-RMS",
+            "outcome": "SATISFIED",
+            "method": "queue_cont_rms_portal_2",
+            "proposed": {
+              "value": 0.008,
+              "unit": "mJy/beam",
+              "source_field": "aggregate",
+              "semantics": "PROPOSED_REQUESTED_AGGREGATE_RMS"
+            },
+            "candidate": {
+              "value": 0.008,
+              "unit": "mJy",
+              "source_field": "Req.Sensitivity",
+              "semantics": "QUEUE_REQUESTED_RMS_AT_REFERENCE_WIDTH"
+            },
+            "derived": {
+              "reference_bandwidth_mhz": 7500.0,
+              "aggregate_bandwidth_mhz": 7500.0,
+              "aggregate_rms_mjy": 0.008,
+              "max_factor": 2.0
+            }
+          }
+        ],
+        "request_valid": true,
+        "inspection_matches_report": true,
+        "generated_at": "2026-10-13T08:19:25.347999+00:00",
+        "downloads": {
+          "request.json": {
+            "size": 2861,
+            "sha256": "41058b12d114868b26cb9f66fdb1711cfa13e7a0821ed52c8da971233bf7b531"
+          },
+          "report.json": {
+            "size": 19369328,
+            "sha256": "f26fd70d481927a1ba16bb46d95abcaf475e295d1708266dd2d5c479dacb96ed"
+          },
+          "view.json": {
+            "size": 241397,
+            "sha256": "3859fc8b817a50373652934efd4db807358b2500a9bb2e63b1f159f0344ca306"
+          },
+          "inspection.json": {
+            "size": 18301860,
+            "sha256": "b6baa5a3211feb29abceeb2c546c4f7b0e11e57fad744a1059d8899a219888c9"
+          }
+        },
+        "visualization": {
+          "rows": 1,
+          "operands_match_saved_criteria": true,
+          "identities_and_pair_spws_match": true
+        },
+        "same_context_identities_and_branch_outcomes_as_pr134": true,
+        "saved_files_unchanged_after_revisits": true,
+        "browser_downloads_byte_identical": []
+      }
+    },
+    "queue-line": {
+      "input": {
+        "request": {
+          "target_kind": "FIXED",
+          "geometry": "SINGLE_POINTING",
+          "target_name": "circinus_galaxy LINE self-match",
+          "position": {
+            "ra": "213.291275",
+            "dec": "-65.339019",
+            "ra_format": "DEG",
+            "dec_format": "DEG",
+            "frame": "ICRS"
+          },
+          "setup_id": "setup-1",
+          "setup_complete": true,
+          "intents": [
+            "LINE"
+          ],
+          "angular_resolution": {
+            "value": "0.15",
+            "unit": "arcsec"
+          },
+          "representative_frequency": null,
+          "spectral_windows": [
+            {
+              "window_id": "wfd9a656f5b93",
+              "center": {
+                "value": "182.5870779652115",
+                "unit": "GHz",
+                "kind": "SKY",
+                "frame": "UNKNOWN"
+              },
+              "correlator_mode": "FDM"
+            }
+          ],
+          "sensitivities": [
+            {
+              "sensitivity_id": "line-wfd9a656f5b93",
+              "purpose": "LINE",
+              "scope": "WINDOW",
+              "window_ids": [
+                "wfd9a656f5b93"
+              ],
+              "basis": "SMOOTHED",
+              "rms": {
+                "value": "5.5",
+                "unit": "mJy/beam"
+              },
+              "smoothing_resolution": {
+                "value": "0.564453125",
+                "unit": "MHz"
+              }
+            }
+          ]
+        },
+        "search_options": {
+          "sources": [
+            "QUEUE"
+          ],
+          "predicates": [],
+          "radius_mode": "AUTO"
+        }
+      },
+      "temporary_run_id": "ee4e22b936a7479ea9676e3924fe8780.4a52c5712bbd47798fdb0e6fda4ed1b7",
+      "metrics": {
+        "click_to_saved_view_seconds": 36.23440408706665,
+        "bytes": 88886013,
+        "files": {
+          "request.json": {
+            "size": 1309,
+            "sha256": "eb6f8fcbc0227479131e080936c471a43b8c02c027ab4e1d68a770de093a6ada"
+          },
+          "report.json": {
+            "size": 71075300,
+            "sha256": "b818eddebc0692619f88cb04b14a8217c194750f291b991f3b96756cd298f4e9"
+          },
+          "view.json": {
+            "size": 257056,
+            "sha256": "45726c7e61887651a844084f12aefab0a6e932d8b470c6f09b0f2556245043d2"
+          },
+          "inspection.json": {
+            "size": 17552348,
+            "sha256": "3cb45ec32c9f4a590eec69e50bbea6435b77539aa772ad754c23753d10c32172"
+          }
+        }
+      },
+      "sources": {
+        "ARCHIVE": {
+          "status": "NOT_SELECTED"
+        },
+        "QUEUE": {
+          "status": "COMPLETED",
+          "snapshot": {
+            "source_url": "https://almascience.eso.org/proposing/duplications",
+            "snapshot_sha256": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5",
+            "captured_at": null,
+            "byte_length": 1448241,
+            "encoding": "utf-8-sig",
+            "description_raw": "This spreadsheet lists the metadata for ongoing observations for Grade A projects that are in the observing queue as of 2026 March 3.",
+            "operational_columns": [
+              "Project Code",
+              "Target Name",
+              "RA",
+              "Dec",
+              "RA_HMS",
+              "Dec_DMS",
+              "Long Offset",
+              "Lat Offset",
+              "Velocity",
+              "Vel. Frame",
+              "Vel. Convention",
+              "Mosaic",
+              "Mos. Length",
+              "Mos. Width",
+              "Mos. PA",
+              "Mos. Spacing",
+              "Mos. Coord.",
+              "Band",
+              "Req. Ang. Res.",
+              "Req. LAS",
+              "Use 7-m?",
+              "Use TP?",
+              "Polarization",
+              "Ref.Frequency",
+              "Ref.Freq.Width",
+              "Req.Sensitivity",
+              "Is Sky Freq?",
+              "SPS Start Freq.",
+              "SPS End Freq.",
+              "SPS Bandwidth",
+              "SPS Spec. Res.",
+              "Freq SPW 1",
+              "Freq SPW 2",
+              "Freq SPW 3",
+              "Freq SPW 4",
+              "Freq SPW 5",
+              "Freq SPW 6",
+              "Freq SPW 7",
+              "Freq SPW 8",
+              "Freq SPW 9",
+              "Freq SPW 10",
+              "Freq SPW 11",
+              "Freq SPW 12",
+              "Freq SPW 13",
+              "Freq SPW 14",
+              "Freq SPW 15",
+              "Freq SPW 16",
+              "Bandwidth SPW 1",
+              "Bandwidth SPW 2",
+              "Bandwidth SPW 3",
+              "Bandwidth SPW 4",
+              "Bandwidth SPW 5",
+              "Bandwidth SPW 6",
+              "Bandwidth SPW 7",
+              "Bandwidth SPW 8",
+              "Bandwidth SPW 9",
+              "Bandwidth SPW 10",
+              "Bandwidth SPW 11",
+              "Bandwidth SPW 12",
+              "Bandwidth SPW 13",
+              "Bandwidth SPW 14",
+              "Bandwidth SPW 15",
+              "Bandwidth SPW 16",
+              "Spec.Res. SPW 1",
+              "Spec.Res. SPW 2",
+              "Spec.Res. SPW 3",
+              "Spec.Res. SPW 4",
+              "Spec.Res. SPW 5",
+              "Spec.Res. SPW 6",
+              "Spec.Res. SPW 7",
+              "Spec.Res. SPW 8",
+              "Spec.Res. SPW 9",
+              "Spec.Res. SPW 10",
+              "Spec.Res. SPW 11",
+              "Spec.Res. SPW 12",
+              "Spec.Res. SPW 13",
+              "Spec.Res. SPW 14",
+              "Spec.Res. SPW 15",
+              "Spec.Res. SPW 16"
+            ],
+            "secondary_header_row": [
+              "",
+              "",
+              "[deg]",
+              "[deg]",
+              "",
+              "",
+              "[arcsec]",
+              "[arcsec]",
+              "[kms/s]",
+              "",
+              "",
+              "",
+              "[arcsec]",
+              "[arcsec]",
+              "[deg]",
+              "[arcsec]",
+              "Ref. Sys.",
+              "",
+              "[arcsec]",
+              "[arcsec]",
+              "",
+              "",
+              "",
+              "[GHz]",
+              "[MHz]",
+              "[mJy]",
+              "",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[MHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[GHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]",
+              "[MHz]"
+            ],
+            "dictionary_entries": [
+              {
+                "physical_start_line": 4,
+                "source_name": "Project Code",
+                "declaration": "string",
+                "description": "ALMA Project code."
+              },
+              {
+                "physical_start_line": 5,
+                "source_name": "Target Name",
+                "declaration": "string",
+                "description": "Name of the science target."
+              },
+              {
+                "physical_start_line": 6,
+                "source_name": "RA",
+                "declaration": "[deg]",
+                "description": "Target right ascension, in decimal degrees (0 for solar system targets)."
+              },
+              {
+                "physical_start_line": 7,
+                "source_name": "Dec",
+                "declaration": "[deg]",
+                "description": "Target declination, in decimal degress (0 for solar system targets)."
+              },
+              {
+                "physical_start_line": 8,
+                "source_name": "RA_HMS",
+                "declaration": "[h:m:s]",
+                "description": "Target right ascension, in Hr,Min,Sec."
+              },
+              {
+                "physical_start_line": 9,
+                "source_name": "Dec_DMS",
+                "declaration": "[d:m:s]",
+                "description": "Target declination, in Deg, Min, Sec."
+              },
+              {
+                "physical_start_line": 10,
+                "source_name": "Long Offset",
+                "declaration": "[\"]",
+                "description": "Right Ascension/galactic-longitude offset in arcsec. Offset is in RA unless Mos.Coord.Ref.Sys is \"galactic\"."
+              },
+              {
+                "physical_start_line": 11,
+                "source_name": "Lat Offset",
+                "declaration": "[\"]",
+                "description": "Declination/galactic-latitude offset in arcsec. Offset is in declination unless Mos.Coord.Ref.Sys is \"galactic\"."
+              },
+              {
+                "physical_start_line": 12,
+                "source_name": "Velocity",
+                "declaration": "[km/s]",
+                "description": "Target velocity"
+              },
+              {
+                "physical_start_line": 13,
+                "source_name": "Vel. Frame",
+                "declaration": "string",
+                "description": "Target velocity reference frame."
+              },
+              {
+                "physical_start_line": 14,
+                "source_name": "Vel. Convention",
+                "declaration": "string",
+                "description": "Velocity convention (radio, optical, or relativistic)."
+              },
+              {
+                "physical_start_line": 15,
+                "source_name": "Mosaic",
+                "declaration": "[boolean]",
+                "description": "Type of mosaic, either Rectangle, Custom, or N/A; N/A implies there is a single pointing for the target."
+              },
+              {
+                "physical_start_line": 16,
+                "source_name": "Mos. Length",
+                "declaration": "[\"]",
+                "description": "If a rectangular mosaic was requested: Length of rectangular area to be mapped as defined in the ALMA Observing Tool (OT)."
+              },
+              {
+                "physical_start_line": 17,
+                "source_name": "Mos. Width",
+                "declaration": "[\"]",
+                "description": "If a rectangular mosaic was requested: Width of rectangular area to be mapped as defined in the ALMA Observing Tool (OT)."
+              },
+              {
+                "physical_start_line": 18,
+                "source_name": "Mos. PA",
+                "declaration": "[deg]",
+                "description": "If a rectangular mosaic was requested: Position Angle of rectangular area to be mapped as defined in the ALMA Observing Tool (OT)."
+              },
+              {
+                "physical_start_line": 19,
+                "source_name": "Mos. Spacing",
+                "declaration": "[\"]",
+                "description": "If a rectangular mosaic was requested: Spacing betweeng pointings."
+              },
+              {
+                "physical_start_line": 20,
+                "source_name": "Mos. Coord. Ref. Sys",
+                "declaration": "string",
+                "description": "If the target is a mosaic, this field gives the coordinate system sed to define the mosaic."
+              },
+              {
+                "physical_start_line": 21,
+                "source_name": "Band",
+                "declaration": "string",
+                "description": "ALMA Observing Band, in format \"ALMA_RB\" followed by Band ID."
+              },
+              {
+                "physical_start_line": 22,
+                "source_name": "Req. Ang. Res.",
+                "declaration": "[\"]",
+                "description": "Requested angular resolution"
+              },
+              {
+                "physical_start_line": 23,
+                "source_name": "Req.LAS",
+                "declaration": "[\"]",
+                "description": "Requested largest angular scale"
+              },
+              {
+                "physical_start_line": 24,
+                "source_name": "Use 7-m?",
+                "declaration": "[boolean]",
+                "description": "Indicates if  observations with ACA 7-m Array are requested."
+              },
+              {
+                "physical_start_line": 25,
+                "source_name": "Use TP?",
+                "declaration": "[boolean]",
+                "description": "Indicates if observations with ACA Total Power Array are requested."
+              },
+              {
+                "physical_start_line": 26,
+                "source_name": "standAlone_ACA",
+                "declaration": "[boolean]",
+                "description": "Indicates if observations are ACA 7-m Array only."
+              },
+              {
+                "physical_start_line": 27,
+                "source_name": "Polarization",
+                "declaration": "[FULL/DOUBLE/SINGLE]",
+                "description": "Polarization products: Full, Dual or Single-X."
+              },
+              {
+                "physical_start_line": 28,
+                "source_name": "Ref.Frequency",
+                "declaration": "[GHz]",
+                "description": "Reference frequency for user-requested sensitivity."
+              },
+              {
+                "physical_start_line": 29,
+                "source_name": "Ref.Freq.Width",
+                "declaration": "[MHz]",
+                "description": "Reference bandwidth for user-requested sensitivity."
+              },
+              {
+                "physical_start_line": 30,
+                "source_name": "Req.Sensitivity",
+                "declaration": "[mJy]",
+                "description": "User-requested sensitivity"
+              },
+              {
+                "physical_start_line": 31,
+                "source_name": "Is Sky Freq?",
+                "declaration": "[boolean]",
+                "description": "Indicates if the frequencies for the spectral scan and spectral windows  are sky frequencies; If False,  the frequencies represent rest frequencies."
+              },
+              {
+                "physical_start_line": 32,
+                "source_name": "SPS Start Freq.",
+                "declaration": "[GHz]",
+                "description": "If the observation is a spectral scan: Start frequency of the spectral scan."
+              },
+              {
+                "physical_start_line": 33,
+                "source_name": "SPS End Freq.",
+                "declaration": "[GHz]",
+                "description": "If the observation is a spectral scan: End frequency of the spectral scan."
+              },
+              {
+                "physical_start_line": 34,
+                "source_name": "SPS Bandwidth",
+                "declaration": "[MHz]",
+                "description": "If the observation is a spectral scan: bandwidth of each window in the spectral scan."
+              },
+              {
+                "physical_start_line": 35,
+                "source_name": "SPS Spec. Res.",
+                "declaration": "[MHz]",
+                "description": "If the observation is a spectral scan: spectral resolution of the spectral scan."
+              },
+              {
+                "physical_start_line": 36,
+                "source_name": "Freq SPW [N]",
+                "declaration": "[GHz]",
+                "description": "Central  frequency in GHz for Spectral Window #N (where N = 1-16)."
+              },
+              {
+                "physical_start_line": 37,
+                "source_name": "Bandwidth SPW [N]",
+                "declaration": "[MHz]",
+                "description": "Bandwidth of spectral window #N (where N= 1-16)."
+              },
+              {
+                "physical_start_line": 38,
+                "source_name": "Spec.Res SPW [N]",
+                "declaration": "[MHz]",
+                "description": "Spectral resolution spectral Window #N (where N = 1-16)."
+              }
+            ],
+            "schema_version": "cycle13-queue-csv-v1",
+            "parser_version": "7",
+            "retrieved_at": null,
+            "parsed_at": "2026-10-13T08:21:20.612251+00:00",
+            "source_as_of": "2026-03-03",
+            "source_as_of_raw": "2026 March 3",
+            "source_as_of_status": "PARSED",
+            "source_url_kind": "SOURCE_PAGE",
+            "provenance_version": "2"
+          }
+        }
+      },
+      "checks": {
+        "contexts": 3200,
+        "counts": {
+          "INDETERMINATE": 3081,
+          "CRITERIA_NOT_MET": 118,
+          "CRITERIA_MET": 1
+        },
+        "sources": {
+          "ARCHIVE": "NOT_SELECTED",
+          "QUEUE": "COMPLETED"
+        },
+        "expected_identities": [
+          {
+            "Target": "circinus_galaxy",
+            "Project": "2025.1.00344.S",
+            "Queue row": "8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5:97"
+          }
+        ],
+        "numerical_checks": [
+          {
+            "criterion": "ANGULAR",
+            "outcome": "SATISFIED",
+            "method": "queue_angular_factor_7",
+            "proposed": {
+              "value": 0.15,
+              "unit": "arcsec",
+              "source_field": "angular_resolution",
+              "semantics": "PROPOSED_REQUESTED"
+            },
+            "candidate": {
+              "value": 0.15,
+              "unit": "arcsec",
+              "source_field": "Req. Ang. Res.",
+              "semantics": "QUEUE_REQUESTED"
+            },
+            "derived": {
+              "factor": 1.0,
+              "max_factor": 2.0
+            }
+          },
+          {
+            "criterion": "POS-SINGLE",
+            "outcome": "SATISFIED",
+            "method": "queue_pos_single_6",
+            "proposed": null,
+            "candidate": null,
+            "derived": {
+              "separation_deg": 0.0,
+              "candidate_radius_deg": 0.004418479490663193,
+              "candidate_fwhm_deg": 0.008836958981326385,
+              "candidate_frequency_ghz": 183.03649619730908,
+              "antenna_diameter_m": 12.0,
+              "candidate_ra_deg": 213.291275,
+              "candidate_dec_deg": -65.339019,
+              "proposal_ra_deg": 213.291275,
+              "proposal_dec_deg": -65.339019
+            }
+          },
+          {
+            "criterion": "POS-SINGLE",
+            "outcome": "SATISFIED",
+            "method": "queue_pos_single_6",
+            "proposed": null,
+            "candidate": null,
+            "derived": {
+              "separation_deg": 0.0,
+              "candidate_radius_deg": 0.004418479490663193,
+              "candidate_fwhm_deg": 0.008836958981326385,
+              "candidate_frequency_ghz": 183.03649619730908,
+              "antenna_diameter_m": 12.0,
+              "candidate_ra_deg": 213.291275,
+              "candidate_dec_deg": -65.339019,
+              "proposal_ra_deg": 213.291275,
+              "proposal_dec_deg": -65.339019
+            }
+          },
+          {
+            "criterion": "ANGULAR",
+            "outcome": "SATISFIED",
+            "method": "queue_angular_factor_7",
+            "proposed": {
+              "value": 0.15,
+              "unit": "arcsec",
+              "source_field": "angular_resolution",
+              "semantics": "PROPOSED_REQUESTED"
+            },
+            "candidate": {
+              "value": 0.15,
+              "unit": "arcsec",
+              "source_field": "Req. Ang. Res.",
+              "semantics": "QUEUE_REQUESTED"
+            },
+            "derived": {
+              "factor": 1.0,
+              "max_factor": 2.0
+            }
+          },
+          {
+            "criterion": "LINE-FDM",
+            "outcome": "SATISFIED",
+            "method": "queue_line_fdm_1",
+            "proposed": null,
+            "candidate": null,
+            "derived": {}
+          },
+          {
+            "criterion": "LINE-COVERAGE",
+            "outcome": "SATISFIED",
+            "method": "queue_line_coverage_2",
+            "proposed": {
+              "value": 182.5870779652115,
+              "unit": "GHz",
+              "source_field": "wfd9a656f5b93",
+              "semantics": "PREPARED_SKY_CENTER"
+            },
+            "candidate": null,
+            "derived": {
+              "sky_frequency_ghz": 182.5870779652115,
+              "interval_low_ghz": 182.3526779652115,
+              "interval_high_ghz": 182.8214779652115
+            }
+          },
+          {
+            "criterion": "LINE-RESOLUTION-COMPATIBILITY",
+            "outcome": "SATISFIED",
+            "method": "queue_line_resolution_compatibility_2",
+            "proposed": {
+              "value": 0.9267840400062302,
+              "unit": "km/s",
+              "source_field": "wfd9a656f5b93",
+              "semantics": "PREPARED_PLANNED_RESOLUTION"
+            },
+            "candidate": {
+              "value": 0.564453125,
+              "unit": "MHz",
+              "source_field": "Spec.Res. SPW 3",
+              "semantics": "QUEUE_SPECTRAL_RESOLUTION"
+            },
+            "derived": {
+              "planned_resolution_kms": 0.9267840400062302,
+              "planned_resolution_mhz": 0.564453125,
+              "queue_resolution_mhz": 0.564453125
+            }
+          },
+          {
+            "criterion": "LINE-RMS",
+            "outcome": "SATISFIED",
+            "method": "queue_line_rms_portal_2",
+            "proposed": {
+              "value": 5.5,
+              "unit": "mJy/beam",
+              "source_field": "line-wfd9a656f5b93",
+              "semantics": "REQUESTED_AT_PLANNED_RESOLUTION"
+            },
+            "candidate": {
+              "value": 5.5,
+              "unit": "mJy",
+              "source_field": "Req.Sensitivity",
+              "semantics": "QUEUE_REQUESTED_RMS_AT_REFERENCE_WIDTH"
+            },
+            "derived": {
+              "planned_resolution_mhz": 0.564453125,
+              "queue_reference_width_mhz": 0.564453125,
+              "queue_rms_at_planned_resolution_mjy": 5.5,
+              "theta_plan_arcsec": 0.15,
+              "theta_queue_arcsec": 0.15,
+              "comparable_queue_rms_mjy": 5.5,
+              "sigma_requested_mjy_beam": 5.5,
+              "max_factor": 2.0
+            }
+          }
+        ],
+        "request_valid": true,
+        "inspection_matches_report": true,
+        "generated_at": "2026-10-13T08:21:48.619144+00:00",
+        "downloads": {
+          "request.json": {
+            "size": 1309,
+            "sha256": "eb6f8fcbc0227479131e080936c471a43b8c02c027ab4e1d68a770de093a6ada"
+          },
+          "report.json": {
+            "size": 71075300,
+            "sha256": "b818eddebc0692619f88cb04b14a8217c194750f291b991f3b96756cd298f4e9"
+          },
+          "view.json": {
+            "size": 257056,
+            "sha256": "45726c7e61887651a844084f12aefab0a6e932d8b470c6f09b0f2556245043d2"
+          },
+          "inspection.json": {
+            "size": 17552348,
+            "sha256": "3cb45ec32c9f4a590eec69e50bbea6435b77539aa772ad754c23753d10c32172"
+          }
+        },
+        "visualization": {
+          "rows": 1,
+          "operands_match_saved_criteria": true,
+          "identities_and_pair_spws_match": true
+        },
+        "same_context_identities_and_branch_outcomes_as_pr134": true,
+        "saved_files_unchanged_after_revisits": true,
+        "browser_downloads_byte_identical": [
+          "report",
+          "inspection",
+          "request"
+        ]
+      }
+    }
+  },
+  "interaction_checks": {
+    "consecutive_runs": 4,
+    "archive_all_comparison_pages": [
+      1,
+      2
+    ],
+    "queue_line_all_comparison_pages": [
+      1,
+      2
+    ],
+    "visual_selection": "Archive continuum comparison 4 / SPW 31 selected by chart click and keyboard; both charts and details agreed",
+    "position_and_frequency_zoom_reset": true,
+    "technical_records_hidden_in_default_view": true,
+    "report_and_form_navigation": true,
+    "empty_configured_reports_list_explained": true,
+    "desktop_width_px": 1440,
+    "narrow_width_px": 390,
+    "narrow_document_width_px": 390,
+    "console_errors_or_warnings": []
+  },
+  "observations": [
+    {
+      "severity": "nonblocking",
+      "area": "Queue LINE selected comparison identity",
+      "message": "The selected row correctly identifies SPW 3, but the identity list labels all context windows 1, 2, 3, 4 as SPW. Distinguish context windows from the selected pair in a later presentation change. Scientific pairing and plot interval are correct."
+    }
+  ],
+  "limits": [
+    "Self-retrieval engineering checks, not independent supervisor scientific acceptance.",
+    "Queue used a pinned 2026-03-03 snapshot, not a freshly refreshed observing queue.",
+    "No new live tests of source failure, REST/redshift, mixed purposes, mixed beams or broader scientific scope. Existing automated UI regressions passed.",
+    "All matching results fitted on one report page and one plot page; multiple matching Member/plot pages covered by automated tests.",
+    "Expiry, eviction, restart, concurrent user isolation and deployment were not forced in the live browser run.",
+    "Timing stops at saved view.json; subsequent HTML render and downloads excluded."
+  ]
+}
