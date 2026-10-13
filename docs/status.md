@@ -88,6 +88,13 @@ this documentation-only sync.
 | Single-pointing visualization | PR #138 implementation: 271 UI tests; saved Archive LINE/CONTINUUM and synthetic Queue browser checks; no new source acquisition | [Explorer verification](ui_report_browser.md#single-pointing-report-explorer) |
 | Deterministic scientific engineering acceptance | Pinned 15-case catalog and references; source/SPW isolation and incomplete-source cases | [Acceptance contract](acceptance_cases.md), [UI/CLI parity](ui_offline_assessment.md#offline-uicli-parity-gate) |
 
+The [2026-10-13 browser-to-explorer acceptance](evidence/browser_explorer_acceptance_2026-10-13.md)
+ran on merged PR #139 (`f3e15f5`): four newly entered Archive/Queue
+CONTINUUM/LINE cases, plot-to-report operand checks and 271 UI tests passed.
+The evidence records the fixed Queue snapshot, timings, lifecycle coverage and
+one non-blocking Queue SPW-label clarification. It is engineering verification,
+not independent supervisor scientific acceptance.
+
 ## Queue experimental boundary
 
 The [processor experiment](experiments/queue_processor_consensus.md) is conditional

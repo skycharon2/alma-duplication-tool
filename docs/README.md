@@ -62,6 +62,9 @@ checks, consecutive runs, pagination and unchanged downloads after PR #132.
 The [post-PR #134 browser regression](evidence/browser_regression_pr134_2026-10-12.md)
 repeats all four workflows after the performance changes and records outcome
 parity, retrieval-first provenance, saved-view timings and retained file sizes.
+The [post-PR #139 browser-to-explorer acceptance](evidence/browser_explorer_acceptance_2026-10-13.md)
+checks four newly generated reports, plot operands, linked selection, saved
+downloads and sequential runs, and records the remaining presentation finding.
 The [form sketch](proposed_observation_form.md) is a historical design reference;
 the [implemented form](ui_proposed_form.md) owns current input mapping, and the
 request API owns the accepted backend format. Historical statistics now live in the [snapshot register](evidence/exploration_snapshots.md);

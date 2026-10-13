@@ -18,6 +18,10 @@ to [rule inputs](duplication_rule_inputs.md).
   [recorded](evidence/browser_regression_pr134_2026-10-12.md).
 - Readable Member-grouped reports and the independent
   [single-pointing explorer](ui_report_browser.md#single-pointing-report-explorer).
+- Fresh four-workflow [browser-to-explorer acceptance](evidence/browser_explorer_acceptance_2026-10-13.md)
+  on merged PR #139: self-retrieval, scientific plot operands, linked selection,
+  sequential runs, pagination and unchanged exports. The evidence records the
+  Queue snapshot date and one non-blocking SPW-label clarification.
 
 Earlier increment IDs, test counts and extraction records are retained in
 [delivery history](history/delivery_notes.md). They are not an active task list.
@@ -26,13 +30,12 @@ Earlier increment IDs, test counts and extraction records are retained in
 
 | Step | Work | Exit gate |
 | --- | --- | --- |
-| 1. Verify newly generated reports | Restart on the reviewed code; submit new single-pointing requests, then open text reports and their explorers. Cover Archive/Queue and LINE/CONTINUUM. | Exact context/Member/target/execution/SPW and beam identities agree; units and plot operands match the saved report; selection, pagination, repeat reads and missing-evidence states work without new queries. Record runtime and data provenance. |
-| 2. Prepare a restricted supervisor preview | Define intended users, hosting, access control, source configuration, Queue snapshot freshness and temporary report retention. Document and test the chosen runtime. | An authorized supervisor can submit a case and review results; access boundaries, concurrent progress polling, expiry/restart behavior, source failures and data removal are tested. No public Flask development-server deployment. |
-| 3. Review supervisor cases | Collect actual proposals and expected judgments, distinguish self-retrieval from independent scientific review, and investigate discrepancies. | Record input provenance, reviewed labels, criterion-level explanations and known gaps; fix each confirmed defect in a bounded change with regression coverage. |
+| 1. Prepare a restricted supervisor preview | Define intended users, hosting, access control, source configuration, Queue snapshot freshness and temporary report retention. Clarify the recorded Queue SPW label; document and test the chosen runtime. | An authorized supervisor can submit a case and review results; access boundaries, concurrent progress polling, expiry/restart behavior, source failures and data removal are tested. No public Flask development-server deployment. |
+| 2. Review supervisor cases | Collect actual proposals and expected judgments, distinguish self-retrieval from independent scientific review, and investigate discrepancies. | Record input provenance, reviewed labels, criterion-level explanations and known gaps; fix each confirmed defect in a bounded change with regression coverage. |
 
-Step 1 verifies the new form-to-explorer path after the UI changes; it does not
-repeat an earlier live AUTO smoke as if that work were missing. Saved-report
-visualization checks remain useful but do not replace this execution check.
+The new form-to-explorer path has been verified for the four recorded cases.
+Repeat affected workflow checks after runtime or source-configuration changes;
+saved-report checks alone do not verify a changed acquisition path.
 
 A restricted preview does not automatically require a database or a general
 multi-user platform. The current progress/index state is process-local and report
