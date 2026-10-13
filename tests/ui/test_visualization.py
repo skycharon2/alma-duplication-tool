@@ -140,6 +140,8 @@ def test_report_route_escape_empty_scope_and_original_download(tmp_path):
     assert response.status_code == 200
     assert b'</script><script>alert(1)</script>' not in response.data
     assert 'Position' in response.text and 'Frequency' in response.text
+    assert response.text.index('static/visualization_view.js') < response.text.index('static/visualization.js')
+    assert client.get('/static/visualization_view.js').status_code == 200
     assert len(visual_response(client, base + '/visualization')['rows']) == 1
     assert client.get(base + '/download/report').data == raw
     assert base + '/visualization' in client.get(base).text

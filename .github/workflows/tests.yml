@@ -20,6 +20,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  visualization:
+    name: Visualization interactions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - run: node --test tests/ui/visualization_view.test.cjs
+      - run: node --check src/alma_duplicate/ui/static/visualization.js
+
   lint:
     name: Pyflakes rules
     runs-on: ubuntu-latest

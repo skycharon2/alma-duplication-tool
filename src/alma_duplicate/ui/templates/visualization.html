@@ -2,6 +2,7 @@
 {% block title %}Explore report · ALMA Duplication Assessment{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='visualization.css') }}">
+<script src="{{ url_for('static', filename='visualization_view.js') }}" defer></script>
 <script src="{{ url_for('static', filename='visualization.js') }}" defer></script>
 {% endblock %}
 {% block content %}
@@ -13,17 +14,28 @@
 {% else %}
 <div class="visual-scope"><span>Report page <strong>{{ page }} / {{ pages }}</strong> · Comparisons <strong>{{ visual.start }}–{{ visual.stop }}</strong> of {{ visual.total }} on this page</span><span class="visual-legend"><span class="legend-proposed">◆ Your observation</span><span class="legend-archive">● Archive</span><span class="legend-queue">● Queue</span></span></div>
 {% if visual.continuum_declaration %}<p class="chart-caption">Continuum setup qualification uses a researcher confirmation. <a href="{{ report_url }}#setup-qualification">Review setup evidence</a>.</p>{% endif %}
+<section id="visual-controls" class="visual-controls" aria-label="Filter displayed comparisons" hidden>
+<div class="visual-filter-fields">
+<label for="visual-project">Project<select id="visual-project"></select></label>
+<label for="visual-member">Member OUS<select id="visual-member"></select></label>
+<div class="visual-filter-actions"><button type="button" id="visual-isolate" aria-pressed="false">Only selected</button><button type="button" id="visual-focus">Focus selected</button><button type="button" id="visual-clear">Clear filters</button></div>
+</div>
+<p><strong id="visual-visible-count" role="status"></strong><span>Current loaded batch only ({{ visual.plot_page }} / {{ visual.plot_pages }} on report page {{ page }}). Other pages are unchanged.</span></p>
+</section>
+<section id="visual-current" class="visual-current" aria-label="Current comparison summary" hidden></section>
+<p id="visual-empty" class="notice" hidden>No comparisons in this view. Use Clear filters to show the loaded comparisons. This is not a duplication verdict.</p>
 <div class="visual-panels">
 <section class="visual-panel" aria-labelledby="spatial-title"><header><div><h2 id="spatial-title">Position</h2><p>Candidate half-power boundaries</p></div><div class="chart-tools" aria-label="Position zoom"><button type="button" data-zoom="spatial:in" aria-label="Zoom in position">+</button><button type="button" data-zoom="spatial:out" aria-label="Zoom out position">−</button><button type="button" data-zoom="spatial:reset">Reset</button></div></header>
 <svg id="spatial-chart" viewBox="0 0 460 460" role="group" aria-label="Position comparison, east to the left and north up"></svg>
-<p class="chart-caption">{{ visual.spatial_available }} / {{ visual.rows|length }} comparisons have position evidence. Offsets from your target in arcsec · East ← · North ↑. Boundaries use the candidate radius recorded by the backend.</p></section>
+<p class="chart-caption"><span id="visual-spatial-count">{{ visual.spatial_available }} / {{ visual.rows|length }}</span> visible comparisons have position evidence. Offsets from your target in arcsec · East ← · North ↑. Boundaries use the candidate radius recorded by the backend.</p></section>
 <section class="visual-panel" aria-labelledby="spectral-title"><header><div><h2 id="spectral-title">Frequency</h2><p>LINE windows · CONTINUUM representative frequencies</p></div><div class="chart-tools" aria-label="Frequency zoom"><button type="button" data-zoom="spectral:in" aria-label="Zoom in frequency">+</button><button type="button" data-zoom="spectral:out" aria-label="Zoom out frequency">−</button><button type="button" data-zoom="spectral:reset">Reset</button></div></header>
 <div class="frequency-scroll" tabindex="0" role="region" aria-label="Frequency comparisons"><svg id="spectral-chart" role="group" aria-label="Recorded frequency comparisons in GHz"></svg></div>
-<p class="chart-caption">{{ visual.spectral_available }} / {{ visual.rows|length }} comparisons have frequency evidence. ◆ Requested SKY frequency; bars show LINE candidate intervals. CONTINUUM uses two markers, not a coverage interval.</p></section>
+<p class="chart-caption"><span id="visual-spectral-count">{{ visual.spectral_available }} / {{ visual.rows|length }}</span> visible comparisons have frequency evidence. ◆ Requested SKY frequency; bars show LINE candidate intervals. CONTINUUM uses two markers, not a coverage interval.</p></section>
 </div>
-<p class="visual-selection-hint">Select a row or a plotted comparison to highlight it in both panels. Overlapping positions remain separate comparisons.</p>
+<p class="visual-selection-hint">Drag to pan · Ctrl/⌘ + scroll to zoom · Click overlapping positions to choose. Both plots and the list share your selection.</p>
+<details class="visual-help"><summary>Keyboard and touch controls</summary><p>Focus a plot: arrow keys pan, +/− zoom, Home resets. Enter/Space selects a focused comparison. On touch screens use the zoom buttons and comparison list.</p></details>
 <div class="visual-bottom">
-<section class="visual-panel visual-candidates" aria-labelledby="selection-title"><header><h2 id="selection-title">Matching comparisons</h2><span>{{ visual.rows|length }} shown</span></header>
+<section class="visual-panel visual-candidates" aria-labelledby="selection-title"><header><h2 id="selection-title">Matching comparisons</h2><span id="visual-list-count">{{ visual.rows|length }} shown</span></header>
 <div class="visual-list">{% for row in visual.rows %}<div class="visual-candidate" data-row="{{ row.id }}"><button type="button" class="visual-select" data-select="{{ row.id }}" aria-pressed="{{ 'true' if loop.first else 'false' }}"><span class="visual-row-number">{{ loop.index + visual.start - 1 }}</span><span><strong>{{ row.label }}</strong><small>{{ row.source|title }} · {{ row.intent }} · SPW {{ row.spw }}{% if row.window %} · requested {{ row.window }}{% endif %}{% if row.beam_variant is not none %} · beam path {{ row.beam_variant + 1 }}{% endif %}</small></span></button><a href="{{ report_url }}#{{ row.anchor }}" aria-label="Text comparison {{ loop.index + visual.start - 1 }}">Details ↗</a></div>{% endfor %}</div>
 </section>
 <section class="visual-panel visual-detail" aria-labelledby="detail-title"><header><h2 id="detail-title">Selected comparison</h2></header><p id="visual-selection-status" class="sr-only" aria-live="polite"></p><div id="visual-detail-body"><p>Select a comparison to inspect its recorded evidence.</p></div><noscript><p>Enable JavaScript for interactive charts. Each Details link opens the full text comparison.</p></noscript></section>

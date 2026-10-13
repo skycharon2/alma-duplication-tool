@@ -326,9 +326,70 @@ convert scientific inputs, or recompute decisions. Downloads remain unchanged.
 The desktop layout places position and frequency panels side by side, with a
 comparison selector and recorded evidence below. On narrow screens the panels
 stack. Selecting a plot or list row highlights the same comparison in both
-panels. Zoom and Reset change only display bounds. Hover titles and the detail
-panel expose values; selection also supports keyboard activation. The text-report
-links remain usable without JavaScript.
+panels. Selecting another comparison preserves both viewports.
+
+- Drag with a mouse or trackpad button to pan position in two dimensions or
+  frequency horizontally. A movement threshold prevents a drag from selecting
+  the comparison beneath it. Touch scrolling keeps the normal page behavior.
+- Ctrl/Command + wheel zooms around the pointer. Ordinary wheel scrolling stays
+  available for the page and frequency rows. The +/− buttons zoom around the plot
+  center; Reset restores the original fit for that plot.
+- Click overlapping position boundaries, interiors or nearby centers to open a
+  chooser listing every hit on the current comparison page. Comparison number,
+  source, SPW, requested window, beam path and available Member/ASDM identity
+  distinguish records. Scroll the chooser for longer lists; Escape, the close
+  button or an outside click dismisses it. Coordinates are never shifted to
+  separate overlaps, and the picker does not determine duplication.
+- Archive stays blue and Queue orange; Queue boundaries are dashed. The selected
+  boundary has a white halo and stronger outline, paired with the same numbered
+  frequency row, list entry and evidence panel. Unselected areas are unfilled so
+  overlapping records do not produce a misleading density map.
+- Focus the plot itself for arrow-key panning, +/− zoom and Home reset. Focus a
+  comparison and press Enter/Space to select it. Mouse-only gestures therefore
+  have keyboard alternatives. On touch devices use the buttons and list.
+
+Hover titles and the detail panel expose values. These interactions change only
+view state; stored geometry, scientific values, verdicts and downloads are
+unchanged. The text-report links remain usable without JavaScript.
+
+The dependency-free viewport helper has Node tests for anchored zoom after pan,
+zoom limits, horizontal-only frequency movement, coincident hit selection and
+missing outlines. Run `node --test tests/ui/visualization_view.test.cjs`; CI runs
+these checks alongside the existing Python tests.
+
+### Filtering and focus
+
+The compact controls above the plots filter **only the loaded comparison batch**
+(up to 30 comparisons within the current report page). They do not fetch other
+pages or change assessment results. The counter always shows visible versus
+loaded comparisons, alongside the batch and report-page scope.
+
+- Project restricts the Member choices to that project's loaded rows. Changing
+  project clears the previous Member filter. Member keys include the source;
+  Queue records without a Member remain individually selectable comparisons and
+  are labeled "No Member OUS recorded". Filtering never merges SPWs or contexts.
+- The existing selection stays when eligible; otherwise the first eligible
+  comparison is selected and announced. Comparison numbers and text-report
+  anchors stay stable when rows are hidden. An empty view asks the user to clear
+  filters and does not imply a negative duplication result.
+- **Only selected** toggles the plots and list between the current comparison and
+  the filtered set. **Clear filters** restores the entire loaded batch and turns
+  off isolation. Counts and evidence-availability captions follow the visible set.
+- **Focus selected** fits the requested target plus the selected candidate's
+  stored boundary/center in the position plot, keeping equal spatial scale.
+  Frequency focus includes the requested marker and the candidate interval ends
+  (LINE), or both representative markers (CONTINUUM). Missing evidence is not
+  reconstructed. Focus is disabled if neither panel has evidence.
+- Reset/Home fits the visible comparisons in that panel. Changing filters fits
+  the new visible set; ordinary selection retains the viewport. The compact
+  summary identifies the source, project, Member, execution, SPW and requested
+  window/beam path where recorded, with separation, half-power radius and
+  frequencies in their units.
+
+Browser verification used saved CASE1 continuum evidence (16 → 12 by project →
+4 by Member → 1 isolated comparison, then 16 after clearing) and saved Queue
+LINE evidence (a full interval retained during focus). No new source query was
+performed. UI regression: 271 passed; display interaction tests: 10 passed.
 
 ### What is drawn
 
