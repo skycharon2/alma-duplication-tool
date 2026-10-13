@@ -2,7 +2,8 @@
 
 The viewer consumes full report v4, historical report v5,
 [matching-detail report v6](matching_report.md) and inspection v3.
-New browser runs use v6; existing v4/v5 reports remain unchanged.
+New non-solar browser runs use v6; Solar exemptions retain v4, and existing
+v4/v5 reports remain unchanged.
 The viewer does not submit a proposal,
 query sources, or implement scientific calculations. The
 [proposed form](ui_proposed_form.md) validates input and exports request JSON;
@@ -10,6 +11,12 @@ query sources, or implement scientific calculations. The
 explicitly configured Archive replay/live TAP and Queue CSV sources. Existing
 reports are not results of the current form. Both report routes use the same
 comparison view. The viewer displays the methods supplied by each report.
+
+This document owns report reading, exports and visualization. Startup for new
+assessments and generated-run storage belong to the browser assessment contract;
+input controls belong to the form contract. [Status](status.md) owns the current
+implementation baseline and verification register. Dated checks below retain
+their original scope and counts; they are not tests rerun on every new baseline.
 
 Normal source coverage and retrieval details are collapsed; source problems open
 the coverage section automatically and retain the warning in the result summary.
@@ -48,8 +55,9 @@ default; the empty page says no reports are configured, not no duplicates.
 This is a local review tool without authentication. Only select reports approved
 for the people using that process. Do not expose the development server publicly.
 All configured reports are accessible to that process's visitors. Restart to load
-new reports or remove old ones. Nothing is uploaded, written or deleted by routes.
-This is not the future per-user assessment storage service.
+new reports or remove old ones. Saved-report routes do not modify the configured
+artifacts. Temporary `/runs` have a separate expiry/eviction lifecycle; they are
+not added to the Existing reports list. Neither route provides per-user isolation.
 
 ## Display and export contract
 
@@ -73,7 +81,7 @@ This is not the future per-user assessment storage service.
 - Each context shows independent branches, common criteria and expandable LINE
   pairs with original attempt/reference and full criteria. Unit-bearing field
   names, method versions, decision references and unknown reason codes are kept.
-  JSON evidence is available inside the single Technical records disclosure.
+  JSON evidence is available inside the operator view's Technical records disclosure.
   The default page shows plain-language explanations, not raw reason codes.
 - Null or ineligible outcomes say Needs review; non-applicable criteria are labelled separately. Solar explicitly says search not performed.
   No context or NOT_AGGREGATED never becomes a no-duplication verdict.
@@ -93,7 +101,7 @@ This is not the future per-user assessment storage service.
   association evidence may supply identity; generated IDs are never parsed to
   guess it. The summary counts matching Member groups separately from matching
   comparisons. It does not claim that every observation in a Member is a duplicate.
-- Technical records links to `?view=all`, an optional audit view of all evaluated
+- In `technical=1`, Technical records links to `?view=all`, an optional audit view of all evaluated
   contexts, paginated independently at 20 contexts per page. Evidence-issue links explicitly target that
   view, so excluded/unresolved contexts remain traceable. Both stored-report and
   temporary-run routes use this behavior. Unknown view values return 400.
@@ -116,6 +124,9 @@ This is not the future per-user assessment storage service.
 
 ## Verification and next step
 
+Current next steps are maintained only in the [roadmap](roadmap.md). The checks
+below describe report behavior; dates and counts later on this page are historical.
+
 `tests/ui/test_reports.py` runs the 15 offline catalog cases, renders all pages,
 checks byte-identical original downloads and exact inspection equality, and
 resolves pair-gap pointers. It also checks Solar, empty configuration, invalid
@@ -125,10 +136,9 @@ null RMS with dependency reasons, zero-valued SPW identities, unknown derived
 fields, immutable input documents and escaping of displayed quantities.
 These are engineering cases, not independently reviewed real proposals.
 
-Form validation, offline execution and explicit live Archive TAP execution are
-implemented. Production run storage remains a separate future increment; the
-comparison view continues to consume retained backend results without querying
-sources on refresh.
+Form validation, configured offline/live assessment and temporary disk retention
+are implemented. Persistent multi-user storage remains outside the current
+lifecycle; report refresh does not query sources.
 
 
 ### Queue MIX evidence
@@ -143,7 +153,7 @@ JSON exports retain both variants; inspection links refer to that full document.
 
 The overview counts stored branch results across all contexts, not across beam
 variants or pair rows. It does not synthesize an observation-wide verdict.
-New report v4 documents include additive `display_identity` source labels;
+Current full and matching-detail reports include `display_identity` source labels;
 older reports use existing stored bindings where available and otherwise show
 an explicit missing identity. Rendering never queries sources for missing labels.
 Numeric display uses six significant digits; original values and method versions
@@ -157,7 +167,9 @@ The default reading order is plain-language findings, source coverage, matching
 candidates, expandable comparisons and information to review. Technical records
 and their navigation links are hidden in the researcher view. Operators can add
 `technical=1` to a report URL to reveal the existing technical disclosure and
-original report, inspection and input exports. This is a display option, not an
+original report and inspection exports, plus input export for generated runs.
+Use `?technical=1` on a URL without query parameters, or append `&technical=1`
+when it already has parameters such as `page`. This is a display option, not an
 access-control boundary; technical records remain in the HTML and download routes
 remain unchanged. Rendering and navigation do not run a new assessment.
 
@@ -195,8 +207,12 @@ lookups and unresolved retrieval filters remain visible outside technical panels
 Recognized synthetic examples and recorded Archive inputs are labelled as such.
 Solar reports explicitly show an exemption instead of a zero-candidate summary.
 
-Inline raw candidate records are limited to the current page; the original
-report download remains complete and byte-identical. No UI action recomputes
+Inline raw candidate records are limited to the current page; the saved
+report download remains byte-identical. In v6, matching contexts retain full
+calculations and other contexts retain decision summaries. Neither the audit
+view nor the download reconstructs intentionally omitted calculation payloads;
+an omitted payload is different from missing scientific evidence.
+No UI action recomputes
 scientific results or queries a source. Tests cover default visibility, original
 exports, unresolved evidence, unknown codes, method eligibility and pair isolation.
 
@@ -247,7 +263,7 @@ recomputed during presentation.
 
 Generated-run HTML excludes the full inspection and per-row source payloads.
 Their complete contents remain in the original JSON downloads under technical
-details. The page still presents summary counts, source status, provenance and
+details (`technical=1`). The page still presents summary counts, source status, provenance and
 information to review. No matching results with indeterminate candidates must
 continue to show uncertainty, not a conclusion of no duplication.
 

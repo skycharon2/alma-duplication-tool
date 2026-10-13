@@ -8,21 +8,35 @@ owned by the existing backend. Live TAP alone does not enable live AQ. An
 additional explicit operator flag enables the existing post-TAP AQ backend;
 no scientific scope is added.
 
+This document owns startup, source configuration, execution and temporary storage.
+Use the [form contract](ui_proposed_form.md) for inputs, the
+[scientific workflow](ui_scientific_workflow.md) for calculation mapping and the
+[report browser](ui_report_browser.md) for reading and exploring results.
+Current delivery priorities and recorded verification belong to
+[roadmap](roadmap.md) and [status](status.md).
+
 ## Run locally
 
-From the repository root, with `.[test,ui]` installed:
+For an offline form check, start from the repository root with `.[test,ui]`
+installed. Use the committed synthetic Queue file with the default AUTO form:
 
 ```bash
-export ALMA_UI_ARCHIVE_REPLAY="$PWD/examples/confirmed_line/archive/manifest.json"
+unset ALMA_UI_ARCHIVE_REPLAY ALMA_UI_ARCHIVE_ARRAY_EVIDENCE
+unset ALMA_UI_LIVE_ARCHIVE ALMA_UI_LIVE_ARCHIVE_AQ
 export ALMA_UI_QUEUE_CSV="$PWD/examples/acceptance/queue/dual-source-line.csv"
 python -m flask --app alma_duplicate.ui.app:create_app run --host 127.0.0.1 --port 5001
 ```
 
-Open http://127.0.0.1:5001/proposed. These committed examples are synthetic
+Open http://127.0.0.1:5001/proposed and select QUEUE only. This file contains synthetic
 engineering reference data, not current observatory holdings or reviewed real
 proposals. Existing `ALMA_UI_REPORT_DIR` configuration is independent and optional.
 Neither form validation nor application startup reads assessment source files or
-contacts Archive TAP.
+contacts Archive TAP. A configured report directory is read at startup.
+
+The operator supplies `ALMA_UI_QUEUE_CSV`; researchers do not enter a file path.
+This browser adapter does not download or refresh the official Queue file on
+each search. It reads the configured snapshot for each run. Replacing that file
+affects subsequent runs; existing reports keep their recorded snapshot identity.
 
 For live Archive TAP, do not configure `ALMA_UI_ARCHIVE_REPLAY`; instead set
 `ALMA_UI_LIVE_ARCHIVE=1`. The live flag accepts explicit boolean spellings and
@@ -98,7 +112,9 @@ readable without claiming a live lookup. Query details include zero-hit records,
 timestamps, endpoint and response hash. External text is escaped. Report,
 inspection and request downloads retain original bytes; viewing, pagination and
 downloads never re-run acquisition. Each execution creates a separate catalog and
-run. No background worker, automatic retry or stage-progress estimate is added.
+run. The assessment POST performs the work; measured stage progress is described
+under [Waiting for live sources](#waiting-for-live-sources). No automatic retry or
+detached background worker is used.
 
 `tests/ui/test_live_aq.py` verifies the matrix, lazy lifecycle, failure messages,
 stored-report compatibility, escaped values, run isolation and exact exports.
@@ -108,30 +124,37 @@ does not establish live service availability or a reviewed real-proposal result.
 
 ### Guide B form check
 
+Use the offline Queue configuration above. This checks the current AUTO form;
+it does not replay the older explicit-radius Archive capture.
+
 | Input | Value |
 | --- | --- |
 | RA / Dec | 201.365 / -43.019, both DEG |
 | Purposes | LINE |
 | Requested angular resolution | 0.3 arcsec |
 | Source redshift | 0.024 |
-| Requested line / SPW centre frequency | 230.538 GHz, REST (LINE opens the first entry; Add line / window adds more) |
+| Requested line / SPW centre frequency | 230.538 GHz, REST (LINE opens the first entry) |
 | Declared correlator mode | FDM |
 | Planned LINE resolution / RMS | 20 km/s / 0.3 mJy/beam |
 | Complete window list | Checked |
-| Search radius | 30 arcsec |
-| Sources | ARCHIVE and QUEUE |
+| Search scope | AUTO; no radius entry |
+| Sources | QUEUE only |
 | Candidate display limit | 1 |
 
 Window and setup identities are supplied by the form. Click Run assessment.
-The response redirects to `/runs/<id>`. Expect [matching-detail report v6](matching_report.md), separate source states,
+The response opens `/runs/<id>`: a 303 redirect without JavaScript, or navigation
+to the returned report URL with JavaScript. Expect [matching-detail report v6](matching_report.md), separate source states,
 independent branch/pair evidence and explicit effective evaluation configuration.
 This is a new computation using the entered fields, not a saved acceptance report.
 
-Download the complete report, inspection v3 and this run's input request. Refresh
+Read the criterion tables and open Explore this report. For an export check, add
+`?technical=1` to the text-report URL and download the saved report, inspection v3
+and this run's input request. Refresh
 or repeat a download: the report bytes, generated timestamp and SHA-256 stay the
 same. Editing and running a different input creates another ID and does not
 replace the first report. The display limit never trims the report's evaluated
-contexts or the complete download.
+contexts or the saved download. V6 keeps full calculations for matching contexts
+and decision summaries for others; it is not a full-evidence export for every context.
 
 ### Deliberate partial and failure checks
 
@@ -140,10 +163,9 @@ contexts or the complete download.
   remains missing, not satisfied by selecting CONTINUUM. Alternatively, explicitly
   confirm the [setup declaration](continuum_setup_declaration.md) to use researcher
   evidence for this criterion. Do not mark an omitted window list complete.
-- Enter negative RMS or omit the search radius: no assessment is invoked; the
-  form retains the entered values and validator diagnostics.
-- Change radius to 31 arcsec: the replay query no longer matches. Preserve the
-  backend's Archive failure and any available Queue results; no live fallback.
+- Enter negative RMS or invalid coordinates: no assessment is invoked; the
+  form retains the entered values and validator diagnostics. A new AUTO form
+  requires no explicit radius. Legacy EXPLICIT requests still require one.
 - Omit Queue configuration but select QUEUE: preserve NOT_PROVIDED alongside
   available Archive results.
 - A missing/malformed replay manifest can fail provider construction. Show an
@@ -153,6 +175,28 @@ Archive replay matches exact query/maxrec, including coordinates, radius and
 search strategy. It is not an offline database for arbitrary targets. Capture
 metadata and fixture kind come from the backend report. Queue snapshot provenance
 is shown in source evidence; parse time is not represented as the source date.
+
+### Reproduce the legacy Archive fixture
+
+`examples/confirmed_line/archive/manifest.json` records a 30 arcsec explicit
+footprint query. Configuring it via `ALMA_UI_ARCHIVE_REPLAY` does not make it
+compatible with a newly opened AUTO form. The form has no request-file import.
+For a reproducible offline Archive check, use its matching request through the CLI:
+
+```bash
+python -m alma_duplicate.cli.evaluate \
+  --request examples/confirmed_line/request.json \
+  --archive-replay examples/confirmed_line/archive/manifest.json \
+  --report-detail matches \
+  --output reports/guide-b-replay/guide-b/report.json
+```
+
+Use a new output path if that file already exists. To browse the generated
+artifact, set `ALMA_UI_REPORT_DIR="$PWD/reports/guide-b-replay"` before restarting
+the application, then open `/reports`. This tests a saved explicit-scope report,
+not AUTO acquisition or live holdings. Changing its request radius to 31 arcsec
+causes a replay mismatch; no live fallback occurs. Offline form/CLI parity tests
+submit the compatible explicit fields directly and cover that separate path.
 
 ## Ownership and execution
 
@@ -170,9 +214,10 @@ The report's `input_sha256` stays null: a form has no original input-file bytes.
 The separately retained request download is the wire mapping submitted by the
 form; no fabricated original-file digest is inserted into the report.
 
-`ui/reports.py` builds one viewer artifact from exact report bytes and derives
-inspection v3 once. `/runs/<id>` reuses the existing report template/pagination.
-Existing `/reports` artifacts are not modified or mixed into the run store.
+Configured `/reports/<id>` artifacts are loaded by `ui/reports.py` at startup.
+Generated `/runs/<id>` artifacts use the indexed disk store below; report and
+inspection v3 are retained once. Both routes reuse the same presentation and
+pagination. Existing `/reports` artifacts are not modified or mixed into the run store.
 Execution COMPLETED does not imply duplication criteria passed. Source failures
 can return a usable report and SOURCES_UNAVAILABLE. Unexpected construction or
 serialization failures do not become scientific outcomes.
@@ -191,7 +236,7 @@ Contexts are stored once in `report.json`. During the same write, the store reco
 each context's UTF-8 byte offset and length in `view.json`; there is no duplicate
 `contexts.jsonl`. Pages seek into the original report and decode only the selected
 contexts. Its formatting, bytes and SHA-256 remain identical to the shared report
-serializer, for both v4 and v5. Only descriptors remain in the run registry.
+serializer, for v4/v5/v6. Only descriptors remain in the run registry.
 Downloads stream the original files in 64 KiB chunks. Assessment and initial inspection still construct full Python documents;
 this change does not impose a hard memory bound on scientific execution.
 
@@ -257,7 +302,9 @@ the execution adapter, CLI and report viewer, with source access forbidden; it
 is selectable for validation/export but cannot execute through the form. Network
 calls are forbidden throughout the gate.
 
-Full report dictionaries are compared, including method versions, reasons,
+Both executions select `report_detail='matches'` (CLI `--report-detail matches`)
+to compare the same representation; the CLI's normal default remains full v4.
+Complete saved report dictionaries are compared, including method versions, reasons,
 outcomes, source states, snapshot hashes, configuration and pair associations.
 Only these execution-time fields are normalized:
 
@@ -306,7 +353,8 @@ Polling never queries sources or reruns evaluation. Without JavaScript the
 existing POST/303 flow remains available. Invalid input and execution errors
 retain the form; progress connection loss never automatically resubmits it.
 
-Progress is in memory in the serving process, like the run store. Use one process
+Progress and the run index are in memory in the serving process; report artifacts
+are on temporary disk. Use one process
 with concurrent request threads; a single blocking worker cannot serve polls, and
 multiple processes require a shared progress/run store before deployment. Up to
 four progress-enabled runs may be active, with 64 progress records retained.
@@ -323,8 +371,10 @@ form resets its timer and busy state. No progress status is a scientific verdict
 Run storage batches small JSON encoder tokens into bounded UTF-8 blocks before
 hashing and writing them. Original JSON bytes, hashes, evaluation scope and disk
 budget checks are preserved. This reduces write overhead; it does not reduce
-TAP/AQ latency or the size of a large report. The known full-CSV LINE retention
-limit remains a separate issue.
+TAP/AQ latency or the size of a large report. Matching-detail v6 and shared
+summaries separately reduce report size; see the versioned
+[measurements and limits](matching_report.md). Large reports can still exceed
+the unchanged disk budget, in which case storage fails explicitly.
 
 Live TAP HTTP requests use a 10-second connection timeout and a 60-second idle
 read timeout, including redirected requests and streamed responses. Network

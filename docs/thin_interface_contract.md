@@ -1,23 +1,28 @@
-# Thin-interface contract over report v4
+# Thin browser interface contract
 
-Contract version 3. The [shared entry](assessment_entry.md) and configuration
-preflight are implemented; [status](status.md) owns the reviewed baseline.
-The browser has a [validator-connected proposed form](ui_proposed_form.md) and a
-[read-only report viewer](ui_report_browser.md). The
-[browser assessment flow](ui_offline_assessment.md) connects the current form to
-per-run report v4 and inspection v3 exports with explicit Archive `NONE` / replay /
-live TAP configuration and optional Queue CSV. Replay and live TAP are mutually
-exclusive; live failures do not fall back to replay, and live TAP does not imply
-live AQ acquisition. The [form sketch](proposed_observation_form.md)
-owns layout; the [request API](proposed_observation_api.md) owns field validation;
-[reporting](evaluation_cli.md) owns JSON; [rules](rules.md) owns every formula and
-aggregation. This document defines how the first UI must consume those contracts.
+The [shared entry](assessment_entry.md) and configuration preflight are
+implemented; [status](status.md) owns the reviewed implementation baseline.
+The [current form](ui_proposed_form.md) owns input mapping and interaction;
+the [earlier form sketch](proposed_observation_form.md) is historical.
+The [request API](proposed_observation_api.md) owns validation; [rules](rules.md)
+own scientific formulas and aggregation.
+
+The [browser assessment flow](ui_offline_assessment.md) uses explicit Archive
+NONE/replay/live TAP configuration and optional Queue CSV. Live TAP can use
+separately configured [post-TAP AQ](live_aq_assessment.md). Replay and live TAP
+are mutually exclusive, and live failures do not fall back to replay.
+
+New non-solar browser runs retain [matching-detail v6](matching_report.md): full
+matching calculations and decision summaries for other retained contexts. Shared
+entry/CLI defaults remain full v4; Solar exemptions retain v4. The viewer reads
+v4/v5/v6 with inspection v3. Display limits do not change scientific evaluation.
 
 ## Three actions
 
 1. Edit proposed observation plus search options; call the existing validator.
    Show ERROR at the affected field; distinguish selected-branch MISSING from
-   EVIDENCE provenance notes. Valid partial inputs can search. LINE REST centers
+   EVIDENCE provenance notes. Valid partial inputs can search. AUTO scope is the browser default;
+   explicit-radius requests remain supported. LINE and CONTINUUM REST frequencies
    require explicit redshift for evaluation; planned resolution can use frequency
    or velocity units. Missing noise bandwidth alone does not block the confirmed
    direct line method. Invalid supplied fields still fail validation.
@@ -25,13 +30,16 @@ aggregation. This document defines how the first UI must consume those contracts
    selection does not set FDM, confer continuum bandwidth eligibility, fill missing
    RMS or supply a scientific verdict. Valid SUN produces the existing no-search
    exemption. Queue mappings keep their source-specific limitations.
+   The form restricts execution to supported fixed single-pointing requests;
+   SUN can be validated/exported, while its backend exemption is tested separately.
    The separate [continuum setup confirmation](continuum_setup_declaration.md)
    can provide USER_DECLARED qualification evidence. Display its distinct method
    and any contradiction; ordinary purpose selection is not this confirmation.
-3. Expand a context/pair and export the **same complete report**, including hidden
-   contexts. Never rebuild report criteria from a displayed subset or calculate
-   formula/aggregation logic in the browser. A diagnostic inspection is an optional
-   separate export, not a replacement for report v4.
+3. Read matching context/pair comparisons, optionally open the report explorer,
+   or export the **same saved report**. In v6, other retained contexts carry
+   decision summaries rather than full calculations. Never rebuild criteria from
+   a displayed subset or calculate scientific aggregation in the browser. Optional
+   inspection and original exports do not replace an understandable report page.
 
 ## Effective backend configuration
 
@@ -51,7 +59,7 @@ comparison from rounded values or parse rational evidence to run browser rules.
 
 Construct `request`, `search_options` and explicit `AssessmentOptions` first,
 then call `assess_observation()`. When `AssessmentResult.document` is present,
-render and export that report v4 document; derive the optional gap view with
+render and export that returned document; derive the optional gap view with
 `inspect_report(document, inspection_version="3")`. Inspection is a report
 consumer, not a step that selects Queue methods or precedes assessment.
 
@@ -95,16 +103,16 @@ computed values; explain the dependency and show the available resolution.
 No condition from another pair may be substituted for a missing one.
 
 Show original input and mode provenance in expandable evidence details. Where
-report v4 contains a reference rather than full raw content, link to the retained
+the report contains a reference rather than full raw content, link to the retained
 capture only if that artifact is available; do not invent raw values. A source
 status of COMPLETED does not establish all-sky coverage or an up-to-date Queue.
 Show capture/snapshot date, effective filters and retrieval limitations separately
-from display truncation. Report v4's existing generated timestamp is not a capture date.
+from display truncation. The report's generated timestamp is not a capture date.
 
 ## Optional gap inspection
 
 `report_inspection.inspect_report(report_document)` is a read-only report consumer.
-It neither re-evaluates science nor modifies report v4. The default
+It neither re-evaluates science nor modifies the saved report. The default
 `inspection_version="3"` provides branch counts, source statuses, scope and
 traceable gap occurrences. Versions 1 and 2 remain explicitly callable to
 reproduce their historical behavior; new consumers use version 3.
@@ -144,15 +152,33 @@ they share the same reason. An unresolved reference can be null; do not invent
 an association. Other location strings retain their existing convention. Report
 indices are not cross-run identifiers. See the [inspection contract](report_inspection.md).
 
-## First UI acceptance gate
+## UI acceptance gate
 
 Use the [pinned catalog](acceptance_cases.md). Compare the UI-exported report with
-the backend report from the same run without dropping any fields. For separate
-UI/CLI runs, exclude only the execution timestamp paths identified in the
-[roadmap](roadmap.md#bounded-maintenance-increments).
+the backend report from the same run without dropping any saved fields. Match
+source/method configuration and report-detail mode for separate UI/CLI runs;
+exclude only execution timestamps specified by the
+[parity contract](ui_offline_assessment.md#offline-uicli-parity-gate), which also
+defines separate input-file hash assertions.
 Keep input/capture hashes, methods, associations, all retained contexts and outcomes
 identical. The UI must demonstrate guide A/B, mixed intents, missing RMS, coarse
 resolution blocking, multi-window pair expansion, source-not-provided and display
 truncation. Add a Solar exemption check and explicit unsupported request handling.
 No formula or independent aggregation implementation belongs in the browser.
 Human review of actual proposal cases remains visibly separate from UI/CLI parity.
+
+
+## Report lifecycle and explorer
+
+The run store has a process-local index over temporary disk artifacts, with
+count, disk-byte and age limits. Progress snapshots are process-local. The
+assessment POST needs concurrent request handling for polling; multiple server
+processes require a separate shared-state design. Report expiry, eviction and
+server restart must remain distinguishable from an assessment outcome.
+
+The [single-pointing explorer](ui_report_browser.md#single-pointing-report-explorer)
+is a separate page bound to an existing report. Linked position/frequency panels
+select the same context, pair and beam variant. Plotting stored operands does
+not create new evidence or verdicts. Missing evidence stays unavailable; the
+30-comparison drawing limit and Member pagination are presentation limits only.
+Report reads, charts and downloads must not call TAP, AQ or Queue acquisition.

@@ -1,10 +1,10 @@
 # Runtime architecture
 
 The reviewed implementation baseline and verification conditions are owned by
-[status](status.md). The bounded extractions and shared application entry below
-are implemented, including replay and explicit live Archive TAP browser
-assessment. Persistent multi-user lifecycle and automatic live AQ acquisition
-remain separate work.
+[status](status.md). The shared entry supports Archive replay or live TAP, optional
+post-TAP live AQ, and configured Queue CSV assessment. Browser input, progress,
+reports and the single-pointing explorer consume these backend boundaries.
+Persistent multi-user lifecycle remains separate work.
 
 This is a navigation map of implemented boundaries, not another field schema.
 The [object index](data_model.md) links definitions and the
@@ -19,7 +19,7 @@ The [object index](data_model.md) links definitions and the
 | Search execution | Candidate search orchestrates source calls, binding, local selectors and independent execution reports; failed or incomplete sources remain visible. |
 | Presentation | Grouping organizes candidate rows for display while retaining their contexts and filter records. |
 | Criteria | Archive continuum/LINE and the supported Queue common/continuum/LINE methods feed source-bound per-context branch aggregation. Queue LINE keeps same-row/same-SPW evidence; no branch aggregation crosses candidate contexts or sources. |
-| Report and inspection | Report v4 serializes complete retained-context results; inspection v3 reads that report without recomputing criteria and locates pair-specific gaps. |
+| Report and inspection | Shared entry/CLI default to full v4; non-solar browser runs use matching-detail v6. Inspection v3 consumes v4/v5/v6 without recomputing criteria. |
 
 The [evaluation entry point](../src/alma_duplicate/rules/evaluation.py) takes the
 original plan request and selects branches by intents. For CONTINUUM it evaluates
@@ -103,8 +103,9 @@ their preserved boundaries are explicit:
   browser form/rendering integration now consumes that boundary through the
   configured replay/live source adapter.
 
-The [roadmap](roadmap.md#bounded-maintenance-increments) owns their order and
-acceptance gates. Compatibility exports, explicit legacy/provisional paths,
+The [delivery history](history/delivery_notes.md#bounded-maintenance-increments)
+retains their original verification. The [roadmap](roadmap.md#change-and-verification-gates)
+owns current change and acceptance gates. Compatibility exports, explicit legacy/provisional paths,
 experiment CLIs, pinned captures and exploratory notebooks are not deletion
 candidates merely because they are outside the default formal path. Preserve
 scientific versions when code only moves, and fix discovered behavior defects
@@ -133,9 +134,40 @@ explicit options and lazy Archive replay/live TAP and Queue CSV providers for
 Archive client is constructed only for a search-ready assessment that selected
 ARCHIVE; validation, request download, Solar and unselected Archive paths do not
 construct it, and failures do not fall back to replay. Each returned report is
-serialized once and retained under an independent run ID. A count/serialized-byte
-bounded process-local store holds request/report/inspection artifacts; refresh and
-downloads do not rerun the assessment. See the
+serialized once and retained under an independent run ID. A process-local index
+tracks temporary disk artifacts under count, byte and age limits; report contexts
+are read through indexed byte offsets. Progress snapshots are process-local too;
+concurrent request handling lets polls run alongside the assessment POST. Refresh
+and downloads do not rerun the assessment. See the
 [browser assessment contract](ui_offline_assessment.md).
 Window row tokens survive editing; window IDs bind each LINE sensitivity.
 Request JSON downloads revalidate the current form and contain no report verdict.
+
+
+## Source configuration and post-TAP AQ
+
+`ui/runs.py` passes lazy providers to `assess_observation()`. Live AQ requires
+explicit operator configuration in addition to live TAP and is mutually exclusive
+with a captured array catalog. The shared entry selects retained linked Members
+after TAP; it owns acquisition timing, exact binding and failure behavior. The
+browser does not build a second binding or scientific fallback path. Failed or
+incomplete AQ acquisition retains TAP candidates with unresolved array evidence.
+See [live AQ assessment](live_aq_assessment.md) and
+[browser configuration](ui_offline_assessment.md#explicit-live-aq-configuration).
+Queue consumes the configured CSV snapshot; provenance does not imply freshness.
+
+## Report presentation and visualization
+
+`ui/report_pages.py` projects saved metadata and selects complete Member groups;
+`ui/report_view.py` formats recorded comparisons. New non-solar browser runs use
+[matching-detail v6](matching_report.md): all retained contexts keep decisions,
+while full calculation details are retained for matching contexts. This is a
+serialization policy, not a retrieval or evaluation limit.
+
+`ui/visualization.py` prepares read-only display data for the
+[single-pointing explorer](ui_report_browser.md#single-pointing-report-explorer).
+The position panel uses exact-context centers and stored half-power radii; the
+frequency panel uses recorded LINE intervals or CONTINUUM representative
+frequencies. Spherical projection and zoom are display transformations. They do
+not establish new geometry, recalculate beam size or change a verdict. Report,
+explorer, pagination and downloads share the same report identity and lifecycle.
