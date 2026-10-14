@@ -1,0 +1,11 @@
+[Unit]
+Description=Check ALMA official Queue CSV once daily without automatic activation
+
+[Timer]
+OnCalendar=*-*-* 07:00:00 UTC
+RandomizedDelaySec=15min
+Persistent=true
+Unit=alma-queue-update.service
+
+[Install]
+WantedBy=timers.target

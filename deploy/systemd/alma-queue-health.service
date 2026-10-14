@@ -1,0 +1,16 @@
+[Unit]
+Description=ALMA Queue operations health check (no network or state changes)
+After=alma-queue-update.service
+
+[Service]
+Type=oneshot
+User=alma
+Group=alma
+WorkingDirectory=/srv/alma-duplication-tool
+UMask=0077
+ExecStart=/srv/alma-duplication-tool/.venv/bin/python -m alma_duplicate.cli.queue_health --store-root /var/lib/alma-duplication/queue-snapshots --max-check-age-hours 48
+TimeoutStartSec=2min
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
