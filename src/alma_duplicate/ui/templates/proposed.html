@@ -128,21 +128,7 @@
 <div class="form-pair">
 <fieldset id="sources" class="choice-group"><legend>Sources</legend><div class="inline-choices">{% for source in ['ARCHIVE','QUEUE'] %}<label><input type="checkbox" name="sources" value="{{ source }}" {% if source in values.get('sources', []) %}checked{% endif %}>{{ source }}</label>{% endfor %}</div>{{ messages('sources') }}</fieldset></div>
 <p class="field-note">Archive: {{ 'live' if configured.archive_kind == 'LIVE' else ('replay' if configured.archive_kind == 'REPLAY' else 'not configured') }} · Queue CSV: {{ 'managed snapshot' if configured.managed_queue_root else ('available' if configured.queue_csv else 'not configured') }}. Sources are accessed when you run the assessment.</p>
-{% if queue_status %}
-<div id="queue-source-status" class="field-note" role="status">
-{% if queue_status.status == 'ACTIVE' %}
-<p><strong>Queue data as of: {{ queue_status.source_as_of }}</strong> · Snapshot SHA-256: <code>{{ queue_status.snapshot_sha256[:12] }}</code>… · Source ID: <code>{{ queue_status.source_id }}</code>.</p>
-{% elif queue_status.status == 'NOT_ACTIVATED' %}
-<p><strong>Queue snapshot not activated.</strong> Queue assessments will be unavailable until the operator approves a validated download.</p>
-{% else %}
-<p><strong>Queue snapshot unavailable.</strong> Active selection failed validation; Queue results cannot establish an absence of matches.</p>
-{% endif %}
-<p>Last update check: {{ queue_status.checked_at or 'not recorded' }} · Result: {{ queue_status.check_status }}. Last successful check: {{ queue_status.last_successful_check_at or 'not recorded' }}.</p>
-{% if queue_status.check_error %}<p>Queue update check warning: {{ queue_status.check_error }}. {% if queue_status.status == 'ACTIVE' %}Using previously approved snapshot.{% endif %}</p>{% endif %}
-{% if queue_status.update_waiting_for_approval %}<p>A different validated download is waiting for operator approval; the active Queue version has not changed.</p>{% endif %}
-<p>The official Queue data date is not the last check time. No Queue download is triggered by this page.</p>
-</div>
-{% endif %}
+{% if queue_status %}{% include '_queue_source_status.html' %}{% endif %}
 {% set radius_mode = values.get('radius_mode', 'EXPLICIT' if 'radius' in values else 'AUTO') %}
 {% if radius_mode == 'AUTO' %}
 <input type="hidden" name="radius_mode" value="AUTO">

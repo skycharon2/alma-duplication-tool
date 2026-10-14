@@ -1,0 +1,58 @@
+{% macro timestamp(value) -%}
+{% if value %}<time datetime="{{ value }}" title="{{ value }}">{% if value.endswith('+00:00') or value.endswith('Z') %}{{ value[:16]|replace('T', ' ') }} UTC{% else %}{{ value|replace('T', ' ') }}{% endif %}</time>{% else %}Not recorded{% endif %}
+{%- endmacro %}
+{% set active = queue_status.status == 'ACTIVE' %}
+{% set check_ok = queue_status.check_status in ['NEW_VALIDATED', 'UNCHANGED'] %}
+{% set check_failed = not check_ok and queue_status.check_status != 'NOT_CHECKED' %}
+{% set check_labels = {'NEW_VALIDATED': 'Download validated', 'UNCHANGED': 'Download unchanged', 'NOT_CHECKED': 'Not checked yet', 'DOWNLOAD_FAILED': 'Download failed', 'STORAGE_FAILED': 'Snapshot could not be saved', 'PARSE_FAILED': 'CSV could not be read', 'VALIDATION_FAILED': 'Download needs review', 'KNOWN_INVALID': 'Previous validation failure', 'CHECK_LOG_INVALID': 'Check history unavailable'} %}
+<div id="queue-source-status" class="queue-status-compact">
+  <div class="queue-status-strip">
+    <span class="queue-status-dot {{ 'queue-ready' if active else 'queue-unavailable' }}" aria-hidden="true"></span>
+    <span><strong>Queue</strong> {% if active %}<span class="queue-strip-date">Data as of {{ queue_status.source_as_of }}</span>{% else %}<span class="queue-check-warning">Snapshot unavailable</span>{% endif %}</span>
+    <button type="button" class="queue-details-button" popovertarget="queue-source-popover" aria-label="View Queue snapshot details">Details <span aria-hidden="true">ⓘ</span></button>
+  </div>
+  {% if check_failed or queue_status.check_error %}<p class="queue-compact-warning">Update check needs attention.{% if active %} Using approved snapshot.{% endif %}</p>{% endif %}
+  {% if queue_status.update_waiting_for_approval %}<p class="queue-compact-warning">New download awaiting approval.</p>{% endif %}
+</div>
+<div id="queue-source-popover" class="queue-status-panel" popover="auto" role="dialog" aria-labelledby="queue-status-title">
+  <button type="button" class="queue-popover-close" popovertarget="queue-source-popover" popovertargetaction="hide" aria-label="Close Queue snapshot details">×</button>
+  <div class="queue-status-heading">
+    <h3 id="queue-status-title">Queue snapshot</h3>
+    <span class="queue-status-badge {{ 'queue-ready' if active else 'queue-unavailable' }}">{{ 'Approved snapshot available' if active else 'Unavailable' }}</span>
+  </div>
+  {% if active %}
+  <p class="queue-data-date">Queue data as of: {{ queue_status.source_as_of }}</p>
+  <p class="queue-status-caption">Official dataset date. Checking for updates does not change this date.</p>
+  {% elif queue_status.status == 'NOT_ACTIVATED' %}
+  <p class="queue-data-date">Queue snapshot not activated.</p>
+  <p class="queue-status-caption">An operator must approve a validated download before Queue assessments are available.</p>
+  {% else %}
+  <p class="queue-data-date">Queue snapshot unavailable.</p>
+  <p class="queue-status-caption">The active snapshot could not be verified. Queue results cannot establish an absence of matches. Ask the operator to review the snapshot.</p>
+  {% endif %}
+  <dl class="queue-check-facts">
+    <div><dt>Last update check</dt><dd>{{ timestamp(queue_status.checked_at) }}</dd></div>
+    <div><dt>Check result</dt><dd class="{{ 'queue-check-warning' if check_failed else '' }}">{{ check_labels.get(queue_status.check_status, 'Check status needs review') }}</dd></div>
+  </dl>
+  {% if check_failed or queue_status.check_error %}
+  <p class="queue-status-notice">The latest update check could not confirm a usable download. {% if active %}Using previously approved snapshot.{% else %}Queue remains unavailable until a verified snapshot is approved.{% endif %}</p>
+  {% endif %}
+  {% if queue_status.update_waiting_for_approval %}
+  <p class="queue-status-notice"><strong>New download awaiting approval.</strong> A different validated download is waiting for operator approval; assessments continue to use the date shown above.</p>
+  {% endif %}
+  <details class="queue-status-details">
+    <summary>Snapshot and check details</summary>
+    <dl class="queue-technical-facts">
+      <div><dt>Last successful check:</dt><dd>{{ timestamp(queue_status.last_successful_check_at) }}</dd></div>
+      {% if active %}
+      <div><dt>Source ID</dt><dd><code>{{ queue_status.source_id }}</code></dd></div>
+      <div><dt>Parse run ID</dt><dd><code>{{ queue_status.run_id }}</code></dd></div>
+      <div><dt>Snapshot SHA-256</dt><dd><code>{{ queue_status.snapshot_sha256 }}</code></dd></div>
+      {% endif %}
+      <div><dt>Check code</dt><dd><code>{{ queue_status.check_status }}</code></dd></div>
+      {% if queue_status.check_error %}<div><dt>Check diagnostic</dt><dd>{{ queue_status.check_error }}</dd></div>{% endif %}
+      {% if queue_status.error %}<div><dt>Snapshot diagnostic</dt><dd>{{ queue_status.error }}</dd></div>{% endif %}
+    </dl>
+    <p class="queue-status-caption">This page reads saved status only. Opening it does not download or approve Queue data. Each assessment records the snapshot it uses.</p>
+  </details>
+</div>
