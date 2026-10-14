@@ -21,6 +21,7 @@ from alma_duplicate.clients.queue_downloader import (
     DownloadedQueue, QueueDownloadError, download_queue_csv,
 )
 from alma_duplicate.storage import QueueSnapshotStore, QueueSnapshotStoreError
+from alma_duplicate.storage.queue_active import QueueActiveError, _safe_official_source
 
 GOOD_STATUSES = {"COMPLETE", "COMPLETE_WITH_WARNINGS"}
 SUCCESS_STATUSES = {"NEW_VALIDATED", "UNCHANGED"}
@@ -113,8 +114,16 @@ def run_update(
             same_sources = []
             for source_id in store.list_sources():
                 saved = store.read_source(source_id)
-                if saved.metadata["snapshot_sha256"] == checksum:
-                    same_sources.append(saved)
+                if saved.metadata["snapshot_sha256"] != checksum:
+                    continue
+                # Identical bytes are not equivalent acquisitions if older
+                # metadata lacks the official retrieval proof required by PR2.
+                # Preserve the legacy evidence, but reacquire under a new ID.
+                try:
+                    _safe_official_source(saved.metadata)
+                except QueueActiveError:
+                    continue
+                same_sources.append(saved)
             same_ids = {item.source_id for item in same_sources}
             matched_runs = []
             if same_ids:

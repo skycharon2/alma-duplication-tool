@@ -23,6 +23,7 @@ from alma_duplicate.ui.visualization import visualization_data
 from alma_duplicate.ui.run_store import DEFAULT_DISK_BYTES, DEFAULT_MAX_AGE
 from alma_duplicate.ui.proposed import MAX_WINDOWS, assessment_supported, contributing_windows, initial_form, new_row, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
+from alma_duplicate.ui.managed_queue import managed_queue_status
 
 
 def _env_flag(name):
@@ -50,6 +51,7 @@ def create_app(config=None):
     app.config["LIVE_ARCHIVE"] = _env_flag("ALMA_UI_LIVE_ARCHIVE")
     app.config["LIVE_AQ"] = _env_flag("ALMA_UI_LIVE_ARCHIVE_AQ")
     app.config["OFFLINE_QUEUE_CSV"] = os.environ.get("ALMA_UI_QUEUE_CSV")
+    app.config["MANAGED_QUEUE_ROOT"] = os.environ.get("ALMA_UI_QUEUE_SNAPSHOT_ROOT")
     app.config["ARCHIVE_ARRAY_EVIDENCE"] = os.environ.get("ALMA_UI_ARCHIVE_ARRAY_EVIDENCE")
     app.config["MAX_RETAINED_RUNS"] = 20
     app.config["MAX_RETAINED_BYTES"] = DEFAULT_DISK_BYTES
@@ -62,6 +64,7 @@ def create_app(config=None):
     configured = BrowserAssessment(
         archive_replay=app.config["OFFLINE_ARCHIVE_REPLAY"],
         queue_csv=app.config["OFFLINE_QUEUE_CSV"],
+        managed_queue_root=app.config["MANAGED_QUEUE_ROOT"],
         archive_array_evidence=app.config["ARCHIVE_ARRAY_EVIDENCE"],
         live_archive=app.config["LIVE_ARCHIVE"],
         live_aq=app.config["LIVE_AQ"],
@@ -322,7 +325,9 @@ def create_app(config=None):
                                pending_removal=pending_removal, edit_notice=edit_notice, added_row=added_row,
                                purpose_updated=purpose_updated,
                                scope_updated=scope_updated, assessment_supported=assessment_supported(values),
-                               configured=configured, execution_error=execution_error, auto_scope=automatic_scope())
+                               configured=configured, execution_error=execution_error, auto_scope=automatic_scope(),
+                               queue_status=(managed_queue_status(configured.managed_queue_root)
+                                             if configured.managed_queue_root else None))
 
     @app.get("/healthz")
     def healthz():

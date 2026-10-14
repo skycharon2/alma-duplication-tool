@@ -94,8 +94,10 @@ def test_orphaned_source_reparsed_without_duplicate_download(tmp_path):
     original = QueueSnapshotStore(tmp_path).save_source(raw)
     result = run_update(tmp_path, downloader=delivery(raw), clock=lambda: T0)
     assert result["status"] == "NEW_VALIDATED"
-    assert result["source_id"] == original.source_id
-    assert len(QueueSnapshotStore(tmp_path).list_sources()) == 1
+    # Original source had SOURCE_PAGE / no retrieval time, so a new verified
+    # acquisition is required for subsequent PR2 approval.
+    assert result["source_id"] != original.source_id
+    assert len(QueueSnapshotStore(tmp_path).list_sources()) == 2
 
 
 def test_no_activation_and_no_flask_changes(tmp_path):
