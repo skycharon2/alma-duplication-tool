@@ -226,3 +226,5 @@ review gate, persistent multi-user lifecycle and broader-mode scope.
 - [Report browser and explorer](ui_report_browser.md): read saved evidence, inspect linked single-pointing charts and export original artifacts.
 
 - [Proposed form validation](ui_proposed_form.md): field mapping, per-window RMS, request export.
+
+- [Active Queue snapshot selection](queue_active_snapshot.md): manually and atomically approve a validated Queue source/run, inspect recent selection history, and explicitly roll back; the Flask source remains unchanged in PR2.
