@@ -440,3 +440,28 @@ whitespace checks passed. Browser checks exercised the saved Archive LINE case,
 the CASE1 continuum report (4 Members / 16 comparisons), and a clearly labeled
 synthetic Queue continuum report. Selection, zoom, text-report navigation and
 a 390 px stacked layout were checked without new source queries.
+
+
+### Comparison relationships, preview and figure export
+
+The explorer summary shows separation divided by the recorded half-power radius
+when both values are finite and the radius is positive. This is a display
+relationship, not angular resolution or a new duplication verdict. For LINE,
+signed distances from the lower interval edge and to the upper edge are shown in
+GHz; a negative distance indicates the requested frequency lies outside that
+edge. CONTINUUM representative markers never imply interval coverage. Missing
+position or frequency evidence retains its explanation.
+
+In the overlap chooser, pointer hover or keyboard focus temporarily highlights
+the candidate in both plots. The frequency list scrolls to the previewed row.
+Leaving or closing the chooser restores the selected highlight and previous
+frequency scroll position; clicking commits the choice. Pan and zoom are retained.
+
+**Export charts (SVG)** downloads a standalone white-background vector figure
+with both plots at the current zoom and every frequency row in the filtered
+loaded batch. It includes export time, report URL, page/batch scope, filter and
+selection state, legend, units, evidence counts, declaration note when applicable,
+and an identity appendix with text-report references. Embedded metadata retains
+the exported rows and viewport state. It does not retrieve additional batches or
+recompute results. Report links, especially temporary run links, may expire;
+retain the original report JSON separately for durable scientific provenance.

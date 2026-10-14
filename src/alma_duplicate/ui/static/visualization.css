@@ -77,4 +77,9 @@
 .visual-current span { font-size:.78rem; }.visual-current small { font-size:.73rem; color:#546b7e; margin-top:.2rem; }
 .visual-current-values { border-left:1px solid #e0e8ef; padding-left:.8rem; }
 .visual-page [hidden] { display:none !important; }
+.visual-export { display:flex; align-items:center; flex-wrap:wrap; gap:8px 14px; margin:12px 0; }
+.visual-export .button { cursor:pointer; padding:8px 14px; min-height:40px; }
+.visual-export > span, .visual-preview-status { color:#506b7e; font-size:12px; }
+.visual-preview-status { min-height:1.6em; margin:4px 0; }
+.overlap-list button:focus-visible { background:#e4f1fa; }
 @media(max-width:600px) { .visual-current { grid-template-columns:1fr; }.visual-current-values { border-left:0; border-top:1px solid #e0e8ef; padding:.5rem 0 0; }.visual-filter-fields label { flex-basis:100%; }.visual-filter-actions { width:100%; } }

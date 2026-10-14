@@ -23,6 +23,8 @@
 <p><strong id="visual-visible-count" role="status"></strong><span>Current loaded batch only ({{ visual.plot_page }} / {{ visual.plot_pages }} on report page {{ page }}). Other pages are unchanged.</span></p>
 </section>
 <section id="visual-current" class="visual-current" aria-label="Current comparison summary" hidden></section>
+<div class="visual-export" id="visual-export" hidden><button class="button" type="button" id="visual-export-svg">Export charts (SVG)</button><span>Current filters and zoom · includes comparison identities and report scope</span></div>
+<p id="visual-preview-status" class="visual-preview-status" role="status" aria-live="polite"></p>
 <p id="visual-empty" class="notice" hidden>No comparisons in this view. Use Clear filters to show the loaded comparisons. This is not a duplication verdict.</p>
 <div class="visual-panels">
 <section class="visual-panel" aria-labelledby="spatial-title"><header><div><h2 id="spatial-title">Position</h2><p>Candidate half-power boundaries</p></div><div class="chart-tools" aria-label="Position zoom"><button type="button" data-zoom="spatial:in" aria-label="Zoom in position">+</button><button type="button" data-zoom="spatial:out" aria-label="Zoom out position">−</button><button type="button" data-zoom="spatial:reset">Reset</button></div></header>

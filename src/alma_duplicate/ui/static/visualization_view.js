@@ -42,7 +42,17 @@
       horizontal ? Infinity : halfHeight*1.76/Math.max(1,maxY-minY))));
     return {k, x: (origin[0]-(minX+maxX)/2)*k, y: horizontal ? 0 : (origin[1]-(minY+maxY)/2)*k};
   }
-  const api={fresh, zoom, pan, hits, projectKey, memberKey, filter, visible, selection, fit};
+  // Display-only relationships; never infer missing evidence or a scientific verdict.
+  function relationships(row) {
+    const s=row.spatial, f=row.spectral, finite=Number.isFinite;
+    const ratio=s.available && finite(s.separation_arcsec) && s.separation_arcsec>=0 &&
+      finite(s.radius_arcsec) && s.radius_arcsec>0 ? s.separation_arcsec/s.radius_arcsec : null;
+    const interval=f.available && f.kind==="interval" && [f.proposed,f.low,f.high].every(finite) && f.low<=f.high;
+    return {radiusRatio: ratio,
+      lowerMarginGHz: interval ? f.proposed-f.low : null,
+      upperMarginGHz: interval ? f.high-f.proposed : null};
+  }
+  const api={relationships, fresh, zoom, pan, hits, projectKey, memberKey, filter, visible, selection, fit};
   if (typeof module === "object" && module.exports) module.exports=api;
   else root.ReportViewport=api;
 })(globalThis);

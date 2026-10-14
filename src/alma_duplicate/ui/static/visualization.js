@@ -6,7 +6,8 @@
   const data = JSON.parse(payload.textContent);
   if (!data.rows.length) return;
   const rows = data.rows;
-  let selected = rows[0].id;
+  let selected = rows[0].id, previewed = null, previewScroll = null;
+  const highlighted = () => previewed ?? selected;
   const viewport = window.ReportViewport;
   const views = {spatial: viewport.fresh(), spectral: viewport.fresh()};
   let project = "", member = "", isolated = false;
@@ -83,9 +84,9 @@
     clip(svg, "position-clip", 55, 35, 370, 370);
     const layer = draw(svg, "g", {"clip-path": "url(#position-clip)"});
     // Paint the selected geometry last so coincident centers remain visible.
-    visibleRows().map(row => [row, rows.indexOf(row)]).sort(([a], [b]) => Number(a.id === selected) - Number(b.id === selected)).forEach(([row, i]) => {
+    visibleRows().map(row => [row, rows.indexOf(row)]).sort(([a], [b]) => Number(a.id === highlighted()) - Number(b.id === highlighted())).forEach(([row, i]) => {
       if (!row.spatial.available) return;
-      const spatial = row.spatial, active = row.id === selected;
+      const spatial = row.spatial, active = row.id === highlighted();
       const desc = `Center RA ${fmt(spatial.center[0])}, Dec ${fmt(spatial.center[1])} deg; half-power radius ${fmt(spatial.radius_arcsec)} arcsec`;
       const g = selectable(layer, row, i, desc);
       const polygon = (spatial.outline || []).map(p => [sx(p[0]), sy(p[1])]);
@@ -102,7 +103,7 @@
       });
       draw(g, "circle", {cx: sx(spatial.offset[0]), cy: sy(spatial.offset[1]), r: active ? 5 : 3,
         fill: color(row), stroke: "white", "stroke-width": 1});
-      if (active) draw(g, "text", {x: sx(spatial.offset[0])+8, y: sy(spatial.offset[1])-8}, `#${i+data.start}`);
+      if (active) draw(g, "text", {x: sx(spatial.offset[0])+8, y: sy(spatial.offset[1])-8}, `#${i+data.start}${previewed === row.id ? " preview" : ""}`);
     });
     if (data.origin) { marker(layer, sx(0), sy(0)); draw(svg, "text", {x: 60, y: 22}, "◆ Your target at (0, 0)"); }
     if (!points.length) draw(svg, "text", {x: 240, y: 190, "text-anchor": "middle"}, "Candidate position evidence unavailable");
@@ -131,7 +132,7 @@
     draw(svg, "text", {x: 350, y: height-3, "text-anchor": "middle"}, "Frequency (GHz)");
     clip(svg, "frequency-clip", 135, 30, 430, bottom-30);
     shown.forEach((row, i) => {
-      const y = 48 + i*34, f = row.spectral, active = row.id === selected;
+      const y = 48 + i*34, f = row.spectral, active = row.id === highlighted();
       const description = !f.available ? f.reason : f.kind === "interval" ?
         `Requested ${fmt(f.proposed)} GHz; candidate interval ${fmt(f.low)} to ${fmt(f.high)} GHz` :
         `Requested ${fmt(f.proposed)} GHz; candidate representative frequency ${fmt(f.candidate)} GHz`;
@@ -236,15 +237,39 @@
     node("span", {}, `${row.source === "QUEUE" ? "Queue" : "Archive"} · ${row.intent} · SPW ${row.spw}${row.window ? ` · requested ${row.window}` : ""}${row.beam_variant != null ? ` · beam path ${row.beam_variant+1}` : ""}`, identity);
     node("small", {}, row.identity["Member OUS"] ? `Member ${row.identity["Member OUS"]}` : "Member OUS not recorded", identity);
     if (row.identity.ASDM) node("small", {}, `ASDM ${row.identity.ASDM}`, identity);
-    const s=row.spatial, f=row.spectral;
+    const s=row.spatial, f=row.spectral, relation=viewport.relationships(row);
     const position=node("div", {class:"visual-current-values"}, null, summary);
     node("strong", {}, "Position", position);
     node("span", {}, s.available ? `Separation ${fmt(s.separation_arcsec)} arcsec` : "Evidence unavailable", position);
     if (s.available) node("small", {}, `Half-power radius ${fmt(s.radius_arcsec)} arcsec`, position);
+    if (relation.radiusRatio !== null) node("small", {}, `Separation / half-power radius: ${fmt(relation.radiusRatio)} (1 = boundary; not angular resolution)`, position);
+    if (!s.available && s.reason) node("small", {}, s.reason, position);
     const frequency=node("div", {class:"visual-current-values"}, null, summary);
     node("strong", {}, "Frequency", frequency);
     node("span", {}, f.available ? `Requested ${fmt(f.proposed)} GHz` : "Evidence unavailable", frequency);
     if (f.available) node("small", {}, f.kind === "interval" ? `Candidate ${fmt(f.low)}–${fmt(f.high)} GHz` : `Candidate ${fmt(f.candidate)} GHz (representative)`, frequency);
+    if (relation.lowerMarginGHz !== null) {
+      node("small", {}, `From lower edge: ${fmt(relation.lowerMarginGHz)} GHz; to upper edge: ${fmt(relation.upperMarginGHz)} GHz. Negative = outside interval.`, frequency);
+    } else if (f.available) node("small", {}, "Representative markers do not describe frequency coverage.", frequency);
+    if (!f.available && f.reason) node("small", {}, f.reason, frequency);
+  }
+  function preview(id) {
+    if (id === previewed) return;
+    const scroller=document.querySelector(".frequency-scroll");
+    if (previewScroll === null) previewScroll=scroller.scrollTop;
+    previewed=id;
+    spatialChart(); spectralChart();
+    const row=rows.find(row=>row.id===id);
+    document.getElementById("visual-preview-status").textContent=row ? `Preview #${number(row)}: ${row.label}. Click to select; current selection is unchanged.` : "";
+    revealWithin(scroller, document.querySelector(`#spectral-chart [data-plot-select="${id}"]`));
+  }
+  function clearPreview() {
+    if (previewed === null) return;
+    previewed=null;
+    spatialChart(); spectralChart();
+    if (previewScroll !== null) document.querySelector(".frequency-scroll").scrollTop=previewScroll;
+    previewScroll=null;
+    document.getElementById("visual-preview-status").textContent="";
   }
   function applyFilters() {
     selected=viewport.selection(filteredRows(),selected);
@@ -275,6 +300,7 @@
   }
   function closeChooser(restore = true) {
     if (!chooser) return;
+    clearPreview();
     chooser.remove(); chooser = null;
     if (restore) chooserReturn?.focus({preventScroll: true});
   }
@@ -286,7 +312,7 @@
     node("strong", {}, `${ids.length} comparisons at this position`, head);
     const close = node("button", {type: "button", "aria-label": "Close overlapping comparisons"}, "×", head);
     close.addEventListener("click", () => closeChooser());
-    node("p", {}, "Choose one to highlight its position and frequency.", chooser);
+    node("p", {}, "Hover or focus to preview both plots. Click to select.", chooser);
     const list = node("div", {class: "overlap-list"}, null, chooser);
     rows.forEach((row, i) => {
       if (!ids.includes(row.id)) return;
@@ -295,6 +321,10 @@
       node("small", {}, `${row.source} · ${row.intent} · SPW ${row.spw}${row.window ? ` · requested ${row.window}` : ""}${row.beam_variant != null ? ` · beam path ${row.beam_variant+1}` : ""}`, b);
       const identity = [row.identity["Member OUS"], row.identity.ASDM].filter(Boolean).join(" · ");
       if (identity) node("small", {class: "overlap-identity"}, identity, b);
+      b.addEventListener("pointerenter", event => { if (event.pointerType !== "touch") preview(row.id); });
+      b.addEventListener("pointerleave", () => { if (document.activeElement !== b) clearPreview(); });
+      b.addEventListener("focus", () => preview(row.id));
+      b.addEventListener("blur", () => clearPreview());
       b.addEventListener("click", () => { select(row.id); svg.focus({preventScroll: true}); });
     });
     const bounds = chooser.getBoundingClientRect();
@@ -310,6 +340,7 @@
   });
   window.addEventListener("resize", () => closeChooser(false));
   window.addEventListener("scroll", event => {
+    if (event.target === document.querySelector(".frequency-scroll")) return;
     if (chooser && !chooser.contains(event.target)) closeChooser(false);
   }, true);
   for (const chart of ["spatial", "spectral"]) {
@@ -379,5 +410,68 @@
     views[chart] = action === "reset" ? (fitChart(chart, visibleRows()) || viewport.fresh()) : viewport.zoom(views[chart], action === "in" ? 1.6 : 1/1.6, origins[chart], origins[chart], chart === "spectral");
     render(chart);
   }));
+  function exportFigure() {
+    closeChooser(false);
+    const shown=visibleRows(), reportLink=document.querySelector(".visual-heading > a");
+    const figure=node("svg", {xmlns:ns, width:1200, role:"img"}, null, null, true);
+    draw(figure,"title",{},"ALMA observation comparison: position and frequency");
+    draw(figure,"rect",{width:"100%",height:"100%",fill:"white"});
+    let y=30;
+    function text(value, bold=false) {
+      // Fixed-width text makes long project/Member identities wrap predictably.
+      for (const part of String(value).match(/.{1,138}/gu) || [""]) {
+        draw(figure,"text",{x:24,y,fill:"#203e52","font-family":"monospace","font-size":13,
+          "font-weight":bold ? 700 : 400},part);
+        y+=19;
+      }
+    }
+    text(document.querySelector(".visual-heading h1").textContent,true);
+    text(`Report: ${reportLink.href}`);
+    text(`Exported: ${new Date().toISOString()} | Current zoom; complete visible frequency rows`);
+    text(document.querySelector(".visual-scope").textContent.replace(/\s+/g," ").trim());
+    text(`Batch ${data.plot_page}/${data.plot_pages}; showing ${shown.length}/${rows.length} loaded comparisons. Other batches excluded.`);
+    text(`Project: ${document.getElementById("visual-project").selectedOptions[0].textContent}; Member: ${document.getElementById("visual-member").selectedOptions[0].textContent}`);
+    const current=rows.find(row=>row.id===selected);
+    text(`Only selected: ${isolated ? "yes" : "no"}; Selected: ${current ? "#"+number(current)+" "+current.label : "none"}`);
+    text("Legend: purple diamond = proposed; blue = Archive; orange = Queue (dashed position boundary).");
+    text("Position circles are half-power boundaries, not angular resolution. Continuum dots are representative frequencies.");
+    text("Display relationships do not recompute decisions. Matches do not establish absence of duplication elsewhere.");
+    if (data.continuum_declaration) text("Continuum setup qualification uses a researcher declaration; review the text report for evidence.");
+    const top=y+12;
+    let chartHeight=0;
+    for (const [index,id] of ["spatial-chart","spectral-chart"].entries()) {
+      const original=document.getElementById(id), copy=original.cloneNode(true);
+      const box=original.viewBox.baseVal, width=560, height=width*box.height/box.width;
+      copy.setAttribute("x",index ? 616 : 24); copy.setAttribute("y",top+24);
+      copy.setAttribute("width",width); copy.setAttribute("height",height);
+      copy.querySelectorAll("text").forEach(element=>{
+        element.setAttribute("font-family","Arial, sans-serif"); element.setAttribute("font-size","10");
+        element.setAttribute("fill","#36586f");
+      });
+      copy.querySelectorAll("[tabindex]").forEach(element=>element.removeAttribute("tabindex"));
+      draw(figure,"text",{x:index ? 616 : 24,y:top+12,"font-family":"Arial, sans-serif","font-size":16,fill:"#203e52"},index ? "Frequency (GHz)" : "Position (arcsec)");
+      figure.append(copy); chartHeight=Math.max(chartHeight,height);
+    }
+    y=top+chartHeight+52;
+    text(`Evidence available: position ${shown.filter(r=>r.spatial.available).length}/${shown.length}; frequency ${shown.filter(r=>r.spectral.available).length}/${shown.length}.`);
+    text("Comparison identities (numbers remain stable across filters)",true);
+    for (const row of shown) {
+      text(`#${number(row)} ${row.label} | ${row.source} | ${row.intent} | SPW ${row.spw}`,true);
+      text(`Requested window: ${row.window ?? "not recorded"}; beam path: ${row.beam_variant == null ? "not applicable" : row.beam_variant+1}`);
+      for (const [key,value] of Object.entries(row.identity)) text(`${key}: ${value}`);
+      if (!row.spatial.available) text(`Position: ${row.spatial.reason}`);
+      if (!row.spectral.available) text(`Frequency: ${row.spectral.reason}`);
+      text(`Evidence: ${reportLink.href.split("#")[0]}#${row.anchor}`);
+      y+=8;
+    }
+    draw(figure,"metadata",{},JSON.stringify({report:reportLink.href,project,member,isolated,selected,views,rows:shown}));
+    figure.setAttribute("height",y+16); figure.setAttribute("viewBox",`0 0 1200 ${y+16}`);
+    const blob=new Blob([new XMLSerializer().serializeToString(figure)],{type:"image/svg+xml;charset=utf-8"});
+    const url=URL.createObjectURL(blob), link=node("a",{href:url,download:"alma-comparison.svg"},null,document.body);
+    link.click(); link.remove(); setTimeout(()=>URL.revokeObjectURL(url),60000);
+    document.getElementById("visual-preview-status").textContent=`Exported ${shown.length} comparisons with current filters, zoom and report references.`;
+  }
+  document.getElementById("visual-export").hidden=false;
+  document.getElementById("visual-export-svg").addEventListener("click",exportFigure);
   select(selected);
 })();

@@ -89,3 +89,22 @@ test('coincident markers focus finitely and unavailable geometry has no invented
   const f=view.fit([[200,0],[200,0]],[350,0],215,1,true);
   assert.equal(f.k,64); assert.ok(Number.isFinite(f.x));
 });
+
+test('display relationships preserve signed LINE edge distances and input evidence', () => {
+  const row={spatial:{available:true,separation_arcsec:5,radius_arcsec:10},spectral:{available:true,kind:'interval',proposed:99,low:100,high:110}};
+  const before=JSON.stringify(row);
+  assert.deepEqual(view.relationships(row),{radiusRatio:.5,lowerMarginGHz:-1,upperMarginGHz:11});
+  assert.equal(JSON.stringify(row),before);
+  row.spectral.proposed=110;
+  assert.equal(view.relationships(row).upperMarginGHz,0);
+  row.spectral.proposed=111;
+  assert.equal(view.relationships(row).upperMarginGHz,-1);
+});
+test('missing evidence and continuum representatives never invent interval coverage', () => {
+  for (const radius of [0,null,undefined,Infinity,-1]) {
+    const result=view.relationships({spatial:{available:true,separation_arcsec:0,radius_arcsec:radius},spectral:{available:true,kind:'representative',proposed:100,candidate:101}});
+    assert.deepEqual(result,{radiusRatio:null,lowerMarginGHz:null,upperMarginGHz:null});
+  }
+  assert.deepEqual(view.relationships({spatial:{available:false},spectral:{available:false}}),{radiusRatio:null,lowerMarginGHz:null,upperMarginGHz:null});
+  assert.equal(view.relationships({spatial:{available:true,separation_arcsec:null,radius_arcsec:10},spectral:{available:true,kind:'interval',proposed:100,low:110,high:90}}).lowerMarginGHz,null);
+});
