@@ -127,7 +127,22 @@
 <section id="search"><div class="section-title"><h2>Data sources</h2>{{ help('sources', 'data sources') }}</div>
 <div class="form-pair">
 <fieldset id="sources" class="choice-group"><legend>Sources</legend><div class="inline-choices">{% for source in ['ARCHIVE','QUEUE'] %}<label><input type="checkbox" name="sources" value="{{ source }}" {% if source in values.get('sources', []) %}checked{% endif %}>{{ source }}</label>{% endfor %}</div>{{ messages('sources') }}</fieldset></div>
-<p class="field-note">Archive: {{ 'live' if configured.archive_kind == 'LIVE' else ('replay' if configured.archive_kind == 'REPLAY' else 'not configured') }} · Queue CSV: {{ 'available' if configured.queue_csv else 'not configured' }}. Sources are accessed when you run the assessment.</p>
+<p class="field-note">Archive: {{ 'live' if configured.archive_kind == 'LIVE' else ('replay' if configured.archive_kind == 'REPLAY' else 'not configured') }} · Queue CSV: {{ 'managed snapshot' if configured.managed_queue_root else ('available' if configured.queue_csv else 'not configured') }}. Sources are accessed when you run the assessment.</p>
+{% if queue_status %}
+<div id="queue-source-status" class="field-note" role="status">
+{% if queue_status.status == 'ACTIVE' %}
+<p><strong>Queue data as of: {{ queue_status.source_as_of }}</strong> · Snapshot SHA-256: <code>{{ queue_status.snapshot_sha256[:12] }}</code>… · Source ID: <code>{{ queue_status.source_id }}</code>.</p>
+{% elif queue_status.status == 'NOT_ACTIVATED' %}
+<p><strong>Queue snapshot not activated.</strong> Queue assessments will be unavailable until the operator approves a validated download.</p>
+{% else %}
+<p><strong>Queue snapshot unavailable.</strong> Active selection failed validation; Queue results cannot establish an absence of matches.</p>
+{% endif %}
+<p>Last update check: {{ queue_status.checked_at or 'not recorded' }} · Result: {{ queue_status.check_status }}. Last successful check: {{ queue_status.last_successful_check_at or 'not recorded' }}.</p>
+{% if queue_status.check_error %}<p>Queue update check warning: {{ queue_status.check_error }}. {% if queue_status.status == 'ACTIVE' %}Using previously approved snapshot.{% endif %}</p>{% endif %}
+{% if queue_status.update_waiting_for_approval %}<p>A different validated download is waiting for operator approval; the active Queue version has not changed.</p>{% endif %}
+<p>The official Queue data date is not the last check time. No Queue download is triggered by this page.</p>
+</div>
+{% endif %}
 {% set radius_mode = values.get('radius_mode', 'EXPLICIT' if 'radius' in values else 'AUTO') %}
 {% if radius_mode == 'AUTO' %}
 <input type="hidden" name="radius_mode" value="AUTO">
@@ -141,7 +156,7 @@
 {% else %}<input type="hidden" name="radius_mode" value="{{ radius_mode }}"><p>Explicit search scope retained from this request. Start a new observation to use automatic scope.</p>{{ quantity('radius', 'Search radius', ['arcsec','arcmin','deg'], 'arcsec') }}{% endif %}
 <details class="field-help"><summary>Display options</summary><div class="display-limit">{{ input('result_limit', 'Candidate display limit (optional positive integer)') }}</div><p class="field-note">Limits displayed candidates only; it does not limit retrieval or evaluation.</p></details>
 {% if configured.enabled %}<details id="assessment-sources" class="field-help"><summary>Data source details</summary>
-<p>Archive TAP: {% if configured.archive_kind == 'LIVE' %}live{% elif configured.archive_kind == 'REPLAY' %}replay{% else %}not provided{% endif %}. Queue CSV: {{ 'configured' if configured.queue_csv else 'not provided' }}.</p>
+<p>Archive TAP: {% if configured.archive_kind == 'LIVE' %}live{% elif configured.archive_kind == 'REPLAY' %}replay{% else %}not provided{% endif %}. Queue CSV: {{ 'managed approved snapshot' if configured.managed_queue_root else ('configured' if configured.queue_csv else 'not provided') }}.</p>
 <p>Additional AQ evidence: {% if configured.live_aq %}live AQ enabled. After TAP retrieval, linked Members from retained candidates are queried for source-bound array evidence. Acquisition failures retain available candidates with unresolved array evidence; no fallback is used.{% elif configured.archive_array_evidence %}captured AQ manifest configured. A live TAP run does not perform a live AQ lookup; configured AQ evidence remains captured evidence.{% else %}not configured. A live TAP run does not perform a live AQ lookup; existing TAP-only array interpretation remains available.{% endif %}</p>
 {% if configured.archive_kind == 'REPLAY' %}<p>Archive replay requires the exact recorded query, including search mode and radius. Older explicit-radius recordings cannot be replayed by an AUTO request. A different query can fail; it will not fall back to a live search. These reference files do not establish current Archive or Queue coverage.</p>{% elif configured.archive_kind == 'LIVE' %}<p>The live Archive client is created only for a search-ready Run assessment that selected ARCHIVE. Archive query failures are not replaced by replay results.</p>{% endif %}
 <p>When Queue is selected, common criteria and the formal methods for each selected purpose are explicitly enabled. The report shows the effective configuration.</p></details>{% endif %}

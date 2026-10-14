@@ -7,6 +7,8 @@ from alma_duplicate.assessment import (
 )
 from alma_duplicate.clients.archive_replay import RecordedArchiveClient
 from alma_duplicate.clients.queue_csv_client import QueueCsvClient
+from alma_duplicate.storage.queue_active import QueueActiveError
+from alma_duplicate.ui.managed_queue import pin_active_queue
 from alma_duplicate.ui.run_store import RunStore as RunStore
 
 
@@ -18,8 +20,11 @@ class BrowserAssessment:
     live_archive: bool = False
     live_aq: bool = False
     report_detail: str = 'matches'
+    managed_queue_root: str | None = None
 
     def __post_init__(self):
+        if self.queue_csv and self.managed_queue_root:
+            raise ValueError("manual Queue CSV and managed Queue root are mutually exclusive")
         if self.report_detail not in {'full', 'matches'}:
             raise ValueError('Report detail must be full or matches')
         if type(self.live_archive) is not bool:
@@ -45,7 +50,7 @@ class BrowserAssessment:
 
     @property
     def enabled(self):
-        return bool(self.archive_kind or self.queue_csv)
+        return bool(self.archive_kind or self.queue_csv or self.managed_queue_root)
 
     def assess(self, document):
         """Construct fresh lazy providers; never fall back between Archive modes."""
@@ -82,18 +87,31 @@ class BrowserAssessment:
                 "Archive provider requested without Archive configuration"
             )
 
-        loader = (
-            (lambda: QueueCsvClient().load(self.queue_csv))
-            if self.queue_csv and queue
-            else None
-        )
+        # Select and freeze Queue bytes now, before Archive/search work can
+        # overlap with a later administrator activation of another snapshot.
+        selection = None
+        if queue and self.managed_queue_root:
+            try:
+                selection = pin_active_queue(self.managed_queue_root)
+            except (QueueActiveError, OSError) as exc:
+                message = f"{type(exc).__name__}: {exc}"
+
+                def unavailable_queue():
+                    raise QueueActiveError(message)
+
+                loader = unavailable_queue  # Shared entry reports Queue FAILED, not empty.
+            else:
+                loader = selection.parse
+        else:
+            loader = ((lambda: QueueCsvClient().load(self.queue_csv))
+                      if self.queue_csv and queue else None)
 
         def fetch_archive_arrays(members):
             # The shared entry calls this only after TAP retained linked Members.
             from alma_duplicate.clients.archive_aq_client import ArchiveAqClient
             return ArchiveAqClient().fetch_members(members)
 
-        return assess_observation(
+        assessment = assess_observation(
             document["request"],
             document["search_options"],
             report_detail=self.report_detail,
@@ -113,6 +131,13 @@ class BrowserAssessment:
             ),
             # A browser form has no original input-file bytes to hash.
         )
+        if selection is not None and assessment.document is not None:
+            # Add an optional browser-specific evidence binding without changing
+            # report version, evaluated science or archive-only reports.
+            queue_report = assessment.document.get("sources", {}).get("QUEUE")
+            if queue_report is not None:
+                queue_report["managed_snapshot"] = dict(selection.provenance)
+        return assessment
 
 
 # Historical internal name retained for import compatibility.
