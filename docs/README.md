@@ -1,5 +1,8 @@
 # Documentation guide
 
+For one-shot official Queue CSV acquisition (without activation), see
+[Queue auto-update CLI](queue_auto_update.md).
+
 This guide separates executable contracts, conceptual design and dated evidence.
 The current Python implementation and its tests establish implementation status;
 project plans guide architecture and delivery order. Older plan statements that
