@@ -1,0 +1,19 @@
+[Unit]
+Description=ALMA Queue official CSV acquisition (validate, never activate)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=alma
+Group=alma
+WorkingDirectory=/srv/alma-duplication-tool
+UMask=0077
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/srv/alma-duplication-tool/.venv/bin/python -m alma_duplicate.cli.queue_update --once --store-root /var/lib/alma-duplication/queue-snapshots
+TimeoutStartSec=15min
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/alma-duplication/queue-snapshots

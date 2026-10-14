@@ -1,0 +1,27 @@
+[Unit]
+Description=ALMA duplication assessment browser (loopback only)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=alma
+Group=alma
+WorkingDirectory=/srv/alma-duplication-tool
+UMask=0077
+Environment=PYTHONUNBUFFERED=1
+Environment=ALMA_UI_QUEUE_SNAPSHOT_ROOT=/var/lib/alma-duplication/queue-snapshots
+Environment=ALMA_UI_LIVE_ARCHIVE=1
+Environment=ALMA_UI_LIVE_ARCHIVE_AQ=1
+# Exactly one worker: temporary reports are per-process, not a shared store.
+ExecStart=/srv/alma-duplication-tool/.venv/bin/gunicorn --workers 1 --threads 4 --timeout 300 --bind 127.0.0.1:5050 alma_duplicate.ui.app:create_app()
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

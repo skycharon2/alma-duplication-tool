@@ -1,0 +1,11 @@
+[Unit]
+Description=Check ALMA Queue scheduler and approved source health daily
+
+[Timer]
+OnCalendar=*-*-* 08:00:00 UTC
+RandomizedDelaySec=10min
+Persistent=true
+Unit=alma-queue-health.service
+
+[Install]
+WantedBy=timers.target
