@@ -56,6 +56,16 @@
 {% if target_kind != 'FIXED' %}<details><summary>Retained coordinates</summary>{% endif %}
 <div class="form-pair"><div class="coordinate-control"><div>{{ input('ra', 'Right ascension') }}</div><div>{{ select('ra_format', 'RA format', ['DEG','HMS'], 'DEG') }}</div></div><div class="coordinate-control"><div>{{ input('dec', 'Declination') }}</div><div>{{ select('dec_format', 'Dec format', ['DEG','DMS'], 'DEG') }}</div></div></div>
 <p class="field-note">ICRS coordinates. Use colons for HMS / DMS, e.g. 18:33:39.920.</p>
+<div class="sky-preview" data-url="{{ url_for('sky_preview') }}">
+<button type="button" class="button" data-sky-open aria-expanded="false" aria-controls="sky-preview-content">Sky preview</button>
+<span class="field-note">Loads external survey imagery from CDS on request.</span>
+<p data-sky-status role="status" class="field-note"></p>
+<div id="sky-preview-content" hidden>
+<button type="button" class="button" data-sky-close>Close preview</button>
+<div data-sky-frame></div>
+<p class="field-note">DSS2 color · CDS Aladin Lite. Optical survey imagery for position reference, not an ALMA image or duplication assessment. Preview does not change your inputs.</p>
+</div>
+</div>
 {% if target_kind != 'FIXED' %}</details>{% endif %}
 
 
@@ -193,5 +203,6 @@
 </aside></div></form>
 <aside id="field-guide" class="help-popover" role="dialog" aria-modal="false" aria-labelledby="guide-title" hidden><header class="popover-header"><h2 id="guide-title"></h2><button type="button" id="close-guide" aria-label="Close help">×</button></header><div id="guide-content"></div></aside>
 <script src="{{ url_for('static', filename='proposal-workbench.js') }}" defer></script>
+<script src="{{ url_for('static', filename='sky-preview.js') }}" defer></script>
 <script src="{{ url_for('static', filename='proposed.js') }}" defer></script>
 {% endblock %}

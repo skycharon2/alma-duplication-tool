@@ -3,6 +3,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='visualization.css') }}">
 <script src="{{ url_for('static', filename='visualization_view.js') }}" defer></script>
+<script src="{{ url_for('static', filename='report-sky.js') }}" defer></script>
 <script src="{{ url_for('static', filename='visualization.js') }}" defer></script>
 {% endblock %}
 {% block content %}
@@ -26,14 +27,50 @@
 <div class="visual-export" id="visual-export" hidden><button class="button" type="button" id="visual-export-svg">Export charts (SVG)</button><span>Current filters and zoom · includes comparison identities and report scope</span></div>
 <p id="visual-preview-status" class="visual-preview-status" role="status" aria-live="polite"></p>
 <p id="visual-empty" class="notice" hidden>No comparisons in this view. Use Clear filters to show the loaded comparisons. This is not a duplication verdict.</p>
-<div class="visual-panels">
+<div class="evidence-gallery-heading"><div><h2>Explore the evidence</h2><p>Scroll right for sky context · chart gestures stay inside each view</p></div><div class="evidence-pager" role="group" aria-label="Visualization views"><button type="button" id="position-offsets" aria-pressed="true" aria-controls="evidence-charts">Charts</button><span id="evidence-page-number" aria-live="polite">1 / 2</span><button type="button" id="position-sky" aria-pressed="false" aria-controls="report-sky-panel">Sky preview →</button></div></div>
+<div class="evidence-gallery" id="evidence-gallery" tabindex="0" aria-label="Visualization gallery. Use left and right arrows to change views.">
+<div class="evidence-slide" id="evidence-charts" role="group" aria-label="1 of 2: Position and frequency charts"><div class="visual-panels">
 <section class="visual-panel" aria-labelledby="spatial-title"><header><div><h2 id="spatial-title">Position</h2><p>Candidate half-power boundaries</p></div><div class="chart-tools" aria-label="Position zoom"><button type="button" data-zoom="spatial:in" aria-label="Zoom in position">+</button><button type="button" data-zoom="spatial:out" aria-label="Zoom out position">−</button><button type="button" data-zoom="spatial:reset">Reset</button></div></header>
 <svg id="spatial-chart" viewBox="0 0 460 460" role="group" aria-label="Position comparison, east to the left and north up"></svg>
 <p class="chart-caption"><span id="visual-spatial-count">{{ visual.spatial_available }} / {{ visual.rows|length }}</span> visible comparisons have position evidence. Offsets from your target in arcsec · East ← · North ↑. Boundaries use the candidate radius recorded by the backend.</p></section>
 <section class="visual-panel" aria-labelledby="spectral-title"><header><div><h2 id="spectral-title">Frequency</h2><p>LINE windows · CONTINUUM representative frequencies</p></div><div class="chart-tools" aria-label="Frequency zoom"><button type="button" data-zoom="spectral:in" aria-label="Zoom in frequency">+</button><button type="button" data-zoom="spectral:out" aria-label="Zoom out frequency">−</button><button type="button" data-zoom="spectral:reset">Reset</button></div></header>
 <div class="frequency-scroll" tabindex="0" role="region" aria-label="Frequency comparisons"><svg id="spectral-chart" role="group" aria-label="Recorded frequency comparisons in GHz"></svg></div>
 <p class="chart-caption"><span id="visual-spectral-count">{{ visual.spectral_available }} / {{ visual.rows|length }}</span> visible comparisons have frequency evidence. ◆ Requested SKY frequency; bars show LINE candidate intervals. CONTINUUM uses two markers, not a coverage interval.</p></section>
+</div></div>
+<section id="report-sky-panel" class="evidence-slide visual-panel sky-stage" role="group" aria-label="2 of 2: Sky preview">
+<header><div><h2>Target &amp; observation coverage</h2><p>Where does your target fall within a candidate observation?</p></div><div class="sky-view-actions"><button type="button" id="sky-overview">Sky context</button><button type="button" id="sky-fit">Fit footprints</button><button type="button" id="sky-selected">Focus selected</button><button type="button" id="sky-retry" hidden>Retry loading</button></div></header>
+<div class="sky-workspace"><div class="sky-map-column">
+<div class="sky-survey-presets sky-view-actions" aria-label="Choose reference imagery">
+<span>Reference imagery</span>
+<button type="button" id="sky-survey-dss" aria-pressed="false" disabled>Use DSS color</button>
+<button type="button" id="sky-survey-ps" aria-pressed="false" disabled>Use Pan-STARRS color</button>
+<small>Pan-STARRS offers finer sampling where available. If blank, switch to DSS. Active survey and more options: layers icon.</small>
 </div>
+<p class="sky-survey-status">Active layer: <strong id="sky-active-survey">Not loaded</strong><span id="sky-imagery-status" role="status">Reference image has not loaded yet.</span></p>
+<div class="sky-layer-controls"><label><input type="checkbox" id="sky-show-beams" checked> Show candidate boundaries</label><label><input type="checkbox" id="sky-show-others"> Show other candidates</label><label><input type="checkbox" id="sky-show-imagery" checked> Show reference image</label></div>
+<div id="report-sky-canvas"></div>
+<div class="sky-stage-legend"><span>✛ Proposed target</span><span class="sky-key-selected">◯ Selected half-power boundary</span><span>○ Candidate center · line: center separation</span><span>Other candidates, when enabled: blue Archive · amber Queue</span></div>
+<div id="report-sky-choices" class="sky-view-actions" role="group" aria-label="Comparisons at the same position"></div>
+<details class="sky-display-controls"><summary>Image display</summary>
+<label>Brightness <input id="sky-brightness" type="range" min="-0.5" max="0.5" step="0.05" value="0" disabled></label>
+<label>Contrast <input id="sky-contrast" type="range" min="-0.5" max="0.5" step="0.05" value="0" disabled></label>
+<button id="sky-reset-display" type="button" disabled>Reset display</button>
+<small>Display adjustments only; no sharpening or changes to coordinates and boundaries.</small>
+</details>
+</div><aside class="sky-explanation-column" aria-label="Position interpretation"><div class="sky-relationship-card" aria-live="polite">
+<strong id="sky-comparison-name">Selected comparison</strong>
+<p id="sky-relationship">Loading saved position evidence…</p>
+<dl class="sky-relationship-metrics"><div><dt>Center separation</dt><dd id="sky-separation">—</dd></div><div><dt>Separation / radius</dt><dd id="sky-radius-ratio">—</dd></div></dl>
+<small>Point-to-boundary comparison only. No proposed observation footprint is inferred. Position alone does not establish duplication.</small>
+</div>
+<details class="sky-evidence-parameters" open><summary>Selected footprint · recorded parameters</summary>
+<dl id="sky-parameters"></dl>
+
+<p class="chart-caption">The red circle is the recorded half-power boundary, not the object size or angular resolution. The background shows optical imagery, not ALMA detections. Nearly coincident centers may visually overlap; use the numerical separation above.</p></details></aside></div>
+
+<p id="report-sky-status" class="chart-caption" role="status"></p>
+<p class="chart-caption">Optical reference imagery via CDS, not ALMA data. DSS color: STScI/NASA/CDS; Pan-STARRS: PS1 Science Consortium/MAST/CDS. Finer sampling does not guarantee a resolved target. Spatial coverage alone is not a duplication verdict. SVG export includes the charts, not this image.</p>
+</section></div>
 <p class="visual-selection-hint">Drag to pan · Ctrl/⌘ + scroll to zoom · Click overlapping positions to choose. Both plots and the list share your selection.</p>
 <details class="visual-help"><summary>Keyboard and touch controls</summary><p>Focus a plot: arrow keys pan, +/− zoom, Home resets. Enter/Space selects a focused comparison. On touch screens use the zoom buttons and comparison list.</p></details>
 <div class="visual-bottom">

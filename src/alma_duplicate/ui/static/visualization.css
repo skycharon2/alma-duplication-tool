@@ -83,3 +83,88 @@
 .visual-preview-status { min-height:1.6em; margin:4px 0; }
 .overlap-list button:focus-visible { background:#e4f1fa; }
 @media(max-width:600px) { .visual-current { grid-template-columns:1fr; }.visual-current-values { border-left:0; border-top:1px solid #e0e8ef; padding:.5rem 0 0; }.visual-filter-fields label { flex-basis:100%; }.visual-filter-actions { width:100%; } }
+
+.sky-view-switch, .sky-view-actions { display:flex; flex-wrap:wrap; gap:8px; padding:10px 16px; }
+.sky-view-switch button, .sky-view-actions button { border:1px solid var(--border); border-radius:999px; padding:7px 12px; background:var(--paper); color:var(--ink); cursor:pointer; }
+.sky-view-switch [aria-pressed="true"] { background:var(--blue-dark); color:white; }
+#report-sky-canvas { width:100%; height:420px; }
+#report-sky-panel[hidden], #spatial-chart[hidden] { display:none; }
+#report-sky-choices:empty { display:none; }
+.visual-panel .chart-tools[hidden], .visual-panel .chart-caption[hidden] { display:none; }
+
+/* Two full-width evidence pages; horizontal gestures on chrome turn pages,
+   gestures inside plots retain their scientific pan/zoom behavior. */
+.evidence-gallery-heading { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin:14px 0; }
+.evidence-gallery-heading h2 { font-size:19px; margin:0; }
+.evidence-gallery-heading p { font-size:12px; color:var(--muted); margin:4px 0; }
+.evidence-pager { display:flex; gap:8px; align-items:center; padding:5px; border:1px solid var(--glass-edge); border-radius:999px; background:var(--glass); box-shadow:var(--glass-shadow); }
+.evidence-pager button { padding:10px 16px; border:0; border-radius:999px; color:var(--ink); background:transparent; cursor:pointer; }
+.evidence-pager button[aria-pressed="true"] { background:white; color:var(--blue-dark); box-shadow:0 2px 8px #203e5215; }
+#evidence-page-number { color:var(--muted); font-size:12px; font-variant-numeric:tabular-nums; }
+.evidence-gallery { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:thin; overscroll-behavior-x:contain; align-items:flex-start; border-radius:22px; }
+.evidence-slide { flex:0 0 100%; min-width:0; box-sizing:border-box; scroll-snap-align:start; scroll-snap-stop:always; }
+.evidence-slide .visual-panels { margin:0; }
+.sky-stage > header { padding:18px 22px; }
+.sky-stage #report-sky-canvas { height:clamp(360px,55vh,620px); width:100%; background:#071016; }
+.sky-stage-legend { display:flex; flex-wrap:wrap; gap:10px 22px; padding:12px 22px; font-size:12px; border-bottom:1px solid var(--border); }
+.sky-key-selected { color:#aa2538; }
+.sky-evidence-parameters { margin:0; padding:14px 22px; }
+.sky-evidence-parameters summary { cursor:pointer; font-weight:600; font-size:14px; }
+#sky-parameters { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px 24px; margin:16px 0; }
+#sky-parameters dt { font-size:12px; color:var(--muted); }
+#sky-parameters dd { margin:5px 0 0; font-size:13px; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+.sky-layer-controls { display:flex; flex-wrap:wrap; gap:14px 24px; font-size:13px; }
+.sky-layer-controls label { display:flex; align-items:center; gap:7px; }
+.sky-evidence-parameters .chart-caption { padding:12px 0 0; }
+@media(max-width:600px) { #sky-parameters { grid-template-columns:1fr 1fr; } .sky-stage > header { flex-wrap:wrap; } .evidence-pager { width:100%; justify-content:space-between; } }
+@media(prefers-reduced-motion:reduce) { .evidence-gallery { scroll-behavior:auto; } }
+
+/* Keep the embedded sky controls dark against survey imagery. */
+#report-sky-canvas input, #report-sky-canvas select {
+  background:#080c10 !important;
+  color:#eef4f8 !important;
+  border:1px solid #8b969f !important;
+  border-radius:2px !important;
+  box-shadow:none !important;
+}
+
+.sky-survey-presets { align-items:center; border-top:1px solid var(--border); }
+.sky-survey-presets > span { font-size:12px; font-weight:600; }
+.sky-survey-presets small { flex-basis:100%; color:var(--muted); font-size:12px; }
+.sky-survey-presets button:disabled { opacity:.5; cursor:wait; }
+
+.sky-relationship-card { padding:16px 22px; background:rgba(230,245,250,.65); border-top:1px solid var(--border); }
+.sky-relationship-card strong { font-size:13px; color:var(--blue-dark); }
+.sky-relationship-card p { margin:8px 0; font-size:16px; line-height:1.6; max-width:80ch; }
+.sky-relationship-card small { color:var(--muted); font-size:12px; }
+
+.sky-stage > .sky-layer-controls { padding:10px 22px; border-top:1px solid var(--border); }
+
+/* Compact finder image beside its scientific interpretation. */
+.sky-workspace { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr); align-items:start; }
+.sky-map-column { min-width:0; }
+.sky-explanation-column { min-width:0; border-left:1px solid var(--border); }
+.sky-explanation-column .sky-relationship-card { border-top:0; }
+.sky-explanation-column .sky-relationship-card p { font-size:15px; }
+.sky-explanation-column #sky-parameters { grid-template-columns:1fr 1fr; }
+.sky-stage .sky-map-column #report-sky-canvas { height:390px; }
+.sky-map-column .sky-layer-controls { padding:10px 16px; font-size:12px; gap:8px 14px; }
+.sky-map-column .sky-stage-legend { gap:8px 14px; padding:12px 16px; }
+.sky-display-controls { padding:12px 16px; border-top:1px solid var(--border); font-size:12px; }
+.sky-display-controls summary { cursor:pointer; font-weight:600; }
+.sky-display-controls label { display:flex; align-items:center; gap:12px; margin:12px 0; }
+.sky-display-controls input { flex:1; min-width:0; }
+.sky-display-controls small { display:block; color:var(--muted); margin-top:8px; }
+.sky-display-controls button { border:1px solid var(--border); border-radius:20px; padding:6px 12px; background:var(--paper); color:var(--ink); cursor:pointer; }
+@media(max-width:900px) { .sky-workspace { grid-template-columns:1fr; } .sky-explanation-column { border-left:0; border-top:1px solid var(--border); } .sky-stage .sky-map-column #report-sky-canvas { height:360px; } }
+
+.sky-survey-presets button[aria-pressed="true"], #report-sky-choices button[aria-pressed="true"] { background:var(--blue-dark); color:white; }
+.sky-view-actions button:hover { border-color:var(--blue-dark); }
+.sky-view-actions button:focus-visible { outline:2px solid #007cb0; outline-offset:3px; }
+.sky-survey-status { margin:0; padding:8px 16px; font-size:12px; overflow-wrap:anywhere; }
+.sky-survey-status span { display:block; margin-top:5px; color:var(--muted); }
+.sky-relationship-metrics { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 18px; }
+.sky-relationship-metrics dt { font-size:12px; color:var(--muted); }
+.sky-relationship-metrics dd { margin:4px 0 0; font-size:21px; font-weight:600; font-variant-numeric:tabular-nums; }
+#report-sky-choices > strong { flex-basis:100%; font-size:13px; }
+#report-sky-choices button { text-align:left; overflow-wrap:anywhere; max-width:100%; }
