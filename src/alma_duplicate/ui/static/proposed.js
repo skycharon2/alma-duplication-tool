@@ -7,7 +7,6 @@ window.addEventListener('pagehide', () => pauseActive());
 function initializeForm(form) {
   if (!form) return;
   window.initializeProposalWorkbench?.(form);
-  window.initializeSkyPreview?.(form);
   let assessing = false;
   const busyMessage = document.getElementById('assessment-busy');
   const elapsedLabel = document.getElementById('assessment-elapsed');

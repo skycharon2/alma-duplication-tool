@@ -1,7 +1,10 @@
 # Target sky preview
 
-The Proposed observation page offers an optional Sky preview below RA/Dec.
-It posts only coordinate fields and target kind to `/sky-preview`. This route
+The Proposed observation form no longer includes the Sky preview control or
+loads its client script. Sky visualization remains available in the report explorer.
+
+The retained standalone `/sky-preview` endpoint accepts only coordinate fields
+and target kind. This route
 uses the same coordinate validator as assessment, without running an assessment
 or querying Archive/Queue. Only fixed targets are supported. Other scientific
 inputs are not required for preview.
@@ -13,7 +16,7 @@ Aladin retains its logo and attribution. See https://aladin.cds.unistra.fr/Aladi
 for the library's GPL-3.0 licensing and embedding terms. The upstream latest
 endpoint can change independently of this application.
 
-The iframe separates viewer layout/styles from the form; it permits scripts and
+The legacy preview iframe separates viewer layout/styles from its host; it permits scripts and
 same-origin access required by the viewer and is not a security boundary against
 the upstream library. No target name, scientific requirements or report data is
 sent to the viewer. Survey tile requests reveal the region being viewed to the
@@ -24,9 +27,7 @@ marks the current view centre and can move away from the target while panning.
 Reset view returns to the input position at 0.25 degree field width. This is an
 initial viewing scale, not an ALMA beam or scientific search radius.
 
-Editing coordinates removes the previous preview. Closing/reopening retries
-loading. Failure does not disable form validation or assessment. The preview
-never writes coordinates back into the form or supplies duplication evidence.
+The retained preview endpoint does not supply duplication evidence.
 
 ## Report Sky view
 
