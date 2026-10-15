@@ -329,6 +329,21 @@ def create_app(config=None):
                                queue_status=(managed_queue_status(configured.managed_queue_root)
                                              if configured.managed_queue_root else None))
 
+    @app.post("/sky-preview")
+    def sky_preview():
+        values = {key: request.form.get(key, "") for key in
+                  ("ra", "dec", "ra_format", "dec_format", "target_kind")}
+        if values["target_kind"] != "FIXED":
+            return {"errors": [{"field": "target_kind", "message": "Sky preview is available for fixed targets only."}]}, 422
+        from alma_duplicate.request_validation import validate_preview_position
+        position, issues = validate_preview_position({key: values[key] for key in
+            ("ra", "dec", "ra_format", "dec_format")} | {"frame": "ICRS"})
+        errors = [{"field": issue.path.rsplit(".", 1)[-1], "message": issue.message}
+                  for issue in issues]
+        if errors or position is None:
+            return {"errors": errors or [{"field": "ra", "message": "Enter valid RA and Dec coordinates."}]}, 422
+        return {"html": render_template("sky_preview.html", ra=position.ra_deg, dec=position.dec_deg)}
+
     @app.get("/healthz")
     def healthz():
         return {"status": "ok"}

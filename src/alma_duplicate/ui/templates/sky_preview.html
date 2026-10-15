@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0;font:13px system-ui;color:#203e52;background:#f4f9fd}header{display:flex;gap:12px;align-items:center;padding:10px;flex-wrap:wrap}button{padding:6px 12px;cursor:pointer}#sky{height:310px;width:100%}#status{padding:0 10px}a{color:#075b84}</style></head>
+<body><header><span>ICRS {{ '%.6f'|format(ra) }}°, {{ '%.6f'|format(dec) }}°</span><button id="reset" disabled>Reset view</button></header>
+<p id="status" role="status">Loading DSS2 color imagery…</p><div id="sky"></div>
+<script>
+const ra={{ ra|tojson }}, dec={{ dec|tojson }};
+const status=document.querySelector('#status');
+const timer=setTimeout(()=>{status.textContent='Imagery is taking longer to load. Reopen Sky preview to retry. The form remains available.';},20000);
+const script=document.createElement('script');
+script.src='https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js';
+script.onerror=()=>{clearTimeout(timer);status.textContent='Could not load Aladin Lite. Check your connection and reopen Sky preview to retry.';};
+script.onload=async()=>{
+ try {
+  await A.init;
+  const viewer=A.aladin('#sky',{survey:'P/DSS2/color',target:ra+' '+dec,fov:0.25,cooFrame:'ICRS',showReticle:true,showFullscreenControl:false});
+  const catalog=A.catalog({name:'Entered target',sourceSize:14,color:'#00e5e5'});
+  viewer.addCatalog(catalog);catalog.addSources([A.source(ra,dec,{name:'Entered target'})]);
+  const reset=document.querySelector('#reset');reset.disabled=false;reset.onclick=()=>{viewer.gotoRaDec(ra,dec);viewer.setFoV(0.25);};
+  clearTimeout(timer);status.textContent='DSS2 color background · cyan marker: entered target. If the background stays blank, reopen the preview to retry.';
+ } catch(e) {clearTimeout(timer);status.textContent='Sky preview could not start. WebGL or the imagery service may be unavailable. Reopen preview to retry.';}
+};document.head.append(script);
+</script></body></html>

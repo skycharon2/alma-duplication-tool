@@ -822,6 +822,13 @@ class _Validator:
         )
 
 
+def validate_preview_position(value):
+    """Parse ICRS preview coordinates using the assessment's coordinate rules."""
+    validator = _Validator()
+    position = validator.position(value)
+    return position, tuple(validator.issues)
+
+
 def validate_proposed_observation(
     request_input, search_options_input=None
 ) -> RequestValidationResult:

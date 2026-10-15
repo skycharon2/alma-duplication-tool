@@ -63,7 +63,9 @@
     const path = draw(defs, "clipPath", {id: name});
     draw(path, "rect", {x, y, width, height});
   }
+  const sky = window.createReportSky?.({origin: data.origin, rows: visibleRows, selected: highlighted, select});
   function spatialChart() {
+    sky?.update();
     const svg = document.getElementById("spatial-chart");
     svg.replaceChildren();
     const points = spatialPoints(visibleRows());
@@ -288,6 +290,7 @@
     document.getElementById("visual-project").value=""; members(); applyFilters();
   });
   document.getElementById("visual-focus").addEventListener("click", () => {
+    sky?.focus();
     closeChooser(false); fitCharts(rows.filter(row=>row.id===selected));
     select(selected);
     const row=rows.find(row=>row.id===selected);
