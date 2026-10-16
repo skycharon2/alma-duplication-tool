@@ -73,3 +73,16 @@ Report schema v4 and inspection v3 remain unchanged: existing method identities,
 reasons, provenance and variant fields express this scientific revision. Historical
 reports are not reinterpreted. Tests treat TP-only as an unexpected-input defense,
 not a supported seventh proposal configuration.
+
+### Report-format clarification
+
+The v4 reference above describes the full-evidence report, which remains the
+default for the shared assessment entry and evaluation CLI. Browser assessments
+default to matching-detail v6: matching contexts retain full evidence, while
+other contexts retain decision summaries. The CLI can select the same format
+with `--report-detail matches`. Solar exemption reports remain v4.
+
+Both report schemas and inspection v3 are unchanged by this scientific revision.
+The updated scientific method identities apply independently of the selected
+report detail. This clarification does not relabel saved reports or change their
+historical meaning. See the [matching-detail contract](../matching_report.md).
