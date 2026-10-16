@@ -51,17 +51,48 @@ def test_line_receives_identical_common_position(standalone,intents):
 
 
 @pytest.mark.parametrize("tp", ["True", "False"])
-def test_conflicting_standalone_is_unresolved_for_both_intents(tp):
+@pytest.mark.parametrize("intents", [["LINE"], ["CONTINUUM", "LINE"]])
+@pytest.mark.parametrize("standalone", ["True", "False"])
+def test_standalone_conflict_gates_formal_queue_branches(tp, intents, standalone):
     p = payload()
     p["request"]["position"].update(ra=10, dec=20)
-    p["request"]["intents"] = ["CONTINUUM", "LINE"]
+    p["request"]["intents"] = intents
     p["search_options"]["sources"] = ["QUEUE"]
-    raw = source("True", use7="False", tp=tp)
+    raw = source(standalone, use7="False", tp=tp)
     q = parse_queue_csv_bytes(raw)
     search = search_candidates(validated(p), queue_result=q)
-    c = evaluate_candidate_search(search, queue_continuum=True).context_evaluations[0]
+    c = evaluate_candidate_search(
+        search, queue_continuum="CONTINUUM" in intents, queue_line=True,
+    ).context_evaluations[0]
+    line = next(b for b in c.branches if b.branch == "LINE")
+    assert line.method_version == "queue_line_context_or_1"
+    assert {b.branch for b in c.branches} == set(intents)
     assert not c.beam_variants
-    assert rule(c, "POS-SINGLE").outcome is None
-    assert "STANDALONE_WITHOUT_7M_REQUEST" in rule(c, "POS-SINGLE").reasons
-    assert all(b.status == "INDETERMINATE" for b in c.branches)
-    assert c.candidate.context.evidence.row.raw_row.value("standAlone_ACA") == "True"
+    assert c.line_pairs
+    pos = rule(c, "POS-SINGLE")
+    for pair in c.line_pairs:
+        assert pair.method_version == "queue_line_pair_and_1"
+        assert next(r for r in pair.criteria if r.criterion_id == "POS-SINGLE") is pos
+        # This fixture has a genuine spectral coverage failure. The conflict
+        # gate must override it, not accidentally turn UNKNOWN into FALSE.
+        assert next(r for r in pair.criteria if r.criterion_id == "LINE-COVERAGE").outcome == "NOT_SATISFIED"
+
+    if standalone == "True":
+        assert pos.outcome is None
+        assert "STANDALONE_WITHOUT_7M_REQUEST" in pos.reasons
+        assert dict(pos.details)["common_scope"] == "UNRESOLVED"
+        assert all(b.status == "INDETERMINATE" and b.truth == "UNKNOWN" for b in c.branches)
+        assert "BRANCH_SCOPE_UNSUPPORTED" in line.reasons
+        assert all(pair.truth == "UNKNOWN" and "BRANCH_SCOPE_UNSUPPORTED" in pair.reasons
+                   for pair in c.line_pairs)
+    else:
+        # Changing only the conflicting field restores a valid D12 path. This
+        # control prevents an unconditional UNKNOWN implementation from passing.
+        assert pos.outcome == "SATISFIED"
+        assert dict(pos.derived)["antenna_diameter_m"] == 12.0
+        assert dict(pos.details)["common_scope"] == "SUPPORTED"
+        assert "STANDALONE_WITHOUT_7M_REQUEST" not in pos.reasons
+        assert line.status == "CRITERIA_NOT_MET" and line.truth == "FALSE"
+        assert "BRANCH_SCOPE_UNSUPPORTED" not in line.reasons
+        assert all(pair.truth == "FALSE" for pair in c.line_pairs)
+    assert c.candidate.context.evidence.row.raw_row.value("standAlone_ACA") == standalone
