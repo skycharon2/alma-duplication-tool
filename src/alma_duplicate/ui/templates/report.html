@@ -56,6 +56,7 @@
 <div class="page-heading report-heading"><div><h1>Observation comparison</h1><p>{{ summary.target }}</p></div>
 <nav class="report-actions" aria-label="Report actions">{% if document.report_kind != 'SOLAR_EXEMPTION' %}<a class="button" href="{{ visualization_url }}">Explore this report</a>{% endif %}<a class="button" href="{{ url_for('proposed') }}">Enter another observation</a><a class="button" href="{{ url_for('report_index') }}">Existing reports</a></nav></div>
 {% set selected_queue = document.get('sources', {}).get('QUEUE', {}).get('managed_snapshot') %}
+{% include '_archive_source_status.html' %}
 {% if selected_queue %}<section id="queue-run-provenance" aria-label="Queue snapshot used by this run">
 <h2>Queue source used in this run</h2>
 <p>Official data as of {{ selected_queue.source_as_of }} · Source ID <code>{{ selected_queue.source_id }}</code> · Parse run ID <code>{{ selected_queue.run_id }}</code>.</p>

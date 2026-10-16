@@ -53,6 +53,8 @@ from alma_duplicate.clients.archive_queries import (
 from alma_duplicate.clients.archive_projection import plan_archive_projection
 from alma_duplicate.performance import measure_stage
 
+from alma_duplicate.archive_endpoints import ArchiveBudgetExpired, request_timeout
+
 ARCHIVE_CLIENT_VERSION = "8"
 DEFAULT_MAXREC = 10_000
 TAP_HTTP_TIMEOUT = (10, 60)
@@ -63,7 +65,7 @@ class _TapTimeoutAdapter(HTTPAdapter):
 
     def send(self, request, **kwargs):
         if kwargs.get("timeout") is None:
-            kwargs["timeout"] = TAP_HTTP_TIMEOUT
+            kwargs["timeout"] = request_timeout(TAP_HTTP_TIMEOUT)
         return super().send(request, **kwargs)
 
 
@@ -189,10 +191,13 @@ class PyvoTapExecutor:
             raise ValueError("maxrec must be positive")
 
         try:
+            request_timeout(TAP_HTTP_TIMEOUT)
             result = self._get_service().run_sync(
                 adql,
                 maxrec=maxrec,
             )
+        except ArchiveBudgetExpired as exc:
+            raise TapExecutionError(ArchiveQueryErrorKind.SERVICE_ERROR, str(exc)) from exc
         except DALQueryError as exc:
             raise TapExecutionError(
                 ArchiveQueryErrorKind.QUERY_ERROR,
@@ -206,8 +211,11 @@ class PyvoTapExecutor:
                 str(exc),
             ) from exc
         except DALAccessError as exc:
+            code = getattr(exc, "code", None)
             raise TapExecutionError(
-                ArchiveQueryErrorKind.SERVICE_ERROR,
+                ArchiveQueryErrorKind.QUERY_ERROR
+                if isinstance(code, int) and 400 <= code < 500 and code not in {408, 429}
+                else ArchiveQueryErrorKind.SERVICE_ERROR,
                 str(exc),
             ) from exc
         except RequestException as exc:

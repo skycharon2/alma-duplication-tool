@@ -47,8 +47,8 @@ def wired(monkeypatch):
             return state["source"]
 
     class Aq:
-        def __init__(self):
-            assert state["events"][-1] == "TAP_SEARCH"
+        def __init__(self, *, origin="https://almascience.eso.org"):
+            assert origin in {"https://almascience.eso.org", "https://almascience.nao.ac.jp", "https://almascience.nrao.edu"}
             state["events"].append("AQ_INIT")
 
         def fetch_members(self, members):
@@ -129,7 +129,7 @@ def test_aq_client_is_not_created_when_backend_skips(wired, kind, reason):
     client = create_app(config()).test_client()
     posted = client.post("/proposed", data=line_form())
     assert posted.status_code == 303
-    assert wired["events"] == ["TAP_INIT", "TAP_SEARCH"]
+    assert wired["events"] == ["TAP_INIT", "TAP_SEARCH"] * (3 if kind == "incomplete" else 1)
     html = client.get(posted.location).get_data(as_text=True)
     assert "AQ acquisition: SKIPPED" in html and reason in html
 
@@ -156,7 +156,7 @@ def test_results_keep_candidates_report_and_original_exports(wired, mode, status
     post = client.post("/proposed", data=line_form())
     assert post.status_code == 303
     assert wired["events"][:3] == ["TAP_INIT", "TAP_SEARCH", "AQ_INIT"]
-    assert len(wired["events"]) == 4
+    assert len(wired["events"]) == (8 if mode == "INCOMPLETE" else 4)
     location = post.location
     raw = client.get(location + "/download/report").data
     document = json.loads(raw)
@@ -183,7 +183,7 @@ def test_results_keep_candidates_report_and_original_exports(wired, mode, status
         assert client.get(location + "?page=1").status_code == 200
         for kind, expected in [("report", raw), ("inspection", inspection), ("request", request)]:
             assert client.get(location + "/download/" + kind).data == expected
-    assert len(wired["events"]) == 4
+    assert len(wired["events"]) == (8 if mode == "INCOMPLETE" else 4)
 
 
 def test_contract_exception_is_the_no_report_path(wired):
@@ -210,19 +210,21 @@ def test_runs_have_separate_catalogs_and_refresh_does_not_query(wired):
 
 def test_browser_and_shared_entry_have_same_science_and_provenance(monkeypatch, wired):
     from alma_duplicate import archive_array_acquisition
+    from alma_duplicate.clients import archive_mirrors
     class Clock:
         @staticmethod
         def now(tz=None):
             return datetime(2026, 10, 5, 10, 0, tzinfo=timezone.utc)
     monkeypatch.setattr(archive_array_acquisition, "datetime", Clock)
     monkeypatch.setattr(archive_aq_client, "datetime", Clock)
+    monkeypatch.setattr(archive_mirrors, "datetime", Clock)
     client = create_app(config()).test_client()
     location = client.post("/proposed", data=line_form()).location
     document = client.get(location + "/download/report").get_json()
     request = client.get(location + "/download/request").get_json()
     direct = assess_observation(**request, report_detail='matches', sources=AssessmentSources(
-        "LIVE", lambda: ArchiveInput(archive_client.ArchiveClient("https://almascience.eso.org/tap")),
-        archive_array_fetcher=lambda members: archive_aq_client.ArchiveAqClient().fetch_members(members)))
+        "LIVE", lambda: ArchiveInput(archive_mirrors.MirroredArchiveClient()),
+        archive_array_fetcher=archive_mirrors.MirroredArchiveAqClient().fetch_members))
     assert normalized(document) == normalized(direct.document)
     assert inspect_report(document) == inspect_report(direct.document)
 

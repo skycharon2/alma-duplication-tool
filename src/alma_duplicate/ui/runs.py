@@ -10,6 +10,14 @@ from alma_duplicate.clients.queue_csv_client import QueueCsvClient
 from alma_duplicate.storage.queue_active import QueueActiveError
 from alma_duplicate.ui.managed_queue import pin_active_queue
 from alma_duplicate.ui.run_store import RunStore as RunStore
+from alma_duplicate.archive_endpoints import ARCHIVE_ORIGINS
+
+ARCHIVE_CONNECTIONS = {
+    "AUTO": ARCHIVE_ORIGINS,
+    "EUROPE": (ARCHIVE_ORIGINS[0],),
+    "EAST_ASIA": (ARCHIVE_ORIGINS[1],),
+    "NORTH_AMERICA": (ARCHIVE_ORIGINS[2],),
+}
 
 
 @dataclass(frozen=True)
@@ -21,8 +29,11 @@ class BrowserAssessment:
     live_aq: bool = False
     report_detail: str = 'matches'
     managed_queue_root: str | None = None
+    archive_connection: str = "AUTO"
 
     def __post_init__(self):
+        if self.archive_connection not in ARCHIVE_CONNECTIONS:
+            raise ValueError("Invalid Archive connection selection")
         if self.queue_csv and self.managed_queue_root:
             raise ValueError("manual Queue CSV and managed Queue root are mutually exclusive")
         if self.report_detail not in {'full', 'matches'}:
@@ -75,11 +86,11 @@ class BrowserAssessment:
                 return ArchiveInput(client, client.metadata, catalog)
 
             if archive_kind == "LIVE":
-                from alma_duplicate.clients.archive_client import ArchiveClient
+                from alma_duplicate.clients.archive_mirrors import MirroredArchiveClient
 
                 return ArchiveInput(
-                    ArchiveClient("https://almascience.eso.org/tap",
-                                  completeness_policy="STATUS_THEN_COUNT"),
+                    MirroredArchiveClient(origins=ARCHIVE_CONNECTIONS[self.archive_connection],
+                                          completeness_policy="STATUS_THEN_COUNT"),
                     array_catalog=catalog,
                 )
 
@@ -108,8 +119,8 @@ class BrowserAssessment:
 
         def fetch_archive_arrays(members):
             # The shared entry calls this only after TAP retained linked Members.
-            from alma_duplicate.clients.archive_aq_client import ArchiveAqClient
-            return ArchiveAqClient().fetch_members(members)
+            from alma_duplicate.clients.archive_mirrors import MirroredArchiveAqClient
+            return MirroredArchiveAqClient(origins=ARCHIVE_CONNECTIONS[self.archive_connection]).fetch_members(members)
 
         assessment = assess_observation(
             document["request"],

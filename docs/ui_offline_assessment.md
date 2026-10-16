@@ -116,8 +116,9 @@ timestamps, endpoint and response hash. External text is escaped. Report,
 inspection and request downloads retain original bytes; viewing, pagination and
 downloads never re-run acquisition. Each execution creates a separate catalog and
 run. The assessment POST performs the work; measured stage progress is described
-under [Waiting for live sources](#waiting-for-live-sources). No automatic retry or
-detached background worker is used.
+under [Waiting for live sources](#waiting-for-live-sources). Eligible failures use
+[whole-operation mirror failover](archive_mirror_failover.md); there is no detached
+background worker.
 
 `tests/ui/test_live_aq.py` verifies the matrix, lazy lifecycle, failure messages,
 stored-report compatibility, escaped values, run isolation and exact exports.
@@ -382,9 +383,11 @@ the unchanged disk budget, in which case storage fails explicitly.
 Live TAP HTTP requests use a 10-second connection timeout and a 60-second idle
 read timeout, including redirected requests and streamed responses. Network
 failures wrapped by PyVO as format errors are classified as service errors.
-There is no automatic retry or reduction of the search radius. These timeouts
-are per request, not a deadline for the complete TAP/AQ/evaluation workflow.
-AQ retains its existing per-request timeouts. Source failure must remain
+Eligible failures attempt Europe, East Asia, then North America without reducing
+the search radius or combining partial results. Each TAP search and AQ batch has
+a separate 180-second scheduling budget that also caps request timeouts. This is
+not a hard deadline for streaming responses or the complete assessment; see
+[mirror policy and limits](archive_mirror_failover.md). Source failure must remain
 unavailable evidence rather than a no-duplication conclusion.
 
 An already-running server must be restarted to load these protections. Reloading

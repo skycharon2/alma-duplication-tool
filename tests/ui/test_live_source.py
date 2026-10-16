@@ -163,11 +163,10 @@ def test_live_archive_is_lazy_until_selected_search_ready_assess(
         data=line_form(),
     )
 
-    assert response.status_code == 200
-    assert constructed == [
-        "https://almascience.eso.org/tap"
-    ]
-    assert b"No report was created" in response.data
+    assert response.status_code == 303
+    assert constructed == ["https://almascience.eso.org/tap"]
+    document = client.get(response.location + "/download/report").get_json()
+    assert document["sources"]["ARCHIVE"]["status"] == "FAILED"
 
 
 def test_live_archive_uses_shared_entry_without_replay_or_live_aq(

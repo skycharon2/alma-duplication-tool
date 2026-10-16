@@ -127,6 +127,55 @@ def test_successful_empty_aq_is_not_failure_or_no_duplicate():
     assert all(c["branches"][0]["status"] == "INDETERMINATE" for c in result.document["context_evaluations"])
 
 
+@pytest.mark.parametrize("recover", [True, False])
+def test_mirror_failover_preserves_source_binding_and_failure_scope(recover):
+    import requests
+    from alma_duplicate.archive_endpoints import ARCHIVE_ORIGINS
+    from alma_duplicate.clients.archive_mirrors import MirroredArchiveAqClient
+
+    source, members = tap_rows()
+    calls = []
+
+    def factory(*, origin):
+        calls.append(origin)
+        if origin != ARCHIVE_ORIGINS[-1] or not recover:
+            http = Http(requests.Timeout())
+        else:
+            # Distinct labels make accidental cross-source binding observable.
+            http = Http(
+                Reply({"elasticsearchUrl": origin + "/aq/service/api/search"}),
+                Reply(response([hit(members[0], "SourceA", "12m TP"),
+                                hit(members[0], "SourceB", "7m TP")])),
+                Reply(response([hit(members[1], "SourceA", "7m 12m TP")])),
+            )
+        return ArchiveAqClient(origin=origin, request=http)
+
+    result = run(source, MirroredArchiveAqClient(client_factory=factory).fetch_members)
+    metadata = acquisition(result)
+    assert calls == list(ARCHIVE_ORIGINS)
+    assert [a["origin"] for a in metadata["mirror_attempts"]] == calls
+    assert result.document["sources"]["ARCHIVE"]["status"] == "COMPLETED"
+    contexts = result.document["context_evaluations"]
+    assert len(contexts) == 3
+    if recover:
+        assert result.status == "COMPLETED"
+        assert [a["status"] for a in metadata["mirror_attempts"]] == ["FAILED", "FAILED", "COMPLETED"]
+        expected = {(members[0], "SourceA"): [12.0], (members[0], "SourceB"): [7.0],
+                    (members[1], "SourceA"): [7.0, 12.0]}
+        for context in contexts:
+            evidence = context["array_evidence"]
+            record = evidence["records"][0]
+            assert evidence["diameters_m"] == expected[(record["member_ous_uid"], record["source_name"])]
+            assert record["url"].startswith(ARCHIVE_ORIGINS[-1] + "/")
+    else:
+        assert result.status == "SOURCES_UNAVAILABLE"
+        assert metadata["status"] == "FAILED"
+        assert metadata["queries"] == []
+        assert all(c["branches"][0]["status"] == "INDETERMINATE" for c in contexts)
+        assert all(c["array_evidence"]["diameters_m"] == [] for c in contexts)
+    assert json.loads(report_json_text(result.document)) == result.document
+
+
 @pytest.mark.parametrize("kind,reason", [
     ("empty", "NO_RETAINED_ARCHIVE_CONTEXTS"),
     ("unlinked", "NO_LINKED_ARCHIVE_MEMBERS"),

@@ -75,8 +75,8 @@ def main(argv=None, *, archive_client_factory=None):
                 return ArchiveInput(client, client.metadata, catalog)
             factory = archive_client_factory
             if factory is None:
-                from alma_duplicate.clients.archive_client import ArchiveClient
-                factory = lambda: ArchiveClient("https://almascience.eso.org/tap")
+                from alma_duplicate.clients.archive_mirrors import MirroredArchiveClient
+                factory = MirroredArchiveClient
             return ArchiveInput(factory(), array_catalog=catalog)
 
         archive_kind = "REPLAY" if args.archive_replay is not None else "LIVE" if args.live_archive else None

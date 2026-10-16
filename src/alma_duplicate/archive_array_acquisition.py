@@ -71,12 +71,16 @@ def acquire_archive_arrays(source: SourceSearchExecution,
         except ArchiveAqError as exc:
             data["status"] = "INCOMPLETE" if exc.code == "INCOMPLETE" else "FAILED"
             data["error"] = {"code": exc.code, "member_ous_uid": exc.member_ous_uid}
+            if exc.attempts:
+                data["mirror_attempts"] = list(exc.attempts)
         else:
             _check_result(result, members)
             catalog = result.catalog
             data["status"] = "COMPLETED"
             data["queries"] = [asdict(q) for q in result.queries]
             data["properties_url"] = result.properties_url
+            if result.mirror_attempts:
+                data["mirror_attempts"] = list(result.mirror_attempts)
         data["finished_at"] = datetime.now(timezone.utc).isoformat()
     metadata = archive_array_catalog_report_metadata(catalog)
     metadata["acquisition"] = data

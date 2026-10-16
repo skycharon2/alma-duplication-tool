@@ -10,11 +10,16 @@
 <p>AQ retrieval completed. Returned source records: {{ aq.record_count }}. Exact source binding determines whether these records provide evidence for each candidate.</p>
 {% if aq.record_count == 0 %}<p>No source records were returned. This is not evidence of no duplication.</p>{% endif %}
 {% elif acquisition.status == 'FAILED' %}
-<p class="notice">Live AQ acquisition failed. Available TAP candidates and Queue results are retained; source-bound Archive array evidence is unresolved. No fallback was used.</p>
+<p class="notice">Live AQ acquisition failed. Available TAP candidates and Queue results are retained; source-bound Archive array evidence is unresolved. No partial catalog or legacy array inference was substituted.</p>
 {% elif acquisition.status == 'INCOMPLETE' %}
-<p class="notice">Live AQ acquisition was incomplete. No partial catalog was used. Available candidates remain in this report with unresolved Archive array evidence. No fallback was used.</p>
+<p class="notice">Live AQ acquisition was incomplete. No partial catalog was used. Available candidates remain in this report with unresolved Archive array evidence. No partial catalog or legacy array inference was substituted.</p>
 {% elif acquisition.status == 'SKIPPED' %}
 <p>No live AQ lookup was performed for this run.</p>
+{% endif %}
+{% if acquisition.get('mirror_attempts') %}
+<details><summary>AQ mirror attempts</summary><ul>
+{% for attempt in acquisition.mirror_attempts %}<li>{{ attempt.origin }}: {{ attempt.status }}{% if attempt.error %} ({{ attempt.error }}){% endif %}</li>{% endfor %}
+</ul></details>
 {% endif %}
 {% if acquisition.reason %}<p>Reason: <code>{{ acquisition.reason }}</code>.</p>{% endif %}
 {% if acquisition.error %}<p>Error code: <code>{{ acquisition.error.code }}</code>.{% if acquisition.error.member_ous_uid %} Failed Member: {{ acquisition.error.member_ous_uid }}.{% endif %}</p>{% endif %}

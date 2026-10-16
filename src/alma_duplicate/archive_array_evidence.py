@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 
 from alma_duplicate.domain.comparison import ArchiveContextEvidence
+from alma_duplicate.archive_endpoints import ARCHIVE_ORIGINS
 
 METHOD = "archive_source_array_2"
 DECISION_REF = "docs/evidence/single_point_tp_exclusion_decision_2026-10-16.md"
@@ -142,7 +143,7 @@ def load_archive_array_catalog(path):
             digest = hashlib.sha256(data).hexdigest()
             if digest != entry["sha256"]:
                 raise ValueError("AQ response checksum mismatch")
-            if entry["url"] != "https://almascience.eso.org/aq/service/api/search/observations/_search":
+            if entry["url"] not in {origin + "/aq/service/api/search/observations/_search" for origin in ARCHIVE_ORIGINS}:
                 raise ValueError("Unsupported AQ observation endpoint")
             captured = entry["retrieved_at"]
             if datetime.fromisoformat(captured).tzinfo is None:

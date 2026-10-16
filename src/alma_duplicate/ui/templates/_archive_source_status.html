@@ -1,0 +1,23 @@
+{% if archive_status %}
+<div id="archive-source-status" class="queue-status-compact archive-status">
+  <div class="queue-status-strip">
+    <span class="queue-status-dot archive-{{ archive_status.tone }}" aria-hidden="true"></span>
+    <span><strong>Archive</strong> <span class="queue-strip-date">{{ archive_status.label }}</span></span>
+    <button type="button" class="archive-details-button" popovertarget="archive-source-popover">Details <span aria-hidden="true">ⓘ</span></button>
+  </div>
+  {% for stage in archive_status.stages %}
+  <p class="archive-stage archive-{{ stage.tone }}"><strong>{{ stage.name }}</strong>: {{ stage.label }}{% if stage.region != 'Not recorded' %} · {{ stage.region }}{% endif %}{% if stage.switched %} · Switched mirror{% endif %}</p>
+  {% endfor %}
+</div>
+<div id="archive-source-popover" class="archive-status-panel" popover="auto" role="dialog" aria-labelledby="archive-status-title">
+  <button type="button" class="archive-popover-close" popovertarget="archive-source-popover" popovertargetaction="hide" aria-label="Close Archive status details">×</button>
+  <h3 id="archive-status-title">Archive retrieval status</h3>
+  <p>{{ archive_status.note }}</p>
+  {% for stage in archive_status.stages %}
+  <h4>{{ stage.name }} — {{ stage.label }}</h4>
+  {% if stage.attempts %}<ol>
+  {% for attempt in stage.attempts %}<li>{{ attempt.region }} — {{ attempt.status }}{% if attempt.error %} ({{ attempt.error }}){% endif %}{% if attempt.finished_at %}<br><time datetime="{{ attempt.finished_at }}">{{ attempt.finished_at }}</time>{% endif %}</li>{% endfor %}
+  </ol>{% else %}<p>No mirror attempt history was recorded.</p>{% endif %}
+  {% endfor %}
+</div>
+{% endif %}
