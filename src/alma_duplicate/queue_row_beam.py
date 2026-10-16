@@ -4,8 +4,8 @@ from dataclasses import dataclass
 import math
 from types import MappingProxyType
 
-PROFILE = "QUEUE_ARRAY_BEAM_INFERENCE_2"
-DECISION_REF = "docs/evidence/queue_array_beam_inference_decision_2026-10-01.md"
+PROFILE = "QUEUE_ARRAY_BEAM_INFERENCE_3"
+DECISION_REF = "docs/evidence/single_point_tp_exclusion_decision_2026-10-16.md"
 FIELD = "standAlone_ACA"
 # Cycle 13 representative GHz and 7-m resolution in arcsec. No frequency scaling.
 ACA_7M_THRESHOLDS = MappingProxyType(
@@ -112,8 +112,6 @@ def resolve_queue_beam_interpretation(row):
     anomalies = []
     if standalone is True and use7 is False:
         anomalies.append("STANDALONE_WITHOUT_7M_REQUEST")
-    if tp is True and use7 is False:
-        anomalies.append("TP_WITHOUT_7M")
 
     def result(diameters, reasons, kind=None):
         classification = {
@@ -138,10 +136,12 @@ def resolve_queue_beam_interpretation(row):
     # Parsed flags must be actual booleans, never strings or truthy numbers.
     if type(use7) is not bool or type(tp) is not bool:
         return result((), ("INVALID_ARRAY_FLAGS",), "UNRESOLVED")
-    tp_reason = ("TP_12M_REQUESTED",) if tp else ()
+    tp_reason = ("TP_IGNORED_FOR_POSITION",) if tp else ()
+    if standalone is True and not use7:
+        return result((), tp_reason + ("STANDALONE_WITHOUT_7M_REQUEST",), "UNRESOLVED")
     if standalone is True:
         return result(
-            (7.0, 12.0) if tp else (7.0,), ("SOURCE_STANDALONE_ACA",) + tp_reason
+            (7.0,), ("SOURCE_STANDALONE_ACA",) + tp_reason
         )
     if standalone is False:
         return result(
@@ -150,12 +150,13 @@ def resolve_queue_beam_interpretation(row):
             + (("ACA_7M_REQUESTED",) if use7 else ())
             + tp_reason,
         )
-    reasons = ("STANDALONE_FIELD_ABSENT",)
+    reasons = ("STANDALONE_FIELD_ABSENT",) + tp_reason
     if not use7:
-        return result((12.0,), reasons + ("ACA_7M_NOT_REQUESTED",) + tp_reason)
+        # D12 follows the existing main-array inference, never TP's aperture.
+        # The owner explicitly confirms the TP=true/7m=false configuration.
+        confirmed = ("MAIN_12M_CONFIRMED_TP_WITHOUT_7M",) if tp else ()
+        return result((12.0,), reasons + ("ACA_7M_NOT_REQUESTED",) + confirmed)
     reasons += ("ACA_7M_REQUESTED",)
-    if tp:
-        return result((7.0, 12.0), reasons + tp_reason)
     ar = row.request.requested_angular_resolution_arcsec
     threshold = _threshold(row.group_key.band)
     if (

@@ -17,14 +17,15 @@ def row(**kwargs):
     return parse_queue_csv_bytes(source(**kwargs)).row_inputs[0]
 
 
+@pytest.mark.parametrize("tp", ["True", "False"])
 @pytest.mark.parametrize("band,table", ACA_7M_THRESHOLDS.items())
 @pytest.mark.parametrize(
     "offset,diameters", [(-0.01, (7.0, 12.0)), (0, (7.0,)), (0.01, (7.0,))]
 )
-def test_every_band_strict_boundary(band, table, offset, diameters):
+def test_every_band_strict_boundary(band, table, offset, diameters, tp):
     r = row(
         use7="True",
-        tp="False",
+        tp=tp,
         changes={
             "Band": f"ALMA_RB_{int(band):02d}",
             "Req. Ang. Res.": str(round(table[1] + offset, 2)),
@@ -71,10 +72,10 @@ def test_required_ar_unavailable(value):
     b = resolve_queue_beam_interpretation(r)
     assert b.classification == "UNRESOLVED" and b.diameters_m == ()
     assert b.reasons[-1] == "ACA_7M_INFERENCE_EVIDENCE_UNAVAILABLE"
-    # TP explicitly establishes both diameters even without usable AR.
+    # TP supplies no missing AR evidence.
     assert resolve_queue_beam_interpretation(
         replace(r, request=replace(r.request, use_tp=True))
-    ).diameters_m == (7.0, 12.0)
+    ).diameters_m == ()
 
 
 @pytest.mark.parametrize("band", ["", "ALMA_RB_11", "6.0", "unknown"])
@@ -122,9 +123,24 @@ def test_explicit_standalone_keeps_priority_and_deduplicates_tp():
         standalone="True", use7="False", tp="True", changes={"Req. Ang. Res.": "0.001"}
     )
     b = resolve_queue_beam_interpretation(r)
-    assert b.diameters_m == (7.0, 12.0) and b.standalone is True
+    assert b.diameters_m == () and b.standalone is True
     assert "STANDALONE_WITHOUT_7M_REQUEST" in b.anomalies
     r = row(standalone="False", use7="True", tp="True")
     b = resolve_queue_beam_interpretation(r)
     assert b.diameters_m == (7.0, 12.0)
-    assert {"SOURCE_NON_STANDALONE", "TP_12M_REQUESTED"} <= set(b.reasons)
+    assert {"SOURCE_NON_STANDALONE", "TP_IGNORED_FOR_POSITION"} <= set(b.reasons)
+
+
+@pytest.mark.parametrize("standalone", ["False", "True"])
+def test_operational_evidence_retains_its_kind_with_tp(standalone):
+    b = resolve_queue_beam_interpretation(row(standalone=standalone, use7="True", tp="True"))
+    assert b.interpretation_kind == "SOURCE_PROVIDED"
+    assert b.diameters_m == ((7.,) if standalone == "True" else (7., 12.))
+
+
+def test_main_twelve_with_tp_is_operational_not_tp_inference():
+    b = resolve_queue_beam_interpretation(row(standalone="False", use7="False", tp="True"))
+    assert b.diameters_m == (12.,)
+    assert b.interpretation_kind == "SOURCE_PROVIDED"
+    assert "SOURCE_NON_STANDALONE" in b.reasons
+    assert not b.anomalies

@@ -14,8 +14,8 @@ from pathlib import Path
 
 from alma_duplicate.domain.comparison import ArchiveContextEvidence
 
-METHOD = "archive_source_array_1"
-DECISION_REF = "docs/archive_array_evidence.md#source-bound-method-adoption-2026-10-02"
+METHOD = "archive_source_array_2"
+DECISION_REF = "docs/evidence/single_point_tp_exclusion_decision_2026-10-16.md"
 COMPONENTS = {"7m": "ACA_7M", "12m": "MAIN_ARRAY_12M", "tp": "TOTAL_POWER"}
 
 
@@ -75,9 +75,6 @@ class ArchiveArrayEvidence:
     reasons: tuple[str, ...]
     method_version: str = METHOD
 
-    def total_power_at(self, diameter):
-        return diameter == 12.0 and "TOTAL_POWER" in self.components
-
 
 @dataclass(frozen=True)
 class ArchiveArrayCatalog:
@@ -116,8 +113,13 @@ class ArchiveArrayCatalog:
         if not tokens or len(set(tokens)) != len(tokens) or any(t not in COMPONENTS for t in tokens):
             return result(records=records, reasons=("ARCHIVE_ARRAY_LABEL_UNSUPPORTED",))
         components = tuple(sorted(COMPONENTS[t] for t in tokens))
-        diameters = tuple(sorted({7.0 if t == "7m" else 12.0 for t in tokens}))
-        return result(records, components, diameters, ("OFFICIAL_AQ_SOURCE_ARRAY_BOUND",))
+        diameters = tuple(sorted({7.0 if t == "7m" else 12.0 for t in tokens if t != "tp"}))
+        reasons = ("OFFICIAL_AQ_SOURCE_ARRAY_BOUND",)
+        if "tp" in tokens:
+            reasons += ("TP_IGNORED_FOR_POSITION",)
+        if not diameters:
+            reasons += ("ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED",)
+        return result(records, components, diameters, reasons)
 
 
 def load_archive_array_catalog(path):

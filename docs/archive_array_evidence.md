@@ -2,7 +2,8 @@
 
 This document owns the optional, source-bound Archive array adapter and its
 project-adopted diameter interpretation. The legacy TAP-only method remains
-available. Queue's independent beam inference is unchanged.
+available. Queue's separate evidence representation is governed by
+[Queue common](queue_common.md) under the same TP exclusion decision.
 
 ## Three different facts
 
@@ -42,13 +43,11 @@ decision reference; mixed evidence does not acquire an effective diameter.
 
 ## Source-bound method adoption (2026-10-02)
 
-The project owner requested an official array evidence adapter bound to the
-specific science target, complete 7-m/12-m alternatives for Archive mixed labels
-as for Queue, and recognition of TP's physical 12-m aperture. This is a **project
-method adoption**, not a new observatory approval or an independent proposal
-validation. Method identities are `archive_source_array_1` for binding,
-`archive_pos_single_2` for position, and `archive_beam_variant_or_1` for OR of
-complete diameter branches.
+The original adoption and TP aperture interpretation are historical. The
+[current supervisor clarification](evidence/single_point_tp_exclusion_decision_2026-10-16.md)
+supersedes TP-derived D12 position treatment. Current method identities are
+`archive_source_array_2`, `archive_pos_single_4`, and unchanged
+`archive_beam_variant_or_1` for complete-branch OR.
 
 The loader consumes a captured official AQ response manifest. It checks the
 official observation endpoint, query Member, timezone-aware capture timestamp,
@@ -71,28 +70,18 @@ catalog has been selected.
 | `7m` | 7 m | Existing supported fixed single-field criteria |
 | `12m` | 12 m | Existing supported fixed single-field criteria |
 | `7m 12m` (either order) | 7 m and 12 m | Evaluate both complete branches, OR their three-valued results |
-| `TP` | 12 m, retaining `TOTAL_POWER` identity | POS-SINGLE uses D=12 m and returns the geometric result; broader interferometric CONTINUUM/LINE branch scope remains UNKNOWN |
-| `7m TP` | 7 m and 12 m | 7-m branch is evaluated normally; the TP D=12 m position is evaluated, while the TP science branch remains UNKNOWN; OR complete results |
-| Any label including both `12m` and `TP` | Unique 12-m diameter, plus 7 m if present | D=12 m is valid for POS-SINGLE, but broader 12-m science scope remains UNKNOWN because this evidence does not separate main-array and TP observing modes |
+| `7m TP` | 7 m | TP ignored; evaluate the complete D7 branch |
+| `12m TP` | 12 m | TP ignored; evaluate the genuine complete D12 branch |
+| `7m 12m TP` | 7 m and 12 m | TP ignored; OR complete independent branches |
 
-TP antennas are 12-m single dishes; see the official
-[Technical Handbook](https://almascience.eso.org/proposing/documents-and-tools/latest/alma-technical-handbook).
-Physical aperture alone does not establish interferometric angular, RMS or
-spectral applicability.
+Unexpected `TP` alone is outside valid proposal-configuration scope. Retain its
+TOTAL_POWER provenance and explicit unresolved/scope diagnostics; compute no
+position radius or outcome. Both CONTINUUM and LINE remain UNKNOWN, including
+when other criteria fail. This is an anomaly defense, not a supported scientific
+branch. TP must never suppress a genuine 7m or 12m component.
 
-### TP D=12 position follow-up
-
-The supervisor-confirmed project decision is recorded in
-[the dated decision](evidence/archive_tp_d12_position_decision_2026-10-02.md).
-For a source-bound TP path, POS-SINGLE uses D=12 m and the existing inclusive
-half-power-beam comparison normally. Source-bound Archive position reports from
-this method use `archive_pos_single_3`; historical `archive_pos_single_2` reports
-retain their original meaning.
-
-`ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED` remains visible as a
-downstream branch-scope reason. It does not erase an otherwise computable TP
-position result, but it still keeps current Archive CONTINUUM/LINE aggregation
-on that TP path UNKNOWN.
+The [October 2 decision](evidence/archive_tp_d12_position_decision_2026-10-02.md)
+and reports using `archive_pos_single_3` retain their historical meaning.
 
 Both diameter alternatives reuse exactly the same retained source context and
 its bound SPWs, frequency, resolution and sensitivity. They are **diameter

@@ -23,7 +23,7 @@ def test_blank_offset_uses_spherical_transport_and_preserves_raw_parser(frame):
     assert row.context.evidence.row.spatial.mosaic_kind is QueueMosaicKind.UNSPECIFIED_WITH_OFFSET
     assert row.context.evidence.row.raw_row.value('Mosaic') == ''
     assert angular.method_version == 'queue_angular_factor_8'
-    assert position.method_version == 'queue_pos_single_7'
+    assert position.method_version == 'queue_pos_single_9'
     assert position.outcome == 'SATISFIED'
     assert 'PORTAL_BLANK_MOSAIC_SINGLE_POINTING' in position.reasons
     assert 'QUEUE_GEOMETRY_UNSUPPORTED' not in position.reasons
@@ -52,7 +52,7 @@ def test_new_interpretation_does_not_bypass_geometry_frame_or_coordinate_guards(
 def test_blank_offset_continuum_and_line_use_same_scope():
     s, _, c = continuum_case({'Mosaic': '', 'Long Offset': '1', 'Lat Offset': '0'})
     assert c.branches[0].status == 'CRITERIA_MET'
-    assert rule(c, 'POS-SINGLE').method_version == 'queue_pos_single_7'
+    assert rule(c, 'POS-SINGLE').method_version == 'queue_pos_single_9'
     c = contexts({'Mosaic': '', 'Long Offset': '1'})[0]
     pairs = build_queue_line_pairs(request(), c)
     assert pairs.builder_version == 'queue_line_pair_builder_2'

@@ -44,7 +44,7 @@ def test_candidate_beam_and_outside_retained_for_evaluation(offset, outcome):
     assert p.outcome == outcome
     assert a.outcome == "SATISFIED"
     assert p.approval == a.approval == "APPROVED"
-    assert p.method_version == "queue_pos_single_6"
+    assert p.method_version == "queue_pos_single_8"
     d = dict(p.derived)
     expected = math.degrees(1.13 * 299792458 / (338.5e9 * 12))
     assert d["candidate_fwhm_deg"] == pytest.approx(expected)
@@ -227,7 +227,7 @@ def test_cli_all_retained_including_hidden_and_source_failure(tmp_path):
         for c in context.get("beam_variants", [context])
     )
     assert all(
-        c["criteria"][1]["method_version"] == "queue_pos_single_6"
+        c["criteria"][1]["method_version"] == "queue_pos_single_8"
         for context in report["context_evaluations"]
         for c in context.get("beam_variants", [context])
     )
@@ -304,7 +304,7 @@ def test_tp_request_does_not_block_row_beam_or_approve_component(use_7m):
     assert rules[0].outcome == 'SATISFIED'
     assert rules[1].outcome == 'SATISFIED'
     assert dict(rules[1].derived)['antenna_diameter_m'] == 12.0
-    assert 'TP_12M_REQUESTED' in dict(rules[1].details)['diameter_source']
+    assert 'TP_IGNORED_FOR_POSITION' in dict(rules[1].details)['diameter_source']
 
 
 def test_7m_positive_flag_and_manual_diameter_do_not_prove_standalone():

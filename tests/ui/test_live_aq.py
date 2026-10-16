@@ -237,7 +237,7 @@ def test_report_display_uses_saved_provenance_not_operator_config(wired, tmp_pat
     captured_doc = deepcopy(live_doc)
     captured_doc["sources"]["ARCHIVE"]["array_evidence"] = {
         "scope": "CAPTURED_OFFICIAL_AQ_SOURCE_LABELS", "record_count": 1,
-        "manifest_sha256": "stored-capture-hash", "method_version": "archive_source_array_1"}
+        "manifest_sha256": "stored-capture-hash", "method_version": "archive_source_array_2"}
     for name, doc in [("a-live", live_doc), ("b-old", old_doc), ("c-captured", captured_doc)]:
         case = tmp_path / name
         case.mkdir()

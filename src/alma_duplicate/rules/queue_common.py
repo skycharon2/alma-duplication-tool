@@ -36,8 +36,8 @@ def queue_common_scope_supported(common):
     return (
         len(common) == 2
         and {r.method_version for r in common}
-        in ({"queue_angular_factor_7", "queue_pos_single_6"},
-            {"queue_angular_factor_8", "queue_pos_single_7"})
+        in ({"queue_angular_factor_7", "queue_pos_single_8"},
+            {"queue_angular_factor_8", "queue_pos_single_9"})
         and all(dict(r.details).get("common_scope") == "SUPPORTED" for r in common)
     )
 
@@ -114,7 +114,7 @@ def evaluate_queue_common(request, context, spatial_evidence, *, beam_diameter_m
         ("frame_interpretation", "PORTAL_EQUATORIAL_CONVENTION_NOT_MEASURED_FRAME"),
         ("offset_frame_raw", row.spatial.coordinate_system_raw),
         ("array_scope", "ROW_BEAM_NOT_COMPONENT_MEMBERSHIP"),
-        ("array_evidence_method", "QUEUE_ARRAY_BEAM_INFERENCE_2"),
+        ("array_evidence_method", PROFILE),
     ) + ((
         ("mosaic_raw", row.raw_row.value("Mosaic")),
         ("effective_queue_geometry", "SINGLE_FIELD"),
@@ -199,7 +199,7 @@ def evaluate_queue_common(request, context, spatial_evidence, *, beam_diameter_m
     position = CriterionResult(
         criterion_id="POS-SINGLE",
         policy_ref=f"{POLICY_DOCUMENT}, Position",
-        method_version="queue_pos_single_7" if blank_pointing else "queue_pos_single_6",
+        method_version="queue_pos_single_9" if blank_pointing else "queue_pos_single_8",
         approval=MethodApproval.APPROVED,
         applicability=A.UNRESOLVED if position_issues else A.APPLICABLE,
         evaluation=E.INSUFFICIENT_INFORMATION if position_issues else E.EVALUATED,
