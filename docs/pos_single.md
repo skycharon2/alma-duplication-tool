@@ -4,7 +4,8 @@
 > and the report/evaluation versions produced by that delivery. It is retained
 > for reproducibility; it is not the current formal Queue POS-SINGLE contract.
 > For UI/backend integration, use [Queue common](queue_common.md), where
-> `queue_pos_single_6` is current, together with the
+> the current methods are `queue_pos_single_8` for previously supported geometry
+> and `queue_pos_single_9` for the blank-Mosaic offset interpretation. See also the
 > [thin-interface contract](thin_interface_contract.md) and
 > [current status](status.md). Do not translate the version numbers below into
 > current report or method requirements.
