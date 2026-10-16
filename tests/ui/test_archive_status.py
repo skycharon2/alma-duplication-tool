@@ -7,7 +7,11 @@ from alma_duplicate.archive_endpoints import ARCHIVE_ORIGINS
 from alma_duplicate.ui import create_app
 from alma_duplicate.ui.archive_status import archive_run_status
 from tests.ui.test_live_source import live_config, line_form
-from tests.ui.test_live_aq import wired, no_network
+from tests.ui import test_live_aq
+
+# Register shared pytest fixtures explicitly, including the autouse network guard.
+wired = test_live_aq.wired
+no_network = test_live_aq.no_network
 
 
 def test_form_shows_unchecked_policy_without_contacting_sources():
