@@ -60,9 +60,14 @@ Mosaic and moving-target scientific assessment remain unimplemented. Sun is
 selectable for validation/export; the shared backend has a no-source Solar
 exemption, rather than a duplication assessment.
 
-The source-bound Archive TP position path can use D=12 m within its documented
-scope; that does not establish general TP CONTINUUM/LINE applicability or solve
-TP scanning geometry. See the [array contract](archive_array_evidence.md).
+In the supported fixed SINGLE_POINTING workflow, TP is retained as provenance
+but never supplies a position/beam diameter. Genuine 7m and 12m components remain
+eligible when TP is present; mixed interferometric components are evaluated as
+complete independent branches. Unexpected TP-only or conflicting array evidence
+remains unresolved, never a successful non-duplication result. See the
+[supervisor clarification](evidence/single_point_tp_exclusion_decision_2026-10-16.md),
+[Archive array contract](archive_array_evidence.md) and
+[Queue evidence rules](queue_common.md).
 
 Continuum and LINE branches are reported independently. A matching SPW or pair
 is not a whole-Member verdict. Missing evidence, failed sources, unsupported

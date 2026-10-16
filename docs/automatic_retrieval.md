@@ -37,8 +37,10 @@ bound**, not a value inferred for missing candidate metadata.
 `R = FWHM(35 GHz, 7 m) / 2`, rounded outward to `0.0396119023 deg`
 (about `142.603 arcsec`). Because the radius decreases with frequency and
 aperture, this encloses the half-power discs for 7-m and 12-m candidates within
-that profile. It also bounds a 12-m TP beam; TP scientific applicability is still
-handled separately by existing rules.
+that profile. TP contributes no position/beam branch under the current
+[single-point decision](evidence/single_point_tp_exclusion_decision_2026-10-16.md).
+Retrieval remains conservative; array eligibility is checked separately during
+assessment, preserving unexpected TP-only evidence as unresolved.
 
 TAP uses the existing CENTER query on `s_ra/s_dec`, without a footprint,
 requested-frequency or scientific angular-resolution filter. The same radius
