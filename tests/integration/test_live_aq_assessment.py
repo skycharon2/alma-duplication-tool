@@ -108,7 +108,7 @@ def test_aq_failure_keeps_tap_candidates_without_raw_array_fallback(code, status
     for c in result.document["context_evaluations"]:
         assert c["array_evidence"]["diameters_m"] == []
         pos = next(r for r in c["criteria"] if r["criterion_id"] == "POS-SINGLE")
-        assert pos["method_version"] == "archive_pos_single_3"
+        assert pos["method_version"] == "archive_pos_single_4"
         assert pos["outcome"] is None
         assert c["branches"][0]["status"] == "INDETERMINATE"
     inspection = inspect_report(result.document)

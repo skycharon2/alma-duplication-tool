@@ -907,8 +907,12 @@ preservation and association safety.
 ## Current assessment beam inference
 
 [Queue common](queue_common.md) consumes the typed row using
-`QUEUE_ARRAY_BEAM_INFERENCE_2`. Operational standalone status has priority;
-absent fields use Use 7-m?/Use TP? and, only when necessary, the fixed band/AR
-table. The resolver recognizes source band labels such as `ALMA_RB_06` without
+`QUEUE_ARRAY_BEAM_INFERENCE_3`. Consistent operational standalone status has
+priority; conflicting standalone true/Use 7-m false remains unresolved. Absent
+fields use Use 7-m? and the fixed band/AR table; TP never supplies a diameter. The resolver recognizes source band labels such as `ALMA_RB_06` without
 changing their raw values. MIX means two assessment hypotheses for one source
 row. It does not alter parser grouping, signatures, row IDs or CSV snapshots.
+
+## Current TP interpretation (2026-10-16)
+
+The [supervisor clarification](evidence/single_point_tp_exclusion_decision_2026-10-16.md) supersedes TP-derived D12 hypotheses in the earlier version-2 discussion. Current profile is `QUEUE_ARRAY_BEAM_INFERENCE_3`; raw CSV parsing is unchanged.

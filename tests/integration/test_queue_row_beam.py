@@ -55,8 +55,12 @@ def evaluate(raw):
 def test_operational_priority_and_absent_flags(standalone, use7, tp):
     row = parse_queue_csv_bytes(source(standalone, use7, tp)).row_inputs[0]
     beam = resolve_queue_primary_beam_diameter(row)
-    if standalone == "True":
-        expected = (7.0, 12.0) if tp == "True" else (7.0,)
+    if standalone == "True" and use7 == "False":
+        expected = ()
+    elif tp == "True" and use7 == "False":
+        expected = (12.0,)
+    elif standalone == "True":
+        expected = (7.0,)
     else:
         expected = (7.0, 12.0) if use7 == "True" else (12.0,)
     assert beam.diameters_m == expected
@@ -85,7 +89,7 @@ def test_seven_metre_beam_is_wider_and_inclusive(monkeypatch):
         "alma_duplicate.rules.queue_common.angular_separation_deg", lambda *a: radius12 * 1.2
     )
     assert evaluate(source("False"))[1][1].outcome == "NOT_SATISFIED"
-    p7 = evaluate(source("True"))[1][1]
+    p7 = evaluate(source("True", use7="True"))[1][1]
     assert p7.outcome == "SATISFIED"
     assert dict(p7.derived)["candidate_radius_deg"] == pytest.approx(radius12 * 12 / 7)
     for factor, expected in [
@@ -97,7 +101,7 @@ def test_seven_metre_beam_is_wider_and_inclusive(monkeypatch):
             "alma_duplicate.rules.queue_common.angular_separation_deg",
             lambda *a: dict(p7.derived)["candidate_radius_deg"] * factor,
         )
-        assert evaluate(source("True"))[1][1].outcome == expected
+        assert evaluate(source("True", use7="True"))[1][1].outcome == expected
 
 
 @pytest.mark.parametrize(
@@ -126,7 +130,7 @@ def test_duplicate_and_unknown_columns_still_rejected():
     import csv, io
 
     for name in ("standAlone_ACA", "unrelated_column"):
-        records = list(csv.reader(io.StringIO(source("True").decode())))
+        records = list(csv.reader(io.StringIO(source("True", use7="True").decode())))
         records[39].append(name)
         records[40].append("")
         records[41].append("True")
@@ -135,7 +139,7 @@ def test_duplicate_and_unknown_columns_still_rejected():
 
 def test_cross_source_spatial_evidence_rejected():
     s, _ = evaluate(source())
-    other, _ = evaluate(source("True"))
+    other, _ = evaluate(source("True", use7="True"))
     c = s.queue.retained_rows[0]
     with pytest.raises(ValueError, match="another context"):
         evaluate_queue_common(
@@ -197,14 +201,14 @@ def test_cli_reads_optional_field_and_exports_assumption(tmp_path):
             for r in doc["context_evaluations"][0]["criteria"]
             if r["criterion_id"] == "POS-SINGLE"
         )
-        assert result["method_version"] == "queue_pos_single_6"
+        assert result["method_version"] == "queue_pos_single_8"
         assert dict(result["details"])["standalone_aca_field"] == (
             "ABSENT" if token is ABSENT else "INVALID" if token == "" else "PRESENT"
         )
 
 
 def test_legacy_beam_search_cannot_drop_new_seven_metre_candidate():
-    q = parse_queue_csv_bytes(source("True", use7="False", tp="False"))
+    q = parse_queue_csv_bytes(source("True", use7="True", tp="False"))
     v = validation(sources=("QUEUE",), ra=10, dec=20 + 10 / 3600)
     s = search_candidates(v, queue_result=q, queue_candidate_beam=True)
     assert len(s.queue.retained_rows) == 1

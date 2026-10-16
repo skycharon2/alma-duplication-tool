@@ -38,9 +38,11 @@ local-domain offset bounds, candidate frequency and diameter guards still apply.
 Custom, Rectangle, unknown nonblank categories and conflicting evidence are not
 promoted. Legacy candidate-beam retrieval keeps its conservative interpretation.
 
-Only newly interpreted blank-with-offset rows use `queue_pos_single_7` and
-`queue_angular_factor_8`; existing supported rows retain their previous methods.
-These versions change geometric applicability, not numerical thresholds. Formal
+Blank-with-offset rows currently use `queue_pos_single_9` and
+`queue_angular_factor_8`; other supported rows use `queue_pos_single_8` and
+`queue_angular_factor_7`. The October 16 position versions apply the
+[TP exclusion decision](evidence/single_point_tp_exclusion_decision_2026-10-16.md);
+the geometry interpretation and numerical thresholds are unchanged. Formal
 LINE pair preparation applies the same interpretation and records
 `queue_line_pair_builder_2` for those rows. Mode inference, frequency coverage,
 resolution, sensitivity associations and complete-beam aggregation are unchanged.

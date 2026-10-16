@@ -1,24 +1,23 @@
 # Queue common rules: row beam and component scope
 
-`--queue-common` selects `queue_pos_single_6` and `queue_angular_factor_7` for
+`--queue-common` selects `queue_pos_single_8` and `queue_angular_factor_7` for
 previously supported geometry. Newly interpreted blank-Mosaic offset rows use
-`queue_pos_single_7` and `queue_angular_factor_8`; see the
+`queue_pos_single_9` and `queue_angular_factor_8`; see the
 [blank-Mosaic contract](queue_blank_mosaic.md).
 `--queue-continuum` and `--queue-line` include these common rules. The
-[current decision](evidence/queue_array_beam_inference_decision_2026-10-01.md)
-implements `QUEUE_ARRAY_BEAM_INFERENCE_2`. Archive methods and raw Queue records
-are unchanged. The earlier Portal fallback is historical, not the current rule.
+[current decision](evidence/single_point_tp_exclusion_decision_2026-10-16.md)
+implements `QUEUE_ARRAY_BEAM_INFERENCE_3`. Raw Queue records are unchanged. The earlier Portal fallback is historical, not the current rule.
 
 ## Row-level beam interpretation
 
 | Operational standAlone_ACA | Additional evidence | Diameters (m) |
 | --- | --- | --- |
-| True | TP false / true | 7 / 7 and 12 |
+| True | Use 7-m true, TP either | 7 |
+| True | Use 7-m false | Unresolved conflict |
 | False | Use 7-m false / true | 12 / 7 and 12 |
-| Absent | Use 7-m false | 12 (including TP if requested) |
-| Absent | Use 7-m true, TP true | 7 and 12; no AR comparison needed |
-| Absent | Use 7-m true, TP false, Req.AR < band threshold | 7 and 12 |
-| Absent | Use 7-m true, TP false, Req.AR >= band threshold | 7 |
+| Absent | Use 7-m false | 12 (main-array inference, regardless of TP) |
+| Absent | Use 7-m true, TP either, Req.AR < band threshold | 7 and 12 |
+| Absent | Use 7-m true, TP either, Req.AR >= band threshold | 7 |
 | Empty, invalid or duplicate operational field | No absent fallback | Unresolved |
 | Absent and required AR/band unavailable, or invalid typed array flags | No default diameter | Unresolved |
 
@@ -27,10 +26,10 @@ to the 7-m side; there is no epsilon, interpolation or Ref.Frequency rescaling.
 AR comparison uses the parsed canonical arcsec values. These values do not recover
 precision lost during parsing. Numeric source tokens remain available as evidence.
 
-Valid operational standalone evidence takes precedence. Standalone true with
-Use 7-m false records an inconsistency without replacing that standalone value.
-TP contributes a 12-m hypothesis. Main-array and TP reasons are retained together
-but never create duplicate 12-m variants. An absent field keeps standalone UNKNOWN;
+Valid operational standalone evidence takes precedence, except that standalone true
+with Use 7-m false is an unresolved conflict. TP never supplies a diameter. The
+owner confirms TP true/Use 7-m false includes main-array D12 when operational
+evidence is absent or consistent. An absent field keeps standalone UNKNOWN;
 a 7-m-compatible inference never fabricates source-provided standalone status.
 
 The request must still be fixed celestial and single-point, and the candidate

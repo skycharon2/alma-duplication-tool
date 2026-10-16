@@ -88,21 +88,21 @@ def test_real_official_label_resolves_science_target_not_calibrator(sample_id, d
     assert evidence.diameters_m == (d,)
     result = evaluate_archive_position(request_at(SAMPLES[sample_id]), context,
                                       adapt_spatial(context, source), array_evidence=evidence)
-    assert result.method_version == "archive_pos_single_3"
+    assert result.method_version == "archive_pos_single_4"
     assert result.outcome == "SATISFIED"
     assert dict(result.derived)["antenna_diameter_m"] == d
     assert evidence.records[0].source_name == SAMPLES[sample_id]["target_name"]
     assert evidence.manifest_sha256 == hashlib.sha256(MANIFEST.read_bytes()).hexdigest()
 
 
-def synthetic(label="12m 7m", *, offset=16, intents=("CONTINUUM",)):
+def synthetic(label="12m 7m", *, offset=16, intents=("CONTINUUM",), resolution=.45):
     # Synthetic numerical case, never substitute these labels in real captures.
     document = payload()
     document["request"]["intents"] = list(intents)
     v = validated(document)
     source, context = archive(build_search_plan(v), s_ra=201.365,
                               s_dec=-43.019 + offset / 3600, frequency=240.,
-                              spatial_resolution=.45, cont_sensitivity_bandwidth=.15)
+                              spatial_resolution=resolution, cont_sensitivity_bandwidth=.15)
     key = context.evidence.row_link.association_key.context
     # Fixture source name must match its reconstructed source, as in real rows.
     source = replace(source, rows=tuple(dict(r, target_name=key.source_name) for r in source.rows))
@@ -145,36 +145,20 @@ def test_archive_mixed_diameters_evaluate_whole_branches_and_report_once():
         assert "criterion_id" in node
 
 
-@pytest.mark.parametrize(
-    "offset,outcome",
-    [(0, "SATISFIED"), (25, "NOT_SATISFIED")],
-)
-def test_tp_uses_d12_for_position_but_not_interferometric_branch_scope(
-    offset, outcome
-):
-    from alma_duplicate.geometry import primary_beam_fwhm_deg
-
-    search, catalog = synthetic(
-        "TP", offset=offset, intents=("CONTINUUM", "LINE")
-    )
+@pytest.mark.parametrize("offset", [0, 25])
+@pytest.mark.parametrize("resolution", [.45, 10.])
+def test_tp_only_has_no_position_and_never_false_branch(offset, resolution):
+    search, catalog = synthetic("TP", offset=offset, intents=("CONTINUUM", "LINE"), resolution=resolution)
     c = evaluate_candidate_search(search, archive_arrays=catalog).context_evaluations[0]
+    if resolution == 10.:
+        assert c.criteria[0].outcome == "NOT_SATISFIED"
     assert c.array_evidence.components == ("TOTAL_POWER",)
-    assert c.array_evidence.diameters_m == (12.,)
+    assert c.array_evidence.diameters_m == ()
     pos = c.criteria[1]
-    derived = dict(pos.derived)
-    assert pos.method_version == "archive_pos_single_3"
-    assert derived["antenna_diameter_m"] == 12
-    assert derived["candidate_radius_deg"] == pytest.approx(
-        primary_beam_fwhm_deg(240., 12.) / 2
-    )
-    assert pos.outcome == outcome
-    assert pos.evaluation == "EVALUATED"
-    assert not pos.issues
+    assert dict(pos.derived)["antenna_diameter_m"] is None
+    assert dict(pos.derived)["candidate_radius_deg"] is None
+    assert pos.outcome is None
     assert "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED" in pos.reasons
-    assert (
-        "docs/evidence/archive_tp_d12_position_decision_2026-10-02.md"
-        in pos.decision_refs
-    )
     assert all(b.status == "INDETERMINATE" for b in c.branches)
 
 
@@ -227,16 +211,40 @@ def test_archive_both_diameters(offset, status):
     assert c.branches[0].status == status
 
 
-@pytest.mark.parametrize("offset,status", [(0, "CRITERIA_MET"), (25, "INDETERMINATE")])
-def test_seven_with_tp_preserves_unknown_twelve_metre_branch(offset, status):
-    search, catalog = synthetic("7m TP", offset=offset)
+@pytest.mark.parametrize("label,diameters", [
+    ("7m", (7.,)), ("12m", (12.,)), ("7m 12m", (7., 12.)),
+    ("TP", ()), ("7m TP", (7.,)), ("12m TP", (12.,)),
+    ("7m 12m TP", (7., 12.)),
+])
+@pytest.mark.parametrize("offset", [0, 16, 25])
+def test_all_array_combinations_preserve_provenance_and_complete_branches(label, diameters, offset):
+    search, catalog = synthetic(label, offset=offset, intents=("CONTINUUM", "LINE"))
     c = evaluate_candidate_search(search, archive_arrays=catalog).context_evaluations[0]
-    assert [v.diameter_m for v in c.beam_variants] == [7, 12]
-    assert c.beam_variants[1].evaluation.branches[0].status == "INDETERMINATE"
-    assert c.branches[0].status == status
-    gaps = inspect_report(report_document(evaluate_candidate_search(search, archive_arrays=catalog)))["gap_occurrences"]
-    assert all(g["category"] == "SCOPE_UNSUPPORTED" for g in gaps
-               if g["code"] == "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED")
+    assert c.array_evidence.diameters_m == diameters
+    assert c.array_evidence.records == catalog.records
+    assert ("TOTAL_POWER" in c.array_evidence.components) == ("TP" in label)
+    if not diameters:
+        assert all(b.status == "INDETERMINATE" for b in c.branches)
+        return
+    # Adding TP cannot change either complete interferometric branch.
+    clean_catalog = replace(catalog, records=(replace(catalog.records[0], raw_label=label.replace("TP", "").strip()),))
+    clean = evaluate_candidate_search(search, archive_arrays=clean_catalog).context_evaluations[0]
+    assert c.branches == clean.branches
+    variants = c.beam_variants or (None,)
+    for variant in variants:
+        pos = (variant.evaluation if variant else c).criteria[1]
+        assert "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED" not in pos.reasons
+
+
+@pytest.mark.parametrize("factor,outcome", [(1 - 1e-12, "SATISFIED"), (1, "SATISFIED"), (1 + 1e-12, "NOT_SATISFIED")])
+def test_real_twelve_with_tp_inclusive_position_boundary(monkeypatch, factor, outcome):
+    from alma_duplicate.geometry import primary_beam_fwhm_deg
+    radius = primary_beam_fwhm_deg(240., 12.) / 2
+    monkeypatch.setattr("alma_duplicate.rules.archive_position.angular_separation_deg", lambda *args: radius * factor)
+    search, catalog = synthetic("12m TP")
+    c = evaluate_candidate_search(search, archive_arrays=catalog).context_evaluations[0]
+    assert c.criteria[1].outcome == outcome
+    assert dict(c.criteria[1].derived)["antenna_diameter_m"] == 12.
 
 
 def test_archive_cannot_borrow_criteria_between_diameters():

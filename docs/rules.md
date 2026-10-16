@@ -53,10 +53,10 @@ method needs uncertainty bounds, it must define and version them explicitly.
 | Criterion | Method version | Behavior |
 | --- | --- | --- |
 | ANGULAR | `archive_angular_factor_3` (approved Archive); `queue_angular_factor_7` (supported Queue), `queue_angular_factor_8` (blank-Mosaic offset interpretation); `angular_factor_2` (legacy) | Symmetric max/min <= 2, inclusive. Uses source-specific Archive or Queue angular evidence in canonical arcsec. Missing/invalid/unit-unsafe evidence remains explicit. |
-| POS-SINGLE | `queue_pos_single_6` (supported Queue), `queue_pos_single_7` (blank-Mosaic offset interpretation); `queue_pos_single_1` (legacy) | The supported Queue row-beam method is defined in [Queue common](queue_common.md); legacy reports retain their original method identity. Structured issues preserve proposed, candidate and method limitations. |
+| POS-SINGLE | `queue_pos_single_8` (supported Queue), `queue_pos_single_9` (blank-Mosaic offset interpretation); `queue_pos_single_1` (legacy) | The supported Queue row-beam method is defined in [Queue common](queue_common.md); legacy reports retain their original method identity. Structured issues preserve proposed, candidate and method limitations. |
 | CONT-SETUP | `continuum_setup_3` (direct usable); `continuum_setup_4` (approved nominal conversion); `continuum_setup_2` (legacy) | At least two distinct proposed windows with usable width strictly > 1.8 GHz. Exactly 1.8 does not qualify. Unknown semantics and unmapped wide nominal widths remain unresolved. |
 | CONT-SETUP declaration | `continuum_setup_declaration_1` | Explicit researcher confirmation of that same qualification; accepted project evidence with USER_DECLARED provenance. A contradictory complete list leaves the outcome unresolved. Ordinary CONTINUUM intent does not qualify. See the [declaration contract](continuum_setup_declaration.md). |
-| Archive POS-SINGLE | `archive_pos_single_3` (source-bound AQ); `archive_pos_single_1` (legacy TAP-only) | Candidate `frequency`, source-bound or otherwise supported physical diameter, spherical separation <= half-power radius; inclusive float64 boundary. TP uses D=12 m for this geometric criterion under the dated project decision; broader TP science scope remains separate. |
+| Archive POS-SINGLE | `archive_pos_single_4` (source-bound AQ); `archive_pos_single_1` (legacy TAP-only) | Candidate `frequency`, source-bound or otherwise supported physical diameter, spherical separation <= half-power radius; inclusive float64 boundary. TP is excluded from eligible diameters under the October 16 supervisor clarification; genuine 7m/12m branches remain eligible. |
 | CONT-FREQ | `archive_cont_freq_2`; `queue_cont_freq_3` | Archive uses its source frequency estimate; supported Queue continuum uses the coherent row reference SKY frequency. Both prepare proposed SKY or REST + redshift through the [shared frequency contract](proposed_frequency.md), then use the exact factor-1.3 contract without cross-source substitution. |
 | CONT-RMS | `archive_cont_rms_2`; `queue_cont_rms_portal_2` | Archive uses its direct aggregate RMS comparison. Supported Queue continuum uses the same-row reference sensitivity and reference width with the versioned usable-bandwidth union before the one-sided factor-two comparison. Source-specific methods never borrow RMS evidence across sources. |
 
@@ -242,11 +242,11 @@ retain their independent source-specific methods.
 
 Supplying `archive_arrays=catalog` selects the optional
 [official source array contract](archive_array_evidence.md).
-Position uses `archive_pos_single_3`; a source-bound `7m 12m` label creates
+Position uses `archive_pos_single_4`; a source-bound `7m 12m` label creates
 complete 7-m and 12-m context branches, aggregated with
 `archive_beam_variant_or_1`. CONTINUUM and LINE retain their existing independent
-criteria and Source–SPW bindings. TP uses physical D = 12 m for POS-SINGLE and
-returns the geometric position result, while the retained TP scope reason keeps
-broader interferometric CONTINUUM/LINE branch evaluation UNKNOWN.
+criteria and Source–SPW bindings. TP is retained as provenance but supplies no position diameter. Genuine 7m/12m
+components remain eligible when TP is present. Unexpected TP-only evidence is
+outside valid proposal scope and keeps CONTINUUM/LINE UNKNOWN.
 Missing/ambiguous official evidence is UNKNOWN.
 Without a catalog, `archive_pos_single_1` remains unchanged.

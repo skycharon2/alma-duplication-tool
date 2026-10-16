@@ -37,7 +37,7 @@ def test_position_false_and_missing_rms_is_false_with_auxiliary_flags():
 def test_line_receives_identical_common_position(standalone,intents):
     p=payload();p['request']['position'].update(ra=10,dec=20)
     p['request']['intents']=intents;p['search_options']['sources']=['QUEUE']
-    q=parse_queue_csv_bytes(source(standalone))
+    q=parse_queue_csv_bytes(source(standalone, use7='True' if standalone == 'True' else 'False'))
     search=search_candidates(validated(p),queue_result=q)
     c=evaluate_candidate_search(search,queue_continuum=True).context_evaluations[0]
     pos=rule(c,'POS-SINGLE')
@@ -48,3 +48,20 @@ def test_line_receives_identical_common_position(standalone,intents):
         assert next(r for r in pair.criteria if r.criterion_id=='POS-SINGLE') is pos
     # Queue line numerical rules are separate unfinished work, not a position gate.
     assert next(b for b in c.branches if b.branch=='LINE').status=='INDETERMINATE'
+
+
+@pytest.mark.parametrize("tp", ["True", "False"])
+def test_conflicting_standalone_is_unresolved_for_both_intents(tp):
+    p = payload()
+    p["request"]["position"].update(ra=10, dec=20)
+    p["request"]["intents"] = ["CONTINUUM", "LINE"]
+    p["search_options"]["sources"] = ["QUEUE"]
+    raw = source("True", use7="False", tp=tp)
+    q = parse_queue_csv_bytes(raw)
+    search = search_candidates(validated(p), queue_result=q)
+    c = evaluate_candidate_search(search, queue_continuum=True).context_evaluations[0]
+    assert not c.beam_variants
+    assert rule(c, "POS-SINGLE").outcome is None
+    assert "STANDALONE_WITHOUT_7M_REQUEST" in rule(c, "POS-SINGLE").reasons
+    assert all(b.status == "INDETERMINATE" for b in c.branches)
+    assert c.candidate.context.evidence.row.raw_row.value("standAlone_ACA") == "True"
