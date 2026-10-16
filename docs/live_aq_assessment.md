@@ -118,3 +118,11 @@ LIVE-AQ-4 adds explicit browser configuration and renders acquisition status
 in the execution flow. A CLI switch remains separate work. Live-service smoke
 verification and real-proposal scientific acceptance are not claimed by these
 fake-HTTP tests.
+
+## Browser mirror failover
+
+The browser now supplies the [mirror wrapper](archive_mirror_failover.md) as its
+live AQ fetcher. The states above describe the final whole-batch result after
+eligible mirror attempts. “No fallback” means no partial catalog, captured
+evidence or legacy array inference is substituted; it does not prohibit retrying
+the complete live batch at another official mirror. Attempt provenance is retained.

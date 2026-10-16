@@ -129,6 +129,9 @@
 <fieldset id="sources" class="choice-group"><legend>Sources</legend><div class="inline-choices">{% for source in ['ARCHIVE','QUEUE'] %}<label><input type="checkbox" name="sources" value="{{ source }}" {% if source in values.get('sources', []) %}checked{% endif %}>{{ source }}</label>{% endfor %}</div>{{ messages('sources') }}</fieldset></div>
 <p class="field-note">Archive: {{ 'live' if configured.archive_kind == 'LIVE' else ('replay' if configured.archive_kind == 'REPLAY' else 'not configured') }} · Queue CSV: {{ 'managed snapshot' if configured.managed_queue_root else ('available' if configured.queue_csv else 'not configured') }}. Sources are accessed when you run the assessment.</p>
 {% if queue_status %}{% include '_queue_source_status.html' %}{% endif %}
+{% if configured.archive_kind == 'LIVE' %}
+{% include '_archive_connection.html' %}
+{% else %}{% include '_archive_source_status.html' %}{% endif %}
 {% set radius_mode = values.get('radius_mode', 'EXPLICIT' if 'radius' in values else 'AUTO') %}
 {% if radius_mode == 'AUTO' %}
 <input type="hidden" name="radius_mode" value="AUTO">

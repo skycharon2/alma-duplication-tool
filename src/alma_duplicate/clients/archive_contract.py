@@ -169,6 +169,7 @@ class ArchiveQueryProvenance:
     projection: ArchiveProjectionEvidence | None = None
     completeness_policy: str = "COUNT_FIRST"
     count_attempted: bool = True
+    mirror_attempts: tuple[dict, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.query_run_id.strip():

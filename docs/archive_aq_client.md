@@ -25,11 +25,13 @@ order; empty input returns an empty LIVE catalog and no queries without discover
 
 The client discovers the search base through the official properties endpoint,
 then POSTs one exact Member query with `track_total_hits=true` and the configured
-`size`. Only the observed HTTPS host and `/aq/service/api/search` path are
+`size`. Only the selected official mirror HTTPS host and `/aq/service/api/search` path are
 accepted, with no user information, query or fragment and no nonstandard port.
 The observation endpoint is constructed explicitly. Redirects are disabled for
 both discovery and search. Connect/read timeouts are 10/60 seconds per request;
-there is no automatic retry, pagination or total batch deadline.
+the single-site client performs no retry or pagination. The browser uses the
+[mirror wrapper](archive_mirror_failover.md), which restarts whole failed batches
+and supplies a request scheduling budget.
 
 Every Member response must explicitly have `timed_out=false`, zero failed
 shards, an exact nonnegative integer total, and a hit count equal to that total

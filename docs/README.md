@@ -229,3 +229,6 @@ review gate, persistent multi-user lifecycle and broader-mode scope.
 
 - [Active Queue snapshot selection](queue_active_snapshot.md): manually and atomically approve a validated Queue source/run, inspect recent selection history, and explicitly roll back; the Flask source remains unchanged in PR2.
 - [Managed Queue browser source](queue_managed_ui.md): approved active snapshot selection, pinned report provenance, and update-check status (PR3).
+
+- [Archive mirror failover](archive_mirror_failover.md): official live TAP/AQ
+  retry boundaries, request budgets, provenance and source isolation.

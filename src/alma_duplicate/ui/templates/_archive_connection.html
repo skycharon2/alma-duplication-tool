@@ -1,0 +1,25 @@
+{% set connection_labels = {'AUTO': 'Automatic', 'EUROPE': 'Europe (ESO)', 'EAST_ASIA': 'East Asia (NAOJ)', 'NORTH_AMERICA': 'North America (NRAO)'} %}
+<div class="queue-status-compact archive-status" id="archive-source-status">
+  <div class="queue-status-strip">
+    <span class="queue-status-dot archive-neutral" aria-hidden="true"></span>
+    <span><strong>Archive</strong> <span class="queue-strip-date" id="archive-connection-summary">{{ connection_labels.get(values.get('archive_connection', 'AUTO'), 'Automatic') }}</span></span>
+    <button type="button" class="archive-details-button" popovertarget="archive-connection-popover" aria-label="View Archive connection details">Details <span aria-hidden="true">ⓘ</span></button>
+  </div>
+</div>
+<div id="archive-connection-popover" class="archive-status-panel archive-connection-panel" popover="auto" role="dialog" aria-labelledby="archive-connection-title">
+  <button type="button" class="archive-popover-close" popovertarget="archive-connection-popover" popovertargetaction="hide" aria-label="Close Archive connection details">×</button>
+  <h3 id="archive-connection-title">Archive connection</h3>
+  <p class="archive-panel-intro">Choose where this assessment retrieves Archive data.</p>
+  <dl class="archive-connection-state"><div><dt>Connection status</dt><dd>Not checked</dd></div></dl>
+  <p class="archive-panel-caption">Connection starts when you run the assessment.</p>
+  <div class="archive-connection-control">
+    <label for="archive_connection">Archive connection</label>
+    <select id="archive_connection" name="archive_connection" aria-describedby="archive-connection-help">
+    {% for value, label in [('AUTO', 'Automatic — Europe → East Asia → North America'), ('EUROPE', 'Europe (ESO)'), ('EAST_ASIA', 'East Asia (NAOJ)'), ('NORTH_AMERICA', 'North America (NRAO)')] %}
+    <option value="{{ value }}"{% if values.get('archive_connection', 'AUTO') == value %} selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+    </select>
+    <p class="archive-panel-caption" id="archive-connection-help">Automatic tries another mirror if retrieval fails. Selecting a region uses only that site for Archive searches and live array evidence.</p>
+  </div>
+  <div class="archive-panel-footer"><span>Applies to this assessment</span><button type="button" popovertarget="archive-connection-popover" popovertargetaction="hide">Done</button></div>
+</div>

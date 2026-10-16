@@ -8,7 +8,9 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import re
-from urllib.parse import urlsplit
+from alma_duplicate.archive_endpoints import (
+    ARCHIVE_ORIGINS, aq_search_endpoint, request_timeout, validate_origins,
+)
 
 import requests
 
@@ -27,7 +29,9 @@ _MEMBER = re.compile(r"uid://[A-Za-z0-9]+/[A-Za-z0-9]+/[A-Za-z0-9]+\Z")
 class ArchiveAqError(ValueError):
     """Safe error metadata; never includes response bodies, headers or secrets."""
 
-    def __init__(self, code: str, member_ous_uid: str | None = None):
+    def __init__(self, code: str, member_ous_uid: str | None = None, *, http_status=None, attempts=()):
+        self.http_status = http_status
+        self.attempts = attempts
         self.code = code
         self.member_ous_uid = member_ous_uid
         super().__init__(f"AQ acquisition failed: {code}")
@@ -48,6 +52,7 @@ class ArchiveAqFetchResult:
     catalog: ArchiveArrayCatalog
     queries: tuple[ArchiveAqMemberQuery, ...]
     properties_url: str = PROPERTIES_URL
+    mirror_attempts: tuple[dict, ...] = ()
 
 
 def _object(pairs):
@@ -63,17 +68,9 @@ def _constant(value):
     raise ValueError("Non-finite JSON literal")
 
 
-def _endpoint(value):
-    # The observed service is an explicit allowlist, not an arbitrary URL prefix.
-    if not isinstance(value, str) or any(c.isspace() for c in value):
-        raise ValueError("Invalid endpoint")
-    parsed = urlsplit(value)
-    if (parsed.scheme != "https" or parsed.hostname != "almascience.eso.org"
-            or parsed.port not in (None, 443) or parsed.username is not None
-            or parsed.password is not None or parsed.query or parsed.fragment
-            or parsed.path not in ("/aq/service/api/search", "/aq/service/api/search/")):
-        raise ValueError("Invalid endpoint")
-    return "https://almascience.eso.org/aq/service/api/search/observations/_search"
+def _endpoint(value, *, origin=ARCHIVE_ORIGINS[0]):
+    # Discovery credentials never cross to another mirror or arbitrary host.
+    return aq_search_endpoint(value, origin=origin)
 
 
 class ArchiveAqClient:
@@ -84,14 +81,16 @@ class ArchiveAqClient:
     The request callable follows requests.request(method, url, **kwargs).
     """
 
-    def __init__(self, *, request=None, max_hits=100):
+    def __init__(self, *, request=None, max_hits=100, origin=ARCHIVE_ORIGINS[0]):
         if type(max_hits) is not int or max_hits < 1:
             raise ValueError("max_hits must be a positive integer")
+        self.origin = validate_origins((origin,))[0]
+        self.properties_url = self.origin + "/aq/service/api/v1/properties"
         self._request = request if request is not None else requests.request
         self._max_hits = max_hits
 
     def _read(self, method, url, *, member=None, headers=None, body=None):
-        options = {"timeout": (10, 60), "allow_redirects": False,
+        options = {"timeout": request_timeout(), "allow_redirects": False,
                    "headers": headers or {"Accept": "application/json"}}
         if body is not None:
             options["json"] = body
@@ -102,7 +101,7 @@ class ArchiveAqClient:
         # Do not follow redirects or call raise_for_status, whose exception may
         # retain request headers or response content.
         if response.status_code != 200:
-            raise ArchiveAqError("HTTP_ERROR", member) from None
+            raise ArchiveAqError("HTTP_ERROR", member, http_status=response.status_code) from None
         raw = response.content
         try:
             payload = json.loads(raw, object_pairs_hook=_object, parse_constant=_constant)
@@ -123,9 +122,9 @@ class ArchiveAqClient:
         emit_progress("aq", 0, len(members), "members")
         if members:
             with measure_stage('aq_discovery'):
-                properties, _, _ = self._read("GET", PROPERTIES_URL)
+                properties, _, _ = self._read("GET", self.properties_url)
             try:
-                endpoint = _endpoint(properties["elasticsearchUrl"])
+                endpoint = _endpoint(properties["elasticsearchUrl"], origin=self.origin)
                 key = properties.get("elasticsearchApiKey")
                 if key is not None and (not isinstance(key, str)
                         or any(ord(c) < 33 or ord(c) > 126 for c in key)):
@@ -152,7 +151,7 @@ class ArchiveAqClient:
                 emit_progress("aq", len(queries), len(members), "members")
         catalog = ArchiveArrayCatalog(tuple(records),
             ArchiveArrayCatalogProvenance(ArchiveArrayCatalogMode.LIVE))
-        return ArchiveAqFetchResult(catalog, tuple(queries))
+        return ArchiveAqFetchResult(catalog, tuple(queries), self.properties_url)
 
     def _validate(self, payload, member):
         try:

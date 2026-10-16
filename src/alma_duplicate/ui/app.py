@@ -3,6 +3,7 @@
 import os
 import re
 from contextlib import nullcontext
+from dataclasses import replace
 import weakref
 
 from flask import Flask, Response, abort, redirect, render_template, request, url_for
@@ -17,13 +18,14 @@ from alma_duplicate.ui.report_view import (
     criterion_explanation, criterion_status, pair_title, standalone_criteria, PURPOSE_LABELS,
     summary_line_conditions,
 )
-from alma_duplicate.ui.runs import BrowserAssessment, RunStore
+from alma_duplicate.ui.runs import ARCHIVE_CONNECTIONS, BrowserAssessment, RunStore
 from alma_duplicate.ui.report_pages import report_page, report_projection
 from alma_duplicate.ui.visualization import visualization_data
 from alma_duplicate.ui.run_store import DEFAULT_DISK_BYTES, DEFAULT_MAX_AGE
 from alma_duplicate.ui.proposed import MAX_WINDOWS, assessment_supported, contributing_windows, initial_form, new_row, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
 from alma_duplicate.ui.managed_queue import managed_queue_status
+from alma_duplicate.ui.archive_status import archive_configuration_status, archive_run_status
 
 
 def _env_flag(name):
@@ -111,6 +113,7 @@ def create_app(config=None):
     def render_report(data, report_id):
         is_run = data.get('run') is not None
         return render_template("report.html", **data, report_id=report_id,
+                               archive_status=archive_run_status(data['document']),
                                show_technical=request.args.get('technical') == '1',
                                visualization_url=url_for("run_visualization" if is_run else "report_visualization",
                                                          report_id=report_id, page=data["page"] if data["result_view"] == "matches" else 1),
@@ -246,6 +249,8 @@ def create_app(config=None):
         if request.method == "POST":
             try:
                 values, rows = read_form(request.form)
+                if values.get("archive_connection", "AUTO") not in ARCHIVE_CONNECTIONS:
+                    raise ValueError("Invalid Archive connection selection")
             except ValueError as exc:
                 abort(400, description=str(exc))
             action = values.get("action", "validate")
@@ -295,7 +300,8 @@ def create_app(config=None):
                             observer = (observe_progress(lambda event: progress.update(token, event))
                                         if token else nullcontext())
                             with observer:
-                                assessment = configured.assess(document)
+                                assessment = replace(configured, archive_connection=values.get(
+                                    "archive_connection", "AUTO")).assess(document)
                                 if assessment.document is not None:
                                     run_id = runs.add(document, assessment)
                                     report_url = url_for("run_view", report_id=run_id)
@@ -326,6 +332,7 @@ def create_app(config=None):
                                purpose_updated=purpose_updated,
                                scope_updated=scope_updated, assessment_supported=assessment_supported(values),
                                configured=configured, execution_error=execution_error, auto_scope=automatic_scope(),
+                               archive_status=archive_configuration_status(configured.archive_kind),
                                queue_status=(managed_queue_status(configured.managed_queue_root)
                                              if configured.managed_queue_root else None))
 

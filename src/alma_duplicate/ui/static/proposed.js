@@ -236,3 +236,15 @@ function initializeForm(form) {
 
 initializeForm(document.querySelector('.proposed-form'));
 })();
+
+// Reflect the form's selected connection without probing a remote service.
+(() => {
+  const choice = document.getElementById('archive_connection');
+  const summary = document.getElementById('archive-connection-summary');
+  if (!choice || !summary) return;
+  const labels = {AUTO: 'Automatic', EUROPE: 'Europe (ESO)', EAST_ASIA: 'East Asia (NAOJ)', NORTH_AMERICA: 'North America (NRAO)'};
+  const update = () => { summary.textContent = labels[choice.value] || 'Not selected'; };
+  choice.addEventListener('change', update);
+  choice.form?.addEventListener('reset', () => setTimeout(update, 0));
+  update();
+})();
