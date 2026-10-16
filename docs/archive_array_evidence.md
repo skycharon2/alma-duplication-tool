@@ -53,6 +53,14 @@ The loader consumes a captured official AQ response manifest. It checks the
 official observation endpoint, query Member, timezone-aware capture timestamp,
 response SHA-256, successful query completeness and sibling file paths. An
 invalid capture fails explicitly; it does not silently select a different method.
+Completeness requires a hit list, an exact (`eq`) nonnegative integer total equal
+to its length, boolean `timed_out=False`, and integer `_shards.failed=0`.
+Missing required status fields, boolean counts and other invalid field types are
+rejected. Optional `terminated_early` may be absent or boolean false; true rejects
+the response even when the reported total equals the returned hit count. These
+checks agree with the live AQ entry; its configured response-size cap remains a
+live acquisition constraint. An incomplete response anywhere in a captured
+manifest rejects the entire catalog, never returning earlier partial records.
 Hashes ensure replay integrity, not independent authentication of a locally
 edited manifest. Capture provenance must remain available for review.
 

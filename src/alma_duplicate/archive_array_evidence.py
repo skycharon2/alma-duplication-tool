@@ -150,10 +150,18 @@ def load_archive_array_catalog(path):
             member = entry["request_body"]["query"]["term"]["mous"]
             payload = json.loads(data)
             hits, total = payload["hits"]["hits"], payload["hits"]["total"]
-            shards = payload.get("_shards", {})
-            if not isinstance(shards, dict):
-                raise ValueError("Invalid AQ shard status")
-            if (payload.get("timed_out", False) or shards.get("failed", 0)
+            # Match the live AQ completeness gate. A verified checksum proves
+            # byte integrity, not that the service finished the query. Required
+            # status fields must not default to success; bool is not a count.
+            failed = payload["_shards"]["failed"]
+            timed_out = payload["timed_out"]
+            terminated_early = payload.get("terminated_early", False)
+            if (not isinstance(hits, list) or not isinstance(total, dict)
+                    or type(total["value"]) is not int or total["value"] < 0
+                    or type(failed) is not int or failed < 0
+                    or type(timed_out) is not bool or type(terminated_early) is not bool):
+                raise ValueError("Invalid AQ completeness metadata")
+            if (timed_out or failed or terminated_early
                     or total["relation"] != "eq" or total["value"] != len(hits)):
                 raise ValueError("Incomplete AQ array evidence")
             for hit in hits:
