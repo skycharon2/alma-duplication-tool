@@ -60,9 +60,12 @@ manifest to the same lazy Archive provider. It must correspond to the actual
 Archive science sources for that run; unmatched sources remain UNKNOWN. A live
 TAP run does not automatically refresh or acquire AQ evidence. The browser keeps
 one original candidate with both complete diameter paths when the backend
-returns mixed evidence, displays the binding provenance and exports the original
-report/inspection. TP's physical 12-m aperture does not remove its unsupported
-scientific scope. See the [array adapter](archive_array_evidence.md).
+resolves genuine 7m and 12m components, displays the binding provenance and exports
+the original report/inspection. TP remains in provenance but supplies no diameter:
+`7m TP` uses D7, `12m TP` uses D12, and `7m 12m TP` uses independent D7/D12
+branches. Unexpected TP-only evidence remains unresolved with no eligible
+position branch; it must not be presented as a non-duplication result. See the
+[array adapter](archive_array_evidence.md).
 
 ### Explicit live AQ configuration
 

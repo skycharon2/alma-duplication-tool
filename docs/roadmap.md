@@ -47,9 +47,11 @@ Operational requirements should determine that scope before deployment.
 ## Deferred extensions
 
 - Mosaic and moving-target scientific inputs, methods and acceptance.
-- Broader TP geometry and scientific applicability; physical D=12 m alone does
-  not establish the complete branch. Existing supported mixed-beam alternatives
-  remain implemented; broader component interpretations are separate work.
+- Component-specific products or broader observing-mode interpretations require
+  separate scientific evidence and approval. The current fixed-single-point
+  policy ignores TP and preserves genuine 7m/12m branches; TP-only is not a valid
+  normal proposal configuration or a planned supported branch. See the
+  [current decision](evidence/single_point_tp_exclusion_decision_2026-10-16.md).
 - Additional observation/configuration scope and source evidence outside the
   current confirmed contracts.
 - Persistent multi-user report storage and shared execution state, if needed.

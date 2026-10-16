@@ -62,9 +62,10 @@ retrieval example; see the [example](../examples/queue_continuum/README.md).
 Source failures and search completeness remain in the original report.
 Top-level NOT_AGGREGATED never means no duplication was found in a complete search.
 
-Auxiliary Use 7-m?/Use TP? flags do not exclude row-level continuum. Position
-uses the recorded Portal diameter interpretation; all other candidate quantities
-come from that same coherent row/setup.
+TP presence alone does not exclude row-level continuum or supply a diameter.
+Position uses the current [Queue array evidence rules](queue_common.md), including
+operational evidence, absent-field AR inference and unresolved-conflict gates.
+All other candidate quantities come from that same coherent row/setup.
 
 
 For [MIX beam hypotheses](queue_common.md), these same five conditions are

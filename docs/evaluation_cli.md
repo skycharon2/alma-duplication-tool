@@ -166,8 +166,10 @@ Pass `--archive-array-evidence /path/to/aq-manifest.json` with the Archive repla
 or live-TAP option. This is a captured official AQ source-label catalog, not a
 replacement TAP replay. Missing catalog bindings remain UNKNOWN. Source and
 context evidence are included in report v4; Archive mixed labels use complete
-7-m/12-m branches with their own method identity. TP remains physically 12 m
-with unsupported scientific scope. See the
+7-m/12-m branches with their own method identity. TP is retained in source
+provenance but contributes no position diameter and does not suppress a genuine
+7-m or 12-m branch. Unexpected TP-only evidence has no eligible position branch;
+CONTINUUM and LINE remain UNKNOWN. See the
 [adapter contract](archive_array_evidence.md#enable-explicitly).
 
 ## Opt-in Queue common methods
@@ -202,18 +204,24 @@ acceptance commands. Report v4 and top-level `NOT_AGGREGATED` are unchanged.
 
 ## Row-beam correction
 
-`--queue-common` (also included by `--queue-continuum` and `--queue-line`) selects position v5.
-Use 7-m?/Use TP? do not choose D or exclude a row from POS-SINGLE. Operational
-standalone true means 7 m, false means 12 m; absent means the recorded Cycle 13
-Portal 12-m assumption, while invalid remains unknown. This does not extend
-angular/RMS/component branch scope. See [Queue common](queue_common.md).
+`--queue-common` (also included by `--queue-continuum` and `--queue-line`) selects
+the current [Queue common](queue_common.md) methods. Consistent operational
+standalone true selects D7; false selects D12 plus D7 if requested. An absent
+operational field uses the adopted Use 7-m? and fixed band/AR inference. TP never
+adds a diameter or bypasses the required AR evidence. Use TP=true/Use 7-m=false
+retains main-array D12 when operational evidence is absent or consistent;
+standalone true/Use 7-m=false is an unresolved conflict. Invalid or duplicate
+operational fields also remain unresolved. Raw source values are unchanged.
 
 ## Coherent Queue row scope
 
-With `--queue-continuum`, auxiliary flags no longer gate ANGULAR, frequency/RMS
-or the continuum branch. POS-SINGLE v5 and ANGULAR are also the shared common
-criteria used by `--queue-line`; formal Queue LINE then evaluates the bound
-same-row/same-SPW FDM, coverage, resolution and RMS conditions. Broader mosaic,
-moving-target, TP-science and mixed-array interpretation remain outside the
-supported scope. The earlier continuum-only decision remains preserved as dated
+With `--queue-continuum`, the presence of TP alone does not block row-level
+ANGULAR, frequency/RMS or the continuum branch. Unresolved array evidence still
+blocks formal branch scope. POS-SINGLE and ANGULAR are the shared common criteria
+used by `--queue-line`; formal Queue LINE then evaluates the bound same-row/SPW
+FDM, coverage, resolution and RMS conditions. D7/D12 alternatives each evaluate
+complete branches before three-valued OR; conditions are never borrowed across
+diameters. Mosaic and moving-target scientific assessment remain unsupported;
+TP is ignored in this fixed-single-point workflow. The earlier continuum-only
+decision remains preserved as dated
 evidence in [the 2026-09-24 record](evidence/queue_row_continuum_decision_2026-09-24.md).
