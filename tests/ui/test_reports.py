@@ -61,7 +61,7 @@ def test_catalog_render_export_and_pair_identity(reports, monkeypatch):
 
 def test_empty_unknown_and_invalid_page():
     client = create_app({"TESTING": True, "REPORT_DIRECTORY": None}).test_client()
-    assert b"No reports configured" in client.get("/reports").data
+    assert b"No reports yet" in client.get("/reports").data
     assert client.get("/reports/../../etc/passwd").status_code == 404
     assert client.get("/reports/1/download/report").status_code == 404
 
@@ -496,3 +496,20 @@ def test_member_pages_keep_interleaved_contexts_together_and_escape_identity(rep
     assert client.get('/reports/1?page=3').status_code == 404
     assert client.get('/reports/1/download/report').data == raw
     assert client.get('/reports/1/download/inspection').get_json() == inspect_report(deepcopy(doc))
+
+
+def test_unified_library_keeps_both_link_types_without_duplicate_empty_states(reports):
+    from tests.ui.test_live_source import line_form, live_config, ARCHIVE_REPLAY
+    app = create_app(live_config(LIVE_ARCHIVE=False, REPORT_DIRECTORY=reports,
+                                OFFLINE_ARCHIVE_REPLAY=str(ARCHIVE_REPLAY)))
+    client = app.test_client()
+    response = client.post('/proposed', data=line_form())
+    assert response.status_code == 303
+    html = client.get('/reports').text
+    assert html.count('class="report-library-list"') == 1
+    assert response.location in html and '/reports/1' in html
+    assert html.index(response.location) < html.index('href="/reports/1"')
+    assert 'Preloaded' in html and 'This browser' in html
+    assert 'No reports yet' not in html
+    assert '<h2>Recent assessments</h2>' not in html
+    assert '<h2>Saved reports</h2>' not in html
