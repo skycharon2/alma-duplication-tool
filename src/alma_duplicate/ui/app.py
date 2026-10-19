@@ -6,7 +6,8 @@ from contextlib import nullcontext
 from dataclasses import replace
 import weakref
 
-from flask import Flask, Response, abort, redirect, render_template, request, url_for
+from flask import Flask, Response, abort, redirect, render_template, request, session, url_for
+from secrets import token_hex
 
 from alma_duplicate.progress import observe_progress
 from alma_duplicate.ui.progress import ProgressStore
@@ -47,6 +48,8 @@ def _env_flag(name):
 def create_app(config=None):
     """Create the browser application without accessing assessment sources."""
     app = Flask(__name__)
+    app.config.update(SECRET_KEY=token_hex(32), SESSION_COOKIE_NAME='alma_report_history',
+                      SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax')
     app.config["MAX_CONTENT_LENGTH"] = 1024 * 1024
     app.config["REPORT_DIRECTORY"] = os.environ.get("ALMA_UI_REPORT_DIR")
     app.config["OFFLINE_ARCHIVE_REPLAY"] = os.environ.get("ALMA_UI_ARCHIVE_REPLAY")
@@ -94,7 +97,9 @@ def create_app(config=None):
 
     @app.get("/reports")
     def report_index():
-        return render_template("reports.html", reports=reports)
+        return render_template("reports.html", reports=reports,
+                               recent_runs=runs.summaries(session.get('report_history', [])),
+                               retention_hours=runs.max_age / 3600)
 
     def artifact(report_id):
         if report_id not in reports:
@@ -304,6 +309,8 @@ def create_app(config=None):
                                     "archive_connection", "AUTO")).assess(document)
                                 if assessment.document is not None:
                                     run_id = runs.add(document, assessment)
+                                    history = session.get('report_history', [])
+                                    session['report_history'] = ([run_id] + history)[:20]
                                     report_url = url_for("run_view", report_id=run_id)
                                     return {"report_url": report_url} if token else redirect(report_url, code=303)
                                 execution_error = "Assessment returned no report. Review input readiness."

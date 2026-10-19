@@ -289,6 +289,21 @@ class RunStore:
                         remaining_minutes=max(0, math.ceil((item.expires_at - self._clock()) / 60)))
             return data
 
+    def summaries(self, run_ids):
+        """List only explicitly supplied browser links, without loading contexts."""
+        with self._lock:
+            self._prune_locked()
+            result = []
+            for run_id in dict.fromkeys(run_ids):
+                item = self._runs.get(run_id)
+                if item is None:
+                    continue
+                projection = json.loads((item.directory / 'view.json').read_bytes())
+                result.append({'id': run_id, 'target': projection['summary']['target'],
+                               'generated_at': projection['document'].get('generated_at'),
+                               'status': item.status})
+            return result
+
     def open_download(self, run_id, kind):
         if kind not in {'report', 'inspection', 'request'}:
             raise ValueError('Unknown download kind')
