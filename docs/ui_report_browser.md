@@ -465,3 +465,19 @@ and an identity appendix with text-report references. Embedded metadata retains
 the exported rows and viewport state. It does not retrieve additional batches or
 recompute results. Report links, especially temporary run links, may expire;
 retain the original report JSON separately for durable scientific provenance.
+
+### Recent browser assessments
+
+The Existing reports page lists Recent assessments separately from operator-selected
+Saved reports. On successful report publication, the browser receives a signed,
+HttpOnly, SameSite=Lax session cookie containing up to 20 recent run links. Only
+those browser links are listed, newest first; the server does not enumerate other
+visitors' reports. Listing reads report projection metadata, not candidate contexts,
+and never re-runs a search or extends retention. Expired and evicted runs disappear.
+
+This is navigation history, not authentication or permanent storage: existing run
+URLs retain their share-by-link behavior. Clearing cookies removes history. The
+default cookie signing key and temporary run store both belong to one application
+instance; a restart ends access. Use a single worker with threads for this temporary
+browser workflow. Download important reports before restarting. Reports created
+before history tracking was enabled cannot be recovered from the new cookie.
