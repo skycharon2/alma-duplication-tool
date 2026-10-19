@@ -49,4 +49,4 @@ def test_evicted_runs_are_removed_and_reading_does_not_extend_expiry():
 def test_validation_does_not_add_a_report():
     client = app_for().test_client()
     client.post('/proposed', data=line_form('validate'))
-    assert 'No retained assessments for this browser' in client.get('/reports').text
+    assert 'No reports yet' in client.get('/reports').text

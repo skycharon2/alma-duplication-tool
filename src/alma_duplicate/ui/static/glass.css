@@ -315,3 +315,9 @@ input[type="text"], .proposal-page .proposed-form input[type="text"],
 .proposal-page .archive-panel-footer button { padding: 8px 22px; border: 0; border-radius: 9px; background: #2468a0; color: white; font-size: 13px; font-weight: 600; cursor: pointer; }
 .archive-connection-panel button:focus-visible, .archive-connection-panel select:focus-visible, .archive-details-button:focus-visible { outline: 3px solid #2468a0; outline-offset: 3px; }
 @media (forced-colors: active) { .proposal-page .archive-connection-panel { background: Canvas; color: CanvasText; border-color: ButtonText; backdrop-filter: none; } }
+
+.report-library-welcome { padding: 44px 28px; text-align: center; }
+.report-library-welcome h2 { margin: 0 0 10px; color: var(--ink); font-size: 22px; font-weight: 600; }
+.report-library-welcome p { margin: 0 0 22px; }
+.report-library-welcome .button { display: inline-flex; }
+.report-retention-note { margin: 16px 4px 0; max-width: 78ch; color: var(--muted); font-size: 12px; line-height: 1.6; }

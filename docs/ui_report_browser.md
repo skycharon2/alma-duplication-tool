@@ -468,8 +468,10 @@ retain the original report JSON separately for durable scientific provenance.
 
 ### Recent browser assessments
 
-The Existing reports page lists Recent assessments separately from operator-selected
-Saved reports. On successful report publication, the browser receives a signed,
+The Existing reports page uses one list: recent browser assessments first, then
+operator-selected reports. Small source labels distinguish browser reports from
+preloaded reports. When both sources are empty, a single empty state links to a
+new assessment; retention guidance appears below the list. On successful report publication, the browser receives a signed,
 HttpOnly, SameSite=Lax session cookie containing up to 20 recent run links. Only
 those browser links are listed, newest first; the server does not enumerate other
 visitors' reports. Listing reads report projection metadata, not candidate contexts,
