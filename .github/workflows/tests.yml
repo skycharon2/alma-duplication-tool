@@ -29,7 +29,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "22"
-      - run: node --test tests/ui/visualization_view.test.cjs
+      - run: node --test tests/ui/visualization_view.test.cjs tests/ui/continuum_choice.test.cjs
       - run: node --check src/alma_duplicate/ui/static/visualization.js
 
   lint:

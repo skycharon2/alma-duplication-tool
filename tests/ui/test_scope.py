@@ -133,7 +133,7 @@ def test_type_specific_location_guidance(client):
     data = form()
     data["action"] = "scope"
     html = client.post("/proposed", data=data).get_data(as_text=True)
-    assert "search scope controls candidate retrieval" in html
+    assert "Retrieval radius is separate from the scientific position test" in html
     data["geometry"] = "MOSAIC"
     html = client.post("/proposed", data=data).get_data(as_text=True)
     assert "more than 50% of the proposed pointings" in html
@@ -155,8 +155,8 @@ def test_requested_windows_and_alternative_conditions_match_wire_contract(client
     assert "Requested line 1" not in html
     assert "Window central frequency (REST or SKY)" in html
     assert "every window need not pass" in html
-    assert "does not require both spectral routes to pass" in html
-    assert "interprets that bandwidth as usable bandwidth" in html
+    assert "complete branches are evaluated independently: either can qualify" in html
+    assert "This project uses usable bandwidth" in html
     data["action"] = "download"
     document = client.post("/proposed", data=data).get_json()
     assert len(document["request"]["spectral_windows"]) == 1

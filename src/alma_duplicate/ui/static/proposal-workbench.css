@@ -1,4 +1,9 @@
 /* The observation workbench shares the existing form and backend contract. */
+.proposal-page .purpose-option { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.proposal-page .purpose-rules-button { border: 0; background: transparent; color: #00618d; font: inherit; padding: 8px 4px; cursor: pointer; }
+.proposal-page .purpose-rules-button:focus-visible { outline: 2px solid #007bb1; outline-offset: 2px; }
+.proposal-page .purpose-rules-panel { width: min(540px, calc(100vw - 32px)); line-height: 1.6; }
+.proposal-page .purpose-rules-panel li + li { margin-top: 8px; }
 .proposal-page .proposal-intro { margin: 0 0 16px; padding: 8px 12px; border: 1px solid var(--border); background: white; }
 .proposal-page .proposal-layout { grid-template-columns: minmax(0, 1fr) 248px; gap: 22px; }
 .proposal-page .proposal-summary { display: block; top: 16px; max-height: calc(100vh - 32px); scrollbar-width: thin; }
