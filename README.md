@@ -28,37 +28,137 @@ prerequisites, not successful retrieval or a duplication verdict. See the
 [mapping boundary](docs/data_model.md#spectral-mapping-boundary) for current
 whole-result spectral validation and future per-quantity usability.
 
-## Installation
+## Run locally from GitHub
 
-Use Python 3.11 or later. From the repository root:
+For a local browser test, follow the steps below. **You do not need a copy of
+this project's local `data` folder:** the Queue downloader can acquire the
+official CSV on your computer. Operational CSV snapshots are not committed to
+Git. The small CSV fixtures included in the repository are synthetic or reduced
+engineering datasets, not the full current Queue.
+
+These commands use **macOS or Linux**, Python 3.11+, and a terminal opened in the
+project folder (for example, VS Code's integrated terminal). On Windows, use
+WSL with a Linux Python environment for this workflow: managed Queue commands
+use POSIX file locking and are not native PowerShell commands.
+Internet access is needed to install dependencies, download Queue data and query
+live Archive services.
+
+### 1. Download and install
+
+Clone the repository, or use GitHub's **Code → Download ZIP**, extract it and
+open the extracted project folder. If cloning:
 
 ```bash
-python -m venv .venv
+git clone https://github.com/skycharon2/alma-duplication-tool.git
+cd alma-duplication-tool
+```
+
+From the project root (the folder containing `pyproject.toml`):
+
+```bash
+python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[ui]"
 ```
 
-For the browser interface, also install the optional UI dependencies:
+Confirm that `python3` is version 3.11 or later before creating the environment.
+For development or notebooks, additionally install `.[dev]`; it is not required
+to launch the browser interface.
+
+### 2. Download and activate the initial Queue snapshot
+
+Skip this step for Archive-only testing. To test real Queue observations, run:
 
 ```bash
-python -m pip install -e ".[ui]"
-python -m flask --app alma_duplicate.ui.app:create_app run
+python -m alma_duplicate.cli.queue_update --once \
+  --store-root data/cache/queue-snapshots
 ```
 
-Open the local URL printed by Flask. The home route opens the [proposed form](docs/ui_proposed_form.md)
-at `/proposed`, which validates inputs and exports request JSON. Configure the
-[browser assessment flow](docs/ui_offline_assessment.md) with Archive replay,
-live Archive TAP and/or a Queue CSV and view each run's own report. Set
-`ALMA_UI_LIVE_ARCHIVE=1` to opt into live TAP access; live TAP and Archive replay
-are mutually exclusive, and live TAP never implies a live AQ lookup.
-To enable live AQ explicitly, also set `ALMA_UI_LIVE_ARCHIVE_AQ=1` and leave
-`ALMA_UI_ARCHIVE_ARRAY_EVIDENCE` unset. AQ runs after TAP retention; its status
-and query provenance appear separately in the report. See the
-[configuration matrix](docs/ui_offline_assessment.md#explicit-live-aq-configuration).
-The read-only [report browser](docs/ui_report_browser.md) displays backend reports
-and exports their original JSON plus inspection v3. To enable it, generate an
-acceptance run and set `ALMA_UI_REPORT_DIR` to its output directory before starting
-Flask; browse `/reports`. No new assessment is performed by this viewer.
+The command creates local storage, downloads the official CSV and validates it.
+A successful check reports `NEW_VALIDATED` or `UNCHANGED`, with `source_id` and
+`run_id` in its JSON output. Downloading does **not** activate the snapshot.
+If download or validation fails, resolve the reported error before continuing.
+
+Review the source date, checksum and parser warnings in the output and linked
+source/run manifests. Replace both placeholders below with the actual IDs from
+the successful check, then explicitly select that snapshot for assessments:
+
+```bash
+python -m alma_duplicate.cli.queue_active \
+  --store-root data/cache/queue-snapshots activate \
+  --source-id SOURCE_ID_FROM_OUTPUT \
+  --run-id RUN_ID_FROM_OUTPUT \
+  --reason "Reviewed initial official Queue snapshot for local testing"
+
+python -m alma_duplicate.cli.queue_active \
+  --store-root data/cache/queue-snapshots status
+```
+
+Verify that the status identifies the active snapshot before testing Queue.
+Keep the whole snapshot store: the active selection refers to both original CSV
+bytes and parse-run evidence. See [snapshot activation](docs/queue_active_snapshot.md).
+
+### 3. Start the webpage with Archive and Queue
+
+In the same terminal, with the environment still activated:
+
+```bash
+unset ALMA_UI_QUEUE_CSV ALMA_UI_ARCHIVE_REPLAY ALMA_UI_ARCHIVE_ARRAY_EVIDENCE
+unset ALMA_UI_REPORT_DIR
+export ALMA_UI_QUEUE_SNAPSHOT_ROOT="$PWD/data/cache/queue-snapshots"
+export ALMA_UI_LIVE_ARCHIVE=1
+export ALMA_UI_LIVE_ARCHIVE_AQ=1
+
+python -m flask --app alma_duplicate.ui.app:create_app run \
+  --host 127.0.0.1 --port 5051
+```
+
+Open **http://127.0.0.1:5051/proposed** on the same computer. Keep the terminal
+running; press **Ctrl+C** to stop the server. If the port is already occupied,
+choose another port and use the matching URL.
+
+- **Archive + Queue:** use the configuration above and select the desired sources
+  on the form. Archive TAP and AQ retrieve data online; Queue reads the active
+  local snapshot. Check Queue's data-source details in the form.
+- **Archive only:** omit the Queue export above, or run
+  `unset ALMA_UI_QUEUE_SNAPSHOT_ROOT ALMA_UI_QUEUE_CSV` before starting. Select
+  ARCHIVE only. No local CSV is needed.
+- **Queue only:** after activating a snapshot, unset
+  `ALMA_UI_LIVE_ARCHIVE ALMA_UI_LIVE_ARCHIVE_AQ` before starting and select QUEUE only.
+- **Form validation only:** with no assessment sources configured, the form can
+  validate and export inputs; it cannot run a source assessment.
+
+Live TAP alone does not enable live AQ: both flags above are intentional.
+Missing or invalid Queue data is reported as unavailable/failed, not as proof of
+no duplication. Opening the webpage or running an assessment never downloads or
+updates Queue data.
+
+Reports generated by this browser session are accessible through **Existing
+reports** at `/reports`. They are temporary and may expire or disappear on server
+restart; download important reports. `ALMA_UI_REPORT_DIR` is an optional, separate
+setting for preloaded read-only reports, not a requirement for new assessments.
+See [browser source configuration](docs/ui_offline_assessment.md),
+[managed Queue configuration](docs/queue_managed_ui.md) and
+[report browsing](docs/ui_report_browser.md).
+
+### Updating Queue data later
+
+Run the same `queue_update --once` command to check the official source again.
+Changed valid data is saved as a new candidate; it does not overwrite the active
+snapshot. Review it and run `queue_active activate` with its actual IDs to use it
+in subsequent assessments. Existing reports retain their original data identity.
+A successful download today does not mean the CSV's scientific data date is today.
+
+**Scheduled checking requires separate setup.** Cloning the repository or
+starting Flask does not install a background updater. The repository provides
+[Linux systemd timer/service examples](docs/queue_operations_deployment.md).
+They automate acquisition and validation, but adopting a new snapshot still
+requires explicit activation. They do not run automatically on macOS or Windows.
+For a short local test, a manual update check is sufficient.
+
+This launch command is for local testing. Institutional hosting needs a separate
+service, access-control and persistence setup; see the
+[deployment guide](docs/queue_operations_deployment.md).
 
 ## Minimal example
 
