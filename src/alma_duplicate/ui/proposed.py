@@ -15,7 +15,8 @@ def new_row():
 
 
 def initial_form():
-    return {"setup_id": "setup-1", "radius_mode": "AUTO"}, []
+    return {"setup_id": "setup-1", "radius_mode": "AUTO",
+            "sources": ["ARCHIVE", "QUEUE"]}, []
 
 
 def assessment_supported(values):

@@ -44,6 +44,23 @@ def test_initial_and_line_validation(client):
     assert 'REST_FREQUENCY_RETAINED' in html
 
 
+def test_new_form_selects_both_sources(client):
+    html = client.get("/proposed").get_data(as_text=True)
+    for source in ("ARCHIVE", "QUEUE"):
+        assert f'name="sources" value="{source}" checked' in html
+
+
+@pytest.mark.parametrize("sources", [[], ["ARCHIVE"], ["QUEUE"]])
+@pytest.mark.parametrize("action", ["validate", "purpose", "scope"])
+def test_source_deselection_survives_form_actions(client, sources, action):
+    data = MultiDict(fields())
+    data.setlist("sources", sources)
+    data.setlist("action", [action])
+    html = client.post("/proposed", data=data).get_data(as_text=True)
+    for source in ("ARCHIVE", "QUEUE"):
+        assert (f'name="sources" value="{source}" checked' in html) == (source in sources)
+
+
 def test_continuum_confirmation_is_explicit_preserved_and_removable(client):
     data = {"setup_id": "setup-1", "ra": "201.365", "dec": "-43.019",
             "radius": "30", "sources": "ARCHIVE", "intents": "CONTINUUM",
