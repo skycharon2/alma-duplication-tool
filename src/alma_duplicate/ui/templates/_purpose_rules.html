@@ -1,0 +1,27 @@
+{% for purpose, label in [('line', 'Spectral line'), ('continuum', 'Continuum')] %}
+<div id="rules-{{ purpose }}" class="archive-status-panel purpose-rules-panel" popover="auto" role="dialog" aria-labelledby="rules-{{ purpose }}-title">
+<button type="button" class="archive-popover-close" popovertarget="rules-{{ purpose }}" popovertargetaction="hide" aria-label="Close {{ label|lower }} rules">×</button>
+<h3 id="rules-{{ purpose }}-title">{{ label }} · Appendix A</h3>
+<p>For the same comparison observation, all of these conditions must hold:</p>
+<ul>
+<li><strong>Position:</strong> the proposed single pointing lies within the comparison observation's half-power beam.</li>
+<li><strong>Angular resolution:</strong> the proposed resolution differs by a factor of ≤ 2.</li>
+{% if purpose == 'continuum' %}
+<li><strong>Setup:</strong> at least two distinct spectral windows, each with bandwidth &gt; 1.8 GHz. This project uses usable bandwidth; exactly 1.8 GHz does not qualify.</li>
+<li><strong>Sensitivity:</strong> requested aggregate-bandwidth sensitivity is better by a factor of ≤ 2.</li>
+<li><strong>Frequency:</strong> within a factor of 1.3.</li>
+{% else %}
+<li><strong>Coverage and mode:</strong> the centre of any requested FDM window is encompassed by another FDM observation.</li>
+<li><strong>Sensitivity:</strong> requested per-channel sensitivity is better by a factor of ≤ 2 after smoothing to the same spectral resolution. Coverage, mode and sensitivity must belong to the same coherent comparison.</li>
+{% endif %}
+</ul>
+{% if purpose == 'continuum' %}<p>The combined Continuum choice records your setup confirmation; it does not independently verify window widths or confirm duplication. A conflicting complete window list is flagged.</p>{% else %}<p>Selecting Spectral line does not declare FDM or establish these conditions. Enter mode, frequency, resolution and RMS below.</p>{% endif %}
+<p>When both purposes are selected, complete branches are evaluated independently: either can qualify. Conditions cannot be borrowed across branches, array diameters, spectral windows or sources. Missing evidence may leave a result unresolved.</p>
+<details><summary>Scope and other observation types</summary>
+<p>Fixed single pointing uses supported 7m and 12m array evidence; TP does not create a position branch. Retrieval radius is separate from the scientific position test.</p>
+<p>Appendix A identifies moving objects by name. For mosaics, more than 50% of proposed pointings must fall within the half-power beam area covered by the other observation; this is not an overlapping map-area percentage. These rules do not imply that moving-target or mosaic assessment is implemented here. Solar observations are exempt.</p>
+<p>Available methods and missing evidence are shown in the report.</p>
+</details>
+<div class="archive-panel-footer"><span>Scientific conditions</span><button type="button" popovertarget="rules-{{ purpose }}" popovertargetaction="hide">Done</button></div>
+</div>
+{% endfor %}

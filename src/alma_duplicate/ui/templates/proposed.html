@@ -63,8 +63,11 @@
 <details><summary>Setup identity and frequency frame</summary>{{ input('setup_id', 'Setup ID (automatic)', true) }}<p>Frequency frame is recorded as UNKNOWN. No observing reference frame is inferred.</p></details>
 </section>
 <section id="requirements" tabindex="-1" {% if purpose_updated %}data-purpose-updated{% endif %}><h2>Scientific requirements</h2>
-<div class="form-pair science-shared"><div>{{ quantity('angular', 'Planned angular resolution', ['arcsec','mas'], 'arcsec') }}</div><div><fieldset id="intents" class="choice-group"><legend>What should this observation be checked for?</legend><div class="inline-choices">{% for intent, label in [('LINE','Spectral line'),('CONTINUUM','Continuum')] %}<label><input type="checkbox" name="intents" value="{{ intent }}" {% if intent in values.get('intents', []) %}checked{% endif %}>{{ label }}</label>{% endfor %}</div>{{ messages('intents') }}</fieldset>
-<p class="field-note">Select either or both.</p></div></div>
+<div class="form-pair science-shared"><div>{{ quantity('angular', 'Planned angular resolution', ['arcsec','mas'], 'arcsec') }}</div><div><fieldset id="intents" class="choice-group"><legend>What should this observation be checked for?</legend><div class="inline-choices">{% for intent, label in [('LINE','Spectral line'),('CONTINUUM','Continuum')] %}<div class="purpose-option"><label><input type="checkbox" name="intents" value="{{ intent }}" {% if intent in values.get('intents', []) %}checked{% endif %}{% if intent == 'CONTINUUM' %} aria-describedby="continuum-choice-note"{% endif %}>{{ label }}</label><button type="button" class="purpose-rules-button" popovertarget="rules-{{ intent|lower }}" aria-label="{{ label }} rules">Rules ⓘ</button></div>{% endfor %}</div>{{ messages('intents') }}</fieldset>
+<p class="field-note">Select either or both.</p>
+<p id="continuum-choice-note" class="field-note" data-combined-continuum hidden>By selecting Continuum, I confirm at least two distinct spectral windows, each with usable bandwidth greater than 1.8 GHz.</p>
+<div data-continuum-confirmation><label class="complete-choice"><input type="checkbox" id="continuum_setup_declaration" name="continuum_setup_declaration" aria-describedby="continuum_setup_declaration-notes" {% if values.get('continuum_setup_declaration') == 'on' %}checked{% endif %}> I confirm at least two distinct spectral windows, each with usable bandwidth greater than 1.8 GHz.</label><p class="field-note">Confirm this condition or provide qualifying window evidence. Previously entered Continuum selections do not automatically confirm it.</p></div>
+{{ messages('continuum_setup_declaration') }}</div></div>
 
 
 <div id="shared-redshift">{{ input('redshift', 'Source redshift z (shared by REST frequencies)') }}
@@ -92,12 +95,7 @@
 {{ messages('sensitivities') }}
 
 <div class="continuum-frequency-grid"><div>{{ quantity('representative', 'Representative frequency', ['GHz','MHz','kHz','Hz'], 'GHz') }}</div><div>{{ select('representative_kind', 'Representative frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>{{ quantity('aggregate', 'Planned aggregate RMS', ['mJy/beam','Jy/beam'], 'mJy/beam') }}</div>
-<div class="setup-evidence"><h3>Continuum setup qualification</h3>
-
-<label class="complete-choice"><input type="checkbox" id="continuum_setup_declaration" name="continuum_setup_declaration" aria-describedby="continuum_setup_declaration-notes" {% if values.get('continuum_setup_declaration') == 'on' %}checked{% endif %}> I confirm that this setup contains at least two distinct spectral windows, each with usable bandwidth greater than 1.8 GHz.</label>
-{{ messages('continuum_setup_declaration') }}
-<p class="field-note">Provide this confirmation or qualifying window details below.</p><details class="field-help"><summary>About this confirmation</summary><p>This project interprets that bandwidth as usable bandwidth. Exactly 1.8 GHz does not qualify. This records your declaration; it does not independently verify window widths. A conflicting complete window list is flagged.</p></details>
-</div><details {% if stale_ids %}open{% endif %}><summary>Contributing windows (optional)</summary><fieldset id="aggregate_windows" class="choice-group" tabindex="-1"><legend>Windows contributing to the declared aggregate RMS</legend>
+<details {% if stale_ids %}open{% endif %}><summary>Contributing windows (optional)</summary><fieldset id="aggregate_windows" class="choice-group" tabindex="-1"><legend>Windows contributing to the declared aggregate RMS</legend>
 {% if not rows and not stale_ids %}<p class="field-note">No window list is required to declare the aggregate RMS for this setup.</p>{% endif %}
 {% for row in rows %}<label><input type="checkbox" name="aggregate_windows" value="{{ values[row + '_id'] }}" {% if values[row + '_id'] in selected_windows %}checked{% endif %}>Window {{ loop.index }}{% if line_layout %} (same requested window){% endif %}</label>{% endfor %}
 {% for window_id in stale_ids %}<label class="stale-reference"><input type="checkbox" name="aggregate_windows" value="{{ window_id }}" checked>Unavailable window: {{ window_id }}</label>{% endfor %}
@@ -123,7 +121,7 @@
 <label class="complete-choice"><input type="checkbox" id="setup_complete" name="setup_complete" {% if values.get('setup_complete') == 'on' %}checked{% endif %}> I have listed every window in this setup</label>{{ messages('setup_complete') }}
 <p class="field-note">Confirm only if the list is complete, including windows beyond the lines of interest. An incomplete list cannot establish an exhaustive negative LINE conclusion. This is separate from the continuum setup declaration.</p></details>
 </section>
-{% include '_appendix_a.html' %}
+{% include '_purpose_rules.html' %}
 <section id="search"><div class="section-title"><h2>Data sources</h2>{{ help('sources', 'data sources') }}</div>
 <div class="form-pair">
 <fieldset id="sources" class="choice-group"><legend>Sources</legend><div class="inline-choices">{% for source in ['ARCHIVE','QUEUE'] %}<label><input type="checkbox" name="sources" value="{{ source }}" {% if source in values.get('sources', []) %}checked{% endif %}>{{ source }}</label>{% endfor %}</div>{{ messages('sources') }}</fieldset></div>
@@ -196,5 +194,6 @@
 </aside></div></form>
 <aside id="field-guide" class="help-popover" role="dialog" aria-modal="false" aria-labelledby="guide-title" hidden><header class="popover-header"><h2 id="guide-title"></h2><button type="button" id="close-guide" aria-label="Close help">×</button></header><div id="guide-content"></div></aside>
 <script src="{{ url_for('static', filename='proposal-workbench.js') }}" defer></script>
+<script src="{{ url_for('static', filename='continuum-choice.js') }}" defer></script>
 <script src="{{ url_for('static', filename='proposed.js') }}" defer></script>
 {% endblock %}

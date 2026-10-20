@@ -440,3 +440,15 @@ def test_workbench_keeps_unique_shared_and_window_controls(client, purposes):
     for asset in ("proposal-workbench.css", "proposal-workbench.js"):
         assert f'/static/{asset}' in html
         assert client.get(f'/static/{asset}').status_code == 200
+
+
+def test_purpose_rules_are_separate_non_submitting_popovers(client):
+    html = client.get('/proposed').get_data(as_text=True)
+    for purpose in ('line', 'continuum'):
+        assert f'popovertarget="rules-{purpose}"' in html
+        assert f'id="rules-{purpose}"' in html
+    assert 'class="appendix-guide"' not in html
+    assert 'Continuum setup qualification</h3>' not in html
+    assert 'By selecting Continuum, I confirm' in html
+    assert 'data-continuum-confirmation' in html  # Accessible without JavaScript.
+    assert 'name="continuum_setup_declaration"' in html
