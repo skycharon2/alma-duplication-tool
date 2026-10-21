@@ -1,0 +1,68 @@
+{
+  "experiment": "Archive s_region vs. science-FIELD circular beam-union model",
+  "scope": "one public 7m Execution Block, not full Member completion",
+  "policy_verdict": "NOT_EVALUATED",
+  "footprint_semantics": "not established by this comparison",
+  "s_region_polygon_model": "straight edges in local azimuthal-equidistant projection; approximate",
+  "beam_union_model": "isotropic circular half-power beams; exploratory coefficient sweep",
+  "project_code": "2021.2.00176.S",
+  "target": "SPT0303-59",
+  "member_ous_uid": "uid://A001/X15aa/Xe5",
+  "asdm_uid": "uid://A002/Xfb8480/X4f37",
+  "frequency_ghz": 350.9853598277315,
+  "diameter_m": 7.0,
+  "field_ids": [
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+  ],
+  "field_count": 19,
+  "polygon_vertices": 42,
+  "source_sha256": {
+    "tap_xml": "221d9b0cc6a07a3e9ddfbe43cae59c59a39a5a3a1d2ce35817f1dd71e747a0dc",
+    "pointings_csv": "f9a359b6a9924c86f724c5e7fa939720e255e02d84f02b988bfd7b1914642431"
+  },
+  "coefficient_results": [
+    {
+      "coefficient": 1.13,
+      "radius_arcsec": 14.220250346927166,
+      "vertex_to_nearest_field_arcsec": {
+        "min": 14.501042288590678,
+        "mean": 14.506424669032981,
+        "max": 14.510173260501018
+      },
+      "grid": {
+        "step_arcsec": 0.5,
+        "nx": 180,
+        "ny": 307,
+        "pixel_area_arcsec2": 0.25
+      },
+      "raster_counts": {
+        "both": 22419,
+        "polygon_only": 50,
+        "beam_only": 164,
+        "neither": 32627,
+        "boundary_unclassified": 0
+      },
+      "intersection_over_union_raster": 0.990544779746388,
+      "edge_probe_count": 252,
+      "edge_probe_disagreements": 31
+    }
+  ]
+}

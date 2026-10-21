@@ -1,8 +1,8 @@
 # Archive Mosaic pointing evidence
 
-Status: local single-ASDM diagnostic fixtures now exist for both arrays. SPT0303-59 (`uid://A002/Xfb8480/X4f37`, 7m) has 19 science fields; NGC5248 (`uid://A002/Xeaae1d/X1a2`, 12m) has 11. The standalone comparison tests pass. This does not establish full Member completeness or scientific approval of the coverage model.
+Status: local single-ASDM diagnostic fixtures now exist for both arrays. SPT0303-59 (`uid://A002/Xfb8480/X4f37`, 7m) has 19 science fields; NGC5248 (`uid://A002/Xeaae1d/X1a2`, 12m) has 11. The standalone comparison and local extraction tests pass for both samples. This does not establish full Member completeness or scientific approval of the coverage model.
 
-Current files remain in `experiments/mosaic_footprint_ab/data/`; do not move or overwrite them simply to match the prospective receipt layout below. Next work is to document acquisition provenance, validate the extraction path for the supplied 7m Markdown listobs, and establish the completeness scope required by Appendix A implementation.
+Current files remain in `experiments/mosaic_footprint_ab/data/`; do not move or overwrite them simply to match the prospective receipt layout below. Next work is to document acquisition provenance, establish the completeness scope required by Appendix A implementation.
 
 ## First case
 

@@ -50,7 +50,23 @@ At 0.5 arcsec grid spacing and coefficient 1.13, the sampled IoU is approximatel
 
 NGC5248, project `2019.1.01718.S`, ASDM `uid://A002/Xeaae1d/X1a2`, has 11 science fields (FIELD_ID 4–14) and a 33-vertex TAP polygon. At 1 arcsec sampling, coefficient 1.13 gives IoU approximately 0.9538, with 0 polygon-only and 58 beam-only cells. These are local diagnostic results for one ASDM, not a complete Member assessment.
 
-`extract_science_fields.py` currently assumes a fixed line for the MeasurementSet header; the supplied 7m Markdown-wrapped listobs fails that check. Passing CSV-reader tests does not establish that this extraction path works. Preserve the original text and fix the reader with a regression test before claiming end-to-end extraction reproducibility for both samples.
+`extract_science_fields.py` locates a unique MeasurementSet header and checks its exact basename against the TAP ASDM. Regression tests cover the supplied Markdown-wrapped 7m listobs, the plain 12m listobs, and missing, mismatched or ambiguous headers. Both samples can now be extracted from their local listobs snapshots. This verifies local parsing, not remote acquisition provenance or Member completeness.
+
+To reproduce extraction without overwriting the captured CSVs:
+
+```sh
+extract_out=$(mktemp -d /tmp/mosaic-fields-XXXXXX)
+python experiments/mosaic_footprint_ab/extract_science_fields.py \
+  --listobs experiments/mosaic_footprint_ab/data/source_listobs.md \
+  --tap experiments/mosaic_footprint_ab/data/case_E_tap.xml \
+  --array 7m --output "$extract_out/7m.csv"
+python experiments/mosaic_footprint_ab/extract_science_fields.py \
+  --listobs experiments/mosaic_footprint_ab/data/ngc5248_12m_listobs.txt \
+  --tap experiments/mosaic_footprint_ab/data/ngc5248_12m_tap.xml \
+  --array 12m --output "$extract_out/12m.csv"
+```
+
+The array argument is supplied by the caller; extraction does not independently validate dish diameters. See `data/local_fixture_inventory.json` for local file hashes and explicit acquisition-evidence limitations.
 
 ## Method and limitations
 

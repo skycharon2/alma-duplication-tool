@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Produced with astropy.io.votable version 8.0.1
+     http://www.astropy.org/ -->
+<VOTABLE version="1.4" xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ivoa.net/xml/VOTable/v1.3 http://www.ivoa.net/xml/VOTable/VOTable-1.4.xsd">
+ <RESOURCE type="results">
+  <TABLE>
+   <FIELD ID="proposal_id" arraysize="64*" datatype="char" name="proposal_id" ucd="meta.id;obs.proposal" utype="obscore:Provenance.Proposal.identifier" xtype="adql:VARCHAR">
+    <DESCRIPTION>
+     Identifier of proposal to which NO observation belongs.
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="member_ous_uid" arraysize="64*" datatype="char" name="member_ous_uid" xtype="adql:VARCHAR">
+    <DESCRIPTION>
+     Member OUS ID
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="asdm_uid" arraysize="32*" datatype="char" name="asdm_uid" ucd="meta.id" xtype="adql:VARCHAR">
+    <DESCRIPTION>
+     UID of the ASDM containing this Field.
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="target_name" arraysize="256*" datatype="char" name="target_name" ucd="meta.id;src" utype="obscore:Target.Name">
+    <DESCRIPTION>
+     name of intended target
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="s_ra" datatype="double" name="s_ra" ucd="pos.eq.ra" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C1" xtype="adql:DOUBLE">
+    <DESCRIPTION>
+     RA of central coordinates
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="s_dec" datatype="double" name="s_dec" ucd="pos.eq.dec" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C2" xtype="adql:DOUBLE">
+    <DESCRIPTION>
+     DEC of central coordinates
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="frequency" datatype="double" name="frequency" ucd="em.freq;obs;meta.main" unit="GHz" utype="obscore:Char.SpectralAxis.Coverage.Location.refval" xtype="adql:DOUBLE">
+    <DESCRIPTION>
+     Observed (tuned) reference frequency on the sky.
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="s_region" arraysize="*" datatype="char" name="s_region" ucd="pos.outline;obs.field" utype="obscore:Char.SpatialAxis.Coverage.Support.Area" xtype="adql:REGION">
+    <DESCRIPTION>
+     region bounded by observation
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="is_mosaic" arraysize="1" datatype="char" name="is_mosaic" xtype="adql:CHAR">
+    <DESCRIPTION>
+     Flag to indicate if this ASDM represents a mosaic or not.
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="science_observation" arraysize="1" datatype="char" name="science_observation" ucd="meta.code.class;obs" xtype="adql:VARCHAR">
+    <DESCRIPTION>
+     Flag to indicate whether this is a science observation.
+    </DESCRIPTION>
+   </FIELD>
+   <DATA>
+    <TABLEDATA>
+     <TR>
+      <TD>2019.1.01718.S</TD>
+      <TD>uid://A001/X1465/X3f4</TD>
+      <TD>uid://A002/Xeaae1d/X1a2</TD>
+      <TD>NGC5248</TD>
+      <TD>204.38302916241335</TD>
+      <TD>8.885383326537175</TD>
+      <TD>342.4657209709879</TD>
+      <TD>Polygon ICRS 204.386650 8.882317 204.386768 8.881045 204.386175 8.879894 204.385191 8.879278 204.383885 8.879237 204.382864 8.879792 204.382250 8.880735 204.381114 8.881238 204.380390 8.882277 204.379254 8.882780 204.378530 8.883819 204.377632 8.884151 204.376992 8.884745 204.376563 8.885815 204.376768 8.887090 204.377759 8.888133 204.379408 8.888450 204.379248 8.889288 204.379363 8.890003 204.380214 8.891160 204.381444 8.891598 204.382719 8.891316 204.383395 8.890763 204.383808 8.890032 204.384828 8.889618 204.385668 8.888490 204.386688 8.888076 204.387528 8.886948 204.388426 8.886616 204.389066 8.886022 204.389513 8.884662 204.389149 8.883422 204.388168 8.882568</TD>
+      <TD>T</TD>
+      <TD>T</TD>
+     </TR>
+    </TABLEDATA>
+   </DATA>
+  </TABLE>
+ </RESOURCE>
+</VOTABLE>
