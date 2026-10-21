@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <RESOURCE type="results">
+    <INFO name="QUERY_STATUS" value="OK" />
+    <INFO name="QUERY_TIMESTAMP" value="2026-10-20T13:05:40.231" />
+    <INFO name="QUERY" value="SELECT column_name,datatype,unit,description FROM TAP_SCHEMA.columns WHERE table_name='ivoa.obscore'" />
+    <TABLE>
+      <FIELD name="column_name" datatype="char" arraysize="64*">
+        <DESCRIPTION>the column name</DESCRIPTION>
+      </FIELD>
+      <FIELD name="datatype" datatype="char" arraysize="64*">
+        <DESCRIPTION>lists the ADQL datatype of columns in the tableset</DESCRIPTION>
+      </FIELD>
+      <FIELD name="unit" datatype="char" arraysize="64*">
+        <DESCRIPTION>lists the unit used for column values in the tableset</DESCRIPTION>
+      </FIELD>
+      <FIELD name="description" datatype="char" arraysize="512*">
+        <DESCRIPTION>describes the columns in the tableset</DESCRIPTION>
+      </FIELD>
+      <DATA>
+        <TABLEDATA>
+          <TR>
+            <TD>obs_publisher_did</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>publisher dataset identifier</TD>
+          </TR>
+          <TR>
+            <TD>obs_collection</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>short name for the data collection</TD>
+          </TR>
+          <TR>
+            <TD>facility_name</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>telescope name</TD>
+          </TR>
+          <TR>
+            <TD>instrument_name</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>instrument name</TD>
+          </TR>
+          <TR>
+            <TD>obs_id</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>internal dataset identifier</TD>
+          </TR>
+          <TR>
+            <TD>dataproduct_type</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>type of product</TD>
+          </TR>
+          <TR>
+            <TD>calib_level</TD>
+            <TD>int</TD>
+            <TD />
+            <TD>calibration level (2 or 3). 2 if product_type = MOUS, 3 if product_type = GOUS</TD>
+          </TR>
+          <TR>
+            <TD>collections</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Indicates that there are external products</TD>
+          </TR>
+          <TR>
+            <TD>target_name</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>name of intended target</TD>
+          </TR>
+          <TR>
+            <TD>s_ra</TD>
+            <TD>double</TD>
+            <TD>deg</TD>
+            <TD>RA of central coordinates</TD>
+          </TR>
+          <TR>
+            <TD>s_dec</TD>
+            <TD>double</TD>
+            <TD>deg</TD>
+            <TD>DEC of central coordinates</TD>
+          </TR>
+          <TR>
+            <TD>s_fov</TD>
+            <TD>double</TD>
+            <TD>deg</TD>
+            <TD>size of the region covered (~diameter of minimum bounding circle)</TD>
+          </TR>
+          <TR>
+            <TD>s_region</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>region bounded by observation</TD>
+          </TR>
+          <TR>
+            <TD>s_xel1</TD>
+            <TD>int</TD>
+            <TD />
+            <TD>Number of elements along the first spatial axis</TD>
+          </TR>
+          <TR>
+            <TD>s_xel2</TD>
+            <TD>int</TD>
+            <TD />
+            <TD>Number of elements along the second spatial axis</TD>
+          </TR>
+          <TR>
+            <TD>em_xel</TD>
+            <TD>int</TD>
+            <TD />
+            <TD>Number of elements along the spectral axis</TD>
+          </TR>
+          <TR>
+            <TD>t_xel</TD>
+            <TD>int</TD>
+            <TD />
+            <TD>Number of elements along the time axis</TD>
+          </TR>
+          <TR>
+            <TD>pol_xel</TD>
+            <TD>int</TD>
+            <TD />
+            <TD>Number of polarization samples</TD>
+          </TR>
+          <TR>
+            <TD>s_resolution</TD>
+            <TD>double</TD>
+            <TD>arcsec</TD>
+            <TD>typical spatial resolution</TD>
+          </TR>
+          <TR>
+            <TD>t_min</TD>
+            <TD>double</TD>
+            <TD>d</TD>
+            <TD>start time of observation (MJD)</TD>
+          </TR>
+          <TR>
+            <TD>t_max</TD>
+            <TD>double</TD>
+            <TD>d</TD>
+            <TD>end time of observation (MJD)</TD>
+          </TR>
+          <TR>
+            <TD>t_exptime</TD>
+            <TD>double</TD>
+            <TD>s</TD>
+            <TD>exposure time of observation</TD>
+          </TR>
+          <TR>
+            <TD>t_resolution</TD>
+            <TD>double</TD>
+            <TD>s</TD>
+            <TD>typical temporal resolution</TD>
+          </TR>
+          <TR>
+            <TD>em_min</TD>
+            <TD>double</TD>
+            <TD>m</TD>
+            <TD>start spectral coordinate value</TD>
+          </TR>
+          <TR>
+            <TD>em_max</TD>
+            <TD>double</TD>
+            <TD>m</TD>
+            <TD>stop spectral coordinate value</TD>
+          </TR>
+          <TR>
+            <TD>em_res_power</TD>
+            <TD>double</TD>
+            <TD />
+            <TD>typical spectral resolution</TD>
+          </TR>
+          <TR>
+            <TD>pol_states</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>polarization states present in the data</TD>
+          </TR>
+          <TR>
+            <TD>cont_sensitivity_bandwidth</TD>
+            <TD>double</TD>
+            <TD>mJy/beam</TD>
+            <TD>Estimated noise in the aggregated continuum bandwidth. Note this is an indication only, it does not include the effects of flagging or dynamic range limitations.</TD>
+          </TR>
+          <TR>
+            <TD>pwv</TD>
+            <TD>float</TD>
+            <TD>mm</TD>
+            <TD>Estimated precipitable water vapour from the XML_CALWVR_ENTITIES table.</TD>
+          </TR>
+          <TR>
+            <TD>group_ous_uid</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Group OUS ID</TD>
+          </TR>
+          <TR>
+            <TD>member_ous_uid</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Member OUS ID</TD>
+          </TR>
+          <TR>
+            <TD>asdm_uid</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>UID of the ASDM containing this Field.</TD>
+          </TR>
+          <TR>
+            <TD>obs_title</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Case-insensitive search over the project title</TD>
+          </TR>
+          <TR>
+            <TD>type</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Type flags.</TD>
+          </TR>
+          <TR>
+            <TD>scan_intent</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Scan intent list for the observed field.</TD>
+          </TR>
+          <TR>
+            <TD>science_observation</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Flag to indicate whether this is a science observation.</TD>
+          </TR>
+          <TR>
+            <TD>spatial_scale_max</TD>
+            <TD>double</TD>
+            <TD>arcsec</TD>
+            <TD>Due to the fact that radio antennas can not be placed infinitely close, measurements do have a smallest separation which translates into a maximal angular distance beyond which features can not be resolved reliably any more. Adding observations with the ALMA Total Power array can add those missing largest scales.</TD>
+          </TR>
+          <TR>
+            <TD>qa2_passed</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Quality Assessment 2 status: does the Member / Group OUS fulfil the PI's requirements?</TD>
+          </TR>
+          <TR>
+            <TD>bib_reference</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Bibliography code</TD>
+          </TR>
+          <TR>
+            <TD>science_keyword</TD>
+            <TD>char</TD>
+            <TD />
+            <TD />
+          </TR>
+          <TR>
+            <TD>scientific_category</TD>
+            <TD>char</TD>
+            <TD />
+            <TD />
+          </TR>
+          <TR>
+            <TD>pi_userid</TD>
+            <TD>char</TD>
+            <TD />
+            <TD />
+          </TR>
+          <TR>
+            <TD>pi_name</TD>
+            <TD>char</TD>
+            <TD />
+            <TD />
+          </TR>
+          <TR>
+            <TD>spectral_resolution</TD>
+            <TD>double</TD>
+            <TD>kHz</TD>
+            <TD />
+          </TR>
+          <TR>
+            <TD>o_ucd</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>UCD describing the observable axis (pixel values)</TD>
+          </TR>
+          <TR>
+            <TD>access_url</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>URL to download the data</TD>
+          </TR>
+          <TR>
+            <TD>access_format</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Content format of the data</TD>
+          </TR>
+          <TR>
+            <TD>access_estsize</TD>
+            <TD>int</TD>
+            <TD>kbyte</TD>
+            <TD>Estimated size of datasets in kilobytes</TD>
+          </TR>
+          <TR>
+            <TD>proposal_id</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Identifier of proposal to which NO observation belongs.</TD>
+          </TR>
+          <TR>
+            <TD>data_rights</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Access to data.</TD>
+          </TR>
+          <TR>
+            <TD>gal_longitude</TD>
+            <TD>double</TD>
+            <TD>deg</TD>
+            <TD>Galactic longitude of the observation for RA/Dec. Estimated using PyEphem and RA/Dec.</TD>
+          </TR>
+          <TR>
+            <TD>gal_latitude</TD>
+            <TD>double</TD>
+            <TD>deg</TD>
+            <TD>Galactic latitude of the observation for RA/Dec. Estimated using PyEphem and RA/Dec.</TD>
+          </TR>
+          <TR>
+            <TD>band_list</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Space delimited list of bands</TD>
+          </TR>
+          <TR>
+            <TD>em_resolution</TD>
+            <TD>double</TD>
+            <TD>m</TD>
+            <TD>Estimated frequency resolution from all the spectral windows, using median values of channel widths.</TD>
+          </TR>
+          <TR>
+            <TD>bandwidth</TD>
+            <TD>double</TD>
+            <TD>Hz</TD>
+            <TD>Total Bandwidth</TD>
+          </TR>
+          <TR>
+            <TD>antenna_arrays</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Blank-separated list of Pad:Antenna pairs, i.e., A109:DV09 J504:DV02 J505:DV05 for antennas DV09, DV02 and DV05 sitting on pads A109, J504, and J505, respectively.</TD>
+          </TR>
+          <TR>
+            <TD>is_mosaic</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Flag to indicate if this ASDM represents a mosaic or not.</TD>
+          </TR>
+          <TR>
+            <TD>obs_release_date</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>timestamp of date the data becomes publicly available</TD>
+          </TR>
+          <TR>
+            <TD>spatial_resolution</TD>
+            <TD>double</TD>
+            <TD>arcsec</TD>
+            <TD>Average of the maximum and minimum spatial resolution values of all spectral windows</TD>
+          </TR>
+          <TR>
+            <TD>frequency_support</TD>
+            <TD>char</TD>
+            <TD>GHz</TD>
+            <TD>All frequency ranges used by the field</TD>
+          </TR>
+          <TR>
+            <TD>frequency</TD>
+            <TD>double</TD>
+            <TD>GHz</TD>
+            <TD>Observed (tuned) reference frequency on the sky.</TD>
+          </TR>
+          <TR>
+            <TD>velocity_resolution</TD>
+            <TD>double</TD>
+            <TD>m/s</TD>
+            <TD>Estimated velocity resolution from all the spectral windows, from frequency resolution.</TD>
+          </TR>
+          <TR>
+            <TD>obs_creator_name</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>case-insensitive partial match over the full PI name. Wildcards can be used</TD>
+          </TR>
+          <TR>
+            <TD>pub_title</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Case insensitive search through the title of the publication.</TD>
+          </TR>
+          <TR>
+            <TD>first_author</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>The first author as provided by &lt;a href="http://telbib.eso.org"&gt;telbib.eso.org&lt;/a&gt;.</TD>
+          </TR>
+          <TR>
+            <TD>authors</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Full list of first author and all co-authors</TD>
+          </TR>
+          <TR>
+            <TD>pub_abstract</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Case insensitive text search through the abstract of the publication.</TD>
+          </TR>
+          <TR>
+            <TD>publication_year</TD>
+            <TD>int</TD>
+            <TD />
+            <TD>The year the publication did appear in the printed version of the refereed journal.</TD>
+          </TR>
+          <TR>
+            <TD>proposal_abstract</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Text search on the proposal abstract. Only abstracts will be returned which contain the given text. The search is case-insensitive.</TD>
+          </TR>
+          <TR>
+            <TD>schedblock_name</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Name of the Scheduling Block used as a template for executing the ASDM containing this Field.</TD>
+          </TR>
+          <TR>
+            <TD>proposal_authors</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Full name of CoIs .</TD>
+          </TR>
+          <TR>
+            <TD>sensitivity_10kms</TD>
+            <TD>double</TD>
+            <TD>mJy/beam</TD>
+            <TD>Estimated noise in an nominal 10km/s bandwidth. Note this is an indication only, it does not include the effects of flagging or Hanning smoothing, and a 10km/s bandwidth may not be achievable with the data as taken.</TD>
+          </TR>
+          <TR>
+            <TD>lastModified</TD>
+            <TD>char</TD>
+            <TD />
+            <TD>Time stamp of last modification of the metadata</TD>
+          </TR>
+        </TABLEDATA>
+      </DATA>
+    </TABLE>
+    <INFO name="placeholder" value="ignore" />
+  </RESOURCE>
+</VOTABLE>

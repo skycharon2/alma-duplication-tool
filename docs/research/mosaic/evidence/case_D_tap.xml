@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <RESOURCE type="results">
+    <INFO name="QUERY_STATUS" value="OK" />
+    <INFO name="QUERY_TIMESTAMP" value="2026-10-20T13:17:58.079" />
+    <INFO name="QUERY" value="SELECT TOP 1 proposal_id,member_ous_uid,asdm_uid,obs_id,target_name,s_ra,s_dec,s_region,s_fov,is_mosaic,frequency,antenna_arrays,obs_publisher_did,data_rights,science_observation,obs_release_date FROM ivoa.obscore WHERE is_mosaic='T' AND science_observation='T' AND data_rights='Public' AND proposal_id &lt;&gt; '2023.1.00687.S' AND proposal_id &lt;&gt; '2018.1.00707.S'" />
+    <TABLE>
+      <FIELD name="proposal_id" datatype="char" arraysize="64*" ucd="meta.id;obs.proposal" utype="obscore:Provenance.Proposal.identifier" xtype="adql:VARCHAR">
+        <DESCRIPTION>Identifier of proposal to which NO observation belongs.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="member_ous_uid" datatype="char" arraysize="64*" xtype="adql:VARCHAR">
+        <DESCRIPTION>Member OUS ID</DESCRIPTION>
+      </FIELD>
+      <FIELD name="asdm_uid" datatype="char" arraysize="32*" ucd="meta.id" xtype="adql:VARCHAR">
+        <DESCRIPTION>UID of the ASDM containing this Field.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_id" datatype="char" arraysize="64*" ucd="meta.id" utype="obscore:DataID.observationID">
+        <DESCRIPTION>internal dataset identifier</DESCRIPTION>
+      </FIELD>
+      <FIELD name="target_name" datatype="char" arraysize="256*" ucd="meta.id;src" utype="obscore:Target.Name">
+        <DESCRIPTION>name of intended target</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_ra" datatype="double" ucd="pos.eq.ra" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C1" xtype="adql:DOUBLE">
+        <DESCRIPTION>RA of central coordinates</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_dec" datatype="double" ucd="pos.eq.dec" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C2" xtype="adql:DOUBLE">
+        <DESCRIPTION>DEC of central coordinates</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_region" datatype="char" arraysize="*" ucd="pos.outline;obs.field" utype="obscore:Char.SpatialAxis.Coverage.Support.Area" xtype="adql:REGION">
+        <DESCRIPTION>region bounded by observation</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_fov" datatype="double" ucd="phys.angSize;instr.fov" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Bounds.Extent.diameter" xtype="adql:DOUBLE">
+        <DESCRIPTION>size of the region covered (~diameter of minimum bounding circle)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="is_mosaic" datatype="char" xtype="adql:CHAR">
+        <DESCRIPTION>Flag to indicate if this ASDM represents a mosaic or not.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="frequency" datatype="double" ucd="em.freq;obs;meta.main" unit="GHz" utype="obscore:Char.SpectralAxis.Coverage.Location.refval" xtype="adql:DOUBLE">
+        <DESCRIPTION>Observed (tuned) reference frequency on the sky.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="antenna_arrays" datatype="char" arraysize="660*" ucd="meta.code.member;instr.setup" xtype="adql:VARCHAR">
+        <DESCRIPTION>Blank-separated list of Pad:Antenna pairs, i.e., A109:DV09 J504:DV02 J505:DV05 for antennas DV09, DV02 and DV05 sitting on pads A109, J504, and J505, respectively.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_publisher_did" datatype="char" arraysize="33*" ucd="meta.ref.ivoid" utype="obscore:Curation.PublisherDID">
+        <DESCRIPTION>publisher dataset identifier</DESCRIPTION>
+      </FIELD>
+      <FIELD name="data_rights" datatype="char" arraysize="11" ucd="meta.code" utype="obscore:Curation.Rights" xtype="adql:VARCHAR">
+        <DESCRIPTION>Access to data.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="science_observation" datatype="char" ucd="meta.code.class;obs" xtype="adql:VARCHAR">
+        <DESCRIPTION>Flag to indicate whether this is a science observation.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_release_date" datatype="char" arraysize="*" ucd="time.release" utype="obscore:Curation.releaseDate" xtype="adql:TIMESTAMP">
+        <DESCRIPTION>timestamp of date the data becomes publicly available</DESCRIPTION>
+      </FIELD>
+      <DATA>
+        <TABLEDATA>
+          <TR>
+            <TD>2017.1.01675.S</TD>
+            <TD>uid://A001/X1296/X832</TD>
+            <TD>uid://A002/Xc7b4ea/X21f9</TD>
+            <TD>uid://A001/X1296/X832.source.TUK93_122.spw.32</TD>
+            <TD>TUK93_122</TD>
+            <TD>84.92708360397111</TD>
+            <TD>-7.5024997044326485</TD>
+            <TD>Polygon ICRS 84.937414 -7.543254 84.934579 -7.547767 84.930871 -7.548711 84.926961 -7.547441 84.925579 -7.550683 84.922721 -7.552609 84.918893 -7.552609 84.915797 -7.550379 84.885373 -7.475360 84.886127 -7.472017 84.888917 -7.469420 84.892330 -7.468884 84.895511 -7.470254 84.899369 -7.465234 84.902781 -7.464698 84.905963 -7.466068 84.909473 -7.461223 84.913232 -7.460512 84.916414 -7.461882 84.919590 -7.457233 84.923296 -7.456289 84.926865 -7.457696 84.929120 -7.453755 84.932969 -7.452103 84.936341 -7.452850 84.938961 -7.455616 84.968798 -7.529636 84.968045 -7.532979 84.965255 -7.535577 84.961842 -7.536113 84.958660 -7.534743 84.955484 -7.539393 84.951777 -7.540337 84.947866 -7.539067 84.946485 -7.542310 84.943253 -7.544343</TD>
+            <TD>0.10081885633230665</TD>
+            <TD>T</TD>
+            <TD>233.02139747981664</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06</TD>
+            <TD>ADS/JAO.ALMA#2017.1.01675.S</TD>
+            <TD>Public</TD>
+            <TD>T</TD>
+            <TD>2019-11-09T00:00:00.000</TD>
+          </TR>
+        </TABLEDATA>
+      </DATA>
+    </TABLE>
+    <INFO name="placeholder" value="ignore" />
+  </RESOURCE>
+</VOTABLE>

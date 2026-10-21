@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <RESOURCE type="results">
+    <INFO name="standardID" value="ivo://ivoa.net/std/DataLink#links-1.1" />
+    <TABLE>
+      <FIELD name="ID" datatype="char" arraysize="*" ucd="meta.id;meta.main" />
+      <FIELD name="access_url" datatype="char" arraysize="*" ucd="meta.ref.url" />
+      <FIELD name="service_def" datatype="char" arraysize="*" ucd="meta.ref" />
+      <FIELD name="error_message" datatype="char" arraysize="*" ucd="meta.code.error" />
+      <FIELD name="semantics" datatype="char" arraysize="*" ucd="meta.code" />
+      <FIELD name="local_semantics" datatype="char" arraysize="*" ucd="meta.code">
+        <DESCRIPTION>local tag indicating equivalent meaning or role of this link (DataLink-1.1)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="description" datatype="char" arraysize="*" ucd="meta.note" />
+      <FIELD name="content_type" datatype="char" arraysize="*" ucd="meta.code.mime" />
+      <FIELD name="content_length" datatype="long" ucd="phys.size;meta.file" unit="byte" />
+      <FIELD name="content_qualifier" datatype="char" arraysize="*">
+        <DESCRIPTION>the nature of the thing the link will deliver (DataLink-1.1)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="link_auth" datatype="char" arraysize="*" ucd="meta.code">
+        <DESCRIPTION>link supports authentication (DataLink-1.1)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="link_authorized" datatype="boolean" ucd="meta.code">
+        <DESCRIPTION>the current authenticated identity is authorized (DataLink-1.1)</DESCRIPTION>
+      </FIELD>
+      <DATA>
+        <TABLEDATA>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/member.uid___A001_X3733_X169.README.txt</TD><TD/><TD/><TD>#documentation</TD><TD/><TD>Download documentation for ./uid://A001/X3733/X169|README.</TD><TD>text/plain</TD><TD>3524</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A001_X3733_X169_001_of_001.tar</TD><TD/><TD/><TD>#this</TD><TD/><TD>Download dataset of type: null, and class: N/A.</TD><TD>application/x-tar</TD><TD>989965312</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD/><TD>DataLink.2023.1.00687.S_uid___A001_X3733_X169_001_of_001.tar</TD><TD/><TD>#this</TD><TD/><TD/><TD>application/x-votable+xml;content=datalink</TD><TD/><TD/><TD/><TD/></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A001_X3733_X169_auxiliary.tar</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: null, and class: N/A.</TD><TD>application/x-tar</TD><TD>3916213248</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD/><TD>DataLink.2023.1.00687.S_uid___A001_X3733_X169_auxiliary.tar</TD><TD/><TD>#auxiliary</TD><TD/><TD/><TD>application/x-votable+xml;content=datalink</TD><TD/><TD/><TD/><TD/></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11aaa01_X9c53.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>2335698944</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11bfccf_X5d22.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>1542960128</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11bfccf_X6aa1.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>2021437440</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11bfccf_X7113.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>2021454848</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11c1c4a_X1192.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>1709096960</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11c1c4a_X1884.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>1105905664</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11c1c4a_Xc18.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>1536731136</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11c29b6_Xb5a3.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>1616251904</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11c29b6_Xbc37.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>2099623936</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11d56db_X2973.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>2107609088</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11d56db_X4620.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>1797896192</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11d61dd_X4d23.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>1721511936</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11d61dd_X5665.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>880256000</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11dd2e2_X124f0.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>2385438720</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11dd2e2_X128d3.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>2344949760</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11dd2e2_X12ca1.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>2344907776</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11dd2e2_X1995c.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>2385429504</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11dd2e2_X19f84.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>2344962048</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11dd2e2_X1a463.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>2344907776</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11e10bc_Xdf3b.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>2747834368</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>uid://A001/X3733/X169</TD><TD>https://almascience.eso.org/dataPortal/2023.1.00687.S_uid___A002_X11e10bc_Xee36.asdm.sdm.tar</TD><TD/><TD/><TD>#progenitor</TD><TD/><TD>Download dataset of type: , and class: N/A.</TD><TD>application/x-tar</TD><TD>2702138368</TD><TD/><TD>false</TD><TD>true</TD></TR></TABLEDATA>
+      </DATA>
+    </TABLE>
+    <INFO name="placeholder" value="ignore" />
+  </RESOURCE>
+  <RESOURCE type="meta" ID="DataLink.2023.1.00687.S_uid___A001_X3733_X169_001_of_001.tar" utype="adhoc:service">
+    <PARAM name="standardID" datatype="char" arraysize="37" value="ivo://ivoa.net/std/DataLink#links-1.0" />
+    <PARAM name="accessURL" datatype="char" arraysize="96" value="https://almascience.eso.org/datalink/sync?ID=2023.1.00687.S_uid___A001_X3733_X169_001_of_001.tar" />
+    <GROUP name="inputParams" />
+  </RESOURCE>
+  <RESOURCE type="meta" ID="DataLink.2023.1.00687.S_uid___A001_X3733_X169_auxiliary.tar" utype="adhoc:service">
+    <PARAM name="standardID" datatype="char" arraysize="37" value="ivo://ivoa.net/std/DataLink#links-1.0" />
+    <PARAM name="accessURL" datatype="char" arraysize="95" value="https://almascience.eso.org/datalink/sync?ID=2023.1.00687.S_uid___A001_X3733_X169_auxiliary.tar" />
+    <GROUP name="inputParams" />
+  </RESOURCE>
+</VOTABLE>

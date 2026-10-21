@@ -1,0 +1,10 @@
+{
+  "url": "https://almascience.eso.org/datalink/sync",
+  "parameters": {
+    "ID": "uid://A001/X3733/X169"
+  },
+  "http_status": 200,
+  "retrieved_at": "2026-10-20T13:07:49.529284+00:00",
+  "bytes": 10494,
+  "sha256": "dc52ac5391809de0c275c3cda224ecd2423bce61194cb0831b5320922b77cd6e"
+}
