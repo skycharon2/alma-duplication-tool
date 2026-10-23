@@ -258,3 +258,9 @@ review gate, persistent multi-user lifecycle and broader-mode scope.
 - [Archive Mosaic candidate pointing groups](archive_mosaic_groups.md): conservative all-pairs grouping with ambiguity reporting and original records retained.
 
 - [Archive Mosaic footprint input readiness](archive_mosaic_readiness.md): execution-local SPW frequency links, antenna evidence and official AQ array crosschecks.
+
+- [Archive Mosaic footprint diagnostic](archive_mosaic_footprint.md): explicit single-execution/SPW circular half-power union and boundary probes.
+
+- [Archive Mosaic footprint validation](archive_mosaic_footprint_validation.md): per-SPW spherical boundary sweeps and scoped s_region vertex comparisons.
+
+- [OT proposed Mosaic pointings](ot_pointings_backend.md)

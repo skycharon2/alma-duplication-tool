@@ -1,0 +1,9 @@
+{
+  "query": "SELECT TOP 1 proposal_id,member_ous_uid,asdm_uid,target_name,science_observation,is_mosaic,s_region,frequency FROM ivoa.obscore WHERE member_ous_uid='uid://A001/X1284/X28b7' AND asdm_uid='uid://A002/Xc63024/X4c8' AND target_name='IC1954' AND science_observation='T' AND is_mosaic='T'",
+  "url": "https://almascience.eso.org/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=votable&MAXREC=2&QUERY=SELECT+TOP+1+proposal_id%2Cmember_ous_uid%2Casdm_uid%2Ctarget_name%2Cscience_observation%2Cis_mosaic%2Cs_region%2Cfrequency+FROM+ivoa.obscore+WHERE+member_ous_uid%3D%27uid%3A%2F%2FA001%2FX1284%2FX28b7%27+AND+asdm_uid%3D%27uid%3A%2F%2FA002%2FXc63024%2FX4c8%27+AND+target_name%3D%27IC1954%27+AND+science_observation%3D%27T%27+AND+is_mosaic%3D%27T%27",
+  "http_status": 200,
+  "sha256": "89205cabea3986f99c442e634e6a305a269b1169ca64fab878f3f9640f129a3b",
+  "bytes": 3724,
+  "retrieved_at": "2026-10-23T12:24:18.308350+00:00",
+  "scope": "SAMPLED_TOP_1_ROW_NOT_EXECUTION_INVENTORY"
+}
