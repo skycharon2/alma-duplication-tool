@@ -46,8 +46,10 @@ Successful TAP status alone does not prove an exhaustive query. A TOP 1 response
 can be successful and still omit executions. Both coverage outcomes therefore
 retain `MEMBER_COMPLETENESS_NOT_ESTABLISHED` and `NOT_EVALUATED`. This is a saved-row
 reconciler, not a live inventory acquisition or Member-wide completeness claim.
-A subsequent increment must capture and validate an unrestricted inventory request,
-its response limits and target scope before strengthening completeness semantics.
+The [TAP inventory capture](archive_mosaic_discovery.md) command records the fixed
+Member/target query and validates response limits. Supply its receipt with
+`--capture-receipt` to establish captured visible-query scope; Member-wide
+completeness remains unestablished.
 
 ## Validation
 

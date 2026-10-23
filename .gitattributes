@@ -11,3 +11,7 @@ tests/fixtures/archive/array_evidence_2026_10_01/supporting/*-readme.txt binary
 # Preserve captured Mosaic evidence bytes; source trailing whitespace is intentional.
 tests/fixtures/archive/mosaic_pipeline_12m_2026_10_23/listobs.txt -text whitespace=-blank-at-eol
 tests/fixtures/archive/mosaic_pipeline_12m_2026_10_23/metadata.xml -text whitespace=-blank-at-eol
+
+# Preserve raw execution inventory TAP response bytes.
+tests/fixtures/archive/mosaic_inventory_2026_10_23/7m/metadata.xml -text whitespace=-blank-at-eol
+tests/fixtures/archive/mosaic_inventory_2026_10_23/12m/metadata.xml -text whitespace=-blank-at-eol
