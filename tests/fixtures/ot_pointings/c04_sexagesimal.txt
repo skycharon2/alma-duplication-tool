@@ -1,0 +1,5 @@
+RA,Dec,Coordinate Type,Coordinate Units
+--   This signals end of the header
+12:00:00.0000,-30:00:00.000,Absolute,SEXAGESIMAL
+12:00:00.0000,-30:00:00.000,Absolute,SEXAGESIMAL
+12:00:00.0095,-30:00:00.988,Absolute,SEXAGESIMAL

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <RESOURCE type="results">
+    <INFO name="QUERY_STATUS" value="OK" />
+    <INFO name="QUERY_TIMESTAMP" value="2026-10-23T12:24:18.286" />
+    <INFO name="QUERY" value="SELECT TOP 1 proposal_id,member_ous_uid,asdm_uid,target_name,science_observation,is_mosaic,s_region,frequency FROM ivoa.obscore WHERE member_ous_uid='uid://A001/X1284/X28b7' AND asdm_uid='uid://A002/Xc63024/X4c8' AND target_name='IC1954' AND science_observation='T' AND is_mosaic='T'" />
+    <TABLE>
+      <FIELD name="proposal_id" datatype="char" arraysize="64*" ucd="meta.id;obs.proposal" utype="obscore:Provenance.Proposal.identifier" xtype="adql:VARCHAR">
+        <DESCRIPTION>Identifier of proposal to which NO observation belongs.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="member_ous_uid" datatype="char" arraysize="64*" xtype="adql:VARCHAR">
+        <DESCRIPTION>Member OUS ID</DESCRIPTION>
+      </FIELD>
+      <FIELD name="asdm_uid" datatype="char" arraysize="32*" ucd="meta.id" xtype="adql:VARCHAR">
+        <DESCRIPTION>UID of the ASDM containing this Field.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="target_name" datatype="char" arraysize="256*" ucd="meta.id;src" utype="obscore:Target.Name">
+        <DESCRIPTION>name of intended target</DESCRIPTION>
+      </FIELD>
+      <FIELD name="science_observation" datatype="char" ucd="meta.code.class;obs" xtype="adql:VARCHAR">
+        <DESCRIPTION>Flag to indicate whether this is a science observation.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="is_mosaic" datatype="char" xtype="adql:CHAR">
+        <DESCRIPTION>Flag to indicate if this ASDM represents a mosaic or not.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_region" datatype="char" arraysize="*" ucd="pos.outline;obs.field" utype="obscore:Char.SpatialAxis.Coverage.Support.Area" xtype="adql:REGION">
+        <DESCRIPTION>region bounded by observation</DESCRIPTION>
+      </FIELD>
+      <FIELD name="frequency" datatype="double" ucd="em.freq;obs;meta.main" unit="GHz" utype="obscore:Char.SpectralAxis.Coverage.Location.refval" xtype="adql:DOUBLE">
+        <DESCRIPTION>Observed (tuned) reference frequency on the sky.</DESCRIPTION>
+      </FIELD>
+      <DATA>
+        <TABLEDATA>
+          <TR>
+            <TD>2017.1.00886.L</TD>
+            <TD>uid://A001/X1284/X28b7</TD>
+            <TD>uid://A002/Xc63024/X4c8</TD>
+            <TD>IC1954</TD>
+            <TD>T</TD>
+            <TD>T</TD>
+            <TD>Polygon ICRS 52.872747 -51.922569 52.869494 -51.924642 52.864751 -51.925591 52.860431 -51.925169 52.856398 -51.923360 52.854119 -51.919807 52.855476 -51.916300 52.849714 -51.915120 52.846075 -51.912027 52.845666 -51.909342 52.846975 -51.906986 52.845761 -51.904725 52.846175 -51.902039 52.850338 -51.898731 52.855790 -51.897771 52.858520 -51.895917 52.864492 -51.894738 52.868845 -51.892292 52.873193 -51.891705 52.876985 -51.889434 52.881893 -51.888671 52.885684 -51.886400 52.889881 -51.885647 52.893605 -51.885937 52.896895 -51.887053 52.899222 -51.888769 52.903944 -51.889531 52.907224 -51.891314 52.909119 -51.894560 52.907767 -51.898067 52.912466 -51.898828 52.915746 -51.900611 52.917583 -51.903470 52.917174 -51.906156 52.913015 -51.909467 52.907563 -51.910429 52.904834 -51.912285 52.898861 -51.913465 52.894507 -51.915913 52.890157 -51.916500 52.886364 -51.918771 52.881453 -51.919535 52.877659 -51.921806</TD>
+            <TD>232.17385612549617</TD>
+          </TR>
+        </TABLEDATA>
+      </DATA>
+    </TABLE>
+    <INFO name="placeholder" value="ignore" />
+  </RESOURCE>
+</VOTABLE>

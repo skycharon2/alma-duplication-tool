@@ -1,0 +1,5 @@
+RA,Dec,Coordinate Type,Coordinate Units
+--   This signals end of the header
+180.00000,-30.00000,Absolute,DEGREES
+180.00000000003206,-30.00000000002777,Absolute,DEGREES
+180.000039598893,-30.00027434841657,Absolute,DEGREES
