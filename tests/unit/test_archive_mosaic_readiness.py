@@ -108,3 +108,12 @@ def test_spw_ids_remain_local_and_different_frequency_preserved():
     second = parse_spectral_windows(text.replace(row, ' '.join(cells)).encode())
     assert first[16]['spw_id'] == second[16]['spw_id']
     assert first[16]['first_channel_hz'] != second[16]['first_channel_hz']
+
+
+def test_position_readiness_does_not_require_listobs_spectral_data():
+    raw = RAW.replace(b'Ch0(MHz)', b'Ch0(unsupported)')
+    result = execution_readiness(execution(raw), raw, catalog())
+    assert 'spectral_windows' in result['parse_errors']
+    assert all(f['input_status'] == 'NOT_READY' for f in result['fields'])
+    assert all(f['position_status'] == 'EVIDENCE_BOUND' for f in result['fields'])
+    assert all(not f['position_blocking_reasons'] for f in result['fields'])

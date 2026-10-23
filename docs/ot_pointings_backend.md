@@ -213,3 +213,178 @@ The console summarizes inside/total counts and the formal position outcome witho
 printing every circle distance. Exit 0 means the assessment report was generated;
 it does not mean the candidate satisfies all duplication criteria. Exit 2 indicates
 invalid input or execution failure. Existing output files are never overwritten.
+
+## Automatic candidate pointing preparation
+
+The preparation runner connects discovery identities to the existing inventory,
+DataLink, cache, auxiliary inspection and package reconstruction implementations.
+Users no longer supply ASDM IDs, product row indices or per-candidate package paths
+for this acquisition step.
+
+```bash
+python -m alma_duplicate.cli.mosaic_candidate_preparation \
+  --discovery reports/mosaic-dev/ic1954-discovery-acceptance-01/discovery.json \
+  --cache data/cache/archive-auxiliary \
+  --output-dir reports/mosaic-dev/automatic-pointings-01
+```
+
+This command performs live metadata retrieval and may download auxiliary products
+within the existing per-product size/time limits. At most 100 distinct Member/target
+candidates are accepted. Each candidate captures fresh Member/target inventory and
+DataLink evidence, selects exactly one accessible verified auxiliary product, and
+runs the package audit. Downloads reuse the hash-verified auxiliary cache. Multiple
+eligible products are reported as AMBIGUOUS_PRODUCTS, never silently selected.
+Missing products and failures retain their stage and reason. One candidate failure
+does not discard successful candidates. New output directories preserve earlier runs.
+
+POINTINGS_PREPARED means supported package pointings were reconstructed without
+reported unresolved package entries; it does not establish complete Member coverage.
+PARTIAL_EVIDENCE retains available executions and unresolved records. The summary
+also preserves upstream discovery status and recall limitations. A COMPLETED
+preparation run only describes its supplied candidates, not exhaustive discovery.
+No-position-result is not non-duplication.
+
+Preparation now includes automatic AQ array readiness as described below. Selection
+of spectrally applicable SPWs and overall duplication aggregation remain separate work.
+The output package directories feed the existing verified readiness builder. Metadata
+replay is available through injected providers for offline tests; the CLI uses live
+metadata and cached auxiliary content where available.
+
+### Automatic AQ array readiness
+
+Candidate preparation now fetches official AQ source records for each reconstructed
+Member using the existing validated AQ client. Source identity and execution antenna
+diameters are cross-checked by the existing readiness binder. The command no longer
+requires a manually prepared array manifest for this stage.
+
+Each candidate retains `array_acquisition.json` (query provenance, response hashes
+and parsed records) and `readiness.json`. This is live acquisition provenance, not
+an original-response capture manifest; no raw AQ response is fabricated. The readiness
+builder also accepts an in-memory catalog, mutually exclusive with a captured manifest.
+
+A successful run requires pointings and EVIDENCE_BOUND readiness for every supplied
+candidate. AQ failures preserve reconstructed pointings and set readiness_status to
+UNAVAILABLE. Incomplete or conflicting position/array evidence yields NOT_READY. Offline
+replay without an injected array provider explicitly skips AQ and remains INCOMPLETE.
+Listobs spectral selection remains diagnostic; the main Archive assessment uses TAP metadata and shared branch aggregation.
+
+### Metadata responsibilities
+
+OT exports supply proposed pointing positions. Archive auxiliary listobs supply
+candidate science pointing positions and their execution/scan identity. Additional
+listobs setup information is diagnostic evidence only; it does not define a second
+proposal-frequency matching workflow.
+
+Production frequency, bandwidth, angular resolution, spectral resolution and
+sensitivity inputs must come from the existing Archive metadata ingestion and
+comparison contexts used by Single Pointing. Those contexts retain their existing
+unit, association and evidence validation. Mosaic adds candidate pointings and the
+directional POS-MOSAIC criterion; it does not replace the other metadata sources.
+
+The experimental listobs proposal-window routing module and its CLI options have
+been removed. Candidate preparation does not require a proposal frequency interval,
+TOPO-only proposal input, or full containment within an estimated listobs interval.
+Existing execution/SPW footprint diagnostics remain diagnostics and must not be
+mistaken for the metadata-driven comparison interface described below.
+
+## Shared Archive metadata assessment
+
+`assess_archive_mosaic_contexts` in the assessment layer now accepts a validated
+fixed Mosaic request, imported proposed pointings, existing Archive comparison
+contexts, audited package directories keyed by (Member UID, target), and the existing
+AQ array catalog. It loads verified package executions and binds pointings to each
+context's Member, target and ASDM. Wrong candidate identities are errors; absent
+matching execution evidence leaves the position criterion unresolved.
+
+The corresponding `evaluate_mosaic_context` uses the Archive context's canonical
+frequency and bound array diameter for half-power radii. Listobs contributes science
+field coordinates and execution identity only. No listobs SPW selection or approximate
+spectral containment is required by this path. Frequency and continuum RMS evaluators
+are reused directly, as are angular resolution, continuum setup and line-pair numeric
+rules. Continuum and line aggregation explicitly accept POS-MOSAIC; the proposal is
+never relabelled SINGLE_POINTING to bypass a guard. Legacy evaluation defaults remain
+unchanged.
+
+Results include the same per-context criteria, continuum/line branch outcomes,
+line-pair evidence and position coverage. Existing ambiguity, association, missing
+quantity and unapproved-evidence gates remain in force. Pointing completeness and
+boundary limitations still prevent unsupported negative position conclusions. A
+verified majority can satisfy position while another independent criterion fails.
+
+## Automatic assessment entrypoint
+
+`assess_observation(..., mosaic=MosaicAssessmentInput(...))` now runs the Archive
+Mosaic workflow. The CLI exposes the same entrypoint:
+
+```sh
+python -m alma_duplicate.cli.evaluate \
+  --request path/to/mosaic-request.json \
+  --live-archive \
+  --mosaic-pointings path/to/ot-pointings.txt \
+  --mosaic-array 7m \
+  --confirm-fixed-icrs --confirm-complete \
+  --mosaic-margin-arcsec 1 \
+  --mosaic-cache data/cache/archive-auxiliary \
+  --mosaic-workdir reports/mosaic-dev/full-assessment-01 \
+  --output reports/mosaic-dev/full-assessment-01-report.json
+```
+
+The request uses `geometry: "MOSAIC"`, its proposed target name, and the same
+frequency, angular resolution, spectral-window and sensitivity fields as a Single
+Pointing request. Select `ARCHIVE` only. The OT file supplies the position list;
+no replacement central coordinate is required. Use a fresh work directory and
+choose the discovery margin explicitly; the example value is not a validated
+completeness guarantee. Queue and custom candidate prefilter predicates are not
+supported in this workflow and are rejected rather than silently ignored.
+
+The backend discovers candidate identities, acquires auxiliary products, reconstructs
+pointings, obtains AQ array evidence, and fetches full TAP rows with an exact
+Member/target query. Count-first completeness, field descriptors, normalization,
+reconstruction and comparison-context construction reuse the existing Archive client.
+The report retains metadata rows, field descriptors and query provenance alongside
+acquisition receipts and per-context criterion/branch results. Failures remain visible
+per candidate; an empty or incomplete search never establishes non-duplication.
+
+### Position readiness and multi-execution binding
+
+`position_status` and `position_blocking_reasons` describe array/pointing readiness.
+The older `input_status`, SPW links and spectral parse errors remain available for
+experimental listobs diagnostics. Missing FULL_RES labels, missing listobs frequency
+tables and non-TOPO labels do not block the metadata-driven position path.
+
+Execution union requires matching Member/target identity and explicit compatible TAP
+rows for each ASDM. Compatibility requires equal normalized frequency, bandwidth,
+resolution and sensitivity operands, frequency-support content, observing-mode input,
+project and array labels. Distinct local field IDs are qualified by ASDM. A proposed
+row counts once regardless of how many circles cover it. Package-only executions with
+no compatible TAP row are listed in `excluded_executions`; package membership does not
+supply missing spectral associations. Other criteria remain evaluated per Archive
+context, with existing ambiguity gates intact.
+
+Position results distinguish missing pointings, missing array/frequency metadata,
+unbound execution metadata, unconfirmed proposed completeness, boundary uncertainty,
+and insufficient candidate completeness. More than half inside a verified subset can
+satisfy POS-MOSAIC. Exactly half does not satisfy the strict threshold. An uncovered
+subset cannot establish a negative Member-level verdict while completeness is unknown.
+
+### Acceptance scope
+
+Regression tests exercise the common assessment entrypoint, captured three-execution
+listobs reconstruction, automatic product selection/readiness, metadata ingestion,
+multi-execution union, shared continuum/line rules, missing spectral diagnostics,
+incompatible metadata and duplicate-hit counting. Network boundaries are replayed
+for deterministic acceptance; synthetic proposal/metadata identities are explicitly
+marked in tests. These tests do not establish all-sky discovery recall.
+
+UI form wiring and exhaustive candidate discovery are separate remaining work. The
+region prefilter includes public science Mosaic rows and a null-region fallback; its
+recall against reconstructed half-power coverage is still unproven. Results therefore
+remain scoped to the acquired candidates and bound Archive contexts.
+
+A live IC1954 verification on 2026-10-23 returned four complete TAP metadata rows.
+With the saved synthetic 22-point acceptance list, all four contexts satisfied
+POS-MOSAIC using their own Archive frequencies. Only ASDM `uid://A002/Xc63024/X4c8`
+had matching TAP metadata; the two additional package executions remained explicit
+exclusions. Local receipts are `reports/mosaic-dev/ic1954-member-metadata-acceptance-02.json`
+and `reports/mosaic-dev/ic1954-metadata-position-acceptance-01.json`. This verifies the
+metadata/position connection, not a final scientific verdict for a real proposal.

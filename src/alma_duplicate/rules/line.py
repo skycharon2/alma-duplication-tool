@@ -56,7 +56,7 @@ class LinePairEvaluation:
     scope: str = "ONE_PROPOSED_WINDOW_ONE_CANDIDATE_COMPONENT"
 
     def __post_init__(self):
-        if tuple(r.criterion_id for r in self.criteria) != LINE_CRITERIA:
+        if tuple(r.criterion_id for r in self.criteria) not in (LINE_CRITERIA, ("POS-MOSAIC",)+LINE_CRITERIA[1:]):
             raise ValueError(
                 "A line pair requires all six criteria exactly once in order"
             )
@@ -309,33 +309,34 @@ def _numerical(request, context, attempt):
     return tuple(results)
 
 
-def evaluate_line(request, context, common_criteria):
+def evaluate_line(request, context, common_criteria, *, mosaic=False):
     """Build, evaluate AND per pair, then OR complete pairs in this context only."""
     if "LINE" not in request.intents:
         raise ValueError("Line evaluation requires a selected LINE intent")
+    position_id = "POS-MOSAIC" if mosaic else "POS-SINGLE"
     common = {r.criterion_id: r for r in common_criteria}
-    if len(common) != len(common_criteria) or set(common) != {"POS-SINGLE", "ANGULAR"}:
+    if len(common) != len(common_criteria) or set(common) != {position_id, "ANGULAR"}:
         raise ValueError(
             "Line evaluation requires exactly the common position and angular criteria"
         )
     if any(r.context_id != context.context_id for r in common.values()):
         raise ValueError("Common line criteria belong to another context")
-    pairing = build_line_pairs(request, context)
+    pairing = build_line_pairs(request, context, mosaic=mosaic)
     supported = (
-        archive_scope(request, context)
-        and context.evidence.prepared.normalized_metadata.is_mosaic.value is False
+        (archive_scope(request, context) or (mosaic and request.geometry == "MOSAIC" and request.target_kind == "FIXED"))
+        and (mosaic or context.evidence.prepared.normalized_metadata.is_mosaic.value is False)
         and context.evidence.row_link.is_linked
         and not context.alternative_context_ids
         and not {
             "UNIQUE_INTERFEROMETRIC_DIAMETER_REQUIRED",
             "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED",
             "CONFLICTING_POSITION_INTERPRETATION",
-        }.intersection(common["POS-SINGLE"].reasons)
+        }.intersection(common[position_id].reasons)
     )
     pairs = []
     for attempt in pairing.attempts:
         criteria = (
-            common["POS-SINGLE"],
+            common[position_id],
             common["ANGULAR"],
             *_numerical(request, context, attempt),
         )
@@ -365,7 +366,7 @@ def evaluate_line(request, context, common_criteria):
         context.context_id,
         STATUS[truth],
         truth,
-        LINE_CRITERIA,
+        ((position_id,)+LINE_CRITERIA[1:]),
         tuple(reasons),
         method_version="archive_line_context_or_1",
     )

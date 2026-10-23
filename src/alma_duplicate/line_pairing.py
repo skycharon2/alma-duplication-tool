@@ -11,7 +11,7 @@ from alma_duplicate.proposed_line import prepare_line_window
 
 
 def build_line_pairs(
-    request: ProposedObservationRequest, context: ComparisonContext
+    request: ProposedObservationRequest, context: ComparisonContext, *, mosaic=False
 ) -> LinePairBuildResult:
     """Visit every listed window, including out-of-band or incomplete attempts.
 
@@ -35,13 +35,13 @@ def build_line_pairs(
         mode = None
         status = "UNRESOLVED"
         evidence = context.evidence
-        if request.target_kind != "FIXED" or request.geometry != "SINGLE_POINTING":
+        if request.target_kind != "FIXED" or request.geometry != ("MOSAIC" if mosaic else "SINGLE_POINTING"):
             reasons.append("FIXED_SINGLE_POINT_REQUEST_REQUIRED")
             status = "UNSUPPORTED"
         elif not isinstance(evidence, ArchiveContextEvidence):
             reasons.append("ARCHIVE_LINE_MAPPING_REQUIRED")
             status = "UNSUPPORTED"
-        elif evidence.prepared.normalized_metadata.is_mosaic.value is not False:
+        elif not mosaic and evidence.prepared.normalized_metadata.is_mosaic.value is not False:
             reasons.append("SINGLE_FIELD_CANDIDATE_REQUIRED")
             status = "UNSUPPORTED"
         else:

@@ -82,8 +82,15 @@ class ArchiveQuerySpec:
     angular_resolution_max_arcsec: float | None = None
 
     spatial_strategy: str = "REGION"
+    member_ous_uid: str | None = None
+    target_name: str | None = None
 
     def __post_init__(self) -> None:
+        if (self.member_ous_uid is None) != (self.target_name is None):
+            raise ValueError("Member and target must be supplied together")
+        if self.member_ous_uid is not None:
+            if any(not isinstance(v, str) or not v.strip() for v in (self.member_ous_uid, self.target_name)):
+                raise ValueError("Nonempty Member and target required")
         if self.spatial_strategy not in {"REGION", "CENTER"}:
             raise ValueError("Unknown spatial strategy")
         _validate_finite_real("ra_deg", self.ra_deg)
@@ -169,6 +176,8 @@ def normalize_query_parameters(
     """Return immutable, canonical query parameters."""
 
     parameters = _legacy_parameters(spec)
+    if spec.member_ous_uid is not None:
+        return (("member_ous_uid", spec.member_ous_uid), ("target_name", spec.target_name)) + parameters
     if spec.spatial_strategy == "CENTER":
         return (("spatial_strategy", "CENTER"),) + parameters
     return parameters
@@ -278,6 +287,11 @@ def build_where_clause(
             "1 = CONTAINS(POINT('ICRS', s_ra, s_dec), "
             f"CIRCLE('ICRS', {ra_text}, {dec_text}, {radius_text}))"
         ]
+
+    if spec.member_ous_uid is not None:
+        member = spec.member_ous_uid.replace("'", "''")
+        target = spec.target_name.replace("'", "''")
+        clauses = [f"member_ous_uid = '{member}'", f"target_name = '{target}'"]
 
     if spec.science_only:
         clauses.append("science_observation = 'T'")

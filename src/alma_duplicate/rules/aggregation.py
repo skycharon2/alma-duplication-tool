@@ -49,7 +49,8 @@ class BranchAssessment:
 CONTINUUM_CRITERIA = ("POS-SINGLE", "ANGULAR", "CONT-SETUP", "CONT-FREQ", "CONT-RMS")
 
 
-def aggregate_continuum(context, criteria, *, supported=True, queue_method=False):
+def aggregate_continuum(context, criteria, *, supported=True, queue_method=False, mosaic=False):
+    required = (("POS-MOSAIC",) + CONTINUUM_CRITERIA[1:]) if mosaic else CONTINUUM_CRITERIA
     results = {}
     for result in criteria:
         expected_context = None if result.criterion_id == "CONT-SETUP" else context.context_id
@@ -68,7 +69,7 @@ def aggregate_continuum(context, criteria, *, supported=True, queue_method=False
             raise ValueError("Queue association belongs to another source row")
     reasons = []
     values = []
-    for name in CONTINUUM_CRITERIA:
+    for name in required:
         r = results.get(name)
         if r is None or not r.eligible_for_formal_aggregation:
             values.append(Truth.UNKNOWN)
@@ -94,4 +95,4 @@ def aggregate_continuum(context, criteria, *, supported=True, queue_method=False
         from alma_duplicate.rules.queue_continuum import DECISION_REF as QUEUE_REF
         kwargs = dict(method_version="queue_continuum_branch_2", decision_refs=(QUEUE_REF,))
     return BranchAssessment("CONTINUUM", context.context_id, status, truth,
-                            CONTINUUM_CRITERIA, tuple(reasons), **kwargs)
+                            required, tuple(reasons), **kwargs)
