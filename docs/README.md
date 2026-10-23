@@ -254,3 +254,7 @@ review gate, persistent multi-user lifecycle and broader-mode scope.
 - [Archive Mosaic package execution audit](archive_mosaic_package_audit.md): real IC1954 multi-execution evidence and TAP/package discrepancy handling.
 
 - [Archive Mosaic pointing comparison](archive_mosaic_pointings.md): cross-execution field-centre diagnostics with explicit tolerance and preserved evidence.
+
+- [Archive Mosaic candidate pointing groups](archive_mosaic_groups.md): conservative all-pairs grouping with ambiguity reporting and original records retained.
+
+- [Archive Mosaic footprint input readiness](archive_mosaic_readiness.md): execution-local SPW frequency links, antenna evidence and official AQ array crosschecks.
