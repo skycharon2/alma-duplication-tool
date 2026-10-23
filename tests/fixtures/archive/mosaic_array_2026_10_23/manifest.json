@@ -1,0 +1,22 @@
+[
+  {
+    "file": "response.json",
+    "sha256": "3296e9ddc0d5f05f3c7da7fba8feced4e4e5476fcb72d6a7cf7aa15122ec3bb7",
+    "retrieved_at": "2026-10-23T10:24:30.252705+00:00",
+    "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+    "request_body": {
+      "size": 100,
+      "track_total_hits": true,
+      "_source": [
+        "mous",
+        "sourceName",
+        "array"
+      ],
+      "query": {
+        "term": {
+          "mous": "uid://A001/X1284/X28b7"
+        }
+      }
+    }
+  }
+]
