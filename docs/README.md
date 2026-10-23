@@ -79,7 +79,9 @@ They are not current population counts or Python class definitions.
 [Local execution reconstruction](archive_mosaic_backend.md) documents the supported
 listobs parser and execution-level evidence objects. [Product discovery](archive_mosaic_products.md)
 documents Member-bound DataLink metadata acquisition, offline replay, and saved
-receipts. These standalone backend increments do not enable Mosaic assessment in
+receipts. [Auxiliary acquisition](archive_mosaic_acquisition.md) covers bounded
+downloads, verified cache reuse, and nested weblog listobs inspection.
+These standalone backend increments do not enable Mosaic assessment in
 the browser or establish complete Member pointing inventories.
 
 ## UI reading order
