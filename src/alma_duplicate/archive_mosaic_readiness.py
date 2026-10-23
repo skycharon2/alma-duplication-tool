@@ -65,7 +65,12 @@ def execution_readiness(execution, raw, catalog=None):
         linked = [windows[sid] for sid in ids if sid in windows]
         # Names are retained as explicit source labels, not an automatic observing-mode decision.
         full_res = [w['spw_id'] for w in linked if w['name'].endswith('#FULL_RES')]
-        reasons = list(array['reasons'])
+        position_reasons = list(array['reasons'])
+        if antennas is None:
+            position_reasons.append('ANTENNA_TABLE_UNAVAILABLE')
+        elif len(antennas['diameters_m']) != 1:
+            position_reasons.append('MIXED_DISH_EXECUTION')
+        reasons = list(position_reasons)
         if missing or not ids:
             reasons.append('SCIENCE_SPW_LINKS_INCOMPLETE')
         if not full_res:
@@ -78,6 +83,8 @@ def execution_readiness(execution, raw, catalog=None):
             reasons.append('MIXED_DISH_EXECUTION')
         fields.append(dict(asdm_uid=execution['asdm_uid'], **field,
             spectral_windows=linked, missing_spw_ids=missing, explicit_full_res_spw_ids=full_res,
+            position_status='EVIDENCE_BOUND' if not position_reasons else 'NOT_READY',
+            position_blocking_reasons=sorted(set(position_reasons)),
             input_status='EVIDENCE_BOUND' if not reasons else 'NOT_READY', blocking_reasons=sorted(set(reasons)),
             footprint_status='NOT_EVALUATED', footprint_requirements=[
                 'SELECT_FREQUENCY_AND_SPW_POLICY', 'VALIDATE_CHANNEL_EDGE_REQUIREMENTS',
@@ -87,9 +94,11 @@ def execution_readiness(execution, raw, catalog=None):
                 parse_errors=errors, fields=fields)
 
 
-def build_readiness(directory: Path, *, array_catalog: Path | None = None):
+def build_readiness(directory: Path, *, array_catalog: Path | None = None, catalog=None):
     executions, provenance = load_package_executions(directory)
-    catalog = load_archive_array_catalog(array_catalog) if array_catalog is not None else None
+    if array_catalog is not None and catalog is not None:
+        raise ValueError("Supply a captured array catalog or a live catalog, not both")
+    catalog = load_archive_array_catalog(array_catalog) if array_catalog is not None else catalog
     sources = {e['asdm_uid']: e for e in provenance['execution_evidence']}
     reports = []
     for execution in executions:

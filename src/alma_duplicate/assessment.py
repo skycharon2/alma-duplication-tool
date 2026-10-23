@@ -69,7 +69,7 @@ def assess_observation(request: dict, search_options: dict, *,
                        options: AssessmentOptions = AssessmentOptions(),
                        sources: AssessmentSources = AssessmentSources(),
                        input_sha256: str | None = None,
-                       report_detail: str = 'full') -> AssessmentResult:
+                       report_detail: str = 'full', mosaic=None) -> AssessmentResult:
     """Run one assessment, preserving missing-source and independent branch states.
 
     COMPLETED describes execution only, never a search-wide duplication verdict.
@@ -86,6 +86,39 @@ def assess_observation(request: dict, search_options: dict, *,
             report_document(SolarExemptionReport(validation=validated),
                             input_sha256=input_sha256),
         )
+    if mosaic is not None and validated.is_valid:
+        from dataclasses import replace
+        from alma_duplicate.domain.proposed_observation import SearchReadiness
+        from alma_duplicate.mosaic_backend import run_mosaic_backend
+        if validated.request.target_kind != 'FIXED' or validated.request.geometry != 'MOSAIC':
+            raise ValueError('OT pointings require a fixed Mosaic request')
+        if validated.search_options.sources != ('ARCHIVE',):
+            raise ValueError('Automatic Mosaic assessment currently requires ARCHIVE only')
+        if validated.search_options.predicates:
+            raise ValueError('Mosaic candidate prefilter predicates are not implemented; omit them')
+        if sources.queue_loader is not None or options.queue_common or options.queue_continuum or options.queue_line:
+            raise ValueError('Queue evaluation is not supported by this Archive Mosaic workflow')
+        if sources.archive_kind != 'LIVE':
+            raise ValueError('Automatic Mosaic acquisition requires explicit LIVE Archive input')
+        if (sources.archive_kind is None) != (sources.archive_provider is None):
+            raise ValueError('Archive kind and provider must be supplied together')
+        if sources.archive_array_fetcher is not None:
+            raise ValueError('Mosaic preparation owns AQ acquisition; provide a catalog for replay')
+        if mosaic.proposed['source_name'] != validated.request.target_name:
+            raise ValueError('OT pointings belong to another proposed target')
+        if options.nominal_conversion not in (None, PORTAL_SCRIPT_V1):
+            raise ValueError('Unknown proposed nominal bandwidth conversion')
+        validated = replace(validated, search_readiness=SearchReadiness.READY,
+            issues=tuple(i for i in validated.issues if not
+                         (i.category == 'CAPABILITY' and i.path == 'request' and i.code == 'METHOD_NOT_IMPLEMENTED')))
+        archive = sources.archive_provider() if sources.archive_provider else None
+        document = run_mosaic_backend(validated.request, mosaic,
+            archive_client=archive.client if archive else None,
+            array_catalog=archive.array_catalog if archive else None,
+            nominal_conversion=options.nominal_conversion)
+        document['input_sha256'] = input_sha256
+        return AssessmentResult(AssessmentStatus.COMPLETED if document['assessment_status'] == 'COMPLETED'
+                                else AssessmentStatus.SOURCES_UNAVAILABLE, validated, document)
     if not validated.is_valid or not validated.can_search:
         return AssessmentResult(AssessmentStatus.REQUEST_NOT_SEARCH_READY, validated, None)
 
@@ -211,3 +244,45 @@ def assess_mosaic_candidates(proposed: dict, candidates: list, *,
     return dict(schema_version='mosaic_candidate_assessment_1',candidates=results,
         candidate_discovery_scope='EXPLICITLY_SUPPLIED_CANDIDATES_NOT_EXHAUSTIVE_SEARCH',
         assessment_status='COMPLETED',duplication_status='NOT_EVALUATED')
+
+
+def assess_archive_mosaic_contexts(request, proposed, contexts, *, package_directories,
+                                  array_catalog, boundary_epsilon_arcsec=0.000001,
+                                  nominal_conversion=None, ready_executions=None):
+    """Reuse Archive comparison contexts and rules with verified Mosaic pointings.
+
+    package_directories maps (Member UID, target name) to local audited packages.
+    Contexts are constructed by the existing Archive ingestion pipeline; listobs
+    contributes positions only. This does not invoke single-pointing search filters.
+    """
+    from dataclasses import asdict
+    from pathlib import Path
+    from alma_duplicate.archive_mosaic_pointings import load_package_executions
+    from alma_duplicate.rules.mosaic_context import evaluate_mosaic_context
+    from alma_duplicate.domain.comparison import ArchiveContextEvidence
+    contexts = tuple(contexts)
+    loaded, seen, results = {}, set(), []
+    for context in contexts:
+        if context.context_id in seen or not isinstance(context.evidence,ArchiveContextEvidence):
+            raise ValueError('Unique Archive contexts required')
+        seen.add(context.context_id)
+        raw=context.evidence.prepared.raw_row
+        key=(raw.get('member_ous_uid'),raw.get('target_name'))
+        if key not in loaded:
+            directory=package_directories.get(key)
+            loaded[key]=load_package_executions(Path(directory))[0] if directory is not None else ()
+        executions = loaded[key]
+        evaluated=evaluate_mosaic_context(request,context,proposed,executions=executions,
+            metadata_contexts=contexts,
+            ready_asdm_uids=None if ready_executions is None else ready_executions.get(key, ()),
+            array_evidence=array_catalog.bind(context) if array_catalog is not None else None,
+            boundary_epsilon_arcsec=boundary_epsilon_arcsec,nominal_conversion=nominal_conversion)
+        results.append(dict(context_id=context.context_id,
+            criteria=[asdict(c) for c in evaluated['criteria']],
+            request_criteria=[asdict(c) for c in evaluated['request_criteria']],
+            branches=[asdict(b) for b in evaluated['branches']],
+            line_pairing=asdict(evaluated['line_pairing']) if evaluated['line_pairing'] is not None else None,
+            line_pairs=[asdict(p) for p in evaluated['line_pairs']],coverage=evaluated['coverage']))
+    return dict(schema_version='archive_mosaic_context_assessment_1',contexts=results,
+        metadata_source='EXISTING_ARCHIVE_COMPARISON_CONTEXTS',pointing_source='VERIFIED_PACKAGE_EXECUTIONS',
+        discovery_scope='SUPPLIED_CONTEXTS_NOT_EXHAUSTIVE_SEARCH',assessment_status='COMPLETED')

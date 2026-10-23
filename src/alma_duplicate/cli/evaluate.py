@@ -40,12 +40,21 @@ def main(argv=None, *, archive_client_factory=None):
     parser.add_argument('--nominal-conversion', choices=(PORTAL_SCRIPT_V1, 'NONE'),
                         default=PORTAL_SCRIPT_V1,
                         help='Proposed continuum nominal-to-usable mapping; NONE retains unconverted evidence')
+    parser.add_argument('--mosaic-pointings', type=Path, help='OT absolute pointing export')
+    parser.add_argument('--mosaic-array', choices=('7m', '12m'))
+    parser.add_argument('--mosaic-workdir', type=Path)
+    parser.add_argument('--mosaic-cache', type=Path)
+    parser.add_argument('--mosaic-margin-arcsec', type=float)
+    parser.add_argument('--confirm-fixed-icrs', action='store_true')
+    parser.add_argument('--confirm-complete', action='store_true')
     args = parser.parse_args(argv)
 
     try:
         if args.archive_array_evidence is not None and not (args.archive_replay or args.live_archive):
             raise ValueError("--archive-array-evidence requires --archive-replay or --live-archive")
         inputs = [args.request]
+        if args.mosaic_pointings is not None:
+            inputs.append(args.mosaic_pointings)
         if args.archive_array_evidence is not None:
             inputs.append(args.archive_array_evidence)
         if args.queue_csv is not None:
@@ -81,6 +90,22 @@ def main(argv=None, *, archive_client_factory=None):
 
         archive_kind = "REPLAY" if args.archive_replay is not None else "LIVE" if args.live_archive else None
         loader = (lambda: QueueCsvClient().load(args.queue_csv)) if args.queue_csv is not None else None
+        mosaic = None
+        if args.mosaic_pointings is not None:
+            if not args.live_archive or args.archive_replay:
+                raise ValueError('Automatic Mosaic acquisition requires --live-archive')
+            if any(v is None for v in (args.mosaic_array, args.mosaic_workdir,
+                                      args.mosaic_cache, args.mosaic_margin_arcsec)):
+                raise ValueError('Mosaic array, workdir, cache and search margin are required')
+            from alma_duplicate.mosaic_backend import MosaicAssessmentInput
+            from alma_duplicate.proposed_mosaic import import_proposed
+            from alma_duplicate.parsers.ot_pointings import MAX_BYTES
+            with args.mosaic_pointings.open('rb') as stream:
+                proposed = import_proposed(stream.read(MAX_BYTES + 1),
+                    source_name=payload['request'].get('target_name'), array=args.mosaic_array,
+                    confirm_fixed_icrs=args.confirm_fixed_icrs, confirm_complete=args.confirm_complete)
+            mosaic = MosaicAssessmentInput(proposed, args.mosaic_workdir, args.mosaic_cache,
+                                            args.mosaic_margin_arcsec)
         result = assess_observation(
             payload["request"], payload["search_options"],
             options=AssessmentOptions(
@@ -94,7 +119,7 @@ def main(argv=None, *, archive_client_factory=None):
             ),
             sources=AssessmentSources(archive_kind, archive_provider if archive_kind else None, loader),
             input_sha256=hashlib.sha256(raw).hexdigest(),
-            report_detail=args.report_detail,
+            report_detail=args.report_detail, mosaic=mosaic,
         )
         if result.status == AssessmentStatus.REQUEST_NOT_SEARCH_READY:
             print(json.dumps({
