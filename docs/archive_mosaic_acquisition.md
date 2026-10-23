@@ -92,13 +92,13 @@ for local argument or preflight errors.
   overwriting existing cache entries, then save their manifest. Partial downloads
   are removed. An interrupted publication may leave an incomplete entry, which is
   rejected on reuse. Existing cache entries are checked by size and SHA-256.
-- Inspect archives in memory without extracting archive paths into the filesystem.
+- Inspect nested weblog archives as streams without extracting archive paths into the filesystem.
   Reject absolute paths, parent traversal, duplicate paths, and linked candidate
   files. Unrelated nonregular entries are recorded and never followed.
 - Traverse nested archives only when their basename contains `weblog`. Other
   packages are explicitly outside scope. Inspect direct listobs candidates too.
 - Bound nesting to two nested levels, total inspected entries to 20,000, summed
-  declared member sizes to 1 GB, each regular member to 100 MB, each listobs to
+  declared member sizes to 1 GB, ordinary regular members to 100 MB, nested weblog archives to 250 MB, each listobs to
   5 MB, and candidate count to 100. These are implementation limits, not scientific
   completeness guarantees.
 
@@ -107,7 +107,9 @@ that fails parsing return `UNRESOLVED_CANDIDATES`. `NOT_FOUND` means no match wi
 the declared inspection scope, not that the observation has no pointings.
 
 Cache hashes establish local consistency, not cryptographic authenticity of the
-remote dataset. This release has been exercised online only for the 7m case.
+remote dataset. The 7m and independent 12m auxiliary packages have been downloaded and inspected.
+The 12m package required a separate 250 MB nested-weblog limit and streaming reads;
+its 11 science fields match the preserved reference.
 A found listobs establishes neither the complete execution inventory nor a general
 mapping between FIELD centres and approved Mosaic coverage.
 

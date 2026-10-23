@@ -81,6 +81,8 @@ listobs parser and execution-level evidence objects. [Product discovery](archive
 documents Member-bound DataLink metadata acquisition, offline replay, and saved
 receipts. [Auxiliary acquisition](archive_mosaic_acquisition.md) covers bounded
 downloads, verified cache reuse, and nested weblog listobs inspection.
+[Unified acquisition and reconstruction](archive_mosaic_pipeline.md) connects the
+7m workflow using saved TAP identity and verified acquisition evidence.
 These standalone backend increments do not enable Mosaic assessment in
 the browser or establish complete Member pointing inventories.
 
@@ -242,3 +244,5 @@ review gate, persistent multi-user lifecycle and broader-mode scope.
 
 - [Archive mirror failover](archive_mirror_failover.md): official live TAP/AQ
   retry boundaries, request budgets, provenance and source isolation.
+
+- [Archive Mosaic inventory](archive_mosaic_inventory.md): saved Member/target execution coverage and missing-evidence reconciliation.
