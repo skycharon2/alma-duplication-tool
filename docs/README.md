@@ -74,6 +74,14 @@ request API owns the accepted backend format. Historical statistics now live in 
 original ERDs and conceptual entities live in the [design document](design/conceptual_data_model.md).
 They are not current population counts or Python class definitions.
 
+## Archive Mosaic backend development
+
+[Local execution reconstruction](archive_mosaic_backend.md) documents the supported
+listobs parser and execution-level evidence objects. [Product discovery](archive_mosaic_products.md)
+documents Member-bound DataLink metadata acquisition, offline replay, and saved
+receipts. These standalone backend increments do not enable Mosaic assessment in
+the browser or establish complete Member pointing inventories.
+
 ## UI reading order
 
 For running the browser end to end, start with
