@@ -252,3 +252,5 @@ review gate, persistent multi-user lifecycle and broader-mode scope.
 - [Archive Mosaic execution batches](archive_mosaic_batch.md): independent reconstruction, verified reuse and Member/target summaries.
 
 - [Archive Mosaic package execution audit](archive_mosaic_package_audit.md): real IC1954 multi-execution evidence and TAP/package discrepancy handling.
+
+- [Archive Mosaic pointing comparison](archive_mosaic_pointings.md): cross-execution field-centre diagnostics with explicit tolerance and preserved evidence.
