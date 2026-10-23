@@ -1,0 +1,17 @@
+{
+  "schema_version": "mosaic_candidates_1",
+  "candidates": [
+    {
+      "context_id": "ARCHIVE:IC1954:uid://A001/X1284/X28b7",
+      "member_ous_uid": "uid://A001/X1284/X28b7",
+      "source_name": "IC1954",
+      "package_audit_dir": "../../reports/mosaic-dev/ic1954-package-reuse-02",
+      "array_catalog": "../../tests/fixtures/archive/mosaic_array_2026_10_23/manifest.json",
+      "selections": [
+        {"asdm_uid": "uid://A002/Xc63024/X4c8", "spw_id": 16},
+        {"asdm_uid": "uid://A002/Xc63024/X568e", "spw_id": 16},
+        {"asdm_uid": "uid://A002/Xc63024/X98b", "spw_id": 16}
+      ]
+    }
+  ]
+}

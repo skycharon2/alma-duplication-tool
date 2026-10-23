@@ -171,3 +171,43 @@ def assess_observation(request: dict, search_options: dict, *,
     if acquisition is not None:
         document["assessment_status"] = status.value
     return AssessmentResult(status, validated, document)
+
+
+def assess_mosaic_candidates(proposed: dict, candidates: list, *,
+                             hpbw_coefficient=1.13, boundary_epsilon_arcsec=0.000001,
+                             assume_uniform_field_antennas=False) -> dict:
+    """Assess supplied Archive candidates independently using the shared rule model.
+
+    Candidate acquisition is explicit: this entrypoint does not use the existing
+    single-pointing search or claim exhaustive candidate discovery. Each candidate
+    binds a verified readiness bundle to its Member and target before evaluation.
+    Missing bundles yield insufficient information; identity conflicts are errors.
+    """
+    from dataclasses import asdict
+    from alma_duplicate.rules.position_mosaic import evaluate_mosaic_position
+    import math
+    for value, positive in ((hpbw_coefficient, True), (boundary_epsilon_arcsec, False)):
+        if isinstance(value, bool) or not math.isfinite(value) or value < 0 or (positive and value == 0):
+            raise ValueError('Invalid Mosaic beam coefficient or boundary epsilon')
+    results, seen = [], set()
+    for candidate in candidates:
+        identity = candidate['context_id']
+        if not isinstance(identity, str) or not identity.strip() or identity in seen:
+            raise ValueError('Candidate context IDs must be nonempty and unique')
+        seen.add(identity)
+        member, source = candidate['member_ous_uid'], candidate['source_name']
+        if not isinstance(member,str) or not member or not isinstance(source,str) or not source:
+            raise ValueError('Candidate Member and source identity required')
+        readiness = candidate.get('readiness')
+        if readiness is not None and (readiness['member_ous_uid'] != member or
+                                      readiness['source_name'] != source):
+            raise ValueError('Mosaic evidence belongs to a different candidate')
+        criterion, coverage = evaluate_mosaic_position(proposed,context_id=identity,
+            readiness=readiness,selections=candidate.get('selections'),
+            hpbw_coefficient=hpbw_coefficient,boundary_epsilon_arcsec=boundary_epsilon_arcsec,
+            assume_uniform_field_antennas=assume_uniform_field_antennas)
+        results.append(dict(context_id=identity,member_ous_uid=member,source_name=source,
+            criteria=[asdict(criterion)],coverage=coverage,duplication_status='NOT_EVALUATED'))
+    return dict(schema_version='mosaic_candidate_assessment_1',candidates=results,
+        candidate_discovery_scope='EXPLICITLY_SUPPLIED_CANDIDATES_NOT_EXHAUSTIVE_SEARCH',
+        assessment_status='COMPLETED',duplication_status='NOT_EVALUATED')

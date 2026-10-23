@@ -264,3 +264,5 @@ review gate, persistent multi-user lifecycle and broader-mode scope.
 - [Archive Mosaic footprint validation](archive_mosaic_footprint_validation.md): per-SPW spherical boundary sweeps and scoped s_region vertex comparisons.
 
 - [OT proposed Mosaic pointings](ot_pointings_backend.md)
+
+- [Mosaic Archive candidate discovery](mosaic_candidate_discovery.md)
