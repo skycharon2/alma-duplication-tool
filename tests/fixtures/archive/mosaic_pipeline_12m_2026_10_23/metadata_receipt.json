@@ -1,0 +1,16 @@
+{
+  "url": "https://almascience.eso.org/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=votable&MAXREC=2&QUERY=SELECT+TOP+1+proposal_id%2C+member_ous_uid%2C+asdm_uid%2C+target_name%2C+science_observation%2C+is_mosaic+FROM+ivoa.obscore+WHERE+member_ous_uid%3D%27uid%3A%2F%2FA001%2FX1465%2FX3f4%27+AND+asdm_uid%3D%27uid%3A%2F%2FA002%2FXeaae1d%2FX1a2%27+AND+target_name%3D%27NGC5248%27+AND+science_observation%3D%27T%27+AND+is_mosaic%3D%27T%27",
+  "parameters": {
+    "REQUEST": "doQuery",
+    "LANG": "ADQL",
+    "FORMAT": "votable",
+    "MAXREC": "2",
+    "QUERY": "SELECT TOP 1 proposal_id, member_ous_uid, asdm_uid, target_name, science_observation, is_mosaic FROM ivoa.obscore WHERE member_ous_uid='uid://A001/X1465/X3f4' AND asdm_uid='uid://A002/Xeaae1d/X1a2' AND target_name='NGC5248' AND science_observation='T' AND is_mosaic='T'"
+  },
+  "started_at": "2026-10-23T08:16:13.690849+00:00",
+  "finished_at": "2026-10-23T08:16:13.981354+00:00",
+  "http_status": 200,
+  "sha256": "a5a3ddb1afd43ecf59d6071257acf5a666bb70b6d3dddbe57dd0eb5c71aa4555",
+  "bytes": 2216,
+  "scope": "TOP 1 identity row for an explicit Member/ASDM/target, not a complete SPW or execution inventory"
+}

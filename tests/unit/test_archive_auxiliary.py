@@ -185,3 +185,26 @@ def test_cli_offline_success(tmp_path, monkeypatch):
     assert (output / 'listobs.txt').read_bytes() == RAW
     assert (output / 'discovery.json').read_bytes() == RECEIPT.read_bytes()
     assert (output / 'response.xml').read_bytes() == (RECEIPT.parent / 'response.xml').read_bytes()
+
+
+def test_weblog_streaming_has_a_separate_bounded_limit(tmp_path, monkeypatch):
+    import alma_duplicate.archive_auxiliary as module
+    nested = archive_bytes([('listobs.txt', RAW)])
+    monkeypatch.setattr(module, 'MAX_MEMBER', len(RAW) + 1)
+    # Pad a valid nested tar beyond the ordinary member limit; trailing padding
+    # is ignored by the tar reader and must not become a listobs candidate.
+    padded = nested + b'\0' * (len(RAW) + 2)
+    monkeypatch.setattr(module, 'MAX_WEBLOG', len(padded))
+    result, raw = inspect(tmp_path, [('qa/weblog.tgz', padded)])
+    assert result['status'] == 'FOUND' and raw == RAW
+    monkeypatch.setattr(module, 'MAX_WEBLOG', len(padded) - 1)
+    with pytest.raises(ValueError, match='member size'):
+        inspect(tmp_path, [('qa/weblog.tgz', padded)])
+
+
+def test_nested_stream_still_enforces_expanded_budget(tmp_path, monkeypatch):
+    import alma_duplicate.archive_auxiliary as module
+    nested = archive_bytes([('listobs.txt', RAW)])
+    monkeypatch.setattr(module, 'MAX_EXPANDED', len(nested) + len(RAW) - 1)
+    with pytest.raises(ValueError, match='budget'):
+        inspect(tmp_path, [('qa/weblog.tgz', nested)])

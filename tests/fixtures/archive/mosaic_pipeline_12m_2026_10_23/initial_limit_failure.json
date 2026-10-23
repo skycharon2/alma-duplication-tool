@@ -1,0 +1,36 @@
+{
+  "schema_version": "archive_listobs_acquisition_1",
+  "discovery_receipt_sha256": "c3277fba7316dc411bba5afe5a27c63cf4f386a9d83bb1a3041af7a290d32867",
+  "product": {
+    "row_index": 3,
+    "member_ous_uid": "uid://A001/X1465/X3f4",
+    "access_url": "https://almascience.eso.org/dataPortal/2019.1.01718.S_uid___A001_X1465_X3f4_auxiliary.tar",
+    "service_def": null,
+    "semantics": "#auxiliary",
+    "description": "Download dataset of type: null, and class: N/A.",
+    "content_type": "application/x-tar",
+    "content_length": 250724352,
+    "link_auth": "false",
+    "link_authorized": "true",
+    "kind": "AUXILIARY_CANDIDATE",
+    "issues": [],
+    "binding": "DATALINK_ROW_MEMBER_ID",
+    "pointing_content": "NOT_INSPECTED",
+    "asdm_binding": "NOT_ESTABLISHED"
+  },
+  "asdm_uid": "uid://A002/Xeaae1d/X1a2",
+  "source_name": "NGC5248",
+  "completeness": "MEMBER_COMPLETENESS_NOT_ESTABLISHED",
+  "acquisition": {
+    "url": "https://almascience.eso.org/dataPortal/2019.1.01718.S_uid___A001_X1465_X3f4_auxiliary.tar",
+    "bytes": 250724352,
+    "sha256": "fa75f9804cb97ffb3694ae1f78d85c210d2c7cb5651ca684d4ec2d117b222313",
+    "started_at": "2026-10-23T08:16:14.801842+00:00",
+    "finished_at": "2026-10-23T08:16:19.909581+00:00",
+    "http_status": 200
+  },
+  "cache_hit": false,
+  "status": "FAILED",
+  "error_type": "ValueError",
+  "error": "Unsupported archive member size"
+}

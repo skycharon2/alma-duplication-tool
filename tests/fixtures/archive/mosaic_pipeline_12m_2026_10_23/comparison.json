@@ -1,0 +1,6 @@
+{
+  "field_count": 11,
+  "all_fields_equal": true,
+  "reference": "experiments/mosaic_footprint_ab/data/ngc5248_12m_listobs.txt",
+  "scope": "All ScienceField values including original coordinates and scan/SPW associations"
+}

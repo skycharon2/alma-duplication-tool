@@ -2,7 +2,6 @@
 from dataclasses import asdict
 from datetime import datetime, timezone
 from hashlib import sha256
-from io import BytesIO
 from http.client import HTTPException
 import json
 import os
@@ -21,6 +20,7 @@ from alma_duplicate.parsers.archive_listobs import parse_science_fields
 MAX_DOWNLOAD = 300_000_000
 MAX_EXPANDED = 1_000_000_000
 MAX_MEMBER = 100_000_000
+MAX_WEBLOG = 250_000_000
 MAX_TEXT = 5_000_000
 MAX_ENTRIES = 20000
 MAX_CANDIDATES = 100
@@ -160,7 +160,8 @@ def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str):
                         raise ValueError('Linked candidate archive member is unsupported')
                     skipped.append(dict(path_chain=chain + [member.name], reason='NON_REGULAR_MEMBER'))
                     continue
-                if member.size < 0 or member.size > MAX_MEMBER:
+                member_limit = MAX_WEBLOG if nested and 'weblog' in path.name.lower() else MAX_MEMBER
+                if member.size < 0 or member.size > member_limit:
                     raise ValueError('Unsupported archive member size')
                 if nested and 'weblog' not in path.name.lower():
                     skipped.append(dict(path_chain=chain + [member.name], reason='OUTSIDE_WEBLOG_SCOPE'))
@@ -171,14 +172,15 @@ def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str):
                     raise ValueError('Archive nesting limit exceeded')
                 if listobs and member.size > MAX_TEXT:
                     raise ValueError('Listobs size limit exceeded')
-                with tar.extractfile(member) as item:
-                    raw = item.read(member.size + 1)
-                if len(raw) != member.size:
-                    raise ValueError('Truncated archive member')
                 location = chain + [member.name]
                 if nested:
-                    visit(BytesIO(raw), location, depth + 1)
+                    with tar.extractfile(member) as item:
+                        visit(item, location, depth + 1)
                 else:
+                    with tar.extractfile(member) as item:
+                        raw = item.read(member.size + 1)
+                    if len(raw) != member.size:
+                        raise ValueError('Truncated archive member')
                     if len(candidates) >= MAX_CANDIDATES:
                         raise ValueError('Listobs candidate limit exceeded')
                     entry = dict(path_chain=location, bytes=len(raw), sha256=sha256(raw).hexdigest())
