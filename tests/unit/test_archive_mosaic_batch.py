@@ -125,3 +125,18 @@ def test_multiple_auxiliary_products_are_not_guessed(inputs, tmp_path):
     result = batch.run_batch(**inputs, output=tmp_path / 'batch')
     assert result['status'] == 'INCOMPLETE'
     assert all('found 2' in e['error'] for e in result['executions'].values())
+
+
+def test_extra_package_asdm_requires_audit(inputs, tmp_path, monkeypatch):
+    original = pipeline.acquire_listobs
+    def acquire(*args, **kwargs):
+        result = original(*args, **kwargs)
+        result['inspection']['candidates'].append(dict(status='OTHER_MEASUREMENT_SET',
+            reported_asdm_uid='uid://A002/Xextra/X1', measurement_set_variant='ORIGINAL'))
+        (args[3] / 'acquisition.json').write_text(json.dumps(result))
+        return result
+    monkeypatch.setattr(pipeline, 'acquire_listobs', acquire)
+    report = batch.run_batch(**inputs, output=tmp_path / 'batch')
+    assert report['status'] == 'PACKAGE_AUDIT_REQUIRED'
+    assert report['missing_asdm_uids'] == []
+    assert report['additional_package_asdm_uids'] == ['uid://A002/Xextra/X1']

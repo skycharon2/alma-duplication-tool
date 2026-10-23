@@ -66,3 +66,17 @@ reconstructed 11 fields; the 7m reuse batch verified 19 fields. Synthetic two-ex
 tests cover partial failure, identical FIELD IDs, revalidation of reuse, modified
 evidence, ambiguous products and overwrite protection. Cross-execution coordinate
 aggregation requires separate scientific validation.
+
+## Package inventory discrepancy
+
+New receipts preserve nonselected MS header identities. When additional package
+ASDMs are found, an otherwise covered batch returns `PACKAGE_AUDIT_REQUIRED`
+(exit 3). See the [real multi-execution audit](archive_mosaic_package_audit.md).
+Historical receipts lacking these fields require a fresh package inspection.
+
+## Package-bound execution mode
+
+Use `--package-audit-dir` to reuse and retry package-bound executions under the
+[package audit contract](archive_mosaic_package_audit.md). This mode has a separate
+summary schema and PACKAGE_EVIDENCE_COVERED status; additional ASDMs are not
+converted into TAP-bound execution records.

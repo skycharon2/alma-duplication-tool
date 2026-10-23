@@ -250,3 +250,5 @@ review gate, persistent multi-user lifecycle and broader-mode scope.
 - [Archive Mosaic TAP inventory capture](archive_mosaic_discovery.md): bounded live execution discovery, captured requests and validated reconciliation.
 
 - [Archive Mosaic execution batches](archive_mosaic_batch.md): independent reconstruction, verified reuse and Member/target summaries.
+
+- [Archive Mosaic package execution audit](archive_mosaic_package_audit.md): real IC1954 multi-execution evidence and TAP/package discrepancy handling.
