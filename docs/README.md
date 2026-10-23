@@ -246,3 +246,7 @@ review gate, persistent multi-user lifecycle and broader-mode scope.
   retry boundaries, request budgets, provenance and source isolation.
 
 - [Archive Mosaic inventory](archive_mosaic_inventory.md): saved Member/target execution coverage and missing-evidence reconciliation.
+
+- [Archive Mosaic TAP inventory capture](archive_mosaic_discovery.md): bounded live execution discovery, captured requests and validated reconciliation.
+
+- [Archive Mosaic execution batches](archive_mosaic_batch.md): independent reconstruction, verified reuse and Member/target summaries.

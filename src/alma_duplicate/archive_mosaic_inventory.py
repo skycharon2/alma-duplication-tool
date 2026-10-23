@@ -11,7 +11,7 @@ from alma_duplicate.archive_mosaic_pipeline import (
 
 
 def reconcile_inventory(metadata: Path, execution_dirs: list[Path], *, member: str,
-                        source: str) -> dict:
+                        source: str, capture_receipt: Path | None = None) -> dict:
     """Report coverage of supplied rows, without asserting an exhaustive TAP query.
 
     Repeated spectral-product rows collapse by ASDM within one project/Member/target.
@@ -19,6 +19,11 @@ def reconcile_inventory(metadata: Path, execution_dirs: list[Path], *, member: s
     """
     with metadata.open('rb') as stream:
         raw = stream.read(MAX_METADATA_BYTES + 1)
+    capture_hash = None
+    if capture_receipt is not None:
+        from alma_duplicate.archive_mosaic_discovery import verify_inventory_capture
+        verify_inventory_capture(raw, capture_receipt, member=member, source=source)
+        capture_hash = sha256(capture_receipt.read_bytes()).hexdigest()
     rows = read_mosaic_rows(raw)
     if not rows:
         raise ValueError('Empty inventory does not establish Member coverage')
@@ -57,5 +62,7 @@ def reconcile_inventory(metadata: Path, execution_dirs: list[Path], *, member: s
                 expected_asdm_uids=sorted(expected), acquired=acquired,
                 missing_asdm_uids=missing,
                 coverage_status='MISSING_EXECUTIONS' if missing else 'SUPPLIED_INVENTORY_COVERED',
-                inventory_scope='SAVED_ROWS_EXHAUSTIVENESS_NOT_ESTABLISHED',
+                inventory_scope=('CAPTURED_VISIBLE_SCIENCE_MOSAIC_MEMBER_TARGET' if capture_hash else
+                                 'SAVED_ROWS_EXHAUSTIVENESS_NOT_ESTABLISHED'),
+                capture_receipt_sha256=capture_hash,
                 completeness='MEMBER_COMPLETENESS_NOT_ESTABLISHED', policy_status='NOT_EVALUATED')

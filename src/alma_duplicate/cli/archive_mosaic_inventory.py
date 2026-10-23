@@ -10,6 +10,7 @@ from alma_duplicate.archive_mosaic_inventory import reconcile_inventory
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--metadata', type=Path, required=True)
+    parser.add_argument('--capture-receipt', type=Path)
     parser.add_argument('--member', required=True)
     parser.add_argument('--source', required=True)
     parser.add_argument('--execution-dir', type=Path, action='append', default=[])
@@ -17,7 +18,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         report = reconcile_inventory(args.metadata, args.execution_dir,
-                                     member=args.member, source=args.source)
+                                     member=args.member, source=args.source, capture_receipt=args.capture_receipt)
         with args.output.open('x', encoding='utf-8') as stream:
             stream.write(json.dumps(report, indent=2, allow_nan=False) + '\n')
     except (OSError, ValueError, KeyError, TypeError, ET.ParseError) as exc:
