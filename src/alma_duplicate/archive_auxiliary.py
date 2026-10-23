@@ -122,7 +122,7 @@ def acquire_auxiliary(product, cache: Path, *, offline=False, open_url=None):
             temporary.unlink(missing_ok=True)
 
 
-def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str):
+def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str, capture_dir: Path | None = None):
     """Read regular listobs members only; no archive path is extracted to disk.
 
     Nested tar/tgz files are inspected within fixed shared budgets. Any skipped
@@ -133,6 +133,8 @@ def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str):
         raise ValueError('Invalid ASDM UID')
     if not source_name or source_name != source_name.strip():
         raise ValueError('Invalid target name')
+    if capture_dir is not None:
+        capture_dir.mkdir(exist_ok=False)
     budget = {'entries': 0, 'expanded': 0}
     skipped = []
     candidates, matches = [], []
@@ -185,12 +187,20 @@ def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str):
                         raise ValueError('Listobs candidate limit exceeded')
                     entry = dict(path_chain=location, bytes=len(raw), sha256=sha256(raw).hexdigest())
                     candidates.append(entry)
+                    if capture_dir is not None:
+                        (capture_dir / (entry['sha256'] + '.txt')).write_bytes(raw)
                     text = raw.decode('utf-8')
                     headers = re.findall(r'^\s*MeasurementSet Name:\s+(.+?)\s+MS Version\s+\S+\s*$', text, re.M)
                     if len(headers) != 1:
                         entry['status'] = 'INVALID_HEADER'
                         continue
-                    if PurePosixPath(headers[0].strip()).name != expected:
+                    basename = PurePosixPath(headers[0].strip()).name
+                    entry['measurement_set'] = basename
+                    uid_match = re.fullmatch(r'uid___(A[0-9A-Za-z]+)_([0-9A-Za-z]+)_([0-9A-Za-z]+)(?:_target)?\.ms', basename)
+                    if uid_match:
+                        entry['reported_asdm_uid'] = 'uid://' + '/'.join(uid_match.groups())
+                        entry['measurement_set_variant'] = 'TARGET' if basename.endswith('_target.ms') else 'ORIGINAL'
+                    if basename != expected:
                         entry['status'] = 'OTHER_MEASUREMENT_SET'
                         continue
                     try:
