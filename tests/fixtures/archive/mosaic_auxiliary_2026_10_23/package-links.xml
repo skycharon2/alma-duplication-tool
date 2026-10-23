@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <RESOURCE type="results">
+    <INFO name="standardID" value="ivo://ivoa.net/std/DataLink#links-1.1" />
+    <TABLE>
+      <FIELD name="ID" datatype="char" arraysize="*" ucd="meta.id;meta.main" />
+      <FIELD name="access_url" datatype="char" arraysize="*" ucd="meta.ref.url" />
+      <FIELD name="service_def" datatype="char" arraysize="*" ucd="meta.ref" />
+      <FIELD name="error_message" datatype="char" arraysize="*" ucd="meta.code.error" />
+      <FIELD name="semantics" datatype="char" arraysize="*" ucd="meta.code" />
+      <FIELD name="local_semantics" datatype="char" arraysize="*" ucd="meta.code">
+        <DESCRIPTION>local tag indicating equivalent meaning or role of this link (DataLink-1.1)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="description" datatype="char" arraysize="*" ucd="meta.note" />
+      <FIELD name="content_type" datatype="char" arraysize="*" ucd="meta.code.mime" />
+      <FIELD name="content_length" datatype="long" ucd="phys.size;meta.file" unit="byte" />
+      <FIELD name="content_qualifier" datatype="char" arraysize="*">
+        <DESCRIPTION>the nature of the thing the link will deliver (DataLink-1.1)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="link_auth" datatype="char" arraysize="*" ucd="meta.code">
+        <DESCRIPTION>link supports authentication (DataLink-1.1)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="link_authorized" datatype="boolean" ucd="meta.code">
+        <DESCRIPTION>the current authenticated identity is authorized (DataLink-1.1)</DESCRIPTION>
+      </FIELD>
+      <DATA>
+        <TABLEDATA>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/member.uid___A001_X15aa_Xe5.hifa_calimage_renorm.auxproducts.tgz</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: calibration, and class: CALIBRATION.</TD><TD>application/octet-stream</TD><TD>1195</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/member.uid___A001_X15aa_Xe5.session_2.caltables.tgz</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: calibration, and class: CALIBRATION.</TD><TD>application/octet-stream</TD><TD>2028998</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/uid___A002_Xfb8480_X4f37.ms.calapply.txt</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: calibration, and class: CALIBRATION.</TD><TD>text/plain</TD><TD>2590</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/uid___A002_Xfb8480_X4f37.ms.flagversions.tgz</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: calibration, and class: CALIBRATION.</TD><TD>application/octet-stream</TD><TD>88481</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/member.uid___A001_X15aa_Xe5.calimage.product_rename.txt</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: script, and class: AUX.</TD><TD>text/plain</TD><TD>8681</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/member.uid___A001_X15aa_Xe5.hifa_calimage.pldriver_report.xml</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: script, and class: AUX.</TD><TD>application/xml</TD><TD>171</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/member.uid___A001_X15aa_Xe5.hifa_calimage_renorm.casa_piperestorescript.py</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: script, and class: SCRIPT.</TD><TD>text/plain</TD><TD>536</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/member.uid___A001_X15aa_Xe5.hifa_calimage_renorm.casa_pipescript.py</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: script, and class: SCRIPT.</TD><TD>text/plain</TD><TD>3166</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/member.uid___A001_X15aa_Xe5.hifa_calimage_renorm.pipeline_manifest.xml</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: script, and class: SCRIPT.</TD><TD>application/xml</TD><TD>36130</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/member.uid___A001_X15aa_Xe5.hifa_calimage_renorm.pprequest.xml</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: script, and class: PPR.</TD><TD>application/xml</TD><TD>13061</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/member.uid___A001_X15aa_Xe5.scriptForPI.py</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: script, and class: SCRIPT.</TD><TD>text/plain</TD><TD>23152</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/member.uid___A001_X15aa_Xe5.hifa_calimage_renorm.casa_commands.log</TD><TD/><TD/><TD>#documentation</TD><TD/><TD>Download documentation for log/2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar|CASA_COMMANDS.</TD><TD>application/octet-stream</TD><TD>103076</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/member.uid___A001_X15aa_Xe5.hifa_calimage_renorm.weblog.tgz</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: qa, and class: WEBLOG.</TD><TD>application/octet-stream</TD><TD>52451522</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/member.uid___A001_X15aa_Xe5.qa2_report.pdf</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: qa, and class: QA2.</TD><TD>application/pdf</TD><TD>68323</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/uid___A002_Xfa2f45_X193fe.qa0_report.pdf</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: qa, and class: QA0.</TD><TD>application/pdf</TD><TD>323750</TD><TD/><TD>false</TD><TD>true</TD></TR>
+<TR><TD>2021.2.00176.S_uid___A001_X15aa_Xe5_auxiliary.tar</TD><TD>https://almascience.eso.org/dataPortal/uid___A002_Xfb8480_X4f37.qa0_report.pdf</TD><TD/><TD/><TD>#auxiliary</TD><TD/><TD>Download dataset of type: qa, and class: QA0.</TD><TD>application/pdf</TD><TD>970294</TD><TD/><TD>false</TD><TD>true</TD></TR></TABLEDATA>
+      </DATA>
+    </TABLE>
+    <INFO name="placeholder" value="ignore" />
+  </RESOURCE>
+</VOTABLE>

@@ -1,0 +1,7 @@
+{
+  "fields_equal": true,
+  "field_count": 19,
+  "live_offline_bytes_equal": true,
+  "reference": "experiments/mosaic_footprint_ab/data/source_listobs.md",
+  "comparison": "All ScienceField dataclass values, including scan/SPW associations"
+}
