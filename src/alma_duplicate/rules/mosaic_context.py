@@ -49,6 +49,11 @@ def _metadata_signature(context):
             )
         ),
         tuple((q.status, q.canonical_value, q.canonical_unit) for q in quantities),
+        context.evidence.selected_component,
+        None if context.evidence.mode_evidence is None else (
+            context.evidence.mode_evidence.status,
+            context.evidence.mode_evidence.operational_mode,
+        ),
     )
 
 
@@ -90,6 +95,8 @@ def evaluate_mosaic_context(
     for other in (context, *metadata_contexts):
         if not isinstance(other.evidence, ArchiveContextEvidence):
             raise ValueError("Archive metadata contexts required")
+        if other.reference.source_record_id != context.reference.source_record_id:
+            raise ValueError("Mixed Archive metadata acquisition identities")
         if _metadata_signature(other) == _metadata_signature(context):
             uid = other.evidence.prepared.raw_row.get("asdm_uid")
             bindings.setdefault(uid, set()).add(other.context_id)
@@ -97,6 +104,8 @@ def evaluate_mosaic_context(
     for execution in executions:
         if execution["member_ous_uid"] != member or execution["source_name"] != source:
             raise ValueError("Pointings belong to another Archive candidate")
+        if execution.get("project_code") not in (None, raw.get("proposal_id")):
+            raise ValueError("Pointings belong to another Archive project")
         uid = execution["asdm_uid"]
         if uid in seen:
             raise ValueError("Ambiguous execution evidence")
@@ -152,6 +161,8 @@ def evaluate_mosaic_context(
                     fid = field["field_id"]
                     if fid in seen_fields:
                         raise ValueError("Duplicate science field identity")
+                    if field.get("target_name", source) != source:
+                        raise ValueError("Science FIELD belongs to another target")
                     seen_fields.add(fid)
                     probe_footprint(
                         {"circles": []},
