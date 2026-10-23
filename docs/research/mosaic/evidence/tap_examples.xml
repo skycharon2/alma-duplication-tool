@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <RESOURCE type="results">
+    <INFO name="QUERY_STATUS" value="OK" />
+    <INFO name="QUERY_TIMESTAMP" value="2026-10-20T13:05:42.155" />
+    <INFO name="QUERY" value="SELECT TOP 2 proposal_id,member_ous_uid,asdm_uid,target_name,s_ra,s_dec,s_region,s_fov,is_mosaic,frequency,antenna_arrays,obs_publisher_did FROM ivoa.obscore WHERE is_mosaic='T' AND science_observation='T' AND data_rights='Public'" />
+    <TABLE>
+      <FIELD name="proposal_id" datatype="char" arraysize="64*" ucd="meta.id;obs.proposal" utype="obscore:Provenance.Proposal.identifier" xtype="adql:VARCHAR">
+        <DESCRIPTION>Identifier of proposal to which NO observation belongs.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="member_ous_uid" datatype="char" arraysize="64*" xtype="adql:VARCHAR">
+        <DESCRIPTION>Member OUS ID</DESCRIPTION>
+      </FIELD>
+      <FIELD name="asdm_uid" datatype="char" arraysize="32*" ucd="meta.id" xtype="adql:VARCHAR">
+        <DESCRIPTION>UID of the ASDM containing this Field.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="target_name" datatype="char" arraysize="256*" ucd="meta.id;src" utype="obscore:Target.Name">
+        <DESCRIPTION>name of intended target</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_ra" datatype="double" ucd="pos.eq.ra" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C1" xtype="adql:DOUBLE">
+        <DESCRIPTION>RA of central coordinates</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_dec" datatype="double" ucd="pos.eq.dec" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C2" xtype="adql:DOUBLE">
+        <DESCRIPTION>DEC of central coordinates</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_region" datatype="char" arraysize="*" ucd="pos.outline;obs.field" utype="obscore:Char.SpatialAxis.Coverage.Support.Area" xtype="adql:REGION">
+        <DESCRIPTION>region bounded by observation</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_fov" datatype="double" ucd="phys.angSize;instr.fov" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Bounds.Extent.diameter" xtype="adql:DOUBLE">
+        <DESCRIPTION>size of the region covered (~diameter of minimum bounding circle)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="is_mosaic" datatype="char" xtype="adql:CHAR">
+        <DESCRIPTION>Flag to indicate if this ASDM represents a mosaic or not.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="frequency" datatype="double" ucd="em.freq;obs;meta.main" unit="GHz" utype="obscore:Char.SpectralAxis.Coverage.Location.refval" xtype="adql:DOUBLE">
+        <DESCRIPTION>Observed (tuned) reference frequency on the sky.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="antenna_arrays" datatype="char" arraysize="660*" ucd="meta.code.member;instr.setup" xtype="adql:VARCHAR">
+        <DESCRIPTION>Blank-separated list of Pad:Antenna pairs, i.e., A109:DV09 J504:DV02 J505:DV05 for antennas DV09, DV02 and DV05 sitting on pads A109, J504, and J505, respectively.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_publisher_did" datatype="char" arraysize="33*" ucd="meta.ref.ivoid" utype="obscore:Curation.PublisherDID">
+        <DESCRIPTION>publisher dataset identifier</DESCRIPTION>
+      </FIELD>
+      <DATA>
+        <TABLEDATA>
+          <TR>
+            <TD>2023.1.00687.S</TD>
+            <TD>uid://A001/X3733/X169</TD>
+            <TD>uid://A002/X11aaa01/X9c53</TD>
+            <TD>GMC104_south</TD>
+            <TD>80.27801112260727</TD>
+            <TD>-70.24048776377754</TD>
+            <TD>Polygon ICRS 80.296062 -70.251477 80.285502 -70.255803 80.271044 -70.258488 80.251920 -70.259097 80.236230 -70.257372 80.221834 -70.253077 80.214826 -70.248032 80.213808 -70.242470 80.218918 -70.237171 80.225406 -70.234157 80.233905 -70.231783 80.246533 -70.229938 80.259988 -70.229499 80.268468 -70.225792 80.282376 -70.222806 80.301314 -70.221789 80.319731 -70.223596 80.330604 -70.226445 80.338346 -70.230291 80.342198 -70.234758 80.341180 -70.240320 80.335726 -70.244592 80.324448 -70.248658 80.312184 -70.250773</TD>
+            <TD>0.043643628767693676</TD>
+            <TD>T</TD>
+            <TD>86.27469035741849</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06</TD>
+            <TD>ADS/JAO.ALMA#2023.1.00687.S</TD>
+          </TR>
+          <TR>
+            <TD>2023.1.00687.S</TD>
+            <TD>uid://A001/X3733/X169</TD>
+            <TD>uid://A002/X11aaa01/X9c53</TD>
+            <TD>GMC104_south</TD>
+            <TD>80.27801112260727</TD>
+            <TD>-70.24048776377754</TD>
+            <TD>Polygon ICRS 80.296062 -70.251477 80.285502 -70.255803 80.271044 -70.258488 80.251920 -70.259097 80.236230 -70.257372 80.221834 -70.253077 80.214826 -70.248032 80.213808 -70.242470 80.218918 -70.237171 80.225406 -70.234157 80.233905 -70.231783 80.246533 -70.229938 80.259988 -70.229499 80.268468 -70.225792 80.282376 -70.222806 80.301314 -70.221789 80.319731 -70.223596 80.330604 -70.226445 80.338346 -70.230291 80.342198 -70.234758 80.341180 -70.240320 80.335726 -70.244592 80.324448 -70.248658 80.312184 -70.250773</TD>
+            <TD>0.043643628767693676</TD>
+            <TD>T</TD>
+            <TD>99.20945703202234</TD>
+            <TD>J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06</TD>
+            <TD>ADS/JAO.ALMA#2023.1.00687.S</TD>
+          </TR>
+        </TABLEDATA>
+      </DATA>
+    </TABLE>
+    <INFO name="placeholder" value="ignore" />
+  </RESOURCE>
+</VOTABLE>

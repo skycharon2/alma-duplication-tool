@@ -119,6 +119,11 @@ These choices do not claim complete Appendix A implementation.
 
 ## Appendix A wording and input meaning
 
+A newly opened form selects both Archive and Queue by default. Researchers can
+deselect either or both; validation and section updates preserve the submitted
+selection, including an empty selection. These defaults do not configure a
+source, download Queue data or contact Archive services.
+
 The form explains location AND angular resolution AND either the continuum or
 spectral-line conditions for the same other observation. Both purpose checkboxes
 may be selected for independent branch results; the UI does not require both

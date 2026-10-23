@@ -1,0 +1,504 @@
+[
+  {
+    "name": "tap_schema",
+    "endpoint": "https://almascience.eso.org/tap/sync",
+    "parameters": {
+      "REQUEST": "doQuery",
+      "LANG": "ADQL",
+      "FORMAT": "votable",
+      "MAXREC": 200,
+      "QUERY": "SELECT column_name,datatype,unit,description FROM TAP_SCHEMA.columns WHERE table_name='ivoa.obscore'"
+    },
+    "started_at": "2026-10-20T13:05:40.049967+00:00",
+    "http_status": 200,
+    "bytes": 15179,
+    "sha256": "9b9831e7563eace18fa2a63b28a4a0a23a64ef3d756193c8d422ce5d0604cfbc",
+    "rows": [
+      {
+        "column_name": "obs_publisher_did",
+        "datatype": "char",
+        "unit": "",
+        "description": "publisher dataset identifier"
+      },
+      {
+        "column_name": "obs_collection",
+        "datatype": "char",
+        "unit": "",
+        "description": "short name for the data collection"
+      },
+      {
+        "column_name": "facility_name",
+        "datatype": "char",
+        "unit": "",
+        "description": "telescope name"
+      },
+      {
+        "column_name": "instrument_name",
+        "datatype": "char",
+        "unit": "",
+        "description": "instrument name"
+      },
+      {
+        "column_name": "obs_id",
+        "datatype": "char",
+        "unit": "",
+        "description": "internal dataset identifier"
+      },
+      {
+        "column_name": "dataproduct_type",
+        "datatype": "char",
+        "unit": "",
+        "description": "type of product"
+      },
+      {
+        "column_name": "calib_level",
+        "datatype": "int",
+        "unit": "",
+        "description": "calibration level (2 or 3). 2 if product_type = MOUS, 3 if product_type = GOUS"
+      },
+      {
+        "column_name": "collections",
+        "datatype": "char",
+        "unit": "",
+        "description": "Indicates that there are external products"
+      },
+      {
+        "column_name": "target_name",
+        "datatype": "char",
+        "unit": "",
+        "description": "name of intended target"
+      },
+      {
+        "column_name": "s_ra",
+        "datatype": "double",
+        "unit": "deg",
+        "description": "RA of central coordinates"
+      },
+      {
+        "column_name": "s_dec",
+        "datatype": "double",
+        "unit": "deg",
+        "description": "DEC of central coordinates"
+      },
+      {
+        "column_name": "s_fov",
+        "datatype": "double",
+        "unit": "deg",
+        "description": "size of the region covered (~diameter of minimum bounding circle)"
+      },
+      {
+        "column_name": "s_region",
+        "datatype": "char",
+        "unit": "",
+        "description": "region bounded by observation"
+      },
+      {
+        "column_name": "s_xel1",
+        "datatype": "int",
+        "unit": "",
+        "description": "Number of elements along the first spatial axis"
+      },
+      {
+        "column_name": "s_xel2",
+        "datatype": "int",
+        "unit": "",
+        "description": "Number of elements along the second spatial axis"
+      },
+      {
+        "column_name": "em_xel",
+        "datatype": "int",
+        "unit": "",
+        "description": "Number of elements along the spectral axis"
+      },
+      {
+        "column_name": "t_xel",
+        "datatype": "int",
+        "unit": "",
+        "description": "Number of elements along the time axis"
+      },
+      {
+        "column_name": "pol_xel",
+        "datatype": "int",
+        "unit": "",
+        "description": "Number of polarization samples"
+      },
+      {
+        "column_name": "s_resolution",
+        "datatype": "double",
+        "unit": "arcsec",
+        "description": "typical spatial resolution"
+      },
+      {
+        "column_name": "t_min",
+        "datatype": "double",
+        "unit": "d",
+        "description": "start time of observation (MJD)"
+      },
+      {
+        "column_name": "t_max",
+        "datatype": "double",
+        "unit": "d",
+        "description": "end time of observation (MJD)"
+      },
+      {
+        "column_name": "t_exptime",
+        "datatype": "double",
+        "unit": "s",
+        "description": "exposure time of observation"
+      },
+      {
+        "column_name": "t_resolution",
+        "datatype": "double",
+        "unit": "s",
+        "description": "typical temporal resolution"
+      },
+      {
+        "column_name": "em_min",
+        "datatype": "double",
+        "unit": "m",
+        "description": "start spectral coordinate value"
+      },
+      {
+        "column_name": "em_max",
+        "datatype": "double",
+        "unit": "m",
+        "description": "stop spectral coordinate value"
+      },
+      {
+        "column_name": "em_res_power",
+        "datatype": "double",
+        "unit": "",
+        "description": "typical spectral resolution"
+      },
+      {
+        "column_name": "pol_states",
+        "datatype": "char",
+        "unit": "",
+        "description": "polarization states present in the data"
+      },
+      {
+        "column_name": "cont_sensitivity_bandwidth",
+        "datatype": "double",
+        "unit": "mJy/beam",
+        "description": "Estimated noise in the aggregated continuum bandwidth. Note this is an indication only, it does not include the effects of flagging or dynamic range limitations."
+      },
+      {
+        "column_name": "pwv",
+        "datatype": "float",
+        "unit": "mm",
+        "description": "Estimated precipitable water vapour from the XML_CALWVR_ENTITIES table."
+      },
+      {
+        "column_name": "group_ous_uid",
+        "datatype": "char",
+        "unit": "",
+        "description": "Group OUS ID"
+      },
+      {
+        "column_name": "member_ous_uid",
+        "datatype": "char",
+        "unit": "",
+        "description": "Member OUS ID"
+      },
+      {
+        "column_name": "asdm_uid",
+        "datatype": "char",
+        "unit": "",
+        "description": "UID of the ASDM containing this Field."
+      },
+      {
+        "column_name": "obs_title",
+        "datatype": "char",
+        "unit": "",
+        "description": "Case-insensitive search over the project title"
+      },
+      {
+        "column_name": "type",
+        "datatype": "char",
+        "unit": "",
+        "description": "Type flags."
+      },
+      {
+        "column_name": "scan_intent",
+        "datatype": "char",
+        "unit": "",
+        "description": "Scan intent list for the observed field."
+      },
+      {
+        "column_name": "science_observation",
+        "datatype": "char",
+        "unit": "",
+        "description": "Flag to indicate whether this is a science observation."
+      },
+      {
+        "column_name": "spatial_scale_max",
+        "datatype": "double",
+        "unit": "arcsec",
+        "description": "Due to the fact that radio antennas can not be placed infinitely close, measurements do have a smallest separation which translates into a maximal angular distance beyond which features can not be resolved reliably any more. Adding observations with the ALMA Total Power array can add those missing largest scales."
+      },
+      {
+        "column_name": "qa2_passed",
+        "datatype": "char",
+        "unit": "",
+        "description": "Quality Assessment 2 status: does the Member / Group OUS fulfil the PI's requirements?"
+      },
+      {
+        "column_name": "bib_reference",
+        "datatype": "char",
+        "unit": "",
+        "description": "Bibliography code"
+      },
+      {
+        "column_name": "science_keyword",
+        "datatype": "char",
+        "unit": "",
+        "description": ""
+      },
+      {
+        "column_name": "scientific_category",
+        "datatype": "char",
+        "unit": "",
+        "description": ""
+      },
+      {
+        "column_name": "pi_userid",
+        "datatype": "char",
+        "unit": "",
+        "description": ""
+      },
+      {
+        "column_name": "pi_name",
+        "datatype": "char",
+        "unit": "",
+        "description": ""
+      },
+      {
+        "column_name": "spectral_resolution",
+        "datatype": "double",
+        "unit": "kHz",
+        "description": ""
+      },
+      {
+        "column_name": "o_ucd",
+        "datatype": "char",
+        "unit": "",
+        "description": "UCD describing the observable axis (pixel values)"
+      },
+      {
+        "column_name": "access_url",
+        "datatype": "char",
+        "unit": "",
+        "description": "URL to download the data"
+      },
+      {
+        "column_name": "access_format",
+        "datatype": "char",
+        "unit": "",
+        "description": "Content format of the data"
+      },
+      {
+        "column_name": "access_estsize",
+        "datatype": "int",
+        "unit": "kbyte",
+        "description": "Estimated size of datasets in kilobytes"
+      },
+      {
+        "column_name": "proposal_id",
+        "datatype": "char",
+        "unit": "",
+        "description": "Identifier of proposal to which NO observation belongs."
+      },
+      {
+        "column_name": "data_rights",
+        "datatype": "char",
+        "unit": "",
+        "description": "Access to data."
+      },
+      {
+        "column_name": "gal_longitude",
+        "datatype": "double",
+        "unit": "deg",
+        "description": "Galactic longitude of the observation for RA/Dec. Estimated using PyEphem and RA/Dec."
+      },
+      {
+        "column_name": "gal_latitude",
+        "datatype": "double",
+        "unit": "deg",
+        "description": "Galactic latitude of the observation for RA/Dec. Estimated using PyEphem and RA/Dec."
+      },
+      {
+        "column_name": "band_list",
+        "datatype": "char",
+        "unit": "",
+        "description": "Space delimited list of bands"
+      },
+      {
+        "column_name": "em_resolution",
+        "datatype": "double",
+        "unit": "m",
+        "description": "Estimated frequency resolution from all the spectral windows, using median values of channel widths."
+      },
+      {
+        "column_name": "bandwidth",
+        "datatype": "double",
+        "unit": "Hz",
+        "description": "Total Bandwidth"
+      },
+      {
+        "column_name": "antenna_arrays",
+        "datatype": "char",
+        "unit": "",
+        "description": "Blank-separated list of Pad:Antenna pairs, i.e., A109:DV09 J504:DV02 J505:DV05 for antennas DV09, DV02 and DV05 sitting on pads A109, J504, and J505, respectively."
+      },
+      {
+        "column_name": "is_mosaic",
+        "datatype": "char",
+        "unit": "",
+        "description": "Flag to indicate if this ASDM represents a mosaic or not."
+      },
+      {
+        "column_name": "obs_release_date",
+        "datatype": "char",
+        "unit": "",
+        "description": "timestamp of date the data becomes publicly available"
+      },
+      {
+        "column_name": "spatial_resolution",
+        "datatype": "double",
+        "unit": "arcsec",
+        "description": "Average of the maximum and minimum spatial resolution values of all spectral windows"
+      },
+      {
+        "column_name": "frequency_support",
+        "datatype": "char",
+        "unit": "GHz",
+        "description": "All frequency ranges used by the field"
+      },
+      {
+        "column_name": "frequency",
+        "datatype": "double",
+        "unit": "GHz",
+        "description": "Observed (tuned) reference frequency on the sky."
+      },
+      {
+        "column_name": "velocity_resolution",
+        "datatype": "double",
+        "unit": "m/s",
+        "description": "Estimated velocity resolution from all the spectral windows, from frequency resolution."
+      },
+      {
+        "column_name": "obs_creator_name",
+        "datatype": "char",
+        "unit": "",
+        "description": "case-insensitive partial match over the full PI name. Wildcards can be used"
+      },
+      {
+        "column_name": "pub_title",
+        "datatype": "char",
+        "unit": "",
+        "description": "Case insensitive search through the title of the publication."
+      },
+      {
+        "column_name": "first_author",
+        "datatype": "char",
+        "unit": "",
+        "description": "The first author as provided by <a href=\"http://telbib.eso.org\">telbib.eso.org</a>."
+      },
+      {
+        "column_name": "authors",
+        "datatype": "char",
+        "unit": "",
+        "description": "Full list of first author and all co-authors"
+      },
+      {
+        "column_name": "pub_abstract",
+        "datatype": "char",
+        "unit": "",
+        "description": "Case insensitive text search through the abstract of the publication."
+      },
+      {
+        "column_name": "publication_year",
+        "datatype": "int",
+        "unit": "",
+        "description": "The year the publication did appear in the printed version of the refereed journal."
+      },
+      {
+        "column_name": "proposal_abstract",
+        "datatype": "char",
+        "unit": "",
+        "description": "Text search on the proposal abstract. Only abstracts will be returned which contain the given text. The search is case-insensitive."
+      },
+      {
+        "column_name": "schedblock_name",
+        "datatype": "char",
+        "unit": "",
+        "description": "Name of the Scheduling Block used as a template for executing the ASDM containing this Field."
+      },
+      {
+        "column_name": "proposal_authors",
+        "datatype": "char",
+        "unit": "",
+        "description": "Full name of CoIs ."
+      },
+      {
+        "column_name": "sensitivity_10kms",
+        "datatype": "double",
+        "unit": "mJy/beam",
+        "description": "Estimated noise in an nominal 10km/s bandwidth. Note this is an indication only, it does not include the effects of flagging or Hanning smoothing, and a 10km/s bandwidth may not be achievable with the data as taken."
+      },
+      {
+        "column_name": "lastModified",
+        "datatype": "char",
+        "unit": "",
+        "description": "Time stamp of last modification of the metadata"
+      }
+    ],
+    "scope": "obscore column metadata; inspect QUERY_STATUS"
+  },
+  {
+    "name": "tap_examples",
+    "endpoint": "https://almascience.eso.org/tap/sync",
+    "parameters": {
+      "REQUEST": "doQuery",
+      "LANG": "ADQL",
+      "FORMAT": "votable",
+      "MAXREC": 200,
+      "QUERY": "SELECT TOP 2 proposal_id,member_ous_uid,asdm_uid,target_name,s_ra,s_dec,s_region,s_fov,is_mosaic,frequency,antenna_arrays,obs_publisher_did FROM ivoa.obscore WHERE is_mosaic='T' AND science_observation='T' AND data_rights='Public'"
+    },
+    "started_at": "2026-10-20T13:05:40.382650+00:00",
+    "http_status": 200,
+    "bytes": 5815,
+    "sha256": "7de127412e81f15857242c3c76107109d208fd0daf1dc74f58e1209b3f138394",
+    "rows": [
+      {
+        "proposal_id": "2023.1.00687.S",
+        "member_ous_uid": "uid://A001/X3733/X169",
+        "asdm_uid": "uid://A002/X11aaa01/X9c53",
+        "target_name": "GMC104_south",
+        "s_ra": "80.27801112260727",
+        "s_dec": "-70.24048776377754",
+        "s_region": "Polygon ICRS 80.296062 -70.251477 80.285502 -70.255803 80.271044 -70.258488 80.251920 -70.259097 80.236230 -70.257372 80.221834 -70.253077 80.214826 -70.248032 80.213808 -70.242470 80.218918 -70.237171 80.225406 -70.234157 80.233905 -70.231783 80.246533 -70.229938 80.259988 -70.229499 80.268468 -70.225792 80.282376 -70.222806 80.301314 -70.221789 80.319731 -70.223596 80.330604 -70.226445 80.338346 -70.230291 80.342198 -70.234758 80.341180 -70.240320 80.335726 -70.244592 80.324448 -70.248658 80.312184 -70.250773",
+        "s_fov": "0.043643628767693676",
+        "is_mosaic": "T",
+        "frequency": "86.27469035741849",
+        "antenna_arrays": "J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06",
+        "obs_publisher_did": "ADS/JAO.ALMA#2023.1.00687.S"
+      },
+      {
+        "proposal_id": "2023.1.00687.S",
+        "member_ous_uid": "uid://A001/X3733/X169",
+        "asdm_uid": "uid://A002/X11aaa01/X9c53",
+        "target_name": "GMC104_south",
+        "s_ra": "80.27801112260727",
+        "s_dec": "-70.24048776377754",
+        "s_region": "Polygon ICRS 80.296062 -70.251477 80.285502 -70.255803 80.271044 -70.258488 80.251920 -70.259097 80.236230 -70.257372 80.221834 -70.253077 80.214826 -70.248032 80.213808 -70.242470 80.218918 -70.237171 80.225406 -70.234157 80.233905 -70.231783 80.246533 -70.229938 80.259988 -70.229499 80.268468 -70.225792 80.282376 -70.222806 80.301314 -70.221789 80.319731 -70.223596 80.330604 -70.226445 80.338346 -70.230291 80.342198 -70.234758 80.341180 -70.240320 80.335726 -70.244592 80.324448 -70.248658 80.312184 -70.250773",
+        "s_fov": "0.043643628767693676",
+        "is_mosaic": "T",
+        "frequency": "99.20945703202234",
+        "antenna_arrays": "J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 J506:CM05 N601:CM07 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06",
+        "obs_publisher_did": "ADS/JAO.ALMA#2023.1.00687.S"
+      }
+    ],
+    "scope": "TOP 2 sample only; not catalogue-complete"
+  }
+]

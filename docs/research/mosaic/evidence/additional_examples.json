@@ -1,0 +1,341 @@
+[
+  {
+    "name": "case_C_tap",
+    "url": "https://almascience.eso.org/tap/sync",
+    "parameters": {
+      "REQUEST": "doQuery",
+      "LANG": "ADQL",
+      "FORMAT": "votable",
+      "MAXREC": 1,
+      "QUERY": "SELECT TOP 1 proposal_id,member_ous_uid,asdm_uid,obs_id,target_name,s_ra,s_dec,s_region,s_fov,is_mosaic,frequency,antenna_arrays,obs_publisher_did,data_rights,science_observation,obs_release_date FROM ivoa.obscore WHERE is_mosaic='T' AND science_observation='T' AND data_rights='Public' AND proposal_id <> '2023.1.00687.S' "
+    },
+    "retrieved_at": "2026-10-20T13:17:55.441598+00:00",
+    "http_status": 200,
+    "bytes": 6365,
+    "sha256": "7cc025e9c7bd77c34d13a9ad718126d5f7597c1f675efed71891a50e8383fbc9",
+    "query_status": [
+      "OK"
+    ],
+    "rows": [
+      {
+        "proposal_id": "2018.1.00707.S",
+        "member_ous_uid": "uid://A001/X133d/X22e8",
+        "asdm_uid": "uid://A002/Xdab261/X6fdf",
+        "obs_id": "uid://A001/X133d/X22e8.source.Sun.spw.3",
+        "target_name": "Sun",
+        "s_ra": "19.531128333333335",
+        "s_dec": "8.246696875",
+        "s_region": "Union ICRS ( Polygon 19.525086 8.242851 19.524846 8.241605 19.524160 8.240535 19.523123 8.239789 19.522308 8.239527 19.521667 8.239467 19.521027 8.239527 19.520211 8.239789 19.519175 8.240534 19.518488 8.241605 19.518248 8.242851 19.518488 8.244096 19.519175 8.245167 19.520211 8.245913 19.520817 8.246128 19.521667 8.246235 19.522308 8.246175 19.523123 8.245913 19.524159 8.245167 19.524846 8.244097 Polygon 19.537705 8.247980 19.537464 8.246734 19.537172 8.246167 19.536626 8.245513 19.535544 8.244834 19.534285 8.244596 19.533027 8.244834 19.531945 8.245513 19.531192 8.246539 19.530974 8.247138 19.530866 8.247980 19.531106 8.249225 19.531793 8.250296 19.532453 8.250837 19.533027 8.251126 19.534285 8.251364 19.535544 8.251126 19.536295 8.250717 19.536778 8.250296 19.537465 8.249225 Polygon 19.550313 8.253106 19.550206 8.252264 19.549987 8.251665 19.549234 8.250639 19.548152 8.249960 19.546894 8.249722 19.545635 8.249960 19.545062 8.250249 19.544401 8.250790 19.543715 8.251861 19.543475 8.253106 19.543535 8.253740 19.543800 8.254547 19.544553 8.255573 19.545635 8.256252 19.546894 8.256490 19.548153 8.256252 19.548904 8.255844 19.549386 8.255422 19.550073 8.254352)",
+        "s_fov": "0.03173344298832037",
+        "is_mosaic": "T",
+        "frequency": "248.00351973064102",
+        "antenna_arrays": "T702:PM03 T704:PM04",
+        "obs_publisher_did": "ADS/JAO.ALMA#2018.1.00707.S",
+        "data_rights": "Public",
+        "science_observation": "T",
+        "obs_release_date": "2026-10-01T06:32:19.000"
+      }
+    ],
+    "scope": "One public science mosaic row; not a complete Member or catalogue query",
+    "aq_exact_source_hits": [
+      {
+        "observation_id": "uid://A001/X133d/X22e8.source.Sun",
+        "member_ous_uid": "uid://A001/X133d/X22e8",
+        "source_name": "Sun",
+        "raw_label": "TP",
+        "response_sha256": "5b1517dcd5f70d559566e609e8dda27427e4591671c8932f6449218f96d265de",
+        "retrieved_at": "2026-10-20T13:17:56.685209+00:00",
+        "url": "https://almascience.eso.org/aq/service/api/search/observations/_search"
+      }
+    ],
+    "aq_total_hits": 1
+  },
+  {
+    "name": "case_C_datalink",
+    "url": "https://almascience.eso.org/datalink/sync",
+    "parameters": {
+      "ID": "uid://A001/X133d/X22e8"
+    },
+    "retrieved_at": "2026-10-20T13:17:56.689748+00:00",
+    "http_status": 200,
+    "bytes": 4396,
+    "sha256": "43f39f787578161ba0a657d531430e54e372c96ba745245d18ba68451004a2ff",
+    "query_status": [],
+    "rows": [
+      {
+        "ID": "uid://A001/X133d/X22e8",
+        "access_url": "https://almascience.eso.org/dataPortal/member.uid___A001_X133d_X22e8.README.txt",
+        "service_def": "",
+        "error_message": "",
+        "semantics": "#documentation",
+        "local_semantics": "",
+        "description": "Download documentation for ./uid://A001/X133d/X22e8|README.",
+        "content_type": "text/plain",
+        "content_length": "3524",
+        "content_qualifier": "",
+        "link_auth": "false",
+        "link_authorized": "True"
+      },
+      {
+        "ID": "uid://A001/X133d/X22e8",
+        "access_url": "https://almascience.eso.org/dataPortal/2018.1.00707.S_uid___A001_X133d_X22e8_auxiliary.tar",
+        "service_def": "",
+        "error_message": "",
+        "semantics": "#auxiliary",
+        "local_semantics": "",
+        "description": "Download dataset of type: null, and class: N/A.",
+        "content_type": "application/x-tar",
+        "content_length": "1727488",
+        "content_qualifier": "",
+        "link_auth": "false",
+        "link_authorized": "True"
+      },
+      {
+        "ID": "uid://A001/X133d/X22e8",
+        "access_url": "",
+        "service_def": "DataLink.2018.1.00707.S_uid___A001_X133d_X22e8_auxiliary.tar",
+        "error_message": "",
+        "semantics": "#auxiliary",
+        "local_semantics": "",
+        "description": "",
+        "content_type": "application/x-votable+xml;content=datalink",
+        "content_length": null,
+        "content_qualifier": "",
+        "link_auth": "",
+        "link_authorized": null
+      },
+      {
+        "ID": "uid://A001/X133d/X22e8",
+        "access_url": "https://almascience.eso.org/dataPortal/2018.1.00707.S_uid___A002_Xdab261_X6fdf.asdm.sdm.tar",
+        "service_def": "",
+        "error_message": "",
+        "semantics": "#package",
+        "local_semantics": "",
+        "description": "Download all data associated with uid://A001/X133d/X22e8.",
+        "content_type": "application/x-tar",
+        "content_length": "499442688",
+        "content_qualifier": "",
+        "link_auth": "false",
+        "link_authorized": "True"
+      },
+      {
+        "ID": "uid://A001/X133d/X22e8",
+        "access_url": "https://almascience.eso.org/dataPortal/2018.1.00707.S_uid___A002_Xdab261_X7071.asdm.sdm.tar",
+        "service_def": "",
+        "error_message": "",
+        "semantics": "#package",
+        "local_semantics": "",
+        "description": "Download all data associated with uid://A001/X133d/X22e8.",
+        "content_type": "application/x-tar",
+        "content_length": "499442688",
+        "content_qualifier": "",
+        "link_auth": "false",
+        "link_authorized": "True"
+      },
+      {
+        "ID": "uid://A001/X133d/X22e8",
+        "access_url": "https://almascience.eso.org/dataPortal/2018.1.00707.S_uid___A002_Xdab261_X72a1.asdm.sdm.tar",
+        "service_def": "",
+        "error_message": "",
+        "semantics": "#package",
+        "local_semantics": "",
+        "description": "Download all data associated with uid://A001/X133d/X22e8.",
+        "content_type": "application/x-tar",
+        "content_length": "499438592",
+        "content_qualifier": "",
+        "link_auth": "false",
+        "link_authorized": "True"
+      },
+      {
+        "ID": "uid://A001/X133d/X22e8",
+        "access_url": "https://almascience.eso.org/dataPortal/2018.1.00707.S_uid___A002_Xdab261_X73ce.asdm.sdm.tar",
+        "service_def": "",
+        "error_message": "",
+        "semantics": "#package",
+        "local_semantics": "",
+        "description": "Download all data associated with uid://A001/X133d/X22e8.",
+        "content_type": "application/x-tar",
+        "content_length": "499440640",
+        "content_qualifier": "",
+        "link_auth": "false",
+        "link_authorized": "True"
+      }
+    ],
+    "semantics_counts": {
+      "#documentation": 1,
+      "#auxiliary": 2,
+      "#package": 4
+    },
+    "scope": "Product discovery only; no product links or service descriptors followed"
+  },
+  {
+    "name": "case_D_tap",
+    "url": "https://almascience.eso.org/tap/sync",
+    "parameters": {
+      "REQUEST": "doQuery",
+      "LANG": "ADQL",
+      "FORMAT": "votable",
+      "MAXREC": 1,
+      "QUERY": "SELECT TOP 1 proposal_id,member_ous_uid,asdm_uid,obs_id,target_name,s_ra,s_dec,s_region,s_fov,is_mosaic,frequency,antenna_arrays,obs_publisher_did,data_rights,science_observation,obs_release_date FROM ivoa.obscore WHERE is_mosaic='T' AND science_observation='T' AND data_rights='Public' AND proposal_id <> '2023.1.00687.S' AND proposal_id <> '2018.1.00707.S' "
+    },
+    "retrieved_at": "2026-10-20T13:17:57.186267+00:00",
+    "http_status": 200,
+    "bytes": 6060,
+    "sha256": "cde9886ad470eb4017785b7ca937548703160c392f1f2552ddbc5499470b33d0",
+    "query_status": [
+      "OK"
+    ],
+    "rows": [
+      {
+        "proposal_id": "2017.1.01675.S",
+        "member_ous_uid": "uid://A001/X1296/X832",
+        "asdm_uid": "uid://A002/Xc7b4ea/X21f9",
+        "obs_id": "uid://A001/X1296/X832.source.TUK93_122.spw.32",
+        "target_name": "TUK93_122",
+        "s_ra": "84.92708360397111",
+        "s_dec": "-7.5024997044326485",
+        "s_region": "Polygon ICRS 84.937414 -7.543254 84.934579 -7.547767 84.930871 -7.548711 84.926961 -7.547441 84.925579 -7.550683 84.922721 -7.552609 84.918893 -7.552609 84.915797 -7.550379 84.885373 -7.475360 84.886127 -7.472017 84.888917 -7.469420 84.892330 -7.468884 84.895511 -7.470254 84.899369 -7.465234 84.902781 -7.464698 84.905963 -7.466068 84.909473 -7.461223 84.913232 -7.460512 84.916414 -7.461882 84.919590 -7.457233 84.923296 -7.456289 84.926865 -7.457696 84.929120 -7.453755 84.932969 -7.452103 84.936341 -7.452850 84.938961 -7.455616 84.968798 -7.529636 84.968045 -7.532979 84.965255 -7.535577 84.961842 -7.536113 84.958660 -7.534743 84.955484 -7.539393 84.951777 -7.540337 84.947866 -7.539067 84.946485 -7.542310 84.943253 -7.544343",
+        "s_fov": "0.10081885633230665",
+        "is_mosaic": "T",
+        "frequency": "233.02139747981664",
+        "antenna_arrays": "J501:CM10 J502:CM02 J503:CM03 J504:CM12 J505:CM08 N602:CM01 N603:CM09 N604:CM11 N605:CM04 N606:CM06",
+        "obs_publisher_did": "ADS/JAO.ALMA#2017.1.01675.S",
+        "data_rights": "Public",
+        "science_observation": "T",
+        "obs_release_date": "2019-11-09T00:00:00.000"
+      }
+    ],
+    "scope": "One public science mosaic row; not a complete Member or catalogue query",
+    "aq_exact_source_hits": [
+      {
+        "observation_id": "uid://A001/X1296/X832.source.TUK93_122",
+        "member_ous_uid": "uid://A001/X1296/X832",
+        "source_name": "TUK93_122",
+        "raw_label": "7m",
+        "response_sha256": "f4c75a29bb49a464e4081347f523dec64abea12fbe838a263b3ce6f68186b77a",
+        "retrieved_at": "2026-10-20T13:17:58.389565+00:00",
+        "url": "https://almascience.eso.org/aq/service/api/search/observations/_search"
+      }
+    ],
+    "aq_total_hits": 3
+  },
+  {
+    "name": "case_D_datalink",
+    "url": "https://almascience.eso.org/datalink/sync",
+    "parameters": {
+      "ID": "uid://A001/X1296/X832"
+    },
+    "retrieved_at": "2026-10-20T13:17:58.394398+00:00",
+    "http_status": 200,
+    "bytes": 4693,
+    "sha256": "d799729fbbb8fcb7a60de8a338e0a5eb7f500edf823feeb32111adedc67ddd61",
+    "query_status": [],
+    "rows": [
+      {
+        "ID": "uid://A001/X1296/X832",
+        "access_url": "https://almascience.eso.org/dataPortal/member.uid___A001_X1296_X832.README.txt",
+        "service_def": "",
+        "error_message": "",
+        "semantics": "#documentation",
+        "local_semantics": "",
+        "description": "Download documentation for ./uid://A001/X1296/X832|README.",
+        "content_type": "text/plain",
+        "content_length": "3523",
+        "content_qualifier": "",
+        "link_auth": "false",
+        "link_authorized": "True"
+      },
+      {
+        "ID": "uid://A001/X1296/X832",
+        "access_url": "https://almascience.eso.org/dataPortal/2017.1.01675.S_uid___A001_X1296_X832_001_of_001.tar",
+        "service_def": "",
+        "error_message": "",
+        "semantics": "#this",
+        "local_semantics": "",
+        "description": "Download dataset of type: null, and class: N/A.",
+        "content_type": "application/x-tar",
+        "content_length": "7492097024",
+        "content_qualifier": "",
+        "link_auth": "false",
+        "link_authorized": "True"
+      },
+      {
+        "ID": "uid://A001/X1296/X832",
+        "access_url": "",
+        "service_def": "DataLink.2017.1.01675.S_uid___A001_X1296_X832_001_of_001.tar",
+        "error_message": "",
+        "semantics": "#this",
+        "local_semantics": "",
+        "description": "",
+        "content_type": "application/x-votable+xml;content=datalink",
+        "content_length": null,
+        "content_qualifier": "",
+        "link_auth": "",
+        "link_authorized": null
+      },
+      {
+        "ID": "uid://A001/X1296/X832",
+        "access_url": "https://almascience.eso.org/dataPortal/2017.1.01675.S_uid___A001_X1296_X832_auxiliary.tar",
+        "service_def": "",
+        "error_message": "",
+        "semantics": "#auxiliary",
+        "local_semantics": "",
+        "description": "Download dataset of type: null, and class: N/A.",
+        "content_type": "application/x-tar",
+        "content_length": "272897024",
+        "content_qualifier": "",
+        "link_auth": "false",
+        "link_authorized": "True"
+      },
+      {
+        "ID": "uid://A001/X1296/X832",
+        "access_url": "",
+        "service_def": "DataLink.2017.1.01675.S_uid___A001_X1296_X832_auxiliary.tar",
+        "error_message": "",
+        "semantics": "#auxiliary",
+        "local_semantics": "",
+        "description": "",
+        "content_type": "application/x-votable+xml;content=datalink",
+        "content_length": null,
+        "content_qualifier": "",
+        "link_auth": "",
+        "link_authorized": null
+      },
+      {
+        "ID": "uid://A001/X1296/X832",
+        "access_url": "https://almascience.eso.org/dataPortal/2017.1.01675.S_uid___A002_Xc7b4ea_X21f9.asdm.sdm.tar",
+        "service_def": "",
+        "error_message": "",
+        "semantics": "#progenitor",
+        "local_semantics": "",
+        "description": "Download dataset of type: , and class: N/A.",
+        "content_type": "application/x-tar",
+        "content_length": "1438001152",
+        "content_qualifier": "",
+        "link_auth": "false",
+        "link_authorized": "True"
+      },
+      {
+        "ID": "uid://A001/X1296/X832",
+        "access_url": "https://almascience.eso.org/dataPortal/2017.1.01675.S_uid___A002_Xc7cf4e_X718a.asdm.sdm.tar",
+        "service_def": "",
+        "error_message": "",
+        "semantics": "#progenitor",
+        "local_semantics": "",
+        "description": "Download dataset of type: , and class: N/A.",
+        "content_type": "application/x-tar",
+        "content_length": "1460250624",
+        "content_qualifier": "",
+        "link_auth": "false",
+        "link_authorized": "True"
+      }
+    ],
+    "semantics_counts": {
+      "#documentation": 1,
+      "#this": 2,
+      "#auxiliary": 2,
+      "#progenitor": 2
+    },
+    "scope": "Product discovery only; no product links or service descriptors followed"
+  }
+]

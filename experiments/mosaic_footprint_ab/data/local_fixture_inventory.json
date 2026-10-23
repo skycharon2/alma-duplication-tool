@@ -1,0 +1,49 @@
+{
+  "kind": "local fixture inventory, not an acquisition receipt",
+  "scope": "existing local bytes inspected on 2026-10-21; no new download",
+  "acquisition_url": "UNKNOWN: not established by this inventory",
+  "acquisition_time_utc": "UNKNOWN",
+  "limitations": [
+    "Local ASDM association and science-intent parsing do not establish full Member completeness.",
+    "Array labels are caller inputs to the extraction script; independent association evidence is still required.",
+    "FIELD centres are not independently validated antenna/time-dependent POINTING directions."
+  ],
+  "files": [
+    {
+      "file": "case_E_tap.xml",
+      "bytes": 6275,
+      "sha256": "221d9b0cc6a07a3e9ddfbe43cae59c59a39a5a3a1d2ce35817f1dd71e747a0dc",
+      "role": "preserved local source snapshot"
+    },
+    {
+      "file": "ngc5248_12m_listobs.txt",
+      "bytes": 60831,
+      "sha256": "d47518e1362bb1cf9f36c5f62c6a4b88b863a96edd3741a5b63f60da2e597585",
+      "role": "preserved local source snapshot"
+    },
+    {
+      "file": "ngc5248_12m_pointings.csv",
+      "bytes": 3197,
+      "sha256": "3edc749573defde4e42e81a155b5efdbd3c61fc570fe3cd65d0c1f3cbde1d95e",
+      "role": "derived science-field table"
+    },
+    {
+      "file": "ngc5248_12m_tap.xml",
+      "bytes": 3823,
+      "sha256": "b61036a637618523f790398291d1ead4be3114873f1f48a0016ef47444437c45",
+      "role": "preserved local source snapshot"
+    },
+    {
+      "file": "science_pointings.csv",
+      "bytes": 5197,
+      "sha256": "f9a359b6a9924c86f724c5e7fa939720e255e02d84f02b988bfd7b1914642431",
+      "role": "derived science-field table"
+    },
+    {
+      "file": "source_listobs.md",
+      "bytes": 40650,
+      "sha256": "fd111a8aa93721cbae24d472c23ee1b1aac4fb599b30da91108bca501c11d163",
+      "role": "preserved local source snapshot"
+    }
+  ]
+}

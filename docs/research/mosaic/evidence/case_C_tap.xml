@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <RESOURCE type="results">
+    <INFO name="QUERY_STATUS" value="OK" />
+    <INFO name="QUERY_TIMESTAMP" value="2026-10-20T13:17:56.387" />
+    <INFO name="QUERY" value="SELECT TOP 1 proposal_id,member_ous_uid,asdm_uid,obs_id,target_name,s_ra,s_dec,s_region,s_fov,is_mosaic,frequency,antenna_arrays,obs_publisher_did,data_rights,science_observation,obs_release_date FROM ivoa.obscore WHERE is_mosaic='T' AND science_observation='T' AND data_rights='Public' AND proposal_id &lt;&gt; '2023.1.00687.S'" />
+    <TABLE>
+      <FIELD name="proposal_id" datatype="char" arraysize="64*" ucd="meta.id;obs.proposal" utype="obscore:Provenance.Proposal.identifier" xtype="adql:VARCHAR">
+        <DESCRIPTION>Identifier of proposal to which NO observation belongs.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="member_ous_uid" datatype="char" arraysize="64*" xtype="adql:VARCHAR">
+        <DESCRIPTION>Member OUS ID</DESCRIPTION>
+      </FIELD>
+      <FIELD name="asdm_uid" datatype="char" arraysize="32*" ucd="meta.id" xtype="adql:VARCHAR">
+        <DESCRIPTION>UID of the ASDM containing this Field.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_id" datatype="char" arraysize="64*" ucd="meta.id" utype="obscore:DataID.observationID">
+        <DESCRIPTION>internal dataset identifier</DESCRIPTION>
+      </FIELD>
+      <FIELD name="target_name" datatype="char" arraysize="256*" ucd="meta.id;src" utype="obscore:Target.Name">
+        <DESCRIPTION>name of intended target</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_ra" datatype="double" ucd="pos.eq.ra" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C1" xtype="adql:DOUBLE">
+        <DESCRIPTION>RA of central coordinates</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_dec" datatype="double" ucd="pos.eq.dec" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C2" xtype="adql:DOUBLE">
+        <DESCRIPTION>DEC of central coordinates</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_region" datatype="char" arraysize="*" ucd="pos.outline;obs.field" utype="obscore:Char.SpatialAxis.Coverage.Support.Area" xtype="adql:REGION">
+        <DESCRIPTION>region bounded by observation</DESCRIPTION>
+      </FIELD>
+      <FIELD name="s_fov" datatype="double" ucd="phys.angSize;instr.fov" unit="deg" utype="obscore:Char.SpatialAxis.Coverage.Bounds.Extent.diameter" xtype="adql:DOUBLE">
+        <DESCRIPTION>size of the region covered (~diameter of minimum bounding circle)</DESCRIPTION>
+      </FIELD>
+      <FIELD name="is_mosaic" datatype="char" xtype="adql:CHAR">
+        <DESCRIPTION>Flag to indicate if this ASDM represents a mosaic or not.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="frequency" datatype="double" ucd="em.freq;obs;meta.main" unit="GHz" utype="obscore:Char.SpectralAxis.Coverage.Location.refval" xtype="adql:DOUBLE">
+        <DESCRIPTION>Observed (tuned) reference frequency on the sky.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="antenna_arrays" datatype="char" arraysize="660*" ucd="meta.code.member;instr.setup" xtype="adql:VARCHAR">
+        <DESCRIPTION>Blank-separated list of Pad:Antenna pairs, i.e., A109:DV09 J504:DV02 J505:DV05 for antennas DV09, DV02 and DV05 sitting on pads A109, J504, and J505, respectively.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_publisher_did" datatype="char" arraysize="33*" ucd="meta.ref.ivoid" utype="obscore:Curation.PublisherDID">
+        <DESCRIPTION>publisher dataset identifier</DESCRIPTION>
+      </FIELD>
+      <FIELD name="data_rights" datatype="char" arraysize="11" ucd="meta.code" utype="obscore:Curation.Rights" xtype="adql:VARCHAR">
+        <DESCRIPTION>Access to data.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="science_observation" datatype="char" ucd="meta.code.class;obs" xtype="adql:VARCHAR">
+        <DESCRIPTION>Flag to indicate whether this is a science observation.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="obs_release_date" datatype="char" arraysize="*" ucd="time.release" utype="obscore:Curation.releaseDate" xtype="adql:TIMESTAMP">
+        <DESCRIPTION>timestamp of date the data becomes publicly available</DESCRIPTION>
+      </FIELD>
+      <DATA>
+        <TABLEDATA>
+          <TR>
+            <TD>2018.1.00707.S</TD>
+            <TD>uid://A001/X133d/X22e8</TD>
+            <TD>uid://A002/Xdab261/X6fdf</TD>
+            <TD>uid://A001/X133d/X22e8.source.Sun.spw.3</TD>
+            <TD>Sun</TD>
+            <TD>19.531128333333335</TD>
+            <TD>8.246696875</TD>
+            <TD>Union ICRS ( Polygon 19.525086 8.242851 19.524846 8.241605 19.524160 8.240535 19.523123 8.239789 19.522308 8.239527 19.521667 8.239467 19.521027 8.239527 19.520211 8.239789 19.519175 8.240534 19.518488 8.241605 19.518248 8.242851 19.518488 8.244096 19.519175 8.245167 19.520211 8.245913 19.520817 8.246128 19.521667 8.246235 19.522308 8.246175 19.523123 8.245913 19.524159 8.245167 19.524846 8.244097 Polygon 19.537705 8.247980 19.537464 8.246734 19.537172 8.246167 19.536626 8.245513 19.535544 8.244834 19.534285 8.244596 19.533027 8.244834 19.531945 8.245513 19.531192 8.246539 19.530974 8.247138 19.530866 8.247980 19.531106 8.249225 19.531793 8.250296 19.532453 8.250837 19.533027 8.251126 19.534285 8.251364 19.535544 8.251126 19.536295 8.250717 19.536778 8.250296 19.537465 8.249225 Polygon 19.550313 8.253106 19.550206 8.252264 19.549987 8.251665 19.549234 8.250639 19.548152 8.249960 19.546894 8.249722 19.545635 8.249960 19.545062 8.250249 19.544401 8.250790 19.543715 8.251861 19.543475 8.253106 19.543535 8.253740 19.543800 8.254547 19.544553 8.255573 19.545635 8.256252 19.546894 8.256490 19.548153 8.256252 19.548904 8.255844 19.549386 8.255422 19.550073 8.254352)</TD>
+            <TD>0.03173344298832037</TD>
+            <TD>T</TD>
+            <TD>248.00351973064102</TD>
+            <TD>T702:PM03 T704:PM04</TD>
+            <TD>ADS/JAO.ALMA#2018.1.00707.S</TD>
+            <TD>Public</TD>
+            <TD>T</TD>
+            <TD>2026-10-01T06:32:19.000</TD>
+          </TR>
+        </TABLEDATA>
+      </DATA>
+    </TABLE>
+    <INFO name="placeholder" value="ignore" />
+  </RESOURCE>
+</VOTABLE>

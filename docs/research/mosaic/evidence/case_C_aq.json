@@ -1,0 +1,32 @@
+{
+  "catalog": {
+    "records": [
+      {
+        "observation_id": "uid://A001/X133d/X22e8.source.Sun",
+        "member_ous_uid": "uid://A001/X133d/X22e8",
+        "source_name": "Sun",
+        "raw_label": "TP",
+        "response_sha256": "5b1517dcd5f70d559566e609e8dda27427e4591671c8932f6449218f96d265de",
+        "retrieved_at": "2026-10-20T13:17:56.685209+00:00",
+        "url": "https://almascience.eso.org/aq/service/api/search/observations/_search"
+      }
+    ],
+    "provenance": {
+      "mode": "LIVE",
+      "manifest_sha256": null
+    },
+    "input_paths": []
+  },
+  "queries": [
+    {
+      "member_ous_uid": "uid://A001/X133d/X22e8",
+      "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+      "retrieved_at": "2026-10-20T13:17:56.685209+00:00",
+      "response_sha256": "5b1517dcd5f70d559566e609e8dda27427e4591671c8932f6449218f96d265de",
+      "total_hits": 1,
+      "max_hits": 100
+    }
+  ],
+  "properties_url": "https://almascience.eso.org/aq/service/api/v1/properties",
+  "mirror_attempts": []
+}

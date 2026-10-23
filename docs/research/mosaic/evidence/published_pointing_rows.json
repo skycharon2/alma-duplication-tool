@@ -1,0 +1,200 @@
+{
+  "url": "https://casaguides.nrao.edu/index.php/AntennaeBand7_Calibration_6.4",
+  "asdm_uid": "uid://A002/X1ff7b0/Xb",
+  "ms_basename": "uid___A002_X1ff7b0_Xb.ms",
+  "status": "PUBLISHED_TABLE_ONLY_NOT_PRODUCT_VALIDATED",
+  "rows": [
+    {
+      "field_id": 2,
+      "ra_hms": "12:01:53.17008",
+      "dec_dms": "-18.52.37.9200",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 4818
+    },
+    {
+      "field_id": 3,
+      "ra_hms": "12:01:51.90301",
+      "dec_dms": "-18.51.49.9437",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 6435
+    },
+    {
+      "field_id": 4,
+      "ra_hms": "12:01:52.43086",
+      "dec_dms": "-18.51.49.9437",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 6424
+    },
+    {
+      "field_id": 5,
+      "ra_hms": "12:01:52.95871",
+      "dec_dms": "-18.51.49.9437",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 5478
+    },
+    {
+      "field_id": 6,
+      "ra_hms": "12:01:53.48656",
+      "dec_dms": "-18.51.49.9436",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 6435
+    },
+    {
+      "field_id": 7,
+      "ra_hms": "12:01:54.01441",
+      "dec_dms": "-18.51.49.9436",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 6446
+    },
+    {
+      "field_id": 8,
+      "ra_hms": "12:01:52.16693",
+      "dec_dms": "-18.51.56.4319",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 6435
+    },
+    {
+      "field_id": 9,
+      "ra_hms": "12:01:52.69478",
+      "dec_dms": "-18.51.56.4318",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 6424
+    },
+    {
+      "field_id": 10,
+      "ra_hms": "12:01:53.22263",
+      "dec_dms": "-18.51.56.4318",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 6446
+    },
+    {
+      "field_id": 11,
+      "ra_hms": "12:01:53.75049",
+      "dec_dms": "-18.51.56.4318",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 6446
+    },
+    {
+      "field_id": 12,
+      "ra_hms": "12:01:51.90301",
+      "dec_dms": "-18.52.02.9201",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 6435
+    },
+    {
+      "field_id": 13,
+      "ra_hms": "12:01:52.43086",
+      "dec_dms": "-18.52.02.9200",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 6424
+    },
+    {
+      "field_id": 14,
+      "ra_hms": "12:01:52.95871",
+      "dec_dms": "-18.52.02.9200",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 4818
+    },
+    {
+      "field_id": 15,
+      "ra_hms": "12:01:53.48656",
+      "dec_dms": "-18.52.02.9200",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 4829
+    },
+    {
+      "field_id": 16,
+      "ra_hms": "12:01:54.01441",
+      "dec_dms": "-18.52.02.9199",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 4829
+    },
+    {
+      "field_id": 17,
+      "ra_hms": "12:01:52.16694",
+      "dec_dms": "-18.52.09.4082",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 4829
+    },
+    {
+      "field_id": 18,
+      "ra_hms": "12:01:52.69479",
+      "dec_dms": "-18.52.09.4082",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 4829
+    },
+    {
+      "field_id": 19,
+      "ra_hms": "12:01:53.22264",
+      "dec_dms": "-18.52.09.4082",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 3872
+    },
+    {
+      "field_id": 20,
+      "ra_hms": "12:01:53.75049",
+      "dec_dms": "-18.52.09.4081",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 4829
+    },
+    {
+      "field_id": 21,
+      "ra_hms": "12:01:51.90301",
+      "dec_dms": "-18.52.15.8964",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 4829
+    },
+    {
+      "field_id": 22,
+      "ra_hms": "12:01:52.43087",
+      "dec_dms": "-18.52.15.8964",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 4829
+    },
+    {
+      "field_id": 23,
+      "ra_hms": "12:01:52.95872",
+      "dec_dms": "-18.52.15.8963",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 4818
+    },
+    {
+      "field_id": 24,
+      "ra_hms": "12:01:53.48657",
+      "dec_dms": "-18.52.15.8963",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 4818
+    },
+    {
+      "field_id": 25,
+      "ra_hms": "12:01:54.01442",
+      "dec_dms": "-18.52.15.8963",
+      "frame": "J2000",
+      "source_id": 2,
+      "nrows": 4840
+    }
+  ]
+}

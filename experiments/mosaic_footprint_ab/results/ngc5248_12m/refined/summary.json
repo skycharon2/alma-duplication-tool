@@ -1,0 +1,61 @@
+{
+  "experiment": "Archive Mosaic footprint A/B: s_region vs circular beam union",
+  "policy_verdict": "NOT_EVALUATED",
+  "scope": "single ASDM/Execution Block; Member-wide completeness unverified",
+  "s_region_semantics": "official half-power equivalence not established",
+  "polygon_model": "locally projected straight STC-S polygon edges (approximate)",
+  "beam_model": "circular half-power disks per science FIELD (hypothesis)",
+  "project_code": "2019.1.01718.S",
+  "target_name": "NGC5248",
+  "member_ous_uid": "uid://A001/X1465/X3f4",
+  "asdm_uid": "uid://A002/Xeaae1d/X1a2",
+  "array": "12m",
+  "diameter_m": 12.0,
+  "frequency_ghz": 342.4657209709879,
+  "science_field_count": 11,
+  "science_field_ids": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "s_region_vertex_count": 33,
+  "source_sha256": {
+    "tap": "b61036a637618523f790398291d1ead4be3114873f1f48a0016ef47444437c45",
+    "fields": "3edc749573defde4e42e81a155b5efdbd3c61fc570fe3cd65d0c1f3cbde1d95e"
+  },
+  "coefficient_results": [
+    {
+      "coefficient": 1.13,
+      "radius_arcsec": 8.501507268848751,
+      "vertex_to_nearest_field_arcsec": {
+        "min": 8.326146462258073,
+        "mean": 8.32997106380663,
+        "max": 8.33240730457114
+      },
+      "grid": {
+        "step_arcsec": 0.25,
+        "nx": 277,
+        "ny": 271,
+        "pixel_area_arcsec2": 0.0625
+      },
+      "raster_counts": {
+        "both": 19195,
+        "polygon_only": 0,
+        "beam_only": 839,
+        "neither": 55033,
+        "boundary_unclassified": 0
+      },
+      "intersection_over_union_raster": 0.9581211939702505,
+      "edge_probe_count": 198,
+      "edge_probe_disagreements": 46
+    }
+  ]
+}
