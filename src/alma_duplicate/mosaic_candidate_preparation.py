@@ -12,6 +12,21 @@ from alma_duplicate.archive_auxiliary import select_auxiliary
 from alma_duplicate.archive_mosaic_package_audit import audit_package
 
 
+def acquire_candidate_array(directory, member, *, offline, array_fetcher):
+    from alma_duplicate.clients.archive_aq_client import ArchiveAqClient
+    from alma_duplicate.archive_array_acquisition import _check_result
+    if offline and array_fetcher is None:
+        return None
+    fetched = (array_fetcher or ArchiveAqClient().fetch_members)((member,))
+    _check_result(fetched, (member,))
+    (directory/'array_acquisition.json').write_text(json.dumps(dict(
+        queries=[asdict(q) for q in fetched.queries],
+        records=[asdict(r) for r in fetched.catalog.records],
+        provenance=asdict(fetched.catalog.provenance),
+        properties_url=fetched.properties_url), indent=2)+'\n')
+    return fetched.catalog
+
+
 def prepare_candidates(discovery, *, output, cache, inventory_capture=None, product_discovery=None,
                        package_audit=None, offline=False, array_fetcher=None):
     """Prepare each distinct Member/target; isolate failures without negative verdicts.
@@ -31,7 +46,7 @@ def prepare_candidates(discovery, *, output, cache, inventory_capture=None, prod
         if any(not isinstance(v,str) or not v.strip() for v in key) or key in seen:
             raise ValueError('Invalid or duplicate Member/target identity')
         seen.add(key)
-    if offline and (inventory_capture is None or product_discovery is None):
+    if offline and any('T' in r.get('geometry_flags', ['T']) for r in rows) and (inventory_capture is None or product_discovery is None):
         raise ValueError('Offline preparation requires explicit metadata replay providers')
     output=Path(output);output.mkdir(parents=True,exist_ok=False)
     results=[]
@@ -42,6 +57,17 @@ def prepare_candidates(discovery, *, output, cache, inventory_capture=None, prod
         result=dict(context_id=row['context_id'],member_ous_uid=member,source_name=source,
             directory=str(directory),status='FAILED',stage='INVENTORY',policy_status='NOT_EVALUATED')
         try:
+            flags = row.get('geometry_flags', ['T'])
+            result['geometry_flags'] = flags
+            if 'T' not in flags:
+                result['stage'] = 'ARRAY_READINESS'
+                catalog = acquire_candidate_array(directory, member, offline=offline, array_fetcher=array_fetcher)
+                result.update(status='METADATA_ONLY_PREPARED',
+                    readiness_status='ARRAY_ACQUIRED' if catalog is not None else 'ARRAY_ACQUISITION_NOT_REQUESTED_OFFLINE',
+                    pointing_source='ARCHIVE_CONTEXT_CENTER_IF_SINGLE')
+                results.append(result)
+                (directory/'preparation.json').write_text(json.dumps(result, indent=2)+'\n')
+                continue
             inventory=(inventory_capture or capture_inventory)(directory/'inventory',member=member,source=source)
             if inventory['status']!='CAPTURED':
                 raise ValueError('Inventory unavailable: '+inventory['status'])
@@ -110,11 +136,18 @@ def prepare_candidates(discovery, *, output, cache, inventory_capture=None, prod
                 result['readiness_status']='UNAVAILABLE'
             else:
                 result['status']='FAILED'
+        if {'F', 'T'}.issubset(result.get('geometry_flags', ())) and not (directory/'array_acquisition.json').exists():
+            try:
+                catalog = acquire_candidate_array(directory, member, offline=offline, array_fetcher=array_fetcher)
+                result['single_field_array_status'] = 'ARRAY_ACQUIRED' if catalog is not None else 'UNAVAILABLE'
+            except (OSError, ValueError, KeyError, TypeError, HTTPException) as exc:
+                result['single_field_array_status'] = 'UNAVAILABLE'
+                result['single_field_array_error'] = str(exc)
         results.append(result)
         (directory/'preparation.json').write_text(json.dumps(result,indent=2)+'\n')
     report=dict(schema_version='mosaic_candidate_preparation_1',candidates=results,
         discovery_status=discovery.get('status'),discovery_scope=discovery.get('plan',{}).get('scope'),
-        status='COMPLETED' if all(r['status']=='POINTINGS_PREPARED' and r.get('readiness_status')=='EVIDENCE_BOUND' for r in results) else 'INCOMPLETE',
+        status='COMPLETED' if all(((r['status']=='POINTINGS_PREPARED' and r.get('readiness_status')=='EVIDENCE_BOUND') or (r['status']=='METADATA_ONLY_PREPARED' and r.get('readiness_status')=='ARRAY_ACQUIRED')) for r in results) else 'INCOMPLETE',
         discovery_recall_status=discovery.get('plan',{}).get('recall_status'),
         scope='POINTING_AND_ARRAY_READINESS_NOT_SPECTRAL_SELECTION',policy_status='NOT_EVALUATED')
     (output/'preparation.json').write_text(json.dumps(report,indent=2)+'\n')

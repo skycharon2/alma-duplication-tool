@@ -23,11 +23,10 @@ python -m pytest -q
   identical shared continuum/line evaluators, component-scoped association,
   coherent context identity and saved readiness integrity.
 * They are **not** gold labels for independent real proposal scientific review.
-* The Archive candidate discovery currently has `is_mosaic='T'`, and its TAP
-  inventory and package audit also require Mosaic rows. Proposed Mosaic against
-  Archive Single Pointing is **not** implemented by this patch. Do not remove
-  only the discovery filter; a separate end-to-end mixed-geometry acquisition
-  and routing design is required.
+* Cross-geometry routing now includes Archive Single Pointing candidates. Their
+  verified TAP centre, metadata frequency and AQ diameter define one beam; Mosaic
+  candidates retain the verified package path. Both use the proposed Mosaic
+  pointing-count criterion. See [cross-geometry support](mosaic_cross_geometry.md).
 * Discovery recall relative to true beam union remains **unestablished**.
 * Locally consistent receipts do not prove all Member executions were retrieved.
   Keep UNKNOWN for negative claims until Member completeness is proven.

@@ -6,9 +6,17 @@ from alma_duplicate.rules.mosaic_context import evaluate_mosaic_context
 from alma_duplicate.proposed_mosaic import import_proposed
 
 
+def as_mosaic_context(context):
+    prepared = context.evidence.prepared
+    normalized = prepared.normalized_metadata
+    return replace(context, evidence=replace(context.evidence, prepared=replace(prepared,
+        raw_row=dict(prepared.raw_row, is_mosaic='T'),
+        normalized_metadata=replace(normalized, is_mosaic=replace(normalized.is_mosaic, value=True)))))
+
+
 def data():
     search = sample()
-    context = search.archive.retained_rows[0].context
+    context = as_mosaic_context(search.archive.retained_rows[0].context)
     request = replace(
         search.plan.validation.request, geometry="MOSAIC", target_name="proposed"
     )

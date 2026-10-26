@@ -17,7 +17,7 @@ from alma_duplicate.rules.continuum import (
 )
 from alma_duplicate.rules.line import evaluate_line
 from alma_duplicate.rules.mosaic_context import evaluate_mosaic_context
-from tests.integration.test_mosaic_context import data, other_execution
+from tests.integration.test_mosaic_context import data, other_execution, as_mosaic_context
 
 
 def _points(*positions):
@@ -35,7 +35,7 @@ def _line_case():
     from tests.integration.test_line_preparation import report as line_report
 
     source_report = line_report()
-    context = source_report.context_evaluations[0].candidate.context
+    context = as_mosaic_context(source_report.context_evaluations[0].candidate.context)
     request = replace(
         source_report.search_result.plan.validation.request,
         geometry="MOSAIC", target_name="proposed",
@@ -242,8 +242,13 @@ def test_line_numerics_are_identical_between_mosaic_and_single():
     )
     single_request = replace(request, geometry="SINGLE_POINTING")
     pos_single = replace(result["criteria"][1], criterion_id="POS-SINGLE")
+    prepared = context.evidence.prepared
+    norm = prepared.normalized_metadata
+    single_context = replace(context, evidence=replace(context.evidence, prepared=replace(
+        prepared, raw_row=dict(prepared.raw_row, is_mosaic='F'),
+        normalized_metadata=replace(norm, is_mosaic=replace(norm.is_mosaic, value=False)))))
     _, single_pairs, _ = evaluate_line(
-        single_request, context, (pos_single, result["criteria"][0]), mosaic=False
+        single_request, single_context, (pos_single, result["criteria"][0]), mosaic=False
     )
     mosaic_pairs = result["line_pairs"]
     assert len(mosaic_pairs) == len(single_pairs) > 0
@@ -281,12 +286,9 @@ def test_execution_and_context_provenance_is_not_interchangeable(mutation, needl
         )
 
 
-def test_cross_geometry_discovery_is_not_yet_implemented():
-    # This is a regression reminder of a known coverage gap, NOT a passing
-    # scientific acceptance test for Mosaic vs Archive Single Pointing.
+def test_cross_geometry_discovery_keeps_recall_limit_explicit():
     _, _, proposed, _, _ = data()
-    proposed["input_sha256"] = proposed.get("input_sha256", "fixture")
     plan = plan_discovery(proposed, margin_arcsec=1)
-    assert all("is_mosaic='T'" in req["query"] for req in plan["requests"])
-    assert "MOSAICS" in plan["scope"]
-    assert plan["recall_status"].startswith("NOT_ESTABLISHED")
+    assert all("is_mosaic='T'" not in req['query'] for req in plan['requests'])
+    assert 'ALL_GEOMETRIES' in plan['scope']
+    assert plan['recall_status'].startswith('NOT_ESTABLISHED')

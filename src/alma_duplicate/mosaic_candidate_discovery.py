@@ -9,7 +9,7 @@ from urllib.parse import urlencode
 import xml.etree.ElementTree as ET
 from alma_duplicate.archive_endpoints import ARCHIVE_ORIGINS
 from alma_duplicate.archive_mosaic_discovery import _fetch, MAX_ROWS
-from alma_duplicate.archive_mosaic_pipeline import read_mosaic_rows, MAX_METADATA_BYTES
+from alma_duplicate.archive_mosaic_pipeline import read_candidate_rows, MAX_METADATA_BYTES
 
 
 def plan_discovery(proposed, *, margin_arcsec, origin=ARCHIVE_ORIGINS[0]):
@@ -36,19 +36,19 @@ def plan_discovery(proposed, *, margin_arcsec, origin=ARCHIVE_ORIGINS[0]):
             else:
                 predicates.append(f"1=INTERSECTS(CIRCLE('ICRS',{ra:.17g},{dec:.17g},{margin_arcsec/3600:.17g}),s_region)")
         query=("SELECT DISTINCT proposal_id,member_ous_uid,asdm_uid,target_name,science_observation,is_mosaic "
-               "FROM ivoa.obscore WHERE science_observation='T' AND is_mosaic='T' AND ("
+               "FROM ivoa.obscore WHERE science_observation='T' AND ("
                + ' OR '.join(predicates)+')')
         params=dict(REQUEST='doQuery',LANG='ADQL',FORMAT='votable',MAXREC=str(MAX_ROWS),QUERY=query)
         requests.append(dict(query=query,url=origin+'/tap/sync?'+urlencode(params),
             kind='REGION', proposed_ids=[pid for coord in subset for pid in positions[coord]],maxrec=MAX_ROWS))
     query=("SELECT DISTINCT proposal_id,member_ous_uid,asdm_uid,target_name,science_observation,is_mosaic "
-           "FROM ivoa.obscore WHERE science_observation='T' AND is_mosaic='T' AND s_region IS NULL")
+           "FROM ivoa.obscore WHERE science_observation='T' AND s_region IS NULL")
     params=dict(REQUEST='doQuery',LANG='ADQL',FORMAT='votable',MAXREC=str(MAX_ROWS),QUERY=query)
     requests.append(dict(query=query,url=origin+'/tap/sync?'+urlencode(params),
                          kind='NULL_REGION_FALLBACK',proposed_ids=[],maxrec=MAX_ROWS))
     return dict(schema_version='mosaic_candidate_discovery_plan_1',origin=origin,
         proposed_sha256=proposed['input_sha256'],margin_arcsec=margin_arcsec,requests=requests,
-        scope='PUBLIC_SCIENCE_MOSAICS_REGION_PREFILTER_WITH_NULL_REGION_FALLBACK',
+        scope='PUBLIC_SCIENCE_ALL_GEOMETRIES_REGION_PREFILTER_WITH_NULL_REGION_FALLBACK',
         recall_status='NOT_ESTABLISHED_FOR_RECONSTRUCTED_HALF_POWER_COVERAGE')
 
 
@@ -65,21 +65,21 @@ def discover_candidates(proposed, output: Path, *, margin_arcsec, origin=ARCHIVE
             receipt.update(http_status=code,response_file=filename,response_sha256=sha256(raw).hexdigest(),response_bytes=len(raw))
             if code!=200:
                 raise ValueError(f'HTTP {code}')
-            rows=read_mosaic_rows(raw)
+            rows=read_candidate_rows(raw)
             if len(rows)>=MAX_ROWS:
                 raise ValueError('MAXREC reached; query completeness unknown')
             receipt.update(status='COMPLETED',row_count=len(rows))
             for row in rows:
                 key=(row['proposal_id'],row['member_ous_uid'],row['target_name'])
                 group=groups.setdefault(key,dict(project_code=key[0],member_ous_uid=key[1],source_name=key[2],
-                    asdm_uids=set(),request_indices=set()))
-                group['asdm_uids'].add(row['asdm_uid']);group['request_indices'].add(index)
+                    asdm_uids=set(),request_indices=set(),geometry_flags=set()))
+                group['geometry_flags'].add(row['is_mosaic']);group['asdm_uids'].add(row['asdm_uid']);group['request_indices'].add(index)
         except (OSError,HTTPException,ValueError,ET.ParseError) as exc:
             receipt['error']=str(exc)
         receipts.append(receipt)
     candidates=[]
     for key,g in sorted(groups.items()):
-        g['asdm_uids']=sorted(g['asdm_uids']);g['request_indices']=sorted(g['request_indices'])
+        g['geometry_flags']=sorted(g['geometry_flags']);g['asdm_uids']=sorted(g['asdm_uids']);g['request_indices']=sorted(g['request_indices'])
         g['context_id']='ARCHIVE:MOSAIC:'+sha256(json.dumps(key).encode()).hexdigest()
         g['coverage_status']='NOT_RECONSTRUCTED'
         candidates.append(g)
