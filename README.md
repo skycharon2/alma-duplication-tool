@@ -43,6 +43,22 @@ use POSIX file locking and are not native PowerShell commands.
 Internet access is needed to install dependencies, download Queue data and query
 live Archive services.
 
+### Linux prerequisites (Ubuntu/Debian)
+
+On Ubuntu or Debian, install the basic tools before cloning. Other Linux
+systems should use their distribution's package manager for equivalent tools.
+
+```bash
+sudo apt update
+sudo apt install -y git python3 python3-venv python3-pip ca-certificates curl
+python3 --version
+```
+
+The Python interpreter used below **must be 3.11 or newer**. On systems with an
+older default Python, install a supported interpreter and its matching `venv`
+package, then use that interpreter (for example, `python3.11 -m venv .venv`).
+Do not replace the Linux system Python just to run this project.
+
 ### 1. Download and install
 
 Clone the repository, or use GitHub's **Code → Download ZIP**, extract it and
@@ -53,17 +69,38 @@ git clone https://github.com/skycharon2/alma-duplication-tool.git
 cd alma-duplication-tool
 ```
 
+Cloning checks out GitHub's default `main` branch. Changes on an unpublished
+local branch are not included; push the intended branch before checking it out
+on the Linux machine if you need those changes.
+
 From the project root (the folder containing `pyproject.toml`):
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+python -m pip install --upgrade pip
 python -m pip install -e ".[ui]"
+python -m pip check
 ```
 
 Confirm that `python3` is version 3.11 or later before creating the environment.
 For development or notebooks, additionally install `.[dev]`; it is not required
 to launch the browser interface.
+
+**Archive-only quick start:** after installing, you can test live Archive
+queries without downloading or activating Queue CSV data:
+
+```bash
+unset ALMA_UI_QUEUE_CSV ALMA_UI_QUEUE_SNAPSHOT_ROOT
+unset ALMA_UI_ARCHIVE_REPLAY ALMA_UI_ARCHIVE_ARRAY_EVIDENCE ALMA_UI_REPORT_DIR
+export ALMA_UI_LIVE_ARCHIVE=1
+export ALMA_UI_LIVE_ARCHIVE_AQ=1
+python -m flask --app alma_duplicate.ui.app:create_app run \
+  --host 127.0.0.1 --port 5051
+```
+
+Open `http://127.0.0.1:5051/proposed` and select ARCHIVE only. Press Ctrl+C
+to stop this server before proceeding to the combined Archive + Queue setup.
 
 ### 2. Download and activate the initial Queue snapshot
 
@@ -159,6 +196,46 @@ For a short local test, a manual update check is sufficient.
 This launch command is for local testing. Institutional hosting needs a separate
 service, access-control and persistence setup; see the
 [deployment guide](docs/queue_operations_deployment.md).
+
+### Access a remote Linux host from your laptop
+
+If Flask is running on a remote Linux computer, keep its `--host 127.0.0.1`
+setting. From a separate terminal on your own laptop, establish an SSH tunnel
+(replace the placeholders with your actual SSH login and host):
+
+```bash
+ssh -N -L 5051:127.0.0.1:5051 USERNAME@LINUX_HOST
+```
+
+Keep the tunnel open and visit `http://127.0.0.1:5051/proposed` **on your laptop**.
+The address `127.0.0.1` otherwise refers to whichever machine runs the browser.
+SSH access must already be authorized and configured. If local port 5051 is in
+use, choose another local port in `-L` and in the laptop browser URL. Do not
+use `--host 0.0.0.0` to expose the Flask development server to the network.
+
+### Basic checks and troubleshooting
+
+In another terminal on the Linux host, check that Flask responds:
+
+```bash
+curl -fsS http://127.0.0.1:5051/healthz
+```
+
+This confirms the HTTP process is reachable, **not** that Archive queries or
+Queue downloads work. If setup fails, check these common causes:
+
+- `python3 -m venv` fails: install the `venv` package matching your Python version.
+- `No module named flask`: activate `.venv` and reinstall `.[ui]`.
+- Port 5051 is occupied: choose another port and update the browser/tunnel URL.
+- Queue unavailable: check `queue_active ... status`; downloading alone does
+  not activate a snapshot. Preserve the full snapshot store.
+- Archive unavailable: verify outbound HTTPS/DNS and review application logs;
+  source failure is not a non-duplication result.
+- Old browser reports missing: temporary run history may expire or disappear
+  after restarting the process; download reports you need to retain.
+
+For automated Linux services, refer to the [deployment guide](docs/queue_operations_deployment.md)
+instead of exposing this development server.
 
 ## Minimal example
 
