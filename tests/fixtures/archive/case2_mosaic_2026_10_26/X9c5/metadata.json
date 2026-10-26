@@ -1,0 +1,619 @@
+{
+  "status": "COMPLETE",
+  "rows": [
+    {
+      "proposal_id": "2018.1.00294.S",
+      "obs_publisher_did": "ADS/JAO.ALMA#2018.1.00294.S",
+      "group_ous_uid": "uid://A001/X133d/X9c2",
+      "member_ous_uid": "uid://A001/X133d/X9c5",
+      "asdm_uid": "uid://A002/Xfeb5e6/X59b7",
+      "obs_id": "uid://A001/X133d/X9c5.source.NGC253.spw.25",
+      "target_name": "NGC253",
+      "s_ra": 11.887768008798632,
+      "s_dec": -25.28841111084336,
+      "s_region": "Polygon ICRS 11.888290 -25.289480 11.888009 -25.289776 11.887661 -25.289962 11.887185 -25.290044 11.886785 -25.289987 11.886425 -25.289821 11.886139 -25.289562 11.885955 -25.289236 11.885894 -25.288801 11.886015 -25.288377 11.886360 -25.287974 11.886662 -25.287806 11.886883 -25.287559 11.887246 -25.287342 11.887409 -25.287147 11.887659 -25.286960 11.888030 -25.286815 11.888433 -25.286781 11.888902 -25.286890 11.889294 -25.287147 11.889554 -25.287517 11.889642 -25.288021 11.889554 -25.288378 11.889348 -25.288693 11.889111 -25.288893 11.888874 -25.289016 11.888592 -25.289312",
+      "frequency": 690.8932063433901,
+      "bandwidth": 1875000000.0,
+      "em_xel": 480,
+      "frequency_support": "[688.19..690.06GHz,3904.30kHz,12.5mJy/beam@10km/s,1.4mJy/beam@native, XX YY] U [689.96..691.83GHz,3904.30kHz,12.1mJy/beam@10km/s,1.3mJy/beam@native, XX YY] U [691.77..693.64GHz,3904.30kHz,12.1mJy/beam@10km/s,1.3mJy/beam@native, XX YY] U [693.58..695.45GHz,3904.30kHz,12.1mJy/beam@10km/s,1.3mJy/beam@native, XX YY]",
+      "spectral_resolution": 3904.296875,
+      "spatial_resolution": 0.2233103692869649,
+      "sensitivity_10kms": 12.070618186799607,
+      "cont_sensitivity_bandwidth": 0.6760254250360646,
+      "antenna_arrays": "A001:DA46 A002:DV06 A006:DV16 A007:DV04 A008:DA52 A010:DV15 A011:DV25 A015:DV21 A016:DA64 A017:DV17 A019:DV13 A022:DV02 A023:DA63 A024:DV10 A026:DV05 A027:DV03 A033:DV01 A034:DV24 A035:DA61 A036:DA57 A039:DV07 A040:DA45 A041:DV14 A042:DA60 A043:DA51 A044:DA44 A045:DA58 A047:DA42 A048:DV19 A049:DA47 A050:DA49 A058:DV12 A060:DV20 A062:DA65 A066:DA62 A068:DA54 A069:DV18 A070:DA48 A072:DV23 A073:DA43 A074:DA56 A075:DV09 A076:DA50 A082:DA41 A083:DV22 A085:DA59 A088:DV11 T701:PM02 T702:PM03 T703:PM01 T704:PM04",
+      "is_mosaic": "T",
+      "science_observation": "T",
+      "qa2_passed": "T",
+      "obs_release_date": "2023-10-12T21:30:47.000",
+      "lastModified": "2026-09-28T18:47:19.570",
+      "s_resolution": 0.2233103692869649,
+      "s_fov": 0.003393068314445117,
+      "t_min": 59845.309191,
+      "t_max": 59848.216976,
+      "band_list": "9",
+      "pol_states": "/XX/YY/"
+    },
+    {
+      "proposal_id": "2018.1.00294.S",
+      "obs_publisher_did": "ADS/JAO.ALMA#2018.1.00294.S",
+      "group_ous_uid": "uid://A001/X133d/X9c2",
+      "member_ous_uid": "uid://A001/X133d/X9c5",
+      "asdm_uid": "uid://A002/Xfeb5e6/X59b7",
+      "obs_id": "uid://A001/X133d/X9c5.source.NGC253.spw.27",
+      "target_name": "NGC253",
+      "s_ra": 11.887768008798632,
+      "s_dec": -25.28841111084336,
+      "s_region": "Polygon ICRS 11.888290 -25.289480 11.888009 -25.289776 11.887661 -25.289962 11.887185 -25.290044 11.886785 -25.289987 11.886425 -25.289821 11.886139 -25.289562 11.885955 -25.289236 11.885894 -25.288801 11.886015 -25.288377 11.886360 -25.287974 11.886662 -25.287806 11.886883 -25.287559 11.887246 -25.287342 11.887409 -25.287147 11.887659 -25.286960 11.888030 -25.286815 11.888433 -25.286781 11.888902 -25.286890 11.889294 -25.287147 11.889554 -25.287517 11.889642 -25.288021 11.889554 -25.288378 11.889348 -25.288693 11.889111 -25.288893 11.888874 -25.289016 11.888592 -25.289312",
+      "frequency": 692.7083471169428,
+      "bandwidth": 1875000000.0,
+      "em_xel": 480,
+      "frequency_support": "[688.19..690.06GHz,3904.30kHz,12.5mJy/beam@10km/s,1.4mJy/beam@native, XX YY] U [689.96..691.83GHz,3904.30kHz,12.1mJy/beam@10km/s,1.3mJy/beam@native, XX YY] U [691.77..693.64GHz,3904.30kHz,12.1mJy/beam@10km/s,1.3mJy/beam@native, XX YY] U [693.58..695.45GHz,3904.30kHz,12.1mJy/beam@10km/s,1.3mJy/beam@native, XX YY]",
+      "spectral_resolution": 3904.296875,
+      "spatial_resolution": 0.2233103692869649,
+      "sensitivity_10kms": 12.088085060776871,
+      "cont_sensitivity_bandwidth": 0.6760254250360646,
+      "antenna_arrays": "A001:DA46 A002:DV06 A006:DV16 A007:DV04 A008:DA52 A010:DV15 A011:DV25 A015:DV21 A016:DA64 A017:DV17 A019:DV13 A022:DV02 A023:DA63 A024:DV10 A026:DV05 A027:DV03 A033:DV01 A034:DV24 A035:DA61 A036:DA57 A039:DV07 A040:DA45 A041:DV14 A042:DA60 A043:DA51 A044:DA44 A045:DA58 A047:DA42 A048:DV19 A049:DA47 A050:DA49 A058:DV12 A060:DV20 A062:DA65 A066:DA62 A068:DA54 A069:DV18 A070:DA48 A072:DV23 A073:DA43 A074:DA56 A075:DV09 A076:DA50 A082:DA41 A083:DV22 A085:DA59 A088:DV11 T701:PM02 T702:PM03 T703:PM01 T704:PM04",
+      "is_mosaic": "T",
+      "science_observation": "T",
+      "qa2_passed": "T",
+      "obs_release_date": "2023-10-12T21:30:47.000",
+      "lastModified": "2026-09-28T18:47:19.570",
+      "s_resolution": 0.2233103692869649,
+      "s_fov": 0.003393068314445117,
+      "t_min": 59845.309191,
+      "t_max": 59848.216976,
+      "band_list": "9",
+      "pol_states": "/XX/YY/"
+    },
+    {
+      "proposal_id": "2018.1.00294.S",
+      "obs_publisher_did": "ADS/JAO.ALMA#2018.1.00294.S",
+      "group_ous_uid": "uid://A001/X133d/X9c2",
+      "member_ous_uid": "uid://A001/X133d/X9c5",
+      "asdm_uid": "uid://A002/Xfeb5e6/X59b7",
+      "obs_id": "uid://A001/X133d/X9c5.source.NGC253.spw.29",
+      "target_name": "NGC253",
+      "s_ra": 11.887768008798632,
+      "s_dec": -25.28841111084336,
+      "s_region": "Polygon ICRS 11.888290 -25.289480 11.888009 -25.289776 11.887661 -25.289962 11.887185 -25.290044 11.886785 -25.289987 11.886425 -25.289821 11.886139 -25.289562 11.885955 -25.289236 11.885894 -25.288801 11.886015 -25.288377 11.886360 -25.287974 11.886662 -25.287806 11.886883 -25.287559 11.887246 -25.287342 11.887409 -25.287147 11.887659 -25.286960 11.888030 -25.286815 11.888433 -25.286781 11.888902 -25.286890 11.889294 -25.287147 11.889554 -25.287517 11.889642 -25.288021 11.889554 -25.288378 11.889348 -25.288693 11.889111 -25.288893 11.888874 -25.289016 11.888592 -25.289312",
+      "frequency": 694.5168574892202,
+      "bandwidth": 1875000000.0,
+      "em_xel": 480,
+      "frequency_support": "[688.19..690.06GHz,3904.30kHz,12.5mJy/beam@10km/s,1.4mJy/beam@native, XX YY] U [689.96..691.83GHz,3904.30kHz,12.1mJy/beam@10km/s,1.3mJy/beam@native, XX YY] U [691.77..693.64GHz,3904.30kHz,12.1mJy/beam@10km/s,1.3mJy/beam@native, XX YY] U [693.58..695.45GHz,3904.30kHz,12.1mJy/beam@10km/s,1.3mJy/beam@native, XX YY]",
+      "spectral_resolution": 3904.296875,
+      "spatial_resolution": 0.2233103692869649,
+      "sensitivity_10kms": 12.105641720036893,
+      "cont_sensitivity_bandwidth": 0.6760254250360646,
+      "antenna_arrays": "A001:DA46 A002:DV06 A006:DV16 A007:DV04 A008:DA52 A010:DV15 A011:DV25 A015:DV21 A016:DA64 A017:DV17 A019:DV13 A022:DV02 A023:DA63 A024:DV10 A026:DV05 A027:DV03 A033:DV01 A034:DV24 A035:DA61 A036:DA57 A039:DV07 A040:DA45 A041:DV14 A042:DA60 A043:DA51 A044:DA44 A045:DA58 A047:DA42 A048:DV19 A049:DA47 A050:DA49 A058:DV12 A060:DV20 A062:DA65 A066:DA62 A068:DA54 A069:DV18 A070:DA48 A072:DV23 A073:DA43 A074:DA56 A075:DV09 A076:DA50 A082:DA41 A083:DV22 A085:DA59 A088:DV11 T701:PM02 T702:PM03 T703:PM01 T704:PM04",
+      "is_mosaic": "T",
+      "science_observation": "T",
+      "qa2_passed": "T",
+      "obs_release_date": "2023-10-12T21:30:47.000",
+      "lastModified": "2026-09-28T18:47:19.570",
+      "s_resolution": 0.2233103692869649,
+      "s_fov": 0.003393068314445117,
+      "t_min": 59845.309191,
+      "t_max": 59848.216976,
+      "band_list": "9",
+      "pol_states": "/XX/YY/"
+    },
+    {
+      "proposal_id": "2018.1.00294.S",
+      "obs_publisher_did": "ADS/JAO.ALMA#2018.1.00294.S",
+      "group_ous_uid": "uid://A001/X133d/X9c2",
+      "member_ous_uid": "uid://A001/X133d/X9c5",
+      "asdm_uid": "uid://A002/Xfeb5e6/X59b7",
+      "obs_id": "uid://A001/X133d/X9c5.source.NGC253.spw.31",
+      "target_name": "NGC253",
+      "s_ra": 11.887768008798632,
+      "s_dec": -25.28841111084336,
+      "s_region": "Polygon ICRS 11.888290 -25.289480 11.888009 -25.289776 11.887661 -25.289962 11.887185 -25.290044 11.886785 -25.289987 11.886425 -25.289821 11.886139 -25.289562 11.885955 -25.289236 11.885894 -25.288801 11.886015 -25.288377 11.886360 -25.287974 11.886662 -25.287806 11.886883 -25.287559 11.887246 -25.287342 11.887409 -25.287147 11.887659 -25.286960 11.888030 -25.286815 11.888433 -25.286781 11.888902 -25.286890 11.889294 -25.287147 11.889554 -25.287517 11.889642 -25.288021 11.889554 -25.288378 11.889348 -25.288693 11.889111 -25.288893 11.888874 -25.289016 11.888592 -25.289312",
+      "frequency": 689.1252473171846,
+      "bandwidth": 1875000000.0,
+      "em_xel": 480,
+      "frequency_support": "[688.19..690.06GHz,3904.30kHz,12.5mJy/beam@10km/s,1.4mJy/beam@native, XX YY] U [689.96..691.83GHz,3904.30kHz,12.1mJy/beam@10km/s,1.3mJy/beam@native, XX YY] U [691.77..693.64GHz,3904.30kHz,12.1mJy/beam@10km/s,1.3mJy/beam@native, XX YY] U [693.58..695.45GHz,3904.30kHz,12.1mJy/beam@10km/s,1.3mJy/beam@native, XX YY]",
+      "spectral_resolution": 3904.296875,
+      "spatial_resolution": 0.2233103692869649,
+      "sensitivity_10kms": 12.499242006321587,
+      "cont_sensitivity_bandwidth": 0.6760254250360646,
+      "antenna_arrays": "A001:DA46 A002:DV06 A006:DV16 A007:DV04 A008:DA52 A010:DV15 A011:DV25 A015:DV21 A016:DA64 A017:DV17 A019:DV13 A022:DV02 A023:DA63 A024:DV10 A026:DV05 A027:DV03 A033:DV01 A034:DV24 A035:DA61 A036:DA57 A039:DV07 A040:DA45 A041:DV14 A042:DA60 A043:DA51 A044:DA44 A045:DA58 A047:DA42 A048:DV19 A049:DA47 A050:DA49 A058:DV12 A060:DV20 A062:DA65 A066:DA62 A068:DA54 A069:DV18 A070:DA48 A072:DV23 A073:DA43 A074:DA56 A075:DV09 A076:DA50 A082:DA41 A083:DV22 A085:DA59 A088:DV11 T701:PM02 T702:PM03 T703:PM01 T704:PM04",
+      "is_mosaic": "T",
+      "science_observation": "T",
+      "qa2_passed": "T",
+      "obs_release_date": "2023-10-12T21:30:47.000",
+      "lastModified": "2026-09-28T18:47:19.570",
+      "s_resolution": 0.2233103692869649,
+      "s_fov": 0.003393068314445117,
+      "t_min": 59845.309191,
+      "t_max": 59848.216976,
+      "band_list": "9",
+      "pol_states": "/XX/YY/"
+    }
+  ],
+  "provenance": {
+    "query_run_id": "6f323927-3957-455d-bf78-c282a0d68bc8",
+    "endpoint": "https://almascience.eso.org/tap",
+    "count_adql": "SELECT COUNT(*) AS total_matches\nFROM ivoa.obscore\nWHERE member_ous_uid = 'uid://A001/X133d/X9c5'\n    AND target_name = 'NGC253'\n    AND science_observation = 'T'",
+    "retrieval_adql": "SELECT\n    proposal_id,\n    obs_publisher_did,\n    group_ous_uid,\n    member_ous_uid,\n    asdm_uid,\n    obs_id,\n    target_name,\n    s_ra,\n    s_dec,\n    s_region,\n    frequency,\n    bandwidth,\n    em_xel,\n    frequency_support,\n    spectral_resolution,\n    spatial_resolution,\n    sensitivity_10kms,\n    cont_sensitivity_bandwidth,\n    antenna_arrays,\n    is_mosaic,\n    science_observation,\n    qa2_passed,\n    obs_release_date,\n    lastModified,\n    s_resolution,\n    s_fov,\n    t_min,\n    t_max,\n    band_list,\n    pol_states\nFROM ivoa.obscore\nWHERE member_ous_uid = 'uid://A001/X133d/X9c5'\n    AND target_name = 'NGC253'\n    AND science_observation = 'T'",
+    "normalized_parameters": [
+      [
+        "member_ous_uid",
+        "uid://A001/X133d/X9c5"
+      ],
+      [
+        "target_name",
+        "NGC253"
+      ],
+      [
+        "ra_deg",
+        0.0
+      ],
+      [
+        "dec_deg",
+        0.0
+      ],
+      [
+        "radius_deg",
+        180.0
+      ],
+      [
+        "science_only",
+        true
+      ],
+      [
+        "frequency_min_ghz",
+        null
+      ],
+      [
+        "frequency_max_ghz",
+        null
+      ],
+      [
+        "angular_resolution_min_arcsec",
+        null
+      ],
+      [
+        "angular_resolution_max_arcsec",
+        null
+      ]
+    ],
+    "configured_maxrec": 10000,
+    "started_at": "2026-10-26T08:29:50.312148+00:00",
+    "finished_at": "2026-10-26T08:29:50.907451+00:00",
+    "expected_count": 4,
+    "retrieved_count": 4,
+    "count_query_status_raw": "OK",
+    "retrieval_query_status_raw": "OK",
+    "query_hash": "c0c751471fd15f49483b667b2ff9a853cc7c47852d8a7d6e8c8b6af0512a078e",
+    "client_version": "8",
+    "schema_version": "3",
+    "frequency_prefilter_status": "NOT_REQUESTED",
+    "angular_resolution_prefilter_status": "NOT_REQUESTED",
+    "query_unit_contract_version": "2",
+    "query_unit_metadata": [],
+    "warnings": [
+      "QUERY=SELECT COUNT(*) AS total_matches\nFROM ivoa.obscore\nWHERE member_ous_uid = 'uid://A001/X133d/X9c5'\n    AND target_name = 'NGC253'\n    AND science_observation = 'T'",
+      "QUERY_TIMESTAMP=2026-10-26T08:29:50.668",
+      "placeholder=ignore",
+      "QUERY=SELECT\n    proposal_id,\n    obs_publisher_did,\n    group_ous_uid,\n    member_ous_uid,\n    asdm_uid,\n    obs_id,\n    target_name,\n    s_ra,\n    s_dec,\n    s_region,\n    frequency,\n    bandwidth,\n    em_xel,\n    frequency_support,\n    spectral_resolution,\n    spatial_resolution,\n    sensitivity_10kms,\n    cont_sensitivity_bandwidth,\n    antenna_arrays,\n    is_mosaic,\n    science_observation,\n    qa2_passed,\n    obs_release_date,\n    lastModified,\n    s_resolution,\n    s_fov,\n    t_min,\n    t_max,\n    band_list,\n    pol_states\nFROM ivoa.obscore\nWHERE member_ous_uid = 'uid://A001/X133d/X9c5'\n    AND target_name = 'NGC253'\n    AND science_observation = 'T'",
+      "QUERY_TIMESTAMP=2026-10-26T08:29:50.839",
+      "placeholder=ignore",
+      "QUERY=SELECT column_name\nFROM TAP_SCHEMA.columns\nWHERE table_name = 'ivoa.obscore'\n    AND column_name IN ('s_resolution', 's_fov', 't_min', 't_max', 'band_list', 'pol_states')",
+      "QUERY_TIMESTAMP=2026-10-26T08:29:50.469",
+      "placeholder=ignore"
+    ],
+    "projection": {
+      "version": "1",
+      "selected_columns": [
+        "proposal_id",
+        "obs_publisher_did",
+        "group_ous_uid",
+        "member_ous_uid",
+        "asdm_uid",
+        "obs_id",
+        "target_name",
+        "s_ra",
+        "s_dec",
+        "s_region",
+        "frequency",
+        "bandwidth",
+        "em_xel",
+        "frequency_support",
+        "spectral_resolution",
+        "spatial_resolution",
+        "sensitivity_10kms",
+        "cont_sensitivity_bandwidth",
+        "antenna_arrays",
+        "is_mosaic",
+        "science_observation",
+        "qa2_passed",
+        "obs_release_date",
+        "lastModified",
+        "s_resolution",
+        "s_fov",
+        "t_min",
+        "t_max",
+        "band_list",
+        "pol_states"
+      ],
+      "optional_columns": [
+        {
+          "column_name": "s_resolution",
+          "status": "SELECTED",
+          "returned": true
+        },
+        {
+          "column_name": "s_fov",
+          "status": "SELECTED",
+          "returned": true
+        },
+        {
+          "column_name": "t_min",
+          "status": "SELECTED",
+          "returned": true
+        },
+        {
+          "column_name": "t_max",
+          "status": "SELECTED",
+          "returned": true
+        },
+        {
+          "column_name": "band_list",
+          "status": "SELECTED",
+          "returned": true
+        },
+        {
+          "column_name": "pol_states",
+          "status": "SELECTED",
+          "returned": true
+        }
+      ],
+      "probe_adql": "SELECT column_name\nFROM TAP_SCHEMA.columns\nWHERE table_name = 'ivoa.obscore'\n    AND column_name IN ('s_resolution', 's_fov', 't_min', 't_max', 'band_list', 'pol_states')",
+      "probe_status_raw": "OK",
+      "probe_rows": [
+        {
+          "column_name": "band_list"
+        },
+        {
+          "column_name": "pol_states"
+        },
+        {
+          "column_name": "s_fov"
+        },
+        {
+          "column_name": "s_resolution"
+        },
+        {
+          "column_name": "t_max"
+        },
+        {
+          "column_name": "t_min"
+        }
+      ],
+      "probe_error": null,
+      "warnings": [
+        "QUERY=SELECT column_name\nFROM TAP_SCHEMA.columns\nWHERE table_name = 'ivoa.obscore'\n    AND column_name IN ('s_resolution', 's_fov', 't_min', 't_max', 'band_list', 'pol_states')",
+        "QUERY_TIMESTAMP=2026-10-26T08:29:50.469",
+        "placeholder=ignore"
+      ]
+    },
+    "completeness_policy": "COUNT_FIRST",
+    "count_attempted": true,
+    "mirror_attempts": [
+      {
+        "origin": "https://almascience.eso.org",
+        "started_at": "2026-10-26T08:29:50.312130+00:00",
+        "finished_at": "2026-10-26T08:29:50.907922+00:00",
+        "status": "COMPLETE",
+        "error": null,
+        "query_run_id": "6f323927-3957-455d-bf78-c282a0d68bc8",
+        "query_hash": "c0c751471fd15f49483b667b2ff9a853cc7c47852d8a7d6e8c8b6af0512a078e"
+      }
+    ]
+  },
+  "field_metadata": [
+    {
+      "name": "proposal_id",
+      "datatype": "char",
+      "arraysize": "64*",
+      "unit": null,
+      "ucd": "meta.id;obs.proposal",
+      "utype": "obscore:Provenance.Proposal.identifier",
+      "xtype": "adql:VARCHAR",
+      "description": "Identifier of proposal to which NO observation belongs."
+    },
+    {
+      "name": "obs_publisher_did",
+      "datatype": "char",
+      "arraysize": "33*",
+      "unit": null,
+      "ucd": "meta.ref.ivoid",
+      "utype": "obscore:Curation.PublisherDID",
+      "xtype": null,
+      "description": "publisher dataset identifier"
+    },
+    {
+      "name": "group_ous_uid",
+      "datatype": "char",
+      "arraysize": "64*",
+      "unit": null,
+      "ucd": null,
+      "utype": null,
+      "xtype": "adql:VARCHAR",
+      "description": "Group OUS ID"
+    },
+    {
+      "name": "member_ous_uid",
+      "datatype": "char",
+      "arraysize": "64*",
+      "unit": null,
+      "ucd": null,
+      "utype": null,
+      "xtype": "adql:VARCHAR",
+      "description": "Member OUS ID"
+    },
+    {
+      "name": "asdm_uid",
+      "datatype": "char",
+      "arraysize": "32*",
+      "unit": null,
+      "ucd": "meta.id",
+      "utype": null,
+      "xtype": "adql:VARCHAR",
+      "description": "UID of the ASDM containing this Field."
+    },
+    {
+      "name": "obs_id",
+      "datatype": "char",
+      "arraysize": "64*",
+      "unit": null,
+      "ucd": "meta.id",
+      "utype": "obscore:DataID.observationID",
+      "xtype": null,
+      "description": "internal dataset identifier"
+    },
+    {
+      "name": "target_name",
+      "datatype": "char",
+      "arraysize": "256*",
+      "unit": null,
+      "ucd": "meta.id;src",
+      "utype": "obscore:Target.Name",
+      "xtype": null,
+      "description": "name of intended target"
+    },
+    {
+      "name": "s_ra",
+      "datatype": "double",
+      "arraysize": null,
+      "unit": "deg",
+      "ucd": "pos.eq.ra",
+      "utype": "obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C1",
+      "xtype": "adql:DOUBLE",
+      "description": "RA of central coordinates"
+    },
+    {
+      "name": "s_dec",
+      "datatype": "double",
+      "arraysize": null,
+      "unit": "deg",
+      "ucd": "pos.eq.dec",
+      "utype": "obscore:Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C2",
+      "xtype": "adql:DOUBLE",
+      "description": "DEC of central coordinates"
+    },
+    {
+      "name": "s_region",
+      "datatype": "char",
+      "arraysize": "*",
+      "unit": null,
+      "ucd": "pos.outline;obs.field",
+      "utype": "obscore:Char.SpatialAxis.Coverage.Support.Area",
+      "xtype": "adql:REGION",
+      "description": "region bounded by observation"
+    },
+    {
+      "name": "frequency",
+      "datatype": "double",
+      "arraysize": null,
+      "unit": "GHz",
+      "ucd": "em.freq;obs;meta.main",
+      "utype": "obscore:Char.SpectralAxis.Coverage.Location.refval",
+      "xtype": "adql:DOUBLE",
+      "description": "Observed (tuned) reference frequency on the sky."
+    },
+    {
+      "name": "bandwidth",
+      "datatype": "double",
+      "arraysize": null,
+      "unit": "Hz",
+      "ucd": "em.freq;instr.bandpass",
+      "utype": "obscore:Char.SpectralAxis.Coverage.Bounds.Extent",
+      "xtype": "adql:DOUBLE",
+      "description": "Total Bandwidth"
+    },
+    {
+      "name": "em_xel",
+      "datatype": "int",
+      "arraysize": null,
+      "unit": null,
+      "ucd": "meta.number",
+      "utype": "obscore:Char.SpectralAxis.numBins",
+      "xtype": "adql:BIGINT",
+      "description": "Number of elements along the spectral axis"
+    },
+    {
+      "name": "frequency_support",
+      "datatype": "char",
+      "arraysize": "4000*",
+      "unit": "GHz",
+      "ucd": "em.freq;obs;meta.main",
+      "utype": "obscore:Char.SpectralAxis.Coverage.Location.support",
+      "xtype": "adql:VARCHAR",
+      "description": "All frequency ranges used by the field"
+    },
+    {
+      "name": "spectral_resolution",
+      "datatype": "double",
+      "arraysize": null,
+      "unit": "kHz",
+      "ucd": null,
+      "utype": null,
+      "xtype": "adql:DOUBLE",
+      "description": null
+    },
+    {
+      "name": "spatial_resolution",
+      "datatype": "double",
+      "arraysize": null,
+      "unit": "arcsec",
+      "ucd": null,
+      "utype": null,
+      "xtype": "adql:DOUBLE",
+      "description": "Average of the maximum and minimum spatial resolution values of all spectral windows"
+    },
+    {
+      "name": "sensitivity_10kms",
+      "datatype": "double",
+      "arraysize": null,
+      "unit": "mJy / beam",
+      "ucd": null,
+      "utype": null,
+      "xtype": "adql:DOUBLE",
+      "description": "Estimated noise in an nominal 10km/s bandwidth. Note this is an indication only, it does not include the effects of flagging or Hanning smoothing, and a 10km/s bandwidth may not be achievable with the data as taken."
+    },
+    {
+      "name": "cont_sensitivity_bandwidth",
+      "datatype": "double",
+      "arraysize": null,
+      "unit": "mJy / beam",
+      "ucd": null,
+      "utype": null,
+      "xtype": "adql:DOUBLE",
+      "description": "Estimated noise in the aggregated continuum bandwidth. Note this is an indication only, it does not include the effects of flagging or dynamic range limitations."
+    },
+    {
+      "name": "antenna_arrays",
+      "datatype": "char",
+      "arraysize": "660*",
+      "unit": null,
+      "ucd": "meta.code.member;instr.setup",
+      "utype": null,
+      "xtype": "adql:VARCHAR",
+      "description": "Blank-separated list of Pad:Antenna pairs, i.e., A109:DV09 J504:DV02 J505:DV05 for antennas DV09, DV02 and DV05 sitting on pads A109, J504, and J505, respectively."
+    },
+    {
+      "name": "is_mosaic",
+      "datatype": "char",
+      "arraysize": "1",
+      "unit": null,
+      "ucd": null,
+      "utype": null,
+      "xtype": "adql:CHAR",
+      "description": "Flag to indicate if this ASDM represents a mosaic or not."
+    },
+    {
+      "name": "science_observation",
+      "datatype": "char",
+      "arraysize": "1",
+      "unit": null,
+      "ucd": "meta.code.class;obs",
+      "utype": null,
+      "xtype": "adql:VARCHAR",
+      "description": "Flag to indicate whether this is a science observation."
+    },
+    {
+      "name": "qa2_passed",
+      "datatype": "char",
+      "arraysize": "1",
+      "unit": null,
+      "ucd": "meta.code",
+      "utype": null,
+      "xtype": "adql:CHAR",
+      "description": "Quality Assessment 2 status: does the Member / Group OUS fulfil the PI's requirements?"
+    },
+    {
+      "name": "obs_release_date",
+      "datatype": "char",
+      "arraysize": "*",
+      "unit": null,
+      "ucd": "time.release",
+      "utype": "obscore:Curation.releaseDate",
+      "xtype": "adql:TIMESTAMP",
+      "description": "timestamp of date the data becomes publicly available"
+    },
+    {
+      "name": "lastModified",
+      "datatype": "char",
+      "arraysize": "32*",
+      "unit": null,
+      "ucd": null,
+      "utype": null,
+      "xtype": "adql:TIMESTAMP",
+      "description": "Time stamp of last modification of the metadata"
+    },
+    {
+      "name": "s_resolution",
+      "datatype": "double",
+      "arraysize": null,
+      "unit": "arcsec",
+      "ucd": "pos.angResolution",
+      "utype": "obscore:Char.SpatialAxis.Resolution.refval.value",
+      "xtype": "adql:DOUBLE",
+      "description": "typical spatial resolution"
+    },
+    {
+      "name": "s_fov",
+      "datatype": "double",
+      "arraysize": null,
+      "unit": "deg",
+      "ucd": "phys.angSize;instr.fov",
+      "utype": "obscore:Char.SpatialAxis.Coverage.Bounds.Extent.diameter",
+      "xtype": "adql:DOUBLE",
+      "description": "size of the region covered (~diameter of minimum bounding circle)"
+    },
+    {
+      "name": "t_min",
+      "datatype": "double",
+      "arraysize": null,
+      "unit": "d",
+      "ucd": "time.start;obs.exposure",
+      "utype": "obscore:Char.TimeAxis.Coverage.Bounds.Limits.StartTime",
+      "xtype": "adql:DOUBLE",
+      "description": "start time of observation (MJD)"
+    },
+    {
+      "name": "t_max",
+      "datatype": "double",
+      "arraysize": null,
+      "unit": "d",
+      "ucd": "time.end;obs.exposure",
+      "utype": "obscore:Char.TimeAxis.Coverage.Bounds.Limits.StopTime",
+      "xtype": "adql:DOUBLE",
+      "description": "end time of observation (MJD)"
+    },
+    {
+      "name": "band_list",
+      "datatype": "char",
+      "arraysize": "30*",
+      "unit": null,
+      "ucd": null,
+      "utype": null,
+      "xtype": "adql:VARCHAR",
+      "description": "Space delimited list of bands"
+    },
+    {
+      "name": "pol_states",
+      "datatype": "char",
+      "arraysize": "64*",
+      "unit": null,
+      "ucd": "meta.code;phys.polarization",
+      "utype": "obscore:Char.PolarizationAxis.stateList",
+      "xtype": null,
+      "description": "polarization states present in the data"
+    }
+  ],
+  "missing_columns": [],
+  "error_kind": null,
+  "error_message": null
+}

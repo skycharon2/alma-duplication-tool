@@ -1,5 +1,6 @@
 """Automatically acquire and reconstruct pointings for discovered Archive candidates."""
 from dataclasses import asdict
+from alma_duplicate.mosaic_resource_limits import MosaicResourceLimits
 from hashlib import sha256
 from http.client import HTTPException
 import json
@@ -28,13 +29,16 @@ def acquire_candidate_array(directory, member, *, offline, array_fetcher):
 
 
 def prepare_candidates(discovery, *, output, cache, inventory_capture=None, product_discovery=None,
-                       package_audit=None, offline=False, array_fetcher=None):
+                       package_audit=None, offline=False, array_fetcher=None, resource_limits=None):
     """Prepare each distinct Member/target; isolate failures without negative verdicts.
 
     Injectable acquisition functions support replay of captured metadata. Offline
     production reuse is handled by the verified auxiliary cache, not fabricated TAP
     receipts. A fresh run directory preserves every acquisition attempt.
     """
+    limits = resource_limits or MosaicResourceLimits()
+    if not isinstance(limits, MosaicResourceLimits):
+        raise ValueError('Expected MosaicResourceLimits')
     if discovery.get('schema_version') != 'mosaic_candidate_discovery_1':
         raise ValueError('Expected Mosaic candidate discovery report')
     rows=discovery['candidates']
@@ -104,7 +108,8 @@ def prepare_candidates(discovery, *, output, cache, inventory_capture=None, prod
                 audit=(package_audit or audit_package)(metadata=directory/'inventory/metadata.xml',
                     capture_receipt=directory/'inventory/inventory_receipt.json',receipt=receipt_path,
                     row_index=eligible[0],cache=Path(cache),output=directory/'package',member=member,
-                    source=source,offline=offline)
+                    source=source,offline=offline,
+                    **(asdict(limits) if resource_limits is not None else {}))
                 result.update(package_audit_dir=str(directory/'package'),
                     execution_count=len(audit['executions']),unresolved=audit['unresolved'],
                     reused_cache=audit['reused_cache'],completeness=audit['completeness'],
@@ -146,6 +151,7 @@ def prepare_candidates(discovery, *, output, cache, inventory_capture=None, prod
         results.append(result)
         (directory/'preparation.json').write_text(json.dumps(result,indent=2)+'\n')
     report=dict(schema_version='mosaic_candidate_preparation_1',candidates=results,
+        resource_limits=asdict(limits),
         discovery_status=discovery.get('status'),discovery_scope=discovery.get('plan',{}).get('scope'),
         status='COMPLETED' if all(((r['status']=='POINTINGS_PREPARED' and r.get('readiness_status')=='EVIDENCE_BOUND') or (r['status']=='METADATA_ONLY_PREPARED' and r.get('readiness_status')=='ARRAY_ACQUIRED')) for r in results) else 'INCOMPLETE',
         discovery_recall_status=discovery.get('plan',{}).get('recall_status'),

@@ -9,6 +9,7 @@ from alma_duplicate.mosaic_candidate_preparation import prepare_candidates
 from alma_duplicate.clients.archive_queries import ArchiveQuerySpec
 from alma_duplicate.comparison import build_archive_contexts
 from alma_duplicate.reporting import json_value
+from alma_duplicate.mosaic_resource_limits import MosaicResourceLimits
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,7 @@ class MosaicAssessmentInput:
     output_directory: Path
     cache_directory: Path
     margin_arcsec: float
+    resource_limits: MosaicResourceLimits | None = None
 
 
 def run_mosaic_backend(
@@ -39,7 +41,8 @@ def run_mosaic_backend(
         mosaic.proposed, root / "discovery", margin_arcsec=mosaic.margin_arcsec
     )
     preparation = (preparation_provider or prepare_candidates)(
-        discovery, output=root / "preparation", cache=mosaic.cache_directory
+        discovery, output=root / "preparation", cache=mosaic.cache_directory,
+        **({"resource_limits": mosaic.resource_limits} if mosaic.resource_limits is not None else {})
     )
     client = archive_client if archive_client is not None else MirroredArchiveClient()
     results = []

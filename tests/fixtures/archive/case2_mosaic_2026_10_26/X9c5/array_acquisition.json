@@ -1,0 +1,73 @@
+{
+  "queries": [
+    {
+      "member_ous_uid": "uid://A001/X133d/X9c5",
+      "url": "https://almascience.eso.org/aq/service/api/search/observations/_search",
+      "retrieved_at": "2026-10-26T08:47:39.451921+00:00",
+      "response_sha256": "8252a67aca3ccd72e71887af7948f55c9cd1277b78889aa7372da1d9a68bab7e",
+      "total_hits": 6,
+      "max_hits": 100
+    }
+  ],
+  "records": [
+    {
+      "observation_id": "uid://A001/X133d/X9c5.source.NGC253",
+      "member_ous_uid": "uid://A001/X133d/X9c5",
+      "source_name": "NGC253",
+      "raw_label": "12m",
+      "response_sha256": "8252a67aca3ccd72e71887af7948f55c9cd1277b78889aa7372da1d9a68bab7e",
+      "retrieved_at": "2026-10-26T08:47:39.451921+00:00",
+      "url": "https://almascience.eso.org/aq/service/api/search/observations/_search"
+    },
+    {
+      "observation_id": "uid://A001/X133d/X9c5.source.J2253+1608",
+      "member_ous_uid": "uid://A001/X133d/X9c5",
+      "source_name": "J2253+1608",
+      "raw_label": "12m",
+      "response_sha256": "8252a67aca3ccd72e71887af7948f55c9cd1277b78889aa7372da1d9a68bab7e",
+      "retrieved_at": "2026-10-26T08:47:39.451921+00:00",
+      "url": "https://almascience.eso.org/aq/service/api/search/observations/_search"
+    },
+    {
+      "observation_id": "uid://A001/X133d/X9c5.source.J0120-2701",
+      "member_ous_uid": "uid://A001/X133d/X9c5",
+      "source_name": "J0120-2701",
+      "raw_label": "12m",
+      "response_sha256": "8252a67aca3ccd72e71887af7948f55c9cd1277b78889aa7372da1d9a68bab7e",
+      "retrieved_at": "2026-10-26T08:47:39.451921+00:00",
+      "url": "https://almascience.eso.org/aq/service/api/search/observations/_search"
+    },
+    {
+      "observation_id": "uid://A001/X133d/X9c5.source.J0423-0120",
+      "member_ous_uid": "uid://A001/X133d/X9c5",
+      "source_name": "J0423-0120",
+      "raw_label": "12m",
+      "response_sha256": "8252a67aca3ccd72e71887af7948f55c9cd1277b78889aa7372da1d9a68bab7e",
+      "retrieved_at": "2026-10-26T08:47:39.451921+00:00",
+      "url": "https://almascience.eso.org/aq/service/api/search/observations/_search"
+    },
+    {
+      "observation_id": "uid://A001/X133d/X9c5.source.J0137-2430",
+      "member_ous_uid": "uid://A001/X133d/X9c5",
+      "source_name": "J0137-2430",
+      "raw_label": "12m",
+      "response_sha256": "8252a67aca3ccd72e71887af7948f55c9cd1277b78889aa7372da1d9a68bab7e",
+      "retrieved_at": "2026-10-26T08:47:39.451921+00:00",
+      "url": "https://almascience.eso.org/aq/service/api/search/observations/_search"
+    },
+    {
+      "observation_id": "uid://A001/X133d/X9c5.source.J0038-2459",
+      "member_ous_uid": "uid://A001/X133d/X9c5",
+      "source_name": "J0038-2459",
+      "raw_label": "12m",
+      "response_sha256": "8252a67aca3ccd72e71887af7948f55c9cd1277b78889aa7372da1d9a68bab7e",
+      "retrieved_at": "2026-10-26T08:47:39.451921+00:00",
+      "url": "https://almascience.eso.org/aq/service/api/search/observations/_search"
+    }
+  ],
+  "provenance": {
+    "mode": "LIVE",
+    "manifest_sha256": null
+  },
+  "properties_url": "https://almascience.eso.org/aq/service/api/v1/properties"
+}

@@ -1,4 +1,5 @@
 """Prepare Archive pointings automatically from a Mosaic discovery report."""
+from alma_duplicate.mosaic_resource_limits import add_resource_arguments, resource_arguments
 import argparse
 import json
 from pathlib import Path
@@ -10,11 +11,13 @@ def main(argv=None):
     parser.add_argument('--discovery',type=Path,required=True)
     parser.add_argument('--cache',type=Path,required=True)
     parser.add_argument('--output-dir',type=Path,required=True)
+    add_resource_arguments(parser)
     args=parser.parse_args(argv)
     try:
         with args.discovery.open('rb') as stream:raw=stream.read(5_000_001)
         if len(raw)>5_000_000:raise ValueError('Discovery report exceeds 5 MB')
-        report=prepare_candidates(json.loads(raw),output=args.output_dir,cache=args.cache)
+        report=prepare_candidates(json.loads(raw),output=args.output_dir,cache=args.cache,
+                                  resource_limits=resource_arguments(args))
     except (OSError,ValueError,KeyError,TypeError) as exc:
         parser.exit(2,f'Candidate preparation failed: {exc}\n')
     for c in report['candidates']:

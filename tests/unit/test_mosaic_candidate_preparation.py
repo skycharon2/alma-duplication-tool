@@ -98,3 +98,18 @@ def test_live_catalog_passed_to_readiness(tmp_path,monkeypatch):
         array_fetcher=lambda members:fetched)
     assert r['candidates'][0]['readiness_status']=='EVIDENCE_BOUND'
     assert r['status']=='COMPLETED'
+
+
+def test_explicit_resource_limits_reach_audit_and_receipt(tmp_path):
+    from alma_duplicate.mosaic_resource_limits import MosaicResourceLimits
+    from dataclasses import asdict
+    limits = MosaicResourceLimits(1_000_000_000, 1_000_000_000, 10_000_000_000)
+    def audit(**kwargs):
+        assert {k: kwargs[k] for k in asdict(limits)} == asdict(limits)
+        raise ValueError('simulated inspection budget exceeded')
+    report = prepare_candidates(discovery(), output=tmp_path/'run', cache=tmp_path/'cache',
+        inventory_capture=inventory, product_discovery=products, package_audit=audit,
+        offline=True, resource_limits=limits)
+    assert report['resource_limits'] == asdict(limits)
+    assert report['candidates'][0]['status'] == 'FAILED'
+    assert 'budget exceeded' in report['candidates'][0]['error']

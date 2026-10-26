@@ -84,3 +84,50 @@ and counts against the generated source, then assess the imported proposal again
 verified CASE2 coverage. Additional package executions without compatible TAP metadata
 must remain excluded from production coverage binding. Candidate search recall and
 final duplication criteria remain separate acceptance questions.
+
+## Actual OT round trip and production position acceptance
+
+The user supplied `pointings-12m.txt` after the OT round trip. All three coordinates
+and their order exactly match the selected X9c3 source file. The actual bytes are
+retained in `tests/fixtures/archive/case2_mosaic_2026_10_26/ot-12m.txt`. The separately
+supplied 7m list has different positions and is not used as the CASE2 round-trip fixture.
+
+Offline acceptance restores captured metadata, reparses package listobs, rebuilds
+array readiness and invokes the production context assessment and common assessment
+entrypoint. Both Members produce four contexts with 3/3 inside and POS-MOSAIC
+SATISFIED. Synthetic variants verify 2/3 SATISFIED, while 1/3 and 2/4 retain unknown
+because Member completeness is not established. They never become positive. Only
+the TAP-bound ASDM contributes coverage; additional package executions stay excluded.
+Other request parameters in these position tests are synthetic, so no complete
+scientific duplication claim is made.
+
+Run the deterministic acceptance with:
+
+```sh
+python -m pytest -q tests/integration/test_case2_mosaic_acceptance.py
+```
+
+## Automatic resource-budget configuration
+
+The earlier package-audit-only limitation is now removed: the common evaluate CLI
+accepts these optional flags and passes them through preparation to package audit:
+
+```text
+--mosaic-max-download-bytes 1000000000
+--mosaic-max-weblog-bytes 1000000000
+--mosaic-max-expanded-bytes 10000000000
+```
+
+The standalone `mosaic_candidate_preparation` CLI accepts the same flags without the
+`mosaic-` prefix. The API uses `MosaicResourceLimits`. Defaults remain 300 MB download,
+250 MB weblog and 1 GB expanded; limits are per package, not a whole-run quota.
+Invalid values are rejected and effective values appear in `preparation.json`.
+Timeout, hash, path, nested-depth, text-size and candidate-count checks remain active.
+
+A real-cache preparation replay using captured inventory, DataLink and AQ providers
+completed for both CASE2 Members with POINTINGS_PREPARED and EVIDENCE_BOUND. It selected
+products automatically and rescanned the actual cached tar files with explicit limits.
+The receipt is `reports/mosaic-dev/case2-automatic-budget-01/preparation.json`.
+This validates actual cached packages and acquisition orchestration, not a fresh
+network retrieval or exhaustive spatial candidate discovery. Live discovery recall
+and full continuum/line proposal acceptance remain separate work.
