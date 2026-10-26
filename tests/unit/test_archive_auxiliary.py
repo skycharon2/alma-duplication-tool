@@ -208,3 +208,49 @@ def test_nested_stream_still_enforces_expanded_budget(tmp_path, monkeypatch):
     monkeypatch.setattr(module, 'MAX_EXPANDED', len(nested) + len(RAW) - 1)
     with pytest.raises(ValueError, match='budget'):
         inspect(tmp_path, [('qa/weblog.tgz', nested)])
+
+
+def test_explicit_download_budget_validates_cache_and_http(tmp_path):
+    product, _, _ = select_auxiliary(RECEIPT, 3)
+    product = replace(product, content_length=4)
+    for limit in (True, 0, -1, 1_000_000_001):
+        with pytest.raises(ValueError, match='Download limit'):
+            acquire_auxiliary(product, tmp_path, max_download_bytes=limit)
+    with pytest.raises(ValueError, match='Advertised'):
+        acquire_auxiliary(product, tmp_path, max_download_bytes=3)
+    acquire_auxiliary(product, tmp_path, max_download_bytes=4,
+                      open_url=lambda request: Response(b'abcd'))
+    with pytest.raises(ValueError, match='Cache integrity'):
+        acquire_auxiliary(replace(product, content_length=None), tmp_path,
+                          offline=True, max_download_bytes=3)
+    with pytest.raises(ValueError, match='Content-Length'):
+        acquire_auxiliary(replace(product, content_length=None), tmp_path / 'http',
+                          max_download_bytes=3, open_url=lambda request: Response(b'abcd'))
+
+
+def test_explicit_inspection_budgets_remain_enforced(tmp_path):
+    nested = archive_bytes([('listobs.txt', RAW)])
+    path = tmp_path / 'nested.tar'
+    path.write_bytes(archive_bytes([('qa/test.weblog.tgz', nested)]))
+    with pytest.raises(ValueError, match='member size'):
+        inspect_auxiliary(path, asdm_uid=ASDM, source_name=SOURCE, max_weblog_bytes=1)
+    with pytest.raises(ValueError, match='inspection budget exceeded'):
+        inspect_auxiliary(path, asdm_uid=ASDM, source_name=SOURCE, max_expanded_bytes=1)
+    for kwargs in ({'max_weblog_bytes': True}, {'max_expanded_bytes': 10_000_000_001}):
+        with pytest.raises(ValueError, match='Invalid explicit'):
+            inspect_auxiliary(path, asdm_uid=ASDM, source_name=SOURCE, **kwargs)
+    report, raw = inspect_auxiliary(path, asdm_uid=ASDM, source_name=SOURCE,
+        max_weblog_bytes=len(nested), max_expanded_bytes=len(nested) + len(RAW))
+    assert report['status'] == 'FOUND' and raw == RAW
+
+
+@pytest.mark.parametrize('suffix', ['_targets', '_targets_line'])
+def test_derived_target_ms_is_identified_but_never_original(tmp_path, suffix):
+    derived = RAW.replace(b'uid___A002_Xfb8480_X4f37.ms',
+                          ('uid___A002_Xfb8480_X4f37' + suffix + '.ms').encode())
+    result, raw = inspect(tmp_path, [('listobs.txt', derived)])
+    assert raw is None
+    candidate = result['candidates'][0]
+    assert candidate['reported_asdm_uid'] == ASDM
+    assert candidate['measurement_set_variant'] == 'TARGET'
+    assert candidate['status'] == 'OTHER_MEASUREMENT_SET'

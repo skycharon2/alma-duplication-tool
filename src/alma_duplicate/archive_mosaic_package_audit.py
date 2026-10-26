@@ -12,7 +12,8 @@ from alma_duplicate.archive_mosaic_discovery import verify_inventory_capture
 
 def audit_package(*, metadata: Path, capture_receipt: Path, receipt: Path,
                   row_index: int, cache: Path, output: Path, member: str, source: str,
-                  offline=True, reuse_dir: Path | None = None):
+                  offline=True, reuse_dir: Path | None = None, max_download_bytes=None,
+                  max_weblog_bytes=None, max_expanded_bytes=None):
     """Reconstruct supported original MS records; never forge additional TAP rows."""
     with metadata.open('rb') as stream:
         raw = stream.read(MAX_METADATA_BYTES + 1)
@@ -34,11 +35,14 @@ def audit_package(*, metadata: Path, capture_receipt: Path, receipt: Path,
     (output / 'inventory_receipt.json').write_bytes(capture_receipt.read_bytes())
     for name in ('discovery.json', 'response.xml'):
         (output / name).write_bytes((receipt.parent / name).read_bytes())
-    archive, download, reused = acquire_auxiliary(product, cache, offline=offline)
+    archive, download, reused = acquire_auxiliary(product, cache, offline=offline,
+        **({} if max_download_bytes is None else {"max_download_bytes": max_download_bytes}))
     if previous is not None and previous['download']['sha256'] != download['sha256']:
         raise ValueError('Reuse package archive hash differs')
     inspection, _ = inspect_auxiliary(archive, asdm_uid=rows[0]['asdm_uid'],
-                                      source_name=source, capture_dir=output / 'listobs')
+                                      source_name=source, capture_dir=output / 'listobs',
+                                      max_weblog_bytes=max_weblog_bytes,
+                                      max_expanded_bytes=max_expanded_bytes)
     report = dict(schema_version='archive_mosaic_package_audit_1', member_ous_uid=member,
                   source_name=source, inventory_sha256=sha256(raw).hexdigest(),
                   discovery_receipt_sha256=receipt_hash, product=asdict(product),

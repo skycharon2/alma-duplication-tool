@@ -1,0 +1,47 @@
+{
+  "schema_version": "archive_ot_test_export_1",
+  "purpose": "CONSTRUCTED_TEST_PROPOSAL_NOT_ORIGINAL_OT_EXPORT",
+  "project_code": "2018.1.00294.S",
+  "member_ous_uid": "uid://A001/X133d/X9c5",
+  "source_name": "NGC253",
+  "asdm_uid": "uid://A002/Xfeb5e6/X59b7",
+  "pointing_count": 3,
+  "rows": [
+    {
+      "row": 1,
+      "field_id": 4
+    },
+    {
+      "row": 2,
+      "field_id": 5
+    },
+    {
+      "row": 3,
+      "field_id": 6
+    }
+  ],
+  "pointings_sha256": "530a5f23c2a3dd1ee413d6e93d37eb178b737fa85d7d3f3340954054f4eaa60a",
+  "provenance": {
+    "package_audit_sha256": "17430dc899fdbfcd92cd8fbef0bb4f94870aa81c07bceee5286c3650683241ca",
+    "archive_sha256": "17d0989d5c01934e1447fa586034ae61ff13eceb6418cbc3ea94adba0be30505",
+    "execution_evidence": [
+      {
+        "asdm_uid": "uid://A002/Xfeb5e6/X59b7",
+        "execution_file": "d31708849c758ff4d3fd52d45255311668b05d6f6b8ab9beef5a0c4a5f7c637d.json",
+        "sha256": "3084e8a9a8fe0d3419a83055d1b07d2c4a20db14a7f039fc9fa12af4ff2d204a",
+        "listobs_file": "listobs/6180434c680ac99a8c1ba5ad2e0df478504234e381cf444aac0d8d305cf5b6f1.txt",
+        "listobs_sha256": "6180434c680ac99a8c1ba5ad2e0df478504234e381cf444aac0d8d305cf5b6f1"
+      },
+      {
+        "asdm_uid": "uid://A002/Xfee03e/X492",
+        "execution_file": "32d09917466dbe8cdb640eb07a146e422c34a7b32835a6795c04c797bc0defc2.json",
+        "sha256": "8367d2ef4799e1be7298de3dbcb09046f4a1d5f7d787c5a5bc905caba5042037",
+        "listobs_file": "listobs/b7f1f1fbcc12401b6025c4e53e447b78d8a51472cba1d72b8644589737b2ed0b.txt",
+        "listobs_sha256": "b7f1f1fbcc12401b6025c4e53e447b78d8a51472cba1d72b8644589737b2ed0b"
+      }
+    ],
+    "verification_scope": "LOCAL_RECEIPTS_AND_REPARSED_LISTOBS_NO_ARCHIVE_RESCAN"
+  },
+  "completeness": "SELECTED_EXECUTION_NOT_WHOLE_MEMBER",
+  "policy_status": "NOT_EVALUATED"
+}
