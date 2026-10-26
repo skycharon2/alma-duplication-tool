@@ -32,12 +32,6 @@ def run_mosaic_backend(
     """Preserve partial acquisition and metadata failures without absence verdicts."""
     from alma_duplicate.assessment import assess_archive_mosaic_contexts
     from alma_duplicate.clients.archive_mirrors import MirroredArchiveClient
-    from alma_duplicate.archive_array_evidence import (
-        ArchiveArrayCatalog,
-        ArchiveArrayCatalogProvenance,
-        ArchiveArrayCatalogMode,
-        ArrayRecord,
-    )
 
     root = Path(mosaic.output_directory)
     root.mkdir(parents=True, exist_ok=False)
@@ -72,37 +66,19 @@ def run_mosaic_backend(
             if built.status != "COMPLETE":
                 item.update(status="INCOMPLETE", reasons=list(built.reasons))
             else:
-                catalog = array_catalog
-                if catalog is None:
-                    path = Path(candidate["directory"]) / "array_acquisition.json"
-                    if path.exists():
-                        saved = json.loads(path.read_text())
-                        catalog = ArchiveArrayCatalog(
-                            tuple(ArrayRecord(**r) for r in saved["records"]),
-                            ArchiveArrayCatalogProvenance(
-                                ArchiveArrayCatalogMode(saved["provenance"]["mode"]),
-                                saved["provenance"].get("manifest_sha256"),
-                            ),
-                        )
+                # Reuse the exact candidate-local AQ evidence used for readiness.
+                # A caller-supplied catalog may describe a different acquisition.
+                from alma_duplicate.mosaic_readiness_binding import (
+                    load_candidate_catalog,
+                    verify_candidate_readiness,
+                )
+                catalog = load_candidate_catalog(candidate, fallback=array_catalog)
                 directories, ready = {}, {}
                 key = (member, source)
                 if candidate.get("package_audit_dir") and candidate.get(
                     "readiness_file"
                 ):
-                    readiness = json.loads(
-                        Path(candidate["readiness_file"]).read_text()
-                    )
-                    if (readiness["member_ous_uid"], readiness["source_name"]) != key:
-                        raise ValueError("Readiness belongs to another candidate")
-                    ready[key] = {
-                        e["asdm_uid"]
-                        for e in readiness["executions"]
-                        if e["fields"]
-                        and all(
-                            f["position_status"] == "EVIDENCE_BOUND"
-                            for f in e["fields"]
-                        )
-                    }
+                    ready[key] = verify_candidate_readiness(candidate, catalog=catalog)
                     directories[key] = candidate["package_audit_dir"]
                 evaluated = assess_archive_mosaic_contexts(
                     request,

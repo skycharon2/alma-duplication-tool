@@ -56,6 +56,7 @@ def test_main_entrypoint_metadata_and_real_package_reconstruction(
     rows = tuple(
         dict(
             base.rows[0],
+            proposal_id=executions[0]["project_code"],
             member_ous_uid=member,
             target_name=source,
             asdm_uid=e["asdm_uid"],
