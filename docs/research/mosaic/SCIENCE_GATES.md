@@ -53,3 +53,28 @@ It does not establish Member completeness, approve all duplication conditions,
 or convert the existing diagnostic reports into completed policy evaluations.
 Existing diagnostic status strings remain historical implementation labels until
 a versioned assessment interface incorporates this decision explicitly.
+
+## Superseding Archive coverage decision — 2026-10-26
+
+Reported a new confirmation with the project supervisor: use each
+Archive comparison context's `s_region` as the other observation's half-power
+coverage for the Mosaic position criterion. This supersedes the 2026-10-23
+circle-union prerequisite and the candidate-pointing completeness prerequisite
+above for the default Archive path. It is a project convention, not a claim of
+universal physical equivalence or a separate ALMA endorsement.
+
+Proposal inputs remain complete, fixed ICRS OT pointings. Strictly more than half
+must lie within the context's region. Exactly 5 of 10 inside with the remaining
+5 definitely outside fails; 6 of 10 definitely inside passes. A decisive boundary
+ambiguity or missing/unsupported region remains unknown. Other duplication
+conditions use that same context's Archive metadata and shared rules.
+
+Historical reconstruction remains available for explicit research replay. Queue,
+Solar and moving-target scopes are not expanded by this decision. Identified TP
+or unresolved mixed TP candidates retain an unsupported-scope result; their geometric counts
+may be diagnostic but cannot yield a formal joint verdict. The existing
+application-derived antenna classification is recorded as evidence, not relabeled
+as an authoritative Archive classification. Missing array information is not
+invented, and no diameter is inferred for s_region containment.
+
+Implementation and numerical scope: `docs/mosaic_s_region_position.md`.

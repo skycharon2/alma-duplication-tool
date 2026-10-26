@@ -98,8 +98,11 @@ def assess_observation(request: dict, search_options: dict, *,
             raise ValueError('Mosaic candidate prefilter predicates are not implemented; omit them')
         if sources.queue_loader is not None or options.queue_common or options.queue_continuum or options.queue_line:
             raise ValueError('Queue evaluation is not supported by this Archive Mosaic workflow')
-        if sources.archive_kind != 'LIVE':
-            raise ValueError('Automatic Mosaic acquisition requires explicit LIVE Archive input')
+        if sources.archive_kind not in ('LIVE', 'REPLAY'):
+            raise ValueError('Mosaic assessment requires explicit LIVE or REPLAY Archive input')
+        if sources.archive_kind == 'REPLAY' and (mosaic.coverage_model != 'S_REGION'
+                                                or mosaic.preparation_directory is None):
+            raise ValueError('Mosaic replay requires S_REGION and saved discovery')
         if (sources.archive_kind is None) != (sources.archive_provider is None):
             raise ValueError('Archive kind and provider must be supplied together')
         if sources.archive_array_fetcher is not None:
@@ -117,6 +120,7 @@ def assess_observation(request: dict, search_options: dict, *,
             array_catalog=archive.array_catalog if archive else None,
             nominal_conversion=options.nominal_conversion)
         document['input_sha256'] = input_sha256
+        document['source_mode'] = sources.archive_kind
         return AssessmentResult(AssessmentStatus.COMPLETED if document['assessment_status'] == 'COMPLETED'
                                 else AssessmentStatus.SOURCES_UNAVAILABLE, validated, document)
     if not validated.is_valid or not validated.can_search:

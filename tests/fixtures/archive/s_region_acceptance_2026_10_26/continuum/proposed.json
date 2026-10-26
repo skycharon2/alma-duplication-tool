@@ -1,0 +1,46 @@
+{
+  "schema_version": "ot_pointings_1",
+  "input_sha256": "6afc0fe1c6aab83f113d27255a6004a5053f0e215f93a1ff4869bb661ff0145b",
+  "raw_text": "RA,Dec,Coordinate Type,Coordinate Units\n--   This signals end of the header\n11.887184566666667,-25.288874822222223,Absolute,DEGREES\n11.887768008333332,-25.288411111111113,Absolute,DEGREES\n11.888351445833333,-25.2879474,Absolute,DEGREES",
+  "coordinate_units": "degrees",
+  "row_count": 3,
+  "points": [
+    {
+      "id": "row-1",
+      "line_number": 3,
+      "frame": "ICRS",
+      "ra_deg": 11.887184566666667,
+      "dec_deg": -25.288874822222223,
+      "ra_original": "11.887184566666667",
+      "dec_original": "-25.288874822222223",
+      "raw_line": "11.887184566666667,-25.288874822222223,Absolute,DEGREES"
+    },
+    {
+      "id": "row-2",
+      "line_number": 4,
+      "frame": "ICRS",
+      "ra_deg": 11.887768008333332,
+      "dec_deg": -25.288411111111113,
+      "ra_original": "11.887768008333332",
+      "dec_original": "-25.288411111111113",
+      "raw_line": "11.887768008333332,-25.288411111111113,Absolute,DEGREES"
+    },
+    {
+      "id": "row-3",
+      "line_number": 5,
+      "frame": "ICRS",
+      "ra_deg": 11.888351445833333,
+      "dec_deg": -25.2879474,
+      "ra_original": "11.888351445833333",
+      "dec_original": "-25.2879474",
+      "raw_line": "11.888351445833333,-25.2879474,Absolute,DEGREES"
+    }
+  ],
+  "duplicate_coordinates": [],
+  "identity_rule": "ONE_INPUT_ROW_ONE_POINTING",
+  "frame_basis": "USER_CONFIRMED_FIXED_ICRS",
+  "completeness": "USER_CONFIRMED_COMPLETE",
+  "source_name": "NGC253_CASE2_SYNTHETIC_CONTINUUM",
+  "array": "12m",
+  "binding_basis": "USER_SUPPLIED_NOT_ENCODED_IN_OT_FILE"
+}

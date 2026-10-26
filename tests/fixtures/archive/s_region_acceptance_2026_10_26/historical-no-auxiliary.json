@@ -1,0 +1,30 @@
+{
+  "schema_version": "mosaic_candidate_preparation_1",
+  "candidates": [
+    {
+      "context_id": "ARCHIVE:MOSAIC:d0fc7d29a39af1c89d9abccd967844c8db5f2ab0000d76f121f31b697e54a26b",
+      "member_ous_uid": "uid://A001/X74/X176",
+      "source_name": "NGC253",
+      "directory": "reports/mosaic-dev/live-batch-acceptance-01/candidate-00002/861a7a20406033389d7f1d4e7f7ae7c18a1ddd573ad6e2d04f6282fb8729a3d9",
+      "status": "NO_USABLE_AUXILIARY_PRODUCT",
+      "stage": "PRODUCT_SELECTION",
+      "policy_status": "NOT_EVALUATED",
+      "geometry_flags": [
+        "T"
+      ],
+      "eligible_product_rows": [],
+      "rejected_product_rows": []
+    }
+  ],
+  "resource_limits": {
+    "max_download_bytes": 300000000,
+    "max_weblog_bytes": 250000000,
+    "max_expanded_bytes": 1000000000
+  },
+  "discovery_status": "COMPLETED",
+  "discovery_scope": "PUBLIC_SCIENCE_ALL_GEOMETRIES_REGION_PREFILTER_WITH_NULL_REGION_FALLBACK",
+  "status": "INCOMPLETE",
+  "discovery_recall_status": "NOT_ESTABLISHED_FOR_RECONSTRUCTED_HALF_POWER_COVERAGE",
+  "scope": "POINTING_AND_ARRAY_READINESS_NOT_SPECTRAL_SELECTION",
+  "policy_status": "NOT_EVALUATED"
+}

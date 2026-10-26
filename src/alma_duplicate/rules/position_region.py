@@ -21,6 +21,21 @@ def evaluate_region_position(proposed, context, *, boundary_arcsec=0.001):
         candidate_id=context.context_id,
         boundary_arcsec=boundary_arcsec,
     )
+    # Array evidence is used only to retain the existing TP scope restriction,
+    # never to infer a primary-beam diameter for s_region containment.
+    from alma_duplicate.parsers.array_classification import classify_array_type
+    from alma_duplicate.reporting import json_value
+
+    array = classify_array_type(context.evidence.prepared.raw_row.get("antenna_arrays"))
+    tp = array.family == "TOTAL_POWER" or (
+        array.family == "MIXED" and dict(array.family_counts).get("TOTAL_POWER", 0) > 0
+    )
+    coverage["array_scope_evidence"] = json_value(array)
+    coverage["scope_status"] = "UNSUPPORTED_TP" if tp else "NO_TP_SCOPE_EXCLUSION"
+    if tp:
+        coverage["geometric_outcome"] = coverage["outcome"]
+        coverage["outcome"] = "UNKNOWN"
+        coverage["reasons"] = ["ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED"]
     state = coverage["outcome"]
     outcome = None if state == "UNKNOWN" else O(state)
     reasons = tuple(coverage["reasons"]) or (

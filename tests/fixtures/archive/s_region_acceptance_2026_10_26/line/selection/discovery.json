@@ -1,0 +1,93 @@
+{
+  "schema_version": "mosaic_candidate_discovery_1",
+  "plan": {
+    "schema_version": "mosaic_candidate_discovery_plan_1",
+    "origin": "https://almascience.eso.org",
+    "proposed_sha256": "6afc0fe1c6aab83f113d27255a6004a5053f0e215f93a1ff4869bb661ff0145b",
+    "margin_arcsec": 1.0,
+    "requests": [
+      {
+        "query": "SELECT DISTINCT proposal_id,member_ous_uid,asdm_uid,target_name,science_observation,is_mosaic FROM ivoa.obscore WHERE science_observation='T' AND (1=INTERSECTS(CIRCLE('ICRS',11.887184566666667,-25.288874822222223,0.00027777777777777778),s_region) OR 1=INTERSECTS(CIRCLE('ICRS',11.887768008333332,-25.288411111111113,0.00027777777777777778),s_region) OR 1=INTERSECTS(CIRCLE('ICRS',11.888351445833333,-25.2879474,0.00027777777777777778),s_region))",
+        "url": "https://almascience.eso.org/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=votable&MAXREC=10000&QUERY=SELECT+DISTINCT+proposal_id%2Cmember_ous_uid%2Casdm_uid%2Ctarget_name%2Cscience_observation%2Cis_mosaic+FROM+ivoa.obscore+WHERE+science_observation%3D%27T%27+AND+%281%3DINTERSECTS%28CIRCLE%28%27ICRS%27%2C11.887184566666667%2C-25.288874822222223%2C0.00027777777777777778%29%2Cs_region%29+OR+1%3DINTERSECTS%28CIRCLE%28%27ICRS%27%2C11.887768008333332%2C-25.288411111111113%2C0.00027777777777777778%29%2Cs_region%29+OR+1%3DINTERSECTS%28CIRCLE%28%27ICRS%27%2C11.888351445833333%2C-25.2879474%2C0.00027777777777777778%29%2Cs_region%29%29",
+        "kind": "REGION",
+        "proposed_ids": [
+          "row-1",
+          "row-2",
+          "row-3"
+        ],
+        "maxrec": 10000
+      },
+      {
+        "query": "SELECT DISTINCT proposal_id,member_ous_uid,asdm_uid,target_name,science_observation,is_mosaic FROM ivoa.obscore WHERE science_observation='T' AND s_region IS NULL",
+        "url": "https://almascience.eso.org/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=votable&MAXREC=10000&QUERY=SELECT+DISTINCT+proposal_id%2Cmember_ous_uid%2Casdm_uid%2Ctarget_name%2Cscience_observation%2Cis_mosaic+FROM+ivoa.obscore+WHERE+science_observation%3D%27T%27+AND+s_region+IS+NULL",
+        "kind": "NULL_REGION_FALLBACK",
+        "proposed_ids": [],
+        "maxrec": 10000
+      }
+    ],
+    "scope": "PUBLIC_SCIENCE_ALL_GEOMETRIES_REGION_PREFILTER_WITH_NULL_REGION_FALLBACK",
+    "recall_status": "NOT_ESTABLISHED_FOR_RECONSTRUCTED_HALF_POWER_COVERAGE"
+  },
+  "requests": [
+    {
+      "request_index": 0,
+      "status": "COMPLETED",
+      "started_at": "2026-10-26T16:38:29.876081+00:00",
+      "http_status": 200,
+      "response_file": "response-0000.xml",
+      "response_sha256": "4b14743fd9a68fa718a9807679327f74ba04004b9580f1693e56fe0b0ff3134f",
+      "response_bytes": 53183,
+      "row_count": 214
+    },
+    {
+      "request_index": 1,
+      "status": "COMPLETED",
+      "started_at": "2026-10-26T16:38:30.217253+00:00",
+      "http_status": 200,
+      "response_file": "response-0001.xml",
+      "response_sha256": "f46db5944ac666b8a4431c22e946912de913688a73fdf3c2366b7a58ec81125a",
+      "response_bytes": 1851,
+      "row_count": 0
+    }
+  ],
+  "candidates": [
+    {
+      "project_code": "2018.1.00294.S",
+      "member_ous_uid": "uid://A001/X133d/X9c3",
+      "source_name": "NGC253",
+      "asdm_uids": [
+        "uid://A002/Xd40be0/X42e2"
+      ],
+      "request_indices": [
+        0
+      ],
+      "geometry_flags": [
+        "T"
+      ],
+      "context_id": "ARCHIVE:MOSAIC:45632f3d25d979d19dd99a340a22a651516bd9995b417f316622b2f6a55713ac",
+      "coverage_status": "NOT_RECONSTRUCTED"
+    },
+    {
+      "project_code": "2018.1.00294.S",
+      "member_ous_uid": "uid://A001/X133d/X9c5",
+      "source_name": "NGC253",
+      "asdm_uids": [
+        "uid://A002/Xfeb5e6/X59b7"
+      ],
+      "request_indices": [
+        0
+      ],
+      "geometry_flags": [
+        "T"
+      ],
+      "context_id": "ARCHIVE:MOSAIC:d97d04094f10f5ad0645e7f93b3a23e3064c5fe2b3223b67e4c8f0a3d5d161a7",
+      "coverage_status": "NOT_RECONSTRUCTED"
+    }
+  ],
+  "status": "COMPLETED",
+  "candidate_count": 2,
+  "policy_status": "NOT_EVALUATED",
+  "absence_interpretation": "NO_DUPLICATION_CONCLUSION_FROM_EMPTY_SEARCH",
+  "acceptance_scope": "EXPLICIT_DISCOVERED_MEMBER_SUBSET",
+  "discovered_candidate_count": 214
+}

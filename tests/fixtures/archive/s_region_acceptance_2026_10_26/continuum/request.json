@@ -1,0 +1,113 @@
+{
+  "request": {
+    "target_kind": "FIXED",
+    "geometry": "MOSAIC",
+    "target_name": "NGC253_CASE2_SYNTHETIC_CONTINUUM",
+    "setup_id": "setup-1",
+    "setup_complete": true,
+    "intents": [
+      "CONTINUUM"
+    ],
+    "angular_resolution": {
+      "value": 0.07,
+      "unit": "arcsec"
+    },
+    "representative_frequency": {
+      "value": 690.8931792321085,
+      "unit": "GHz",
+      "kind": "SKY",
+      "frame": "UNKNOWN"
+    },
+    "spectral_windows": [
+      {
+        "window_id": "w0",
+        "representation": "CENTER_BANDWIDTH",
+        "center": {
+          "value": 689.1270082794149,
+          "unit": "GHz",
+          "kind": "SKY",
+          "frame": "UNKNOWN"
+        },
+        "bandwidth": {
+          "value": 1.875,
+          "unit": "GHz"
+        },
+        "bandwidth_kind": "USABLE",
+        "correlator_mode": "FDM"
+      },
+      {
+        "window_id": "w1",
+        "representation": "CENTER_BANDWIDTH",
+        "center": {
+          "value": 690.8931792321085,
+          "unit": "GHz",
+          "kind": "SKY",
+          "frame": "UNKNOWN"
+        },
+        "bandwidth": {
+          "value": 1.875,
+          "unit": "GHz"
+        },
+        "bandwidth_kind": "USABLE",
+        "correlator_mode": "FDM"
+      },
+      {
+        "window_id": "w2",
+        "representation": "CENTER_BANDWIDTH",
+        "center": {
+          "value": 692.7100628404637,
+          "unit": "GHz",
+          "kind": "SKY",
+          "frame": "UNKNOWN"
+        },
+        "bandwidth": {
+          "value": 1.875,
+          "unit": "GHz"
+        },
+        "bandwidth_kind": "USABLE",
+        "correlator_mode": "FDM"
+      },
+      {
+        "window_id": "w3",
+        "representation": "CENTER_BANDWIDTH",
+        "center": {
+          "value": 694.51685748722,
+          "unit": "GHz",
+          "kind": "SKY",
+          "frame": "UNKNOWN"
+        },
+        "bandwidth": {
+          "value": 1.875,
+          "unit": "GHz"
+        },
+        "bandwidth_kind": "USABLE",
+        "correlator_mode": "FDM"
+      }
+    ],
+    "sensitivities": [
+      {
+        "sensitivity_id": "continuum-rms",
+        "purpose": "CONTINUUM",
+        "scope": "SETUP",
+        "setup_id": "setup-1",
+        "basis": "AGGREGATE",
+        "aggregate_path": "DIRECT_DECLARATION",
+        "rms": {
+          "value": 0.4,
+          "unit": "mJy/beam"
+        }
+      }
+    ]
+  },
+  "search_options": {
+    "radius": {
+      "value": 30,
+      "unit": "arcsec"
+    },
+    "sources": [
+      "ARCHIVE"
+    ],
+    "result_limit": 100,
+    "predicates": []
+  }
+}
