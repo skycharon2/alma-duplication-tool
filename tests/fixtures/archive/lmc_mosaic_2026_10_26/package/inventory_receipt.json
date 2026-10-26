@@ -1,0 +1,21 @@
+{
+  "schema_version": "archive_mosaic_inventory_capture_1",
+  "request": {
+    "member_ous_uid": "uid://A001/X879/X6e7",
+    "source_name": "LMC0NT197",
+    "origin": "https://almascience.eso.org",
+    "query": "SELECT DISTINCT proposal_id, member_ous_uid, asdm_uid, target_name, science_observation, is_mosaic FROM ivoa.obscore WHERE member_ous_uid='uid://A001/X879/X6e7' AND target_name='LMC0NT197' AND science_observation='T' AND is_mosaic='T'",
+    "maxrec": 10000,
+    "url": "https://almascience.eso.org/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=votable&MAXREC=10000&QUERY=SELECT+DISTINCT+proposal_id%2C+member_ous_uid%2C+asdm_uid%2C+target_name%2C+science_observation%2C+is_mosaic+FROM+ivoa.obscore+WHERE+member_ous_uid%3D%27uid%3A%2F%2FA001%2FX879%2FX6e7%27+AND+target_name%3D%27LMC0NT197%27+AND+science_observation%3D%27T%27+AND+is_mosaic%3D%27T%27"
+  },
+  "started_at": "2026-10-26T09:44:19.099068+00:00",
+  "status": "CAPTURED",
+  "http_status": 200,
+  "response_bytes": 2183,
+  "response_sha256": "601777543fe213069c22752569677e70f6c9990016fb32c04a7dac3839f1b6b4",
+  "row_count": 1,
+  "asdm_uids": [
+    "uid://A002/Xb8f857/X3977"
+  ],
+  "finished_at": "2026-10-26T09:44:19.424802+00:00"
+}

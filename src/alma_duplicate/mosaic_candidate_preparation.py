@@ -112,8 +112,10 @@ def prepare_candidate_chunk(discovery, *, output, cache, inventory_capture=None,
                     **(asdict(limits) if resource_limits is not None else {}))
                 result.update(package_audit_dir=str(directory/'package'),
                     execution_count=len(audit['executions']),unresolved=audit['unresolved'],
+                    missing_tap_asdm_uids=audit.get('missing_tap_asdm_uids', []),
+                    alternative_pointing_evidence=audit.get('inspection', {}).get('alternative_evidence', []),
                     reused_cache=audit['reused_cache'],completeness=audit['completeness'],
-                    status='POINTINGS_PREPARED' if audit['executions'] and not audit['unresolved'] else 'PARTIAL_EVIDENCE')
+                    status='POINTINGS_PREPARED' if audit['executions'] and not audit['unresolved'] and not audit.get('missing_tap_asdm_uids') else 'PARTIAL_EVIDENCE')
                 if audit['executions']:
                     from alma_duplicate.archive_mosaic_readiness import build_readiness
                     from alma_duplicate.clients.archive_aq_client import ArchiveAqClient

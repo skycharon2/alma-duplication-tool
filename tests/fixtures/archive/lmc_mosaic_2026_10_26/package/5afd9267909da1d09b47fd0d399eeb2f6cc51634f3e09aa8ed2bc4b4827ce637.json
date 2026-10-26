@@ -1,0 +1,432 @@
+{
+  "schema_version": "archive_mosaic_package_execution_1",
+  "execution": {
+    "project_code": "2016.1.00063.S",
+    "member_ous_uid": "uid://A001/X879/X6e7",
+    "asdm_uid": "uid://A002/Xb8f857/X3977",
+    "source_name": "LMC0NT197",
+    "metadata_reference": "discovery.json",
+    "evidence": {
+      "measurement_set": "uid___A002_Xb8f857_X3977.ms",
+      "source_sha256": "7295077b69fe082e6dd99cf9745313292529d4723edd20cb7a4c4e2f40abb2b4",
+      "fields": [
+        {
+          "field_id": 2,
+          "source_id": 2,
+          "target_name": "LMC0NT197",
+          "frame": "ICRS",
+          "ra_original": "05:39:46.373300",
+          "dec_original": "-70.08.03.37627",
+          "ra_deg": 84.94322208333334,
+          "dec_deg": -70.13427118611112,
+          "scans": [
+            {
+              "scan_id": 7,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "scan_id": 11,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "scan_id": 15,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "scan_id": 20,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "scan_id": 24,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            }
+          ]
+        },
+        {
+          "field_id": 3,
+          "source_id": 2,
+          "target_name": "LMC0NT197",
+          "frame": "ICRS",
+          "ra_original": "05:39:41.832322",
+          "dec_original": "-70.07.23.26014",
+          "ra_deg": 84.92430134166668,
+          "dec_deg": -70.12312781666667,
+          "scans": [
+            {
+              "scan_id": 7,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "scan_id": 11,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "scan_id": 15,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "scan_id": 20,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "scan_id": 24,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            }
+          ]
+        },
+        {
+          "field_id": 4,
+          "source_id": 2,
+          "target_name": "LMC0NT197",
+          "frame": "ICRS",
+          "ra_original": "05:39:50.914278",
+          "dec_original": "-70.07.23.26014",
+          "ra_deg": 84.96214282500002,
+          "dec_deg": -70.12312781666667,
+          "scans": [
+            {
+              "scan_id": 7,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "scan_id": 11,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "scan_id": 15,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "scan_id": 20,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "scan_id": 24,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            },
+            {
+              "scan_id": 28,
+              "spw_ids": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ]
+            }
+          ]
+        }
+      ],
+      "declared_field_count": 12,
+      "parser_version": "archive_listobs_icrs_1",
+      "direction_kind": "LISTOBS_REPORTED_FIELD_CENTRE",
+      "scope": "SUPPORTED_SINGLE_TARGET_LISTOBS"
+    },
+    "array_label": null,
+    "array_evidence_reference": null,
+    "metadata_status": "MEMBER_PACKAGE_BOUND_NOT_TAP_EXECUTION_BOUND",
+    "array_status": "NOT_INDEPENDENTLY_VERIFIED",
+    "binding_status": "MS_BASENAME_AND_TARGET_MATCHED",
+    "acquisition_status": "VERIFIED_PACKAGE_LISTOBS",
+    "execution_inventory_status": "UNKNOWN",
+    "completeness": "MEMBER_COMPLETENESS_NOT_ESTABLISHED",
+    "policy_status": "NOT_EVALUATED",
+    "reconstruction_version": "archive_mosaic_execution_1"
+  },
+  "provenance": {
+    "listobs_file": "listobs/7295077b69fe082e6dd99cf9745313292529d4723edd20cb7a4c4e2f40abb2b4.txt",
+    "candidate": {
+      "path_chain": [
+        "2016.1.00063.S/science_goal.uid___A001_X879_X6e5/group.uid___A001_X879_X6e6/member.uid___A001_X879_X6e7/qa/member.uid___A001_X879_X6e7.hifa_calimage.weblog.tgz",
+        "pipeline-20190312T134414/html/sessionsession_1/uid___A002_Xb8f857_X3977.ms/listobs.txt"
+      ],
+      "bytes": 27436,
+      "sha256": "7295077b69fe082e6dd99cf9745313292529d4723edd20cb7a4c4e2f40abb2b4",
+      "measurement_set": "uid___A002_Xb8f857_X3977.ms",
+      "reported_asdm_uid": "uid://A002/Xb8f857/X3977",
+      "measurement_set_variant": "ORIGINAL",
+      "excluded_science_fields": [
+        {
+          "field_id": 6,
+          "target_name": "LMC1N127",
+          "scan_ids": [
+            9,
+            13,
+            17,
+            21,
+            26
+          ],
+          "reason": "OTHER_SCIENCE_TARGET"
+        },
+        {
+          "field_id": 7,
+          "target_name": "LMC1N127",
+          "scan_ids": [
+            9,
+            13,
+            17,
+            21,
+            26
+          ],
+          "reason": "OTHER_SCIENCE_TARGET"
+        },
+        {
+          "field_id": 8,
+          "target_name": "LMC1N127",
+          "scan_ids": [
+            9,
+            13,
+            17,
+            21,
+            26,
+            30
+          ],
+          "reason": "OTHER_SCIENCE_TARGET"
+        },
+        {
+          "field_id": 9,
+          "target_name": "LMC2N113",
+          "scan_ids": [
+            10,
+            14,
+            19,
+            22,
+            27
+          ],
+          "reason": "OTHER_SCIENCE_TARGET"
+        },
+        {
+          "field_id": 10,
+          "target_name": "LMC2N113",
+          "scan_ids": [
+            10,
+            14,
+            19,
+            22,
+            27
+          ],
+          "reason": "OTHER_SCIENCE_TARGET"
+        },
+        {
+          "field_id": 11,
+          "target_name": "LMC2N113",
+          "scan_ids": [
+            10,
+            14,
+            19,
+            22,
+            27,
+            31
+          ],
+          "reason": "OTHER_SCIENCE_TARGET"
+        }
+      ],
+      "status": "MATCHED",
+      "science_field_count": 3
+    },
+    "archive_sha256": "0f8e88b4c3cfd71c502def10fced01518fb46cdebbb8e8e3bbb766b94a4c8574",
+    "discovery_receipt_sha256": "06ff9acc6442e734119acd6d8d04d380f2169e3a6032405c364754773ff1878f"
+  }
+}

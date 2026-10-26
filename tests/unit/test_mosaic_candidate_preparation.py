@@ -113,3 +113,16 @@ def test_explicit_resource_limits_reach_audit_and_receipt(tmp_path):
     assert report['resource_limits'] == asdict(limits)
     assert report['candidates'][0]['status'] == 'FAILED'
     assert 'budget exceeded' in report['candidates'][0]['error']
+
+
+def test_missing_inventory_execution_is_partial(tmp_path):
+    def audit(**kw):
+        return dict(executions={'E': {}}, unresolved=[], reused_cache=True,
+            missing_tap_asdm_uids=['missing'], completeness='MEMBER_COMPLETENESS_NOT_ESTABLISHED',
+            inspection={'alternative_evidence': [{'position_status': 'NOT_READY'}]})
+    report = prepare_candidates(discovery(), output=tmp_path/'run', cache=tmp_path/'cache',
+        inventory_capture=inventory, product_discovery=products, package_audit=audit, offline=True)
+    candidate = report['candidates'][0]
+    assert candidate['status'] == 'PARTIAL_EVIDENCE'
+    assert candidate['missing_tap_asdm_uids'] == ['missing']
+    assert candidate['alternative_pointing_evidence'][0]['position_status'] == 'NOT_READY'

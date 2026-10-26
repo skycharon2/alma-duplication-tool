@@ -1,0 +1,283 @@
+{
+  "schema_version": "archive_mosaic_package_audit_1",
+  "member_ous_uid": "uid://A001/X879/X6e7",
+  "source_name": "LMC0NT197",
+  "inventory_sha256": "601777543fe213069c22752569677e70f6c9990016fb32c04a7dac3839f1b6b4",
+  "discovery_receipt_sha256": "06ff9acc6442e734119acd6d8d04d380f2169e3a6032405c364754773ff1878f",
+  "product": {
+    "row_index": 3,
+    "member_ous_uid": "uid://A001/X879/X6e7",
+    "access_url": "https://almascience.eso.org/dataPortal/2016.1.00063.S_uid___A001_X879_X6e7_auxiliary.tar",
+    "service_def": null,
+    "semantics": "#auxiliary",
+    "description": "Download dataset of type: null, and class: N/A.",
+    "content_type": "application/x-tar",
+    "content_length": 76870656,
+    "link_auth": "false",
+    "link_authorized": "true",
+    "kind": "AUXILIARY_CANDIDATE",
+    "issues": [],
+    "binding": "DATALINK_ROW_MEMBER_ID",
+    "pointing_content": "NOT_INSPECTED",
+    "asdm_binding": "NOT_ESTABLISHED"
+  },
+  "download": {
+    "url": "https://almascience.eso.org/dataPortal/2016.1.00063.S_uid___A001_X879_X6e7_auxiliary.tar",
+    "bytes": 76870656,
+    "sha256": "0f8e88b4c3cfd71c502def10fced01518fb46cdebbb8e8e3bbb766b94a4c8574",
+    "started_at": "2026-10-26T09:44:19.731341+00:00",
+    "finished_at": "2026-10-26T09:44:22.255477+00:00",
+    "http_status": 200
+  },
+  "reused_cache": true,
+  "inspection": {
+    "status": "FOUND",
+    "candidates": [
+      {
+        "path_chain": [
+          "2016.1.00063.S/science_goal.uid___A001_X879_X6e5/group.uid___A001_X879_X6e6/member.uid___A001_X879_X6e7/qa/member.uid___A001_X879_X6e7.hifa_calimage.weblog.tgz",
+          "pipeline-20190312T134414/html/sessionsession_1/uid___A002_Xb8f857_X3977_target.ms/listobs.txt"
+        ],
+        "bytes": 16791,
+        "sha256": "e86c3eafec0b0c313ebd61b4f65b18302676a35321ecfd29012069304fd98811",
+        "measurement_set": "uid___A002_Xb8f857_X3977_target.ms",
+        "reported_asdm_uid": "uid://A002/Xb8f857/X3977",
+        "measurement_set_variant": "TARGET",
+        "status": "OTHER_MEASUREMENT_SET"
+      },
+      {
+        "path_chain": [
+          "2016.1.00063.S/science_goal.uid___A001_X879_X6e5/group.uid___A001_X879_X6e6/member.uid___A001_X879_X6e7/qa/member.uid___A001_X879_X6e7.hifa_calimage.weblog.tgz",
+          "pipeline-20190312T134414/html/sessionsession_1/uid___A002_Xb8f857_X3977.ms/listobs.txt"
+        ],
+        "bytes": 27436,
+        "sha256": "7295077b69fe082e6dd99cf9745313292529d4723edd20cb7a4c4e2f40abb2b4",
+        "measurement_set": "uid___A002_Xb8f857_X3977.ms",
+        "reported_asdm_uid": "uid://A002/Xb8f857/X3977",
+        "measurement_set_variant": "ORIGINAL",
+        "excluded_science_fields": [
+          {
+            "field_id": 6,
+            "target_name": "LMC1N127",
+            "scan_ids": [
+              9,
+              13,
+              17,
+              21,
+              26
+            ],
+            "reason": "OTHER_SCIENCE_TARGET"
+          },
+          {
+            "field_id": 7,
+            "target_name": "LMC1N127",
+            "scan_ids": [
+              9,
+              13,
+              17,
+              21,
+              26
+            ],
+            "reason": "OTHER_SCIENCE_TARGET"
+          },
+          {
+            "field_id": 8,
+            "target_name": "LMC1N127",
+            "scan_ids": [
+              9,
+              13,
+              17,
+              21,
+              26,
+              30
+            ],
+            "reason": "OTHER_SCIENCE_TARGET"
+          },
+          {
+            "field_id": 9,
+            "target_name": "LMC2N113",
+            "scan_ids": [
+              10,
+              14,
+              19,
+              22,
+              27
+            ],
+            "reason": "OTHER_SCIENCE_TARGET"
+          },
+          {
+            "field_id": 10,
+            "target_name": "LMC2N113",
+            "scan_ids": [
+              10,
+              14,
+              19,
+              22,
+              27
+            ],
+            "reason": "OTHER_SCIENCE_TARGET"
+          },
+          {
+            "field_id": 11,
+            "target_name": "LMC2N113",
+            "scan_ids": [
+              10,
+              14,
+              19,
+              22,
+              27,
+              31
+            ],
+            "reason": "OTHER_SCIENCE_TARGET"
+          }
+        ],
+        "status": "MATCHED",
+        "science_field_count": 3
+      }
+    ],
+    "budget": {
+      "entries": 2258,
+      "expanded": 287608962
+    },
+    "skipped": [
+      {
+        "path_chain": [
+          "2016.1.00063.S/science_goal.uid___A001_X879_X6e5/group.uid___A001_X879_X6e6/member.uid___A001_X879_X6e7/calibration/member.uid___A001_X879_X6e7.hifa_calimage.auxproducts.tgz"
+        ],
+        "reason": "OUTSIDE_WEBLOG_SCOPE"
+      },
+      {
+        "path_chain": [
+          "2016.1.00063.S/science_goal.uid___A001_X879_X6e5/group.uid___A001_X879_X6e6/member.uid___A001_X879_X6e7/calibration/member.uid___A001_X879_X6e7.session_1.auxcaltables.tgz"
+        ],
+        "reason": "OUTSIDE_WEBLOG_SCOPE"
+      },
+      {
+        "path_chain": [
+          "2016.1.00063.S/science_goal.uid___A001_X879_X6e5/group.uid___A001_X879_X6e6/member.uid___A001_X879_X6e7/calibration/member.uid___A001_X879_X6e7.session_1.caltables.tgz"
+        ],
+        "reason": "OUTSIDE_WEBLOG_SCOPE"
+      },
+      {
+        "path_chain": [
+          "2016.1.00063.S/science_goal.uid___A001_X879_X6e5/group.uid___A001_X879_X6e6/member.uid___A001_X879_X6e7/calibration/uid___A002_Xb8f857_X3977.ms.flagversions.tgz"
+        ],
+        "reason": "OUTSIDE_WEBLOG_SCOPE"
+      },
+      {
+        "path_chain": [
+          "2016.1.00063.S/science_goal.uid___A001_X879_X6e5/group.uid___A001_X879_X6e6/member.uid___A001_X879_X6e7/qa/member.uid___A001_X879_X6e7.hifa_calimage.weblog.tgz",
+          "pipeline-20190312T134414/html/index.html"
+        ],
+        "reason": "NON_REGULAR_MEMBER"
+      }
+    ],
+    "scope": "DIRECT_LISTOBS_AND_NESTED_WEBLOG_ARCHIVES_ONLY",
+    "selected": {
+      "path_chain": [
+        "2016.1.00063.S/science_goal.uid___A001_X879_X6e5/group.uid___A001_X879_X6e6/member.uid___A001_X879_X6e7/qa/member.uid___A001_X879_X6e7.hifa_calimage.weblog.tgz",
+        "pipeline-20190312T134414/html/sessionsession_1/uid___A002_Xb8f857_X3977.ms/listobs.txt"
+      ],
+      "bytes": 27436,
+      "sha256": "7295077b69fe082e6dd99cf9745313292529d4723edd20cb7a4c4e2f40abb2b4",
+      "measurement_set": "uid___A002_Xb8f857_X3977.ms",
+      "reported_asdm_uid": "uid://A002/Xb8f857/X3977",
+      "measurement_set_variant": "ORIGINAL",
+      "excluded_science_fields": [
+        {
+          "field_id": 6,
+          "target_name": "LMC1N127",
+          "scan_ids": [
+            9,
+            13,
+            17,
+            21,
+            26
+          ],
+          "reason": "OTHER_SCIENCE_TARGET"
+        },
+        {
+          "field_id": 7,
+          "target_name": "LMC1N127",
+          "scan_ids": [
+            9,
+            13,
+            17,
+            21,
+            26
+          ],
+          "reason": "OTHER_SCIENCE_TARGET"
+        },
+        {
+          "field_id": 8,
+          "target_name": "LMC1N127",
+          "scan_ids": [
+            9,
+            13,
+            17,
+            21,
+            26,
+            30
+          ],
+          "reason": "OTHER_SCIENCE_TARGET"
+        },
+        {
+          "field_id": 9,
+          "target_name": "LMC2N113",
+          "scan_ids": [
+            10,
+            14,
+            19,
+            22,
+            27
+          ],
+          "reason": "OTHER_SCIENCE_TARGET"
+        },
+        {
+          "field_id": 10,
+          "target_name": "LMC2N113",
+          "scan_ids": [
+            10,
+            14,
+            19,
+            22,
+            27
+          ],
+          "reason": "OTHER_SCIENCE_TARGET"
+        },
+        {
+          "field_id": 11,
+          "target_name": "LMC2N113",
+          "scan_ids": [
+            10,
+            14,
+            19,
+            22,
+            27,
+            31
+          ],
+          "reason": "OTHER_SCIENCE_TARGET"
+        }
+      ],
+      "status": "MATCHED",
+      "science_field_count": 3
+    }
+  },
+  "executions": {
+    "uid://A002/Xb8f857/X3977": {
+      "status": "RECONSTRUCTED",
+      "execution_file": "5afd9267909da1d09b47fd0d399eeb2f6cc51634f3e09aa8ed2bc4b4827ce637.json",
+      "sha256": "0189dd4083009330cc3fc782ba638917edd4328f5bb4a36d5dc8c4a82b21e3b2",
+      "science_field_count": 3
+    }
+  },
+  "unresolved": [],
+  "completeness": "MEMBER_COMPLETENESS_NOT_ESTABLISHED",
+  "policy_status": "NOT_EVALUATED",
+  "tap_asdm_uids": [
+    "uid://A002/Xb8f857/X3977"
+  ],
+  "additional_package_asdm_uids": [],
+  "missing_tap_asdm_uids": [],
+  "status": "NO_ADDITIONAL_EXECUTIONS"
+}

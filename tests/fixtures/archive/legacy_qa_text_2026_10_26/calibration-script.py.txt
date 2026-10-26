@@ -1,0 +1,573 @@
+# ALMA Data Reduction Script
+
+# Calibration
+
+thesteps = []
+step_title = {0: 'Import of the ASDM',
+              1: 'Fix of SYSCAL table times',
+              2: 'listobs',
+              3: 'A priori flagging',
+              4: 'Generation and time averaging of the WVR cal table',
+              5: 'Generation of the Tsys cal table',
+              6: 'Generation of the antenna position cal table',
+              7: 'Application of the WVR, Tsys and antpos cal tables',
+              8: 'Split out science SPWs and time average',
+              9: 'Listobs, clear pointing table, and save original flags',
+              10: 'Initial flagging',
+              11: 'Putting a model for the flux calibrator(s)',
+              12: 'Save flags before bandpass cal',
+              13: 'Bandpass calibration',
+              14: 'Save flags before gain cal',
+              15: 'Gain calibration',
+              16: 'Save flags before applycal',
+              17: 'Application of the bandpass and gain cal tables',
+              18: 'Split out corrected column',
+              19: 'Save flags after applycal'}
+
+if 'applyonly' not in globals(): applyonly = False
+try:
+  print 'List of steps to be executed ...', mysteps
+  thesteps = mysteps
+except:
+  print 'global variable mysteps not set.'
+if (thesteps==[]):
+  thesteps = range(0,len(step_title))
+  print 'Executing all steps: ', thesteps
+
+# The Python variable 'mysteps' will control which steps
+# are executed when you start the script using
+#   execfile('scriptForCalibration.py')
+# e.g. setting
+#   mysteps = [2,3,4]# before starting the script will make the script execute
+# only steps 2, 3, and 4
+# Setting mysteps = [] will make it execute all steps.
+
+import re
+
+import os
+
+if applyonly != True: es = aU.stuffForScienceDataReduction() 
+
+
+if re.search('^4.3.1', casadef.casa_version) == None:
+ sys.exit('ERROR: PLEASE USE THE SAME VERSION OF CASA THAT YOU USED FOR GENERATING THE SCRIPT: 4.3.1')
+
+
+# CALIBRATE_AMPLI: J1337-129
+# CALIBRATE_ATMOSPHERE: J1337-1257,J1337-129,RX_J1347.5-1145
+# CALIBRATE_BANDPASS: J1337-1257
+# CALIBRATE_FLUX: J1337-129
+# CALIBRATE_FOCUS: 
+# CALIBRATE_PHASE: J1337-1257
+# CALIBRATE_POINTING: J1337-1257
+# OBSERVE_TARGET: RX_J1347.5-1145
+
+# Using reference antenna = DA64
+
+# Import of the ASDM
+mystep = 0
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  if os.path.exists('uid___A002_X984bbe_X2df7.ms') == False:
+    importasdm('uid___A002_X984bbe_X2df7', asis='Antenna Station Receiver Source CalAtmosphere CalWVR', bdfflags=True, lazy=False)
+  if applyonly != True: es.fixForCSV2555('uid___A002_X984bbe_X2df7.ms')
+
+# Fix of SYSCAL table times
+mystep = 1
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  from recipes.almahelpers import fixsyscaltimes
+  fixsyscaltimes(vis = 'uid___A002_X984bbe_X2df7.ms')
+
+print "# A priori calibration"
+
+# listobs
+mystep = 2
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.listobs')
+  listobs(vis = 'uid___A002_X984bbe_X2df7.ms',
+    listfile = 'uid___A002_X984bbe_X2df7.ms.listobs')
+  
+  
+
+# A priori flagging
+mystep = 3
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  flagdata(vis = 'uid___A002_X984bbe_X2df7.ms',
+    mode = 'manual',
+    spw = '1~20',
+    autocorr = T,
+    flagbackup = F)
+  
+  flagdata(vis = 'uid___A002_X984bbe_X2df7.ms',
+    mode = 'manual',
+    intent = '*POINTING*,*SIDEBAND_RATIO*,*ATMOSPHERE*',
+    flagbackup = F)
+  
+  flagcmd(vis = 'uid___A002_X984bbe_X2df7.ms',
+    inpmode = 'table',
+    useapplied = True,
+    action = 'plot',
+    plotfile = 'uid___A002_X984bbe_X2df7.ms.flagcmd.png')
+  
+  flagcmd(vis = 'uid___A002_X984bbe_X2df7.ms',
+    inpmode = 'table',
+    useapplied = True,
+    action = 'apply')
+  
+
+# Generation and time averaging of the WVR cal table
+mystep = 4
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.wvr') 
+  
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.wvrgcal') 
+  
+  mylogfile = casalog.logfile()
+  casalog.setlogfile('uid___A002_X984bbe_X2df7.ms.wvrgcal')
+  
+  wvrgcal(vis = 'uid___A002_X984bbe_X2df7.ms',
+    caltable = 'uid___A002_X984bbe_X2df7.ms.wvr',
+    spw = [9, 11, 13, 15],
+    smooth = '2.016s',
+    toffset = 0,
+    tie = ['RX_J1347.5-1145,J1337-1257'],
+    statsource = 'RX_J1347.5-1145')
+  
+  casalog.setlogfile(mylogfile)
+  
+  if applyonly != True: aU.plotWVRSolutions(caltable='uid___A002_X984bbe_X2df7.ms.wvr', spw='9', antenna='DA64',
+    yrange=[-199,199],subplot=22, interactive=False,
+    figfile='uid___A002_X984bbe_X2df7.ms.wvr.plots/uid___A002_X984bbe_X2df7.ms.wvr') 
+  
+  #Note: If you see wraps in these plots, try changing yrange or unwrap=True 
+  #Note: If all plots look strange, it may be a bad WVR on the reference antenna.
+  #      To check, you can set antenna='' to show all baselines.
+  
+
+# Generation of the Tsys cal table
+mystep = 5
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.tsys') 
+  gencal(vis = 'uid___A002_X984bbe_X2df7.ms',
+    caltable = 'uid___A002_X984bbe_X2df7.ms.tsys',
+    caltype = 'tsys')
+  
+  # Flagging edge channels
+  
+  flagdata(vis = 'uid___A002_X984bbe_X2df7.ms.tsys',
+    mode = 'manual',
+    spw = '9:0~3;124~127,11:0~3;124~127,13:0~3;124~127,15:0~3;124~127',
+    flagbackup = F)
+  
+  if applyonly != True: aU.plotbandpass(caltable='uid___A002_X984bbe_X2df7.ms.tsys', overlay='time', 
+    xaxis='freq', yaxis='amp', subplot=22, buildpdf=False, interactive=False,
+    showatm=True,pwv='auto',chanrange='92.1875%',showfdm=True, showBasebandNumber=True, 
+    field='', figfile='uid___A002_X984bbe_X2df7.ms.tsys.plots.overlayTime/uid___A002_X984bbe_X2df7.ms.tsys') 
+  
+  
+  if applyonly != True: es.checkCalTable('uid___A002_X984bbe_X2df7.ms.tsys', msName='uid___A002_X984bbe_X2df7.ms', interactive=False) 
+  
+
+# Generation of the antenna position cal table
+mystep = 6
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  # Position for antenna DA64 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DA63 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DA61 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DA45 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DV13 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DV21 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DA62 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DV08 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DV11 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DV10 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DV22 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DA50 is derived from baseline run made on 2014-12-02 07:19:25.
+  
+  # Position for antenna DA51 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DA56 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DA54 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DA55 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Note: no baseline run found for antenna DV06.
+  
+  # Position for antenna DA58 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  # Position for antenna DV20 is derived from baseline run made on 2014-12-21 05:53:17.
+  
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.antpos') 
+  gencal(vis = 'uid___A002_X984bbe_X2df7.ms',
+    caltable = 'uid___A002_X984bbe_X2df7.ms.antpos',
+    caltype = 'antpos',
+    antenna = 'DV20,DV21,DV22,DA64,DA63,DA62,DA61,DA55,DA45,DV10,DV13,DA50,DV11,DA51,DA54,DV08,DA56,DA58',
+    parameter = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+  #  parameter = [0.000460050006612,-0.00021874772401,-7.97836114554e-05,4.70783561468e-07,-8.84756445885e-07,-6.96163624525e-07,-5.96418597267e-05,0.000243545705265,0.000261023634975,-0.000200997814954,0.000227271650489,0.000133968187523,-3.45614969862e-05,0.00010563166639,0.000323605398567,0.000264929615067,-0.000314897131399,-8.50887518854e-05,-0.000111840876278,0.000101743698599,8.80274854169e-05,1.39698386192e-06,-1.12783163786e-06,-4.36790287495e-07,1.63912773132e-07,-2.97091901302e-07,-1.83936208487e-07,0.00016249908714,-0.000209751707162,0.00012217719927,3.55299562216e-07,-2.96160578728e-07,-6.33299350739e-08,7.03148543835e-07,1.39698386192e-08,1.25262886286e-07,0.000174600353117,3.53822078968e-05,0.000171536631819,4.47034835815e-07,-6.72414898872e-07,-7.32950866222e-07,-5.81718075137e-05,0.000266376552197,0.000253427648945,0.000687975098872,-0.000654508965563,-0.000244176733802,-4.32264282441e-05,0.000177006535769,0.000105390522328,-0.00013099720693,-3.63277984287e-05,3.93067785242e-05])
+  
+
+# Application of the WVR, Tsys and antpos cal tables
+mystep = 7
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  
+  
+  from recipes.almahelpers import tsysspwmap
+  tsysmap = tsysspwmap(vis = 'uid___A002_X984bbe_X2df7.ms', tsystable = 'uid___A002_X984bbe_X2df7.ms.tsys', tsysChanTol = 1)
+  
+  
+  
+  applycal(vis = 'uid___A002_X984bbe_X2df7.ms',
+    field = '0',
+    spw = '9,11,13,15',
+    gaintable = ['uid___A002_X984bbe_X2df7.ms.tsys', 'uid___A002_X984bbe_X2df7.ms.wvr', 'uid___A002_X984bbe_X2df7.ms.antpos'],
+    gainfield = ['0', '', ''],
+    interp = 'linear,linear',
+    spwmap = [tsysmap,[],[]],
+    calwt = T,
+    flagbackup = F)
+  
+  
+  
+  applycal(vis = 'uid___A002_X984bbe_X2df7.ms',
+    field = '1',
+    spw = '9,11,13,15',
+    gaintable = ['uid___A002_X984bbe_X2df7.ms.tsys', 'uid___A002_X984bbe_X2df7.ms.wvr', 'uid___A002_X984bbe_X2df7.ms.antpos'],
+    gainfield = ['1', '', ''],
+    interp = 'linear,linear',
+    spwmap = [tsysmap,[],[]],
+    calwt = T,
+    flagbackup = F)
+  
+  
+  
+  applycal(vis = 'uid___A002_X984bbe_X2df7.ms',
+    field = '2~9',
+    spw = '9,11,13,15',
+    gaintable = ['uid___A002_X984bbe_X2df7.ms.tsys', 'uid___A002_X984bbe_X2df7.ms.wvr', 'uid___A002_X984bbe_X2df7.ms.antpos'],
+    gainfield = ['2', '', ''],
+    interp = 'linear,linear',
+    spwmap = [tsysmap,[],[]],
+    calwt = T,
+    flagbackup = F)
+  
+  if applyonly != True: es.getCalWeightStats('uid___A002_X984bbe_X2df7.ms') 
+  
+
+# Split out science SPWs and time average
+mystep = 8
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.split') 
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.split.flagversions') 
+  split(vis = 'uid___A002_X984bbe_X2df7.ms',
+    outputvis = 'uid___A002_X984bbe_X2df7.ms.split',
+    datacolumn = 'corrected',
+    spw = '9,11,13,15',
+    keepflags = T)
+  
+  
+
+print "# Calibration"
+
+# Listobs, clear pointing table, and save original flags
+mystep = 9
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.split.listobs')
+  listobs(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    listfile = 'uid___A002_X984bbe_X2df7.ms.split.listobs')
+  
+  tb.open('uid___A002_X984bbe_X2df7.ms.split/POINTING', nomodify = False)
+  a = tb.rownumbers()
+  tb.removerows(a)
+  tb.close()
+  
+  if not os.path.exists('uid___A002_X984bbe_X2df7.ms.split.flagversions/Original.flags'):
+    flagmanager(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+      mode = 'save',
+      versionname = 'Original')
+  
+  
+
+# Initial flagging
+mystep = 10
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  # Flagging shadowed data
+  
+  flagdata(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    mode = 'shadow',
+    flagbackup = F)
+  
+  # Flagging edge channels
+  
+  flagdata(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    mode = 'manual',
+    spw = '0:0~7;120~127,1:0~7;120~127,2:0~7;120~127,3:0~7;120~127',
+    flagbackup = F)
+  
+   # Manual Flagging                                                                                      
+  flagdata(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+     antenna = 'DA53',
+     flagbackup = F)
+
+  flagdata(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+     antenna = 'DV06,DA45',
+     spw = '1,2,3',
+     flagbackup = F)
+
+  flagdata(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+     timerange='2014/12/30/10:43:42.0~2014/12/30/10:43:47.0',
+     field = '1',
+     flagbackup =F)
+
+
+
+# Putting a model for the flux calibrator(s)
+mystep = 11
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  setjy(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    standard = 'manual',
+    field = 'J1337-129',
+    fluxdensity = [4.63697227478, 0, 0, 0],
+    spix = -0.388753293204,
+    reffreq = '92.02105GHz')
+  
+  
+
+# Save flags before bandpass cal
+mystep = 12
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  
+  flagmanager(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    mode = 'save',
+    versionname = 'BeforeBandpassCalibration')
+  
+  
+
+# Bandpass calibration
+mystep = 13
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.split.ap_pre_bandpass') 
+  
+  gaincal(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    caltable = 'uid___A002_X984bbe_X2df7.ms.split.ap_pre_bandpass',
+    field = '0', # J1337-1257
+    spw = '0:51~76,1:51~76,2:51~76,3:51~76',
+    scan = '1,2,4,7,10,12,15,17,20,22',
+    solint = 'int',
+    refant = 'DA64',
+    calmode = 'p')
+  
+  if applyonly != True: es.checkCalTable('uid___A002_X984bbe_X2df7.ms.split.ap_pre_bandpass', msName='uid___A002_X984bbe_X2df7.ms.split', interactive=False) 
+  
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.split.bandpass') 
+  bandpass(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    caltable = 'uid___A002_X984bbe_X2df7.ms.split.bandpass',
+    field = '0', # J1337-1257
+    scan = '1,2,4,7,10,12,15,17,20,22',
+    solint = 'inf',
+    combine = 'scan',
+    refant = 'DA64',
+    solnorm = True,
+    bandtype = 'B',
+    gaintable = 'uid___A002_X984bbe_X2df7.ms.split.ap_pre_bandpass')
+  
+  if applyonly != True: es.checkCalTable('uid___A002_X984bbe_X2df7.ms.split.bandpass', msName='uid___A002_X984bbe_X2df7.ms.split', interactive=False) 
+  
+
+# Save flags before gain cal
+mystep = 14
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  
+  flagmanager(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    mode = 'save',
+    versionname = 'BeforeGainCalibration')
+  
+  
+
+# Gain calibration
+mystep = 15
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.split.phase_int') 
+  gaincal(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    caltable = 'uid___A002_X984bbe_X2df7.ms.split.phase_int',
+    field = '0~1', # J1337-1257,J1337-129
+    solint = 'int',
+    refant = 'DA64',
+    gaintype = 'G',
+    calmode = 'p',
+    gaintable = 'uid___A002_X984bbe_X2df7.ms.split.bandpass')
+  
+  if applyonly != True: es.checkCalTable('uid___A002_X984bbe_X2df7.ms.split.phase_int', msName='uid___A002_X984bbe_X2df7.ms.split', interactive=False) 
+  
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.split.ampli_inf') 
+  gaincal(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    caltable = 'uid___A002_X984bbe_X2df7.ms.split.ampli_inf',
+    field = '0~1', # J1337-1257,J1337-129
+    solint = 'inf',
+    refant = 'DA64',
+    gaintype = 'T',
+    calmode = 'a',
+    gaintable = ['uid___A002_X984bbe_X2df7.ms.split.bandpass', 'uid___A002_X984bbe_X2df7.ms.split.phase_int'])
+  
+  if applyonly != True: es.checkCalTable('uid___A002_X984bbe_X2df7.ms.split.ampli_inf', msName='uid___A002_X984bbe_X2df7.ms.split', interactive=False) 
+  
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.split.flux_inf') 
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.split.fluxscale') 
+  mylogfile = casalog.logfile()
+  casalog.setlogfile('uid___A002_X984bbe_X2df7.ms.split.fluxscale')
+  
+  fluxscaleDict = fluxscale(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    caltable = 'uid___A002_X984bbe_X2df7.ms.split.ampli_inf',
+    fluxtable = 'uid___A002_X984bbe_X2df7.ms.split.flux_inf',
+    reference = '1') # J1337-129
+  
+  casalog.setlogfile(mylogfile)
+  
+  if applyonly != True: es.fluxscale2(caltable = 'uid___A002_X984bbe_X2df7.ms.split.ampli_inf', removeOutliers=True, msName='uid___A002_X984bbe_X2df7.ms', writeToFile=True, preavg=10000)
+  
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.split.phase_inf') 
+  gaincal(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    caltable = 'uid___A002_X984bbe_X2df7.ms.split.phase_inf',
+    field = '0~1', # J1337-1257,J1337-129
+    solint = 'inf',
+    refant = 'DA64',
+    gaintype = 'G',
+    calmode = 'p',
+    gaintable = 'uid___A002_X984bbe_X2df7.ms.split.bandpass')
+  
+  if applyonly != True: es.checkCalTable('uid___A002_X984bbe_X2df7.ms.split.phase_inf', msName='uid___A002_X984bbe_X2df7.ms.split', interactive=False) 
+  
+
+# Save flags before applycal
+mystep = 16
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  
+  flagmanager(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    mode = 'save',
+    versionname = 'BeforeApplycal')
+  
+  
+
+# Application of the bandpass and gain cal tables
+mystep = 17
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  applycal(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    field = '0', # RX_J1347.5-1145
+   scan = '4',                                  
+    gaintable = ['uid___A002_X984bbe_X2df7.ms.split.bandpass', 'uid___A002_X984bbe_X2df7.ms.split.phase_int', 'uid___A002_X984bbe_X2df7.ms.split.flux_inf'],
+    gainfield = ['', '0', '0'], # J1337-1257 
+    interp = 'linear,linear',
+    calwt = T,
+    flagbackup = F)
+
+  for i in ['1']: # J1337-129
+    applycal(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+      field = str(i),
+      gaintable = ['uid___A002_X984bbe_X2df7.ms.split.bandpass', 'uid___A002_X984bbe_X2df7.ms.split.phase_int', 'uid___A002_X984bbe_X2df7.ms.split.flux_inf'],
+      gainfield = ['', i, i],
+      interp = 'linear,linear',
+      calwt = T,
+      flagbackup = F)
+  
+  applycal(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    field = '0,3~9', # RX_J1347.5-1145
+    scan = '7~22',
+    gaintable = ['uid___A002_X984bbe_X2df7.ms.split.bandpass', 'uid___A002_X984bbe_X2df7.ms.split.phase_inf', 'uid___A002_X984bbe_X2df7.ms.split.flux_inf'],
+    gainfield = ['', '0', '0'], # J1337-1257
+    interp = 'linear,linear',
+    calwt = T,
+    flagbackup = F)
+  
+
+# Split out corrected column
+mystep = 18
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.split.cal') 
+  os.system('rm -rf uid___A002_X984bbe_X2df7.ms.split.cal.flagversions') 
+  split(vis = 'uid___A002_X984bbe_X2df7.ms.split',
+    outputvis = 'uid___A002_X984bbe_X2df7.ms.split.cal',
+    datacolumn = 'corrected',
+    keepflags = T)
+  
+  
+
+# Save flags after applycal
+mystep = 19
+if(mystep in thesteps):
+  casalog.post('Step '+str(mystep)+' '+step_title[mystep],'INFO')
+  print 'Step ', mystep, step_title[mystep]
+
+  
+  flagmanager(vis = 'uid___A002_X984bbe_X2df7.ms.split.cal',
+    mode = 'save',
+    versionname = 'AfterApplycal')
+  
+  
+
