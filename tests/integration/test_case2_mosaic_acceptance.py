@@ -84,7 +84,6 @@ def test_actual_ot_export_preserves_source_positions():
 def test_common_entry_with_captured_case2(tmp_path, monkeypatch, member):
     from types import SimpleNamespace
     from alma_duplicate.assessment import assess_observation, AssessmentSources, ArchiveInput
-    from alma_duplicate.mosaic_backend import MosaicAssessmentInput
     from alma_duplicate.mosaic_resource_limits import MosaicResourceLimits
     import alma_duplicate.mosaic_backend as backend
     directory = ROOT / member
@@ -114,8 +113,13 @@ def test_common_entry_with_captured_case2(tmp_path, monkeypatch, member):
         return captured_metadata(member)
     assess_observation(payload['request'], payload['search_options'],
         sources=AssessmentSources('LIVE', lambda: ArchiveInput(client=SimpleNamespace(search=search))),
-        mosaic=MosaicAssessmentInput(proposed, tmp_path / 'run', tmp_path / 'cache', 1.0, limits))
+        mosaic=legacy_mosaic_input(proposed, tmp_path / 'run', tmp_path / 'cache', 1.0, limits))
     report = json.loads((tmp_path / 'run/assessment.json').read_text())
     assert report['assessment_status'] == 'COMPLETED'
     for context in report['candidates'][0]['evaluation']['contexts']:
         assert next(c for c in context['criteria'] if c['criterion_id'] == 'POS-MOSAIC')['outcome'] == 'SATISFIED'
+
+
+def legacy_mosaic_input(*args, **kwargs):
+    from alma_duplicate.mosaic_backend import MosaicAssessmentInput
+    return MosaicAssessmentInput(*args, coverage_model="RECONSTRUCTED", **kwargs)

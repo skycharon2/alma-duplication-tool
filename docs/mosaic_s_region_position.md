@@ -12,7 +12,7 @@ proposal dictionary, one region string and a candidate/context identity. It does
 not perform discovery, downloads, array acquisition or listobs reconstruction.
 It does not combine regions from different candidates. Upstream metadata identity
 binding remains the caller's responsibility. Other duplication criteria are not
-evaluated by this function. The main backend is not switched in this first step.
+evaluated by this function. The main assessment entry now uses this policy by default.
 
 ## Supported geometry
 
@@ -84,6 +84,51 @@ isolation, proposal validation and strict-majority bounds. Astropy directional
 coordinates independently exercise circle boundaries and a high-latitude
 minor-great-circle edge. No live data or local download cache is required.
 
-Next: integrate this module into the main assessment entry, acquire candidate
-metadata directly, and remove auxiliary/listobs readiness from that position path.
-Keep the existing shared non-position rules and test their joint decisions.
+## Main backend integration
+
+`assess_observation` routes fixed Archive-only Mosaic requests through
+`run_mosaic_backend`, whose default coverage model is `S_REGION`:
+
+1. Discover candidate member/target pairs using the imported proposal pointings.
+2. Fetch normal Archive metadata for each pair and check response identity.
+3. Build the existing comparison contexts. Evaluate each context using its own
+   raw `s_region`; never borrow or merge a different context's region.
+4. Combine POS-MOSAIC with the existing angular-resolution, continuum or spectral
+   line rules. Those rules continue to use Archive metadata.
+
+No auxiliary package, listobs, reconstructed execution, antenna diameter or
+execution-completeness readiness is required for this position path. A satisfied
+position criterion alone is not a joint duplication verdict. Missing or unsupported
+regions remain unknown. Source failures and incomplete metadata remain explicit.
+
+Reports use `archive_mosaic_backend_2`, `coverage_source=ARCHIVE_S_REGION` and
+`preparation.status=NOT_REQUIRED`. They retain the source metadata, per-context
+region hash, point classifications and shared criterion/branch decisions.
+`COMPLETED` describes processing, not a search-wide claim of non-duplication.
+Discovery limits and recall uncertainty still apply; the existing discovery plan
+retains its historical recall-status identifier for saved-plan compatibility.
+
+The CLI no longer requires `--mosaic-cache`. If supplied, it is unused.
+`--mosaic-resume-preparation` reuses only a matching saved `discovery.json`; it
+still fetches metadata and does not inspect or prepare packages. Historical
+package resource options do not limit the new metadata-only path.
+
+Historical reconstruction is retained through the explicit Python input
+`coverage_model="RECONSTRUCTED"` for research replay and regression tests. It is
+not an automatic fallback when an Archive region is missing. Low-level context
+callers must pass `use_s_region=True` to select the new policy; the main backend
+already does so.
+
+## Integration validation
+
+```sh
+python -m pytest -q tests/unit/test_mosaic_region_position.py tests/integration/test_s_region_backend.py
+```
+
+The integration tests use captured CASE2 metadata and actual OT pointings through
+`assess_observation`, for both continuum and line requests. They check positive
+coverage, exactly half coverage, missing/unsupported regions, single-pointing
+candidates, response identity mismatch, isolated candidate regions, and angular
+or frequency failures despite positive position coverage. Package preparation and
+readiness loaders are replaced with functions that fail if called. These are
+reproducible offline tests, not a new live Archive acceptance run.

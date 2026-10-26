@@ -44,8 +44,8 @@ def main(argv=None, *, archive_client_factory=None):
     parser.add_argument('--mosaic-pointings', type=Path, help='OT absolute pointing export')
     parser.add_argument('--mosaic-array', choices=('7m', '12m'))
     parser.add_argument('--mosaic-workdir', type=Path)
-    parser.add_argument('--mosaic-cache', type=Path)
-    parser.add_argument('--mosaic-resume-preparation', type=Path)
+    parser.add_argument('--mosaic-cache', type=Path, help='Legacy compatibility option; unused by s_region assessment')
+    parser.add_argument('--mosaic-resume-preparation', type=Path, help='Reuse matching saved discovery only; packages are not prepared')
     parser.add_argument('--mosaic-margin-arcsec', type=float)
     parser.add_argument('--confirm-fixed-icrs', action='store_true')
     parser.add_argument('--confirm-complete', action='store_true')
@@ -98,8 +98,8 @@ def main(argv=None, *, archive_client_factory=None):
             if not args.live_archive or args.archive_replay:
                 raise ValueError('Automatic Mosaic acquisition requires --live-archive')
             if any(v is None for v in (args.mosaic_array, args.mosaic_workdir,
-                                      args.mosaic_cache, args.mosaic_margin_arcsec)):
-                raise ValueError('Mosaic array, workdir, cache and search margin are required')
+                                      args.mosaic_margin_arcsec)):
+                raise ValueError('Mosaic array, workdir and search margin are required')
             from alma_duplicate.mosaic_backend import MosaicAssessmentInput
             from alma_duplicate.proposed_mosaic import import_proposed
             from alma_duplicate.parsers.ot_pointings import MAX_BYTES

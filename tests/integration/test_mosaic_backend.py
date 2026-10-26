@@ -157,7 +157,7 @@ def test_main_entrypoint_metadata_and_real_package_reconstruction(
             "LIVE",
             lambda: ArchiveInput(SimpleNamespace(search=search), array_catalog=catalog),
         ),
-        mosaic=MosaicAssessmentInput(
+        mosaic=legacy_mosaic_input(
             proposed, tmp_path / "run", tmp_path / "cache", 1.0
         ),
     )
@@ -194,3 +194,7 @@ def test_member_metadata_query_is_exact_and_escaped():
     )
     with pytest.raises(ValueError):
         ArchiveQuerySpec(0, 0, 180, member_ous_uid="M")
+
+
+def legacy_mosaic_input(*args, **kwargs):
+    return MosaicAssessmentInput(*args, coverage_model="RECONSTRUCTED", **kwargs)

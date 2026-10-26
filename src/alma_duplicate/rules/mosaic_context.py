@@ -71,6 +71,7 @@ def evaluate_mosaic_context(
     ready_asdm_uids=None,
     boundary_epsilon_arcsec=0.000001,
     nominal_conversion=None,
+    use_s_region=False,
 ):
     """Union only executions explicitly bound to compatible Archive metadata rows.
 
@@ -90,7 +91,10 @@ def evaluate_mosaic_context(
     if proposed["source_name"] != request.target_name:
         raise ValueError("Imported pointings belong to another proposed target")
     geometry = context.evidence.prepared.normalized_metadata.is_mosaic.value
-    if geometry is False:
+    if use_s_region:
+        from alma_duplicate.rules.position_region import evaluate_region_position
+        position, coverage = evaluate_region_position(proposed, context, boundary_arcsec=boundary_epsilon_arcsec)
+    elif geometry is False:
         from alma_duplicate.rules.mosaic_single_candidate import (
             evaluate_single_candidate,
         )

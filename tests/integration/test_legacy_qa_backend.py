@@ -73,7 +73,7 @@ def test_main_entry_qa_unknown_and_valid_candidate_isolated(tmp_path, monkeypatc
         return rx_metadata if spec.member_ous_uid == CANDIDATE['member_ous_uid'] else lmc_metadata
     result = assess_observation(request, payload['search_options'],
         sources=AssessmentSources('LIVE', lambda: ArchiveInput(SimpleNamespace(search=search))),
-        mosaic=MosaicAssessmentInput(proposed, tmp_path/'run', tmp_path/'cache', 1.0))
+        mosaic=legacy_mosaic_input(proposed, tmp_path/'run', tmp_path/'cache', 1.0))
     assert result.validation.is_valid
     report = json.loads((tmp_path/'run/assessment.json').read_text())
     rx, valid = report['candidates']
@@ -91,3 +91,7 @@ def test_qa_candidate_identity_cannot_cross_sources():
     result = alternative_diagnostics(candidate)
     assert result['status'] == 'INVALID_ALTERNATIVE_EVIDENCE'
     assert result['sources'] == []
+
+
+def legacy_mosaic_input(*args, **kwargs):
+    return MosaicAssessmentInput(*args, coverage_model="RECONSTRUCTED", **kwargs)

@@ -59,7 +59,7 @@ def test_invalid_budget(tmp_path,budget):
 
 def test_main_resume_preserves_pending_and_skips_metadata(tmp_path,monkeypatch):
     from types import SimpleNamespace
-    from alma_duplicate.mosaic_backend import MosaicAssessmentInput,run_mosaic_backend
+    from alma_duplicate.mosaic_backend import run_mosaic_backend
     from alma_duplicate.mosaic_candidate_discovery import plan_discovery
     from alma_duplicate.proposed_mosaic import import_proposed
     proposed=import_proposed(b'RA,Dec,Coordinate Type,Coordinate Units\n--\n0,0,Absolute,Degrees\n',
@@ -70,12 +70,12 @@ def test_main_resume_preserves_pending_and_skips_metadata(tmp_path,monkeypatch):
         assert value==d and kwargs['resume'] is True
         return dict(status='INCOMPLETE',candidates=[dict(d['candidates'][0],status='PENDING')])
     def forbidden(spec):raise AssertionError('Pending candidates must not query metadata')
-    r=run_mosaic_backend(None,MosaicAssessmentInput(proposed,tmp_path/'assessment',tmp_path/'cache',1,
+    r=run_mosaic_backend(None,legacy_mosaic_input(proposed,tmp_path/'assessment',tmp_path/'cache',1,
         preparation_directory=saved),archive_client=SimpleNamespace(search=forbidden),preparation_provider=preparation)
     assert r['assessment_status']=='INCOMPLETE'
     assert r['candidates'][0]['status']=='PENDING'
     with pytest.raises(ValueError,match='differs'):
-        run_mosaic_backend(None,MosaicAssessmentInput(proposed,tmp_path/'wrong',tmp_path/'cache',2,
+        run_mosaic_backend(None,legacy_mosaic_input(proposed,tmp_path/'wrong',tmp_path/'cache',2,
             preparation_directory=saved),preparation_provider=preparation)
 
 
@@ -93,3 +93,8 @@ def test_resume_retains_measured_elapsed_and_cache_counts(tmp_path):
     assert second['reused_package_count']==2
     assert second['prepared_count']==1
     assert second['failed_or_unready_count']==1
+
+
+def legacy_mosaic_input(*args, **kwargs):
+    from alma_duplicate.mosaic_backend import MosaicAssessmentInput
+    return MosaicAssessmentInput(*args, coverage_model="RECONSTRUCTED", **kwargs)

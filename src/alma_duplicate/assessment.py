@@ -103,7 +103,7 @@ def assess_observation(request: dict, search_options: dict, *,
         if (sources.archive_kind is None) != (sources.archive_provider is None):
             raise ValueError('Archive kind and provider must be supplied together')
         if sources.archive_array_fetcher is not None:
-            raise ValueError('Mosaic preparation owns AQ acquisition; provide a catalog for replay')
+            raise ValueError('This Mosaic workflow does not accept an AQ acquisition callback')
         if mosaic.proposed['source_name'] != validated.request.target_name:
             raise ValueError('OT pointings belong to another proposed target')
         if options.nominal_conversion not in (None, PORTAL_SCRIPT_V1):
@@ -248,7 +248,7 @@ def assess_mosaic_candidates(proposed: dict, candidates: list, *,
 
 def assess_archive_mosaic_contexts(request, proposed, contexts, *, package_directories,
                                   array_catalog, boundary_epsilon_arcsec=0.000001,
-                                  nominal_conversion=None, ready_executions=None, archive_result=None):
+                                  nominal_conversion=None, ready_executions=None, archive_result=None, use_s_region=False):
     """Reuse Archive comparison contexts and rules with verified Mosaic pointings.
 
     package_directories maps (Member UID, target name) to local audited packages.
@@ -268,6 +268,8 @@ def assess_archive_mosaic_contexts(request, proposed, contexts, *, package_direc
         seen.add(context.context_id)
         raw=context.evidence.prepared.raw_row
         key=(raw.get('member_ous_uid'),raw.get('target_name'))
+        if use_s_region:
+            loaded[key] = ()
         if key not in loaded:
             directory=package_directories.get(key)
             loaded[key]=load_package_executions(Path(directory))[0] if directory is not None else ()
@@ -276,7 +278,8 @@ def assess_archive_mosaic_contexts(request, proposed, contexts, *, package_direc
             metadata_contexts=contexts, archive_result=archive_result,
             ready_asdm_uids=None if ready_executions is None else ready_executions.get(key, ()),
             array_evidence=array_catalog.bind(context) if array_catalog is not None else None,
-            boundary_epsilon_arcsec=boundary_epsilon_arcsec,nominal_conversion=nominal_conversion)
+            boundary_epsilon_arcsec=boundary_epsilon_arcsec,nominal_conversion=nominal_conversion,
+            use_s_region=use_s_region)
         results.append(dict(context_id=context.context_id,
             criteria=[asdict(c) for c in evaluated['criteria']],
             request_criteria=[asdict(c) for c in evaluated['request_criteria']],
@@ -284,5 +287,5 @@ def assess_archive_mosaic_contexts(request, proposed, contexts, *, package_direc
             line_pairing=asdict(evaluated['line_pairing']) if evaluated['line_pairing'] is not None else None,
             line_pairs=[asdict(p) for p in evaluated['line_pairs']],coverage=evaluated['coverage']))
     return dict(schema_version='archive_mosaic_context_assessment_1',contexts=results,
-        metadata_source='EXISTING_ARCHIVE_COMPARISON_CONTEXTS',pointing_source='VERIFIED_PACKAGE_EXECUTIONS',
+        metadata_source='EXISTING_ARCHIVE_COMPARISON_CONTEXTS',pointing_source='ARCHIVE_S_REGION' if use_s_region else 'VERIFIED_PACKAGE_EXECUTIONS',
         discovery_scope='SUPPLIED_CONTEXTS_NOT_EXHAUSTIVE_SEARCH',assessment_status='COMPLETED')
