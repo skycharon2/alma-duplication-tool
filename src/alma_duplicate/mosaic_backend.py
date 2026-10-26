@@ -19,6 +19,7 @@ class MosaicAssessmentInput:
     cache_directory: Path
     margin_arcsec: float
     resource_limits: MosaicResourceLimits | None = None
+    preparation_directory: Path | None = None
 
 
 def run_mosaic_backend(
@@ -37,18 +38,32 @@ def run_mosaic_backend(
 
     root = Path(mosaic.output_directory)
     root.mkdir(parents=True, exist_ok=False)
-    discovery = (discovery_provider or discover_candidates)(
-        mosaic.proposed, root / "discovery", margin_arcsec=mosaic.margin_arcsec
-    )
-    preparation = (preparation_provider or prepare_candidates)(
-        discovery, output=root / "preparation", cache=mosaic.cache_directory,
-        **({"resource_limits": mosaic.resource_limits} if mosaic.resource_limits is not None else {})
-    )
+    if mosaic.preparation_directory is not None:
+        directory = Path(mosaic.preparation_directory)
+        discovery = json.loads((directory / "discovery.json").read_text())
+        from alma_duplicate.mosaic_candidate_discovery import plan_discovery
+        if discovery.get("plan") != plan_discovery(mosaic.proposed, margin_arcsec=mosaic.margin_arcsec):
+            raise ValueError("Resume discovery differs from proposed pointings or search margin")
+        preparation = (preparation_provider or prepare_candidates)(
+            discovery, output=directory, cache=mosaic.cache_directory, resume=True,
+            **({"resource_limits": mosaic.resource_limits} if mosaic.resource_limits is not None else {}))
+    else:
+        discovery = (discovery_provider or discover_candidates)(
+            mosaic.proposed, root / "discovery", margin_arcsec=mosaic.margin_arcsec
+        )
+        preparation = (preparation_provider or prepare_candidates)(
+            discovery, output=root / "preparation", cache=mosaic.cache_directory,
+            **({"resource_limits": mosaic.resource_limits} if mosaic.resource_limits is not None else {})
+        )
     client = archive_client if archive_client is not None else MirroredArchiveClient()
     results = []
     for candidate in preparation["candidates"]:
         member, source = candidate["member_ous_uid"], candidate["source_name"]
         item = dict(member_ous_uid=member, source_name=source, preparation=candidate)
+        if candidate.get("status") == "PENDING":
+            item.update(status="PENDING", reasons=["CANDIDATE_PREPARATION_NOT_STARTED"])
+            results.append(item)
+            continue
         try:
             metadata = client.search(
                 ArchiveQuerySpec(

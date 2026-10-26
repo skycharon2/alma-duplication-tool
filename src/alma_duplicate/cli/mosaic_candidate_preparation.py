@@ -11,13 +11,16 @@ def main(argv=None):
     parser.add_argument('--discovery',type=Path,required=True)
     parser.add_argument('--cache',type=Path,required=True)
     parser.add_argument('--output-dir',type=Path,required=True)
+    parser.add_argument('--resume', action='store_true')
+    parser.add_argument('--max-candidates', type=int, default=100)
     add_resource_arguments(parser)
     args=parser.parse_args(argv)
     try:
         with args.discovery.open('rb') as stream:raw=stream.read(5_000_001)
         if len(raw)>5_000_000:raise ValueError('Discovery report exceeds 5 MB')
         report=prepare_candidates(json.loads(raw),output=args.output_dir,cache=args.cache,
-                                  resource_limits=resource_arguments(args))
+                                  resource_limits=resource_arguments(args),
+                                  resume=args.resume, max_candidates=args.max_candidates)
     except (OSError,ValueError,KeyError,TypeError) as exc:
         parser.exit(2,f'Candidate preparation failed: {exc}\n')
     for c in report['candidates']:

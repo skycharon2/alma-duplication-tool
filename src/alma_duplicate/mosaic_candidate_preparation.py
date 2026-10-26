@@ -28,7 +28,7 @@ def acquire_candidate_array(directory, member, *, offline, array_fetcher):
     return fetched.catalog
 
 
-def prepare_candidates(discovery, *, output, cache, inventory_capture=None, product_discovery=None,
+def prepare_candidate_chunk(discovery, *, output, cache, inventory_capture=None, product_discovery=None,
                        package_audit=None, offline=False, array_fetcher=None, resource_limits=None):
     """Prepare each distinct Member/target; isolate failures without negative verdicts.
 
@@ -158,3 +158,11 @@ def prepare_candidates(discovery, *, output, cache, inventory_capture=None, prod
         scope='POINTING_AND_ARRAY_READINESS_NOT_SPECTRAL_SELECTION',policy_status='NOT_EVALUATED')
     (output/'preparation.json').write_text(json.dumps(report,indent=2)+'\n')
     return report
+
+
+def prepare_candidates(discovery, *, output, cache, max_candidates=100, resume=False, **kwargs):
+    """Process a bounded prefix and retain every pending identity for later resume."""
+    from alma_duplicate.mosaic_preparation_batches import prepare_batches
+    return prepare_batches(discovery, output=output, cache=cache,
+                           max_candidates=max_candidates, resume=resume,
+                           worker=prepare_candidate_chunk, worker_kwargs=kwargs)
