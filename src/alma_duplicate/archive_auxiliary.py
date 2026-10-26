@@ -147,6 +147,7 @@ def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str, capture
     budget = {'entries': 0, 'expanded': 0}
     skipped = []
     candidates, matches = [], []
+    alternative_evidence = []
     expected = asdm_uid.replace(':', '_').replace('/', '_') + '.ms'
 
     def visit(stream, chain, depth):
@@ -166,8 +167,9 @@ def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str, capture
                 lower = member.name.lower()
                 nested = lower.endswith(('.tgz', '.tar.gz', '.tar'))
                 listobs = 'listobs' in path.name.lower()
+                legacy_qa = 'qa' in path.parts and path.name.endswith('__textfile.txt')
                 if not member.isfile():
-                    if listobs or nested:
+                    if listobs or nested or legacy_qa:
                         raise ValueError('Linked candidate archive member is unsupported')
                     skipped.append(dict(path_chain=chain + [member.name], reason='NON_REGULAR_MEMBER'))
                     continue
@@ -177,14 +179,14 @@ def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str, capture
                 if nested and 'weblog' not in path.name.lower():
                     skipped.append(dict(path_chain=chain + [member.name], reason='OUTSIDE_WEBLOG_SCOPE'))
                     continue
-                if not nested and not listobs:
+                if not nested and not listobs and not legacy_qa:
                     continue
                 if nested and depth >= MAX_DEPTH:
                     raise ValueError('Archive nesting limit exceeded')
                 if listobs and path.suffix.lower() in ('.png', '.jpg', '.jpeg', '.gif', '.svg', '.pdf'):
                     skipped.append(dict(path_chain=chain + [member.name], reason='NON_TEXT_LISTOBS_ARTIFACT'))
                     continue
-                if listobs and member.size > MAX_TEXT:
+                if (listobs or legacy_qa) and member.size > MAX_TEXT:
                     raise ValueError('Listobs size limit exceeded')
                 location = chain + [member.name]
                 if nested:
@@ -195,9 +197,16 @@ def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str, capture
                         raw = item.read(member.size + 1)
                     if len(raw) != member.size:
                         raise ValueError('Truncated archive member')
-                    if len(candidates) >= MAX_CANDIDATES:
+                    if len(candidates) + len(alternative_evidence) >= MAX_CANDIDATES:
                         raise ValueError('Listobs candidate limit exceeded')
                     entry = dict(path_chain=location, bytes=len(raw), sha256=sha256(raw).hexdigest())
+                    if legacy_qa:
+                        from alma_duplicate.parsers.archive_qa_text import inspect_qa_text
+                        entry.update(inspect_qa_text(raw, target_name=source_name))
+                        alternative_evidence.append(entry)
+                        if capture_dir is not None:
+                            (capture_dir / (entry['sha256'] + '.txt')).write_bytes(raw)
+                        continue
                     candidates.append(entry)
                     if capture_dir is not None:
                         (capture_dir / (entry['sha256'] + '.txt')).write_bytes(raw)
@@ -232,6 +241,7 @@ def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str, capture
     status = ('UNRESOLVED_CANDIDATES' if uncertain else 'AMBIGUOUS' if len(matches) > 1
               else 'FOUND' if len(matches) == 1 else 'NOT_FOUND')
     return dict(status=status, candidates=candidates, budget=budget, skipped=skipped,
+                **({"alternative_evidence": alternative_evidence} if alternative_evidence else {}),
                 scope='DIRECT_LISTOBS_AND_NESTED_WEBLOG_ARCHIVES_ONLY',
                 selected=matches[0][0] if status == 'FOUND' else None), (matches[0][1] if status == 'FOUND' else None)
 

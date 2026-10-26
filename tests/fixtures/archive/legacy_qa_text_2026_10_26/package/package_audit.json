@@ -1,0 +1,431 @@
+{
+  "schema_version": "archive_mosaic_package_audit_1",
+  "member_ous_uid": "uid://A001/X140/X6",
+  "source_name": "RX_J1347.5-1145",
+  "inventory_sha256": "218630701ac52f6f9a708cc0f7270493148c21027da9c1ace524eb1e99867a41",
+  "discovery_receipt_sha256": "5602dc7c23ec41e87ae27692c5a7a640f081ceaf24a36bba19875e33a5a238b3",
+  "product": {
+    "row_index": 3,
+    "member_ous_uid": "uid://A001/X140/X6",
+    "access_url": "https://almascience.eso.org/dataPortal/2013.1.00246.S_uid___A001_X140_X6_auxiliary.tar",
+    "service_def": null,
+    "semantics": "#auxiliary",
+    "description": "Download dataset of type: , and class: N/A.",
+    "content_type": "application/x-tar",
+    "content_length": 121027072,
+    "link_auth": "false",
+    "link_authorized": "true",
+    "kind": "AUXILIARY_CANDIDATE",
+    "issues": [],
+    "binding": "DATALINK_ROW_MEMBER_ID",
+    "pointing_content": "NOT_INSPECTED",
+    "asdm_binding": "NOT_ESTABLISHED"
+  },
+  "download": {
+    "url": "https://almascience.eso.org/dataPortal/2013.1.00246.S_uid___A001_X140_X6_auxiliary.tar",
+    "bytes": 121027072,
+    "sha256": "be5bae087264ff6550f46a91ce2fc3033c08287142959ec573d86f20d29099b9",
+    "started_at": "2026-10-26T10:05:48.379066+00:00",
+    "finished_at": "2026-10-26T10:05:52.439020+00:00",
+    "http_status": 200
+  },
+  "reused_cache": true,
+  "inspection": {
+    "status": "NOT_FOUND",
+    "candidates": [],
+    "budget": {
+      "entries": 42,
+      "expanded": 120957282
+    },
+    "skipped": [
+      {
+        "path_chain": [
+          "2013.1.00246.S/science_goal.uid___A001_X140_X4/group.uid___A001_X140_X5/member.uid___A001_X140_X6/product/calibrated.ms.continuum.mask.tgz"
+        ],
+        "reason": "OUTSIDE_WEBLOG_SCOPE"
+      },
+      {
+        "path_chain": [
+          "2013.1.00246.S/science_goal.uid___A001_X140_X4/group.uid___A001_X140_X5/member.uid___A001_X140_X6/log/calibrated.log.tgz"
+        ],
+        "reason": "OUTSIDE_WEBLOG_SCOPE"
+      },
+      {
+        "path_chain": [
+          "2013.1.00246.S/science_goal.uid___A001_X140_X4/group.uid___A001_X140_X5/member.uid___A001_X140_X6/calibration/uid___A002_X9707f1_X23ac.calibration.tgz"
+        ],
+        "reason": "OUTSIDE_WEBLOG_SCOPE"
+      },
+      {
+        "path_chain": [
+          "2013.1.00246.S/science_goal.uid___A001_X140_X4/group.uid___A001_X140_X5/member.uid___A001_X140_X6/calibration/uid___A002_X984bbe_X2df7.calibration.tgz"
+        ],
+        "reason": "OUTSIDE_WEBLOG_SCOPE"
+      },
+      {
+        "path_chain": [
+          "2013.1.00246.S/science_goal.uid___A001_X140_X4/group.uid___A001_X140_X5/member.uid___A001_X140_X6/calibration/uid___A002_X9896b4_X641f.calibration.tgz"
+        ],
+        "reason": "OUTSIDE_WEBLOG_SCOPE"
+      },
+      {
+        "path_chain": [
+          "2013.1.00246.S/science_goal.uid___A001_X140_X4/group.uid___A001_X140_X5/member.uid___A001_X140_X6/calibration/uid___A002_X9842f5_X7e3.calibration.tgz"
+        ],
+        "reason": "OUTSIDE_WEBLOG_SCOPE"
+      }
+    ],
+    "alternative_evidence": [
+      {
+        "path_chain": [
+          "2013.1.00246.S/science_goal.uid___A001_X140_X4/group.uid___A001_X140_X5/member.uid___A001_X140_X6/qa/uid___A002_X984bbe_X2df7__textfile.txt"
+        ],
+        "bytes": 32445,
+        "sha256": "23072d116cdf2a13c5792c7ee4dff42dc0729c203cfff121dd3c0e435106b21c",
+        "status": "LEGACY_QA_FIELD_EVIDENCE",
+        "measurement_sets": [
+          "uid___A002_X984bbe_X2df7.ms.split"
+        ],
+        "fields": [
+          {
+            "field_id": 2,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.45.09.4000",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 3,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:32.55663",
+            "dec_original": "-11.45.36.4984",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 4,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:32.55663",
+            "dec_original": "-11.45.02.3016",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 5,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.45.53.5967",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 6,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.45.19.4000",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 7,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.44.45.2033",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 8,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:28.52337",
+            "dec_original": "-11.45.36.4984",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 9,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:28.52337",
+            "dec_original": "-11.45.02.3016",
+            "reported_frame": "J2000"
+          }
+        ],
+        "position_status": "NOT_READY",
+        "policy_status": "NOT_EVALUATED",
+        "reasons": [
+          "J2000_FRAME_MAPPING_NOT_VALIDATED",
+          "SPLIT_MS_IDENTITY_NOT_VALIDATED",
+          "SCIENCE_SCAN_BINDING_NOT_VALIDATED"
+        ]
+      },
+      {
+        "path_chain": [
+          "2013.1.00246.S/science_goal.uid___A001_X140_X4/group.uid___A001_X140_X5/member.uid___A001_X140_X6/qa/uid___A002_X9707f1_X23ac__textfile.txt"
+        ],
+        "bytes": 31038,
+        "sha256": "1426947c43e49fd40d6a2d6181ab98dd3b64d374fcd297afbc78a878db1dabde",
+        "status": "LEGACY_QA_FIELD_EVIDENCE",
+        "measurement_sets": [
+          "uid___A002_X9707f1_X23ac.ms.split"
+        ],
+        "fields": [
+          {
+            "field_id": 3,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.45.09.4000",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 4,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:32.55663",
+            "dec_original": "-11.45.36.4984",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 5,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:32.55663",
+            "dec_original": "-11.45.02.3016",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 6,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.45.53.5967",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 7,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.45.19.4000",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 8,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.44.45.2033",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 9,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:28.52337",
+            "dec_original": "-11.45.36.4984",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 10,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:28.52337",
+            "dec_original": "-11.45.02.3016",
+            "reported_frame": "J2000"
+          }
+        ],
+        "position_status": "NOT_READY",
+        "policy_status": "NOT_EVALUATED",
+        "reasons": [
+          "J2000_FRAME_MAPPING_NOT_VALIDATED",
+          "SPLIT_MS_IDENTITY_NOT_VALIDATED",
+          "SCIENCE_SCAN_BINDING_NOT_VALIDATED"
+        ]
+      },
+      {
+        "path_chain": [
+          "2013.1.00246.S/science_goal.uid___A001_X140_X4/group.uid___A001_X140_X5/member.uid___A001_X140_X6/qa/uid___A002_X9842f5_X7e3__textfile.txt"
+        ],
+        "bytes": 32047,
+        "sha256": "2cea52c28e3c64dd7bf7193a3e1835e97c287ff2e4ec22bf2d38244e9fddff2d",
+        "status": "LEGACY_QA_FIELD_EVIDENCE",
+        "measurement_sets": [
+          "uid___A002_X9842f5_X7e3.ms.split"
+        ],
+        "fields": [
+          {
+            "field_id": 3,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.45.09.4000",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 4,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:32.55663",
+            "dec_original": "-11.45.36.4984",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 5,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:32.55663",
+            "dec_original": "-11.45.02.3016",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 6,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.45.53.5967",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 7,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.45.19.4000",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 8,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.44.45.2033",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 9,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:28.52337",
+            "dec_original": "-11.45.36.4984",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 10,
+            "source_id": 3,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:28.52337",
+            "dec_original": "-11.45.02.3016",
+            "reported_frame": "J2000"
+          }
+        ],
+        "position_status": "NOT_READY",
+        "policy_status": "NOT_EVALUATED",
+        "reasons": [
+          "J2000_FRAME_MAPPING_NOT_VALIDATED",
+          "SPLIT_MS_IDENTITY_NOT_VALIDATED",
+          "SCIENCE_SCAN_BINDING_NOT_VALIDATED"
+        ]
+      },
+      {
+        "path_chain": [
+          "2013.1.00246.S/science_goal.uid___A001_X140_X4/group.uid___A001_X140_X5/member.uid___A001_X140_X6/qa/uid___A002_X9896b4_X641f__textfile.txt"
+        ],
+        "bytes": 32624,
+        "sha256": "325ffb8f6f9bf38a47ec675a49764bad8589d25307e80b4716dfc9808b6a8cf3",
+        "status": "LEGACY_QA_FIELD_EVIDENCE",
+        "measurement_sets": [
+          "uid___A002_X9896b4_X641f.ms.split"
+        ],
+        "fields": [
+          {
+            "field_id": 2,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.45.09.4000",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 3,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:32.55663",
+            "dec_original": "-11.45.36.4984",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 4,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:32.55663",
+            "dec_original": "-11.45.02.3016",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 5,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.45.53.5967",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 6,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.45.19.4000",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 7,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:30.54000",
+            "dec_original": "-11.44.45.2033",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 8,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:28.52337",
+            "dec_original": "-11.45.36.4984",
+            "reported_frame": "J2000"
+          },
+          {
+            "field_id": 9,
+            "source_id": 2,
+            "target_name": "RX_J1347.5-1145",
+            "ra_original": "13:47:28.52337",
+            "dec_original": "-11.45.02.3016",
+            "reported_frame": "J2000"
+          }
+        ],
+        "position_status": "NOT_READY",
+        "policy_status": "NOT_EVALUATED",
+        "reasons": [
+          "J2000_FRAME_MAPPING_NOT_VALIDATED",
+          "SPLIT_MS_IDENTITY_NOT_VALIDATED",
+          "SCIENCE_SCAN_BINDING_NOT_VALIDATED"
+        ]
+      }
+    ],
+    "scope": "DIRECT_LISTOBS_AND_NESTED_WEBLOG_ARCHIVES_ONLY",
+    "selected": null
+  },
+  "executions": {},
+  "unresolved": [],
+  "completeness": "MEMBER_COMPLETENESS_NOT_ESTABLISHED",
+  "policy_status": "NOT_EVALUATED",
+  "tap_asdm_uids": [
+    "uid://A002/X9707f1/X23ac"
+  ],
+  "additional_package_asdm_uids": [],
+  "missing_tap_asdm_uids": [
+    "uid://A002/X9707f1/X23ac"
+  ],
+  "status": "UNRESOLVED"
+}

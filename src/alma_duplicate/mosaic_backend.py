@@ -76,6 +76,8 @@ def run_mosaic_backend(
                 for row in metadata.rows
             ):
                 raise ValueError("Archive metadata response identity mismatch")
+            from alma_duplicate.mosaic_pointing_diagnostics import alternative_diagnostics, position_summary
+            item["alternative_pointing_diagnostics"] = alternative_diagnostics(candidate)
             built = build_archive_contexts(metadata)
             item["metadata_status"] = built.status.value
             item["metadata_provenance"] = json_value(metadata.provenance)
@@ -116,6 +118,7 @@ def run_mosaic_backend(
                 item.update(
                     status=("PARTIAL_EVIDENCE" if item.get("pointing_error") else "EVALUATED") if built.contexts else "NO_METADATA_CONTEXTS",
                     evaluation=evaluated,
+                    position_summary=position_summary(evaluated),
                 )
         except (OSError, ValueError, KeyError, TypeError) as exc:
             item.update(status="INCOMPLETE", error=str(exc))
