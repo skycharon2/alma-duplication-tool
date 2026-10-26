@@ -220,7 +220,7 @@ def test_main_automatic_single_route_never_downloads_listobs(
         sources=AssessmentSources(
             "LIVE", lambda: ArchiveInput(SimpleNamespace(search=search))
         ),
-        mosaic=MosaicAssessmentInput(
+        mosaic=legacy_mosaic_input(
             proposed, tmp_path / "run", tmp_path / "cache", 1.0
         ),
     )
@@ -235,3 +235,7 @@ def test_main_automatic_single_route_never_downloads_listobs(
         assert c["preparation"]["status"] == "METADATA_ONLY_PREPARED"
         assert c["evaluation"]["contexts"][0]["criteria"][1]["outcome"] == "SATISFIED"
     assert not list((tmp_path / "run").rglob("package"))
+
+
+def legacy_mosaic_input(*args, **kwargs):
+    return MosaicAssessmentInput(*args, coverage_model="RECONSTRUCTED", **kwargs)

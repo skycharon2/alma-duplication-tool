@@ -67,7 +67,7 @@ def run_case(tmp_path, monkeypatch, mode, variant='positive'):
         array='12m',confirm_fixed_icrs=True,confirm_complete=True)
     result = assess_observation(request,payload['search_options'],
         sources=AssessmentSources('LIVE',lambda:ArchiveInput(SimpleNamespace(search=search))),
-        mosaic=MosaicAssessmentInput(proposed,tmp_path/'run',tmp_path/'cache',1.0))
+        mosaic=legacy_mosaic_input(proposed,tmp_path/'run',tmp_path/'cache',1.0))
     assert result.validation.is_valid
     return json.loads((tmp_path/'run/assessment.json').read_text())
 
@@ -107,3 +107,7 @@ def test_conditions_are_not_pooled_across_members(tmp_path,monkeypatch):
     assert any(r['ANGULAR']=='SATISFIED' for r in rules)
     assert any(r['CONT-FREQ']=='SATISFIED' for r in rules)
     assert not any(r['ANGULAR']==r['CONT-FREQ']=='SATISFIED' for r in rules)
+
+
+def legacy_mosaic_input(*args, **kwargs):
+    return MosaicAssessmentInput(*args, coverage_model="RECONSTRUCTED", **kwargs)

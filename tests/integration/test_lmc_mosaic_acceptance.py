@@ -79,7 +79,7 @@ def run_case(tmp_path, monkeypatch, variant):
         return metadata
     result = assess_observation(request, payload['search_options'],
         sources=AssessmentSources('LIVE', lambda: ArchiveInput(SimpleNamespace(search=search))),
-        mosaic=MosaicAssessmentInput(proposed, tmp_path/'run', tmp_path/'cache', 1.0))
+        mosaic=legacy_mosaic_input(proposed, tmp_path/'run', tmp_path/'cache', 1.0))
     assert result.validation.is_valid
     return json.loads((tmp_path/'run/assessment.json').read_text())
 
@@ -105,3 +105,7 @@ def test_multitarget_main_entry(tmp_path, monkeypatch, variant):
     else:
         assert 'TRUE' not in outcomes
     assert report['discovery_recall_status'] == 'NOT_ESTABLISHED'
+
+
+def legacy_mosaic_input(*args, **kwargs):
+    return MosaicAssessmentInput(*args, coverage_model="RECONSTRUCTED", **kwargs)

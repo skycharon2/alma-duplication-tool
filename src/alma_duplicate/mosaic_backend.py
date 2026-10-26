@@ -16,13 +16,14 @@ from alma_duplicate.mosaic_resource_limits import MosaicResourceLimits
 class MosaicAssessmentInput:
     proposed: dict
     output_directory: Path
-    cache_directory: Path
+    cache_directory: Path | None
     margin_arcsec: float
     resource_limits: MosaicResourceLimits | None = None
     preparation_directory: Path | None = None
+    coverage_model: str = "S_REGION"
 
 
-def run_mosaic_backend(
+def _run_reconstructed_backend(
     request,
     mosaic,
     *,
@@ -141,4 +142,69 @@ def run_mosaic_backend(
     (root / "assessment.json").write_text(
         json.dumps(json_value(report), indent=2, allow_nan=False) + "\n"
     )
+    return report
+
+
+def run_mosaic_backend(request, mosaic, *, archive_client=None, array_catalog=None,
+                       nominal_conversion=None, discovery_provider=None, preparation_provider=None):
+    """Default to direct metadata-region assessment; retain explicit research replay."""
+    if mosaic.coverage_model == 'RECONSTRUCTED':
+        return _run_reconstructed_backend(request, mosaic, archive_client=archive_client,
+            array_catalog=array_catalog, nominal_conversion=nominal_conversion,
+            discovery_provider=discovery_provider, preparation_provider=preparation_provider)
+    if mosaic.coverage_model != 'S_REGION':
+        raise ValueError('Unknown Mosaic coverage model')
+    if preparation_provider is not None:
+        raise ValueError('s_region assessment does not use package preparation providers')
+    from alma_duplicate.assessment import assess_archive_mosaic_contexts
+    from alma_duplicate.clients.archive_mirrors import MirroredArchiveClient
+    from alma_duplicate.mosaic_pointing_diagnostics import position_summary
+    root = Path(mosaic.output_directory)
+    root.mkdir(parents=True, exist_ok=False)
+    if mosaic.preparation_directory is not None:
+        from alma_duplicate.mosaic_candidate_discovery import plan_discovery
+        discovery = json.loads((Path(mosaic.preparation_directory)/'discovery.json').read_text())
+        if discovery.get('plan') != plan_discovery(mosaic.proposed, margin_arcsec=mosaic.margin_arcsec):
+            raise ValueError('Resume discovery differs from proposed pointings or search margin')
+    else:
+        discovery = (discovery_provider or discover_candidates)(
+            mosaic.proposed, root/'discovery', margin_arcsec=mosaic.margin_arcsec)
+    client = archive_client if archive_client is not None else MirroredArchiveClient()
+    results = []
+    seen = set()
+    for candidate in discovery['candidates']:
+        member, source = candidate['member_ous_uid'], candidate['source_name']
+        if (member, source) in seen:
+            continue
+        seen.add((member, source))
+        item = dict(member_ous_uid=member, source_name=source)
+        try:
+            metadata = client.search(ArchiveQuerySpec(0, 0, 180, member_ous_uid=member, target_name=source))
+            if any(row.get('member_ous_uid') != member or row.get('target_name') != source
+                   or (candidate.get('project_code') is not None and row.get('proposal_id') != candidate['project_code'])
+                   for row in metadata.rows):
+                raise ValueError('Archive metadata response identity mismatch')
+            built = build_archive_contexts(metadata)
+            item.update(metadata_status=built.status.value, metadata_provenance=json_value(metadata.provenance),
+                metadata_field_metadata=json_value(metadata.field_metadata), metadata_rows=json_value(metadata.rows))
+            if built.status != 'COMPLETE':
+                item.update(status='INCOMPLETE', reasons=list(built.reasons))
+            else:
+                evaluated = assess_archive_mosaic_contexts(request, mosaic.proposed, built.contexts,
+                    package_directories={}, array_catalog=None, archive_result=metadata,
+                    boundary_epsilon_arcsec=0.001, nominal_conversion=nominal_conversion, use_s_region=True)
+                item.update(status='EVALUATED' if built.contexts else 'NO_METADATA_CONTEXTS',
+                            evaluation=evaluated, position_summary=position_summary(evaluated))
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            item.update(status='INCOMPLETE', error=str(exc))
+        results.append(item)
+    report = dict(schema_version='archive_mosaic_backend_2', proposed=mosaic.proposed,
+        coverage_source='ARCHIVE_S_REGION', discovery=discovery, candidates=results,
+        preparation=dict(status='NOT_REQUIRED', reason='S_REGION_METADATA_ONLY'),
+        assessment_status='COMPLETED' if discovery['status']=='COMPLETED' and all(
+            r['status']=='EVALUATED' for r in results) else 'INCOMPLETE',
+        duplication_scope='PER_ARCHIVE_CONTEXT_BRANCH_RESULTS',
+        absence_interpretation='NO_SEARCH_WIDE_NON_DUPLICATION_CONCLUSION',
+        discovery_recall_status=discovery['plan']['recall_status'])
+    (root/'assessment.json').write_text(json.dumps(json_value(report),indent=2,allow_nan=False)+'\n')
     return report
