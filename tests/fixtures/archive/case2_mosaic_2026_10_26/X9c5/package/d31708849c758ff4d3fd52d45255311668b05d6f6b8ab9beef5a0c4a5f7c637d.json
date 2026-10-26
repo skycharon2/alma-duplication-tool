@@ -1,0 +1,408 @@
+{
+  "schema_version": "archive_mosaic_package_execution_1",
+  "execution": {
+    "project_code": "2018.1.00294.S",
+    "member_ous_uid": "uid://A001/X133d/X9c5",
+    "asdm_uid": "uid://A002/Xfeb5e6/X59b7",
+    "source_name": "NGC253",
+    "metadata_reference": "discovery.json",
+    "evidence": {
+      "measurement_set": "uid___A002_Xfeb5e6_X59b7.ms",
+      "source_sha256": "6180434c680ac99a8c1ba5ad2e0df478504234e381cf444aac0d8d305cf5b6f1",
+      "fields": [
+        {
+          "field_id": 4,
+          "source_id": 3,
+          "target_name": "NGC253",
+          "frame": "ICRS",
+          "ra_original": "00:47:32.924296",
+          "dec_original": "-25.17.19.94936",
+          "ra_deg": 11.887184566666667,
+          "dec_deg": -25.288874822222223,
+          "scans": [
+            {
+              "scan_id": 9,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 12,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 17,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 20,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 25,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 28,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            }
+          ]
+        },
+        {
+          "field_id": 5,
+          "source_id": 3,
+          "target_name": "NGC253",
+          "frame": "ICRS",
+          "ra_original": "00:47:33.064322",
+          "dec_original": "-25.17.18.28000",
+          "ra_deg": 11.887768008333332,
+          "dec_deg": -25.288411111111113,
+          "scans": [
+            {
+              "scan_id": 9,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 12,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 17,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 20,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 25,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 28,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            }
+          ]
+        },
+        {
+          "field_id": 6,
+          "source_id": 3,
+          "target_name": "NGC253",
+          "frame": "ICRS",
+          "ra_original": "00:47:33.204347",
+          "dec_original": "-25.17.16.61064",
+          "ra_deg": 11.888351445833333,
+          "dec_deg": -25.2879474,
+          "scans": [
+            {
+              "scan_id": 9,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 12,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 17,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 20,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 25,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            },
+            {
+              "scan_id": 28,
+              "spw_ids": [
+                4,
+                13,
+                14,
+                15,
+                16,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            }
+          ]
+        }
+      ],
+      "declared_field_count": 7,
+      "parser_version": "archive_listobs_icrs_1",
+      "direction_kind": "LISTOBS_REPORTED_FIELD_CENTRE",
+      "scope": "SUPPORTED_SINGLE_TARGET_LISTOBS"
+    },
+    "array_label": null,
+    "array_evidence_reference": null,
+    "metadata_status": "MEMBER_PACKAGE_BOUND_NOT_TAP_EXECUTION_BOUND",
+    "array_status": "NOT_INDEPENDENTLY_VERIFIED",
+    "binding_status": "MS_BASENAME_AND_TARGET_MATCHED",
+    "acquisition_status": "VERIFIED_PACKAGE_LISTOBS",
+    "execution_inventory_status": "UNKNOWN",
+    "completeness": "MEMBER_COMPLETENESS_NOT_ESTABLISHED",
+    "policy_status": "NOT_EVALUATED",
+    "reconstruction_version": "archive_mosaic_execution_1"
+  },
+  "provenance": {
+    "listobs_file": "listobs/6180434c680ac99a8c1ba5ad2e0df478504234e381cf444aac0d8d305cf5b6f1.txt",
+    "candidate": {
+      "path_chain": [
+        "2018.1.00294.S/science_goal.uid___A001_X133d_X9c1/group.uid___A001_X133d_X9c2/member.uid___A001_X133d_X9c5/qa/member.uid___A001_X133d_X9c5.hifa_calimage.weblog.tgz",
+        "pipeline-20220930T140549/html/sessionsession_1/uid___A002_Xfeb5e6_X59b7.ms/listobs.txt"
+      ],
+      "bytes": 42353,
+      "sha256": "6180434c680ac99a8c1ba5ad2e0df478504234e381cf444aac0d8d305cf5b6f1",
+      "measurement_set": "uid___A002_Xfeb5e6_X59b7.ms",
+      "reported_asdm_uid": "uid://A002/Xfeb5e6/X59b7",
+      "measurement_set_variant": "ORIGINAL",
+      "status": "MATCHED",
+      "science_field_count": 3
+    },
+    "archive_sha256": "17d0989d5c01934e1447fa586034ae61ff13eceb6418cbc3ea94adba0be30505",
+    "discovery_receipt_sha256": "6c11f6a06eb10fe31b6f6b4a7517d4b8ec1c4b7f74945993e8dcb4055d233cce"
+  }
+}
