@@ -152,7 +152,8 @@ def evaluate_mosaic_context(
                 evaluate_continuum_rms(request, context),
             )
         )
-        branches.append(aggregate_continuum(context, (setup, *criteria), mosaic=True))
+        branches.append(aggregate_continuum(context, (setup, *criteria), mosaic=True,
+            supported="ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED" not in position.reasons))
     if "LINE" in request.intents:
         pairing, pairs, branch = evaluate_line(
             request, context, tuple(criteria[:2]), mosaic=True

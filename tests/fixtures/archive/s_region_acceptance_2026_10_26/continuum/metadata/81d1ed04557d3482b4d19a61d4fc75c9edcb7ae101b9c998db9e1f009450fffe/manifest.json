@@ -1,0 +1,35 @@
+{
+  "replay_version": "1",
+  "fixture_kind": "CAPTURED_TAP_RESPONSE",
+  "endpoint": "https://almascience.eso.org/tap",
+  "maxrec": 10000,
+  "query_run_id": "43a513fe-8d00-4ed0-9402-223ede2850f1",
+  "started_at": "2026-10-26T16:39:02.065783+00:00",
+  "finished_at": "2026-10-26T16:39:02.570242+00:00",
+  "responses": [
+    {
+      "adql": "SELECT column_name\nFROM TAP_SCHEMA.columns\nWHERE table_name = 'ivoa.obscore'\n    AND column_name IN ('s_resolution', 's_fov', 't_min', 't_max', 'band_list', 'pol_states')",
+      "maxrec": 7,
+      "file": "response-000.xml",
+      "sha256": "d78cb8daf84504fb0684fe091303427b37de130d2cca867b083741cb817a3b75",
+      "http_status": 200
+    },
+    {
+      "adql": "SELECT COUNT(*) AS total_matches\nFROM ivoa.obscore\nWHERE member_ous_uid = 'uid://A001/X133d/X9c3'\n    AND target_name = 'NGC253'\n    AND science_observation = 'T'",
+      "maxrec": 1,
+      "file": "response-001.xml",
+      "sha256": "7b3176c573a3ddf971f365993ffd56dec8f818d9d687e138d62ab011569db14e",
+      "http_status": 200
+    },
+    {
+      "adql": "SELECT\n    proposal_id,\n    obs_publisher_did,\n    group_ous_uid,\n    member_ous_uid,\n    asdm_uid,\n    obs_id,\n    target_name,\n    s_ra,\n    s_dec,\n    s_region,\n    frequency,\n    bandwidth,\n    em_xel,\n    frequency_support,\n    spectral_resolution,\n    spatial_resolution,\n    sensitivity_10kms,\n    cont_sensitivity_bandwidth,\n    antenna_arrays,\n    is_mosaic,\n    science_observation,\n    qa2_passed,\n    obs_release_date,\n    lastModified,\n    s_resolution,\n    s_fov,\n    t_min,\n    t_max,\n    band_list,\n    pol_states\nFROM ivoa.obscore\nWHERE member_ous_uid = 'uid://A001/X133d/X9c3'\n    AND target_name = 'NGC253'\n    AND science_observation = 'T'",
+      "maxrec": 10000,
+      "file": "response-002.xml",
+      "sha256": "de9277e966a67118fa925386b92f83b9ce357706045ac4475da64772bf03935b",
+      "http_status": 200
+    }
+  ],
+  "expected_count": 4,
+  "retrieved_count": 4,
+  "status": "COMPLETE"
+}

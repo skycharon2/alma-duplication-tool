@@ -1,0 +1,35 @@
+{
+  "replay_version": "1",
+  "fixture_kind": "CAPTURED_TAP_RESPONSE",
+  "endpoint": "https://almascience.eso.org/tap",
+  "maxrec": 10000,
+  "query_run_id": "8934a448-fac1-49fd-9567-9fe17262fcc6",
+  "started_at": "2026-10-26T16:39:01.410685+00:00",
+  "finished_at": "2026-10-26T16:39:02.056860+00:00",
+  "responses": [
+    {
+      "adql": "SELECT column_name\nFROM TAP_SCHEMA.columns\nWHERE table_name = 'ivoa.obscore'\n    AND column_name IN ('s_resolution', 's_fov', 't_min', 't_max', 'band_list', 'pol_states')",
+      "maxrec": 7,
+      "file": "response-000.xml",
+      "sha256": "0e47368ce7ae32b251ec482067e16c934feb4eb940d094e23991b31e60ef2582",
+      "http_status": 200
+    },
+    {
+      "adql": "SELECT COUNT(*) AS total_matches\nFROM ivoa.obscore\nWHERE member_ous_uid = 'uid://A001/X196/X3d'\n    AND target_name = 'NGC253'\n    AND science_observation = 'T'",
+      "maxrec": 1,
+      "file": "response-001.xml",
+      "sha256": "1623eea74f7a1b41406e6bfdfc6c559266768e50c02d09b393f33d197edc96b1",
+      "http_status": 200
+    },
+    {
+      "adql": "SELECT\n    proposal_id,\n    obs_publisher_did,\n    group_ous_uid,\n    member_ous_uid,\n    asdm_uid,\n    obs_id,\n    target_name,\n    s_ra,\n    s_dec,\n    s_region,\n    frequency,\n    bandwidth,\n    em_xel,\n    frequency_support,\n    spectral_resolution,\n    spatial_resolution,\n    sensitivity_10kms,\n    cont_sensitivity_bandwidth,\n    antenna_arrays,\n    is_mosaic,\n    science_observation,\n    qa2_passed,\n    obs_release_date,\n    lastModified,\n    s_resolution,\n    s_fov,\n    t_min,\n    t_max,\n    band_list,\n    pol_states\nFROM ivoa.obscore\nWHERE member_ous_uid = 'uid://A001/X196/X3d'\n    AND target_name = 'NGC253'\n    AND science_observation = 'T'",
+      "maxrec": 10000,
+      "file": "response-002.xml",
+      "sha256": "aa5bad9f511c0ad12430d029cda65de1de7a942b100525ba5c4967f23158edc0",
+      "http_status": 200
+    }
+  ],
+  "expected_count": 4,
+  "retrieved_count": 4,
+  "status": "COMPLETE"
+}

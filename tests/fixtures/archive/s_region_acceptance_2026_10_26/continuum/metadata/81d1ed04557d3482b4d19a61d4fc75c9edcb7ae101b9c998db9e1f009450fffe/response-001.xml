@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <RESOURCE type="results">
+    <INFO name="QUERY_STATUS" value="OK" />
+    <INFO name="QUERY_TIMESTAMP" value="2026-10-26T16:39:02.332" />
+    <INFO name="QUERY" value="SELECT COUNT(*) AS total_matches&#xA;FROM ivoa.obscore&#xA;WHERE member_ous_uid = 'uid://A001/X133d/X9c3'&#xA;    AND target_name = 'NGC253'&#xA;    AND science_observation = 'T'" />
+    <TABLE>
+      <FIELD name="total_matches" datatype="long" />
+      <DATA>
+        <TABLEDATA>
+          <TR>
+            <TD>4</TD>
+          </TR>
+        </TABLEDATA>
+      </DATA>
+    </TABLE>
+    <INFO name="placeholder" value="ignore" />
+  </RESOURCE>
+</VOTABLE>

@@ -23,7 +23,7 @@ def run_case(tmp_path, monkeypatch, mode="continuum", variant="positive"):
         Path(f"examples/mosaic/case2/{mode}-test-request.json").read_text()
     )
     request = payload["request"]
-    if variant == "angular":
+    if variant in ("angular", "tp_angular"):
         request["angular_resolution"]["value"] = 1.0
     if variant == "frequency":
         if mode == "continuum":
@@ -75,6 +75,10 @@ def run_case(tmp_path, monkeypatch, mode="continuum", variant="positive"):
                     row["s_region"] = None
                 elif variant == "unsupported":
                     row["s_region"] = "Union ICRS (Circle 0 0 1)"
+                elif variant in ("tp", "tp_angular"):
+                    row["antenna_arrays"] = "T701:PM01"
+                elif variant == "mixed_tp":
+                    row["antenna_arrays"] = "A001:DV01 T701:PM01"
                 elif variant == "single":
                     row["is_mosaic"] = "F"
                 elif variant == "identity":
@@ -102,6 +106,8 @@ def run_case(tmp_path, monkeypatch, mode="continuum", variant="positive"):
 @pytest.mark.parametrize(
     "variant",
     [
+        "tp",
+        "mixed_tp",
         "positive",
         "half",
         "angular",
@@ -129,7 +135,7 @@ def test_default_region_main_entry(tmp_path, monkeypatch, mode, variant):
         assert pos["method_version"] == "archive_pos_mosaic_s_region_1"
         expected = (
             None
-            if variant in ("missing", "unsupported")
+            if variant in ("missing", "unsupported", "tp", "mixed_tp")
             else "NOT_SATISFIED"
             if variant in ("half", "split_regions")
             else "SATISFIED"
@@ -138,3 +144,11 @@ def test_default_region_main_entry(tmp_path, monkeypatch, mode, variant):
         assert c["coverage"]["coverage_source"] == "ARCHIVE_S_REGION"
     truths = [b["truth"] for c in contexts for b in c["branches"]]
     assert ("TRUE" in truths) == (variant in ("positive", "single"))
+
+
+@pytest.mark.parametrize("mode", ["continuum", "line"])
+def test_tp_scope_never_yields_negative_joint_verdict(tmp_path, monkeypatch, mode):
+    r = run_case(tmp_path, monkeypatch, mode, "tp_angular")
+    for context in r["candidates"][0]["evaluation"]["contexts"]:
+        assert context["coverage"]["scope_status"] == "UNSUPPORTED_TP"
+        assert all(b["truth"] == "UNKNOWN" for b in context["branches"])

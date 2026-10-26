@@ -132,3 +132,52 @@ candidates, response identity mismatch, isolated candidate regions, and angular
 or frequency failures despite positive position coverage. Package preparation and
 readiness loaders are replaced with functions that fail if called. These are
 reproducible offline tests, not a new live Archive acceptance run.
+
+## Scope checks and capture acceptance
+
+The main region adapter records the existing `antenna_arrays` classification.
+Identified TP and unresolved mixed TP evidence yield an unsupported scientific scope, with
+unknown position and joint decisions even when another condition fails. Geometric
+counts remain available separately as diagnostics. `NO_TP_SCOPE_EXCLUSION` does not
+assert a fully verified array identity; missing or unrecognized tokens are retained
+in `array_scope_evidence`. No new array acquisition or beam inference is introduced.
+
+The dedicated `mosaic_region_acceptance` CLI captures a bounded, explicitly chosen
+subset of discovered Members. It saves original TAP responses, exact ADQL/MAXREC,
+completeness metadata and file checksums. Offline replay runs through the production
+Archive parser and main assessment entry with `REPLAY` source identity. It does not
+require a network or any auxiliary package. This is a selected-case engineering
+acceptance, not an Archive census or an exhaustive search verdict.
+
+The scope gate uses the classifier's family decision. A dominant interferometric
+row is not excluded solely because its raw antenna list also contains TP-pad
+tokens; CASE2 X9c5 exercises this distinction. An unresolved mixed family with TP
+is held unknown. This is a conservative application-derived scope screen, not a
+new scientific claim about every antenna in a product.
+
+Example live acceptance (use a new output directory each time):
+
+```sh
+python -m alma_duplicate.cli.mosaic_region_acceptance \
+  --live \
+  --request examples/mosaic/case2/continuum-test-request.json \
+  --pointings tests/fixtures/archive/case2_mosaic_2026_10_26/ot-12m.txt \
+  --array 12m --confirm-fixed-icrs --confirm-complete \
+  --member uid://A001/X133d/X9c3 \
+  --member uid://A001/X133d/X9c5 \
+  --member uid://A001/X74/X176 \
+  --member uid://A001/X196/X3d \
+  --output-dir reports/mosaic-dev/region-acceptance-01
+
+python -m alma_duplicate.cli.mosaic_region_acceptance \
+  --replay reports/mosaic-dev/region-acceptance-01/capture \
+  --output-dir reports/mosaic-dev/region-replay-01
+```
+
+Replay uses the captured request and proposal, validates the bundle checksums,
+and matches exact metadata queries through `RecordedArchiveClient`. Discovery
+is reused as captured evidence, not reissued to the live service. The discovery
+receipt includes all retrieved candidates; selection is explicitly reported as a
+subset. The capture service uses bounded GET requests to the ESO TAP endpoint;
+it does not implement mirror failover. A failed capture must be retried in a new
+directory. Failed discovery and missing selected Members do not count as acceptance.
