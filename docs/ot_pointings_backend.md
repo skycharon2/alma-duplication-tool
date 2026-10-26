@@ -377,7 +377,7 @@ for deterministic acceptance; synthetic proposal/metadata identities are explici
 marked in tests. These tests do not establish all-sky discovery recall.
 
 UI form wiring and exhaustive candidate discovery are separate remaining work. The
-region prefilter includes public science Mosaic rows and a null-region fallback; its
+region prefilter includes science rows across candidate geometries and a null-region fallback; its
 recall against reconstructed half-power coverage is still unproven. Results therefore
 remain scoped to the acquired candidates and bound Archive contexts.
 
@@ -388,3 +388,7 @@ had matching TAP metadata; the two additional package executions remained explic
 exclusions. Local receipts are `reports/mosaic-dev/ic1954-member-metadata-acceptance-02.json`
 and `reports/mosaic-dev/ic1954-metadata-position-acceptance-01.json`. This verifies the
 metadata/position connection, not a final scientific verdict for a real proposal.
+
+The Archive Single Pointing candidate route is described in
+[cross-geometry support](mosaic_cross_geometry.md). The proposal remains Mosaic;
+the new route changes candidate coverage construction, not the other criteria.

@@ -13,7 +13,11 @@ MAX_METADATA_BYTES = 2_000_000
 
 
 def read_mosaic_rows(raw: bytes) -> list[dict]:
-    """Read successful saved science Mosaic TABLEDATA without selecting rows."""
+    return read_candidate_rows(raw, mosaic_only=True)
+
+
+def read_candidate_rows(raw: bytes, *, mosaic_only=False) -> list[dict]:
+    """Read identified science TABLEDATA, optionally requiring Mosaic geometry."""
     if len(raw) > MAX_METADATA_BYTES or b'<!DOCTYPE' in raw.upper() or b'<!ENTITY' in raw.upper():
         raise ValueError('Unsupported TAP metadata size or declarations')
     root = ET.fromstring(raw)
@@ -46,7 +50,7 @@ def read_mosaic_rows(raw: bytes) -> list[dict]:
         if len(cells) != len(names) or any(c.tag != NS + 'TD' for c in cells):
             raise ValueError('Invalid TAP row width')
         row = dict(zip(names, [''.join(c.itertext()).strip() for c in cells]))
-        if any(not row[k] for k in required) or row['science_observation'] != 'T' or row['is_mosaic'] != 'T':
+        if any(not row[k] for k in required if k != 'is_mosaic') or row['science_observation'] != 'T' or (mosaic_only and row['is_mosaic'] != 'T'):
             raise ValueError('Expected identified science Mosaic observation')
         result.append({k: row[k] for k in required})
     return result

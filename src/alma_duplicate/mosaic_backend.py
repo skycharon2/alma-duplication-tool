@@ -78,8 +78,13 @@ def run_mosaic_backend(
                 if candidate.get("package_audit_dir") and candidate.get(
                     "readiness_file"
                 ):
-                    ready[key] = verify_candidate_readiness(candidate, catalog=catalog)
-                    directories[key] = candidate["package_audit_dir"]
+                    try:
+                        ready[key] = verify_candidate_readiness(candidate, catalog=catalog)
+                        directories[key] = candidate["package_audit_dir"]
+                    except (OSError, ValueError, KeyError, TypeError) as exc:
+                        # A bad Mosaic package must not hide independent single-field contexts.
+                        item['pointing_error'] = str(exc)
+                        ready[key] = set()
                 evaluated = assess_archive_mosaic_contexts(
                     request,
                     mosaic.proposed,
@@ -87,10 +92,11 @@ def run_mosaic_backend(
                     package_directories=directories,
                     array_catalog=catalog,
                     ready_executions=ready,
+                    archive_result=metadata,
                     nominal_conversion=nominal_conversion,
                 )
                 item.update(
-                    status="EVALUATED" if built.contexts else "NO_METADATA_CONTEXTS",
+                    status=("PARTIAL_EVIDENCE" if item.get("pointing_error") else "EVALUATED") if built.contexts else "NO_METADATA_CONTEXTS",
                     evaluation=evaluated,
                 )
         except (OSError, ValueError, KeyError, TypeError) as exc:

@@ -50,7 +50,9 @@ def _metadata_signature(context):
         ),
         tuple((q.status, q.canonical_value, q.canonical_unit) for q in quantities),
         context.evidence.selected_component,
-        None if context.evidence.mode_evidence is None else (
+        None
+        if context.evidence.mode_evidence is None
+        else (
             context.evidence.mode_evidence.status,
             context.evidence.mode_evidence.operational_mode,
         ),
@@ -64,6 +66,7 @@ def evaluate_mosaic_context(
     *,
     executions=(),
     array_evidence=None,
+    archive_result=None,
     metadata_contexts=(),
     ready_asdm_uids=None,
     boundary_epsilon_arcsec=0.000001,
@@ -86,6 +89,94 @@ def evaluate_mosaic_context(
         )
     if proposed["source_name"] != request.target_name:
         raise ValueError("Imported pointings belong to another proposed target")
+    geometry = context.evidence.prepared.normalized_metadata.is_mosaic.value
+    if geometry is False:
+        from alma_duplicate.rules.mosaic_single_candidate import (
+            evaluate_single_candidate,
+        )
+
+        position, coverage = evaluate_single_candidate(
+            proposed,
+            context,
+            archive_result=archive_result,
+            array_evidence=array_evidence,
+            boundary_epsilon_arcsec=boundary_epsilon_arcsec,
+        )
+    elif geometry is True:
+        position, coverage = _mosaic_position(
+            context,
+            proposed,
+            executions=executions,
+            array_evidence=array_evidence,
+            metadata_contexts=metadata_contexts,
+            ready_asdm_uids=ready_asdm_uids,
+            boundary_epsilon_arcsec=boundary_epsilon_arcsec,
+        )
+    else:
+        position, coverage = evaluate_mosaic_position(
+            proposed, context_id=context.context_id
+        )
+        reason = "ARCHIVE_CANDIDATE_GEOMETRY_UNRESOLVED"
+        position = replace(
+            position,
+            reasons=(reason,),
+            issues=(
+                CriterionIssue(
+                    EvidenceSide.CANDIDATE, reason, "candidate.geometry", reason
+                ),
+            ),
+        )
+    angular = replace(
+        evaluate_angular_resolution(request, context),
+        approval=MethodApproval.APPROVED,
+        decision_refs=(DECISION_REF,),
+        method_version="archive_mosaic_angular_shared_1",
+    )
+    criteria = [angular, position]
+    branches = []
+    setup = None
+    pairing = None
+    pairs = ()
+    if "CONTINUUM" in request.intents:
+        setup = approve_setup(
+            evaluate_continuum_setup(request, nominal_conversion=nominal_conversion),
+            nominal_conversion=nominal_conversion,
+        )
+        criteria.extend(
+            (
+                evaluate_continuum_frequency(request, context),
+                evaluate_continuum_rms(request, context),
+            )
+        )
+        branches.append(aggregate_continuum(context, (setup, *criteria), mosaic=True))
+    if "LINE" in request.intents:
+        pairing, pairs, branch = evaluate_line(
+            request, context, tuple(criteria[:2]), mosaic=True
+        )
+        branches.append(branch)
+    return dict(
+        context_id=context.context_id,
+        criteria=tuple(criteria),
+        request_criteria=() if setup is None else (setup,),
+        branches=tuple(branches),
+        line_pairing=pairing,
+        line_pairs=pairs,
+        coverage=coverage,
+    )
+
+
+def _mosaic_position(
+    context,
+    proposed,
+    *,
+    executions,
+    array_evidence,
+    metadata_contexts,
+    ready_asdm_uids,
+    boundary_epsilon_arcsec,
+):
+    from alma_duplicate.rules.model import CriterionIssue, EvidenceSide
+
     position, _ = evaluate_mosaic_position(proposed, context_id=context.context_id)
     raw = context.evidence.prepared.raw_row
     member, source, asdm = (
@@ -245,40 +336,4 @@ def evaluate_mosaic_context(
         if position.outcome
         else (CriterionIssue(side, reason, "mosaic.position", reason),),
     )
-    angular = replace(
-        evaluate_angular_resolution(request, context),
-        approval=MethodApproval.APPROVED,
-        decision_refs=(DECISION_REF,),
-        method_version="archive_mosaic_angular_shared_1",
-    )
-    criteria = [angular, position]
-    branches = []
-    setup = None
-    pairing = None
-    pairs = ()
-    if "CONTINUUM" in request.intents:
-        setup = approve_setup(
-            evaluate_continuum_setup(request, nominal_conversion=nominal_conversion),
-            nominal_conversion=nominal_conversion,
-        )
-        criteria.extend(
-            (
-                evaluate_continuum_frequency(request, context),
-                evaluate_continuum_rms(request, context),
-            )
-        )
-        branches.append(aggregate_continuum(context, (setup, *criteria), mosaic=True))
-    if "LINE" in request.intents:
-        pairing, pairs, branch = evaluate_line(
-            request, context, tuple(criteria[:2]), mosaic=True
-        )
-        branches.append(branch)
-    return dict(
-        context_id=context.context_id,
-        criteria=tuple(criteria),
-        request_criteria=() if setup is None else (setup,),
-        branches=tuple(branches),
-        line_pairing=pairing,
-        line_pairs=pairs,
-        coverage=coverage,
-    )
+    return position, coverage

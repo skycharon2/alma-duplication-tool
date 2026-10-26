@@ -248,7 +248,7 @@ def assess_mosaic_candidates(proposed: dict, candidates: list, *,
 
 def assess_archive_mosaic_contexts(request, proposed, contexts, *, package_directories,
                                   array_catalog, boundary_epsilon_arcsec=0.000001,
-                                  nominal_conversion=None, ready_executions=None):
+                                  nominal_conversion=None, ready_executions=None, archive_result=None):
     """Reuse Archive comparison contexts and rules with verified Mosaic pointings.
 
     package_directories maps (Member UID, target name) to local audited packages.
@@ -273,7 +273,7 @@ def assess_archive_mosaic_contexts(request, proposed, contexts, *, package_direc
             loaded[key]=load_package_executions(Path(directory))[0] if directory is not None else ()
         executions = loaded[key]
         evaluated=evaluate_mosaic_context(request,context,proposed,executions=executions,
-            metadata_contexts=contexts,
+            metadata_contexts=contexts, archive_result=archive_result,
             ready_asdm_uids=None if ready_executions is None else ready_executions.get(key, ()),
             array_evidence=array_catalog.bind(context) if array_catalog is not None else None,
             boundary_epsilon_arcsec=boundary_epsilon_arcsec,nominal_conversion=nominal_conversion)

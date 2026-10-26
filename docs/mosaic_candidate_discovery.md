@@ -2,8 +2,9 @@
 
 This bounded discovery path searches every supplied OT pointing rather than applying
 single-pointing candidate-centre filtering. The existing single-pointing search is
-unchanged. It searches public science Mosaic rows only; single-pointing candidates,
-Queue sources and complete duplication aggregation are not covered by this interface.
+unchanged. It searches science rows across candidate geometries. Geometry flags are retained
+per Member/target; only explicitly single-field rows use the TAP centre route.
+Queue sources are not covered. Discovery alone does not evaluate duplication.
 
 Each ADQL request combines at most 20 spherical region predicates with OR. Zero
 margin uses POINT containment in s_region; a positive explicit margin uses CIRCLE
@@ -43,9 +44,10 @@ makes the run INCOMPLETE; successful batches remain available. Queries do not us
 TOP and no failed batch is converted into an empty successful result.
 
 Candidates group by project, Member UID and exact target name. Observed ASDM UIDs
-and originating query indices are preserved. Query indices indicate batch hits,
+and originating query indices are preserved, together with observed `geometry_flags`. Query indices indicate batch hits,
 not verified per-point matches. Different targets are never merged merely because
-they share a Member. Reconstructed executions are still needed before evaluation.
+they share a Member. Mosaic candidates still need reconstructed executions; Single Pointing candidates
+use validated TAP centre metadata and AQ array evidence. Unknown geometry stays unresolved.
 
 `discovery.json` retains all query status and provenance. `candidates.json` contains
 identity-only entries for the candidate-assessment manifest: they will report missing

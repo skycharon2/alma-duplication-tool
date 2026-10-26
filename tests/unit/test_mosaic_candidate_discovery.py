@@ -59,3 +59,16 @@ def test_empty_success_not_nonduplication(tmp_path):
 @pytest.mark.parametrize('margin',[-1,float('nan'),3601,True])
 def test_invalid_margin(margin):
     with pytest.raises(ValueError):plan_discovery(p(),margin_arcsec=margin)
+
+
+def test_all_geometries_preserved_without_weakening_package_parser(tmp_path):
+    from alma_duplicate.archive_mosaic_pipeline import read_mosaic_rows
+    rows=[('P','M','E1','S','T','T'),('P','M','E2','S','T','F'),
+          ('P','N','E3','OTHER','T','F'),('P','U','E4','UNKNOWN','T','')]
+    raw=response(rows)
+    result=discover_candidates(p(),tmp_path/'run',margin_arcsec=1,fetch=lambda url:(200,raw))
+    assert result['status']=='COMPLETED'
+    flags={c['member_ous_uid']:c['geometry_flags'] for c in result['candidates']}
+    assert flags=={'M':['F','T'],'N':['F'],'U':['']}
+    with pytest.raises(ValueError):read_mosaic_rows(raw)
+    assert all("is_mosaic='T'" not in req['query'] for req in result['plan']['requests'])
