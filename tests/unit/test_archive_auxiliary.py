@@ -254,3 +254,9 @@ def test_derived_target_ms_is_identified_but_never_original(tmp_path, suffix):
     assert candidate['reported_asdm_uid'] == ASDM
     assert candidate['measurement_set_variant'] == 'TARGET'
     assert candidate['status'] == 'OTHER_MEASUREMENT_SET'
+
+
+def test_listobs_image_is_not_parsed_as_execution_text(tmp_path):
+    result,raw=inspect(tmp_path,[('listobs.txt',RAW),('listobs.png',b'\x89PNG\r\n\x1a\n')])
+    assert raw==RAW and result['status']=='FOUND'
+    assert result['skipped'][0]['reason']=='NON_TEXT_LISTOBS_ARTIFACT'

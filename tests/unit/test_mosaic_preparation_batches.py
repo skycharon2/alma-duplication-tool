@@ -77,3 +77,19 @@ def test_main_resume_preserves_pending_and_skips_metadata(tmp_path,monkeypatch):
     with pytest.raises(ValueError,match='differs'):
         run_mosaic_backend(None,MosaicAssessmentInput(proposed,tmp_path/'wrong',tmp_path/'cache',2,
             preparation_directory=saved),preparation_provider=preparation)
+
+
+def test_resume_retains_measured_elapsed_and_cache_counts(tmp_path):
+    def cached_worker(*args,**kwargs):
+        report=worker(*args,**kwargs)
+        report['candidates'][0]['reused_cache']=True
+        return report
+    first=run(tmp_path,max_candidates=1,worker=cached_worker)
+    elapsed=first['candidates'][0]['preparation_elapsed_seconds']
+    second=run(tmp_path,True,max_candidates=1,worker=cached_worker)
+    assert second['candidates'][0]['preparation_elapsed_seconds']==elapsed
+    assert second['measured_candidate_count']==2
+    assert second['measured_candidate_seconds']>=elapsed>=0
+    assert second['reused_package_count']==2
+    assert second['prepared_count']==1
+    assert second['failed_or_unready_count']==1

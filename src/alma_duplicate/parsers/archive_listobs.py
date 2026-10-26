@@ -1,4 +1,4 @@
-"""Parse the supported ICRS, single-target CASA listobs layout offline.
+"""Parse the supported ICRS, target-selected CASA listobs layout offline.
 
 Strict parsing preserves raw precision and scan/SPW links. A complete FIELD
 section does not prove complete acquisition, execution coverage, or policy scope.
@@ -42,7 +42,7 @@ def dms_degrees(dms: str) -> float:
     return sign * (d + m / 60 + s / 3600)
 
 
-def _extract(listobs: str, *, asdm_uid: str, target_name: str) -> tuple[list[ScienceField], int]:
+def _extract(listobs: str, *, asdm_uid: str, target_name: str, exclusions=None) -> tuple[list[ScienceField], int]:
     asdm_tag = asdm_uid.replace(":", "_").replace("/", "_") + ".ms"
     # Locate the actual header, including in Markdown-wrapped snapshots.
     # Require one exact MS basename; a mention elsewhere is not source binding.
@@ -63,6 +63,7 @@ def _extract(listobs: str, *, asdm_uid: str, target_name: str) -> tuple[list[Sci
 
     scans_by_field: dict[int, set[int]] = defaultdict(set)
     scans = {}
+    names_by_field = {}
     for line in scan_section.splitlines():
         if "OBSERVE_TARGET#ON_SOURCE" not in line:
             continue
@@ -70,9 +71,10 @@ def _extract(listobs: str, *, asdm_uid: str, target_name: str) -> tuple[list[Sci
         if m is None:
             raise ValueError(f"Unparsed ON_SOURCE scan: {line[:100]}")
         scan_id, field_id, name, spws = m.groups()
-        if name != target_name:
-            raise ValueError(f"ON_SOURCE target mismatch: {name}")
         field_id = int(field_id)
+        if field_id in names_by_field and names_by_field[field_id] != name:
+            raise ValueError('Conflicting science FIELD target identity')
+        names_by_field[field_id] = name
         scan_id = int(scan_id)
         key = (field_id, scan_id)
         entry = tuple(int(x) for x in spws.split(","))
@@ -96,8 +98,19 @@ def _extract(listobs: str, *, asdm_uid: str, target_name: str) -> tuple[list[Sci
     if not scans_by_field.keys() <= listed_fields.keys():
         raise ValueError("ON_SOURCE references a missing FIELD_ID")
 
+    # Validate every science scan against its FIELD before selecting a target.
+    for fid, name in names_by_field.items():
+        if listed_fields[fid][1] != name:
+            raise ValueError(f'Science FIELD {fid} name/frame mismatch')
+    selected = {fid for fid, name in names_by_field.items() if name == target_name}
+    if not selected:
+        raise ValueError('No ON_SOURCE science scan rows for requested target')
+    if exclusions is not None:
+        exclusions.extend(dict(field_id=fid, target_name=names_by_field[fid],
+                               scan_ids=sorted(scans_by_field[fid]), reason='OTHER_SCIENCE_TARGET')
+                          for fid in sorted(set(scans_by_field) - selected))
     output = []
-    for fid in sorted(scans_by_field):
+    for fid in sorted(selected):
         _, name, ra_hms, dec_dms, frame, src_id, nrows = listed_fields[fid]
         if name != target_name or frame != "ICRS":
             raise ValueError(f"Science FIELD {fid} name/frame mismatch")
@@ -112,13 +125,13 @@ def _extract(listobs: str, *, asdm_uid: str, target_name: str) -> tuple[list[Sci
 
 
 
-def parse_science_fields(raw: bytes, *, asdm_uid: str, target_name: str) -> ParsedScienceFields:
+def parse_science_fields(raw: bytes, *, asdm_uid: str, target_name: str, exclusions=None) -> ParsedScienceFields:
     """Reject unsupported or mismatched input with ValueError; perform no I/O."""
     if not re.fullmatch(r"uid://A[0-9A-Za-z]+/[0-9A-Za-z]+/[0-9A-Za-z]+", asdm_uid):
         raise ValueError("Invalid ASDM UID")
     if not target_name or target_name != target_name.strip():
         raise ValueError("Expected nonblank exact target name")
-    fields, count = _extract(raw.decode("utf-8"), asdm_uid=asdm_uid, target_name=target_name)
+    fields, count = _extract(raw.decode("utf-8"), asdm_uid=asdm_uid, target_name=target_name, exclusions=exclusions)
     return ParsedScienceFields(
         measurement_set=asdm_uid.replace(":", "_").replace("/", "_") + ".ms",
         source_sha256=sha256(raw).hexdigest(), fields=tuple(fields),

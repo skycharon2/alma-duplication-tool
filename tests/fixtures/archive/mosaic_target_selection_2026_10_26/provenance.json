@@ -1,0 +1,18 @@
+[
+  {
+    "file": "lmc-listobs.txt",
+    "sha256": "7295077b69fe082e6dd99cf9745313292529d4723edd20cb7a4c4e2f40abb2b4",
+    "member_ous_uid": "uid://A001/X879/X6e7",
+    "source_name": "LMC0NT197",
+    "url": "https://almascience.eso.org/dataPortal/2016.1.00063.S_uid___A001_X879_X6e7_auxiliary.tar",
+    "archive_sha256": "0f8e88b4c3cfd71c502def10fced01518fb46cdebbb8e8e3bbb766b94a4c8574"
+  },
+  {
+    "file": "n55-calibrated.log",
+    "sha256": "a0c3aaf7ced1b8391bf44cab1846799f0ca9bef5b1fd4ed32db79d21ceb1a0f1",
+    "member_ous_uid": "uid://A001/X145/X43d",
+    "source_name": "N55",
+    "url": "https://almascience.eso.org/dataPortal/2013.1.00214.S_uid___A001_X145_X43d_auxiliary.tar",
+    "archive_sha256": "49bdffd99c465600fa5aa68143dab59079c912bb60e6ef4b92e3764cc49cbaf0"
+  }
+]

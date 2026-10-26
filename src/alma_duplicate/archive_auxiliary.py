@@ -181,6 +181,9 @@ def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str, capture
                     continue
                 if nested and depth >= MAX_DEPTH:
                     raise ValueError('Archive nesting limit exceeded')
+                if listobs and path.suffix.lower() in ('.png', '.jpg', '.jpeg', '.gif', '.svg', '.pdf'):
+                    skipped.append(dict(path_chain=chain + [member.name], reason='NON_TEXT_LISTOBS_ARTIFACT'))
+                    continue
                 if listobs and member.size > MAX_TEXT:
                     raise ValueError('Listobs size limit exceeded')
                 location = chain + [member.name]
@@ -213,7 +216,10 @@ def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str, capture
                         entry['status'] = 'OTHER_MEASUREMENT_SET'
                         continue
                     try:
-                        evidence = parse_science_fields(raw, asdm_uid=asdm_uid, target_name=source_name)
+                        excluded = []
+                        evidence = parse_science_fields(raw, asdm_uid=asdm_uid, target_name=source_name, exclusions=excluded)
+                        if excluded:
+                            entry['excluded_science_fields'] = excluded
                     except ValueError:
                         entry['status'] = 'MATCHING_MS_PARSE_FAILED'
                         continue

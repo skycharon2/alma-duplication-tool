@@ -2,6 +2,7 @@
 from dataclasses import asdict
 from hashlib import sha256
 import json
+import time
 from pathlib import Path
 
 from alma_duplicate.mosaic_resource_limits import MosaicResourceLimits
@@ -63,9 +64,14 @@ def prepare_batches(discovery, *, output, cache, max_candidates, resume, worker,
         if directory.exists():
             raise ValueError('Uncheckpointed candidate directory exists; preserve it and use a new run')
         part = dict(discovery, candidates=[rows[index]])
+        started = time.monotonic()
         report = worker(part, output=directory, cache=cache, **worker_kwargs)
-        results.extend(report['candidates'])
+        elapsed = time.monotonic() - started
+        for candidate in report['candidates']:
+            candidate['preparation_elapsed_seconds'] = round(elapsed, 6)
         receipt = directory / 'preparation.json'
+        _write(receipt, report)
+        results.extend(report['candidates'])
         state['completed'].append(dict(file=str(receipt.relative_to(output)),
                                        sha256=sha256(receipt.read_bytes()).hexdigest()))
         _write(checkpoint, state)
@@ -77,6 +83,10 @@ def prepare_batches(discovery, *, output, cache, max_candidates, resume, worker,
         resource_limits=asdict(limits), status='COMPLETED' if not pending and all(map(success, results)) else 'INCOMPLETE',
         discovered_count=len(rows), attempted_count=len(results), pending_count=len(pending),
         failed_or_unready_count=sum(not success(r) for r in results),
+        prepared_count=sum(success(r) for r in results),
+        reused_package_count=sum(r.get('reused_cache') is True for r in results),
+        measured_candidate_count=sum('preparation_elapsed_seconds' in r for r in results),
+        measured_candidate_seconds=sum(r.get('preparation_elapsed_seconds', 0) for r in results),
         invocation_candidate_budget=max_candidates,
         invocation_download_upper_bound_bytes=max_candidates * limits.max_download_bytes,
         discovery_status=discovery.get('status'),
