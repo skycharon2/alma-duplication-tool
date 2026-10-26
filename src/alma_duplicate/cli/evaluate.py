@@ -45,6 +45,7 @@ def main(argv=None, *, archive_client_factory=None):
     parser.add_argument('--mosaic-array', choices=('7m', '12m'))
     parser.add_argument('--mosaic-workdir', type=Path)
     parser.add_argument('--mosaic-cache', type=Path)
+    parser.add_argument('--mosaic-resume-preparation', type=Path)
     parser.add_argument('--mosaic-margin-arcsec', type=float)
     parser.add_argument('--confirm-fixed-icrs', action='store_true')
     parser.add_argument('--confirm-complete', action='store_true')
@@ -107,7 +108,8 @@ def main(argv=None, *, archive_client_factory=None):
                     source_name=payload['request'].get('target_name'), array=args.mosaic_array,
                     confirm_fixed_icrs=args.confirm_fixed_icrs, confirm_complete=args.confirm_complete)
             mosaic = MosaicAssessmentInput(proposed, args.mosaic_workdir, args.mosaic_cache,
-                                            args.mosaic_margin_arcsec, resource_arguments(args, 'mosaic_'))
+                                            args.mosaic_margin_arcsec, resource_arguments(args, 'mosaic_'),
+                                            args.mosaic_resume_preparation)
         result = assess_observation(
             payload["request"], payload["search_options"],
             options=AssessmentOptions(

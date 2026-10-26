@@ -1,0 +1,58 @@
+{
+  "request": {
+    "target_kind": "FIXED",
+    "geometry": "MOSAIC",
+    "target_name": "NGC253_CASE2_SYNTHETIC_LINE",
+    "setup_id": "setup-1",
+    "setup_complete": true,
+    "intents": [
+      "LINE"
+    ],
+    "angular_resolution": {
+      "value": 0.07,
+      "unit": "arcsec"
+    },
+    "spectral_windows": [
+      {
+        "window_id": "line-0",
+        "center": {
+          "value": 690.8931792321085,
+          "unit": "GHz",
+          "kind": "SKY",
+          "frame": "UNKNOWN"
+        },
+        "correlator_mode": "FDM"
+      }
+    ],
+    "sensitivities": [
+      {
+        "sensitivity_id": "line-rms",
+        "purpose": "LINE",
+        "scope": "WINDOW",
+        "window_ids": [
+          "line-0"
+        ],
+        "basis": "SMOOTHED",
+        "rms": {
+          "value": 8.0,
+          "unit": "mJy/beam"
+        },
+        "smoothing_resolution": {
+          "value": 10,
+          "unit": "km/s"
+        }
+      }
+    ]
+  },
+  "search_options": {
+    "radius": {
+      "value": 30,
+      "unit": "arcsec"
+    },
+    "sources": [
+      "ARCHIVE"
+    ],
+    "result_limit": 1,
+    "predicates": []
+  }
+}
