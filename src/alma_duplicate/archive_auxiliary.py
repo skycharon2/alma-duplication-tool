@@ -66,9 +66,12 @@ def _digest(path):
     return h.hexdigest()
 
 
-def acquire_auxiliary(product, cache: Path, *, offline=False, open_url=None):
+def acquire_auxiliary(product, cache: Path, *, offline=False, open_url=None, max_download_bytes=None):
     """Cache publication is atomic; an entry is usable only after hash validation."""
-    if product.content_length is not None and product.content_length > MAX_DOWNLOAD:
+    download_limit = MAX_DOWNLOAD if max_download_bytes is None else max_download_bytes
+    if type(download_limit) is not int or not 0 < download_limit <= 1_000_000_000:
+        raise ValueError('Download limit must be an integer between 1 and 1000000000 bytes')
+    if product.content_length is not None and product.content_length > download_limit:
         raise ValueError('Advertised product exceeds download limit')
     cache.mkdir(parents=True, exist_ok=True)
     key = sha256(product.access_url.encode()).hexdigest()
@@ -79,7 +82,7 @@ def acquire_auxiliary(product, cache: Path, *, offline=False, open_url=None):
             raise ValueError('Incomplete cache entry')
         record = json.loads(manifest.read_text())
         size = archive.stat().st_size
-        if (record['url'] != product.access_url or size != record['bytes'] or size > MAX_DOWNLOAD
+        if (record['url'] != product.access_url or size != record['bytes'] or size > download_limit
                 or _digest(archive) != record['sha256']
                 or product.content_length is not None and size != product.content_length):
             raise ValueError('Cache integrity mismatch')
@@ -95,14 +98,14 @@ def acquire_auxiliary(product, cache: Path, *, offline=False, open_url=None):
             if response.status != 200:
                 raise ValueError(f'Unexpected HTTP status: {response.status}')
             announced = response.headers.get('Content-Length')
-            if announced is not None and (not announced.isdigit() or int(announced) > MAX_DOWNLOAD):
+            if announced is not None and (not announced.isdigit() or int(announced) > download_limit):
                 raise ValueError('Invalid or oversized HTTP Content-Length')
             with tempfile.NamedTemporaryFile(dir=cache, suffix='.part', delete=False) as stream:
                 temporary = Path(stream.name)
                 size = 0
                 for block in iter(lambda: response.read(65536), b''):
                     size += len(block)
-                    if size > MAX_DOWNLOAD or time.monotonic() > deadline:
+                    if size > download_limit or time.monotonic() > deadline:
                         raise ValueError('Download budget exceeded')
                     stream.write(block)
         if ((announced is not None and size != int(announced))
@@ -122,13 +125,19 @@ def acquire_auxiliary(product, cache: Path, *, offline=False, open_url=None):
             temporary.unlink(missing_ok=True)
 
 
-def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str, capture_dir: Path | None = None):
+def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str, capture_dir: Path | None = None,
+                      max_weblog_bytes=None, max_expanded_bytes=None):
     """Read regular listobs members only; no archive path is extracted to disk.
 
     Nested tar/tgz files are inspected within fixed shared budgets. Any skipped
     unsafe candidate or over-budget layout aborts selection rather than hiding ambiguity.
     Only nested archives named as weblogs are traversed; other packages are recorded.
     """
+    weblog_limit = MAX_WEBLOG if max_weblog_bytes is None else max_weblog_bytes
+    expanded_limit = MAX_EXPANDED if max_expanded_bytes is None else max_expanded_bytes
+    for value, ceiling in ((weblog_limit, 1_000_000_000), (expanded_limit, 10_000_000_000)):
+        if type(value) is not int or not 0 < value <= ceiling:
+            raise ValueError('Invalid explicit inspection budget')
     if not re.fullmatch(r'uid://A[0-9A-Za-z]+/[0-9A-Za-z]+/[0-9A-Za-z]+', asdm_uid):
         raise ValueError('Invalid ASDM UID')
     if not source_name or source_name != source_name.strip():
@@ -146,7 +155,7 @@ def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str, capture
             for member in tar:
                 budget['entries'] += 1
                 budget['expanded'] += member.size
-                if budget['entries'] > MAX_ENTRIES or budget['expanded'] > MAX_EXPANDED:
+                if budget['entries'] > MAX_ENTRIES or budget['expanded'] > expanded_limit:
                     raise ValueError('Archive inspection budget exceeded')
                 path = PurePosixPath(member.name)
                 if path.is_absolute() or '..' in path.parts or '\\' in member.name or member.name in seen:
@@ -162,7 +171,7 @@ def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str, capture
                         raise ValueError('Linked candidate archive member is unsupported')
                     skipped.append(dict(path_chain=chain + [member.name], reason='NON_REGULAR_MEMBER'))
                     continue
-                member_limit = MAX_WEBLOG if nested and 'weblog' in path.name.lower() else MAX_MEMBER
+                member_limit = weblog_limit if nested and 'weblog' in path.name.lower() else MAX_MEMBER
                 if member.size < 0 or member.size > member_limit:
                     raise ValueError('Unsupported archive member size')
                 if nested and 'weblog' not in path.name.lower():
@@ -196,10 +205,10 @@ def inspect_auxiliary(archive: Path, *, asdm_uid: str, source_name: str, capture
                         continue
                     basename = PurePosixPath(headers[0].strip()).name
                     entry['measurement_set'] = basename
-                    uid_match = re.fullmatch(r'uid___(A[0-9A-Za-z]+)_([0-9A-Za-z]+)_([0-9A-Za-z]+)(?:_target)?\.ms', basename)
+                    uid_match = re.fullmatch(r'uid___(A[0-9A-Za-z]+)_([0-9A-Za-z]+)_([0-9A-Za-z]+)(?:_target|_targets|_targets_line)?\.ms', basename)
                     if uid_match:
                         entry['reported_asdm_uid'] = 'uid://' + '/'.join(uid_match.groups())
-                        entry['measurement_set_variant'] = 'TARGET' if basename.endswith('_target.ms') else 'ORIGINAL'
+                        entry['measurement_set_variant'] = 'TARGET' if basename.endswith(('_target.ms', '_targets.ms', '_targets_line.ms')) else 'ORIGINAL'
                     if basename != expected:
                         entry['status'] = 'OTHER_MEASUREMENT_SET'
                         continue
