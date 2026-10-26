@@ -1,0 +1,1087 @@
+{
+  "date": "2026-10-26",
+  "sampling": "BOUNDED_CONVENIENCE_SAMPLE_NOT_POPULATION_ESTIMATE",
+  "sample_count": 50,
+  "solar_count": 2,
+  "product_status_counts": {
+    "PRODUCT_AVAILABLE_NOT_INSPECTED": 49,
+    "NO_USABLE_PRODUCT": 1
+  },
+  "available_product_bytes": 31411456512,
+  "queries": [
+    {
+      "stratum": "2013-lower",
+      "query": "SELECT DISTINCT TOP 50 proposal_id, member_ous_uid, target_name, band_list FROM ivoa.obscore WHERE science_observation='T' AND is_mosaic='T' AND proposal_id LIKE '2013.%' AND obs_release_date < '2026-10-26' AND frequency < 200 ORDER BY proposal_id, member_ous_uid, target_name",
+      "http_status": 200,
+      "sha256": "d2fa74e9bc1778b074cf384b9abf02e784b3f90d7de1d7588a621bab4b1e5576",
+      "status": "SAMPLED",
+      "pool_rows": 50,
+      "selected": 5
+    },
+    {
+      "stratum": "2013-higher",
+      "query": "SELECT DISTINCT TOP 50 proposal_id, member_ous_uid, target_name, band_list FROM ivoa.obscore WHERE science_observation='T' AND is_mosaic='T' AND proposal_id LIKE '2013.%' AND obs_release_date < '2026-10-26' AND frequency >= 200 ORDER BY proposal_id, member_ous_uid, target_name",
+      "http_status": 200,
+      "sha256": "d22eee53c94bda283cdd38422fd6857d0c041e0fa27bf5a87bbc6de17620177e",
+      "status": "SAMPLED",
+      "pool_rows": 50,
+      "selected": 5
+    },
+    {
+      "stratum": "2016-lower",
+      "query": "SELECT DISTINCT TOP 50 proposal_id, member_ous_uid, target_name, band_list FROM ivoa.obscore WHERE science_observation='T' AND is_mosaic='T' AND proposal_id LIKE '2016.%' AND obs_release_date < '2026-10-26' AND frequency < 200 ORDER BY proposal_id, member_ous_uid, target_name",
+      "http_status": 200,
+      "sha256": "6a3c4275dc99016f670252fcf4ac38080ab2bc620e6bad724bdfd76d17f19527",
+      "status": "SAMPLED",
+      "pool_rows": 50,
+      "selected": 5
+    },
+    {
+      "stratum": "2016-higher",
+      "query": "SELECT DISTINCT TOP 50 proposal_id, member_ous_uid, target_name, band_list FROM ivoa.obscore WHERE science_observation='T' AND is_mosaic='T' AND proposal_id LIKE '2016.%' AND obs_release_date < '2026-10-26' AND frequency >= 200 ORDER BY proposal_id, member_ous_uid, target_name",
+      "http_status": 200,
+      "sha256": "1125ef0f900418276d5b0e6d5b5aba7844aed0085fc2dd2a2d5c4b5aa47d49fc",
+      "status": "SAMPLED",
+      "pool_rows": 50,
+      "selected": 5
+    },
+    {
+      "stratum": "2019-lower",
+      "query": "SELECT DISTINCT TOP 50 proposal_id, member_ous_uid, target_name, band_list FROM ivoa.obscore WHERE science_observation='T' AND is_mosaic='T' AND proposal_id LIKE '2019.%' AND obs_release_date < '2026-10-26' AND frequency < 200 ORDER BY proposal_id, member_ous_uid, target_name",
+      "http_status": 200,
+      "sha256": "e7f5a56610cb0daeb0684bc8dc3c8951bba00b94a4d67c099269136174ab7026",
+      "status": "SAMPLED",
+      "pool_rows": 50,
+      "selected": 5
+    },
+    {
+      "stratum": "2019-higher",
+      "query": "SELECT DISTINCT TOP 50 proposal_id, member_ous_uid, target_name, band_list FROM ivoa.obscore WHERE science_observation='T' AND is_mosaic='T' AND proposal_id LIKE '2019.%' AND obs_release_date < '2026-10-26' AND frequency >= 200 ORDER BY proposal_id, member_ous_uid, target_name",
+      "http_status": 200,
+      "sha256": "51eb9c8b20d5b0286701c1859891ddd8bc25d78d409f97216015c10ebf0f4ea2",
+      "status": "SAMPLED",
+      "pool_rows": 50,
+      "selected": 5
+    },
+    {
+      "stratum": "2022-lower",
+      "query": "SELECT DISTINCT TOP 50 proposal_id, member_ous_uid, target_name, band_list FROM ivoa.obscore WHERE science_observation='T' AND is_mosaic='T' AND proposal_id LIKE '2022.%' AND obs_release_date < '2026-10-26' AND frequency < 200 ORDER BY proposal_id, member_ous_uid, target_name",
+      "http_status": 200,
+      "sha256": "c9c46daf21365374209478f9e2b89815dfbdc04d975be20a090533c1bbc0be12",
+      "status": "SAMPLED",
+      "pool_rows": 50,
+      "selected": 5
+    },
+    {
+      "stratum": "2022-higher",
+      "query": "SELECT DISTINCT TOP 50 proposal_id, member_ous_uid, target_name, band_list FROM ivoa.obscore WHERE science_observation='T' AND is_mosaic='T' AND proposal_id LIKE '2022.%' AND obs_release_date < '2026-10-26' AND frequency >= 200 ORDER BY proposal_id, member_ous_uid, target_name",
+      "http_status": 200,
+      "sha256": "46160d87f3cadd650c088b77f77f7089a1b796873aa5d44b35bd2d3d1d7462c2",
+      "status": "SAMPLED",
+      "pool_rows": 50,
+      "selected": 5
+    },
+    {
+      "stratum": "2024-lower",
+      "query": "SELECT DISTINCT TOP 50 proposal_id, member_ous_uid, target_name, band_list FROM ivoa.obscore WHERE science_observation='T' AND is_mosaic='T' AND proposal_id LIKE '2024.%' AND obs_release_date < '2026-10-26' AND frequency < 200 ORDER BY proposal_id, member_ous_uid, target_name",
+      "http_status": 200,
+      "sha256": "af389f161c290f22371a115eb5a4986690b9051d3fc069f2073cba8bd322a547",
+      "status": "SAMPLED",
+      "pool_rows": 50,
+      "selected": 5
+    },
+    {
+      "stratum": "2024-higher",
+      "query": "SELECT DISTINCT TOP 50 proposal_id, member_ous_uid, target_name, band_list FROM ivoa.obscore WHERE science_observation='T' AND is_mosaic='T' AND proposal_id LIKE '2024.%' AND obs_release_date < '2026-10-26' AND frequency >= 200 ORDER BY proposal_id, member_ous_uid, target_name",
+      "http_status": 200,
+      "sha256": "21a79dad4522633623f547851580d2487dd00d59f52515ecd92fda53ad20111b",
+      "status": "SAMPLED",
+      "pool_rows": 50,
+      "selected": 5
+    }
+  ],
+  "sample_manifest": [
+    {
+      "proposal_id": "2013.1.00041.S",
+      "member_ous_uid": "uid://A001/X11f/X98",
+      "target_name": "1-IC2163",
+      "band_list": "3",
+      "stratum": "2013-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 2232339968
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2013.1.00165.S",
+      "member_ous_uid": "uid://A001/X196/X9f",
+      "target_name": "HH_212",
+      "band_list": "4",
+      "stratum": "2013-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 682206208
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2013.1.00191.S",
+      "member_ous_uid": "uid://A001/X12e/X1d2",
+      "target_name": "NGC253",
+      "band_list": "3",
+      "stratum": "2013-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 924958720
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2013.1.00214.S",
+      "member_ous_uid": "uid://A001/X145/X43d",
+      "target_name": "N55",
+      "band_list": "3",
+      "stratum": "2013-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 22539264
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2013.1.00246.S",
+      "member_ous_uid": "uid://A001/X140/X6",
+      "target_name": "RX_J1347.5-1145",
+      "band_list": "3",
+      "stratum": "2013-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 121027072
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2013.1.00021.S",
+      "member_ous_uid": "uid://A001/X125/X5",
+      "target_name": "N4650A",
+      "band_list": "7",
+      "stratum": "2013-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 427690496
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2013.1.00071.S",
+      "member_ous_uid": "uid://A002/X82316f/X7",
+      "target_name": "SgrA_star",
+      "band_list": "8",
+      "stratum": "2013-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 111604736
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2013.1.00099.S",
+      "member_ous_uid": "uid://A001/X196/X26",
+      "target_name": "Uranus",
+      "band_list": "6",
+      "stratum": "2013-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [],
+      "status": "NO_USABLE_PRODUCT"
+    },
+    {
+      "proposal_id": "2013.1.00126.S",
+      "member_ous_uid": "uid://A001/X122/X407",
+      "target_name": "SgrA_star",
+      "band_list": "9",
+      "stratum": "2013-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 1,
+          "bytes": 3072
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2013.1.00149.S",
+      "member_ous_uid": "uid://A001/X148/X2b",
+      "target_name": "RN122",
+      "band_list": "6",
+      "stratum": "2013-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 887732224
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2016.1.00026.S",
+      "member_ous_uid": "uid://A001/X879/X647",
+      "target_name": "EP_Aqr",
+      "band_list": "3",
+      "stratum": "2016-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 373851648
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2016.1.00030.S",
+      "member_ous_uid": "uid://A001/X87d/X5c",
+      "target_name": "Sun_10",
+      "band_list": "3",
+      "stratum": "2016-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 244427264
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2016.1.00035.S",
+      "member_ous_uid": "uid://A001/X87a/Xa9a",
+      "target_name": "H-MM1",
+      "band_list": "3",
+      "stratum": "2016-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 220930048
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2016.1.00050.S",
+      "member_ous_uid": "uid://A001/X87c/X8e8",
+      "target_name": "Sun",
+      "band_list": "3",
+      "stratum": "2016-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 1690624
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2016.1.00063.S",
+      "member_ous_uid": "uid://A001/X879/X6e7",
+      "target_name": "LMC0NT197",
+      "band_list": "3",
+      "stratum": "2016-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 76870656
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2016.1.00007.S",
+      "member_ous_uid": "uid://A001/X879/X8ed",
+      "target_name": "AFGL3068",
+      "band_list": "6",
+      "stratum": "2016-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 241598464
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2016.1.00026.S",
+      "member_ous_uid": "uid://A001/X879/X64d",
+      "target_name": "EP_Aqr",
+      "band_list": "6",
+      "stratum": "2016-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 197539328
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2016.1.00033.S",
+      "member_ous_uid": "uid://A001/X87d/Xa08",
+      "target_name": "CIT_6",
+      "band_list": "7",
+      "stratum": "2016-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 573370368
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2016.1.00035.S",
+      "member_ous_uid": "uid://A001/X87a/Xaa6",
+      "target_name": "H-MM1",
+      "band_list": "7",
+      "stratum": "2016-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 784545792
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2016.1.00041.S",
+      "member_ous_uid": "uid://A001/X879/X220",
+      "target_name": "NGC40389overlap",
+      "band_list": "7",
+      "stratum": "2016-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 976587264
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2019.1.00021.S",
+      "member_ous_uid": "uid://A001/X1465/X3d03",
+      "target_name": "S_Sct",
+      "band_list": "3",
+      "stratum": "2019-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 1483175936
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2019.1.00463.S",
+      "member_ous_uid": "uid://A001/X146a/X15",
+      "target_name": "BHR7",
+      "band_list": "3",
+      "stratum": "2019-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 1166782464
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2019.1.00516.S",
+      "member_ous_uid": "uid://A001/X1477/X1a",
+      "target_name": "Sun",
+      "band_list": "3",
+      "stratum": "2019-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 6851584
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2019.1.00562.S",
+      "member_ous_uid": "uid://A001/X1465/X2bbc",
+      "target_name": "ngc_4302",
+      "band_list": "3",
+      "stratum": "2019-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 1530062848
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2019.1.00641.S",
+      "member_ous_uid": "uid://A001/X1465/X2943",
+      "target_name": "Flame_Nebula",
+      "band_list": "3",
+      "stratum": "2019-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 657424384
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2019.1.00063.S",
+      "member_ous_uid": "uid://A001/X1465/X3afc",
+      "target_name": "GM_Aur_tail",
+      "band_list": "7",
+      "stratum": "2019-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 158986240
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2019.1.00216.S",
+      "member_ous_uid": "uid://A001/X1528/X367",
+      "target_name": "Io",
+      "band_list": "7",
+      "stratum": "2019-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 1943301120
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2019.1.00263.S",
+      "member_ous_uid": "uid://A001/X1465/X345f",
+      "target_name": "IRAS05506+2414",
+      "band_list": "6",
+      "stratum": "2019-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 367508480
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2019.1.00271.S",
+      "member_ous_uid": "uid://A001/X1465/X343f",
+      "target_name": "MC5-N",
+      "band_list": "6",
+      "stratum": "2019-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 579633152
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2019.1.00299.S",
+      "member_ous_uid": "uid://A001/X1465/X3325",
+      "target_name": "MMS5OMC-3",
+      "band_list": "7",
+      "stratum": "2019-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 750332928
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2022.1.00131.S",
+      "member_ous_uid": "uid://A001/X2d1f/Xa63",
+      "target_name": "IRAS15398-3359",
+      "band_list": "3",
+      "stratum": "2022-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 447140864
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2022.1.00181.S",
+      "member_ous_uid": "uid://A001/X2f52/X1da",
+      "target_name": "RCW36",
+      "band_list": "3",
+      "stratum": "2022-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 832340992
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2022.1.00276.S",
+      "member_ous_uid": "uid://A001/X2df7/X48f",
+      "target_name": "M33",
+      "band_list": "3",
+      "stratum": "2022-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 540892160
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2022.1.00290.S",
+      "member_ous_uid": "uid://A001/X3571/X85",
+      "target_name": "RCW103_SW",
+      "band_list": "3",
+      "stratum": "2022-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 263460864
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2022.1.00311.S",
+      "member_ous_uid": "uid://A001/X2d20/X3076",
+      "target_name": "ic443",
+      "band_list": "3",
+      "stratum": "2022-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 522393600
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2022.1.00073.S",
+      "member_ous_uid": "uid://A001/X2d20/X3b8b",
+      "target_name": "MOSAIC-A",
+      "band_list": "6",
+      "stratum": "2022-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 442691584
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2022.1.00131.S",
+      "member_ous_uid": "uid://A001/X3577/X50",
+      "target_name": "OphIRS43",
+      "band_list": "6",
+      "stratum": "2022-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 225686528
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2022.1.00141.S",
+      "member_ous_uid": "uid://A001/X2d1f/X9e5",
+      "target_name": "NGC4526",
+      "band_list": "7",
+      "stratum": "2022-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 209424384
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2022.1.00159.S",
+      "member_ous_uid": "uid://A001/X2d1f/X942",
+      "target_name": "M95",
+      "band_list": "7",
+      "stratum": "2022-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 438106112
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2022.1.00181.S",
+      "member_ous_uid": "uid://A001/X2f52/X1d2",
+      "target_name": "RCW36",
+      "band_list": "6",
+      "stratum": "2022-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 2106488832
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2024.1.00028.S",
+      "member_ous_uid": "uid://A001/X3788/X6edd",
+      "target_name": "M64",
+      "band_list": "3",
+      "stratum": "2024-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 736129024
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2024.1.00056.S",
+      "member_ous_uid": "uid://A001/X3788/X7ab7",
+      "target_name": "EM2POS10",
+      "band_list": "4",
+      "stratum": "2024-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 236505088
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2024.1.00103.S",
+      "member_ous_uid": "uid://A001/X37c8/X6a",
+      "target_name": "SgrA_star",
+      "band_list": "4",
+      "stratum": "2024-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 2313755648
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2024.1.00213.S",
+      "member_ous_uid": "uid://A001/X37dc/X174",
+      "target_name": "c20",
+      "band_list": "1",
+      "stratum": "2024-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 797691904
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2024.1.00221.S",
+      "member_ous_uid": "uid://A001/X3788/X65f8",
+      "target_name": "SNR_G330.2+1.0",
+      "band_list": "3",
+      "stratum": "2024-lower",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 507533312
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2024.1.00027.S",
+      "member_ous_uid": "uid://A001/X37fb/X7",
+      "target_name": "Titan",
+      "band_list": "7",
+      "stratum": "2024-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 915002368
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2024.1.00028.S",
+      "member_ous_uid": "uid://A001/X3788/X6ed5",
+      "target_name": "M64",
+      "band_list": "7",
+      "stratum": "2024-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 343523328
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2024.1.00137.T",
+      "member_ous_uid": "uid://A001/X37b5/X236",
+      "target_name": "Tsuchinshan-ATLAS_C2023_A3",
+      "band_list": "6",
+      "stratum": "2024-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 212656128
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2024.1.00148.S",
+      "member_ous_uid": "uid://A001/X3788/X62c0",
+      "target_name": "BridgeGH",
+      "band_list": "6",
+      "stratum": "2024-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 748026880
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    },
+    {
+      "proposal_id": "2024.1.00178.S",
+      "member_ous_uid": "uid://A001/X3788/X85b9",
+      "target_name": "CloudD",
+      "band_list": "6",
+      "stratum": "2024-higher",
+      "products_status": "DISCOVERED",
+      "eligible_products": [
+        {
+          "row": 3,
+          "bytes": 826434560
+        }
+      ],
+      "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+    }
+  ],
+  "nonsolar_inspection": {
+    "total_reserved_bytes": 99412992,
+    "selection": "SMALL_PACKAGE_STRATUM_SUBSET_NOT_UNBIASED_SUCCESS_RATE",
+    "candidates": [
+      {
+        "sample": {
+          "proposal_id": "2013.1.00126.S",
+          "member_ous_uid": "uid://A001/X122/X407",
+          "target_name": "SgrA_star",
+          "band_list": "9",
+          "stratum": "2013-higher",
+          "products_status": "DISCOVERED",
+          "eligible_products": [
+            {
+              "row": 1,
+              "bytes": 3072
+            }
+          ],
+          "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+        },
+        "reserved_download_bytes": 3072,
+        "result": {
+          "context_id": "0",
+          "member_ous_uid": "uid://A001/X122/X407",
+          "source_name": "SgrA_star",
+          "directory": "reports/mosaic-dev/acquisition-inspection-nonsolar-01/candidate-000/candidate-00000/cfec6fc0b36012adbe40fdf935937e2249850161e44e3aa9c1cd233f1b2bb0ff",
+          "status": "PARTIAL_EVIDENCE",
+          "stage": "PACKAGE_RECONSTRUCTION",
+          "policy_status": "NOT_EVALUATED",
+          "geometry_flags": [
+            "T"
+          ],
+          "eligible_product_rows": [
+            1
+          ],
+          "rejected_product_rows": [],
+          "package_audit_dir": "reports/mosaic-dev/acquisition-inspection-nonsolar-01/candidate-000/candidate-00000/cfec6fc0b36012adbe40fdf935937e2249850161e44e3aa9c1cd233f1b2bb0ff/package",
+          "execution_count": 0,
+          "unresolved": [],
+          "reused_cache": true,
+          "completeness": "MEMBER_COMPLETENESS_NOT_ESTABLISHED",
+          "preparation_elapsed_seconds": 0.514888
+        }
+      },
+      {
+        "sample": {
+          "proposal_id": "2013.1.00214.S",
+          "member_ous_uid": "uid://A001/X145/X43d",
+          "target_name": "N55",
+          "band_list": "3",
+          "stratum": "2013-lower",
+          "products_status": "DISCOVERED",
+          "eligible_products": [
+            {
+              "row": 3,
+              "bytes": 22539264
+            }
+          ],
+          "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+        },
+        "reserved_download_bytes": 22539264,
+        "result": {
+          "context_id": "1",
+          "member_ous_uid": "uid://A001/X145/X43d",
+          "source_name": "N55",
+          "directory": "reports/mosaic-dev/acquisition-inspection-nonsolar-01/candidate-001/candidate-00000/bffe1c79a31986ba9dbedd097c89243259c9c28dacdc93dbd988a2fb40f4aa60",
+          "status": "PARTIAL_EVIDENCE",
+          "stage": "PACKAGE_RECONSTRUCTION",
+          "policy_status": "NOT_EVALUATED",
+          "geometry_flags": [
+            "T"
+          ],
+          "eligible_product_rows": [
+            3
+          ],
+          "rejected_product_rows": [],
+          "package_audit_dir": "reports/mosaic-dev/acquisition-inspection-nonsolar-01/candidate-001/candidate-00000/bffe1c79a31986ba9dbedd097c89243259c9c28dacdc93dbd988a2fb40f4aa60/package",
+          "execution_count": 0,
+          "unresolved": [],
+          "reused_cache": true,
+          "completeness": "MEMBER_COMPLETENESS_NOT_ESTABLISHED",
+          "preparation_elapsed_seconds": 0.558504
+        }
+      },
+      {
+        "sample": {
+          "proposal_id": "2016.1.00063.S",
+          "member_ous_uid": "uid://A001/X879/X6e7",
+          "target_name": "LMC0NT197",
+          "band_list": "3",
+          "stratum": "2016-lower",
+          "products_status": "DISCOVERED",
+          "eligible_products": [
+            {
+              "row": 3,
+              "bytes": 76870656
+            }
+          ],
+          "status": "PRODUCT_AVAILABLE_NOT_INSPECTED"
+        },
+        "reserved_download_bytes": 76870656,
+        "result": {
+          "context_id": "2",
+          "member_ous_uid": "uid://A001/X879/X6e7",
+          "source_name": "LMC0NT197",
+          "directory": "reports/mosaic-dev/acquisition-inspection-nonsolar-01/candidate-002/candidate-00000/a911c184cad198cfa5be3ff1e0341db0dccea02b32e5854189fee6fe7e0049f0",
+          "status": "PARTIAL_EVIDENCE",
+          "stage": "PACKAGE_RECONSTRUCTION",
+          "policy_status": "NOT_EVALUATED",
+          "geometry_flags": [
+            "T"
+          ],
+          "eligible_product_rows": [
+            3
+          ],
+          "rejected_product_rows": [],
+          "package_audit_dir": "reports/mosaic-dev/acquisition-inspection-nonsolar-01/candidate-002/candidate-00000/a911c184cad198cfa5be3ff1e0341db0dccea02b32e5854189fee6fe7e0049f0/package",
+          "execution_count": 0,
+          "unresolved": [
+            {
+              "asdm_uid": "uid://A002/Xb8f857/X3977",
+              "reason": "ON_SOURCE target mismatch: LMC1N127"
+            }
+          ],
+          "reused_cache": false,
+          "completeness": "MEMBER_COMPLETENESS_NOT_ESTABLISHED",
+          "preparation_elapsed_seconds": 3.704052
+        }
+      }
+    ]
+  },
+  "region_comparison": [
+    {
+      "member": "X9c3",
+      "context_id": "ARCHIVE:be5e8412-8a9a-43d5-a0cd-afb7318e0ac5:00000000",
+      "frequency_ghz": 690.8931792321085,
+      "counts": {
+        "BOTH_OUTSIDE": 942,
+        "BEAM_ONLY": 60,
+        "BOTH_INSIDE": 1048,
+        "BOUNDARY": 93
+      },
+      "sample_count": 2143
+    },
+    {
+      "member": "X9c3",
+      "context_id": "ARCHIVE:be5e8412-8a9a-43d5-a0cd-afb7318e0ac5:00000001",
+      "frequency_ghz": 692.7100628404637,
+      "counts": {
+        "BOTH_OUTSIDE": 943,
+        "BOUNDARY": 99,
+        "BOTH_INSIDE": 1064,
+        "BEAM_ONLY": 37
+      },
+      "sample_count": 2143
+    },
+    {
+      "member": "X9c3",
+      "context_id": "ARCHIVE:be5e8412-8a9a-43d5-a0cd-afb7318e0ac5:00000002",
+      "frequency_ghz": 694.51685748722,
+      "counts": {
+        "BOTH_OUTSIDE": 947,
+        "BOTH_INSIDE": 1080,
+        "BEAM_ONLY": 22,
+        "REGION_ONLY": 1,
+        "BOUNDARY": 93
+      },
+      "sample_count": 2143
+    },
+    {
+      "member": "X9c3",
+      "context_id": "ARCHIVE:be5e8412-8a9a-43d5-a0cd-afb7318e0ac5:00000003",
+      "frequency_ghz": 689.1270082794149,
+      "counts": {
+        "BOTH_OUTSIDE": 942,
+        "BEAM_ONLY": 77,
+        "BOTH_INSIDE": 1032,
+        "BOUNDARY": 92
+      },
+      "sample_count": 2143
+    },
+    {
+      "member": "X9c5",
+      "context_id": "ARCHIVE:6f323927-3957-455d-bf78-c282a0d68bc8:00000000",
+      "frequency_ghz": 690.8932063433901,
+      "counts": {
+        "BOTH_OUTSIDE": 942,
+        "BEAM_ONLY": 61,
+        "BOTH_INSIDE": 1046,
+        "BOUNDARY": 94
+      },
+      "sample_count": 2143
+    },
+    {
+      "member": "X9c5",
+      "context_id": "ARCHIVE:6f323927-3957-455d-bf78-c282a0d68bc8:00000001",
+      "frequency_ghz": 692.7083471169428,
+      "counts": {
+        "BOTH_OUTSIDE": 943,
+        "BOUNDARY": 98,
+        "BEAM_ONLY": 37,
+        "BOTH_INSIDE": 1065
+      },
+      "sample_count": 2143
+    },
+    {
+      "member": "X9c5",
+      "context_id": "ARCHIVE:6f323927-3957-455d-bf78-c282a0d68bc8:00000002",
+      "frequency_ghz": 694.5168574892202,
+      "counts": {
+        "BOTH_OUTSIDE": 947,
+        "BEAM_ONLY": 22,
+        "BOTH_INSIDE": 1080,
+        "REGION_ONLY": 1,
+        "BOUNDARY": 93
+      },
+      "sample_count": 2143
+    },
+    {
+      "member": "X9c5",
+      "context_id": "ARCHIVE:6f323927-3957-455d-bf78-c282a0d68bc8:00000003",
+      "frequency_ghz": 689.1252473171846,
+      "counts": {
+        "BOTH_OUTSIDE": 942,
+        "BEAM_ONLY": 78,
+        "BOTH_INSIDE": 1031,
+        "BOUNDARY": 92
+      },
+      "sample_count": 2143
+    }
+  ],
+  "limitations": [
+    "PRODUCT_AVAILABLE_IS_NOT_POINTINGS_AVAILABLE",
+    "SMALL_PACKAGE_SUBSET_IS_SIZE_BIASED",
+    "REGION_TEST_USES_ONLY_CASE2",
+    "NO_FORMAL_POLICY_CHANGE"
+  ]
+}

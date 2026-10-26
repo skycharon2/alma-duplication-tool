@@ -24,8 +24,12 @@ def main(argv=None):
     except (OSError,ValueError,KeyError,TypeError) as exc:
         parser.exit(2,f'Candidate preparation failed: {exc}\n')
     for c in report['candidates']:
+        if c['status'] == 'PENDING':
+            continue
         print(f"{c['source_name']} {c['member_ous_uid']}: {c['status']}")
-    print(f"{report['status']}: {args.output_dir}")
+    print(f"{report['status']}: attempted={report['attempted_count']}, "
+          f"prepared={report['prepared_count']}, failed_or_unready={report['failed_or_unready_count']}, "
+          f"pending={report['pending_count']}, reused_packages={report['reused_package_count']}; {args.output_dir}")
     return 0 if report['status']=='COMPLETED' else 3
 
 
