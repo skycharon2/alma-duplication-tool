@@ -46,9 +46,10 @@ an otherwise matching candidate remains visible in the matching tab.
 The available views are `all`, `matching`, `review`, and `not_met`. Each selects
 candidate indexes from the saved PR A index without evaluating rules or reading
 unselected full candidate payloads. Results retain discovery order and are
-paginated at 20 candidates per page. Previously issued Mosaic URLs with no
-`view` parameter retain the historical all-candidate behavior; the legacy
-`view=matches` spelling is an alias for `all`. Single-point report selectors
+paginated at 20 candidates per page. Mosaic URLs without an explicit
+`view` parameter now default to matching candidates, consistent with the
+positive-result-first report. The legacy `view=matches` spelling selects
+`matching`; an explicit `view=all` displays every candidate. Single-point report selectors
 retain their separate, established behavior.
 
 ## Evidence and completeness limits

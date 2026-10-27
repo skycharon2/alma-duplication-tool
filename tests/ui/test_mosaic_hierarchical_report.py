@@ -51,7 +51,7 @@ def test_filtered_pages_preserve_original_indexes_and_member_boundaries():
     def read(index):
         requested.append(index)
         return report['candidates'][index]
-    all_page = mosaic_report_page(projection, 1, 'matches', read)
+    all_page = mosaic_report_page(projection, 1, 'all', read)
     assert all_page['result_view'] == 'all'
     assert all_page['visible_count'] == 42
     assert all_page['pages'] == 3
@@ -59,6 +59,9 @@ def test_filtered_pages_preserve_original_indexes_and_member_boundaries():
     assert [entry['candidate_index'] for entry in all_page['member_groups'][0]['entries']] == [0, 1, 3]
     assert all_page['member_groups'][0]['member_ous_uid'] == 'uid://shared'
 
+    requested.clear()
+    default_page = mosaic_report_page(projection, 1, 'matches', read)
+    assert default_page['result_view'] == 'matching'
     requested.clear()
     matched = mosaic_report_page(projection, 1, 'matching', read)
     expected = [i for i, s in enumerate(projection['candidate_summaries']) if s['bucket'] == 'MATCH']
@@ -172,4 +175,7 @@ def test_hierarchical_template_renders_recorded_context_evidence():
                  'row-1', 'candidate SPW 1', 'Download complete report JSON'):
         assert text in rendered
     assert 'uid://shared' in rendered
+    assert '3 proposed pointings' in rendered
+    assert '2 / 3 inside Archive s_region' in rendered
+    assert 'data-status="SATISFIED"' in rendered
     assert 'SENSITIVE' not in rendered

@@ -135,7 +135,7 @@ def test_run_store_keeps_original_exports_and_reads_only_selected_candidates(tmp
         raw = b''.join(store.open_download(run_id, 'report'))
         assert raw == report_json_text(source).encode('utf-8')
         assert b''.join(store.open_download(run_id, 'request')) == report_json_text(request).encode('utf-8')
-        page = store.page(run_id, page=2)
+        page = store.page(run_id, page=2, view='all')
         assert page['candidate_count'] == 21
         assert len(page['candidates']) == len(page['candidate_summaries']) == 1
         assert page['candidate_summaries'][0]['candidate_index'] == 20
@@ -143,7 +143,7 @@ def test_run_store_keeps_original_exports_and_reads_only_selected_candidates(tmp
         assert page['mosaic_overview']['candidate_buckets']['NOT_MET'] == 21
         assert 'candidates' not in page['document']
         with pytest.raises(IndexError):
-            store.page(run_id, page=3)
+            store.page(run_id, page=3, view='all')
         # The index is read once; candidate payloads remain in indexed report bytes.
         assert (store._runs[run_id].directory / 'view.json').stat().st_size < len(raw)
     finally:

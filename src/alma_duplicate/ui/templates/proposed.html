@@ -92,8 +92,8 @@
 <section id="requirements" tabindex="-1" {% if purpose_updated %}data-purpose-updated{% endif %}><h2>Scientific requirements</h2>
 <div class="form-pair science-shared"><div>{{ quantity('angular', 'Planned angular resolution', ['arcsec','mas'], 'arcsec') }}</div><div><fieldset id="intents" class="choice-group"><legend>What should this observation be checked for?</legend><div class="inline-choices">{% for intent, label in [('LINE','Spectral line'),('CONTINUUM','Continuum')] %}<div class="purpose-option"><label><input type="checkbox" name="intents" value="{{ intent }}" {% if intent in values.get('intents', []) %}checked{% endif %}{% if intent == 'CONTINUUM' %} aria-describedby="continuum-choice-note"{% endif %}>{{ label }}</label><button type="button" class="purpose-rules-button" popovertarget="rules-{{ intent|lower }}" aria-label="{{ label }} rules">Rules ⓘ</button></div>{% endfor %}</div>{{ messages('intents') }}</fieldset>
 <p class="field-note">Select either or both.</p>
-<p id="continuum-choice-note" class="field-note" data-combined-continuum hidden>By selecting Continuum, I confirm at least two distinct spectral windows, each with usable bandwidth greater than 1.8 GHz.</p>
-<div data-continuum-confirmation><label class="complete-choice"><input type="checkbox" id="continuum_setup_declaration" name="continuum_setup_declaration" aria-describedby="continuum_setup_declaration-notes" {% if values.get('continuum_setup_declaration') == 'on' %}checked{% endif %}> I confirm at least two distinct spectral windows, each with usable bandwidth greater than 1.8 GHz.</label><p class="field-note">Confirm this condition or provide qualifying window evidence. Previously entered Continuum selections do not automatically confirm it.</p></div>
+<p id="continuum-choice-note" class="field-note" data-combined-continuum hidden>By selecting Continuum, I confirm at least two distinct spectral windows, each with usable bandwidth greater than 1.8 GHz. A detailed SPW inventory is optional.</p>
+<div data-continuum-confirmation><label class="complete-choice"><input type="checkbox" id="continuum_setup_declaration" name="continuum_setup_declaration" aria-describedby="continuum_setup_declaration-notes" {% if values.get('continuum_setup_declaration') == 'on' %}checked{% endif %}> I confirm at least two distinct spectral windows, each with usable bandwidth greater than 1.8 GHz.</label><p class="field-note">Selecting Continuum confirms this condition in the interactive form. Without JavaScript, confirm it here explicitly; detailed SPW rows remain optional. A complete SPW list must not contradict the declaration.</p></div>
 {{ messages('continuum_setup_declaration') }}</div></div>
 
 
@@ -146,7 +146,7 @@
 </details>
 <details {% if values.get('setup_complete') == 'on' %}open{% endif %}><summary>Window list completeness</summary>
 <label class="complete-choice"><input type="checkbox" id="setup_complete" name="setup_complete" {% if values.get('setup_complete') == 'on' %}checked{% endif %}> I have listed every window in this setup</label>{{ messages('setup_complete') }}
-<p class="field-note">Confirm only if the list is complete, including windows beyond the lines of interest. An incomplete list cannot establish an exhaustive negative LINE conclusion. This is separate from the continuum setup declaration.</p></details>
+<p class="field-note">Optional: confirm only when all proposed windows are listed, including those beyond lines of interest. Without this confirmation, an exhaustive negative LINE conclusion cannot be established. If Continuum is selected, a declared complete list must contain verifiable bandwidth evidence consistent with at least two distinct usable widths greater than 1.8 GHz. Leaving the detailed list empty is allowed when completeness is not claimed.</p></details>
 </section>
 {% include '_purpose_rules.html' %}
 <section id="search"><div class="section-title"><h2>Data sources</h2>{{ help('sources', 'data sources') }}</div>
@@ -224,5 +224,6 @@
 <aside id="field-guide" class="help-popover" role="dialog" aria-modal="false" aria-labelledby="guide-title" hidden><header class="popover-header"><h2 id="guide-title"></h2><button type="button" id="close-guide" aria-label="Close help">×</button></header><div id="guide-content"></div></aside>
 <script src="{{ url_for('static', filename='proposal-workbench.js') }}" defer></script>
 <script src="{{ url_for('static', filename='continuum-choice.js') }}" defer></script>
+<script src="{{ url_for('static', filename='coordinate-format-sync.js') }}" defer></script>
 <script src="{{ url_for('static', filename='proposed.js') }}" defer></script>
 {% endblock %}

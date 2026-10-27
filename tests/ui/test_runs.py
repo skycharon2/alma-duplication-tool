@@ -294,14 +294,40 @@ def test_declared_continuum_report_matches_cli_and_preserves_provenance(tmp_path
     cli = json.loads(output.read_text())
     for key in ("request_criteria", "context_evaluations", "evaluation_configuration"):
         assert doc[key] == cli[key]
-    # A complete empty list contradicts the declaration; validation itself is not a scientific verdict.
+    # A complete empty SPW list contradicts the researcher's Continuum declaration.
+    # The browser must reject the contradictory form before running an assessment.
     data["setup_complete"] = "on"
     conflict = client.post("/proposed", data=data)
-    result = client.get(conflict.location + "/download/report").get_json()
-    assert result["request_criteria"][0]["outcome"] is None
-    assert b"conflicts with the complete window list" in client.get(conflict.location).data
-    inspection = client.get(conflict.location + "/download/inspection").get_json()
-    assert "CONFLICTING_EVIDENCE" in json.dumps(inspection)
+    assert conflict.status_code == 200
+    assert conflict.location is None
+    assert b"The declared complete SPW list cannot contain two distinct windows" in conflict.data
+
+    # This form-level safeguard must not change the shared validation contract:
+    # CLI/raw inputs retain the contradiction as scientific UNKNOWN for audit.
+    from alma_duplicate.request_validation import validate_proposed_observation
+    from alma_duplicate.rules.continuum_setup import evaluate_continuum_setup
+
+    conflicting_request = json.loads(json.dumps(req))
+    conflicting_request["request"]["setup_complete"] = True
+    validated = validate_proposed_observation(
+        conflicting_request["request"], conflicting_request["search_options"])
+    assert validated.is_valid
+    science = evaluate_continuum_setup(validated.request)
+    assert science.outcome is None
+    assert science.reasons == ("CONTINUUM_SETUP_DECLARATION_CONFLICT",)
+
+    # The CLI still processes the same raw request, preserving report provenance
+    # and the unresolved/conflicting scientific criterion in its inspection.
+    path.write_text(json.dumps(conflicting_request))
+    conflict_output = tmp_path / "conflicting_report.json"
+    assert main(["--request", str(path), "--archive-replay", str(archive),
+                 "--queue-csv", str(queue), "--queue-continuum", "--output", str(conflict_output),
+                 '--report-detail', 'matches']) == 0
+    conflicting_report = json.loads(conflict_output.read_text())
+    assert conflicting_report["request_criteria"][0]["outcome"] is None
+    assert "CONTINUUM_SETUP_DECLARATION_CONFLICT" in conflicting_report["request_criteria"][0]["reasons"]
+    assert "CONFLICTING_EVIDENCE" in json.dumps(
+        inspect_report(conflicting_report, inspection_version="3"))
 
 
 def test_declaration_does_not_fill_line_evidence_or_run_unselected_branch():

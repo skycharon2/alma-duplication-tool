@@ -66,6 +66,7 @@ def test_continuum_confirmation_is_explicit_preserved_and_removable(client):
             "radius": "30", "sources": "ARCHIVE", "intents": "CONTINUUM",
             "continuum_setup_declaration": "on", "action": "validate"}
     html = client.post("/proposed", data=data).get_data(as_text=True)
+    assert 'By selecting Continuum, I confirm at least two distinct spectral windows' in html
     assert 'name="continuum_setup_declaration" aria-describedby="continuum_setup_declaration-notes" checked' in html
     assert "CONTINUUM_SETUP_USER_DECLARED" in html
     assert "Width evidence for setup qualification is incomplete" not in html
@@ -97,6 +98,8 @@ def test_download_is_request_and_backend_ready(client):
 def test_mixed_intents_separate_sensitivities(client):
     data = MultiDict(fields())
     data.setlist("intents", ["CONTINUUM", "LINE"])
+    # This test exercises sensitivity bindings, not an exhaustive SPW list.
+    data.setlist("setup_complete", [""])
     data.setlist("sources", ["ARCHIVE", "QUEUE"])
     data.setlist("rows", [ROW, OTHER])
     data.update({"aggregate": "0.1", "aggregate_windows": "line-0 other",
@@ -344,6 +347,8 @@ def test_purpose_update_preserves_mixed_inputs_and_does_not_validate(client):
 
     data = MultiDict(fields())
     data.setlist("intents", ["LINE", "CONTINUUM"])
+    # MultiDict.update() appends and would duplicate the scalar field.
+    data.setlist("setup_complete", [""])
     data.update({"representative": "230000", "representative_unit": "MHz",
                  "aggregate": "0.0001", "aggregate_unit": "Jy/beam",
                  "continuum_setup_declaration": "on"})
@@ -467,5 +472,7 @@ def test_purpose_rules_are_separate_non_submitting_popovers(client):
     assert 'class="appendix-guide"' not in html
     assert 'Continuum setup qualification</h3>' not in html
     assert 'By selecting Continuum, I confirm' in html
+    assert 'coordinate-format-sync.js' in html
+    assert 'continuum-choice.js' in html
     assert 'data-continuum-confirmation' in html  # Accessible without JavaScript.
     assert 'name="continuum_setup_declaration"' in html

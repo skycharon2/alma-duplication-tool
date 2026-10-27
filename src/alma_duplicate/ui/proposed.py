@@ -131,8 +131,13 @@ def build_document(values, rows):
         request["position"] = None
     redshift = raw("redshift", "request.source_redshift")
     declaration = raw("continuum_setup_declaration", "request.continuum_setup_declaration")
+    # The browser only serializes an explicit confirmation. The purpose is
+    # independent of the bandwidth evidence, and a raw API-style form POST
+    # must retain the existing non-declaration qualification path.
     if declaration:
-        request["continuum_setup_declaration"] = CONTINUUM_SETUP_DECLARATION if declaration == "on" else declaration
+        request["continuum_setup_declaration"] = (
+            CONTINUUM_SETUP_DECLARATION if declaration == "on" else declaration
+        )
     if redshift.strip():
         request["source_redshift"] = redshift
     bindings.update({"request.intents": "intents", "request.setup_complete": "setup_complete",
@@ -191,9 +196,48 @@ def build_document(values, rows):
     return {"request": request, "search_options": search}, bindings
 
 
+def _continuum_inventory_errors(request):
+    """Reject uncorroborated *browser* completeness claims, not API requests.
+
+    The shared validator and CONT-SETUP science still retain conflicting raw
+    declarations as inspectable scientific uncertainty for CLI callers.
+    """
+    if (request is None or request.target_kind == "SUN"
+            or "CONTINUUM" not in request.intents
+            or request.continuum_setup_declaration is None
+            or request.setup_complete is not True):
+        return ()
+    from alma_duplicate.rules.continuum_setup import (
+        MIN_QUALIFYING_WINDOWS, QUALIFIED, NOT_QUALIFIED, qualify_window,
+    )
+    from alma_duplicate.domain.proposed_observation import RequestIssue
+
+    statuses = [qualify_window(window)[0] for window in request.spectral_windows]
+    qualified = sum(status == QUALIFIED for status in statuses)
+    possible = sum(status != NOT_QUALIFIED for status in statuses)
+    if possible < MIN_QUALIFYING_WINDOWS:
+        return (RequestIssue(
+            "ERROR", "CONTINUUM_SETUP_DECLARATION_CONFLICT",
+            "request.continuum_setup_declaration",
+            "The declared complete SPW list cannot contain two distinct windows "
+            "with usable bandwidth strictly greater than 1.8 GHz. Correct the "
+            "list or its completeness claim.", None, "PROPOSED"),)
+    if qualified < MIN_QUALIFYING_WINDOWS:
+        return (RequestIssue(
+            "ERROR", "INCOMPLETE_CONTINUUM_WINDOW_EVIDENCE",
+            "request.spectral_windows",
+            "The claimed complete SPW list does not verify two distinct usable "
+            "bandwidths greater than 1.8 GHz. Supply sufficient usable-width "
+            "evidence or withdraw the completeness claim.", None, "PROPOSED"),)
+    return ()
+
+
 def validate_form(values, rows):
     document, bindings = build_document(values, rows)
     result = validate_proposed_observation(document["request"], document["search_options"])
+    if result.is_valid:
+        from dataclasses import replace
+        result = replace(result, issues=result.issues + _continuum_inventory_errors(result.request))
     issues = []
     for issue in result.issues:
         candidates = [path for path in bindings if issue.path == path or
