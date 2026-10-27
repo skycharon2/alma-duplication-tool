@@ -30,7 +30,12 @@ returned even if coordinates or search radius are missing; search stays BLOCKED
 until its spatial prerequisites exist. READY means fixed single-pointing ICRS
 position, a valid explicit radius or resolved AUTO scope, and at least one selected source. It does not
 mean every predicate is executable, a query was performed or a rule is satisfied.
-MOVING/MOSAIC return UNSUPPORTED without degrading into fixed single pointing;
+The standalone validator returns UNSUPPORTED for MOVING/MOSAIC without degrading
+into fixed single pointing. For fixed Archive Mosaic requests, the shared
+assessment entry accepts a separate validated OT collection through
+`MosaicAssessmentInput` and enables that backend route. The request JSON alone
+does not contain the collection. See the [application boundary](assessment_entry.md#archive-mosaic-input).
+Moving targets remain unsupported;
 SUN returns NOT_APPLICABLE when no input errors exist. Radius and source selection
 are not required for SUN; the CLI exports exemption without data-source access.
 
@@ -58,7 +63,7 @@ so a misspelt input is not silently ignored.
 
 Required structural fields: `target_kind`, `geometry`, `setup_id`. Setup/window/
 sensitivity IDs are client-generated stable internal labels, not project IDs;
-the future form generates them rather than asking the user for archive identity.
+the browser form generates them without asking for Archive identifiers.
 Optional `setup_complete` is Boolean or absent and refers only to enumeration.
 Empty windows may coexist with independent frequency, angular resolution and RMS.
 

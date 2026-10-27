@@ -1,5 +1,10 @@
 # Scientific workflow in the browser
 
+Scope: the implemented browser workflow is fixed-target single pointing.
+Archive Mosaic currently runs through the backend/CLI; its
+[application route](assessment_entry.md#archive-mosaic-input) is not yet wired
+into the form or report explorer.
+
 This map follows `ノート 3.pdf` (17 pages; scientific content on pages 3–17).
 It describes implementation, not a new scientific policy. The notes remain
 unchanged. The [request contract](proposed_observation_api.md),

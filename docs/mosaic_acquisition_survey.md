@@ -1,5 +1,9 @@
 # Mosaic acquisition survey and s_region comparison
 
+Dated acquisition/reconstruction evidence. The observations below retain their
+original scope; acquisition success is not a prerequisite for the default
+[s_region assessment](mosaic_s_region_position.md).
+
 ## Scope and reproduction
 
 The 2026-10-26 experiment separates product availability, successful science-field

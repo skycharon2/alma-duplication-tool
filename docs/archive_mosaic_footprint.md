@@ -1,5 +1,9 @@
 # Single-execution/SPW footprint diagnostic
 
+Retained reconstruction/research tool. Its inputs and completeness requirements
+apply to this tool, not the default Archive Mosaic assessment. Start with the
+[current s_region workflow](mosaic_s_region_position.md) for production evaluation.
+
 The first footprint implementation represents a union of circular half-power disks
 at verified listobs field centres. This coverage model was accepted for project use
 on 2026-10-23 following Yuki Shi's confirmation with the project supervisor; see

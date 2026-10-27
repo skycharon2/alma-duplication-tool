@@ -1,5 +1,11 @@
 # Mosaic duplication: research status
 
+This page preserves the earlier research baseline. Current Archive implementation
+and remaining work are maintained in [status](../../status.md) and
+[roadmap](../../roadmap.md). The [region contract](../../mosaic_s_region_position.md)
+owns the default coverage method; the research questions below are not a current
+implementation checklist.
+
 Last reviewed: 2026-10-21
 
 ## Objective

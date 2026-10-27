@@ -1,5 +1,9 @@
 # Archive Mosaic execution inventory
 
+Retained reconstruction/research tool. Its inputs and completeness requirements
+apply to this tool, not the default Archive Mosaic assessment. Start with the
+[current s_region workflow](mosaic_s_region_position.md) for production evaluation.
+
 The inventory reconciler checks saved science Mosaic TAP rows against verified
 single-execution pipeline directories. It reports expected ASDM identifiers,
 verified acquisitions, and missing executions for one Member and one target.

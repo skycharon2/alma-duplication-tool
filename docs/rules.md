@@ -1,7 +1,7 @@
 # Criterion result contract
 
 The [rules package](../src/alma_duplicate/rules/) implements source-specific
-fixed-target, single-point evaluation paths. Archive continuum uses POS-SINGLE,
+fixed-target evaluation paths. Single-point Archive continuum uses POS-SINGLE,
 ANGULAR, CONT-SETUP, CONT-FREQ and CONT-RMS; Archive LINE adds reference-bound
 FDM, coverage, resolution compatibility and RMS with pair AND and context-local
 pair OR. The supported Queue workflow provides versioned common, continuum and
@@ -9,6 +9,19 @@ LINE methods for coherent fixed single-field regular-SPW contexts. `intents`
 select branches, while Queue formal methods remain explicit evaluator options.
 No aggregation crosses candidate contexts or sources, and no search-wide absence
 verdict is produced.
+
+## Archive Mosaic routing
+
+The default Archive Mosaic path uses `archive_pos_mosaic_s_region_1` for
+POS-MOSAIC and `archive_mosaic_angular_shared_1` for the shared angular comparison.
+Continuum and LINE retain their Archive metadata rules and coherent-context
+aggregation. The [region contract](mosaic_s_region_position.md) defines position
+geometry, the adopted coverage policy and unsupported-scope behavior.
+
+Coverage diagnostics use `UNKNOWN`; the criterion adapter represents this as a
+null outcome with insufficient information. Joint branches retain the existing
+three-valued logic. `RECONSTRUCTED` is an explicit research mode, not a fallback
+for a missing region. Queue Mosaic is outside this route.
 
 ## Separate result dimensions (schema 2)
 
@@ -82,7 +95,9 @@ historical reported feedback remains preserved in [its evidence record](evidence
 [preparation and reference contract](line_pairing_design.md) once per context.
 Every numerical value comes from `reference.resolve(request, context)` and its
 selected support component. No row-level sensitivity or resolution fallback is
-used; Queue mappings and mosaic/moving/TP remain outside this approved workflow.
+used. The Archive Mosaic route reuses these rules with POS-MOSAIC in place of
+POS-SINGLE. Queue has separate mappings; moving targets and unsupported TP scope
+do not gain support through the Mosaic route.
 
 | Criterion | Method version | Inclusive condition / dependency |
 | --- | --- | --- |

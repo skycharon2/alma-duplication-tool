@@ -1,5 +1,9 @@
 # Cross-execution Archive field-centre comparison
 
+Retained reconstruction/research tool. Its inputs and completeness requirements
+apply to this tool, not the default Archive Mosaic assessment. Start with the
+[current s_region workflow](mosaic_s_region_position.md) for production evaluation.
+
 This diagnostic compares reported ICRS field centres across executions of one
 project, Member and target. It keeps every execution-local field, identified by
 `(ASDM UID, FIELD_ID)`. It neither merges records nor evaluates duplication policy.

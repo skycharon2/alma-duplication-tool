@@ -1,5 +1,9 @@
 # Archive Mosaic TAP inventory capture
 
+Retained reconstruction/research tool. Its inputs and completeness requirements
+apply to this tool, not the default Archive Mosaic assessment. Start with the
+[current s_region workflow](mosaic_s_region_position.md) for production evaluation.
+
 The capture command requests all distinct execution identities visible to an
 unauthenticated TAP query for one Member and target. The fixed query selects science
 Mosaic rows; it has no TOP clause, ASDM filter, or frequency filter. ADQL target

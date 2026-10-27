@@ -221,7 +221,25 @@ blocks formal branch scope. POS-SINGLE and ANGULAR are the shared common criteri
 used by `--queue-line`; formal Queue LINE then evaluates the bound same-row/SPW
 FDM, coverage, resolution and RMS conditions. D7/D12 alternatives each evaluate
 complete branches before three-valued OR; conditions are never borrowed across
-diameters. Mosaic and moving-target scientific assessment remain unsupported;
+diameters. Queue Mosaic and moving-target scientific assessment remain unsupported;
 TP is ignored in this fixed-single-point workflow. The earlier continuum-only
 decision remains preserved as dated
 evidence in [the 2026-09-24 record](evidence/queue_row_continuum_decision_2026-09-24.md).
+
+## Archive Mosaic assessment
+
+The general evaluator accepts `--mosaic-pointings` with a fixed Mosaic request,
+Archive-only source selection, `--live-archive`, `--mosaic-array`,
+`--mosaic-workdir` and an explicit `--mosaic-margin-arcsec`. Confirm fixed ICRS and
+proposal completeness with `--confirm-fixed-icrs --confirm-complete`.
+
+The default result is `archive_mosaic_backend_2`, not report v4/v6. Each context
+uses its own region and metadata. `--mosaic-cache` is a retained compatibility
+option and is unused by the default path. `--mosaic-resume-preparation` reuses only
+matching saved discovery; it does not restore auxiliary preparation. Historical
+package resource options do not bound metadata-only evaluation.
+
+Use the [region contract](mosaic_s_region_position.md) for scientific scope and
+`python -m alma_duplicate.cli.evaluate --help` for argument details. The separate
+`mosaic_region_acceptance` CLI provides sealed multi-candidate offline replay;
+`--archive-replay` on the general evaluator does not enable Mosaic replay.

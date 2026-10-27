@@ -1,5 +1,11 @@
 # Current Archive–Queue data model
 
+This index describes the shared typed request and comparison objects. The Mosaic
+application input additionally carries the imported OT collection; the default
+region path reuses Archive contexts and returns `archive_mosaic_backend_2`.
+See [Mosaic orchestration](architecture.md#archive-mosaic-branch) and the
+[region contract](mosaic_s_region_position.md) for those boundaries.
+
 
 Document revision: 0.9. The object index includes search, grouping and rule
 results. Rule-result schema 2 is defined in the [rule contract](rules.md);
@@ -229,7 +235,9 @@ in the [documentation guide](README.md#current-capabilities-and-status-meanings)
    `em_xel`, bandwidth or resolution alone; no single mode is assigned to every Member SPW. QA2 is not an implicit gate.
 8. Preserve raw geometry and unsupported states. A polygon does not prove mosaic
    membership, a mosaic need not have one geometry family, and a valid region
-   does not establish individual pointing identities or an approved beam method.
+   does not establish individual pointing identities. Archive Mosaic uses the
+   separately adopted [region policy](mosaic_s_region_position.md); approval comes
+   from that decision, not from successful geometry parsing.
 9. Keep derivation/signature versions with evidence. Determinism concerns logical
    associations; raw row identity retains query/source-line provenance.
 10. Never turn missing, ambiguous, unsupported or unevaluated evidence into silent

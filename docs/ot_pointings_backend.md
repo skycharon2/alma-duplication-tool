@@ -1,5 +1,10 @@
 # OT proposed Mosaic pointings
 
+The OT import format below remains current. For default Archive assessment,
+use the [s_region workflow](mosaic_s_region_position.md). The package/SPW coverage
+commands later on this page are retained reconstruction diagnostics, not required
+inputs to the default evaluator.
+
 The backend imports native OT Pointings exports without manual JSON conversion.
 It accepts fixed ICRS absolute positions in Degrees, Radians or Sexagesimal.
 Degrees is recommended: the captured C04 export retains distinct coordinates that

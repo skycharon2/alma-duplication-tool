@@ -1,5 +1,9 @@
 # Cross-execution candidate pointing groups
 
+Retained reconstruction/research tool. Its inputs and completeness requirements
+apply to this tool, not the default Archive Mosaic assessment. Start with the
+[current s_region workflow](mosaic_s_region_position.md) for production evaluation.
+
 Candidate grouping follows the verified field-centre comparison layer. It associates
 records for diagnostics while retaining every original field and its ASDM identity.
 It does not deduplicate records, average coordinates, select a representative centre,

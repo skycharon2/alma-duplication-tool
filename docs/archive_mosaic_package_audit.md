@@ -1,5 +1,9 @@
 # Archive Mosaic package execution audit
 
+Retained reconstruction/research tool. Its inputs and completeness requirements
+apply to this tool, not the default Archive Mosaic assessment. Start with the
+[current s_region workflow](mosaic_s_region_position.md) for production evaluation.
+
 A real multi-execution case changes the inventory validation boundary. For IC1954,
 Member `uid://A001/X1284/X28b7`, the captured TAP query returns
 `uid://A002/Xc63024/X4c8`. The 201,467,904-byte auxiliary package also contains original

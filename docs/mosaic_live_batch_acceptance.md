@@ -1,5 +1,9 @@
 # Live small-batch preparation acceptance
 
+Dated acquisition/reconstruction evidence. The observations below retain their
+original scope; acquisition success is not a prerequisite for the default
+[s_region assessment](mosaic_s_region_position.md).
+
 On 2026-10-26, the saved 214-candidate NGC253 discovery was prepared against live
 Archive inventory, DataLink and AQ services. The first invocation attempted five
 candidates using default per-package limits. A second invocation used the same

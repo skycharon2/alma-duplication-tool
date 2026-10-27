@@ -1,5 +1,10 @@
 # Archive Mosaic scientific acceptance (local validation)
 
+Historical reconstruction-path acceptance. These cases remain regression evidence
+for explicit `RECONSTRUCTED` mode; they do not define the default region workflow.
+Current [s_region acceptance](../tests/fixtures/archive/s_region_acceptance_2026_10_26/README.md)
+records the metadata-only path. Original results and commands are retained below.
+
 Baseline: main `b13714c1` (2026-10-23). This patch tests the shared Appendix A
 criterion pipeline: `POS-MOSAIC` replaces `POS-SINGLE`, while ANGULAR,
 CONT-SETUP, CONT-FREQ, CONT-RMS and the four LINE pair tests are reused.

@@ -1,5 +1,9 @@
 # Archive Auxiliary Acquisition and Listobs Inspection
 
+Retained reconstruction/research tool. Its inputs and completeness requirements
+apply to this tool, not the default Archive Mosaic assessment. Start with the
+[current s_region workflow](mosaic_s_region_position.md) for production evaluation.
+
 ## Scope
 
 This increment downloads an explicitly selected Member auxiliary tar, validates and

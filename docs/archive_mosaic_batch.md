@@ -1,5 +1,9 @@
 # Archive Mosaic execution batches
 
+Retained reconstruction/research tool. Its inputs and completeness requirements
+apply to this tool, not the default Archive Mosaic assessment. Start with the
+[current s_region workflow](mosaic_s_region_position.md) for production evaluation.
+
 The batch runner consumes a verified TAP inventory capture for one Member/target.
 It discovers Member DataLink products once, selects a unique usable auxiliary tar,
 and runs the existing reconstruction pipeline independently for each ASDM. Downloads

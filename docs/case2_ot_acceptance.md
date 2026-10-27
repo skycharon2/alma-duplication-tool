@@ -1,5 +1,9 @@
 # CASE2 NGC253: Archive pointings for an OT round trip
 
+Dated acquisition/reconstruction evidence. The observations below retain their
+original scope; acquisition success is not a prerequisite for the default
+[s_region assessment](mosaic_s_region_position.md).
+
 ## Acquisition on 2026-10-26
 
 Project 2018.1.00294.S has two selected NGC253 Members. Exact Member/target TAP

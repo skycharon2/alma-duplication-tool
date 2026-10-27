@@ -1,5 +1,9 @@
 # Bounded Mosaic candidate preparation and resume
 
+Retained reconstruction/research tool. Its inputs and completeness requirements
+apply to this tool, not the default Archive Mosaic assessment. Start with the
+[current s_region workflow](mosaic_s_region_position.md) for production evaluation.
+
 Discovery may return more candidates than one acquisition invocation should process.
 Preparation now accepts up to 10000 unique Member/target identities and attempts at
 most 100 per invocation (or a smaller explicit `--max-candidates` budget). Every
