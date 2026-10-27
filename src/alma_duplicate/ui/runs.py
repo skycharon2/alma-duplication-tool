@@ -63,6 +63,24 @@ class BrowserAssessment:
     def enabled(self):
         return bool(self.archive_kind or self.queue_csv or self.managed_queue_root)
 
+    def assess_mosaic(self, document, proposed):
+        """Run metadata-only Mosaic science; temporary acquisition files are scoped to this call."""
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        from alma_duplicate.mosaic_backend import MosaicAssessmentInput
+        from alma_duplicate.clients.archive_mirrors import MirroredArchiveClient
+        if not self.live_archive:
+            raise ValueError("Browser Mosaic assessment requires live Archive configuration.")
+        with TemporaryDirectory(prefix="alma-mosaic-") as directory:
+            return assess_observation(document["request"], document["search_options"],
+                sources=AssessmentSources(archive_kind="LIVE", archive_provider=lambda: ArchiveInput(
+                    MirroredArchiveClient(origins=ARCHIVE_CONNECTIONS[self.archive_connection],
+                                          completeness_policy="STATUS_THEN_COUNT"))),
+                mosaic=MosaicAssessmentInput(proposed=proposed,
+                    output_directory=Path(directory) / "assessment", cache_directory=None,
+                    margin_arcsec=1.0,
+                    discovery_origin=ARCHIVE_CONNECTIONS[self.archive_connection][0]))
+
     def assess(self, document):
         """Construct fresh lazy providers; never fall back between Archive modes."""
         selected = document["search_options"]["sources"]

@@ -108,12 +108,12 @@ def test_no_mosaic_preview_controls_on_single_point_form(client):
     assert 'value="preview-pointings"' not in html
 
 
-def test_mosaic_assessment_remains_disabled(client):
+def test_mosaic_assessment_requires_live_configuration(client):
     response = client.post("/proposed", data={"target_kind": "FIXED",
         "geometry": "MOSAIC", "sources": "ARCHIVE", "action": "assess"})
     html = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert "cannot be assessed in this browser version" in html
+    assert "requires live Archive configuration" in html
 
 
 def token_from(response):

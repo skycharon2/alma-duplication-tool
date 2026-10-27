@@ -53,7 +53,8 @@ def _indexed_report_blocks(document, offsets):
     yield from emit(['{'])
     for index, (key, value) in enumerate(document.items()):
         yield from emit([',\n' if index else '\n', '  ', encoder.encode(key), ': '])
-        if key == 'context_evaluations' and value:
+        if (key == 'context_evaluations' or (key == 'candidates' and
+                document.get('schema_version') == 'archive_mosaic_backend_2')) and value:
             yield from emit(['[\n    '])
             for context_index, context in enumerate(value):
                 if context_index:
@@ -204,8 +205,12 @@ class RunStore:
         document = result.document
         emit_progress('inspection')
         with measure_stage("inspection"):
-            inspection = inspect_report(document, inspection_version='3')
-        for context in document['context_evaluations']:
+            mosaic = document.get("schema_version") == "archive_mosaic_backend_2"
+            inspection = ({"schema_version": "mosaic_browser_inspection_1",
+                           "assessment_status": document["assessment_status"],
+                           "absence_interpretation": document["absence_interpretation"]}
+                          if mosaic else inspect_report(document, inspection_version='3'))
+        for context in document.get('context_evaluations', []):
             for field in ('reference', 'criteria', 'branches', 'line_pairs'):
                 if field not in context:
                     raise ValueError(f'Missing context field: {field}')
@@ -239,7 +244,12 @@ class RunStore:
                 with measure_stage('write_' + kind):
                     downloads[kind] = write(kind + '.json', _utf8_blocks(report_json_chunks(data)))
             with measure_stage("view_projection"):
-                projection = report_projection(document, inspection, compact=True)
+                projection = ({"mosaic": True, "summary": {"target": document["proposed"]["source_name"]},
+                               "document": {"proposed": {k: document["proposed"][k] for k in ("source_name", "row_count")},
+                                            "assessment_status": document["assessment_status"],
+                                            "discovery": {"status": document["discovery"]["status"]}},
+                               "candidate_count": len(document["candidates"])}
+                              if mosaic else report_projection(document, inspection, compact=True))
             projection['offsets'] = offsets
             with measure_stage('write_view'):
                 write('view.json', _utf8_blocks(report_json_chunks(projection)))
@@ -279,6 +289,18 @@ class RunStore:
             if item is None:
                 return None
             projection = json.loads((item.directory / 'view.json').read_bytes())
+            if projection.get("mosaic"):
+                pages = max(1, math.ceil(projection["candidate_count"] / 20))
+                if page < 1 or page > pages:
+                    raise IndexError("Page out of range")
+                with (item.directory / 'report.json').open('rb') as stream:
+                    candidates = []
+                    for offset, length in projection['offsets'][(page-1)*20:page*20]:
+                        stream.seek(offset)
+                        candidates.append(json.loads(stream.read(length)))
+                return dict(mosaic=True, document=projection["document"], candidates=candidates,
+                            candidate_count=projection["candidate_count"],
+                            page=page, pages=pages, run=item, retention_hours=self.max_age / 3600)
             with (item.directory / 'report.json').open('rb') as stream:
                 def context(index):
                     offset, length = projection['offsets'][index]

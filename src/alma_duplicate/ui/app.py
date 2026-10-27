@@ -23,7 +23,7 @@ from alma_duplicate.ui.runs import ARCHIVE_CONNECTIONS, BrowserAssessment, RunSt
 from alma_duplicate.ui.report_pages import report_page, report_projection
 from alma_duplicate.ui.visualization import visualization_data
 from alma_duplicate.ui.run_store import DEFAULT_DISK_BYTES, DEFAULT_MAX_AGE
-from alma_duplicate.ui.proposed import MAX_WINDOWS, assessment_supported, contributing_windows, initial_form, new_row, preview_mosaic_ot, read_form, validate_form
+from alma_duplicate.ui.proposed import MAX_WINDOWS, bind_mosaic_input, assessment_supported, contributing_windows, initial_form, new_row, preview_mosaic_ot, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
 from alma_duplicate.ui.managed_queue import managed_queue_status
 from alma_duplicate.ui.archive_status import archive_configuration_status, archive_run_status
@@ -120,6 +120,8 @@ def create_app(config=None):
 
     def render_report(data, report_id):
         is_run = data.get('run') is not None
+        if data.get("mosaic"):
+            return render_template("mosaic_report.html", **data, report_id=report_id)
         return render_template("report.html", **data, report_id=report_id,
                                archive_status=archive_run_status(data['document']),
                                show_technical=request.args.get('technical') == '1',
@@ -209,6 +211,8 @@ def create_app(config=None):
             abort(404)
         if data is None:
             return unavailable_run(report_id)
+        if data.get("mosaic"):
+            abort(404)
         return render_visualization(data, report_id, True)
 
     @app.get("/runs/<report_id>/download/<kind>")
@@ -255,6 +259,7 @@ def create_app(config=None):
         scope_updated = False
         execution_error = None
         mosaic_preview, mosaic_preview_error = None, None
+        mosaic_ready = False
         owner = session.setdefault("mosaic_owner", token_hex(24))
         if request.method == "POST":
             try:
@@ -323,14 +328,29 @@ def create_app(config=None):
                 edit_notice = "Window retained. Validate input to update the diagnostics."
             elif action in {"validate", "download", "assess"}:
                 document, result, issues = validate_form(values, rows)
+                proposed_points = None
+                is_mosaic = values.get("target_kind") == "FIXED" and values.get("geometry") == "MOSAIC"
+                if is_mosaic:
+                    issues = [entry for entry in issues if not (
+                        (entry["issue"].category == "MISSING" and entry["issue"].path in
+                         {"request.position", "search_options.radius"}) or
+                        (entry["issue"].category == "CAPABILITY" and entry["issue"].path == "request"
+                         and entry["issue"].code == "METHOD_NOT_IMPLEMENTED"))]
+                    try:
+                        proposed_points = bind_mosaic_input(values, mosaic_preview)
+                        mosaic_ready = result.is_valid and configured.live_archive
+                    except ValueError as exc:
+                        execution_error = str(exc)
                 if action == "assess":
                     if values.get("target_kind") == "SUN":
                         execution_error = "Solar observations are exempt from duplication checking under Appendix A. No assessment or source search was run."
                     elif not assessment_supported(values):
                         execution_error = "This observation type cannot be assessed in this browser version. Your inputs are retained. You can validate and export a valid request."
+                    elif is_mosaic and not configured.live_archive:
+                        execution_error = "Browser Mosaic assessment requires live Archive configuration. Replay and Queue sources cannot run this workflow."
                     elif not configured.enabled:
                         execution_error = "Assessment sources are not configured. You can still validate and download the request."
-                    elif result.is_valid and result.can_search:
+                    elif result.is_valid and (result.can_search or (is_mosaic and proposed_points is not None)):
                         token = request.headers.get("X-Assessment-Progress")
                         if token and re.fullmatch(r"[a-f0-9]{32}", token) is None:
                             abort(400)
@@ -341,10 +361,12 @@ def create_app(config=None):
                             observer = (observe_progress(lambda event: progress.update(token, event))
                                         if token else nullcontext())
                             with observer:
-                                assessment = replace(configured, archive_connection=values.get(
-                                    "archive_connection", "AUTO")).assess(document)
+                                runner = replace(configured, archive_connection=values.get("archive_connection", "AUTO"))
+                                assessment = (runner.assess_mosaic(document, proposed_points) if is_mosaic
+                                              else runner.assess(document))
                                 if assessment.document is not None:
-                                    run_id = runs.add(document, assessment)
+                                    retained_input = document | ({"mosaic_pointings": proposed_points} if is_mosaic else {})
+                                    run_id = runs.add(retained_input, assessment)
                                     history = session.get('report_history', [])
                                     session['report_history'] = ([run_id] + history)[:20]
                                     report_url = url_for("run_view", report_id=run_id)
@@ -357,7 +379,7 @@ def create_app(config=None):
                             if token:
                                 progress.finish(token, report_url=report_url)
                     else:
-                        execution_error = "Assessment was not run. Correct invalid inputs and supply the search information shown below."
+                        execution_error = execution_error or "Assessment was not run. Correct invalid inputs and supply the search information shown below."
                 if action == "download" and result.is_valid:
                     return Response(report_json_text(document), mimetype="application/json",
                                     headers={"Content-Disposition": 'attachment; filename="proposed-request.json"'})
@@ -379,6 +401,7 @@ def create_app(config=None):
                                purpose_updated=purpose_updated,
                                scope_updated=scope_updated, assessment_supported=assessment_supported(values),
                                mosaic_preview=mosaic_preview, mosaic_preview_error=mosaic_preview_error,
+                               mosaic_ready=mosaic_ready,
                                configured=configured, execution_error=execution_error, auto_scope=automatic_scope(),
                                archive_status=archive_configuration_status(configured.archive_kind),
                                queue_status=(managed_queue_status(configured.managed_queue_root)

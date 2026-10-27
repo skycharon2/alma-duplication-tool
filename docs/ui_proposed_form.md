@@ -8,9 +8,9 @@ This document owns the current form controls and request mapping. Use
 
 ## Input scope and structure
 
-`/proposed` executes assessments for fixed ICRS targets, single pointing, one
-setup and up to 32 windows. Other target/geometry choices are available for
-selection, validation and valid-request export only. The initial form has no window rows. Detailed SPW input is optional;
+`/proposed` executes fixed ICRS single-pointing and Mosaic assessments, with one
+setup and up to 32 windows. Mosaic execution requires a live Archive source.
+Moving targets remain limited to validation and valid-request export. The initial form has no window rows. Detailed SPW input is optional;
 researchers need not enter SPW 0–3 to validate a partial request. The limit is
 local to this interface, not a scientific restriction.
 The form groups observation type, shared target information, scientific purposes, spectral line
@@ -98,10 +98,10 @@ use Update observation type. Both paths retain all entered values, units, select
 purposes, row identities and aggregate references, and clear stale validation.
 They do not validate, access sources or execute assessments.
 
-Only FIXED / SINGLE_POINTING can reach browser execution. Moving/Mosaic combinations
-show their limitation and disable Run assessment. FIXED / MOSAIC additionally shows
-a read-only OT export preview using the existing backend parser; it does not run
-candidate discovery or change the browser execution scope. The preview requires
+FIXED / SINGLE_POINTING and FIXED / MOSAIC can reach browser execution. Moving
+targets remain disabled. Mosaic requires a session-owned OT upload, a target name,
+an explicit 7m/12m selection and confirmation of fixed ICRS coordinates and the
+complete pointing list. Import alone never starts a query. The parser requires
 the native Absolute four-column header, bounds its input by the browser's 1 MiB
 request limit (versus the parser's 2 MB byte limit), preserves input-row identity,
 reports duplicate coordinates, and shows at most the first 20 points. It retains
@@ -123,7 +123,32 @@ those confirmations is allowed but does not authorize scientific evaluation.
 Sun instead shows the Appendix A exemption and omits the assessment action;
 retained inputs are collapsed, not discarded. The server independently rejects
 direct assessment POSTs for these types before invoking the execution adapter.
-No motion trajectory or executable mosaic assessment is provided yet.
+No moving-target trajectory is provided.
+
+### Mosaic execution and results
+
+Run assessment binds all retained pointing rows to the current form and invokes
+`assess_observation` with `MosaicAssessmentInput` in `S_REGION` mode. Retained
+single-field coordinates and radius controls do not enter this request. Discovery
+uses a 1 arcsec prefilter margin around every unique proposed position; this is
+not a beam radius or an expansion of the final position test. The selected Archive
+connection controls the discovery origin and metadata client. AUTO discovery uses
+the European origin; metadata retains the client's normal mirror behavior.
+Queue, AQ and auxiliary-product retrieval are not invoked. Browser Archive replay
+is not supported for Mosaic; CLI captured-discovery replay remains available.
+
+Acquisition files live in a temporary directory removed after the call. The stored
+report retains the backend document unchanged, including discovery receipts,
+metadata rows, coverage evidence and branch results. The request download includes
+all bound pointings. A dedicated result page shows 20 candidates per page, coverage
+counts, criterion outcomes, reasons and LINE comparisons. Incomplete candidates
+and unknown outcomes stay visible; the page never presents search-wide absence.
+Reports use the existing disk budget, retention, streaming downloads and history.
+The generic single-point sky visualization is not available for these reports.
+
+Regression coverage runs native OT upload through the real backend using captured
+NGC253 metadata, then checks the result page and downloads. Missing confirmations,
+invalid input and unavailable upload tokens must not issue queries.
 
 Validation and request download use the existing backend contract. Valid moving
 or mosaic requests report UNSUPPORTED. Valid Sun requests report NOT_APPLICABLE:

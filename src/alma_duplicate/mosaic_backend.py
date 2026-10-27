@@ -21,6 +21,7 @@ class MosaicAssessmentInput:
     resource_limits: MosaicResourceLimits | None = None
     preparation_directory: Path | None = None
     coverage_model: str = "S_REGION"
+    discovery_origin: str | None = None
 
 
 def _run_reconstructed_backend(
@@ -156,11 +157,13 @@ def run_mosaic_backend(request, mosaic, *, archive_client=None, array_catalog=No
         raise ValueError('Unknown Mosaic coverage model')
     if preparation_provider is not None:
         raise ValueError('s_region assessment does not use package preparation providers')
+    from alma_duplicate.progress import emit_progress
     from alma_duplicate.assessment import assess_archive_mosaic_contexts
     from alma_duplicate.clients.archive_mirrors import MirroredArchiveClient
     from alma_duplicate.mosaic_pointing_diagnostics import position_summary
     root = Path(mosaic.output_directory)
     root.mkdir(parents=True, exist_ok=False)
+    emit_progress("archive_search")
     if mosaic.preparation_directory is not None:
         from alma_duplicate.mosaic_candidate_discovery import plan_discovery
         discovery = json.loads((Path(mosaic.preparation_directory)/'discovery.json').read_text())
@@ -168,8 +171,11 @@ def run_mosaic_backend(request, mosaic, *, archive_client=None, array_catalog=No
             raise ValueError('Resume discovery differs from proposed pointings or search margin')
     else:
         discovery = (discovery_provider or discover_candidates)(
-            mosaic.proposed, root/'discovery', margin_arcsec=mosaic.margin_arcsec)
+            mosaic.proposed, root/'discovery', margin_arcsec=mosaic.margin_arcsec,
+            **({'origin': mosaic.discovery_origin} if mosaic.discovery_origin else {}))
     client = archive_client if archive_client is not None else MirroredArchiveClient()
+    total = len({(c['member_ous_uid'], c['source_name']) for c in discovery['candidates']})
+    emit_progress("archive_ready", total, unit="candidates")
     results = []
     seen = set()
     for candidate in discovery['candidates']:
@@ -178,6 +184,7 @@ def run_mosaic_backend(request, mosaic, *, archive_client=None, array_catalog=No
             continue
         seen.add((member, source))
         item = dict(member_ous_uid=member, source_name=source)
+        emit_progress("evaluation", len(results), total, "candidates")
         try:
             metadata = client.search(ArchiveQuerySpec(0, 0, 180, member_ous_uid=member, target_name=source))
             if any(row.get('member_ous_uid') != member or row.get('target_name') != source
@@ -198,6 +205,7 @@ def run_mosaic_backend(request, mosaic, *, archive_client=None, array_catalog=No
         except (OSError, ValueError, KeyError, TypeError) as exc:
             item.update(status='INCOMPLETE', error=str(exc))
         results.append(item)
+        emit_progress("evaluation", len(results), total, "candidates")
     report = dict(schema_version='archive_mosaic_backend_2', proposed=mosaic.proposed,
         coverage_source='ARCHIVE_S_REGION', discovery=discovery, candidates=results,
         preparation=dict(status='NOT_REQUIRED', reason='S_REGION_METADATA_ONLY'),
