@@ -241,8 +241,10 @@ def test_additional_form_contracts(tmp_path, monkeypatch, cases, variant):
     _, inputs = cases[case_id]
     data = form_for(json.loads(inputs["request"].read_bytes()))
     if variant.startswith("declaration"):
-        data.setlist("rows", [])
-        data.setlist("aggregate_windows", [])
+        # Removing a key is not the same as setlist(key, []): an empty
+        # MultiDict value list breaks to_dict() in Werkzeug.
+        data.poplist("rows")
+        data.poplist("aggregate_windows")
         data.pop("setup_complete", None)
         data["continuum_setup_declaration"] = "on"
         if variant == "declaration-conflict":
@@ -257,11 +259,26 @@ def test_additional_form_contracts(tmp_path, monkeypatch, cases, variant):
                         "angular": "300", "angular_unit": "mas"}
         for key, value in replacements.items():
             data[key] = value
+    if variant == "declaration-conflict":
+        # A contradictory *browser* full-list claim is rejected, while the
+        # unchanged API accepts and audits the conflict as scientific unknown.
+        from alma_duplicate.ui.proposed import read_form, validate_form
+        from alma_duplicate.request_validation import validate_proposed_observation
+        from alma_duplicate.rules.continuum_setup import evaluate_continuum_setup
+        values, rows = read_form(data)
+        payload, form_result, issues = validate_form(values, rows)
+        assert not form_result.is_valid
+        assert any(entry['issue'].code == 'CONTINUUM_SETUP_DECLARATION_CONFLICT'
+                   for entry in issues)
+        api_result = validate_proposed_observation(payload['request'], payload['search_options'])
+        assert api_result.is_valid
+        criterion = evaluate_continuum_setup(api_result.request)
+        assert criterion.outcome is None
+        assert 'CONTINUUM_SETUP_DECLARATION_CONFLICT' in criterion.reasons
+        return
     document, _, _ = run_form_parity(tmp_path, monkeypatch, inputs, data, 0)
     if variant == "dual-mixed":
         assert {b["branch"] for c in document["context_evaluations"] for b in c["branches"]} == {"LINE", "CONTINUUM"}
-    elif variant == "declaration-conflict":
-        assert "CONTINUUM_SETUP_DECLARATION_CONFLICT" in document["request_criteria"][0]["reasons"]
 
 
 def test_pagination_keeps_all_evaluations_and_exact_downloads(tmp_path, monkeypatch, cases):

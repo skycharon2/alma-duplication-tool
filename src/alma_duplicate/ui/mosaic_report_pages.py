@@ -13,15 +13,15 @@ MOSAIC_VIEWS = ('all', 'matching', 'review', 'not_met')
 def mosaic_report_page(projection, page, view, load_candidate):
     """Return a read-only page of candidate records and Member presentation groups.
 
-    The historical ``matches`` default is an alias for ``all`` to preserve
-    existing Mosaic run URLs. A matching category means at least one recorded
+    The shared ``matches`` default selects matching Mosaic candidates.
+    Explicit ``all`` retains the complete original candidate list. A matching category means at least one recorded
     matching branch, not a verdict for an entire Member OUS.
     """
     if projection.get('projection_schema_version') != PROJECTION_VERSION:
         raise ValueError('Unsupported Mosaic browser projection version')
     if type(page) is not int or page < 1 or view not in (*MOSAIC_VIEWS, 'matches'):
         raise ValueError('Invalid Mosaic report page selection')
-    selected_view = 'all' if view == 'matches' else view
+    selected_view = 'matching' if view == 'matches' else view
     summaries = projection['candidate_summaries']
     if len(summaries) != projection['candidate_count']:
         raise ValueError('Mosaic candidate index length mismatch')

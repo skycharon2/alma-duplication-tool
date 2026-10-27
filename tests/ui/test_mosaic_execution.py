@@ -117,7 +117,7 @@ def test_metadata_failure_is_retained_and_candidates_are_paginated(browser, monk
     token = upload(client)
     response = client.post('/proposed', data=form() | dict(action='assess', mosaic_upload_token=token))
     url = response.headers['Location']
-    first, second = client.get(url).text, client.get(url+'?page=2').text
+    first, second = client.get(url+'?view=all').text, client.get(url+'?view=all&page=2').text
     assert 'Page 1 of 2' in first and 'Page 2 of 2' in second
     assert 'missing/20' not in first and 'missing/20' in second
     report = client.get(url+'/download/report').json
