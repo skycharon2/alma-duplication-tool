@@ -64,9 +64,14 @@ def test_filtered_pages_preserve_original_indexes_and_member_boundaries():
     assert default_page['result_view'] == 'matching'
     requested.clear()
     matched = mosaic_report_page(projection, 1, 'matching', read)
-    expected = [i for i, s in enumerate(projection['candidate_summaries']) if s['bucket'] == 'MATCH']
-    assert [item['candidate_index'] for item in matched['candidate_entries']] == expected[:20]
-    assert requested == expected[:20]
+    matched_members = {s['member_ous_uid'] for s in projection['candidate_summaries']
+                       if s['bucket'] == 'MATCH'}
+    expected = [i for i, s in enumerate(projection['candidate_summaries'])
+                if s['member_ous_uid'] in matched_members]
+    assert [item['candidate_index'] for item in matched['candidate_entries']] == expected
+    assert requested == expected
+    assert matched['matching_member_count'] == len(matched_members)
+    assert matched['visible_count'] == len(expected)
     requested.clear()
     review = mosaic_report_page(projection, 1, 'review', read)
     assert review['visible_count'] == sum(1 for c in projection['candidate_summaries']
@@ -106,7 +111,10 @@ def test_indexed_storage_filters_without_loading_unselected_candidate_bytes(tmp_
         assert report == original
         assert b''.join(store.open_download(run_id, 'report')) == report_json_text(report).encode()
         projection = json.loads((store._runs[run_id].directory / 'view.json').read_text())
-        expected = [i for i, c in enumerate(projection['candidate_summaries']) if c['bucket'] == 'MATCH']
+        matching_members = {c['member_ous_uid'] for c in projection['candidate_summaries']
+                            if c['bucket'] == 'MATCH'}
+        expected = [i for i, c in enumerate(projection['candidate_summaries'])
+                    if c['member_ous_uid'] in matching_members]
         original_loads = json.loads
         reads = []
         def count_reads(raw, *args, **kwargs):

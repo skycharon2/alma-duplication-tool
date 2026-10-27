@@ -39,3 +39,12 @@
   .report-page .mosaic-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .report-page .mosaic-context-body { padding: 8px 0; }
 }
+
+/* Stored Member, Proposal and Execution identities; do not infer relationships. */
+.report-page .mosaic-member-identities {
+  margin: 7px 0;
+  font-size: 13px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.report-page .mosaic-member-identities strong { color: var(--blue-dark); }

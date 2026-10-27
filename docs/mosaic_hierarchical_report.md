@@ -91,3 +91,47 @@ byte-identical downloads and Jinja template parsing. Run the captured Mosaic
 browser path and Single Pointing report checks to guard the shared helpers.
 Record measured timings and real browser observations separately; a passed
 unit test does not establish live Archive scientific acceptance.
+
+## PR D — Member-centric positive-result navigation
+
+The default matching view selects **Member OUS identities with a recorded
+matching candidate**, then loads all saved `(member_ous_uid, source_name)`
+candidate identities for each selected Member. Every recorded comparison
+context is visible, with matching contexts first and expanded; other contexts
+are present but collapsed. The candidate and context indexes, statuses, and
+raw byte-for-byte exports remain unchanged. This is presentation, never a
+Member-wide scientific verdict.
+
+Matching pagination is **20 complete Member groups per page**. One Member may
+include more than 20 related target identities; the page does not silently
+split it. The diagnostic `all`, `review`, and `not_met` views continue to page
+at 20 candidate identities and may split a Member, which is now explained in
+the diagnostic page. The `matches` URL alias still selects `matching`.
+
+Proposal ID, Group OUS and ASDM IDs are shown only if explicitly present in
+the *same candidate's* already saved Archive `metadata_rows`, with exact
+Member and target identity equality. Multiple conflicting proposal codes are
+reported as conflicting; no ID is inferred from the shape of a UID or
+`context_id`. For LINE context captions, SPW and ASDM associations come only
+from exact matching `line_pairs[*].attempt.reference.candidate_association`
+identities. Those context associations are not guessed from metadata rows.
+
+The term **complete Member** in the view means all Member-related candidates
+*already saved in this report*. It does **not** promise retrieval of every
+Archive target or execution for the Member outside the original spatial
+discovery. No new TAP or AQ queries are introduced. Discovery and scientific
+classification remain unchanged.
+
+### PR D checks
+
+```sh
+python -m pytest -q tests/ui/test_mosaic_member_hierarchy.py \
+    tests/ui/test_mosaic_hierarchical_report.py \
+    tests/ui/test_mosaic_report_view.py tests/ui/test_mosaic_execution.py
+python -m pytest -q
+git diff --check
+```
+
+Verify a captured CASE2 result: one matching Member X9c3, Project
+`2018.1.00294.S`, Group OUS `uid://A001/X133d/X9c2`, associated ASDM
+`uid://A002/Xd40be0/X42e2`, and SPWs 25, 27, 29 and 31.
