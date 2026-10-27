@@ -1,12 +1,55 @@
 # Mosaic duplication: research status
 
-This page preserves the earlier research baseline. Current Archive implementation
-and remaining work are maintained in [status](../../status.md) and
-[roadmap](../../roadmap.md). The [region contract](../../mosaic_s_region_position.md)
-owns the default coverage method; the research questions below are not a current
-implementation checklist.
+This page indexes retained Archive Mosaic research and dated acceptance evidence.
+It does not define the current default method, implementation status or delivery
+order. Consult [status](../../status.md), [roadmap](../../roadmap.md), and the
+[current region contract](../../mosaic_s_region_position.md) for those concerns.
 
-Last reviewed: 2026-10-21
+## Reading map
+
+| Purpose | Documents |
+| --- | --- |
+| Current backend entry and OT import | [Assessment entry](../../assessment_entry.md), [OT file contract](../../ot_pointings_backend.md), [candidate discovery](../../mosaic_candidate_discovery.md) |
+| Current region acceptance | [Method and scope](../../mosaic_s_region_position.md), [captured live/replay fixtures](../../../tests/fixtures/archive/s_region_acceptance_2026_10_26/README.md) |
+| Scientific decisions | [Decision history](SCIENCE_GATES.md); the 2026-10-23 reconstructed-circle decision remains historically referenced by code |
+| Research plan | [Historical Archive acquisition plan](ARCHIVE_PLAN.md), [footprint experiment](../../../experiments/mosaic_footprint_ab/README.md) |
+
+## Retained reconstruction tools (not the default Archive path)
+
+- **Inputs and products:** [local execution reconstruction](../../archive_mosaic_backend.md),
+  [product discovery](../../archive_mosaic_products.md),
+  [auxiliary acquisition](../../archive_mosaic_acquisition.md),
+  [pipeline](../../archive_mosaic_pipeline.md).
+- **Inventory and integrity:** [TAP inventory capture](../../archive_mosaic_discovery.md),
+  [execution inventory](../../archive_mosaic_inventory.md),
+  [execution batches](../../archive_mosaic_batch.md),
+  [package audit](../../archive_mosaic_package_audit.md).
+- **Position and coverage diagnostics:** [FIELD/scan extraction](../../archive_mosaic_pointings.md),
+  [candidate grouping](../../archive_mosaic_groups.md),
+  [readiness](../../archive_mosaic_readiness.md),
+  [footprint](../../archive_mosaic_footprint.md),
+  [multi-SPW footprint checks](../../archive_mosaic_footprint_validation.md),
+  [bounded preparation/resume](../../mosaic_candidate_batches.md).
+
+## Dated experiments and historical acceptance
+
+- **Archive surveys:** [acquisition survey and region comparison](../../mosaic_acquisition_survey.md),
+  [legacy QA acquisition](../../mosaic_legacy_qa_acquisition.md).
+- **Constructed acceptance cases:** [CASE2 OT](../../case2_ot_acceptance.md),
+  [CASE2 joint](../../case2_joint_acceptance.md),
+  [local scientific regression](../../mosaic_scientific_acceptance.md),
+  [multi-target reconstruction](../../mosaic_multitarget_acceptance.md),
+  [live preparation batch](../../mosaic_live_batch_acceptance.md).
+- **Cross-geometry background:** [Mosaic versus single-field Archive candidates](../../mosaic_cross_geometry.md)
+  includes retained reconstruction-route details; its current default is the
+  same-context region method.
+
+The following sections preserve the 2026-10-21 research baseline. In particular,
+"Current evidence" and "Work order" describe that historical snapshot, not the
+2026-10-26 region policy or today's delivery priorities. Dated evidence and
+saved decision references are not modified by this index.
+
+Last reviewed: 2026-10-21 (historical baseline only)
 
 ## Objective
 
