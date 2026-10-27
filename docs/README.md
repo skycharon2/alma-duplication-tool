@@ -74,17 +74,25 @@ request API owns the accepted backend format. Historical statistics now live in 
 original ERDs and conceptual entities live in the [design document](design/conceptual_data_model.md).
 They are not current population counts or Python class definitions.
 
-## Archive Mosaic backend development
+## Archive Mosaic
 
-[Local execution reconstruction](archive_mosaic_backend.md) documents the supported
-listobs parser and execution-level evidence objects. [Product discovery](archive_mosaic_products.md)
-documents Member-bound DataLink metadata acquisition, offline replay, and saved
-receipts. [Auxiliary acquisition](archive_mosaic_acquisition.md) covers bounded
-downloads, verified cache reuse, and nested weblog listobs inspection.
-[Unified acquisition and reconstruction](archive_mosaic_pipeline.md) connects the
-7m workflow using saved TAP identity and verified acquisition evidence.
-These standalone backend increments do not enable Mosaic assessment in
-the browser or establish complete Member pointing inventories.
+Start with the [current region contract](mosaic_s_region_position.md), then
+[candidate discovery](mosaic_candidate_discovery.md) and the
+[shared application entry](assessment_entry.md). The default backend imports OT
+pointings, retrieves Archive metadata and evaluates each context's `s_region`
+alongside the shared non-position conditions. Browser and Queue Mosaic execution
+remain next-stage work; see [status](status.md) and [roadmap](roadmap.md).
+
+[Captured acceptance](../tests/fixtures/archive/s_region_acceptance_2026_10_26/README.md)
+records the selected live cases and exact offline replay. These are engineering
+cases, not independently reviewed proposals.
+
+The [execution reconstruction](archive_mosaic_backend.md),
+[product discovery](archive_mosaic_products.md),
+[auxiliary acquisition](archive_mosaic_acquisition.md) and
+[reconstruction pipeline](archive_mosaic_pipeline.md) documents describe retained
+research tools. Their historical prerequisites do not govern the default region
+path. Existing paths and dated evidence remain available for reproducibility.
 
 ## UI reading order
 

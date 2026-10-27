@@ -1,14 +1,29 @@
 # Shared assessment application entry
 
-Report retention is selected separately with `report_detail='full'` (default v4)
-or `'matches'` ([v5 contract](matching_report.md), browser default). All retained
-contexts are evaluated in either mode; scientific options are unchanged.
+For single-pointing assessment, report retention is selected separately with
+`report_detail='full'` (default v4) or `'matches'`
+([matching-report contract](matching_report.md), browser v6). All retained contexts
+are evaluated in either mode. Mosaic uses its own backend report described below.
 
 `alma_duplicate.assessment.assess_observation(request, search_options, ...)`
 accepts the existing request dictionaries and returns `AssessmentResult`.
 It owns validation, valid SUN exemption, method/source selection checks,
 search, source-specific evaluation and report assembly. No scientific method,
 report version or default Queue method changes in this extraction.
+
+## Archive Mosaic input
+
+`mosaic=MosaicAssessmentInput(...)` selects fixed-target Archive-only Mosaic
+assessment. The default model is `S_REGION`; the result document is
+`archive_mosaic_backend_2`, not a v4/v6 matching report. The imported proposal
+must belong to the request target. Queue methods, candidate predicates and live
+AQ callbacks are not supported on this route.
+
+LIVE input retrieves candidate metadata. REPLAY requires `S_REGION` and saved
+discovery; the [acceptance CLI](mosaic_s_region_position.md#scope-checks-and-capture-acceptance)
+provides checksummed multi-candidate replay. The general evaluation CLI's Mosaic
+option still requires live Archive input. The browser does not yet supply the
+Mosaic argument. See [architecture](architecture.md#archive-mosaic-branch).
 
 ## Ownership
 

@@ -1,5 +1,20 @@
 # Mosaic proposals against Archive candidate geometries
 
+## Current default
+
+Archive Mosaic proposals use the same per-context `s_region` method for Archive
+Mosaic and single-pointing candidates. See the [region contract](mosaic_s_region_position.md)
+for the adopted policy and scientific scope. No candidate beam reconstruction,
+AQ diameter or Member execution-completeness check is required for this default
+position path. Other conditions remain bound to the same metadata context.
+
+## Retained reconstruction route
+
+The routing and acceptance notes below describe the explicit `RECONSTRUCTED`
+research mode. Its centre/diameter and completeness requirements do not apply to
+the default region route. Original commands and evidence are retained.
+
+
 The main assessment entry accepts Mosaic proposals against both explicitly Mosaic
 and explicitly single-field Archive contexts. The proposal always uses POS-MOSAIC;
 it is never relabelled as Single Pointing.

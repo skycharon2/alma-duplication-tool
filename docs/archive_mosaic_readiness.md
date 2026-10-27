@@ -1,5 +1,9 @@
 # Archive Mosaic footprint input readiness
 
+Retained reconstruction/research tool. Its inputs and completeness requirements
+apply to this tool, not the default Archive Mosaic assessment. Start with the
+[current s_region workflow](mosaic_s_region_position.md) for production evaluation.
+
 This layer binds execution-local science FIELD/scan/SPW links to verbose listobs
 spectral-window and antenna tables. It crosschecks optional official AQ source array
 labels against the execution's reported dish diameters. It does not compute beam

@@ -3,7 +3,8 @@
 This bounded discovery path searches every supplied OT pointing rather than applying
 single-pointing candidate-centre filtering. The existing single-pointing search is
 unchanged. It searches science rows across candidate geometries. Geometry flags are retained
-per Member/target; only explicitly single-field rows use the TAP centre route.
+per Member/target. The default backend evaluates each returned context using its
+own region, including single-pointing candidates.
 Queue sources are not covered. Discovery alone does not evaluate duplication.
 
 Each ADQL request combines at most 20 spherical region predicates with OR. Zero
@@ -20,7 +21,10 @@ an approved uncertainty. s_region is not established to equal or contain reconst
 half-power coverage. Consequently, even successful queries do not guarantee complete
 recall. Missing, restricted, underestimated or erroneous regions can affect discovery.
 Do not interpret an empty search as non-duplication. Do not apply the >50% rule to
-counts of query hits; only reconstructed coverage can support that rule.
+counts of query hits. The [position evaluator](mosaic_s_region_position.md) must
+classify the proposal pointings against each candidate context's region.
+The saved plan retains `NOT_ESTABLISHED_FOR_RECONSTRUCTED_HALF_POWER_COVERAGE`
+as a historical compatibility identifier; it is not a reconstruction requirement.
 
 ## Plan without network access
 
@@ -46,16 +50,16 @@ TOP and no failed batch is converted into an empty successful result.
 Candidates group by project, Member UID and exact target name. Observed ASDM UIDs
 and originating query indices are preserved, together with observed `geometry_flags`. Query indices indicate batch hits,
 not verified per-point matches. Different targets are never merged merely because
-they share a Member. Mosaic candidates still need reconstructed executions; Single Pointing candidates
-use validated TAP centre metadata and AQ array evidence. Unknown geometry stays unresolved.
+they share a Member. The default backend retrieves their normal metadata and
+binds `s_region` and non-position operands within each comparison context.
 
-`discovery.json` retains all query status and provenance. `candidates.json` contains
-identity-only entries for the candidate-assessment manifest: they will report missing
-coverage until evidence paths and explicit SPW selections are supplied. Always inspect
-`discovery.json` for INCOMPLETE status and recall limitations. The assessment loader
-currently accepts at most 100 candidates; larger result sets require explicit batching,
-not truncation. An empty identity list is a discovery result, not an executable
-assessment request. Existing run directories are never overwritten.
+`discovery.json` retains query status and provenance. `candidates.json` is an
+identity-only manifest for the retained research preparation tools; it does not
+contain position results. Inspect discovery completeness before interpreting any
+assessment. The legacy preparation limit of 100 candidates does not apply to the
+metadata-only default backend. The default path evaluates all discovered pairs
+sequentially; it has no separate package budget or discovery-wide recall guarantee.
+Existing output directories are never overwritten.
 
 Exit 0 means planning succeeded or every query completed, 3 means incomplete live
 retrieval, and 2 means invalid input or local execution failure. Neither 0 nor 3

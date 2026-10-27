@@ -1,7 +1,7 @@
 # Current implementation status
 
-Implementation reviewed for this documentation sync: merged PR #138,
-`a090ff9aa134bdb50428fc01a155a44f16f00ce8` (2026-10-13).
+Implementation reviewed on 2026-10-27: merged PR #178,
+`f194fa50755204d54397b427810c23157b7759f5` (2026-10-26).
 This identifies the code reviewed, not a claim that every historical test or
 live-service check was rerun on this commit. Verification scopes are listed below.
 
@@ -25,6 +25,19 @@ Exact scientific scope belongs to [Archive array evidence](archive_array_evidenc
 [Queue common](queue_common.md), [Queue continuum](queue_continuum.md),
 [Queue LINE](queue_line_pairing.md), [rules](rules.md) and
 [shared LINE precision](line_precision.md). Older provisional paths remain distinct.
+
+## Archive Mosaic backend
+
+Fixed-target Mosaic requests can import complete ICRS OT pointings and run against
+Archive metadata through the shared assessment entry. Each comparison context uses
+its own `s_region` for position and the existing Archive angular, continuum and
+LINE rules for the remaining conditions. Auxiliary products and reconstructed
+pointings are not required by the default path.
+
+The [region contract](mosaic_s_region_position.md) owns geometry, boundary handling,
+TP scope and result semantics. [Discovery](mosaic_candidate_discovery.md) retains
+query completeness and candidate identity. Explicit reconstruction remains available
+for research replay; Queue Mosaic and browser Mosaic execution are not implemented.
 
 ## Browser and report capabilities
 
@@ -56,7 +69,8 @@ Exact scientific scope belongs to [Archive array evidence](archive_array_evidenc
 ## Known limits and scientific interpretation
 
 Only supported fixed-target single-pointing requests execute through the form.
-Mosaic and moving-target scientific assessment remain unimplemented. Sun is
+Archive Mosaic assessment is available through the backend/CLI, but not the form.
+Queue Mosaic and moving-target assessment remain unsupported. Sun is
 selectable for validation/export; the shared backend has a no-source Solar
 exemption, rather than a duplication assessment.
 
@@ -88,7 +102,9 @@ this documentation-only sync.
 
 | Verification | Recorded baseline / scope | Evidence |
 | --- | --- | --- |
-| Recent recorded full regression | 2026-10-12 retrieval-first work: `a920761` plus the documented local changes; 1932 passed, 12 skipped | [Measurement and limits](evidence/tap_retrieval_first_2026-10-12.md) |
+| Archive Mosaic regression | PR #178 development validation: 2683 passed, 12 skipped; final affected tests and Pyflakes checks passed | [Region contract](mosaic_s_region_position.md), [capture fixtures](../tests/fixtures/archive/s_region_acceptance_2026_10_26/README.md) |
+| Archive Mosaic live and replay | 2026-10-26: 214 discovered candidates; selected four continuum and two line candidates, including an earlier no-auxiliary case; exact per-context replay parity | [Captured acceptance](../tests/fixtures/archive/s_region_acceptance_2026_10_26/README.md); engineering inputs, not independent proposal labels |
+| Earlier recorded full regression | 2026-10-12 retrieval-first work: `a920761` plus the documented local changes; 1932 passed, 12 skipped | [Measurement and limits](evidence/tap_retrieval_first_2026-10-12.md) |
 | Four browser workflows | Merged PR #134: live Archive and snapshot Queue, each CONTINUUM and LINE; self-retrieval, original downloads, AUTO provenance and timing | [Browser regression](evidence/browser_regression_pr134_2026-10-12.md) |
 | Single-pointing visualization | PR #138 implementation: 271 UI tests; saved Archive LINE/CONTINUUM and synthetic Queue browser checks; no new source acquisition | [Explorer verification](ui_report_browser.md#single-pointing-report-explorer) |
 | Deterministic scientific engineering acceptance | Pinned 15-case catalog and references; source/SPW isolation and incomplete-source cases | [Acceptance contract](acceptance_cases.md), [UI/CLI parity](ui_offline_assessment.md#offline-uicli-parity-gate) |

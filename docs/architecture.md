@@ -32,6 +32,28 @@ objects with different completeness requirements. Continuum and LINE context agg
 Valid SUN requests exit through a typed request-level exemption before search;
 no source clients or replay loaders are invoked.
 
+## Archive Mosaic branch
+
+`assessment.assess_observation()` accepts a `MosaicAssessmentInput` alongside a
+fixed Mosaic request. It dispatches to `mosaic_backend.run_mosaic_backend()` with
+the default `S_REGION` coverage model:
+
+1. Import proposal OT pointings and confirm their frame and completeness.
+2. Discover Archive Member/target candidates across geometries.
+3. Retrieve normal Archive metadata, validate identity and build comparison contexts.
+4. Evaluate each context's own region through `rules.position_region`; combine
+   that result with the shared angular, continuum and LINE conditions.
+
+This branch returns `archive_mosaic_backend_2`, separate from the single-point
+v4/v6 presentation formats above. It does not call package preparation or require
+execution completeness. The browser has not yet integrated this input/report path.
+The [region contract](mosaic_s_region_position.md) owns the numerical policy.
+
+The acceptance CLI captures selected discovered Members and replays exact metadata
+queries through the production parser and shared entry. Replay requires saved
+discovery and explicit REPLAY source mode. The old `RECONSTRUCTED` branch remains
+an explicit research path. Neither route enables Queue Mosaic.
+
 ## Dependencies and focused follow-up
 
 Python and the declared dependencies remain in [pyproject.toml](../pyproject.toml).

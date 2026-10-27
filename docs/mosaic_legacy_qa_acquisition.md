@@ -1,5 +1,9 @@
 # Legacy QA acquisition follow-up
 
+Dated acquisition/reconstruction evidence. The observations below retain their
+original scope; acquisition success is not a prerequisite for the default
+[s_region assessment](mosaic_s_region_position.md).
+
 ## Observed failure and change
 
 A bounded live preparation of RX_J1347.5-1145, Member `uid://A001/X140/X6`,

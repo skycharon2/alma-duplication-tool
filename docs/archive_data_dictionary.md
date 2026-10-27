@@ -1,7 +1,8 @@
 # ALMA Archive Data Dictionary
 
-**Current scope:** Archive fixed-target, single-point continuum and LINE evaluation
-are implemented. This dictionary owns source-field semantics, not development
+**Current scope:** Archive fixed-target single-point and Mosaic backend evaluation
+are implemented. Mosaic uses the same metadata with a context-bound `s_region`
+position adapter; see the [region contract](mosaic_s_region_position.md). This dictionary owns source-field semantics, not development
 order or report versions; see [rules](rules.md), [CLI/report](evaluation_cli.md)
 and [capabilities](status.md). Queue mappings retain their separate status.
 
@@ -41,9 +42,9 @@ existing projections below.
 | `asdm_uid` | Execution identity | Core / yes | Reconstruction text input | Observed reconstruction keys; grouping does not authorize mixing evidence |
 | `obs_id` | Identifier grammar and association | Core / yes | Versioned identifier parser | Observed reconstruction keys; grouping does not authorize mixing evidence |
 | `target_name` | Source label | Core / yes | Raw only | Source context, not globally resolved physical target |
-| `s_ra` | Position evidence | Core / yes | Raw ingestion; independent unit-checked spatial normalization | Unit-checked center normalization and limited `CIRCLE ICRS` parsing implemented; no general STC-S family parser or formal beam-coverage method |
-| `s_dec` | Position evidence | Core / yes | Raw ingestion; independent unit-checked spatial normalization | Unit-checked center normalization and limited `CIRCLE ICRS` parsing implemented; no general STC-S family parser or formal beam-coverage method |
-| `s_region` | Footprint and spatial search | Core / yes | Raw ingestion; server predicate; separate limited [spatial parser](search_plan_spatial.md#spatial-evidence) | Unit-checked center normalization and limited `CIRCLE ICRS` parsing implemented; no general STC-S family parser or formal beam-coverage method |
+| `s_ra` | Position evidence | Core / yes | Raw ingestion; independent unit-checked spatial normalization | Single-point spatial adaptation remains CIRCLE-only; the separate [Mosaic region adapter](mosaic_s_region_position.md) supports scoped ICRS circles/polygons under the adopted policy; no general STC-S parser |
+| `s_dec` | Position evidence | Core / yes | Raw ingestion; independent unit-checked spatial normalization | Single-point spatial adaptation remains CIRCLE-only; the separate [Mosaic region adapter](mosaic_s_region_position.md) supports scoped ICRS circles/polygons under the adopted policy; no general STC-S parser |
+| `s_region` | Footprint and spatial search | Core / yes | Raw ingestion; server predicate; separate limited [spatial parser](search_plan_spatial.md#spatial-evidence) | Single-point spatial adaptation remains CIRCLE-only; the separate [Mosaic region adapter](mosaic_s_region_position.md) supports scoped ICRS circles/polygons under the adopted policy; no general STC-S parser |
 | `frequency` | Frequency centre | Core / yes | Unit-validated quantity | Row/SPW association subject to mapping; not independently verified usable coverage |
 | `bandwidth` | Coverage | Core / yes | Unit-validated quantity | Row/SPW association subject to mapping; not independently verified usable coverage |
 | `em_xel` | Channel count | Core / yes | Raw channel-count evidence | Ingestion preserves raw values; downstream comparison derives versioned, association-bound operational mode evidence for the confirmed Archive LINE scope; missing/conflicting evidence stays UNKNOWN |
@@ -162,7 +163,7 @@ column order or applying scientific-value normalization to their text.
 | `s_ra` | `double` / deg | `SPATIAL_FOOTPRINT` | Representative ICRS RA. Normalize longitude only in a derived field. Coordinate equality is not target identity. |
 | `s_dec` | `double` / deg | `SPATIAL_FOOTPRINT` | Representative ICRS Dec. Validate finite values and `[-90, 90]`. |
 | `s_fov` | `double` / deg | `SPATIAL_FOOTPRINT` cross-check | Preserve as representative field-of-view evidence; not a footprint replacement. |
-| `s_region` | `char` / — | `SPATIAL_FOOTPRINT` | Preserve raw STC-S. Historical exploration identifies CIRCLE, POLYGON, and UNION families; current local spatial adaptation parses only `CIRCLE ICRS`. POLYGON/UNION remain preserved but unsupported for local geometry evaluation. Execution-scoped. |
+| `s_region` | `char` / — | `SPATIAL_FOOTPRINT` | Preserve raw STC-S. Historical exploration identifies CIRCLE, POLYGON, and UNION families. Single-point adaptation parses `CIRCLE ICRS`; the separate Mosaic adapter evaluates supported ICRS circles/polygons. UNION remains unsupported. Keep the region bound to its source context. |
 | `is_mosaic` | `char` / — | `SOURCE_EXEC_CONTEXT` | Normalize known `T`/`F`; preserve other values. Geometry family does not determine mosaic state. |
 | `s_resolution` | `double` / arcsec | `SOURCE_EXEC_CONTEXT` cross-check | Preserve independently from `spatial_resolution`; no equality constraint. It is ObsCore evidence, not the primary ALMA candidate-query field. |
 | `spatial_resolution` | `double` / arcsec | `SOURCE_EXEC_CONTEXT` | Primary Archive angular-resolution evidence for candidate retrieval. The service describes it as the average of maximum and minimum spatial-resolution values across SPWs. Treat it as approximate/derived metadata, not a measured FITS restoring beam, and keep it separate from `s_resolution`. |

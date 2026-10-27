@@ -1,5 +1,9 @@
 # Archive Mosaic Product Discovery
 
+Retained reconstruction/research tool. Its inputs and completeness requirements
+apply to this tool, not the default Archive Mosaic assessment. Start with the
+[current s_region workflow](mosaic_s_region_position.md) for production evaluation.
+
 ## Scope
 
 This increment discovers product links for a known Archive Member using the

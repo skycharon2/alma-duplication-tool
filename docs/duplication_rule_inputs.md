@@ -1,6 +1,6 @@
 # Duplication rule inputs and evidence contract
 
-Design version: 0.3. Implementation coverage is specified separately below.
+Implementation coverage reviewed on 2026-10-27 against the baseline in [status](status.md).
 
 The reviewed implementation baseline is maintained in [status](status.md). Archive fixed-target,
 single-point continuum implements five approved conditions and per-context
@@ -133,7 +133,7 @@ coherent evidence from the same candidate context, as defined in section 6.
 | ID / applicability / policy | Proposed input | Archive evidence | Queue evidence | Derivation and readiness | Missing behavior |
 | --- | --- | --- | --- | --- | --- |
 | POS-SINGLE: fixed, single-field interferometry; A/location | ICRS position | `s_ra`, `s_dec`; `s_region`, optional `s_fov`, `antenna_arrays`, frequency as supporting evidence | `RA`, `Dec`, geometry and array evidence | Archive: approved candidate-frequency/unique-diameter position method. Queue: adopted opt-in row-beam method with explicit geometry/frame/array evidence; see [Queue common](queue_common.md). Legacy candidate-beam methods retain their provisional identity | Position required for fixed-target search; missing candidate beam permits bounded search, blocks formal position rule |
-| POS-MOSAIC: mosaics; A/location | Proposed pointing list or reproducible pointing-generation inputs | Actual pointing/coverage evidence; generic footprint insufficient | Mosaic fields and offsets are inputs, not a verified pointing list | Future pointing-count coverage calculation | Unsupported formal mode; never reduce to center/FOV or area overlap |
+| POS-MOSAIC: mosaics; A/location | Complete fixed ICRS OT pointing collection | Same-context `s_region` under the adopted project policy | Custom/Rectangle coverage is not implemented | [Region position evaluator](mosaic_s_region_position.md) | Archive backend implemented; no center-distance or area-overlap substitution; browser and Queue Mosaic remain unsupported |
 | TARGET-MOVING: moving; A/location | Explicit moving identity | `target_name` alone does not establish normalized identity | Target label alone does not establish normalized identity | Future identity normalization; no fixed-coordinate fallback | Unsupported search in first model |
 | SOLAR: Sun; A final sentence | Explicit target kind | Candidate matching unnecessary for exemption | Same | `NOT_APPLICABLE` assessment, distinct from unavailable implementation | Never extend exemption to all Solar System objects |
 | ANGULAR: applicable candidate comparison; A/resolution | Positive angular resolution with `REQUESTED_VALUE` meaning | `spatial_resolution` canonical evidence; optional `s_resolution` stays separate | `Req. Ang. Res.` | Convert supported units, preserve requested-versus-estimated semantics; policy comparison after context validation | Missing request or candidate quantity blocks this rule, not spatial retrieval |
@@ -305,7 +305,7 @@ executed search, not proof of non-duplication.
 
 | Mode | First-model behavior | Needed later |
 | --- | --- | --- |
-| Mosaic | UNSUPPORTED formal/search mode; no single-point fallback | Pointing membership or verified generation and beam coverage |
+| Mosaic | Fixed ICRS Archive backend supported with OT input; browser and Queue Mosaic unsupported | Same-context Archive region and metadata under the [adopted policy](mosaic_s_region_position.md) |
 | Moving target | UNSUPPORTED; retain supplied identity | Name normalization and matching strategy |
 | Sun | Assessment NOT_APPLICABLE | Separate UI explanation, no planet exemption |
 | Multiple targets/upload | Unsupported | Dedicated versioned request format with per-target setup links |
@@ -351,6 +351,19 @@ a coverage match. Return multiple coherent pair alternatives with individual
 readiness rather than mixing their most favorable quantities.
 
 ## 7. Scientific decision register
+
+### Archive Mosaic coverage (2026-10-26)
+
+The supervisor-confirmed project policy adopts each Archive context's `s_region`
+as its coverage for the Mosaic position condition. It supersedes candidate
+pointing reconstruction as a prerequisite for the default Archive path. Other
+conditions use the same context's Archive metadata and existing shared rules.
+This does not assert universal physical equivalence to a reconstructed beam union.
+
+The [region contract](mosaic_s_region_position.md) owns implementation details;
+the [decision record](research/mosaic/SCIENCE_GATES.md#superseding-archive-coverage-decision--2026-10-26)
+preserves the scope and superseded model. Proposal pointings remain required.
+Queue Mosaic, moving targets and unsupported TP scope are not newly approved.
 
 ### Current confirmed scope (2026-09-21)
 

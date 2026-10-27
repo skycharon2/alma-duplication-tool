@@ -11,6 +11,12 @@ with ALMA reviewers.
 ## Project status
 
 Archive fixed-target, single-point continuum and LINE evaluation are implemented.
+Archive Mosaic is also available through the backend and CLI: import OT pointings,
+evaluate each candidate context's `s_region`, and combine the result with shared
+non-position rules. See the [Mosaic contract](docs/mosaic_s_region_position.md) and
+[captured acceptance](tests/fixtures/archive/s_region_acceptance_2026_10_26/README.md).
+The browser currently executes single-pointing requests; Mosaic UI and Queue
+Mosaic evaluation remain pending.
 Queue ingestion/search and conditional mode diagnostics are implemented. Queue
 continuum and Queue LINE evaluation are available in the supported coherent
 single-field Queue scope ([continuum contract](docs/queue_continuum.md),
@@ -87,7 +93,7 @@ Confirm that `python3` is version 3.11 or later before creating the environment.
 For development or notebooks, additionally install `.[dev]`; it is not required
 to launch the browser interface.
 
-**Archive-only quick start:** after installing, you can test live Archive
+**Archive-only single-pointing browser quick start:** after installing, you can test live Archive
 queries without downloading or activating Queue CSV data:
 
 ```bash

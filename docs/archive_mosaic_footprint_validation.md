@@ -1,5 +1,9 @@
 # Multi-SPW footprint validation
 
+Retained reconstruction/research tool. Its inputs and completeness requirements
+apply to this tool, not the default Archive Mosaic assessment. Start with the
+[current s_region workflow](mosaic_s_region_position.md) for production evaluation.
+
 This diagnostic runs the explicit circular half-power model independently for each
 selected SPW. It checks inverse-frequency scaling and spherical boundary behaviour.
 An optional sampled TAP s_region supplies vertex probes only, not an authoritative

@@ -1,5 +1,10 @@
 # CASE2 joint duplication acceptance
 
+Historical reconstruction-path acceptance. These cases remain regression evidence
+for explicit `RECONSTRUCTED` mode; they do not define the default region workflow.
+Current [s_region acceptance](../tests/fixtures/archive/s_region_acceptance_2026_10_26/README.md)
+records the metadata-only path. Original results and commands are retained below.
+
 This increment tests the existing production assessment entry with actual OT
 pointings and captured CASE2 metadata. It adds constructed proposals and regression
 coverage; it does not change the scientific comparison formulas or thresholds.

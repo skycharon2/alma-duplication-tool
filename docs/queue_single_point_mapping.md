@@ -1,6 +1,6 @@
 # Queue single-point rule evidence mapping
 
-Blank Mosaic with nonzero offsets now has an explicit [formal pointing interpretation](queue_blank_mosaic.md), with scoped position v7/angular v8 method identities. The underlying parser and historical records are unchanged.
+Blank Mosaic with nonzero offsets now has an explicit [formal pointing interpretation](queue_blank_mosaic.md), with scoped `queue_pos_single_9` / `queue_angular_factor_8` method identities. The underlying parser and historical records are unchanged.
 
 Current mapping includes the scoped Queue continuum and fixed single-field regular-SPW Queue LINE increments. This is a
 contract index, not a new scientific approval record. The [Queue CSV contract](queue_csv_contract.md) owns parsing
