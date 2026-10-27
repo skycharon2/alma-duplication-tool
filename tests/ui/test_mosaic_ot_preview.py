@@ -114,3 +114,57 @@ def test_mosaic_assessment_remains_disabled(client):
     html = response.get_data(as_text=True)
     assert response.status_code == 200
     assert "cannot be assessed in this browser version" in html
+
+
+def token_from(response):
+    import re
+    return re.search(r'name="mosaic_upload_token" value="([a-f0-9]+)"', response.get_data(as_text=True)).group(1)
+
+
+def test_upload_survives_edit_and_failed_replacement_then_removal(client):
+    token = token_from(upload(client))
+    data = dict(target_kind='FIXED', geometry='MOSAIC', action='purpose',
+                mosaic_upload_token=token, mosaic_array='7m', mosaic_complete='on',
+                intents='CONTINUUM', sources=['ARCHIVE', 'QUEUE'])
+    response = client.post('/proposed', data=data)
+    html = response.get_data(as_text=True)
+    assert '3 input rows' in html
+    assert 'proposed array: 7m' in html
+    assert 'List complete: Yes' in html
+    assert 'name="sources" value="QUEUE"' not in html
+    assert 'id="ra"' not in html
+    assert 'centre radius for the supported' not in html
+    failed = upload(client, {'mosaic_upload_token': token}, raw=b'invalid')
+    assert '3 input rows' in failed.get_data(as_text=True)
+    assert token_from(failed) == token
+    data['action'] = 'remove-pointings'
+    removed = client.post('/proposed', data=data)
+    assert 'id="mosaic-preview-result"' not in removed.get_data(as_text=True)
+    assert 'name="mosaic_upload_token"' not in removed.get_data(as_text=True)
+    data['action'] = 'purpose'
+    assert 'expired or is unavailable' in client.post('/proposed', data=data).get_data(as_text=True)
+
+
+def test_token_is_session_owned_and_replacement_invalidates_old(client):
+    token = token_from(upload(client))
+    other = client.application.test_client()
+    data = dict(target_kind='FIXED', geometry='MOSAIC', action='scope', mosaic_upload_token=token)
+    assert '3 input rows' not in other.post('/proposed', data=data).get_data(as_text=True)
+    new = token_from(upload(client, {'mosaic_upload_token': token}))
+    assert new != token
+    assert '3 input rows' not in client.post('/proposed', data=data).get_data(as_text=True)
+
+
+def test_store_expiry_capacity_and_detached_collection():
+    from alma_duplicate.ui.mosaic_uploads import MosaicUploadStore
+    now = [0]
+    store = MosaicUploadStore(ttl=10, capacity=1, clock=lambda: now[0])
+    token = store.put('owner', {'points': [1, 2]})
+    copy = store.get('owner', token)
+    copy['points'].clear()
+    assert store.get('owner', token)['points'] == [1, 2]
+    with pytest.raises(ValueError, match='busy'):
+        store.put('owner', {})
+    now[0] = 10
+    assert store.get('owner', token) is None
+    store.put('owner', {})
