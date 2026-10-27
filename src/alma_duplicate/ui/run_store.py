@@ -19,6 +19,7 @@ from alma_duplicate.progress import emit_progress
 from alma_duplicate.reporting import report_json_chunks
 from alma_duplicate.report_inspection import inspect_report
 from alma_duplicate.ui.report_pages import report_page, report_projection
+from alma_duplicate.ui.mosaic_report_view import mosaic_report_projection
 
 DEFAULT_DISK_BYTES = 1024 * 1024 * 1024
 DEFAULT_MAX_AGE = 24 * 60 * 60
@@ -244,12 +245,8 @@ class RunStore:
                 with measure_stage('write_' + kind):
                     downloads[kind] = write(kind + '.json', _utf8_blocks(report_json_chunks(data)))
             with measure_stage("view_projection"):
-                projection = ({"mosaic": True, "summary": {"target": document["proposed"]["source_name"]},
-                               "document": {"proposed": {k: document["proposed"][k] for k in ("source_name", "row_count")},
-                                            "assessment_status": document["assessment_status"],
-                                            "discovery": {"status": document["discovery"]["status"]}},
-                               "candidate_count": len(document["candidates"])}
-                              if mosaic else report_projection(document, inspection, compact=True))
+                projection = (mosaic_report_projection(document) if mosaic
+                              else report_projection(document, inspection, compact=True))
             projection['offsets'] = offsets
             with measure_stage('write_view'):
                 write('view.json', _utf8_blocks(report_json_chunks(projection)))
@@ -300,6 +297,8 @@ class RunStore:
                         candidates.append(json.loads(stream.read(length)))
                 return dict(mosaic=True, document=projection["document"], candidates=candidates,
                             candidate_count=projection["candidate_count"],
+                            mosaic_overview=projection["mosaic_overview"],
+                            candidate_summaries=projection["candidate_summaries"][(page-1)*20:page*20],
                             page=page, pages=pages, run=item, retention_hours=self.max_age / 3600)
             with (item.directory / 'report.json').open('rb') as stream:
                 def context(index):
