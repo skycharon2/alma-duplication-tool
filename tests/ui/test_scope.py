@@ -137,9 +137,12 @@ def test_type_specific_location_guidance(client):
     data["geometry"] = "MOSAIC"
     html = client.post("/proposed", data=data).get_data(as_text=True)
     assert "more than 50% of the proposed pointings" in html
-    assert "Pointing-list input and coverage evaluation are not implemented" in html
+    assert "Browser assessment is not connected yet" in html
+    assert 'id="mosaic-pointings"' in html
+    assert 'value="preview-pointings"' in html
     data["target_kind"] = "MOVING"
     html = client.post("/proposed", data=data).get_data(as_text=True)
+    assert 'id="mosaic-pointings"' not in html
     assert '<label for="target_name">Moving-object name</label>' in html
     assert "Object-name matching is not implemented" in html
     assert "<summary>Retained coordinates</summary>" in html
