@@ -4,7 +4,6 @@ from copy import deepcopy
 from pathlib import Path
 
 from jinja2 import ChoiceLoader, DictLoader, Environment, FileSystemLoader
-import pytest
 
 from alma_duplicate.ui.mosaic_report_pages import mosaic_report_page
 from alma_duplicate.ui.mosaic_report_view import mosaic_report_projection
