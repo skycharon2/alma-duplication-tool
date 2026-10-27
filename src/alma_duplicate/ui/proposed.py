@@ -1,8 +1,10 @@
 """Browser wire-input adapter; scientific validation belongs to the backend."""
 
+import csv
 import re
 from uuid import uuid4
 
+from alma_duplicate.parsers.ot_pointings import parse_ot_pointings
 from alma_duplicate.request_validation import validate_proposed_observation
 from alma_duplicate.domain.proposed_observation import CONTINUUM_SETUP_DECLARATION
 
@@ -23,6 +25,39 @@ def assessment_supported(values):
     """Browser execution scope; backend scientific readiness remains separate."""
     return (values.get("target_kind", "FIXED") == "FIXED"
             and values.get("geometry", "SINGLE_POINTING") == "SINGLE_POINTING")
+
+
+def preview_mosaic_ot(upload, values):
+    """Preview one native OT export; never enable science or retain its raw bytes."""
+    if values.get("target_kind") != "FIXED" or values.get("geometry") != "MOSAIC":
+        raise ValueError("OT preview is for fixed-target Mosaic observations only")
+    array = values.get("mosaic_array", "12m")
+    if array not in {"7m", "12m"}:
+        raise ValueError("Select the proposed 7m or 12m array")
+    for name in ("mosaic_fixed_icrs", "mosaic_complete"):
+        if values.get(name, "") not in ("", "on"):
+            raise ValueError("Invalid Mosaic confirmation value")
+    if upload is None or not upload.filename:
+        raise ValueError("Choose an OT pointings file to preview")
+    # A bounded read also protects direct callers outside Flask's 1 MiB request cap.
+    from alma_duplicate.parsers.ot_pointings import MAX_BYTES
+    try:
+        parsed = parse_ot_pointings(upload.stream.read(MAX_BYTES + 1))
+    except csv.Error as exc:
+        raise ValueError("Malformed OT pointings CSV") from exc
+    return {
+        "array": array,
+        "row_count": parsed["row_count"],
+        "coordinate_units": parsed["coordinate_units"],
+        "input_sha256": parsed["input_sha256"],
+        "duplicate_count": len(parsed["duplicate_coordinates"]),
+        "points": [{"id": row["id"], "line_number": row["line_number"],
+                    "ra_deg": row["ra_deg"], "dec_deg": row["dec_deg"]}
+                   for row in parsed["points"][:20]],
+        "preview_limit": 20,
+        "fixed_icrs_confirmed": values.get("mosaic_fixed_icrs") == "on",
+        "complete_confirmed": values.get("mosaic_complete") == "on",
+    }
 
 
 def read_form(form):

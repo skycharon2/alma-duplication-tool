@@ -23,7 +23,7 @@ from alma_duplicate.ui.runs import ARCHIVE_CONNECTIONS, BrowserAssessment, RunSt
 from alma_duplicate.ui.report_pages import report_page, report_projection
 from alma_duplicate.ui.visualization import visualization_data
 from alma_duplicate.ui.run_store import DEFAULT_DISK_BYTES, DEFAULT_MAX_AGE
-from alma_duplicate.ui.proposed import MAX_WINDOWS, assessment_supported, contributing_windows, initial_form, new_row, read_form, validate_form
+from alma_duplicate.ui.proposed import MAX_WINDOWS, assessment_supported, contributing_windows, initial_form, new_row, preview_mosaic_ot, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
 from alma_duplicate.ui.managed_queue import managed_queue_status
 from alma_duplicate.ui.archive_status import archive_configuration_status, archive_run_status
@@ -251,6 +251,7 @@ def create_app(config=None):
         purpose_updated = False
         scope_updated = False
         execution_error = None
+        mosaic_preview, mosaic_preview_error = None, None
         if request.method == "POST":
             try:
                 values, rows = read_form(request.form)
@@ -259,7 +260,17 @@ def create_app(config=None):
             except ValueError as exc:
                 abort(400, description=str(exc))
             action = values.get("action", "validate")
-            if action == "scope":
+            if action == "preview-pointings":
+                if values.get("target_kind") != "FIXED" or values.get("geometry") != "MOSAIC":
+                    abort(400, description="OT preview requires a fixed Mosaic request")
+                try:
+                    uploads = request.files.getlist("ot_pointings")
+                    if len(uploads) != 1:
+                        raise ValueError("Select one OT pointings file")
+                    mosaic_preview = preview_mosaic_ot(uploads[0], values)
+                except (ValueError, UnicodeError) as exc:
+                    mosaic_preview_error = str(exc)
+            elif action == "scope":
                 scope_updated = True
                 edit_notice = "Observation type updated. Entered values are retained; validate again."
             elif action == "purpose":
@@ -338,6 +349,7 @@ def create_app(config=None):
                                pending_removal=pending_removal, edit_notice=edit_notice, added_row=added_row,
                                purpose_updated=purpose_updated,
                                scope_updated=scope_updated, assessment_supported=assessment_supported(values),
+                               mosaic_preview=mosaic_preview, mosaic_preview_error=mosaic_preview_error,
                                configured=configured, execution_error=execution_error, auto_scope=automatic_scope(),
                                archive_status=archive_configuration_status(configured.archive_kind),
                                queue_status=(managed_queue_status(configured.managed_queue_root)

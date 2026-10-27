@@ -99,11 +99,20 @@ purposes, row identities and aggregate references, and clear stale validation.
 They do not validate, access sources or execute assessments.
 
 Only FIXED / SINGLE_POINTING can reach browser execution. Moving/Mosaic combinations
-show their limitation and disable Run assessment. Sun instead shows the Appendix A
-exemption and omits that action; retained inputs are collapsed, not discarded.
-The server independently rejects direct assessment POSTs for these types before
-invoking the execution adapter. No motion trajectory
-or mosaic-pattern editor is provided. Retained coordinates do not define either.
+show their limitation and disable Run assessment. FIXED / MOSAIC additionally shows
+a read-only OT export preview using the existing backend parser; it does not run
+candidate discovery or change the browser execution scope. The preview requires
+the native Absolute four-column header, bounds its input by the browser's 1 MiB
+request limit (versus the parser's 2 MB byte limit), preserves input-row identity,
+reports duplicate coordinates, and shows at most the first 20 points. It retains
+only a transient parsed summary for the immediate response; no upload is persisted.
+Proposed 7m/12m selection and fixed-ICRS / completeness confirmations are displayed
+as user declarations, not assertions inferred from the OT file. A preview without
+those confirmations is allowed but does not authorize scientific evaluation.
+Sun instead shows the Appendix A exemption and omits the assessment action;
+retained inputs are collapsed, not discarded. The server independently rejects
+direct assessment POSTs for these types before invoking the execution adapter.
+No motion trajectory or executable mosaic assessment is provided yet.
 
 Validation and request download use the existing backend contract. Valid moving
 or mosaic requests report UNSUPPORTED. Valid Sun requests report NOT_APPLICABLE:
