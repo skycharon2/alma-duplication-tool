@@ -22,6 +22,7 @@ class MosaicAssessmentInput:
     preparation_directory: Path | None = None
     coverage_model: str = "S_REGION"
     discovery_origin: str | None = None
+    discovery_origins: tuple[str, ...] | None = None
 
 
 def _run_reconstructed_backend(
@@ -172,7 +173,8 @@ def run_mosaic_backend(request, mosaic, *, archive_client=None, array_catalog=No
     else:
         discovery = (discovery_provider or discover_candidates)(
             mosaic.proposed, root/'discovery', margin_arcsec=mosaic.margin_arcsec,
-            **({'origin': mosaic.discovery_origin} if mosaic.discovery_origin else {}))
+            **({'origins': mosaic.discovery_origins} if mosaic.discovery_origins else
+               {'origin': mosaic.discovery_origin} if mosaic.discovery_origin else {}))
     client = archive_client if archive_client is not None else MirroredArchiveClient()
     total = len({(c['member_ous_uid'], c['source_name']) for c in discovery['candidates']})
     emit_progress("archive_ready", total, unit="candidates")

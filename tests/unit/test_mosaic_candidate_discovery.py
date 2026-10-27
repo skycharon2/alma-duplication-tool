@@ -72,3 +72,57 @@ def test_all_geometries_preserved_without_weakening_package_parser(tmp_path):
     assert flags=={'M':['F','T'],'N':['F'],'U':['']}
     with pytest.raises(ValueError):read_mosaic_rows(raw)
     assert all("is_mosaic='T'" not in req['query'] for req in result['plan']['requests'])
+
+
+def test_mirror_fallback_restarts_whole_discovery_and_preserves_receipts(tmp_path):
+    from alma_duplicate.archive_endpoints import ARCHIVE_ORIGINS
+    calls = []
+    replies = iter([(200, response([('P', 'OLD', 'E', 'S', 'T', 'T')])),
+                    (503, b'unavailable'),
+                    (200, response([('P', 'NEW', 'E', 'S', 'T', 'F')])),
+                    (200, response())])
+    def fetch(url):
+        calls.append(url)
+        return next(replies)
+    report = discover_candidates(p(), tmp_path/'run', margin_arcsec=1,
+                                 origins=ARCHIVE_ORIGINS, fetch=fetch)
+    assert report['status'] == 'COMPLETED'
+    assert [c['member_ous_uid'] for c in report['candidates']] == ['NEW']
+    assert [a['status'] for a in report['mirror_attempts']] == ['INCOMPLETE', 'COMPLETED']
+    assert all(url.startswith(ARCHIVE_ORIGINS[1]) for url in calls[2:])
+    for receipt in report['requests']:
+        assert (tmp_path/'run'/receipt['response_file']).is_file()
+    assert json.loads((tmp_path/'run/discovery.json').read_text()) == report
+    assert (tmp_path/'run/mirror-00/discovery.json').is_file()
+
+
+@pytest.mark.parametrize('origins_count', [1, 3])
+def test_completed_empty_mirror_stops_without_false_negative(tmp_path, origins_count):
+    from alma_duplicate.archive_endpoints import ARCHIVE_ORIGINS
+    calls = []
+    def fetch(url):
+        calls.append(url)
+        return 200, response()
+    report = discover_candidates(p(), tmp_path/'run', margin_arcsec=1,
+                                 origins=ARCHIVE_ORIGINS[:origins_count], fetch=fetch)
+    assert len(calls) == 2
+    assert len(report['mirror_attempts']) == 1
+    assert report['status'] == 'COMPLETED'
+    assert report['absence_interpretation'] == 'NO_DUPLICATION_CONCLUSION_FROM_EMPTY_SEARCH'
+
+
+@pytest.mark.parametrize('origins_count', [1, 3])
+def test_failed_mirrors_keep_partial_evidence_without_merging(tmp_path, origins_count):
+    from alma_duplicate.archive_endpoints import ARCHIVE_ORIGINS
+    calls = []
+    def fetch(url):
+        calls.append(url)
+        if len(calls) % 2 == 0:
+            return 503, b'unavailable'
+        return 200, response([('P', str(len(calls)), 'E', 'S', 'T', 'T')])
+    report = discover_candidates(p(), tmp_path/'run', margin_arcsec=1,
+                                 origins=ARCHIVE_ORIGINS[:origins_count], fetch=fetch)
+    assert report['status'] == 'INCOMPLETE'
+    assert report['candidate_count'] == 1
+    assert len(report['mirror_attempts']) == origins_count
+    assert len(calls) == 2 * origins_count

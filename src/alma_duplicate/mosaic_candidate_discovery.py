@@ -7,7 +7,7 @@ import math
 from pathlib import Path
 from urllib.parse import urlencode
 import xml.etree.ElementTree as ET
-from alma_duplicate.archive_endpoints import ARCHIVE_ORIGINS
+from alma_duplicate.archive_endpoints import ARCHIVE_ORIGINS, validate_origins
 from alma_duplicate.archive_mosaic_discovery import _fetch, MAX_ROWS
 from alma_duplicate.archive_mosaic_pipeline import read_candidate_rows, MAX_METADATA_BYTES
 
@@ -52,7 +52,33 @@ def plan_discovery(proposed, *, margin_arcsec, origin=ARCHIVE_ORIGINS[0]):
         recall_status='NOT_ESTABLISHED_FOR_RECONSTRUCTED_HALF_POWER_COVERAGE')
 
 
-def discover_candidates(proposed, output: Path, *, margin_arcsec, origin=ARCHIVE_ORIGINS[0], fetch=None):
+def discover_candidates(proposed, output: Path, *, margin_arcsec, origin=ARCHIVE_ORIGINS[0], fetch=None, origins=None):
+    if origins is not None:
+        origins = validate_origins(origins)
+        output = Path(output)
+        output.mkdir(parents=True, exist_ok=False)
+        attempts = []
+        selected = None
+        selected_directory = None
+        for index, mirror in enumerate(origins):
+            directory = f'mirror-{index:02d}'
+            report = discover_candidates(proposed, output / directory,
+                margin_arcsec=margin_arcsec, origin=mirror, fetch=fetch)
+            attempts.append(dict(origin=mirror, status=report['status'],
+                candidate_count=report['candidate_count'], report_file=f'{directory}/discovery.json'))
+            # Preserve the most informative partial attempt if no mirror completes.
+            # Never combine candidates or completeness evidence across mirrors.
+            if selected is None or report['status'] == 'COMPLETED' or report['candidate_count'] > selected['candidate_count']:
+                selected, selected_directory = report, directory
+            if report['status'] == 'COMPLETED':
+                break
+        selected['mirror_attempts'] = attempts
+        for receipt in selected['requests']:
+            if 'response_file' in receipt:
+                receipt['response_file'] = f"{selected_directory}/{receipt['response_file']}"
+        (output / 'discovery.json').write_text(json.dumps(selected, indent=2, allow_nan=False) + '\n')
+        (output / 'candidates.json').write_bytes((output / selected_directory / 'candidates.json').read_bytes())
+        return selected
     plan=plan_discovery(proposed,margin_arcsec=margin_arcsec,origin=origin)
     output=Path(output);output.mkdir(parents=True,exist_ok=False)
     groups, receipts = {}, []

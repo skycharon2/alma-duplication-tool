@@ -8,8 +8,8 @@ const source = fs.readFileSync('src/alma_duplicate/ui/static/coordinate-format-s
 function control(value) {
   const listeners = {};
   return {value, focused: false,
-    addEventListener(name, callback) { listeners[name] = callback; },
-    change(value) { this.value = value; listeners.change?.(); },
+    addEventListener(name, callback) { (listeners[name] ??= []).push(callback); },
+    change(value) { this.value = value; listeners.change?.forEach(callback => callback()); },
     focus() { this.focused = true; }};
 }
 function initialize(withInputs = true) {
@@ -24,11 +24,13 @@ function initialize(withInputs = true) {
     querySelector(name) { return withInputs ? inputs[name] : null; },
     dispatchEvent() { changes++; }
   };
+  const window = {};
   vm.runInNewContext(source, {
+    window,
     document: {querySelector(name) { return name === '.proposed-form' ? form : null; }},
     Event: class { constructor(name) {this.type = name;} }
   });
-  return {raFormat, decFormat, ra, dec, changes: () => changes};
+  return {form, window, raFormat, decFormat, ra, dec, changes: () => changes};
 }
 
 test('changing RA or Dec representation links the counterpart and preserves sky coordinates', () => {
@@ -61,4 +63,24 @@ test('empty coordinates and Mosaic views remain safe', () => {
   p.raFormat.change('HMS');
   assert.equal(p.decFormat.value, 'DMS');
   initialize(false);
+});
+
+
+test('replacement forms initialize once and preserve conversion after validation errors', () => {
+  const original = initialize();
+  // Use fresh controls to represent the replacement parsed from server HTML.
+  const inputs = {
+    '[name="ra_format"]': control('DEG'), '[name="dec_format"]': control('DEG'),
+    '[name="ra"]': control('15'), '[name="dec"]': control('-30')
+  };
+  let events = 0;
+  const form = {querySelector: name => inputs[name], dispatchEvent: () => events++};
+  original.window.initializeCoordinateFormatSync(form);
+  original.window.initializeCoordinateFormatSync(form);
+  inputs['[name="ra_format"]'].change('HMS');
+  assert.equal(inputs['[name="ra"]'].value, '01:00:00.00000000');
+  assert.equal(inputs['[name="dec_format"]'].value, 'DMS');
+  assert.equal(events, 1);
+  assert.match(fs.readFileSync('src/alma_duplicate/ui/static/proposed.js', 'utf8'),
+    /window\.initializeCoordinateFormatSync\?\.\(form\)/);
 });

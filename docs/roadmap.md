@@ -28,15 +28,16 @@ Earlier increment IDs, test counts and extraction records are retained in
 
 Archive Mosaic now has OT import, metadata-only `s_region` position evaluation,
 shared non-position rules and bounded live capture/offline replay. See the
-[region contract](mosaic_s_region_position.md). The next product gap is browser
-execution, not historical pointing recovery.
+[region contract](mosaic_s_region_position.md). Browser execution and Member/context
+report navigation are implemented. The next step is live browser acceptance and
+retrieval reliability before a restricted supervisor preview.
 
 ## Remaining delivery order
 
 | Step | Work | Exit gate |
 | --- | --- | --- |
-| 1. Add Archive Mosaic browser execution | Import OT pointings, preview their coordinates and require fixed-ICRS/completeness confirmation. Reuse the shared backend and existing spectral/ angular inputs. Explicitly limit Mosaic to Archive. | Valid uploads run through the main entry; invalid files fail before querying; source failures, incomplete retrieval and unknown conditions remain visible. |
-| 2. Display and verify Mosaic reports | Show per-context covered counts, point classifications, shared criteria and joint decisions; preserve original exports. | Browser/CLI parity on captured cases, no scientific recomputation in rendering, and clear progress for large candidate sets. |
+| 1. Verify live Archive Mosaic browser execution | Exercise OT upload, validation/retry, AUTO mirror fallback and explicit-region selection using recorded cases. | Valid uploads reach shared assessment; failed retrieval remains incomplete; a complete empty search does not imply non-duplication. |
+| 2. Accept Mosaic report navigation | Verify existing Member/context navigation, covered counts, point classifications, shared criteria and original exports. | Browser/CLI parity on captured cases, no Member-wide verdict or scientific recomputation in rendering, and clear progress for large candidate sets. |
 | 3. Prepare a restricted supervisor preview | Define intended users, hosting, access control, source configuration, Queue snapshot freshness and temporary report retention. Clarify the recorded Queue SPW label; document and test the chosen runtime. | An authorized supervisor can submit a case and review results; access boundaries, concurrent progress polling, expiry/restart behavior, source failures and data removal are tested. No public Flask development-server deployment. |
 | 4. Review supervisor cases | Collect actual proposals and expected judgments, distinguish self-retrieval from independent scientific review, and investigate discrepancies. | Record input provenance, reviewed labels, criterion-level explanations and known gaps; fix each confirmed defect in a bounded change with regression coverage. |
 
