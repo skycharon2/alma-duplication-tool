@@ -47,11 +47,12 @@ def upload(client):
     return re.search(r'name="mosaic_upload_token" value="([a-f0-9]+)"', response.text).group(1)
 
 
-def test_upload_to_real_backend_report_and_downloads(browser):
+@pytest.mark.parametrize('connection', ['AUTO', 'EAST_ASIA'])
+def test_upload_to_real_backend_report_and_downloads(browser, connection):
     client, calls = browser
     token = upload(client)
     response = client.post('/proposed', data=form() | dict(action='assess',
-                          mosaic_upload_token=token, archive_connection='EAST_ASIA', ra='invalid', dec='invalid'))
+                          mosaic_upload_token=token, archive_connection=connection, ra='invalid', dec='invalid'))
     assert response.status_code == 303, response.text
     url = response.headers['Location']
     page = client.get(url)
@@ -67,7 +68,8 @@ def test_upload_to_real_backend_report_and_downloads(browser):
     retained = client.get(url+'/download/request').json
     assert retained['request']['position'] is None
     assert len(retained['mosaic_pointings']['points']) == 3
-    assert calls[0][1]['origin'] == 'https://almascience.nao.ac.jp'
+    from alma_duplicate.ui.runs import ARCHIVE_CONNECTIONS
+    assert calls[0][1]['origins'] == ARCHIVE_CONNECTIONS[connection]
     assert client.get(url+'?page=2').status_code == 404
     assert client.get(url+'/visualization').status_code == 404
     assert client.get('/reports').status_code == 200

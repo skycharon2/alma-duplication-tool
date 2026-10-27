@@ -132,8 +132,12 @@ Run assessment binds all retained pointing rows to the current form and invokes
 single-field coordinates and radius controls do not enter this request. Discovery
 uses a 1 arcsec prefilter margin around every unique proposed position; this is
 not a beam radius or an expansion of the final position test. The selected Archive
-connection controls the discovery origin and metadata client. AUTO discovery uses
-the European origin; metadata retains the client's normal mirror behavior.
+connection controls discovery and metadata clients. AUTO discovery retries the
+whole query set in Europe, East Asia and North America order, stopping at the first
+complete result, including a complete empty result. It does not combine partial
+results across mirrors. Each attempt is recorded; if all fail, the selected partial
+result remains incomplete. A fixed region uses only its selected mirror. Metadata
+retains the client's normal mirror behavior.
 Queue, AQ and auxiliary-product retrieval are not invoked. Browser Archive replay
 is not supported for Mosaic; CLI captured-discovery replay remains available.
 

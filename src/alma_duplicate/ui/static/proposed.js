@@ -8,6 +8,7 @@ function initializeForm(form) {
   if (!form) return;
   window.initializeProposalWorkbench?.(form);
   window.initializeContinuumChoice?.(form);
+  window.initializeCoordinateFormatSync?.(form);
   let assessing = false;
   const busyMessage = document.getElementById('assessment-busy');
   const elapsedLabel = document.getElementById('assessment-elapsed');

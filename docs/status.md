@@ -37,7 +37,8 @@ pointings are not required by the default path.
 The [region contract](mosaic_s_region_position.md) owns geometry, boundary handling,
 TP scope and result semantics. [Discovery](mosaic_candidate_discovery.md) retains
 query completeness and candidate identity. Explicit reconstruction remains available
-for research replay; Queue Mosaic and browser Mosaic execution are not implemented.
+for research replay. Fixed-target Archive Mosaic execution is also available in
+the browser; Queue Mosaic remains unsupported.
 
 ## Browser and report capabilities
 
@@ -54,7 +55,7 @@ for research replay; Queue Mosaic and browser Mosaic execution are not implement
 - [Reports](ui_report_browser.md) lead with matching comparisons grouped by
   Member, preserving target, execution, SPW and beam identities. Technical
   records are optional. Original report, request and inspection exports remain
-  available. New non-solar browser assessments use [report v6](matching_report.md);
+  available. New non-solar single-pointing browser assessments use [report v6](matching_report.md);
   the shared entry/CLI default remains full v4, and Solar exemptions retain v4.
   Inspection v3 reads v4/v5/v6; historical inspection versions remain explicit.
 - The [single-pointing explorer](ui_report_browser.md#single-pointing-report-explorer)
@@ -68,8 +69,11 @@ for research replay; Queue Mosaic and browser Mosaic execution are not implement
 
 ## Known limits and scientific interpretation
 
-Only supported fixed-target single-pointing requests execute through the form.
-Archive Mosaic assessment is available through the backend/CLI, but not the form.
+The form executes supported fixed-target single-pointing and live Archive Mosaic
+requests. Mosaic imports OT pointings and retains backend v2 reports with
+per-context coverage, shared criteria and Member navigation. Member grouping does
+not create a Member-wide scientific verdict. Captured Mosaic replay remains a CLI
+workflow; live browser acceptance should cover source failures as well as matching cases.
 Queue Mosaic and moving-target assessment remain unsupported. Sun is
 selectable for validation/export; the shared backend has a no-source Solar
 exemption, rather than a duplication assessment.

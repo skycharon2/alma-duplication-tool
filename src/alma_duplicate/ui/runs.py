@@ -79,7 +79,7 @@ class BrowserAssessment:
                 mosaic=MosaicAssessmentInput(proposed=proposed,
                     output_directory=Path(directory) / "assessment", cache_directory=None,
                     margin_arcsec=1.0,
-                    discovery_origin=ARCHIVE_CONNECTIONS[self.archive_connection][0]))
+                    discovery_origins=ARCHIVE_CONNECTIONS[self.archive_connection]))
 
     def assess(self, document):
         """Construct fresh lazy providers; never fall back between Archive modes."""
