@@ -9,6 +9,12 @@ Baseline: main `b13714c1` (2026-10-23). This patch tests the shared Appendix A
 criterion pipeline: `POS-MOSAIC` replaces `POS-SINGLE`, while ANGULAR,
 CONT-SETUP, CONT-FREQ, CONT-RMS and the four LINE pair tests are reused.
 
+**Historical instructions only:** the patch named below is not committed in this
+repository and must not be applied to current `main`. The implementation was
+subsequently merged and its default coverage model superseded. Use the current
+[s_region integration and acceptance instructions](mosaic_s_region_position.md#integration-validation)
+for validation. The commands below are retained as part of the original record.
+
 ## Run the patch
 
 ```bash

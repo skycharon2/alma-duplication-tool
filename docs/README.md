@@ -76,23 +76,21 @@ They are not current population counts or Python class definitions.
 
 ## Archive Mosaic
 
-Start with the [current region contract](mosaic_s_region_position.md), then
-[candidate discovery](mosaic_candidate_discovery.md) and the
-[shared application entry](assessment_entry.md). The default backend imports OT
-pointings, retrieves Archive metadata and evaluates each context's `s_region`
-alongside the shared non-position conditions. Browser and Queue Mosaic execution
-remain next-stage work; see [status](status.md) and [roadmap](roadmap.md).
+**Current Archive-only backend:** [OT pointing import](ot_pointings_backend.md),
+[candidate discovery](mosaic_candidate_discovery.md),
+[s_region position contract](mosaic_s_region_position.md), and
+[assessment entry](assessment_entry.md). The default method evaluates each
+candidate context's region with the shared non-position rules. Mosaic is not yet
+available through the browser or Queue; see [status](status.md) and
+[roadmap](roadmap.md).
 
-[Captured acceptance](../tests/fixtures/archive/s_region_acceptance_2026_10_26/README.md)
-records the selected live cases and exact offline replay. These are engineering
-cases, not independently reviewed proposals.
+**Verification:** [captured live/REPLAY acceptance](../tests/fixtures/archive/s_region_acceptance_2026_10_26/README.md)
+contains reproducible engineering evidence, not independently reviewed proposal
+labels.
 
-The [execution reconstruction](archive_mosaic_backend.md),
-[product discovery](archive_mosaic_products.md),
-[auxiliary acquisition](archive_mosaic_acquisition.md) and
-[reconstruction pipeline](archive_mosaic_pipeline.md) documents describe retained
-research tools. Their historical prerequisites do not govern the default region
-path. Existing paths and dated evidence remain available for reproducibility.
+**Retained research:** earlier listobs/auxiliary-product reconstruction is opt-in,
+not a prerequisite. Use the [Mosaic research and evidence index](research/mosaic/README.md)
+for its tools, dated experiments, acceptance records and decision history.
 
 ## UI reading order
 
@@ -193,84 +191,35 @@ behavior belong to the [search/spatial contract](search_plan_spatial.md).
 
 ## Delivery status and remaining work
 
-The [acceptance catalog](acceptance_cases.md) pins inputs and independently documented
-reference values; its runner saves reports, differences and evidence-gap counts.
-[Inspection v3](report_inspection.md) preserves candidate pair identities in those counts.
-The [thin-interface contract](thin_interface_contract.md) defines browser
-consumption of backend reports: new non-solar runs use v6, while full v4 and
-historical v5 remain readable. No delivered case is falsely labelled as a reviewed real proposal.
+[Status](status.md) is the single current capability register;
+[roadmap](roadmap.md) owns the remaining delivery order. The project has engineering
+acceptance for supported single-pointing workflows and selected Archive Mosaic
+cases, but no independently reviewed real-proposal verdict. Retrieval results and
+individual candidates must not be presented as search-wide non-duplication.
+See the [official ALMA duplication guidance](https://almascience.eso.org/proposing/duplications)
+for the Archive and current-cycle Queue sources.
 
+### Topic references
 
-The [remaining PR plan](roadmap.md) owns implementation order and gates.
-Dual-source engineering acceptance, the thin browser interface, offline parity
-and explicit live Archive source wiring are complete. Genuine real-proposal
-review remains deferred pending external input; persistent multi-user lifecycle
-and broader-mode scope remain separate work.
-Continuum delivery records are [initial acceptance](confirmed_continuum.md) and
-[contract closure](continuum_closure.md); neither is another active task list.
+- **Request and browser:** [request API](proposed_observation_api.md),
+  [implemented form](ui_proposed_form.md), [assessment entry](assessment_entry.md),
+  [reports and explorer](ui_report_browser.md).
+- **Data access and operations:** [Archive client](archive_client_contract.md),
+  [Archive mirrors](archive_mirror_failover.md), [Queue contract](queue_csv_contract.md),
+  [snapshot activation](queue_active_snapshot.md) and [browser Queue source](queue_managed_ui.md).
+- **Policy and results:** [rule inputs](duplication_rule_inputs.md),
+  [criterion evaluation](rules.md), [matching reports](matching_report.md),
+  [inspection](report_inspection.md) and [acceptance catalog](acceptance_cases.md).
+- **Archive Mosaic:** [current s_region method](mosaic_s_region_position.md),
+  [discovery](mosaic_candidate_discovery.md), and
+  [retained research/evidence index](research/mosaic/README.md).
+- **Historical validation:** [delivery notes](history/delivery_notes.md),
+  [continuum delivery](history/confirmed_continuum.md),
+  [continuum closure](history/continuum_closure.md),
+  [dual-source replay](dual_source_replay.md),
+  [historical Queue position method](pos_single.md) and
+  [provisional Queue beam profile](queue_candidate_beam.md).
 
-ALMA requires checking both Archive and queued observations; the
-[official duplication guidance](https://almascience.eso.org/proposing/duplications)
-provides the source entry points and policy references. A candidate is evidence
-for review, not an automatic formal duplication conclusion. Versioned policy
-citations and Q1–Q8 interpretations remain in the rule-input contract.
-
-- [Queue candidate-beam profile](queue_candidate_beam.md): legacy/provisional
-  search-profile behavior; not the current formal Queue POS-SINGLE/UI contract.
-- [Verified ALMA source evidence](evidence/official_sources.md)
-
-- [Real dual-source replay](dual_source_replay.md): fixed NGC6240 request, raw Archive capture and Queue subset.
-- [Queue POS-SINGLE](pos_single.md): retained historical/provisional
-  `queue_pos_single_1` increment. Current formal Queue POS-SINGLE is owned by
-  [Queue common](queue_common.md); do not use this file's report/evaluation
-  versions as current UI requirements.
-
-Queue diagnostic deliveries #75/#76 and the supported Queue continuum and LINE
-formal evaluation paths and dual-source engineering acceptance are complete.
-See [status](status.md) and [roadmap](roadmap.md) for the deferred genuine-proposal
-review gate, persistent multi-user lifecycle and broader-mode scope.
-
-- [Queue mode evidence adapter](queue_mode_adapter.md): typed row/SPW mode evidence, exact-first reviewed compatibility, and separate single-point applicability.
-
-- [Blank Queue Mosaic interpretation](queue_blank_mosaic.md): source evidence, scoped offset support, retained raw geometry and spectral-scan limitations.
-- [Queue common rules](queue_common.md): opt-in Queue array/beam inference and complete MIX variants, shared row-level angular conditions and versioned provenance.
-
-- [Queue continuum](queue_continuum.md): opt-in row-level frequency, usable-union RMS and branch contract.
-
-- [Queue LINE pairing and evaluation](queue_line_pairing.md): same-row/SPW evidence preparation, formal FDM/coverage/resolution/RMS evaluation, provenance checks and aggregation boundaries.
-
-- [Shared assessment entry](assessment_entry.md): callable orchestration, lazy sources and execution statuses; browser replay/live TAP execution consumes this entry.
-
-- [Matching-detail reports](matching_report.md): browser v6 retains full matching evidence and shared decision summaries for other candidates; full v4 remains the shared-entry/CLI default.
-
-- [Report browser and explorer](ui_report_browser.md): read saved evidence, inspect linked single-pointing charts and export original artifacts.
-
-- [Proposed form validation](ui_proposed_form.md): field mapping, per-window RMS, request export.
-
-- [Active Queue snapshot selection](queue_active_snapshot.md): manually and atomically approve a validated Queue source/run, inspect recent selection history, and explicitly roll back; the Flask source remains unchanged in PR2.
-- [Managed Queue browser source](queue_managed_ui.md): approved active snapshot selection, pinned report provenance, and update-check status (PR3).
-
-- [Archive mirror failover](archive_mirror_failover.md): official live TAP/AQ
-  retry boundaries, request budgets, provenance and source isolation.
-
-- [Archive Mosaic inventory](archive_mosaic_inventory.md): saved Member/target execution coverage and missing-evidence reconciliation.
-
-- [Archive Mosaic TAP inventory capture](archive_mosaic_discovery.md): bounded live execution discovery, captured requests and validated reconciliation.
-
-- [Archive Mosaic execution batches](archive_mosaic_batch.md): independent reconstruction, verified reuse and Member/target summaries.
-
-- [Archive Mosaic package execution audit](archive_mosaic_package_audit.md): real IC1954 multi-execution evidence and TAP/package discrepancy handling.
-
-- [Archive Mosaic pointing comparison](archive_mosaic_pointings.md): cross-execution field-centre diagnostics with explicit tolerance and preserved evidence.
-
-- [Archive Mosaic candidate pointing groups](archive_mosaic_groups.md): conservative all-pairs grouping with ambiguity reporting and original records retained.
-
-- [Archive Mosaic footprint input readiness](archive_mosaic_readiness.md): execution-local SPW frequency links, antenna evidence and official AQ array crosschecks.
-
-- [Archive Mosaic footprint diagnostic](archive_mosaic_footprint.md): explicit single-execution/SPW circular half-power union and boundary probes.
-
-- [Archive Mosaic footprint validation](archive_mosaic_footprint_validation.md): per-SPW spherical boundary sweeps and scoped s_region vertex comparisons.
-
-- [OT proposed Mosaic pointings](ot_pointings_backend.md)
-
-- [Mosaic Archive candidate discovery](mosaic_candidate_discovery.md)
+These references are navigation, not separate implementation or scientific-policy
+specifications. Follow the linked owning contracts for method versions, evidence
+limitations and reproducible commands.

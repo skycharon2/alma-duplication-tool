@@ -37,6 +37,12 @@ route. They remain relevant to research replay and unresolved Queue work, but
 candidate pointing recovery is no longer a prerequisite for the default Archive
 assessment. Historical decision headings and references are retained.
 
+**Historical scope:** the "Decisions required before duplication verdicts" and
+"Implementation gate" sections below applied to the earlier `RECONSTRUCTED`
+path. They are **not release gates** for the default `S_REGION` workflow.
+The headings and the 2026-10-23 decision anchor remain intact for saved reports
+and `decision_refs`; the adopted 2026-10-26 scope is stated above.
+
 ## Established rules
 
 - [Cycle 13 Users' Policies, Appendix A](https://almascience.eso.org/documents-and-tools/cycle13/alma-user-policies) requires **strictly more than half of the proposed Mosaic pointings** to lie within the other observation's half-power-beam coverage. The threshold is directional and concerns pointing count, not mapped area. Position is only one of the required duplication conditions.
