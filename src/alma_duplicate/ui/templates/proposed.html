@@ -26,21 +26,21 @@
 <section id="observation-type" tabindex="-1" {% if scope_updated %}data-scope-updated{% endif %}><h2>Target</h2>
 
 <div class="form-pair target-identity-grid">
-<div>{{ input('target_name', 'Moving-object name' if target_kind == 'MOVING' else 'Target name (optional label)') }}</div>
+<div>{{ input('target_name', 'Moving-object name' if target_kind == 'MOVING' else 'Target name' if geometry == 'MOSAIC' else 'Target name (optional label)') }}</div>
 <div><label for="target_kind">Target type</label><select id="target_kind" name="target_kind" aria-describedby="scope-support target_kind-notes">
 {% if target_kind not in ['FIXED','MOVING','SUN'] %}<option selected value="{{ target_kind }}">{{ target_kind }} (invalid selection)</option>{% endif %}
 {% for value, label in [('FIXED','Fixed target'),('MOVING','Moving target — assessment not available'),('SUN','Sun — exempt from duplication checking')] %}<option value="{{ value }}" {% if target_kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{{ messages('target_kind') }}</div>
 <div><label for="geometry">Observation geometry</label><select id="geometry" name="geometry" aria-describedby="scope-support geometry-notes">
 {% if geometry not in ['SINGLE_POINTING','MOSAIC'] %}<option selected value="{{ geometry }}">{{ geometry }} (invalid selection)</option>{% endif %}
-{% for value, label in [('SINGLE_POINTING','Single pointing'),('MOSAIC','Mosaic — Solar exemption applies' if target_kind == 'SUN' else 'Mosaic — assessment not available')] %}<option value="{{ value }}" {% if geometry == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{{ messages('geometry') }}</div>
+{% for value, label in [('SINGLE_POINTING','Single pointing'),('MOSAIC','Mosaic — Solar exemption applies' if target_kind == 'SUN' else 'Mosaic')] %}<option value="{{ value }}" {% if geometry == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{{ messages('geometry') }}</div>
 </div>
 <div id="scope-support" class="scope-support{% if assessment_supported %} scope-supported{% endif %}{% if not assessment_supported and target_kind != 'SUN' %} scope-unavailable{% endif %}" role="status">
-{% if assessment_supported %}<span>Single-pointing assessment available.</span>
+{% if assessment_supported %}<span>{{ 'Mosaic Archive assessment available with a live Archive source.' if geometry == 'MOSAIC' else 'Single-pointing assessment available.' }}</span>{% if geometry == 'MOSAIC' %}<p>Check whether more than 50% of the proposed pointings are within each Archive context’s s_region. Other criteria use the same Archive metadata rules as single pointing.</p>{% endif %}
 {% elif target_kind not in ['FIXED','MOVING','SUN'] or geometry not in ['SINGLE_POINTING','MOSAIC'] %}<strong>Unrecognized observation type.</strong><p>Choose a listed target type and geometry, then validate again.</p>
 {% elif target_kind == 'SUN' %}<strong>Exempt: no duplication check required.</strong><p>This exemption applies to Solar observations, including mosaics. It is independent of LINE or CONTINUUM selection. No candidate search or duplication assessment will run.</p><p>You may inspect retained inputs or export a valid request below. A request download is not an assessment report.</p>
 {% else %}<strong>Assessment is not yet available for this observation type.</strong>
 {% if target_kind == 'MOVING' %}<p>Appendix A identifies moving objects by name. Object-name matching is not implemented in this version.</p>{% endif %}
-{% if geometry == 'MOSAIC' %}<p>The Mosaic science backend uses each Archive candidate's s_region as the project-adopted half-power coverage to check whether more than 50% of the proposed pointings are covered. Browser assessment is not connected yet; use the read-only OT preview below.</p>{% endif %}
+{% if geometry == 'MOSAIC' %}<p>The Mosaic science backend uses each Archive candidate's s_region as the project-adopted half-power coverage to check whether more than 50% of the proposed pointings are covered. Import the complete OT pointing list below, confirm its coordinate frame, and run the Archive assessment.</p>{% endif %}
 <p>Your values are retained and still validated. You can export a valid request, but no assessment or source query will run.</p>{% endif %}
 </div>
 <button class="button" type="submit" name="action" value="scope" data-update-scope>Update observation type</button>
@@ -68,7 +68,7 @@
 {% if target_kind == 'FIXED' and geometry == 'MOSAIC' %}
 <section id="mosaic-pointings" aria-label="Archive Mosaic OT pointing preview">
 <h2>Mosaic positions</h2>
-<p class="field-note">Import an ALMA OT Absolute pointings export. Imported positions remain available while editing this form for up to one hour; a server restart clears them. Browser assessment is not yet enabled.</p>
+<p class="field-note">Import an ALMA OT Absolute pointings export. Imported positions remain available while editing this form for up to one hour; a server restart clears them. Run assessment uses every imported row.</p>
 <div><label for="ot_pointings">OT pointings export (.txt or .csv; request limit 1 MiB)</label><input id="ot_pointings" name="ot_pointings" type="file" accept=".txt,.csv,text/plain,text/csv"></div>
 <div><label for="mosaic_array">Proposed antenna array</label><select id="mosaic_array" name="mosaic_array"><option value="12m" {% if values.get('mosaic_array', '12m') == '12m' %}selected{% endif %}>12 m</option><option value="7m" {% if values.get('mosaic_array') == '7m' %}selected{% endif %}>7 m (ACA)</option></select></div>
 <label class="complete-choice"><input name="mosaic_fixed_icrs" type="checkbox" {% if values.get('mosaic_fixed_icrs') == 'on' %}checked{% endif %}> I confirm these are fixed ICRS pointings.</label>
@@ -170,12 +170,12 @@
 {% if values.get('radius', '') %}<p class="notice">This input contains an explicit radius that conflicts with automatic scope. Clear the value below to continue with AUTO.</p>{{ quantity('radius', 'Conflicting explicit radius', ['arcsec','arcmin','deg'], 'arcsec') }}{% endif %}
 {% else %}<input type="hidden" name="radius_mode" value="{{ radius_mode }}"><p>Explicit search scope retained from this request. Start a new observation to use automatic scope.</p>{{ quantity('radius', 'Search radius', ['arcsec','arcmin','deg'], 'arcsec') }}{% endif %}
 {% endif %}
-<details class="field-help"><summary>Display options</summary><div class="display-limit">{{ input('result_limit', 'Candidate display limit (optional positive integer)') }}</div><p class="field-note">Limits displayed candidates only; it does not limit retrieval or evaluation.</p></details>
+{% if geometry != 'MOSAIC' %}<details class="field-help"><summary>Display options</summary><div class="display-limit">{{ input('result_limit', 'Candidate display limit (optional positive integer)') }}</div><p class="field-note">Limits displayed candidates only; it does not limit retrieval or evaluation.</p></details>{% elif values.get('result_limit') %}<input type="hidden" name="result_limit" value="{{ values.result_limit }}">{% endif %}
 {% if configured.enabled %}<details id="assessment-sources" class="field-help"><summary>Data source details</summary>
 <p>Archive TAP: {% if configured.archive_kind == 'LIVE' %}live{% elif configured.archive_kind == 'REPLAY' %}replay{% else %}not provided{% endif %}. Queue CSV: {{ 'managed approved snapshot' if configured.managed_queue_root else ('configured' if configured.queue_csv else 'not provided') }}.</p>
-<p>Additional AQ evidence: {% if configured.live_aq %}live AQ enabled. After TAP retrieval, linked Members from retained candidates are queried for source-bound array evidence. Acquisition failures retain available candidates with unresolved array evidence; no fallback is used.{% elif configured.archive_array_evidence %}captured AQ manifest configured. A live TAP run does not perform a live AQ lookup; configured AQ evidence remains captured evidence.{% else %}not configured. A live TAP run does not perform a live AQ lookup; existing TAP-only array interpretation remains available.{% endif %}</p>
+{% if geometry == 'MOSAIC' %}<p>Mosaic uses Archive TAP metadata only. Queue, AQ and auxiliary products are not queried.</p>{% else %}<p>Additional AQ evidence: {% if configured.live_aq %}live AQ enabled. After TAP retrieval, linked Members from retained candidates are queried for source-bound array evidence. Acquisition failures retain available candidates with unresolved array evidence; no fallback is used.{% elif configured.archive_array_evidence %}captured AQ manifest configured. A live TAP run does not perform a live AQ lookup; configured AQ evidence remains captured evidence.{% else %}not configured. A live TAP run does not perform a live AQ lookup; existing TAP-only array interpretation remains available.{% endif %}</p>
 {% if configured.archive_kind == 'REPLAY' %}<p>Archive replay requires the exact recorded query, including search mode and radius. Older explicit-radius recordings cannot be replayed by an AUTO request. A different query can fail; it will not fall back to a live search. These reference files do not establish current Archive or Queue coverage.</p>{% elif configured.archive_kind == 'LIVE' %}<p>The live Archive client is created only for a search-ready Run assessment that selected ARCHIVE. Archive query failures are not replaced by replay results.</p>{% endif %}
-<p>When Queue is selected, common criteria and the formal methods for each selected purpose are explicitly enabled. The report shows the effective configuration.</p></details>{% endif %}
+<p>When Queue is selected, common criteria and the formal methods for each selected purpose are explicitly enabled. The report shows the effective configuration.</p>{% endif %}</details>{% endif %}
 </section>
 {% if target_kind == 'SUN' %}</details>{% endif %}
 <div id="assessment-busy" class="assessment-progress" hidden>
@@ -185,7 +185,7 @@
 <p id="assessment-progress-description">Searching and preparing your report. It will open when ready.</p>
 <p id="assessment-waiting-note" role="status" hidden>This can take several minutes. Keep this page open. The timer shows waiting time, not completion progress.</p>
 </div>
-<div class="input-actions" id="form-actions">{% if configured.enabled and target_kind != 'SUN' %}<button class="button primary" type="submit" name="action" value="assess" {% if not assessment_supported %}disabled aria-describedby="scope-support"{% endif %}>Run assessment</button>{% endif %}<button class="button{% if not configured.enabled or not assessment_supported %} primary{% endif %}" type="submit" name="action" value="validate">Validate input</button></div>
+<div class="input-actions" id="form-actions">{% if configured.enabled and target_kind != 'SUN' %}<button class="button primary" type="submit" name="action" value="assess" {% if not assessment_supported or (geometry == 'MOSAIC' and not configured.live_archive) %}disabled aria-describedby="scope-support"{% endif %}>Run assessment</button>{% endif %}<button class="button{% if not configured.enabled or not assessment_supported %} primary{% endif %}" type="submit" name="action" value="validate">Validate input</button></div>
 <details class="input-export"><summary>Export input</summary>{% if geometry == 'MOSAIC' %}<p>The request JSON contains observing requirements only. Keep the original OT file separately; the temporary upload is not included in this export.</p>{% endif %}<button class="button" type="submit" name="action" value="download">Validate and download request JSON</button>
 <p class="field-note">{% if target_kind == 'SUN' %}Export validates the retained input only. Solar observations do not require a duplication check.{% else %}Download checks the current input. Valid inputs may still lack scientific evidence. Validation and request download do not run an assessment.{% endif %}</p>
 <p class="field-note">Reports are retained temporarily. Use the report’s technical downloads to keep a copy.</p></details>
@@ -204,8 +204,8 @@
 <h2{% if not result %} class="sr-only"{% endif %}>Input status</h2>
 {% if result %}
 <div class="validation-facts"><p>Input valid: <strong>{{ 'Yes' if result.is_valid else 'No' }}</strong></p>
-<p>Search readiness: <strong>{{ result.search_readiness.value }}</strong></p>
-<p>Can search: <strong>{{ 'Yes' if result.can_search else 'No' }}</strong></p></div>
+<p>Search readiness: <strong>{{ ('READY' if mosaic_ready else 'NOT_READY') if geometry == 'MOSAIC' and target_kind == 'FIXED' else result.search_readiness.value }}</strong></p>
+<p>{% if geometry == 'MOSAIC' %}Mosaic execution requires a valid request, retained OT pointings, both confirmations, and live Archive configuration.{% else %}Can search: <strong>{{ 'Yes' if result.can_search else 'No' }}</strong>{% endif %}</p></div>
 <p class="field-note">Readiness describes the input only. It is not a duplication verdict.</p>
 <div id="validation-current">
 {% for category, heading in [('ERROR', 'Correct these inputs'), ('MISSING', 'Missing information')] %}

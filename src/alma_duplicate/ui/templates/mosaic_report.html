@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Mosaic assessment · {{ document.proposed.source_name }}</h1>
+<p>{{ document.proposed.row_count }} proposed pointings · {{ candidate_count }} Archive candidates · {{ document.assessment_status }}</p>
+<p>Position is satisfied when more than 50% of the proposed pointings fall within the candidate context's Archive s_region. Angular resolution and spectral conditions use Archive metadata.</p>
+<p>This report contains per-context results. It does not establish a search-wide absence of duplication. Unavailable evidence remains unresolved.</p>
+<p>Discovery: {{ document.discovery.status }}. Reports are retained for {{ retention_hours }} hours; restarting the server clears them.</p>
+<p><a href="{{ url_for('run_download', report_id=report_id, kind='report') }}">Download full report</a> · <a href="{{ url_for('run_download', report_id=report_id, kind='request') }}">Download request and all pointings</a></p>
+{% for candidate in candidates %}
+<section class="report-context"><h2>{{ candidate.source_name }} · {{ candidate.member_ous_uid }}</h2>
+<p>Metadata assessment: {{ candidate.status }}</p>
+{% if candidate.error %}<p>{{ candidate.error }}</p>{% endif %}
+{% if candidate.reasons %}<p>{{ candidate.reasons|join(', ') }}</p>{% endif %}
+{% for context in candidate.get('evaluation', {}).get('contexts', []) %}
+<details><summary>Context {{ loop.index }} · {% for branch in context.branches %}{{ branch.branch }}: {{ branch.status }} {% endfor %}</summary>
+<p>Context identity: {{ context.context_id }}</p>
+<table class="comparison-table"><thead><tr><th>Criterion</th><th>Outcome</th><th>Reason</th></tr></thead><tbody>
+{% for criterion in context.criteria + context.request_criteria %}<tr><td>{{ criterion.criterion_id }}</td><td>{{ criterion.outcome or 'UNKNOWN' }}</td><td>{{ criterion.reasons|join(', ') }}</td></tr>{% endfor %}
+</tbody></table>
+{% if context.coverage %}<p>Covered pointings: {{ context.coverage.inside_count }} / {{ context.coverage.pointing_count }}. Boundary: {{ context.coverage.boundary_count }}; unknown: {{ context.coverage.unknown_count }}.</p><details><summary>Pointing coverage evidence</summary><pre>{{ context.coverage|tojson(indent=2) }}</pre></details>{% endif %}
+{% if context.line_pairs %}<details><summary>Spectral line comparisons</summary><pre>{{ context.line_pairs|tojson(indent=2) }}</pre></details>{% endif %}
+</details>{% endfor %}</section>{% endfor %}
+<p>Page {{ page }} of {{ pages }} {% if page > 1 %}<a href="{{ url_for('run_view', report_id=report_id, page=page-1) }}">Previous</a>{% endif %} {% if page < pages %}<a href="{{ url_for('run_view', report_id=report_id, page=page+1) }}">Next</a>{% endif %}</p>
+{% endblock %}

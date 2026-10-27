@@ -24,7 +24,7 @@ def initial_form():
 def assessment_supported(values):
     """Browser execution scope; backend scientific readiness remains separate."""
     return (values.get("target_kind", "FIXED") == "FIXED"
-            and values.get("geometry", "SINGLE_POINTING") == "SINGLE_POINTING")
+            and values.get("geometry", "SINGLE_POINTING") in {"SINGLE_POINTING", "MOSAIC"})
 
 
 def preview_mosaic_ot(upload, values):
@@ -126,7 +126,8 @@ def build_document(values, rows):
     }
     # Non-fixed targets need not supply coordinates. Keep any supplied values
     # for provenance/validation, but do not invent an empty position.
-    if request["target_kind"] != "FIXED" and not any(values.get(k, "").strip() for k in ("ra", "dec")):
+    if (request["target_kind"] == "FIXED" and request["geometry"] == "MOSAIC") or (
+            request["target_kind"] != "FIXED" and not any(values.get(k, "").strip() for k in ("ra", "dec"))):
         request["position"] = None
     redshift = raw("redshift", "request.source_redshift")
     declaration = raw("continuum_setup_declaration", "request.continuum_setup_declaration")
@@ -185,6 +186,8 @@ def build_document(values, rows):
     if limit.strip():
         # The backend expects an integer here, unlike quantity values.
         search["result_limit"] = int(limit) if re.fullmatch(r"[0-9]{1,9}", limit) else limit
+    if request["target_kind"] == "FIXED" and request["geometry"] == "MOSAIC":
+        search = {"sources": ["ARCHIVE"], "predicates": [], "radius_mode": "AUTO"}
     return {"request": request, "search_options": search}, bindings
 
 
@@ -198,3 +201,24 @@ def validate_form(values, rows):
         field = bindings[max(candidates, key=len)] if candidates else "validation"
         issues.append({"issue": issue, "field": field})
     return document, result, issues
+
+
+def bind_mosaic_input(values, preview):
+    """Bind the complete owned upload to the current form, without a centre proxy."""
+    from copy import deepcopy
+    from alma_duplicate.mosaic_candidate_discovery import plan_discovery
+    if preview is None:
+        raise ValueError("Import an OT pointings file before running Mosaic assessment.")
+    if values.get("mosaic_fixed_icrs") != "on" or values.get("mosaic_complete") != "on":
+        raise ValueError("Confirm fixed ICRS coordinates and the complete proposed pointing list.")
+    name = values.get("target_name", "").strip()
+    array = values.get("mosaic_array", "")
+    if not name or array not in {"7m", "12m"}:
+        raise ValueError("Enter a target name and select the proposed 7m or 12m array.")
+    proposed = deepcopy(preview["collection"])
+    proposed.update(source_name=name, array=array,
+                    binding_basis="USER_SUPPLIED_NOT_ENCODED_IN_OT_FILE",
+                    frame_basis="USER_CONFIRMED_FIXED_ICRS",
+                    completeness="USER_CONFIRMED_COMPLETE")
+    plan_discovery(proposed, margin_arcsec=1.0)
+    return proposed

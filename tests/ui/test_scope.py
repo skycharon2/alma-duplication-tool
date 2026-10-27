@@ -80,11 +80,14 @@ def test_selection_export_and_forged_assess_are_safe(client, kind, geometry, rea
         assert "Solar observations are exempt from duplication checking under Appendix A" in html
         assert 'value="assess"' not in html
         assert '<details class="solar-retained" id="solar-retained">' in html
+    elif kind == "FIXED" and geometry == "MOSAIC":
+        assert "requires live Archive configuration" in html
     else:
         assert "This observation type cannot be assessed" in html
         assert 'disabled aria-describedby="scope-support"' in html
     assert 'value="230.538"' in html
-    assert f'Search readiness: <strong>{readiness}</strong>' in html
+    displayed = 'NOT_READY' if kind == 'FIXED' and geometry == 'MOSAIC' else readiness
+    assert f'Search readiness: <strong>{displayed}</strong>' in html
 
 
 def test_scope_round_trip_preserves_mixed_inputs_and_has_no_validation(client, monkeypatch):
@@ -137,7 +140,7 @@ def test_type_specific_location_guidance(client):
     data["geometry"] = "MOSAIC"
     html = client.post("/proposed", data=data).get_data(as_text=True)
     assert "more than 50% of the proposed pointings" in html
-    assert "Browser assessment is not connected yet" in html
+    assert "Mosaic Archive assessment available with a live Archive source" in html
     assert 'id="mosaic-pointings"' in html
     assert 'value="preview-pointings"' in html
     data["target_kind"] = "MOVING"
