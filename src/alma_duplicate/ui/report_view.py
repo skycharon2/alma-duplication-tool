@@ -1,7 +1,8 @@
 """Display projections of stored criteria; no scientific calculation or aggregation."""
 
 LABELS = {
-    "POS-SINGLE": "Position", "ANGULAR": "Angular resolution",
+    "POS-SINGLE": "Position", "POS-MOSAIC": "Mosaic spatial coverage",
+    "ANGULAR": "Angular resolution",
     "CONT-SETUP": "Proposed continuum setup", "CONT-FREQ": "Representative frequency",
     "CONT-RMS": "Aggregate RMS", "LINE-FDM": "Correlator mode",
     "LINE-COVERAGE": "Frequency coverage",
@@ -248,6 +249,8 @@ def matching_contexts(document):
 CONDITION_TEXT = {
     'POS-SINGLE': ('The position lies within the candidate half-power beam.',
                    'The position lies outside the candidate half-power beam.'),
+    'POS-MOSAIC': ('More than half of the proposed pointings satisfy the recorded Archive s_region coverage test.',
+                   'The recorded Archive s_region test does not cover a strict majority of proposed pointings.'),
     'ANGULAR': ('The angular resolutions meet the allowed comparison factor.',
                 'The angular resolutions exceed the allowed comparison factor.'),
     'CONT-SETUP': ('The proposed setup meets the continuum qualification condition.',

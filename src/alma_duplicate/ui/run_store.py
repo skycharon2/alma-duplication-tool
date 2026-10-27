@@ -20,6 +20,7 @@ from alma_duplicate.reporting import report_json_chunks
 from alma_duplicate.report_inspection import inspect_report
 from alma_duplicate.ui.report_pages import report_page, report_projection
 from alma_duplicate.ui.mosaic_report_view import mosaic_report_projection
+from alma_duplicate.ui.mosaic_report_pages import mosaic_report_page
 
 DEFAULT_DISK_BYTES = 1024 * 1024 * 1024
 DEFAULT_MAX_AGE = 24 * 60 * 60
@@ -287,19 +288,17 @@ class RunStore:
                 return None
             projection = json.loads((item.directory / 'view.json').read_bytes())
             if projection.get("mosaic"):
-                pages = max(1, math.ceil(projection["candidate_count"] / 20))
-                if page < 1 or page > pages:
-                    raise IndexError("Page out of range")
                 with (item.directory / 'report.json').open('rb') as stream:
-                    candidates = []
-                    for offset, length in projection['offsets'][(page-1)*20:page*20]:
+                    def candidate(index):
+                        offset, length = projection['offsets'][index]
                         stream.seek(offset)
-                        candidates.append(json.loads(stream.read(length)))
-                return dict(mosaic=True, document=projection["document"], candidates=candidates,
-                            candidate_count=projection["candidate_count"],
-                            mosaic_overview=projection["mosaic_overview"],
-                            candidate_summaries=projection["candidate_summaries"][(page-1)*20:page*20],
-                            page=page, pages=pages, run=item, retention_hours=self.max_age / 3600)
+                        return json.loads(stream.read(length))
+                    data = mosaic_report_page(projection, page, view, candidate)
+                data.update(run=item, retention_hours=self.max_age / 3600,
+                            remaining_minutes=max(0, math.ceil((item.expires_at - self._clock()) / 60)))
+                return data
+            if view not in {'matches', 'all'}:
+                raise IndexError('Unknown single-pointing report view')
             with (item.directory / 'report.json').open('rb') as stream:
                 def context(index):
                     offset, length = projection['offsets'][index]
