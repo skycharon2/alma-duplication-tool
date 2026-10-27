@@ -109,19 +109,26 @@ def create_app(config=None):
             abort(404)
         return reports[report_id]
 
-    def page_selection():
+    def page_selection(allow_mosaic_views=False):
         page = request.args.get("page", "1")
         if not page.isdecimal() or len(page) > 8 or int(page) < 1:
             abort(400)
         view = request.args.get("view", "matches")
-        if view not in ("matches", "all"):
+        allowed = (("matches", "all", "matching", "review", "not_met")
+                   if allow_mosaic_views else ("matches", "all"))
+        if view not in allowed:
             abort(400)
         return int(page), view
 
     def render_report(data, report_id):
         is_run = data.get('run') is not None
         if data.get("mosaic"):
-            return render_template("mosaic_report.html", **data, report_id=report_id)
+            return render_template("mosaic_report.html", **data, report_id=report_id,
+                                   criterion_view=criterion_view,
+                                   criterion_status=criterion_status,
+                                   criterion_explanation=criterion_explanation,
+                                   pair_title=pair_title, display_number=display_number,
+                                   status_labels=STATUS_LABELS)
         return render_template("report.html", **data, report_id=report_id,
                                archive_status=archive_run_status(data['document']),
                                show_technical=request.args.get('technical') == '1',
@@ -166,7 +173,7 @@ def create_app(config=None):
 
     @app.get("/runs/<report_id>")
     def run_view(report_id):
-        page, view = page_selection()
+        page, view = page_selection(allow_mosaic_views=True)
         try:
             data = runs.page(report_id, page, view)
         except IndexError:
