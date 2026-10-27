@@ -105,7 +105,18 @@ candidate discovery or change the browser execution scope. The preview requires
 the native Absolute four-column header, bounds its input by the browser's 1 MiB
 request limit (versus the parser's 2 MB byte limit), preserves input-row identity,
 reports duplicate coordinates, and shows at most the first 20 points. It retains
-only a transient parsed summary for the immediate response; no upload is persisted.
+the full parsed collection in session-owned server memory for one hour, with a
+64-upload process limit. The form carries an opaque token; coordinates are not
+stored in the session cookie. Editing requirements preserves the token. A valid
+replacement invalidates the old token; an invalid replacement preserves the old
+collection. Removal, expiry or server restart requires a new import. Separate
+browser sessions cannot read each other's tokens. This is temporary single-process
+form state, not persistent storage or an assessment result.
+
+Mosaic uses OT positions instead of visible single-centre RA/Dec inputs. Previously
+entered coordinates remain hidden for switching back to Single Pointing. Mosaic
+source selection is Archive-only, and single-point AUTO-radius guidance is hidden.
+The original file hash and coordinate table are expandable technical details.
 Proposed 7m/12m selection and fixed-ICRS / completeness confirmations are displayed
 as user declarations, not assertions inferred from the OT file. A preview without
 those confirmations is allowed but does not authorize scientific evaluation.

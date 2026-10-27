@@ -55,6 +55,8 @@ def preview_mosaic_ot(upload, values):
                     "ra_deg": row["ra_deg"], "dec_deg": row["dec_deg"]}
                    for row in parsed["points"][:20]],
         "preview_limit": 20,
+        "collection": parsed,
+        "filename": upload.filename.replace("\\", "/").split("/")[-1][:200],
         "fixed_icrs_confirmed": values.get("mosaic_fixed_icrs") == "on",
         "complete_confirmed": values.get("mosaic_complete") == "on",
     }

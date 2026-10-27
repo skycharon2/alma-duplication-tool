@@ -48,6 +48,9 @@ def _env_flag(name):
 def create_app(config=None):
     """Create the browser application without accessing assessment sources."""
     app = Flask(__name__)
+    from alma_duplicate.ui.mosaic_uploads import MosaicUploadStore
+    mosaic_uploads = MosaicUploadStore()
+    app.extensions["mosaic_uploads"] = mosaic_uploads
     app.config.update(SECRET_KEY=token_hex(32), SESSION_COOKIE_NAME='alma_report_history',
                       SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax')
     app.config["MAX_CONTENT_LENGTH"] = 1024 * 1024
@@ -252,6 +255,7 @@ def create_app(config=None):
         scope_updated = False
         execution_error = None
         mosaic_preview, mosaic_preview_error = None, None
+        owner = session.setdefault("mosaic_owner", token_hex(24))
         if request.method == "POST":
             try:
                 values, rows = read_form(request.form)
@@ -259,6 +263,14 @@ def create_app(config=None):
                     raise ValueError("Invalid Archive connection selection")
             except ValueError as exc:
                 abort(400, description=str(exc))
+            token = values.get("mosaic_upload_token", "")
+            if token:
+                mosaic_preview = mosaic_uploads.get(owner, token)
+                if mosaic_preview is None:
+                    values.pop("mosaic_upload_token", None)
+                    mosaic_preview_error = "The OT upload expired or is unavailable. Import the file again."
+            if values.get("target_kind") == "FIXED" and values.get("geometry") == "MOSAIC":
+                values["sources"] = ["ARCHIVE"]
             action = values.get("action", "validate")
             if action == "preview-pointings":
                 if values.get("target_kind") != "FIXED" or values.get("geometry") != "MOSAIC":
@@ -267,9 +279,22 @@ def create_app(config=None):
                     uploads = request.files.getlist("ot_pointings")
                     if len(uploads) != 1:
                         raise ValueError("Select one OT pointings file")
-                    mosaic_preview = preview_mosaic_ot(uploads[0], values)
+                    replacement = preview_mosaic_ot(uploads[0], values)
+                    new_token = mosaic_uploads.put(owner, replacement)
+                    mosaic_uploads.remove(owner, token)
+                    values["mosaic_upload_token"] = new_token
+                    mosaic_preview = replacement
+                    mosaic_preview_error = None
                 except (ValueError, UnicodeError) as exc:
                     mosaic_preview_error = str(exc)
+            elif action == "remove-pointings":
+                mosaic_uploads.remove(owner, token)
+                values.pop("mosaic_upload_token", None)
+                values.pop("mosaic_complete", None)
+                values.pop("mosaic_fixed_icrs", None)
+                mosaic_preview = None
+                mosaic_preview_error = None
+                edit_notice = "OT pointings removed."
             elif action == "scope":
                 scope_updated = True
                 edit_notice = "Observation type updated. Entered values are retained; validate again."
@@ -338,6 +363,10 @@ def create_app(config=None):
                                     headers={"Content-Disposition": 'attachment; filename="proposed-request.json"'})
             else:
                 abort(400)
+        if mosaic_preview:
+            mosaic_preview["array"] = values.get("mosaic_array", "12m")
+            mosaic_preview["fixed_icrs_confirmed"] = values.get("mosaic_fixed_icrs") == "on"
+            mosaic_preview["complete_confirmed"] = values.get("mosaic_complete") == "on"
         for row in rows:
             values.setdefault(row + "_id", row)
         selected = contributing_windows(values)
