@@ -70,25 +70,29 @@
 </nav></details>
 
 <section id="candidates" aria-label="Mosaic candidate results"><h2>Candidate results</h2>
-<p>{{ visible_count }} candidate identities in this view · Page {{ page }} of {{ pages }}. Each page contains at most 20 complete candidate identities. Results retain their original discovery order.</p>
+{% if result_view == 'matching' %}<p>{{ matching_member_count }} matching Archive Member groups · {{ visible_count }} recorded candidate identities in those Members · Page {{ page }} of {{ pages }}. Each page contains up to 20 complete Member groups; all recorded target identities in a matching Member remain together.</p>
+{% else %}<p>{{ visible_count }} candidate identities in this diagnostic view · Page {{ page }} of {{ pages }}. Each page contains at most 20 candidate identities; Members may span diagnostic pages. Results retain their original discovery order.</p>{% endif %}
 {% if result_view == 'review' %}<p class="mosaic-status-note">This view contains uncertain evaluated candidates and candidates with unavailable metadata. Matching candidates with unresolved additional branches remain in the matching view.</p>{% endif %}
 {% if not member_groups %}<p class="mosaic-empty">{{ 'No recorded matching candidates in this search.' if result_view == 'matching' else 'No candidate identities are recorded in this category.' }} This is not a search-wide non-duplication conclusion.</p>{% endif %}
 {% for group in member_groups %}<section class="member-result" id="{{ group.anchor }}">
 <h3>Archive Member OUS: {{ group.member_ous_uid or 'Identity unavailable' }}</h3>
+<p class="mosaic-member-identities"><strong>Proposal / Project:</strong> {% if group.projects|length == 1 %}{{ group.projects[0] }}{% elif group.projects|length > 1 %}Conflicting recorded proposals: {{ group.projects|join(', ') }}{% else %}Not available in saved Member metadata{% endif %}</p>
+<p class="mosaic-member-identities"><strong>Group OUS:</strong> {% if group.group_ous_uids %}{{ group.group_ous_uids|join(', ') }}{% else %}Not recorded{% endif %}</p>
 {% if not group.member_ous_uid %}<p class="mosaic-status-note">Member identity is missing; this candidate remains separate.</p>{% endif %}
+{% if result_view == 'matching' %}<p class="mosaic-status-note">This Member contains at least one matching candidate. Other recorded targets and contexts below retain their own independent results.</p>{% endif %}
 {% for entry in group.entries %}{% set candidate = entry.candidate %}{% set index = entry.candidate_index %}
 <section class="member-execution mosaic-candidate" id="mosaic-candidate-{{ index }}">
 <h4>Target: {{ candidate.source_name or 'Not recorded' }}</h4>
 <p>Candidate {{ index + 1 }} · Metadata assessment: <strong>{{ candidate.status or 'UNKNOWN' }}</strong> · {{ candidate_bucket(entry.summary.bucket) }}</p>
+<p class="mosaic-member-identities"><strong>Recorded execution(s) / ASDM:</strong> {% if entry.identity.asdm_uids %}{{ entry.identity.asdm_uids|join(', ') }}{% else %}Not recorded for this target{% endif %}</p>
 {% if candidate.error %}<p role="alert" class="notice">Metadata retrieval error: {{ candidate.error }}</p>{% endif %}
 {% if candidate.reasons %}<p>Candidate reasons: {{ candidate.reasons|join(', ') }}</p>{% endif %}
 {% if not candidate.get('evaluation', {}).get('contexts') %}<p>No evaluable comparison contexts were returned for this candidate.</p>{% endif %}
-{% for context in candidate.get('evaluation', {}).get('contexts', []) %}
-{% set matching_context = context.branches|selectattr('status', 'equalto', 'CRITERIA_MET')|list|length > 0 %}
-{% if result_view != 'matching' or matching_context %}
-<details class="candidate-comparison mosaic-context" id="mosaic-context-{{ index }}-{{ loop.index0 }}"{% if matching_context %} open{% endif %}>
-<summary>Context {{ loop.index }} · {% for branch in context.branches %}{{ branch.branch }}: {{ status_labels.get(branch.status, 'Needs review') }}{% if not loop.last %}; {% endif %}{% else %}No branch result{% endfor %}</summary>
+{% for context_item in entry.contexts %}{% set context = context_item.record %}
+<details class="candidate-comparison mosaic-context" id="mosaic-context-{{ index }}-{{ context_item.index }}"{% if context_item.matching %} open{% endif %}>
+<summary>Context {{ context_item.index + 1 }}{% if context_item.spws %} · Archive SPW {{ context_item.spws|join(', ') }}{% endif %} · {% for branch in context.branches %}{{ branch.branch }}: {{ status_labels.get(branch.status, 'Needs review') }}{% if not loop.last %}; {% endif %}{% else %}No branch result{% endfor %}</summary>
 <div class="mosaic-context-body"><p class="mosaic-context-id">Recorded context ID: {{ context.context_id }}</p>
+{% if context_item.asdm_uids %}<p class="mosaic-context-id">Recorded context ASDM association: {{ context_item.asdm_uids|join(', ') }}</p>{% endif %}
 <p>{% for branch in context.branches %}{{ branch.branch }}: {{ branch_status(branch.status) }} {% else %}<span class="report-status" data-status="INDETERMINATE">No recorded branch</span>{% endfor %}</p>
 {{ coverage_view(context.coverage) }}
 {{ criteria_table(context.criteria, 'Common comparison conditions', context.coverage) }}
@@ -103,7 +107,7 @@
 {{ criteria_table(pair.criteria, 'Criteria for this spectral-window pair', context.coverage) }}
 </details>{% endfor %}
 </section>{% endif %}
-</div></details>{% endif %}{% endfor %}
+</div></details>{% endfor %}
 </section>{% endfor %}
 </section>{% endfor %}
 <nav aria-label="Mosaic result pages">

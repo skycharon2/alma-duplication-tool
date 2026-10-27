@@ -1,8 +1,11 @@
-"""Select Archive Mosaic report pages from the stored presentation index.
+"""Read-only Archive Mosaic Member navigation over the saved presentation index.
 
-The page projection never evaluates a rule. It indexes previously recorded
-candidate categories and reads only the selected original candidate payloads.
+Matching selects *Members* with at least one recorded matching candidate. Every
+candidate identity and every context stored for those Members remains accessible.
+Neither grouping nor page selection assigns or changes scientific outcomes.
 """
+
+from collections import OrderedDict
 
 from alma_duplicate.ui.mosaic_report_view import PROJECTION_VERSION
 
@@ -10,12 +13,79 @@ PAGE_SIZE = 20
 MOSAIC_VIEWS = ('all', 'matching', 'review', 'not_met')
 
 
-def mosaic_report_page(projection, page, view, load_candidate):
-    """Return a read-only page of candidate records and Member presentation groups.
+def _member_key(summary, index):
+    """Only an exact recorded Member UID can join candidate identities."""
+    member = summary.get('member_ous_uid')
+    return ('member', member) if isinstance(member, str) and member else ('candidate', index)
 
-    The shared ``matches`` default selects matching Mosaic candidates.
-    Explicit ``all`` retains the complete original candidate list. A matching category means at least one recorded
-    matching branch, not a verdict for an entire Member OUS.
+
+def _unique(values):
+    return list(dict.fromkeys(value for value in values if isinstance(value, str) and value))
+
+
+def _candidate_identity(candidate):
+    """Project/Group/Execution identities only from matching saved metadata rows."""
+    member, target = candidate.get('member_ous_uid'), candidate.get('source_name')
+    rows = [row for row in (candidate.get('metadata_rows') or ())
+            if isinstance(row, dict) and row.get('member_ous_uid') == member
+            and row.get('target_name') == target]
+    return {
+        'projects': _unique(row.get('proposal_id') for row in rows),
+        'group_ous_uids': _unique(row.get('group_ous_uid') for row in rows),
+        'asdm_uids': _unique(row.get('asdm_uid') for row in rows),
+    }
+
+
+def _context_identity(context, member, target):
+    """Read per-context SPW and ASDM IDs from explicit LINE pair associations.
+
+    A raw Archive row's execution is not automatically assigned to every
+    context; the association must explicitly agree with Member and target.
+    """
+    spws, executions = [], []
+    for pair in context.get('line_pairs') or ():
+        reference = ((pair.get('attempt') or {}).get('reference') or {})
+        association = reference.get('candidate_association') or {}
+        identity = association.get('context') or {}
+        if identity.get('member_ous_uid') != member or identity.get('source_name') != target:
+            continue
+        token = association.get('spw_token')
+        if token is not None and str(token).strip():
+            spws.append(str(token))
+        asdm = identity.get('asdm_uid')
+        if isinstance(asdm, str) and asdm:
+            executions.append(asdm)
+    return {'spws': _unique(spws), 'asdm_uids': _unique(executions)}
+
+
+def _candidate_entry(index, summary, candidate):
+    if summary.get('candidate_index') != index:
+        raise ValueError('Mosaic candidate index identity mismatch')
+    if (candidate.get('member_ous_uid') != summary.get('member_ous_uid')
+            or candidate.get('source_name') != summary.get('source_name')):
+        raise ValueError('Mosaic candidate payload identity mismatch')
+    contexts = []
+    for context_index, context in enumerate((candidate.get('evaluation') or {}).get('contexts') or ()):
+        matching = any(branch.get('status') == 'CRITERIA_MET'
+                       for branch in context.get('branches') or ())
+        contexts.append({
+            'index': context_index, 'record': context, 'matching': matching,
+            **_context_identity(context, candidate.get('member_ous_uid'), candidate.get('source_name')),
+        })
+    # Matching first in presentation only. Recorded Context numbers never change.
+    contexts.sort(key=lambda item: not item['matching'])
+    return {
+        'candidate_index': index, 'candidate': candidate, 'summary': summary,
+        'identity': _candidate_identity(candidate), 'contexts': contexts,
+    }
+
+
+def mosaic_report_page(projection, page, view, load_candidate):
+    """Select report pages without reassessing criteria or modifying raw exports.
+
+    In ``matching`` view pages contain up to 20 complete *Member groups*. This
+    can mean more than 20 candidate identities when a Member has many targets.
+    Other diagnostic views retain their historical candidate-level pagination.
     """
     if projection.get('projection_schema_version') != PROJECTION_VERSION:
         raise ValueError('Unsupported Mosaic browser projection version')
@@ -33,29 +103,53 @@ def mosaic_report_page(projection, page, view, load_candidate):
                 or (selected_view == 'review' and bucket in ('NEEDS_REVIEW', 'UNAVAILABLE'))
                 or (selected_view == 'not_met' and bucket == 'NOT_MET'))
 
-    indexes = [index for index, entry in enumerate(summaries) if visible(entry)]
-    pages = max(1, (len(indexes) + PAGE_SIZE - 1) // PAGE_SIZE)
-    if page > pages:
-        raise IndexError('Mosaic report page unavailable')
-    on_page = indexes[(page - 1) * PAGE_SIZE:page * PAGE_SIZE]
+    if selected_view == 'matching':
+        by_member = OrderedDict()
+        matching_members = set()
+        for index, summary in enumerate(summaries):
+            if summary.get('candidate_index') != index:
+                raise ValueError('Mosaic candidate index identity mismatch')
+            key = _member_key(summary, index)
+            by_member.setdefault(key, []).append(index)
+            if summary['bucket'] == 'MATCH':
+                matching_members.add(key)
+        selected_keys = [key for key in by_member if key in matching_members]
+        member_count = len(selected_keys)
+        visible_count = sum(len(by_member[key]) for key in selected_keys)
+        pages = max(1, (member_count + PAGE_SIZE - 1) // PAGE_SIZE)
+        if page > pages:
+            raise IndexError('Mosaic report page unavailable')
+        keys_on_page = selected_keys[(page - 1) * PAGE_SIZE:page * PAGE_SIZE]
+        indexes = [index for key in keys_on_page for index in by_member[key]]
+        # Do not split one Member between pages, even when it has many targets.
+    else:
+        selected = [index for index, summary in enumerate(summaries) if visible(summary)]
+        visible_count = len(selected)
+        pages = max(1, (visible_count + PAGE_SIZE - 1) // PAGE_SIZE)
+        if page > pages:
+            raise IndexError('Mosaic report page unavailable')
+        indexes = selected[(page - 1) * PAGE_SIZE:page * PAGE_SIZE]
+        member_count = None
+
     entries, groups, group_by_member = [], [], {}
-    for index in on_page:
+    for index in indexes:
         summary = summaries[index]
-        if summary['candidate_index'] != index:
-            raise ValueError('Mosaic candidate index identity mismatch')
-        item = {'candidate_index': index, 'candidate': load_candidate(index),
-                'summary': summary}
-        entries.append(item)
-        # An absent Member identity is not evidence that two records belong
-        # together. Keep those records as separate groups.
-        member = summary.get('member_ous_uid')
-        key = ('member', member) if member else ('candidate', index)
+        entry = _candidate_entry(index, summary, load_candidate(index))
+        entries.append(entry)
+        key = _member_key(summary, index)
         if key not in group_by_member:
-            group = {'member_ous_uid': member, 'anchor': f'mosaic-member-{index}',
-                     'entries': []}
+            group = {'member_ous_uid': summary.get('member_ous_uid'),
+                     'anchor': f'mosaic-member-{index}', 'entries': [],
+                     'projects': [], 'group_ous_uids': [], 'has_matching_candidate': False}
             group_by_member[key] = group
             groups.append(group)
-        group_by_member[key]['entries'].append(item)
+        group = group_by_member[key]
+        group['entries'].append(entry)
+        group['has_matching_candidate'] |= summary['bucket'] == 'MATCH'
+        for field in ('projects', 'group_ous_uids'):
+            for item in entry['identity'][field]:
+                if item not in group[field]:
+                    group[field].append(item)
 
     return {
         'mosaic': True,
@@ -65,8 +159,9 @@ def mosaic_report_page(projection, page, view, load_candidate):
         'candidates': [entry['candidate'] for entry in entries],
         'candidate_entries': entries,
         'member_groups': groups,
+        'matching_member_count': member_count,
         'mosaic_overview': projection['mosaic_overview'],
         'result_view': selected_view,
-        'visible_count': len(indexes),
+        'visible_count': visible_count,
         'page': page, 'pages': pages,
     }
