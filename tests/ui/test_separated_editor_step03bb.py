@@ -53,8 +53,8 @@ def form(action="validate", *, rows=(LINE,), spws=(), **changes):
     return data
 
 
-def test_legacy_form_has_separated_editor_link_and_new_editor_is_nonexecuting(client):
-    assert b"/proposed/separated" in client.get("/proposed").data
+def test_normal_form_hides_separated_editor_and_direct_editor_is_nonexecuting(client):
+    assert b"/proposed/separated" not in client.get("/proposed").data
     page = client.get("/proposed/separated")
     assert page.status_code == 200
     assert b"Requested LINE windows" in page.data
