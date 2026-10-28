@@ -53,11 +53,14 @@ def _request_report(raw_request, raw_search_options, prepared, options, *, readi
         "raw": json_value(raw_request),
         "raw_search_options": json_value(raw_search_options),
         "normalized": {
-            "input_contract": SEPARATED_INPUT_CONTRACT,
+            "input_contract": prepared.input_contract,
             "target_kind": prepared.line_request.target_kind,
             "geometry": prepared.line_request.geometry,
             "setup_id": prepared.line_request.setup_id,
-            "intents": ["LINE"],
+            "intents": list(prepared.line_request.intents),
+            "target_name": prepared.line_request.target_name,
+            "position": json_value(prepared.line_request.position),
+            "continuum_request": json_value(prepared.continuum_request),
             "submitted_requirement_ids": list(prepared.submitted_ids),
             "line_windows": json_value(prepared.separated.line_windows),
             "line_sensitivities": json_value(prepared.separated.line_sensitivities),
@@ -73,7 +76,7 @@ def _request_report(raw_request, raw_search_options, prepared, options, *, readi
 
 def _v2_fields(prepared):
     return {
-        "input_contract": SEPARATED_INPUT_CONTRACT,
+        "input_contract": prepared.input_contract,
         "line_evaluation_scope": LINE_SCOPE,
         "line_context_method_version": "archive_line_context_submitted_or_2",
         "pair_method_version": "archive_line_pair_and_1",
@@ -85,7 +88,7 @@ def _v2_fields(prepared):
 
 def assess_submitted_line_single_v2(
     raw_request, raw_search_options, *, archive_client=None, archive_result=None,
-    input_sha256=None,
+    input_sha256=None, archive_arrays=None, archive_array_fetcher=None, archive_replay_metadata=None,
 ):
     """Explicit Archive-only Single Pointing V2 search + reviewable full report.
 
@@ -97,31 +100,66 @@ def assess_submitted_line_single_v2(
         raise ValueError("Supply exactly one Archive client or query-bound recorded result")
     if prepared.line_request.geometry != "SINGLE_POINTING":
         raise ValueError("Single Pointing V2 entry requires SINGLE_POINTING geometry")
+    if archive_arrays is not None and archive_array_fetcher is not None:
+        raise ValueError("An array catalog and live AQ fetcher are mutually exclusive")
     validated = _base_validation(prepared, raw_search_options)
     search = search_candidates(
         validated, archive_client=archive_client, archive_result=archive_result,
     )
-    contexts = []
-    for row in search.archive.retained_rows:
+    from alma_duplicate.archive_array_acquisition import acquire_archive_arrays
+    acquisition = (acquire_archive_arrays(search.archive, archive_array_fetcher)
+                   if archive_array_fetcher is not None else None)
+    catalog = acquisition.catalog if acquisition is not None else archive_arrays
+
+    def evaluate_row(row, array_evidence=None, diameter=None):
         context = row.context
-        position = evaluate_position_single(prepared.line_request, context, row.spatial_evidence)
+        if array_evidence is None:
+            position = evaluate_position_single(prepared.line_request, context, row.spatial_evidence)
+        else:
+            from alma_duplicate.rules.archive_position import evaluate_archive_position
+            position = evaluate_archive_position(prepared.line_request, context, row.spatial_evidence,
+                                                  array_evidence=array_evidence, beam_diameter_m=diameter)
         angular = approve_angular(
             evaluate_angular_resolution(prepared.line_request, context),
             prepared.line_request, context,
         )
-        v2 = evaluate_submitted_line_context_v2(prepared, context, (angular, position))
-        contexts.append(ContextEvaluation(
-            candidate=row, criteria=(angular, position),
-            branches=(v2.result.branch,),
-            line_pairing=v2.pairing, line_pairs=v2.result.pairs,
-        ))
+        v2 = (evaluate_submitted_line_context_v2(prepared, context, (angular, position))
+              if "LINE" in prepared.line_request.intents else None)
+        from alma_duplicate.submitted_observation import continuum_context
+        extra, continuum_branches = continuum_context(prepared, context, (angular, position))
+        return ContextEvaluation(
+            candidate=row, criteria=(angular, position, *extra), array_evidence=array_evidence,
+            branches=continuum_branches + (() if v2 is None else (v2.result.branch,)),
+            line_pairing=None if v2 is None else v2.pairing, line_pairs=() if v2 is None else v2.result.pairs,
+        )
 
+    contexts = []
+    from alma_duplicate.rules.evaluation_model import BeamVariant
+    from alma_duplicate.rules.queue_beam import aggregate_beam_variants
+    for row in search.archive.retained_rows:
+        evidence = catalog.bind(row.context) if catalog is not None else None
+        if evidence is not None and len(evidence.diameters_m) == 2:
+            variants = tuple(BeamVariant(d, evaluate_row(row, evidence, d)) for d in evidence.diameters_m)
+            contexts.append(ContextEvaluation(candidate=row, criteria=(),
+                branches=aggregate_beam_variants(variants, source="ARCHIVE"),
+                beam_variants=variants, array_evidence=evidence))
+        else:
+            contexts.append(evaluate_row(row, evidence))
+
+    from alma_duplicate.submitted_observation import continuum_setup
+    setup = continuum_setup(prepared)
     report = EvaluationReport(
-        search_result=search, request_criteria=(),
+        search_result=search, request_criteria=() if setup is None else (setup,),
         context_evaluations=tuple(contexts),
         evaluation_configuration=EvaluationConfiguration(),
     )
-    document = report_document(report, input_sha256=input_sha256, detail="full")
+    document = report_document(report, input_sha256=input_sha256, detail="full",
+                               archive_replay_metadata=archive_replay_metadata)
+    if acquisition is not None:
+        document['sources']['ARCHIVE']['array_evidence'] = acquisition.metadata
+    elif catalog is not None:
+        from alma_duplicate.archive_array_evidence import archive_array_catalog_report_metadata
+        document['sources']['ARCHIVE']['array_evidence'] = archive_array_catalog_report_metadata(catalog)
     # The search uses an internal, LINE-only typed request. Never publish that
     # compatibility view as though it were the user's legacy wire input.
     document["request"] = _request_report(
@@ -138,12 +176,15 @@ def assess_submitted_line_single_v2(
     # Explicitly separate successful orchestration from exhaustive discovery.
     document["assessment"] = "NOT_AGGREGATED"
     document["assessment_status"] = (
-        "COMPLETED" if search.archive.status == "COMPLETED"
+        "COMPLETED" if search.archive.status == "COMPLETED" and not (acquisition is not None and acquisition.unavailable)
         else "SOURCES_UNAVAILABLE"
     )
     document["evaluation_scope"]["context_scope"] = (
         "ALL_RETAINED_ARCHIVE_CONTEXTS_ONLY; no search-wide absence inference"
     )
+    if prepared.input_contract != SEPARATED_INPUT_CONTRACT:
+        document.update(report_version="8", assessment_schema_version="submitted_observation_single_report_2",
+                        report_kind="SUBMITTED_OBSERVATION_V2_CANDIDATE_EVALUATION")
     return document
 
 
@@ -184,9 +225,12 @@ def assess_submitted_line_mosaic_v2(
             array_evidence=array_evidence, archive_result=archive_result,
             metadata_contexts=original_contexts,
         )
-        v2 = evaluate_submitted_line_context_v2(
+        v2 = (evaluate_submitted_line_context_v2(
             prepared, context, tuple(evaluated["criteria"][:2]),
-        )
+        ) if "LINE" in prepared.line_request.intents else None)
+        from alma_duplicate.submitted_observation import continuum_context, continuum_setup
+        extra, continuum_branches = continuum_context(prepared, context, tuple(evaluated["criteria"][:2]), mosaic=True)
+        setup = continuum_setup(prepared)
         results.append({
             "context_id": context.context_id,
             "source_reference": json_value(context.reference),
@@ -195,13 +239,14 @@ def assess_submitted_line_mosaic_v2(
                 "member_ous_uid": context.evidence.prepared.raw_row.get("member_ous_uid"),
                 "target_name": context.evidence.prepared.raw_row.get("target_name"),
             },
-            "criteria": json_value(evaluated["criteria"]),
+            "criteria": json_value((*evaluated["criteria"], *extra)),
+            "request_criteria": json_value(() if setup is None else (setup,)),
             "coverage": json_value(evaluated["coverage"]),
-            "branches": json_value((v2.result.branch,)),
-            "line_pairing": json_value(v2.pairing),
-            "line_pairs": json_value(v2.result.pairs),
-            "submitted_requirement_ids": list(v2.result.submitted_requirement_ids),
-            "missing_requirement_ids": list(v2.result.missing_requirement_ids),
+            "branches": json_value(continuum_branches + (() if v2 is None else (v2.result.branch,))),
+            "line_pairing": json_value(None if v2 is None else v2.pairing),
+            "line_pairs": json_value(() if v2 is None else v2.result.pairs),
+            "submitted_requirement_ids": list(prepared.submitted_ids),
+            "missing_requirement_ids": list(() if v2 is None else v2.result.missing_requirement_ids),
         })
     return {
         "schema_version": MOSAIC_REPORT_VERSION,
@@ -247,7 +292,8 @@ def assess_submitted_line_mosaic_search_v2(
         mosaic, evaluate, archive_client=archive_client,
         discovery_provider=discovery_provider,
         report_fields={
-            "schema_version": "submitted_line_mosaic_search_report_1",
+            "schema_version": ("submitted_line_mosaic_search_report_1" if prepared.input_contract == SEPARATED_INPUT_CONTRACT
+                               else "submitted_observation_mosaic_search_report_2"),
             "report_kind": "SUBMITTED_LINE_V2_MOSAIC_SEARCH",
             "request": _request_report(
                 raw_request, None, prepared, None, readiness="READY",

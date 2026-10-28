@@ -15,9 +15,12 @@
 {% set continuum_layout = 'CONTINUUM' in values.get('intents', []) or values.get('representative', '') or values.get('aggregate', '') or values.get('continuum_setup_declaration', '') or selected_windows %}
 {% set target_kind = values.get('target_kind', 'FIXED') %}
 {% set geometry = values.get('geometry', 'SINGLE_POINTING') %}
+{% set normal_records = (values.get('normal_form_version') == '2' and target_kind == 'FIXED' and values.get('intents') and (geometry == 'MOSAIC' or values.get('sources') == ['ARCHIVE'])) or values.get('normal_line_records') == '1' %}
 <div class="page-heading proposal-heading"><div><h1>Proposed observation</h1><p>Define your target and the sensitivity you plan to achieve.</p></div></div>
 {% if not configured.enabled and target_kind != 'SUN' %}<p class="proposal-intro">Input validation only. No assessment source is configured.</p>{% endif %}
 <form method="post" enctype="multipart/form-data" action="{{ url_for('proposed') }}" class="proposed-form" data-progress-url="{{ url_for('assessment_progress', token='TOKEN') }}" novalidate>
+{% if values.get('normal_form_version') == '2' %}<input type="hidden" name="normal_form_version" value="2">{% endif %}
+{% if normal_records %}<input type="hidden" name="normal_line_records" value="1">{% endif %}
 <button type="submit" name="action" value="validate" hidden>Validate input</button>
 {% if values.get('mosaic_upload_token') %}<input type="hidden" name="mosaic_upload_token" value="{{ values.mosaic_upload_token }}">{% endif %}
 <div class="proposal-layout">
@@ -97,8 +100,8 @@
 {{ messages('continuum_setup_declaration') }}</div></div>
 
 
-<div id="shared-redshift">{{ input('redshift', 'Source redshift z (shared by REST frequencies)') }}
-<p class="field-note">Shared by all REST inputs. Leave blank if unknown.</p></div>
+<div id="shared-redshift">{{ input('redshift', 'Default source redshift z') }}
+<p class="field-note">Used for REST frequencies unless a LINE requirement supplies its own redshift. SKY frequencies are unchanged.</p></div>
 <button class="button" type="submit" name="action" value="purpose" data-update-purpose>Update requirement sections</button>
 </section>
 <section id="line-requirements" {% if not line_layout %}hidden{% endif %}><div class="section-title"><h2>Spectral line requirements</h2>{{ help('line', 'spectral line requirements') }}</div>
@@ -108,13 +111,16 @@
 {% if not rows %}<p>No requested windows yet. Add a requested window to enter its central frequency, resolution and RMS.</p>{% endif %}
 {% if line_layout %}{% for row in rows %}{% if not loop.first %}<details class="additional-line"><summary>Additional requested window {{ loop.index }}</summary>{% endif %}<fieldset id="{{ row }}" class="spectral-window" {% if added_row == row %}data-added-row{% endif %}><legend{% if loop.first %} class="sr-only"{% endif %}>Requested window {{ loop.index }}</legend>
 {{ messages(row) }}
-<div class="line-frequency-grid">{{ quantity(row + '_center', 'Window central frequency (REST or SKY)', ['GHz','MHz','kHz','Hz'], 'GHz') }}<div>{{ select(row + '_center_kind', 'Frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div><div class="mode-control">{{ help('mode', 'correlator mode') }}{{ select(row + '_mode', 'Correlator mode', ['UNKNOWN','FDM','TDM'], 'UNKNOWN') }}</div></div>
+{% if normal_records %}<input type="hidden" name="rows" value="{{ row }}"><input type="hidden" name="{{ row }}_id" value="{{ values.get(row + '_id', row) }}">{% endif %}
+<div class="line-frequency-grid">{{ quantity(row + '_center', 'Window central frequency (REST or SKY)', ['GHz','MHz','kHz','Hz'], 'GHz') }}<div>{{ select(row + '_center_kind', 'Frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>{% if normal_records %}<div>{{ input(row + '_redshift', 'Source redshift z') }}<p class="field-note">This LINE only. Blank uses the default; SKY ignores z.</p></div>{% endif %}<div class="mode-control">{{ help('mode', 'correlator mode') }}{{ select(row + '_mode', 'Correlator mode', ['UNKNOWN','FDM','TDM'], 'UNKNOWN') }}</div></div>
+
 
 {{ messages(row + '_mode') }}
 <div class="form-pair">{{ quantity(row + '_resolution', 'Planned spectral resolution', ['km/s','m/s','MHz','GHz','kHz','Hz'], 'km/s') }}{{ quantity(row + '_rms', 'Planned RMS at this resolution', ['mJy/beam','Jy/beam'], 'mJy/beam') }}</div>
 
 <details class="field-help secondary-guidance"><summary>Correlator mode and resolution</summary><p class="field-note">Appendix A requires FDM on both the proposed and comparison sides. Selecting Spectral line does not declare FDM. Spectral resolution, channel spacing and noise bandwidth are different quantities.</p></details>
-<div class="window-tools"><a href="#spw-{{ row }}">Window bandwidth and evidence</a>
+{% if normal_records and values.get(row + '_bandwidth', '') %}<details><summary>Linked SPW bandwidth evidence</summary>{{ quantity(row + '_bandwidth', 'Usable or nominal bandwidth', ['MHz','GHz','kHz','Hz'], 'MHz') }}{{ select(row + '_bandwidth_kind', 'Bandwidth interpretation', ['UNKNOWN','USABLE','NOMINAL'], 'UNKNOWN') }}</details>{% endif %}
+<div class="window-tools">{% if not normal_records %}<a href="#spw-{{ row }}">Window bandwidth and evidence</a>{% endif %}
 <button class="button" type="submit" name="action" value="remove:{{ row }}">Remove requested window {{ loop.index }}</button></div></fieldset>{% if not loop.first %}</details>{% endif %}{% endfor %}{% endif %}
 <button class="button" type="submit" name="action" value="add" {% if rows|length >= 32 %}disabled{% endif %}>Add requested window</button>
 <details class="field-help secondary-guidance"><summary>Which windows should I enter?</summary><p class="field-note">Missing scientific inputs can leave LINE criteria unresolved even when the target can be searched. Each listed window is considered for LINE when this purpose is selected. Any qualifying FDM window can satisfy the spectral-line condition; every window need not pass. Do not enter several lines in one physical window as separate windows.</p></details>
@@ -126,11 +132,30 @@
 <div class="continuum-frequency-grid"><div>{{ quantity('representative', 'Representative frequency', ['GHz','MHz','kHz','Hz'], 'GHz') }}</div><div>{{ select('representative_kind', 'Representative frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>{{ quantity('aggregate', 'Planned aggregate RMS', ['mJy/beam','Jy/beam'], 'mJy/beam') }}</div>
 <details {% if stale_ids %}open{% endif %}><summary>Contributing windows (optional)</summary><fieldset id="aggregate_windows" class="choice-group" tabindex="-1"><legend>Windows contributing to the declared aggregate RMS</legend>
 {% if not rows and not stale_ids %}<p class="field-note">No window list is required to declare the aggregate RMS for this setup.</p>{% endif %}
-{% for row in rows %}<label><input type="checkbox" name="aggregate_windows" value="{{ values[row + '_id'] }}" {% if values[row + '_id'] in selected_windows %}checked{% endif %}>Window {{ loop.index }}{% if line_layout %} (same requested window){% endif %}</label>{% endfor %}
+{% for row in (values.get('spw_rows', []) if normal_records else rows) %}<label><input type="checkbox" name="aggregate_windows" value="{{ values[row + '_id'] }}" {% if values[row + '_id'] in selected_windows %}checked{% endif %}>{{ 'Physical SPW' if normal_records else 'Window' }} {{ loop.index }}</label>{% endfor %}
 {% for window_id in stale_ids %}<label class="stale-reference"><input type="checkbox" name="aggregate_windows" value="{{ window_id }}" checked>Unavailable window: {{ window_id }}</label>{% endfor %}
 {% if stale_ids %}<p class="field-note">Review the aggregate RMS before clearing an unavailable reference. No sensitivity is recalculated automatically.</p>{% endif %}
 {{ messages('aggregate_windows') }}</fieldset></details>
 </section>
+{% if normal_records %}
+{% if target_kind != 'FIXED' or (geometry != 'MOSAIC' and values.get('sources') != ['ARCHIVE']) %}<p role="alert">Independent requirements currently use Archive only. Your records are retained; select Archive without Queue before running.</p>{% endif %}
+<section id="windows"><h2>Physical SPW evidence <small>(optional)</small></h2>
+<p class="field-note">Record bandwidth evidence separately. Adding a record does not add a LINE requirement.</p>
+{% for row in values.get('spw_rows', []) %}
+<fieldset class="spectral-window" id="{{ row }}"><legend>Physical SPW {{ loop.index }}</legend>
+<input type="hidden" name="spw_rows" value="{{ row }}">{{ messages(row) }}
+<div class="form-pair"><div>{{ input(row + '_id', 'SPW ID') }}</div><div><label for="{{ row }}_link">Related LINE requirement (optional)</label><select id="{{ row }}_link" name="{{ row }}_link"><option value="">Unlinked</option>
+{% set links = namespace(ids=[]) %}{% for line in rows %}{% set links.ids = links.ids + [values.get(line + '_id', line)] %}{% endfor %}
+{% for line in rows %}<option value="{{ values.get(line + '_id', line) }}" {% if values.get(row + '_link') == values.get(line + '_id', line) %}selected{% endif %}>LINE {{ loop.index }}</option>{% endfor %}
+{% if values.get(row + '_link') and values.get(row + '_link') not in links.ids %}<option value="{{ values[row + '_link'] }}" selected>Retained reference: {{ values[row + '_link'] }}</option>{% endif %}
+</select>{{ messages(row + '_link') }}</div></div>
+<div class="form-pair">{{ quantity(row + '_bandwidth', 'Bandwidth', ['MHz','GHz','kHz','Hz'], 'MHz') }}<div>{{ select(row + '_bandwidth_kind', 'Bandwidth interpretation', ['UNKNOWN','USABLE','NOMINAL'], 'UNKNOWN') }}</div></div>
+<button class="button" name="action" value="remove-spw:{{ row }}">Remove SPW evidence {{ loop.index }}</button></fieldset>
+{% endfor %}
+<button class="button" name="action" value="add-spw" {% if values.get('spw_rows', [])|length >= 32 %}disabled{% endif %}>Add SPW evidence</button>
+<details><summary>Physical SPW inventory completeness</summary><label><input type="checkbox" name="setup_complete" {% if values.get('setup_complete') == 'on' %}checked{% endif %}> I have listed every physical SPW in this setup</label><p class="field-note">Optional inventory declaration. It does not change which LINE requirements are checked or their result.</p></details>
+</section>
+{% else %}
 <section id="windows"><h2 class="sr-only">Optional spectral window evidence</h2>
 {{ messages('windows') }}
 <details id="window-evidence" {% if rows and not line_layout %}open{% endif %}><summary>SPW bandwidth details <span class="detail-context">{{ rows|length }} of 32 windows</span></summary>
@@ -150,6 +175,7 @@
 <label class="complete-choice"><input type="checkbox" id="setup_complete" name="setup_complete" {% if values.get('setup_complete') == 'on' %}checked{% endif %}> I have listed every window in this setup</label>{{ messages('setup_complete') }}
 <p class="field-note">Optional: confirm only when all proposed windows are listed, including those beyond lines of interest. Without this confirmation, an exhaustive negative LINE conclusion cannot be established. If Continuum is selected, a declared complete list must contain verifiable bandwidth evidence consistent with at least two distinct usable widths greater than 1.8 GHz. Leaving the detailed list empty is allowed when completeness is not claimed.</p></details>
 </section>
+{% endif %}
 {% include '_purpose_rules.html' %}
 <section id="search"><div class="section-title"><h2>Data sources</h2>{{ help('sources', 'data sources') }}</div>
 <div class="form-pair">

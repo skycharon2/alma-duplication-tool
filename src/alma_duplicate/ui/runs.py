@@ -73,7 +73,7 @@ class BrowserAssessment:
             raise ValueError("Browser Mosaic assessment requires live Archive configuration.")
         with TemporaryDirectory(prefix="alma-mosaic-") as directory:
             from alma_duplicate.separated_setup_input import SEPARATED_INPUT_CONTRACT
-            if document['request'].get('line_input_contract') == SEPARATED_INPUT_CONTRACT:
+            if document['request'].get('line_input_contract') in {SEPARATED_INPUT_CONTRACT, 'SEPARATE_OBSERVATION_REQUIREMENTS_V2'}:
                 from types import SimpleNamespace
                 from alma_duplicate.submitted_line_assessment import assess_submitted_line_mosaic_search_v2
                 report = assess_submitted_line_mosaic_search_v2(
@@ -127,6 +127,22 @@ class BrowserAssessment:
             raise RuntimeError(
                 "Archive provider requested without Archive configuration"
             )
+
+        if document['request'].get('line_input_contract') in {
+                'SEPARATE_REQUIREMENTS_AND_SPW_EVIDENCE_V1', 'SEPARATE_OBSERVATION_REQUIREMENTS_V2'}:
+            if selected != ['ARCHIVE'] or archive_kind is None:
+                raise ValueError('Separated observation assessment requires Archive only')
+            from types import SimpleNamespace
+            from alma_duplicate.submitted_line_assessment import assess_submitted_line_single_v2
+            source = archive_provider()
+            fetcher = None
+            if self.live_aq and archive_kind == 'LIVE':
+                from alma_duplicate.clients.archive_mirrors import MirroredArchiveAqClient
+                fetcher = MirroredArchiveAqClient(origins=ARCHIVE_CONNECTIONS[self.archive_connection]).fetch_members
+            report = assess_submitted_line_single_v2(document['request'], document['search_options'],
+                archive_client=source.client, archive_arrays=source.array_catalog,
+                archive_replay_metadata=source.replay_metadata, archive_array_fetcher=fetcher)
+            return SimpleNamespace(document=report, status=report['assessment_status'])
 
         # Select and freeze Queue bytes now, before Archive/search work can
         # overlap with a later administrator activation of another snapshot.

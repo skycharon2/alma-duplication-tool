@@ -36,6 +36,7 @@ class PreparedSubmittedLineRequest:
     line_request: object
     separated: SeparatedSetupOperands
     input_contract: str = SEPARATED_INPUT_CONTRACT
+    continuum_request: object = None
 
     @property
     def submitted_ids(self) -> tuple[str, ...]:
@@ -58,6 +59,10 @@ def prepare_submitted_line_request(raw_request) -> PreparedSubmittedLineRequest:
     its sole ERROR to be SEPARATED_INPUT_NOT_EXECUTABLE before constructing an
     internal view. This is not a bypass for malformed or mixed wire contracts.
     """
+    from alma_duplicate.separated_setup_input import SEPARATED_OBSERVATION_CONTRACT
+    if raw_request.get('line_input_contract') == SEPARATED_OBSERVATION_CONTRACT:
+        from alma_duplicate.submitted_observation import prepare_observation
+        return prepare_observation(raw_request)
     validation = validate_proposed_observation(raw_request)
     codes = [issue.code for issue in validation.errors]
     if codes != ["SEPARATED_INPUT_NOT_EXECUTABLE"]:

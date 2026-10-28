@@ -13,6 +13,7 @@ from alma_duplicate.domain.proposed_observation import (
 from alma_duplicate.proposed_line import prepare_line_window
 
 SEPARATED_INPUT_CONTRACT = "SEPARATE_REQUIREMENTS_AND_SPW_EVIDENCE_V1"
+SEPARATED_OBSERVATION_CONTRACT = "SEPARATE_OBSERVATION_REQUIREMENTS_V2"
 NEW_INPUT_FIELDS = frozenset({
     "line_input_contract", "line_requirements", "physical_spw_evidence",
     "physical_spw_inventory_complete",
@@ -63,10 +64,12 @@ def parse_separated_setup(validator, raw):
         "continuum_setup_declaration", "line_evaluation_scope",
         *NEW_INPUT_FIELDS, *LEGACY_INPUT_FIELDS,
     }
+    if raw.get("line_input_contract") == SEPARATED_OBSERVATION_CONTRACT:
+        allowed.add("continuum_requirement")
     obj = v.obj(raw, "request", allowed)
     contract = v.enum(
         obj.get("line_input_contract"), "request.line_input_contract",
-        {SEPARATED_INPUT_CONTRACT},
+        {SEPARATED_INPUT_CONTRACT, SEPARATED_OBSERVATION_CONTRACT},
     )
     for name in sorted(LEGACY_INPUT_FIELDS.intersection(obj)):
         v.error(

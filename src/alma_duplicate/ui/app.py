@@ -317,6 +317,18 @@ def create_app(config=None):
                     added_row = new_row()
                     rows.append(added_row)
                 edit_notice = "Requirement sections updated. Entered values are retained; validate again."
+            elif action == "add-spw":
+                spws = values.setdefault("spw_rows", [])
+                if len(spws) >= MAX_WINDOWS:
+                    abort(400, description="Maximum 32 physical SPW records")
+                spws.append(new_row())
+                edit_notice = "Physical SPW evidence added. LINE requirements are unchanged."
+            elif action.startswith("remove-spw:"):
+                row = action.split(":", 1)[1]
+                if row not in values.get("spw_rows", []):
+                    abort(400)
+                values["spw_rows"].remove(row)
+                edit_notice = "Physical SPW evidence removed. LINE requirements are unchanged."
             elif action == "add":
                 if len(rows) >= MAX_WINDOWS:
                     abort(400, description="Maximum 32 windows in this form")
@@ -371,7 +383,7 @@ def create_app(config=None):
                             with observer:
                                 runner = replace(configured, archive_connection=values.get("archive_connection", "AUTO"))
                                 from alma_duplicate.ui.mosaic_line_input import is_mosaic_line, submitted_document
-                                if is_mosaic_line(document):
+                                if is_mosaic_line(document) and "line_input_contract" not in document["request"]:
                                     document = submitted_document(document)
                                 assessment = (runner.assess_mosaic(document, proposed_points) if is_mosaic
                                               else runner.assess(document))
@@ -400,10 +412,13 @@ def create_app(config=None):
             mosaic_preview["array"] = values.get("mosaic_array", "12m")
             mosaic_preview["fixed_icrs_confirmed"] = values.get("mosaic_fixed_icrs") == "on"
             mosaic_preview["complete_confirmed"] = values.get("mosaic_complete") == "on"
-        for row in rows:
+        for row in rows + values.get("spw_rows", []):
             values.setdefault(row + "_id", row)
         selected = contributing_windows(values)
-        known_ids = {values[row + "_id"] for row in rows}
+        from alma_duplicate.ui.normal_line_input import enabled as separated_enabled
+        physical_rows = (values.get('spw_rows', []) if values.get('normal_line_records') == '1'
+                         and separated_enabled(values) else rows)
+        known_ids = {values[row + "_id"] for row in physical_rows}
         stale_ids = list(dict.fromkeys(value for value in selected if value not in known_ids))
         return render_template("proposed.html", values=values, rows=rows,
                                result=result, issues=issues, document=document,

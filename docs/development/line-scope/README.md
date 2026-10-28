@@ -52,3 +52,4 @@ evidence remains under [evidence](../../evidence/) and
 - [Mosaic discovery integration](submitted_v2_mosaic_search.md).
 - [CASE2 fixed and online end-to-end acceptance](case2_v2_end_to_end.md).
 - [Normal-form Mosaic LINE integration](mosaic_v2_normal_form.md).
+- [Normal-form LINE and Continuum integration](submitted_observation_form.md).
