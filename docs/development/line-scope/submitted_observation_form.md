@@ -43,3 +43,22 @@ each with its own ID, position or pointings, scientific requirements and result 
 Failure or cancellation of one observation must not erase the others. Results must
 remain grouped by observation; no criteria or coverage may be aggregated across them.
 Batch execution is not implemented by this change.
+
+## Mosaic report grouping
+
+Mosaic reports follow the Single Pointing presentation rule: Member, target,
+then an unambiguous recorded ASDM, with comparison contexts underneath.
+New contexts reuse the shared Archive identity serializer for LINE and Continuum.
+Legacy LINE associations remain readable. Missing or conflicting execution IDs
+keep contexts separate; target-level metadata never supplies an inferred ASDM.
+Member matching navigation still retains sibling contexts and their own outcomes.
+Grouping does not change scientific results or rewrite saved reports.
+
+## Frequency-local redshift
+
+New separated browser submissions carry `frequency_local_redshift=1` and omit
+request-level redshift. Each LINE supplies its own z beside its central frequency.
+Continuum supplies `continuum_requirement.source_redshift` beside its representative
+frequency. REST conversion uses the corresponding value; SKY is not redshifted.
+Existing requests retain shared-redshift fallback semantics. The optional continuum
+redshift overrides that fallback only in the continuum calculation.

@@ -16,12 +16,18 @@ def enabled(values):
 
 def convert(document, values, rows, bindings):
     request = document['request']
+    local_redshift = values.get('frequency_local_redshift') == '1'
+    if local_redshift:
+        request.pop('source_redshift', None)
     windows = request.pop('spectral_windows')
     sensitivities = request.pop('sensitivities')
     if 'CONTINUUM' in request['intents']:
         aggregate = next((s for s in sensitivities if s['purpose'] == 'CONTINUUM'), {})
         request['continuum_requirement'] = dict(rms=aggregate.get('rms'),
                                               physical_spw_ids=aggregate.get('window_ids', []))
+        if local_redshift and values.get('continuum_redshift', '').strip():
+            request['continuum_requirement']['source_redshift'] = values['continuum_redshift']
+        bindings['request.continuum_requirement.source_redshift'] = 'continuum_redshift'
         bindings['request.continuum_requirement.rms'] = 'aggregate'
         bindings['request.continuum_requirement.physical_spw_ids'] = 'aggregate_windows'
     complete = request.pop('setup_complete')

@@ -34,7 +34,7 @@ def prepare_observation(raw):
     continuum = None
     if 'CONTINUUM' in intents:
         item = v.obj(detached.get('continuum_requirement'), 'request.continuum_requirement',
-                     {'rms', 'physical_spw_ids'})
+                     {'rms', 'physical_spw_ids', 'source_redshift'})
         ids = item.get('physical_spw_ids', ())
         science = dict(shared, intents=['CONTINUUM'],
             setup_complete=separated.physical_inventory_complete,
@@ -46,6 +46,8 @@ def prepare_observation(raw):
             sensitivities=[dict(sensitivity_id='continuum', purpose='CONTINUUM', scope='SETUP',
                 setup_id=base.setup_id, basis='AGGREGATE', aggregate_path='DIRECT_DECLARATION',
                 window_ids=json_value(ids), rms=json_value(item.get('rms')))])
+        if 'source_redshift' in item:
+            science['source_redshift'] = item['source_redshift']
         if detached.get('continuum_setup_declaration') is not None:
             science['continuum_setup_declaration'] = detached['continuum_setup_declaration']
         checked = validate_proposed_observation(science)

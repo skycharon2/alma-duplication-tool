@@ -43,6 +43,14 @@ def _context_identity(context, member, target):
     context; the association must explicitly agree with Member and target.
     """
     spws, executions = [], []
+    stored = context.get('display_identity') or {}
+    recorded_member = stored.get('Member OUS', stored.get('member_ous_uid'))
+    recorded_target = stored.get('Target', stored.get('target_name'))
+    if recorded_member == member and recorded_target == target:
+        if stored.get('ASDM'):
+            executions.append(stored['ASDM'])
+        if stored.get('SPW') is not None:
+            spws.append(str(stored['SPW']))
     for pair in context.get('line_pairs') or ():
         reference = ((pair.get('attempt') or {}).get('reference') or {})
         association = reference.get('candidate_association') or {}
@@ -74,7 +82,14 @@ def _candidate_entry(index, summary, candidate):
         })
     # Matching first in presentation only. Recorded Context numbers never change.
     contexts.sort(key=lambda item: not item['matching'])
+    # Match Single Pointing: join only a unique recorded execution identity.
+    children = OrderedDict()
+    for item in contexts:
+        execution = item['asdm_uids'][0] if len(item['asdm_uids']) == 1 else None
+        key = ('execution', execution) if execution else ('context', item['index'])
+        children.setdefault(key, {'execution': execution, 'contexts': []})['contexts'].append(item)
     return {
+        'children': list(children.values()),
         'candidate_index': index, 'candidate': candidate, 'summary': summary,
         'identity': _candidate_identity(candidate), 'contexts': contexts,
     }

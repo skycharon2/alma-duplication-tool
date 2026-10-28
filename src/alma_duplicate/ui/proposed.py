@@ -334,14 +334,13 @@ def bind_mosaic_input(values, preview):
     from alma_duplicate.mosaic_candidate_discovery import plan_discovery
     if preview is None:
         raise ValueError("Import an OT pointings file before running Mosaic assessment.")
-    if values.get("mosaic_fixed_icrs") != "on" or values.get("mosaic_complete") != "on":
-        raise ValueError("Confirm fixed ICRS coordinates and the complete proposed pointing list.")
     name = values.get("target_name", "").strip()
     array = values.get("mosaic_array", "")
     if not name or array not in {"7m", "12m"}:
         raise ValueError("Enter a target name and select the proposed 7m or 12m array.")
     proposed = deepcopy(preview["collection"])
     proposed.update(source_name=name, array=array,
+                    declaration_basis="BROWSER_OT_UPLOAD_FIXED_ICRS_COMPLETE_LIST",
                     binding_basis="USER_SUPPLIED_NOT_ENCODED_IN_OT_FILE",
                     frame_basis="USER_CONFIRMED_FIXED_ICRS",
                     completeness="USER_CONFIRMED_COMPLETE")

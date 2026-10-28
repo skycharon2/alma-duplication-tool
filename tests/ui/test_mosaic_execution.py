@@ -75,8 +75,7 @@ def test_upload_to_real_backend_report_and_downloads(browser, connection):
     assert client.get('/reports').status_code == 200
 
 
-@pytest.mark.parametrize('change', [dict(mosaic_complete=''), dict(mosaic_fixed_icrs=''),
-    dict(mosaic_array='TP'), dict(target_name=''), dict(mosaic_upload_token='invalid'), dict(angular='bad')])
+@pytest.mark.parametrize('change', [dict(mosaic_array='TP'), dict(target_name=''), dict(mosaic_upload_token='invalid'), dict(angular='bad')])
 def test_invalid_mosaic_never_queries(browser, change):
     client, calls = browser
     token = upload(client)
@@ -153,3 +152,14 @@ def test_normal_form_without_inventory_uses_v2_and_retains_exact_report(browser)
     assert 'Archive SPW 25' in client.get(url).text
     assert client.get(url + '/download/report').data == original
     assert len(calls) == 1
+
+
+def test_upload_is_sufficient_without_separate_confirmations(browser):
+    client, calls = browser
+    token = upload(client)
+    data = form() | dict(action='assess', mosaic_upload_token=token)
+    data.pop('mosaic_complete', None)
+    data.pop('mosaic_fixed_icrs', None)
+    response = client.post('/proposed', data=data)
+    assert response.status_code == 303
+    assert calls

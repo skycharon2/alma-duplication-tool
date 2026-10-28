@@ -54,4 +54,54 @@ def test_mosaic_normal_form_continuum(browser, intents):
     assert client.get(url).status_code == 200
     report = client.get(url+'/download/report').json
     assert {b['branch'] for candidate in report['candidates'] for c in candidate['evaluation']['contexts'] for b in c['branches']} == set(intents)
+    for candidate in report['candidates']:
+        for context in candidate['evaluation']['contexts']:
+            identity = context['display_identity']
+            assert identity['Member OUS'] == candidate['member_ous_uid']
+            assert identity['Target'] == candidate['source_name']
+            assert 'ASDM' in identity and 'SPW' in identity
+    assert 'Execution (ASDM):' in client.get(url + '?view=all').text
     assert len(calls) == 1
+
+
+def test_frequency_local_redshift_export_has_no_shared_default(make_client):
+    client = make_client(OFFLINE_ARCHIVE_REPLAY=str(EXAMPLE/'archive/manifest.json'))
+    position = payload()['request']['position']
+    values = data(('LINE', 'CONTINUUM')) | dict(
+        frequency_local_redshift='1', redshift='99', continuum_redshift='2',
+        representative_kind='REST', representative='675.3', geometry='SINGLE_POINTING',
+        ra=str(position['ra']), dec=str(position['dec']),
+        ra_format=position['ra_format'], dec_format=position['dec_format'], angular='0.5',
+        radius_mode='EXPLICIT', radius='30', result_limit='1')
+    exported = client.post('/proposed', data=values | dict(action='download'))
+    assert exported.is_json, exported.text
+    raw = exported.json['request']
+    assert 'source_redshift' not in raw
+    assert raw['continuum_requirement']['source_redshift'] == '2'
+    assert [r['source_redshift'] for r in raw['line_requirements']] == ['1', '0']
+    from alma_duplicate.rules.submitted_line_evaluation import prepare_submitted_line_request
+    prepared = prepare_submitted_line_request(raw)
+    assert prepared.continuum_request.source_redshift == 2
+    assert prepared.line_request.source_redshift is None
+    html = client.post('/proposed', data=values | dict(action='validate')).text
+    assert 'id="shared-redshift"' not in html
+    assert 'id="continuum_redshift"' in html
+
+
+def test_no_selected_science_hides_shared_redshift(make_client):
+    client = make_client()
+    html = client.get('/proposed').text
+    import re
+    assert re.search(r'<div id="shared-redshift"[^>]*\bhidden\b', html)
+
+
+def test_single_pointing_editor_does_not_depend_on_source_selection(make_client):
+    client = make_client()
+    values = data(('LINE',)) | dict(normal_form_version='2', geometry='SINGLE_POINTING',
+                                   sources=['ARCHIVE', 'QUEUE'], action='purpose')
+    values.pop('normal_line_records', None)
+    html = client.post('/proposed', data=values).text
+    assert 'Physical SPW evidence' in html
+    assert 'name="frequency_local_redshift"' in html
+    assert 'id="shared-redshift"' not in html
+    assert 'select Archive without Queue before running' in html

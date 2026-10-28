@@ -15,7 +15,7 @@
 {% set continuum_layout = 'CONTINUUM' in values.get('intents', []) or values.get('representative', '') or values.get('aggregate', '') or values.get('continuum_setup_declaration', '') or selected_windows %}
 {% set target_kind = values.get('target_kind', 'FIXED') %}
 {% set geometry = values.get('geometry', 'SINGLE_POINTING') %}
-{% set normal_records = (values.get('normal_form_version') == '2' and target_kind == 'FIXED' and values.get('intents') and (geometry == 'MOSAIC' or values.get('sources') == ['ARCHIVE'])) or values.get('normal_line_records') == '1' %}
+{% set normal_records = (values.get('normal_form_version') == '2' and target_kind == 'FIXED' and values.get('intents')) or values.get('normal_line_records') == '1' %}
 <div class="page-heading proposal-heading"><div><h1>Proposed observation</h1><p>Define your target and the sensitivity you plan to achieve.</p></div></div>
 {% if not configured.enabled and target_kind != 'SUN' %}<p class="proposal-intro">Input validation only. No assessment source is configured.</p>{% endif %}
 <form method="post" enctype="multipart/form-data" action="{{ url_for('proposed') }}" class="proposed-form" data-progress-url="{{ url_for('assessment_progress', token='TOKEN') }}" novalidate>
@@ -43,7 +43,7 @@
 {% elif target_kind == 'SUN' %}<strong>Exempt: no duplication check required.</strong><p>This exemption applies to Solar observations, including mosaics. It is independent of LINE or CONTINUUM selection. No candidate search or duplication assessment will run.</p><p>You may inspect retained inputs or export a valid request below. A request download is not an assessment report.</p>
 {% else %}<strong>Assessment is not yet available for this observation type.</strong>
 {% if target_kind == 'MOVING' %}<p>Appendix A identifies moving objects by name. Object-name matching is not implemented in this version.</p>{% endif %}
-{% if geometry == 'MOSAIC' %}<p>The Mosaic science backend uses each Archive candidate's s_region as the project-adopted half-power coverage to check whether more than 50% of the proposed pointings are covered. Import the complete OT pointing list below, confirm its coordinate frame, and run the Archive assessment.</p>{% endif %}
+{% if geometry == 'MOSAIC' %}<p>The Mosaic science backend uses each Archive candidate's s_region as the project-adopted half-power coverage to check whether more than 50% of the proposed pointings are covered. Upload the complete OT Absolute pointing list below and run the Archive assessment.</p>{% endif %}
 <p>Your values are retained and still validated. You can export a valid request, but no assessment or source query will run.</p>{% endif %}
 </div>
 <button class="button" type="submit" name="action" value="scope" data-update-scope>Update observation type</button>
@@ -71,19 +71,17 @@
 {% if target_kind == 'FIXED' and geometry == 'MOSAIC' %}
 <section id="mosaic-pointings" aria-label="Archive Mosaic OT pointing preview">
 <h2>Mosaic positions</h2>
-<p class="field-note">Import an ALMA OT Absolute pointings export. Imported positions remain available while editing this form for up to one hour; a server restart clears them. Run assessment uses every imported row.</p>
+<p class="field-note">Upload an ALMA OT Absolute pointings export in Sexagesimal, Degrees or Radians. Relative / Offset exports are not supported.</p>
+<p class="field-note">The uploaded rows define the complete pointing list for this check and are interpreted as fixed ICRS coordinates.</p>
 <div><label for="ot_pointings">OT pointings export (.txt or .csv; request limit 1 MiB)</label><input id="ot_pointings" name="ot_pointings" type="file" accept=".txt,.csv,text/plain,text/csv"></div>
 <div><label for="mosaic_array">Proposed antenna array</label><select id="mosaic_array" name="mosaic_array"><option value="12m" {% if values.get('mosaic_array', '12m') == '12m' %}selected{% endif %}>12 m</option><option value="7m" {% if values.get('mosaic_array') == '7m' %}selected{% endif %}>7 m (ACA)</option></select></div>
-<label class="complete-choice"><input name="mosaic_fixed_icrs" type="checkbox" {% if values.get('mosaic_fixed_icrs') == 'on' %}checked{% endif %}> I confirm these are fixed ICRS pointings.</label>
-<label class="complete-choice"><input name="mosaic_complete" type="checkbox" {% if values.get('mosaic_complete') == 'on' %}checked{% endif %}> I confirm this export contains the complete proposed pointing list.</label>
-<p class="field-note">These are user declarations; the OT export does not independently prove its reference frame or completeness. Preview is permitted without confirmation, but formal assessment will require both.</p>
-<button class="button" type="submit" name="action" value="preview-pointings">{{ 'Replace pointings' if mosaic_preview else 'Import pointings' }}</button>
+<button class="button" type="submit" name="action" value="preview-pointings">{{ 'Replace pointings' if mosaic_preview else 'Upload pointings' }}</button>
 {% if mosaic_preview_error %}<p role="alert" class="field-note" id="mosaic-preview-error">{{ mosaic_preview_error }}</p>{% endif %}
 {% if mosaic_preview %}
 <div id="mosaic-preview-result" role="status"><h3>Parsed OT pointings</h3><p>{{ mosaic_preview.filename }}</p><button class="button" name="action" value="remove-pointings">Remove pointings</button>
 <p>{{ mosaic_preview.row_count }} input rows; {{ mosaic_preview.duplicate_count }} repeated-coordinate rows; units: {{ mosaic_preview.coordinate_units }}; proposed array: {{ mosaic_preview.array }}.</p>
-<p>ICRS confirmed: {{ 'Yes' if mosaic_preview.fixed_icrs_confirmed else 'No' }}. List complete: {{ 'Yes' if mosaic_preview.complete_confirmed else 'No' }}.</p>
-<details><summary>File details</summary><p>Original file SHA-256: <code>{{ mosaic_preview.input_sha256 }}</code>.</p></details>
+<p>All {{ mosaic_preview.row_count }} uploaded rows will be checked as fixed ICRS pointings.</p>
+<details><summary>File details</summary><p>Uploads remain available for up to one hour; restarting the server clears them.</p><p>Original file SHA-256: <code>{{ mosaic_preview.input_sha256 }}</code>.</p></details>
 <details><summary>View coordinates</summary><div class="report-table-scroll"><table class="comparison-table"><caption>First {{ mosaic_preview.points|length }} of {{ mosaic_preview.row_count }} pointings (degrees)</caption><thead><tr><th>Row</th><th>File line</th><th>RA</th><th>Dec</th></tr></thead><tbody>
 {% for point in mosaic_preview.points %}<tr><td>{{ point.id }}</td><td>{{ point.line_number }}</td><td>{{ point.ra_deg }}</td><td>{{ point.dec_deg }}</td></tr>{% endfor %}
 </tbody></table></div></details>
@@ -100,8 +98,8 @@
 {{ messages('continuum_setup_declaration') }}</div></div>
 
 
-<div id="shared-redshift">{{ input('redshift', 'Default source redshift z') }}
-<p class="field-note">Used for REST frequencies unless a LINE requirement supplies its own redshift. SKY frequencies are unchanged.</p></div>
+{% if not normal_records %}<div id="shared-redshift" {% if not values.get('intents', []) %}hidden{% endif %}>{{ input('redshift', 'Default source redshift z') }}
+<p class="field-note">Used for REST frequencies unless a LINE requirement supplies its own redshift. SKY frequencies are unchanged.</p></div>{% else %}<input type="hidden" name="frequency_local_redshift" value="1">{% endif %}
 <button class="button" type="submit" name="action" value="purpose" data-update-purpose>Update requirement sections</button>
 </section>
 <section id="line-requirements" {% if not line_layout %}hidden{% endif %}><div class="section-title"><h2>Spectral line requirements</h2>{{ help('line', 'spectral line requirements') }}</div>
@@ -112,7 +110,7 @@
 {% if line_layout %}{% for row in rows %}{% if not loop.first %}<details class="additional-line"><summary>Additional requested window {{ loop.index }}</summary>{% endif %}<fieldset id="{{ row }}" class="spectral-window" {% if added_row == row %}data-added-row{% endif %}><legend{% if loop.first %} class="sr-only"{% endif %}>Requested window {{ loop.index }}</legend>
 {{ messages(row) }}
 {% if normal_records %}<input type="hidden" name="rows" value="{{ row }}"><input type="hidden" name="{{ row }}_id" value="{{ values.get(row + '_id', row) }}">{% endif %}
-<div class="line-frequency-grid">{{ quantity(row + '_center', 'Window central frequency (REST or SKY)', ['GHz','MHz','kHz','Hz'], 'GHz') }}<div>{{ select(row + '_center_kind', 'Frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>{% if normal_records %}<div>{{ input(row + '_redshift', 'Source redshift z') }}<p class="field-note">This LINE only. Blank uses the default; SKY ignores z.</p></div>{% endif %}<div class="mode-control">{{ help('mode', 'correlator mode') }}{{ select(row + '_mode', 'Correlator mode', ['UNKNOWN','FDM','TDM'], 'UNKNOWN') }}</div></div>
+<div class="line-frequency-grid">{{ quantity(row + '_center', 'Window central frequency (REST or SKY)', ['GHz','MHz','kHz','Hz'], 'GHz') }}<div>{{ select(row + '_center_kind', 'Frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>{% if normal_records %}<div>{{ input(row + '_redshift', 'Source redshift z') }}<p class="field-note">Used only to convert this REST frequency to SKY. Required for REST; unused for SKY.</p></div>{% endif %}<div class="mode-control">{{ help('mode', 'correlator mode') }}{{ select(row + '_mode', 'Correlator mode', ['UNKNOWN','FDM','TDM'], 'UNKNOWN') }}</div></div>
 
 
 {{ messages(row + '_mode') }}
@@ -129,7 +127,7 @@
 {% if 'CONTINUUM' not in values.get('intents', []) %}<p class="purpose-retained">Continuum is not selected. These retained inputs will not enable the CONTINUUM branch.</p>{% endif %}
 {{ messages('sensitivities') }}
 
-<div class="continuum-frequency-grid"><div>{{ quantity('representative', 'Representative frequency', ['GHz','MHz','kHz','Hz'], 'GHz') }}</div><div>{{ select('representative_kind', 'Representative frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>{{ quantity('aggregate', 'Planned aggregate RMS', ['mJy/beam','Jy/beam'], 'mJy/beam') }}</div>
+<div class="continuum-frequency-grid"><div>{{ quantity('representative', 'Representative frequency', ['GHz','MHz','kHz','Hz'], 'GHz') }}</div><div>{{ select('representative_kind', 'Representative frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>{% if normal_records %}<div>{{ input('continuum_redshift', 'Source redshift z') }}<p class="field-note">For this representative REST frequency only; unused for SKY.</p></div>{% endif %}{{ quantity('aggregate', 'Planned aggregate RMS', ['mJy/beam','Jy/beam'], 'mJy/beam') }}</div>
 <details {% if stale_ids %}open{% endif %}><summary>Contributing windows (optional)</summary><fieldset id="aggregate_windows" class="choice-group" tabindex="-1"><legend>Windows contributing to the declared aggregate RMS</legend>
 {% if not rows and not stale_ids %}<p class="field-note">No window list is required to declare the aggregate RMS for this setup.</p>{% endif %}
 {% for row in (values.get('spw_rows', []) if normal_records else rows) %}<label><input type="checkbox" name="aggregate_windows" value="{{ values[row + '_id'] }}" {% if values[row + '_id'] in selected_windows %}checked{% endif %}>{{ 'Physical SPW' if normal_records else 'Window' }} {{ loop.index }}</label>{% endfor %}
@@ -233,7 +231,7 @@
 {% if result %}
 <div class="validation-facts"><p>Input valid: <strong>{{ 'Yes' if result.is_valid else 'No' }}</strong></p>
 <p>Search readiness: <strong>{{ ('READY' if mosaic_ready else 'NOT_READY') if geometry == 'MOSAIC' and target_kind == 'FIXED' else result.search_readiness.value }}</strong></p>
-<p>{% if geometry == 'MOSAIC' %}Mosaic execution requires a valid request, retained OT pointings, both confirmations, and live Archive configuration.{% else %}Can search: <strong>{{ 'Yes' if result.can_search else 'No' }}</strong>{% endif %}</p></div>
+<p>{% if geometry == 'MOSAIC' %}Mosaic execution requires a valid request, retained OT pointings and live Archive configuration.{% else %}Can search: <strong>{{ 'Yes' if result.can_search else 'No' }}</strong>{% endif %}</p></div>
 <p class="field-note">Readiness describes the input only. It is not a duplication verdict.</p>
 <div id="validation-current">
 {% for category, heading in [('ERROR', 'Correct these inputs'), ('MISSING', 'Missing information')] %}

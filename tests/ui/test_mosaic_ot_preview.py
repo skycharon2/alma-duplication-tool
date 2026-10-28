@@ -44,7 +44,7 @@ def test_mosaic_preview_parses_full_list_with_duplicate_row_identity(client):
     assert 'id="mosaic-preview-result"' in html
     assert "3 input rows; 1 repeated-coordinate rows" in html
     assert "row-1" in html and "row-3" in html
-    assert "ICRS confirmed: Yes" in html and "List complete: Yes" in html
+    assert "All 3 uploaded rows will be checked as fixed ICRS pointings" in html
     assert 'value="preview-pointings"' in html
 
 
@@ -61,8 +61,8 @@ def test_large_valid_ot_export_previews_first_twenty_only(client):
 def test_preview_does_not_require_unproven_confirmations(client):
     html = upload(client).get_data(as_text=True)
     assert 'id="mosaic-preview-result"' in html
-    assert "ICRS confirmed: No" in html
-    assert "List complete: No" in html
+    assert 'name="mosaic_fixed_icrs"' not in html
+    assert 'name="mosaic_complete"' not in html
 
 
 @pytest.mark.parametrize("bad", [
@@ -130,7 +130,7 @@ def test_upload_survives_edit_and_failed_replacement_then_removal(client):
     html = response.get_data(as_text=True)
     assert '3 input rows' in html
     assert 'proposed array: 7m' in html
-    assert 'List complete: Yes' in html
+    assert 'All 3 uploaded rows will be checked' in html
     assert 'name="sources" value="QUEUE"' not in html
     assert 'id="ra"' not in html
     assert 'centre radius for the supported' not in html
