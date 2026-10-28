@@ -2,6 +2,12 @@
 
 Request model version: **3**. Validation report version: **8**.
 
+For the versioned LINE migration, see the
+[scope gate](development/line-scope/line_scope_step02_contract.md),
+[separated input contract](development/line-scope/step03ba_separated_contract.md)
+and [stage index](development/line-scope/README.md). These records distinguish
+accepted legacy evaluation from the separated input preparation/export boundary.
+
 Version 7 adds the explicit [continuum setup declaration](continuum_setup_declaration.md).
 The optional `continuum_setup_declaration` accepts only
 `AT_LEAST_TWO_USABLE_WINDOWS_GT_1_8_GHZ` or absence/null. It records researcher
