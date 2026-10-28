@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block body_class %}proposal-page{% endblock %}
+{% block content %}
+<div class="page-heading proposal-heading"><div><h1>Separated LINE and spectral setup editor</h1>
+<p>Draft a versioned request. Validation and JSON export are available; scientific assessment is not yet enabled.</p></div></div>
+<p><a href="{{ url_for('proposed') }}">Return to legacy assessment form</a></p>
+{% if notice %}<p role="status">{{ notice }}</p>{% endif %}
+{% if errors %}<section role="alert" id="separated-errors"><h2>Correct these fields</h2><ul>
+{% for issue in errors %}<li><strong>{{ issue.path }}</strong> ({{ issue.code }}): {{ issue.message }}</li>{% endfor %}
+</ul></section>{% endif %}
+<form method="post" action="{{ url_for('separated_editor.edit_separated') }}" novalidate class="proposed-form">
+<section><h2>Target and shared requirements</h2>
+<label>Target name <input name="target_name" value="{{ values.get('target_name', '') }}"></label>
+<label>Setup ID <input name="setup_id" value="{{ values.get('setup_id', '') }}"></label>
+<label>Geometry <select name="geometry">
+{% for item, title in [('SINGLE_POINTING','Single Pointing'),('MOSAIC','Mosaic')] %}<option value="{{ item }}" {% if values.get('geometry', 'SINGLE_POINTING') == item %}selected{% endif %}>{{ title }}</option>{% endfor %}
+</select></label>
+<label>RA (degrees for Single Pointing) <input name="ra" value="{{ values.get('ra', '') }}"></label>
+<label>Dec (degrees for Single Pointing) <input name="dec" value="{{ values.get('dec', '') }}"></label>
+<input type="hidden" name="ra_format" value="DEG"><input type="hidden" name="dec_format" value="DEG">
+<label>Angular resolution <input name="angular" value="{{ values.get('angular', '') }}"></label>
+<select name="angular_unit" aria-label="Angular resolution unit">{% for unit in ['arcsec','mas'] %}<option value="{{ unit }}" {% if values.get('angular_unit', 'arcsec') == unit %}selected{% endif %}>{{ unit }}</option>{% endfor %}</select>
+<label>Search radius (Single Pointing only) <input name="radius" value="{{ values.get('radius', '') }}"></label>
+<select name="radius_unit" aria-label="Radius unit">{% for unit in ['arcsec','arcmin','deg'] %}<option value="{{ unit }}" {% if values.get('radius_unit', 'arcsec') == unit %}selected{% endif %}>{{ unit }}</option>{% endfor %}</select>
+<label>Shared source redshift z (for REST frequencies) <input name="redshift" value="{{ values.get('redshift', '') }}"></label>
+<p>Frequency means the requested <strong>correlator window center</strong>, not an individual molecular line rest frequency.</p>
+</section>
+<section id="separated-line-requirements"><h2>Requested LINE windows</h2><p>Enter every correlator window that you intend to assess.</p>
+{% for row in line_rows %}<fieldset><legend>LINE requirement {{ loop.index }}</legend><input type="hidden" name="line_rows" value="{{ row }}">
+<label>Requirement ID <input name="{{ row }}_id" value="{{ values.get(row + '_id', row) }}" readonly></label>
+<label>Requested window center <input name="{{ row }}_center" value="{{ values.get(row + '_center', '') }}"></label>
+<select name="{{ row }}_center_unit" aria-label="LINE {{ loop.index }} frequency unit">{% for unit in ['GHz','MHz','kHz','Hz'] %}<option value="{{ unit }}" {% if values.get(row + '_center_unit', 'GHz') == unit %}selected{% endif %}>{{ unit }}</option>{% endfor %}</select>
+<label>Frequency reference <select name="{{ row }}_center_kind">{% for kind in ['SKY','REST','UNKNOWN'] %}<option value="{{ kind }}" {% if values.get(row + '_center_kind', 'SKY') == kind %}selected{% endif %}>{{ kind }}</option>{% endfor %}</select></label>
+<label>Correlator mode <select name="{{ row }}_mode">{% for mode in ['UNKNOWN','FDM','TDM'] %}<option value="{{ mode }}" {% if values.get(row + '_mode', 'UNKNOWN') == mode %}selected{% endif %}>{{ mode }}</option>{% endfor %}</select></label>
+<label>Planned spectral resolution <input name="{{ row }}_resolution" value="{{ values.get(row + '_resolution', '') }}"></label>
+<select name="{{ row }}_resolution_unit" aria-label="LINE {{ loop.index }} resolution unit">{% for unit in ['km/s','m/s','MHz','GHz','kHz','Hz'] %}<option value="{{ unit }}" {% if values.get(row + '_resolution_unit', 'km/s') == unit %}selected{% endif %}>{{ unit }}</option>{% endfor %}</select>
+<label>RMS at that resolution <input name="{{ row }}_rms" value="{{ values.get(row + '_rms', '') }}"></label>
+<select name="{{ row }}_rms_unit" aria-label="LINE {{ loop.index }} RMS unit">{% for unit in ['mJy/beam','Jy/beam'] %}<option value="{{ unit }}" {% if values.get(row + '_rms_unit', 'mJy/beam') == unit %}selected{% endif %}>{{ unit }}</option>{% endfor %}</select>
+<button name="action" value="add-linked-spw:{{ row }}" {% if spw_rows|length >= max_rows %}disabled{% endif %}>Add optional linked bandwidth evidence</button>
+<button name="action" value="remove-line:{{ row }}">Remove LINE requirement {{ loop.index }}</button>
+</fieldset>{% endfor %}
+<button type="submit" name="action" value="add-line" {% if line_rows|length >= max_rows %}disabled{% endif %}>Add another LINE requirement</button>
+</section>
+<section id="separated-spw-evidence"><h2>Spectral setup evidence — optional</h2><p>Physical SPWs are separate records. Adding one never adds a LINE requirement. Maximum {{ max_rows }} records per collection.</p>
+{% for row in spw_rows %}<fieldset><legend>Physical SPW {{ loop.index }}</legend><input type="hidden" name="spw_rows" value="{{ row }}">
+<label>Physical SPW ID <input name="{{ row }}_id" value="{{ values.get(row + '_id', row) }}" readonly></label>
+<label>Linked LINE requirement <select name="{{ row }}_linked"><option value="">No link</option>
+{% for identifier, index in line_ids %}<option value="{{ identifier }}" {% if values.get(row + '_linked', '') == identifier %}selected{% endif %}>LINE requirement {{ index }}</option>{% endfor %}
+</select></label>
+<label>Optional SPW center <input name="{{ row }}_center" value="{{ values.get(row + '_center', '') }}"></label>
+<select name="{{ row }}_center_unit" aria-label="SPW {{ loop.index }} center unit">{% for unit in ['GHz','MHz','kHz','Hz'] %}<option value="{{ unit }}" {% if values.get(row + '_center_unit', 'GHz') == unit %}selected{% endif %}>{{ unit }}</option>{% endfor %}</select>
+<label>Frequency reference <select name="{{ row }}_center_kind">{% for kind in ['SKY','REST','UNKNOWN'] %}<option value="{{ kind }}" {% if values.get(row + '_center_kind', 'SKY') == kind %}selected{% endif %}>{{ kind }}</option>{% endfor %}</select></label>
+<label>Bandwidth evidence <input name="{{ row }}_bandwidth" value="{{ values.get(row + '_bandwidth', '') }}"></label>
+<select name="{{ row }}_bandwidth_unit" aria-label="SPW {{ loop.index }} bandwidth unit">{% for unit in ['MHz','GHz','kHz','Hz'] %}<option value="{{ unit }}" {% if values.get(row + '_bandwidth_unit', 'MHz') == unit %}selected{% endif %}>{{ unit }}</option>{% endfor %}</select>
+<label>Bandwidth interpretation <select name="{{ row }}_bandwidth_kind">{% for kind in ['UNKNOWN','USABLE','NOMINAL'] %}<option value="{{ kind }}" {% if values.get(row + '_bandwidth_kind', 'UNKNOWN') == kind %}selected{% endif %}>{{ kind }}</option>{% endfor %}</select></label>
+<button name="action" value="remove-spw:{{ row }}">Remove physical SPW {{ loop.index }}</button>
+</fieldset>{% endfor %}
+<button type="submit" name="action" value="add-spw" {% if spw_rows|length >= max_rows %}disabled{% endif %}>Add physical SPW evidence</button>
+<details><summary>Physical SPW inventory completeness</summary><label><input type="checkbox" name="physical_spw_inventory_complete" value="on" {% if values.get('physical_spw_inventory_complete') == 'on' %}checked{% endif %}> This inventory includes every physical SPW in the planned setup.</label><p>This does not certify LINE requirement completeness or authorize a negative duplication verdict.</p></details>
+</section>
+<section><h2>Validate and export</h2><button type="submit" name="action" value="validate">Validate record structure</button>
+<button type="submit" name="action" value="download">Download separated request JSON</button>
+<p>Formal LINE/Continuum assessment is not yet available for this versioned input contract. The legacy form remains available for the existing assessment workflow.</p></section>
+</form>
+{% endblock %}

@@ -16,6 +16,7 @@
 {% set target_kind = values.get('target_kind', 'FIXED') %}
 {% set geometry = values.get('geometry', 'SINGLE_POINTING') %}
 <div class="page-heading proposal-heading"><div><h1>Proposed observation</h1><p>Define your target and the sensitivity you plan to achieve.</p></div></div>
+<p class="proposal-intro"><a href="{{ url_for('separated_editor.edit_separated') }}">Open the separated LINE / physical SPW editor (validation and export only)</a></p>
 {% if not configured.enabled and target_kind != 'SUN' %}<p class="proposal-intro">Input validation only. No assessment source is configured.</p>{% endif %}
 <form method="post" enctype="multipart/form-data" action="{{ url_for('proposed') }}" class="proposed-form" data-progress-url="{{ url_for('assessment_progress', token='TOKEN') }}" novalidate>
 <button type="submit" name="action" value="validate" hidden>Validate input</button>
