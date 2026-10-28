@@ -185,3 +185,39 @@ def test_other_diagnostic_views_keep_original_candidate_filters():
         result, loaded = _page(report, view=view)
         assert loaded == expected
         assert [entry['candidate_index'] for entry in result['candidate_entries']] == expected
+
+
+def test_continuum_contexts_group_by_exact_execution_without_line_pairs():
+    candidate = _candidate('target-A', ['CRITERIA_MET'] * 4)
+    for i, context in enumerate(candidate['evaluation']['contexts']):
+        context['line_pairs'] = []
+        context['branches'][0]['branch'] = 'CONTINUUM'
+        context['display_identity'] = {
+            'Member OUS': 'uid://member/A', 'Target': 'target-A',
+            'ASDM': 'uid://execution/1' if i < 2 else 'uid://execution/2',
+            'SPW': str(25 + 2*i),
+        }
+    before = deepcopy(candidate)
+    result, _ = _page(_document([candidate]))
+    children = result['candidate_entries'][0]['children']
+    assert [child['execution'] for child in children] == ['uid://execution/1', 'uid://execution/2']
+    assert [[c['index'] for c in child['contexts']] for child in children] == [[0, 1], [2, 3]]
+    assert children[1]['contexts'][0]['spws'] == ['29']
+    assert candidate == before
+
+
+def test_ambiguous_or_missing_execution_never_inherits_target_metadata():
+    candidate = _candidate('target-A', ['CRITERIA_MET'] * 3)
+    contexts = candidate['evaluation']['contexts']
+    contexts[0]['display_identity'] = {
+        'Member OUS': 'uid://member/A', 'Target': 'target-A', 'ASDM': 'uid://execution/2',
+    }
+    contexts[1]['line_pairs'] = []
+    contexts[2]['line_pairs'] = []
+    contexts[2]['display_identity'] = {
+        'Member OUS': 'uid://wrong', 'Target': 'target-A', 'ASDM': 'uid://execution/1',
+    }
+    result, _ = _page(_document([candidate]))
+    children = result['candidate_entries'][0]['children']
+    assert len(children) == 3
+    assert all(child['execution'] is None for child in children)

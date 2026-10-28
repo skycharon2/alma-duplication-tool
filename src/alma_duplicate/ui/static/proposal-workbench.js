@@ -167,6 +167,7 @@ window.initializeProposalWorkbench = function(form) {
     if(help) help.setAttribute('aria-label','Help with source redshift');
   }
   function update() {
+    if (redshift) redshift.hidden = selected('intents').length === 0;
     write('target', value('target_name') || 'Unnamed target');
     write('position', `RA ${value('ra') || '—'} ${value('ra_format')} / Dec ${value('dec') || '—'} ${value('dec_format')}`);
     write('scope', `${labels[value('target_kind')] || value('target_kind')} / ${labels[value('geometry')] || value('geometry')}`);

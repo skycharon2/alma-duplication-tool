@@ -100,8 +100,8 @@ They do not validate, access sources or execute assessments.
 
 FIXED / SINGLE_POINTING and FIXED / MOSAIC can reach browser execution. Moving
 targets remain disabled. Mosaic requires a session-owned OT upload, a target name,
-an explicit 7m/12m selection and confirmation of fixed ICRS coordinates and the
-complete pointing list. Import alone never starts a query. The parser requires
+an explicit 7m/12m selection. Uploading defines the complete list for this check,
+interpreted as fixed ICRS coordinates; separate confirmation checkboxes are not required. Import alone never starts a query. The parser requires
 the native Absolute four-column header, bounds its input by the browser's 1 MiB
 request limit (versus the parser's 2 MB byte limit), preserves input-row identity,
 reports duplicate coordinates, and shows at most the first 20 points. It retains
@@ -117,9 +117,11 @@ Mosaic uses OT positions instead of visible single-centre RA/Dec inputs. Previou
 entered coordinates remain hidden for switching back to Single Pointing. Mosaic
 source selection is Archive-only, and single-point AUTO-radius guidance is hidden.
 The original file hash and coordinate table are expandable technical details.
-Proposed 7m/12m selection and fixed-ICRS / completeness confirmations are displayed
-as user declarations, not assertions inferred from the OT file. A preview without
-those confirmations is allowed but does not authorize scientific evaluation.
+Absolute Sexagesimal, Degrees and Radians exports are supported; offsets are rejected.
+The upload text explains the fixed-ICRS and complete-list interpretation. Saved input
+records `BROWSER_OT_UPLOAD_FIXED_ICRS_COMPLETE_LIST` as its declaration basis;
+these properties are not independently verified from the file. CLI declarations
+and scientific completeness checks remain unchanged.
 Sun instead shows the Appendix A exemption and omits the assessment action;
 retained inputs are collapsed, not discarded. The server independently rejects
 direct assessment POSTs for these types before invoking the execution adapter.
@@ -151,8 +153,9 @@ Reports use the existing disk budget, retention, streaming downloads and history
 The generic single-point sky visualization is not available for these reports.
 
 Regression coverage runs native OT upload through the real backend using captured
-NGC253 metadata, then checks the result page and downloads. Missing confirmations,
-invalid input and unavailable upload tokens must not issue queries.
+NGC253 metadata, then checks the result page and downloads. Invalid input and
+unavailable upload tokens must not issue queries. Valid uploads run without
+separate confirmation fields.
 
 Validation and request download use the existing backend contract. Valid moving
 or mosaic requests report UNSUPPORTED. Valid Sun requests report NOT_APPLICABLE:

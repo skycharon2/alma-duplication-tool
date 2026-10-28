@@ -231,10 +231,13 @@ def assess_submitted_line_mosaic_v2(
         from alma_duplicate.submitted_observation import continuum_context, continuum_setup
         extra, continuum_branches = continuum_context(prepared, context, tuple(evaluated["criteria"][:2]), mosaic=True)
         setup = continuum_setup(prepared)
+        from alma_duplicate.reporting import _display_identity
         results.append({
             "context_id": context.context_id,
             "source_reference": json_value(context.reference),
             "display_identity": {
+                **_display_identity(context),
+                # Preserve the original Mosaic report keys for existing consumers.
                 "project": context.evidence.prepared.raw_row.get("proposal_id"),
                 "member_ous_uid": context.evidence.prepared.raw_row.get("member_ous_uid"),
                 "target_name": context.evidence.prepared.raw_row.get("target_name"),

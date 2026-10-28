@@ -88,7 +88,9 @@
 {% if candidate.error %}<p role="alert" class="notice">Metadata retrieval error: {{ candidate.error }}</p>{% endif %}
 {% if candidate.reasons %}<p>Candidate reasons: {{ candidate.reasons|join(', ') }}</p>{% endif %}
 {% if not candidate.get('evaluation', {}).get('contexts') %}<p>No evaluable comparison contexts were returned for this candidate.</p>{% endif %}
-{% for context_item in entry.contexts %}{% set context = context_item.record %}
+{% for child in entry.children %}<section class="member-execution">
+<p class="execution-identity">Execution (ASDM): {{ child.execution or 'Not unambiguously recorded; context kept separate' }}</p>
+{% for context_item in child.contexts %}{% set context = context_item.record %}
 <details class="candidate-comparison mosaic-context" id="mosaic-context-{{ index }}-{{ context_item.index }}"{% if context_item.matching %} open{% endif %}>
 <summary>Context {{ context_item.index + 1 }}{% if context_item.spws %} · Archive SPW {{ context_item.spws|join(', ') }}{% endif %} · {% for branch in context.branches %}{{ branch.branch }}: {{ status_labels.get(branch.status, 'Needs review') }}{% if not loop.last %}; {% endif %}{% else %}No branch result{% endfor %}</summary>
 <div class="mosaic-context-body"><p class="mosaic-context-id">Recorded context ID: {{ context.context_id }}</p>
@@ -108,6 +110,7 @@
 </details>{% endfor %}
 </section>{% endif %}
 </div></details>{% endfor %}
+</section>{% endfor %}
 </section>{% endfor %}
 </section>{% endfor %}
 <nav aria-label="Mosaic result pages">
