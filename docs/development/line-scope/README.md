@@ -45,3 +45,9 @@ are not enabled by 05A.
 Run the commands in these records from the repository root. Original scientific
 evidence remains under [evidence](../../evidence/) and
 [Mosaic research](../../research/mosaic/README.md); it has not been relocated.
+
+## Backend acceptance
+
+- [Default region and bounded-source regression](submitted_v2_backend_acceptance.md).
+- [Mosaic discovery integration](submitted_v2_mosaic_search.md).
+- [CASE2 fixed and online end-to-end acceptance](case2_v2_end_to_end.md).
