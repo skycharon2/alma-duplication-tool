@@ -115,8 +115,8 @@ def inspect_report(document, *, inspection_version="3"):
     """
     if inspection_version not in {"1", "2", "3"}:
         raise ValueError("Inspection version must be 1, 2 or 3")
-    if document.get("report_version") not in {"4", "5", "6"}:
-        raise ValueError("Inspection requires report version 4, 5 or 6")
+    if document.get("report_version") not in {"4", "5", "6", "7", "8"}:
+        raise ValueError("Inspection requires report version 4, 5, 6, 7 or 8")
     if document['report_version'] in {'5', '6'}:
         detail = document.get('report_detail') or {}
         expected_policy = '2' if document['report_version'] == '6' else '1'
@@ -140,8 +140,14 @@ def inspect_report(document, *, inspection_version="3"):
         if (detail.get('full_contexts') != full
                 or detail.get('summary_contexts') != len(document['context_evaluations']) - full):
             raise ValueError('Report detail counts disagree with contexts')
+    versioned = document.get('report_version') in {'7', '8'}
+    if versioned:
+        expected = {'7': 'submitted_line_single_candidate_report_1',
+                    '8': 'submitted_observation_single_report_2'}[document['report_version']]
+        if document.get('assessment_schema_version') != expected:
+            raise ValueError('Unknown submitted observation report contract')
     kind = document.get("report_kind")
-    if kind not in {"CANDIDATE_EVALUATION", "SOLAR_EXEMPTION"}:
+    if kind not in {"CANDIDATE_EVALUATION", "SOLAR_EXEMPTION"} and not (versioned and kind in {"SUBMITTED_LINE_V2_CANDIDATE_EVALUATION", "SUBMITTED_OBSERVATION_V2_CANDIDATE_EVALUATION"}):
         raise ValueError("Unknown report kind")
     contexts = document["context_evaluations"]
     if len({c["context_id"] for c in contexts}) != len(contexts):
@@ -196,7 +202,7 @@ def inspect_report(document, *, inspection_version="3"):
                 add(location, reason, source=source, context=context, pair_identity=pair_identity,
                     criterion_record_location=record_location)
 
-    if kind == "CANDIDATE_EVALUATION":
+    if kind in {"CANDIDATE_EVALUATION", "SUBMITTED_LINE_V2_CANDIDATE_EVALUATION", "SUBMITTED_OBSERVATION_V2_CANDIDATE_EVALUATION"}:
         for name, source in document["sources"].items():
             if inspection_version == "3" and name == "ARCHIVE":
                 acquisition = source.get("array_evidence", {}).get("acquisition", {})

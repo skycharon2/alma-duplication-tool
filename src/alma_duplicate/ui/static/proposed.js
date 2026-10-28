@@ -194,7 +194,7 @@ function initializeForm(form) {
       // Re-render the input groups on the server with all current values.
       // This action never validates, queries sources, or runs an assessment.
       form.requestSubmit(updatePurpose);
-    } else if (event.target.matches('[name="target_kind"], [name="geometry"]')) {
+    } else if (event.target.matches('[name="target_kind"], [name="geometry"], [name="sources"]')) {
       form.requestSubmit(updateScope);
     }
   });

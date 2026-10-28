@@ -3,7 +3,7 @@
 const guides = {
  coordinates: ['Target coordinates','Enter the proposed target position in ICRS. This input is not a search by name.','Formats','RA: DEG or HMS. Dec: DEG or DMS.','Example','18:33:39.920 / −21:03:39.900','Use colons for HMS and DMS. The target name is an optional label for fixed targets.'],
  angular: ['Planned angular resolution','The angular resolution requested for this observation. It is compared with the candidate’s recorded angular resolution.','Units','arcsec or mas','Example','3.573980180426332 arcsec','Angular resolution is distinct from the primary-beam footprint used for the position criterion.'],
- line: ['Spectral line requirements','Enter one requested frequency, planned spectral resolution and RMS at that resolution. You do not need to reproduce the candidate’s SPW configuration.','Frequency','REST / laboratory frequency with source redshift, or observed SKY frequency.','Candidate data','Archive and Queue supply their own SPW coverage, resolution and sensitivity.','These values describe the requested line check. Each additional requested window keeps its own frequency, resolution and RMS. An incomplete list cannot establish an exhaustive negative LINE conclusion.'],
+ line: ['Spectral line requirements','Enter one requested frequency, planned spectral resolution and RMS at that resolution. You do not need to reproduce the candidate’s SPW configuration.','Frequency','REST / laboratory frequency with source redshift, or observed SKY frequency.','Candidate data','Archive and Queue supply their own SPW coverage, resolution and sensitivity.','These values describe the requested line check. Each additional requested window keeps its own frequency, resolution and RMS. Results apply to the submitted requirements. Physical SPW inventory completeness is separate in the Archive requirements form.'],
  frequency: ['Requested line frequency','The central frequency of the requested correlator window. Use observed SKY frequency, or REST / laboratory frequency with source redshift.','Units','GHz, MHz, kHz or Hz','Example','230.53800141830845 GHz · SKY','The connected backend prepares REST inputs using the supplied redshift. The original input and converted frequency remain traceable in the report; no observing frame is inferred.'],
  resolution: ['Planned spectral resolution','The spectral resolution requested for this window. Enter the RMS at this same resolution.','Units','km/s, m/s, GHz, MHz, kHz or Hz','Example','1 km/s','Spectral resolution, channel spacing and noise bandwidth are distinct. The backend owns the conversion used in assessment.'],
  rms: ['Planned RMS','The requested noise level per beam, at this window’s planned spectral resolution.','Units','mJy/beam or Jy/beam','Example','19.92234925906079 mJy/beam at 1 km/s','This is a per-window LINE input. It does not supply the continuum aggregate RMS.'],
@@ -12,7 +12,7 @@ const guides = {
  continuum: ['Continuum requirements','Provide a SKY representative frequency, or REST representative frequency with source redshift, and RMS over the aggregate bandwidth.','Setup qualification','At least two distinct windows, each wider than 1.8 GHz usable.','Evidence','Use a setup declaration or qualifying window details.','Exactly 1.8 GHz does not qualify. The combined Continuum choice records your confirmation, not an independent measurement. Conflicting complete window evidence is still flagged.'],
  sources: ['Data sources','Archive and Queue are assessed as separate sources. Source availability is controlled by the connected application.','Archive','TAP retrieval with source-bound AQ evidence when configured.','Queue','A server-managed CSV snapshot; its date belongs in the report.','Automatic retrieval selects the search scope. Candidate position is evaluated separately. Selecting a source does not access it until you run assessment.']
 };
-guides.redshift = ['Source redshift', 'A single source redshift is shared by LINE and CONTINUUM REST frequencies.', 'Conversion', 'Observed frequency = REST frequency / (1 + z).', 'Example', '460 GHz REST at z = 1 corresponds to 230 GHz SKY.', 'Leave blank if unknown. No z = 0 is assumed. SKY inputs are already observed frequencies.'];
+guides.redshift = ['Source redshift', 'This default is used for REST frequencies. In the Archive requirements form, each LINE requirement can override it with its own redshift.', 'Conversion', 'Observed frequency = REST frequency / (1 + z).', 'Example', '460 GHz REST at z = 1 corresponds to 230 GHz SKY.', 'Leave blank if unknown. No z = 0 is assumed. SKY inputs are already observed frequencies.'];
 const illustrations = {
 frequency: `<figure class="help-figure"><figcaption>Window centre <span>Illustration</span></figcaption>
 <svg viewBox="0 0 320 190" role="img" aria-labelledby="frequency-illustration-title frequency-illustration-desc">
@@ -158,10 +158,11 @@ window.initializeProposalWorkbench = function(form) {
   const redshift = form.querySelector('#shared-redshift');
   const lineGrid = form.querySelector('#line-requirements:not([hidden]) .line-frequency-grid');
   const continuumGrid = form.querySelector('#sensitivities:not([hidden]) .continuum-frequency-grid');
-  if (lineGrid) lineGrid.insertBefore(redshift, lineGrid.querySelector('.mode-control'));
-  else if (continuumGrid) continuumGrid.insertBefore(redshift, continuumGrid.lastElementChild);
+  const separateRecords = !!form.querySelector('[name=normal_line_records]');
+  if (lineGrid && !separateRecords) lineGrid.insertBefore(redshift, lineGrid.querySelector('.mode-control'));
+  else if (continuumGrid && !separateRecords) continuumGrid.insertBefore(redshift, continuumGrid.lastElementChild);
   if (redshift) {
-    redshift.querySelector('label').textContent='Source redshift z';
+    redshift.querySelector('label').textContent=separateRecords ? 'Default source redshift z' : 'Source redshift z';
     const help=redshift.querySelector('[data-help]');
     if(help) help.setAttribute('aria-label','Help with source redshift');
   }

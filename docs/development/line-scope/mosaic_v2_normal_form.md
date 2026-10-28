@@ -39,3 +39,29 @@ inputs agreed; reopening and repeated report downloads preserved identical bytes
 Screenshots were inspected without changing layout or styles. This browser run
 used fixed metadata, not another live Archive search. The only console error was
 the existing missing favicon (HTTP 404).
+
+## Independent form records
+
+The existing `/proposed` Mosaic LINE form now keeps requested LINE rows and
+optional physical SPW rows in separate collections. Each LINE row has its own
+redshift override; the shared default remains above the collection. Adding or
+removing an SPW does not change the LINE list. Removing a linked LINE preserves
+the SPW reference so validation can flag it for correction.
+
+Validation, input download and assessment use the same separated request.
+Physical inventory completeness does not affect V2 LINE aggregation. Existing
+bandwidth values on older form rows are preserved as linked evidence. Row IDs
+are bounded and checked for duplicates and overlap between collections.
+
+The initial integration supported Mosaic LINE only. The subsequent
+[submitted observation form](submitted_observation_form.md) also supports
+Single Pointing and Continuum, including combined LINE/Continuum requests.
+The separated form currently uses Archive only.
+Changing scope while independent records are present blocks execution and
+retains the entries; it does not silently send them to the legacy evaluator.
+
+Validation: eight browser-route regression cases cover export/run parity,
+independent redshifts, invalid input, stale links, scope changes and independent
+add/remove operations. The real Mosaic backend runs against fixed CASE2
+metadata in these tests. Browser layout and add/remove controls were also
+checked locally. This is not a new live Archive acceptance run.

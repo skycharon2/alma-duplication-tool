@@ -7,7 +7,7 @@ scientific decisions and do not establish search-wide duplication or absence.
 from collections import Counter
 
 
-MOSAIC_REPORT_SCHEMAS = {'archive_mosaic_backend_2', 'submitted_line_mosaic_search_report_1'}
+MOSAIC_REPORT_SCHEMAS = {'archive_mosaic_backend_2', 'submitted_line_mosaic_search_report_1', 'submitted_observation_mosaic_search_report_2'}
 
 PROJECTION_VERSION = 'mosaic_browser_view_1'
 BUCKETS = ('MATCH', 'NOT_MET', 'NEEDS_REVIEW', 'UNAVAILABLE')

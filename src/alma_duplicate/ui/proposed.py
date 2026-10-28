@@ -17,7 +17,7 @@ def new_row():
 
 
 def initial_form():
-    return {"setup_id": "setup-1", "radius_mode": "AUTO",
+    return {"normal_form_version": "2", "setup_id": "setup-1", "radius_mode": "AUTO",
             "sources": ["ARCHIVE", "QUEUE"]}, []
 
 
@@ -64,7 +64,7 @@ def preview_mosaic_ot(upload, values):
 
 def read_form(form):
     """Preserve raw strings; reject ambiguous wire shape before field mapping."""
-    repeated = {"rows", "intents", "sources", "aggregate_windows"}
+    repeated = {"rows", "intents", "sources", "aggregate_windows", "spw_rows"}
     for key in form:
         if key not in repeated and len(form.getlist(key)) != 1:
             raise ValueError("Repeated scalar form field")
@@ -73,7 +73,12 @@ def read_form(form):
         raise ValueError("Invalid window row list (maximum 32)")
     if any(not ROW.fullmatch(row) for row in rows):
         raise ValueError("Invalid window row identity")
+    spws = form.getlist("spw_rows")
+    if (len(spws) > MAX_WINDOWS or len(set(spws)) != len(spws)
+            or any(not ROW.fullmatch(row) for row in spws) or set(spws) & set(rows)):
+        raise ValueError("Invalid physical SPW row identities")
     values = form.to_dict()
+    values["spw_rows"] = spws
     values["intents"] = form.getlist("intents")
     values["sources"] = form.getlist("sources")
     values["aggregate_windows"] = [value for item in form.getlist("aggregate_windows") for value in item.split()]
@@ -198,7 +203,14 @@ def build_document(values, rows):
         search["result_limit"] = int(limit) if re.fullmatch(r"[0-9]{1,9}", limit) else limit
     if request["target_kind"] == "FIXED" and request["geometry"] == "MOSAIC":
         search = {"sources": ["ARCHIVE"], "predicates": [], "radius_mode": "AUTO"}
-    return {"request": request, "search_options": search}, bindings
+    document = {"request": request, "search_options": search}
+    if values.get("normal_line_records") == "1":
+        from alma_duplicate.ui.normal_line_input import enabled, convert
+        if enabled(values):
+            document = convert(document, values, rows, bindings)
+        else:
+            request["line_input_contract"] = "UNSUPPORTED_BROWSER_LINE_SCOPE"
+    return document, bindings
 
 
 def _continuum_inventory_errors(request):
@@ -288,16 +300,21 @@ def _line_run_requirements(request, rows):
 
 def validate_form(values, rows, *, require_line_complete=False):
     document, bindings = build_document(values, rows)
-    result = validate_proposed_observation(document["request"], document["search_options"])
+    separated = "line_input_contract" in document["request"]
+    if separated:
+        from alma_duplicate.ui.normal_line_input import validate
+        result = validate(document)
+    else:
+        result = validate_proposed_observation(document["request"], document["search_options"])
     line_errors = ()
     if result.is_valid:
         from dataclasses import replace
         from alma_duplicate.domain.proposed_observation import SearchReadiness
-        if require_line_complete:
+        if require_line_complete and not separated:
             line_errors = _line_run_requirements(result.request, rows)
         result = replace(
             result,
-            issues=result.issues + _continuum_inventory_errors(result.request) +
+            issues=result.issues + (() if separated else _continuum_inventory_errors(result.request)) +
                    tuple(issue for _, issue in line_errors),
             search_readiness=(SearchReadiness.BLOCKED if line_errors else result.search_readiness),
         )
