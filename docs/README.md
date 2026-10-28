@@ -20,6 +20,7 @@ boundaries and the current evaluation boundary.
 - Read results and explore them: [report browser](ui_report_browser.md) and
   [single-pointing explorer](ui_report_browser.md#single-pointing-report-explorer).
 - Earlier delivery notes and test counts: [history](history/delivery_notes.md).
+- LINE input migration, stage contracts and acceptance: [LINE scope development](development/line-scope/README.md).
 
 ## Reading paths
 
