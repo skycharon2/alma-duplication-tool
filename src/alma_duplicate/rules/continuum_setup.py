@@ -123,6 +123,7 @@ def evaluate_continuum_setup(
     request: ProposedObservationRequest, *, nominal_conversion: str | None = None,
 ) -> CriterionResult:
     """Evaluate CONT-SETUP on the validated proposed setup."""
+    request.require_legacy_input_contract()
     if nominal_conversion not in (None, PORTAL_SCRIPT_V1):
         raise ValueError(f"Unsupported nominal conversion: {nominal_conversion!r}")
     identities = [w.window_id for w in request.spectral_windows]
