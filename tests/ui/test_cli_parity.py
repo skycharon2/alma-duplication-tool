@@ -198,7 +198,47 @@ def run_form_parity(tmp_path, monkeypatch, inputs, data, expected_code):
 def test_catalog_form_cli_parity(tmp_path, monkeypatch, cases, case_id):
     case, inputs = cases[case_id]
     data = form_for(json.loads(inputs["request"].read_bytes()))
-    run_form_parity(tmp_path, monkeypatch, inputs, data, case["expected_exit_code"])
+    if case_id != "missing-line-rms":
+        run_form_parity(tmp_path, monkeypatch, inputs, data, case["expected_exit_code"])
+        return
+
+    # Step 03 deliberately prevents incomplete LINE input from launching a
+    # browser assessment. Keep the legacy CLI/API diagnostic contract separate.
+    client = create_app({
+        "TESTING": True, "REPORT_DIRECTORY": None,
+        "OFFLINE_ARCHIVE_REPLAY": inputs.get("archive_replay"),
+        "OFFLINE_QUEUE_CSV": inputs.get("queue_csv"),
+    }).test_client()
+    with monkeypatch.context() as check:
+        check.setattr(
+            runs.BrowserAssessment, "assess",
+            lambda *args, **kwargs: pytest.fail("incomplete LINE reached browser assessment"),
+        )
+        blocked = client.post("/proposed", data=data)
+    assert blocked.status_code == 200 and blocked.location is None
+    assert "Enter one valid window-specific LINE RMS" in blocked.get_data(as_text=True)
+
+    # Download remains diagnostic and does not activate V2 or infer missing RMS.
+    data.setlist("action", ["download"])
+    exported = client.post("/proposed", data=data)
+    assert exported.status_code == 200 and exported.is_json
+    request_bytes = exported.data
+    document = exported.get_json()
+    assert "line_evaluation_scope" not in document["request"]
+    assert all(s.get("rms") is None for s in document["request"]["sensitivities"]
+               if s["purpose"] == "LINE")
+
+    # Both execution adapters must still agree on the exact exported legacy
+    # request, without forcing a browser Run or replacing an unknown with FALSE.
+    legacy = runs.BrowserAssessment(
+        archive_replay=inputs.get("archive_replay"),
+        queue_csv=inputs.get("queue_csv"),
+    ).assess(document)
+    assert legacy.document is not None
+    code, cli = cli_run(tmp_path, request_bytes, inputs)
+    assert code == case["expected_exit_code"]
+    assert_same_report(legacy.document, cli, request_bytes)
+    assert "PLANNED_LINE_RMS_REQUIRED" in report_json_text(legacy.document)
 
 
 @pytest.mark.parametrize('width,unit,outcome', [

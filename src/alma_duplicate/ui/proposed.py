@@ -237,17 +237,76 @@ def _continuum_inventory_errors(request):
     return ()
 
 
-def validate_form(values, rows):
+def _line_run_requirements(request, rows):
+    """Browser Run-only completeness gate; never changes shared science verdicts.
+
+    Each submitted window is a LINE requirement while the LINE purpose is
+    selected. Physical SPW bandwidth and setup_complete are deliberately ignored.
+    """
+    from alma_duplicate.domain.proposed_observation import RequestIssue
+    from alma_duplicate.proposed_line import prepare_line_window
+
+    if request is None or "LINE" not in request.intents or request.target_kind != "FIXED":
+        return ()
+
+    errors = []
+
+    def add(field, path, code, message):
+        errors.append((field, RequestIssue(
+            "ERROR", code, path, message, "LINE", "PROPOSED",
+        )))
+
+    if not request.spectral_windows:
+        add("line_requirements", "request.spectral_windows", "LINE_WINDOW_REQUIRED",
+            "Add at least one requested LINE window before running an assessment.")
+        return tuple(errors)
+
+    for index, window in enumerate(request.spectral_windows):
+        row = rows[index]
+        path = f"request.spectral_windows[{index}]"
+        prepared = prepare_line_window(window, request.sensitivities, request.source_redshift)
+        if window.center is None or prepared.sky_frequency_ghz_exact is None:
+            if window.center is not None and window.center.kind == "REST" and request.source_redshift is None:
+                add("redshift", "request.source_redshift", "LINE_REST_REDSHIFT_REQUIRED",
+                    f"Requested LINE window {index + 1} uses REST frequency; enter a source redshift to convert it to SKY.")
+            else:
+                add(row + "_center", path + ".center", "LINE_SKY_FREQUENCY_REQUIRED",
+                    f"Requested LINE window {index + 1} needs a valid SKY frequency or a convertible REST frequency.")
+        if window.correlator_mode == "UNKNOWN":
+            add(row + "_mode", path + ".correlator_mode", "LINE_MODE_REQUIRED",
+                f"Select an explicit correlator mode for requested LINE window {index + 1} (FDM or TDM).")
+        if prepared.planned_resolution_kms_exact is None:
+            add(row + "_resolution", path + ".spectral_resolution", "LINE_RESOLUTION_REQUIRED",
+                f"Enter a usable planned spectral resolution for requested LINE window {index + 1}; conflicting declarations must be resolved.")
+        matches = [s for s in request.sensitivities if s.purpose == "LINE"
+                   and s.scope == "WINDOW" and s.window_ids == (window.window_id,)]
+        if len(matches) != 1 or matches[0].rms is None or matches[0].basis not in {"SMOOTHED", "NATIVE_CHANNEL"}:
+            add(row + "_rms", path + ".sensitivities", "LINE_RMS_REQUIRED",
+                f"Enter one valid window-specific LINE RMS for requested LINE window {index + 1}.")
+    return tuple(errors)
+
+
+def validate_form(values, rows, *, require_line_complete=False):
     document, bindings = build_document(values, rows)
     result = validate_proposed_observation(document["request"], document["search_options"])
+    line_errors = ()
     if result.is_valid:
         from dataclasses import replace
-        result = replace(result, issues=result.issues + _continuum_inventory_errors(result.request))
+        from alma_duplicate.domain.proposed_observation import SearchReadiness
+        if require_line_complete:
+            line_errors = _line_run_requirements(result.request, rows)
+        result = replace(
+            result,
+            issues=result.issues + _continuum_inventory_errors(result.request) +
+                   tuple(issue for _, issue in line_errors),
+            search_readiness=(SearchReadiness.BLOCKED if line_errors else result.search_readiness),
+        )
+    exact_fields = {issue.path: field for field, issue in line_errors}
     issues = []
     for issue in result.issues:
         candidates = [path for path in bindings if issue.path == path or
                       issue.path.startswith(path + ".") or issue.path.startswith(path + "[")]
-        field = bindings[max(candidates, key=len)] if candidates else "validation"
+        field = exact_fields.get(issue.path) or (bindings[max(candidates, key=len)] if candidates else "validation")
         issues.append({"issue": issue, "field": field})
     return document, result, issues
 

@@ -104,11 +104,13 @@
 <section id="line-requirements" {% if not line_layout %}hidden{% endif %}><div class="section-title"><h2>Spectral line requirements</h2>{{ help('line', 'spectral line requirements') }}</div>
 {% if 'LINE' not in values.get('intents', []) %}<p class="purpose-retained">Spectral line is not selected. These retained inputs will not enable the LINE branch.</p>{% endif %}
 <p class="field-note secondary-guidance">Enter the line you want to check. Additional requested windows are optional.</p>
+{{ messages('line_requirements') }}
 {% if not rows %}<p>No requested windows yet. Add a requested window to enter its central frequency, resolution and RMS.</p>{% endif %}
 {% if line_layout %}{% for row in rows %}{% if not loop.first %}<details class="additional-line"><summary>Additional requested window {{ loop.index }}</summary>{% endif %}<fieldset id="{{ row }}" class="spectral-window" {% if added_row == row %}data-added-row{% endif %}><legend{% if loop.first %} class="sr-only"{% endif %}>Requested window {{ loop.index }}</legend>
 {{ messages(row) }}
 <div class="line-frequency-grid">{{ quantity(row + '_center', 'Window central frequency (REST or SKY)', ['GHz','MHz','kHz','Hz'], 'GHz') }}<div>{{ select(row + '_center_kind', 'Frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div><div class="mode-control">{{ help('mode', 'correlator mode') }}{{ select(row + '_mode', 'Correlator mode', ['UNKNOWN','FDM','TDM'], 'UNKNOWN') }}</div></div>
 
+{{ messages(row + '_mode') }}
 <div class="form-pair">{{ quantity(row + '_resolution', 'Planned spectral resolution', ['km/s','m/s','MHz','GHz','kHz','Hz'], 'km/s') }}{{ quantity(row + '_rms', 'Planned RMS at this resolution', ['mJy/beam','Jy/beam'], 'mJy/beam') }}</div>
 
 <details class="field-help secondary-guidance"><summary>Correlator mode and resolution</summary><p class="field-note">Appendix A requires FDM on both the proposed and comparison sides. Selecting Spectral line does not declare FDM. Spectral resolution, channel spacing and noise bandwidth are different quantities.</p></details>

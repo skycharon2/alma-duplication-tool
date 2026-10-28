@@ -336,8 +336,30 @@ def test_declaration_does_not_fill_line_evidence_or_run_unselected_branch():
                       "continuum_setup_declaration": "on", "action": "assess"})
     client = create_app(config()).test_client()
     response = client.post("/proposed", data=data)
-    doc = client.get(response.location + "/download/report").get_json()
+    # Step 03 browser Run must block an entirely absent required LINE window.
+    assert response.status_code == 200 and response.location is None
+    assert b"Add at least one requested LINE window" in response.data
+    assert b"Assessment was not run" in response.data
+
+    # Download and shared assessment preserve the legacy partial-input contract.
+    # An unselected CONTINUUM declaration must not create its scientific branch.
+    data.setlist("action", ["download"])
+    exported = client.post("/proposed", data=data)
+    assert exported.status_code == 200 and exported.is_json
+    document = exported.get_json()
+    assert document["request"]["spectral_windows"] == []
+    assert document["request"]["sensitivities"] == []
+    assert document["request"]["intents"] == ["LINE"]
+    assert "line_evaluation_scope" not in document["request"]
+
+    assessment = execution.BrowserAssessment(
+        archive_replay=config()["OFFLINE_ARCHIVE_REPLAY"],
+    ).assess(document)
+    assert assessment.document is not None
+    doc = assessment.document
     assert doc["request_criteria"] == []
+    assert doc["context_evaluations"]
+    assert all(b["branch"] == "LINE" for c in doc["context_evaluations"] for b in c["branches"])
     assert all(b["status"] == "INDETERMINATE" for c in doc["context_evaluations"] for b in c["branches"])
 
 
