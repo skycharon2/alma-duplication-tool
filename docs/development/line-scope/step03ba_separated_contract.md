@@ -112,3 +112,27 @@ then new-format science remains fail-closed.
 - Physical completeness true or false cannot authorize LINE evaluation.
 - Fail-on-invocation source providers remain untouched for both geometries.
 - No UI, Archive, Mosaic geometry, numerical LINE rule, or report-schema edits.
+
+## Per-requirement redshift
+
+A `line_requirements` entry may supply `source_redshift` (finite numeric z > -1).
+It overrides the request-level value for that requirement only. An omitted
+value retains the shared request-level fallback for compatibility. Explicit
+null, Boolean, non-finite or out-of-range values are rejected; they do not
+silently fall back.
+
+REST window centres use the effective redshift once: sky frequency = REST
+frequency / (1 + z). SKY centres are unchanged. The same prepared frequency
+is used for LINE coverage and conversion of frequency resolution to velocity
+resolution. Raw reports retain the submitted values and requirement IDs.
+Physical SPW evidence remains separate and does not inherit a linked LINE's
+redshift. Existing shared-redshift requests retain their interpretation.
+
+This backend extension does not add form controls. The normal form still needs
+per-requirement redshift inputs and independent physical SPW editing. No new
+page is required. V2 candidate discovery remains spatial; this change adds no
+frequency prefilter that could discard another requirement's candidates.
+
+Regression: `tests/integration/test_line_requirement_redshift.py` covers real
+Single Pointing and Mosaic pairs, report provenance, shared fallback, SKY
+inputs, explicit zero, and invalid local values.
