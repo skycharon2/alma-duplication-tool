@@ -311,6 +311,7 @@ def _numerical(request, context, attempt):
 
 def evaluate_line(request, context, common_criteria, *, mosaic=False):
     """Build, evaluate AND per pair, then OR complete pairs in this context only."""
+    request.require_implemented_line_scope()
     if "LINE" not in request.intents:
         raise ValueError("Line evaluation requires a selected LINE intent")
     position_id = "POS-MOSAIC" if mosaic else "POS-SINGLE"

@@ -18,6 +18,7 @@ def build_line_pairs(
     Candidate data remain reference-bound. The builder never selects a best
     sensitivity, substitutes a row scalar, filters coverage or merges contexts.
     """
+    request.require_implemented_line_scope()
     if "LINE" not in request.intents:
         return LinePairBuildResult(
             context.context_id,

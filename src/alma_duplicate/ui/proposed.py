@@ -124,6 +124,11 @@ def build_document(values, rows):
         "representative_frequency": frequency("representative", "request.representative_frequency", "SKY"),
         "spectral_windows": [], "sensitivities": [],
     }
+    # Preserve an explicitly supplied wire scope, including rejected values.
+    # Normal browser forms omit this field and keep legacy report bytes stable.
+    if "line_evaluation_scope" in values:
+        request["line_evaluation_scope"] = values["line_evaluation_scope"]
+        bindings["request.line_evaluation_scope"] = "line_evaluation_scope"
     # Non-fixed targets need not supply coordinates. Keep any supplied values
     # for provenance/validation, but do not invent an empty position.
     if (request["target_kind"] == "FIXED" and request["geometry"] == "MOSAIC") or (
