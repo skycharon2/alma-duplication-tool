@@ -83,6 +83,7 @@ class ProposedWindow:
     mode_origin: Mapping[str, object]
     channel_spacing: RequestQuantity | None
     spectral_resolution: RequestQuantity | None
+    source_redshift: float | None = None
 
 
 @dataclass(frozen=True, slots=True)

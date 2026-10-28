@@ -5,7 +5,7 @@ It does *not* run science, claim LINE enumeration completeness, or translate
 physical inventory completeness into ``setup_complete``. Shared entrypoints
 reject this wire contract until the versioned evaluator is implemented.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from alma_duplicate.domain.proposed_observation import (
     CONTINUUM_SETUP_DECLARATION, ProposedSensitivity, ProposedWindow,
@@ -110,7 +110,7 @@ def parse_separated_setup(validator, raw):
         path = f"request.line_requirements[{i}]"
         entry = v.obj(item, path, {
             "requirement_id", "window_center", "correlator_mode",
-            "spectral_resolution", "rms",
+            "spectral_resolution", "rms", "source_redshift",
         })
         identifier = v.text(entry.get("requirement_id"), path + ".requirement_id", required=True)
         if identifier is not None:
@@ -135,6 +135,11 @@ def parse_separated_setup(validator, raw):
             "correlator_mode": mode,
             "spectral_resolution": entry.get("spectral_resolution"),
         }, path)
+        if "source_redshift" in entry:
+            local_redshift = v.number(entry["source_redshift"], path + ".source_redshift")
+            if local_redshift is not None and local_redshift <= -1:
+                v.error("INVALID_REDSHIFT", path + ".source_redshift", "Require z > -1.")
+            window = replace(window, source_redshift=local_redshift)
         sensitivity = v.sensitivity({
             "sensitivity_id": f"line:{identifier}",
             "purpose": "LINE", "scope": "WINDOW", "window_ids": (identifier,),

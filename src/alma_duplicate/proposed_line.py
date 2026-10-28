@@ -35,7 +35,10 @@ def prepare_line_window(
     Both resolution declarations, when present, must agree in exact canonical
     arithmetic. Channel spacing and noise bandwidth never fill this role.
     """
-    frequency = prepare_frequency(window.center, source_redshift)
+    frequency = prepare_frequency(
+        window.center,
+        window.source_redshift if window.source_redshift is not None else source_redshift,
+    )
     reasons = [{
         "FREQUENCY_REFERENCE_REQUIRED": "LINE_CENTER_REQUIRED",
         "INVALID_FREQUENCY_INPUT": "INVALID_LINE_FREQUENCY_INPUT",
