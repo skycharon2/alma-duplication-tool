@@ -59,7 +59,7 @@ def test_upload_to_real_backend_report_and_downloads(browser, connection):
     assert page.status_code == 200
     assert 'Mosaic assessment' in page.text and 'POS-MOSAIC' in page.text
     report = client.get(url+'/download/report').json
-    assert report['schema_version'] == 'archive_mosaic_backend_2'
+    assert report['schema_version'] == 'submitted_line_mosaic_search_report_1'
     assert report['preparation']['status'] == 'NOT_REQUIRED'
     assert len(report['candidates']) == 2
     assert report['proposed']['row_count'] == 3
@@ -125,3 +125,31 @@ def test_metadata_failure_is_retained_and_candidates_are_paginated(browser, monk
     report = client.get(url+'/download/report').json
     assert len(report['candidates']) == 21
     assert all(c['status'] == 'INCOMPLETE' for c in report['candidates'])
+
+
+def test_normal_form_without_inventory_uses_v2_and_retains_exact_report(browser):
+    client, calls = browser
+    token = upload(client)
+    response = client.post('/proposed', data=form() | dict(
+        action='assess', setup_complete='', mosaic_upload_token=token))
+    assert response.status_code == 303
+    url = response.headers['Location']
+    original = client.get(url + '/download/report').data
+    report = json.loads(original)
+    retained = client.get(url + '/download/request').json
+    assert retained['request'] == report['request']['raw']
+    assert retained['request']['physical_spw_inventory_complete'] is False
+    assert 'setup_complete' not in retained['request']
+    assert len(retained['request']['line_requirements']) == 1
+    assert retained['request']['physical_spw_evidence'] == []
+    contexts = report['candidates'][0]['evaluation']['contexts']
+    assert [c['branches'][0]['truth'] for c in contexts] == ['TRUE', 'FALSE', 'FALSE', 'FALSE']
+    assert all(c['branches'][0]['method_version'] == 'archive_line_context_submitted_or_2'
+               for c in contexts)
+    for view in ('all', 'matching', 'not_met', 'review'):
+        page = client.get(url + '?view=' + view)
+        assert page.status_code == 200
+    assert 'Archive Member OUS' in client.get(url).text
+    assert 'Archive SPW 25' in client.get(url).text
+    assert client.get(url + '/download/report').data == original
+    assert len(calls) == 1

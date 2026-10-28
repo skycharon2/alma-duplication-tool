@@ -7,6 +7,8 @@ scientific decisions and do not establish search-wide duplication or absence.
 from collections import Counter
 
 
+MOSAIC_REPORT_SCHEMAS = {'archive_mosaic_backend_2', 'submitted_line_mosaic_search_report_1'}
+
 PROJECTION_VERSION = 'mosaic_browser_view_1'
 BUCKETS = ('MATCH', 'NOT_MET', 'NEEDS_REVIEW', 'UNAVAILABLE')
 BRANCH_STATUSES = ('CRITERIA_MET', 'CRITERIA_NOT_MET', 'INDETERMINATE')
@@ -61,7 +63,7 @@ def mosaic_report_projection(document):
     publication bytes remain untouched. This index contains no region polygons,
     pointing rows, full metadata, spectral operands or calculation records.
     """
-    if document.get('schema_version') != 'archive_mosaic_backend_2':
+    if document.get('schema_version') not in MOSAIC_REPORT_SCHEMAS:
         raise ValueError('Expected Archive Mosaic backend report v2')
 
     candidates = []

@@ -370,6 +370,9 @@ def create_app(config=None):
                                         if token else nullcontext())
                             with observer:
                                 runner = replace(configured, archive_connection=values.get("archive_connection", "AUTO"))
+                                from alma_duplicate.ui.mosaic_line_input import is_mosaic_line, submitted_document
+                                if is_mosaic_line(document):
+                                    document = submitted_document(document)
                                 assessment = (runner.assess_mosaic(document, proposed_points) if is_mosaic
                                               else runner.assess(document))
                                 if assessment.document is not None:

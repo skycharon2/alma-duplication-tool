@@ -19,7 +19,7 @@ from alma_duplicate.progress import emit_progress
 from alma_duplicate.reporting import report_json_chunks
 from alma_duplicate.report_inspection import inspect_report
 from alma_duplicate.ui.report_pages import report_page, report_projection
-from alma_duplicate.ui.mosaic_report_view import mosaic_report_projection
+from alma_duplicate.ui.mosaic_report_view import mosaic_report_projection, MOSAIC_REPORT_SCHEMAS
 from alma_duplicate.ui.mosaic_report_pages import mosaic_report_page
 
 DEFAULT_DISK_BYTES = 1024 * 1024 * 1024
@@ -56,7 +56,7 @@ def _indexed_report_blocks(document, offsets):
     for index, (key, value) in enumerate(document.items()):
         yield from emit([',\n' if index else '\n', '  ', encoder.encode(key), ': '])
         if (key == 'context_evaluations' or (key == 'candidates' and
-                document.get('schema_version') == 'archive_mosaic_backend_2')) and value:
+                document.get('schema_version') in MOSAIC_REPORT_SCHEMAS)) and value:
             yield from emit(['[\n    '])
             for context_index, context in enumerate(value):
                 if context_index:
@@ -207,7 +207,7 @@ class RunStore:
         document = result.document
         emit_progress('inspection')
         with measure_stage("inspection"):
-            mosaic = document.get("schema_version") == "archive_mosaic_backend_2"
+            mosaic = document.get("schema_version") in MOSAIC_REPORT_SCHEMAS
             inspection = ({"schema_version": "mosaic_browser_inspection_1",
                            "assessment_status": document["assessment_status"],
                            "absence_interpretation": document["absence_interpretation"]}

@@ -157,5 +157,8 @@ def test_mosaic_complete_line_runs_without_optional_inventory(request):
     assert response.status_code == 303, response.text
     assert calls, "Valid Mosaic LINE submission must reach discovery"
     request = client.get(response.location + "/download/request").get_json()["request"]
-    assert request["setup_complete"] is False
-    assert "bandwidth" not in request["spectral_windows"][0]
+    assert request["physical_spw_inventory_complete"] is False
+    assert request["line_input_contract"] == "SEPARATE_REQUIREMENTS_AND_SPW_EVIDENCE_V1"
+    assert "setup_complete" not in request
+    assert request["physical_spw_evidence"] == []
+    assert len(request["line_requirements"]) == 1

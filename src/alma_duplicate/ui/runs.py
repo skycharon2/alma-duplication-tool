@@ -72,6 +72,18 @@ class BrowserAssessment:
         if not self.live_archive:
             raise ValueError("Browser Mosaic assessment requires live Archive configuration.")
         with TemporaryDirectory(prefix="alma-mosaic-") as directory:
+            from alma_duplicate.separated_setup_input import SEPARATED_INPUT_CONTRACT
+            if document['request'].get('line_input_contract') == SEPARATED_INPUT_CONTRACT:
+                from types import SimpleNamespace
+                from alma_duplicate.submitted_line_assessment import assess_submitted_line_mosaic_search_v2
+                report = assess_submitted_line_mosaic_search_v2(
+                    document['request'], MosaicAssessmentInput(
+                        proposed, Path(directory) / 'assessment', None, 1.0,
+                        discovery_origins=ARCHIVE_CONNECTIONS[self.archive_connection]),
+                    archive_client=MirroredArchiveClient(
+                        origins=ARCHIVE_CONNECTIONS[self.archive_connection],
+                        completeness_policy='STATUS_THEN_COUNT'))
+                return SimpleNamespace(document=report, status=report['assessment_status'])
             return assess_observation(document["request"], document["search_options"],
                 sources=AssessmentSources(archive_kind="LIVE", archive_provider=lambda: ArchiveInput(
                     MirroredArchiveClient(origins=ARCHIVE_CONNECTIONS[self.archive_connection],

@@ -51,3 +51,4 @@ evidence remains under [evidence](../../evidence/) and
 - [Default region and bounded-source regression](submitted_v2_backend_acceptance.md).
 - [Mosaic discovery integration](submitted_v2_mosaic_search.md).
 - [CASE2 fixed and online end-to-end acceptance](case2_v2_end_to_end.md).
+- [Normal-form Mosaic LINE integration](mosaic_v2_normal_form.md).
