@@ -216,3 +216,43 @@ def assess_submitted_line_mosaic_v2(
         ),
         "contexts": json_value(results),
     }
+
+
+def assess_submitted_line_mosaic_search_v2(
+    raw_request, mosaic, *, archive_client=None, discovery_provider=None,
+):
+    """Discover Archive candidates and evaluate their metadata with V2 LINE scope.
+
+    Uses the existing all-geometry s_region discovery and mirror handling.
+    Candidate-local failures and discovery incompleteness remain in the report;
+    neither empty nor partial retrieval establishes search-wide absence.
+    """
+    from alma_duplicate.mosaic_backend import _run_region_backend
+    from alma_duplicate.mosaic_candidate_discovery import plan_discovery
+
+    prepared = prepare_submitted_line_request(raw_request)
+    if prepared.line_request.geometry != "MOSAIC":
+        raise ValueError("Mosaic V2 search requires MOSAIC geometry")
+    if mosaic.coverage_model != "S_REGION":
+        raise ValueError("Mosaic V2 search requires S_REGION coverage")
+    # Validate coordinates and margin before creating output or accessing Archive.
+    plan_discovery(mosaic.proposed, margin_arcsec=mosaic.margin_arcsec)
+
+    def evaluate(contexts, metadata):
+        return assess_submitted_line_mosaic_v2(
+            raw_request, contexts, mosaic.proposed, archive_result=metadata,
+        )
+
+    return _run_region_backend(
+        mosaic, evaluate, archive_client=archive_client,
+        discovery_provider=discovery_provider,
+        report_fields={
+            "schema_version": "submitted_line_mosaic_search_report_1",
+            "report_kind": "SUBMITTED_LINE_V2_MOSAIC_SEARCH",
+            "request": _request_report(
+                raw_request, None, prepared, None, readiness="READY",
+            ),
+            "v2_science": _v2_fields(prepared),
+            "assessment": "NOT_AGGREGATED",
+        },
+    )

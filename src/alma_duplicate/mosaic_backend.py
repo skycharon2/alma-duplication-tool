@@ -158,8 +158,26 @@ def run_mosaic_backend(request, mosaic, *, archive_client=None, array_catalog=No
         raise ValueError('Unknown Mosaic coverage model')
     if preparation_provider is not None:
         raise ValueError('s_region assessment does not use package preparation providers')
-    from alma_duplicate.progress import emit_progress
     from alma_duplicate.assessment import assess_archive_mosaic_contexts
+
+    def evaluate(contexts, metadata):
+        return assess_archive_mosaic_contexts(
+            request, mosaic.proposed, contexts, package_directories={},
+            array_catalog=None, archive_result=metadata,
+            boundary_epsilon_arcsec=0.001, nominal_conversion=nominal_conversion,
+            use_s_region=True,
+        )
+
+    return _run_region_backend(
+        mosaic, evaluate, archive_client=archive_client,
+        discovery_provider=discovery_provider,
+    )
+
+
+def _run_region_backend(mosaic, evaluate_contexts, *, archive_client=None,
+                        discovery_provider=None, report_fields=None):
+    """Shared discovery/metadata orchestration; science is selected by the caller."""
+    from alma_duplicate.progress import emit_progress
     from alma_duplicate.clients.archive_mirrors import MirroredArchiveClient
     from alma_duplicate.mosaic_pointing_diagnostics import position_summary
     root = Path(mosaic.output_directory)
@@ -199,9 +217,7 @@ def run_mosaic_backend(request, mosaic, *, archive_client=None, array_catalog=No
             if built.status != 'COMPLETE':
                 item.update(status='INCOMPLETE', reasons=list(built.reasons))
             else:
-                evaluated = assess_archive_mosaic_contexts(request, mosaic.proposed, built.contexts,
-                    package_directories={}, array_catalog=None, archive_result=metadata,
-                    boundary_epsilon_arcsec=0.001, nominal_conversion=nominal_conversion, use_s_region=True)
+                evaluated = evaluate_contexts(built.contexts, metadata)
                 item.update(status='EVALUATED' if built.contexts else 'NO_METADATA_CONTEXTS',
                             evaluation=evaluated, position_summary=position_summary(evaluated))
         except (OSError, ValueError, KeyError, TypeError) as exc:
@@ -216,5 +232,7 @@ def run_mosaic_backend(request, mosaic, *, archive_client=None, array_catalog=No
         duplication_scope='PER_ARCHIVE_CONTEXT_BRANCH_RESULTS',
         absence_interpretation='NO_SEARCH_WIDE_NON_DUPLICATION_CONCLUSION',
         discovery_recall_status=discovery['plan']['recall_status'])
+    if report_fields is not None:
+        report.update(report_fields)
     (root/'assessment.json').write_text(json.dumps(json_value(report),indent=2,allow_nan=False)+'\n')
     return report
