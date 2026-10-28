@@ -104,6 +104,44 @@ production source, and full suite remains green. The intended future
 successor behavior is specified in this document rather than deceptively
 marked as passing or disabled with `xfail`.
 
+## Step 01b — default `s_region` Mosaic path coverage
+
+The original Step 01 Mosaic fixture calls `evaluate_mosaic_context()` without
+`use_s_region=True`; that exercises reconstructed pointings and cannot be
+claimed as acceptance coverage for the default Archive Mosaic path.
+
+The Step 01b addition now exercises `assess_archive_mosaic_contexts(...,
+use_s_region=True)`, the same assessment entrypoint and flag selected by the
+current `mosaic_backend.py` default (`ARCHIVE_S_REGION`) workflow. It uses the
+synthetic Guide B Archive fixture's **recorded** `s_region`, positions one
+imported and complete fixed-ICRS proposed pointing at the row's own recorded
+spatial centre, and asserts `archive_pos_mosaic_s_region_1`, strict-majority
+coverage, no TP-scope exclusion, unchanged pair methods and unchanged *legacy*
+LINE context OR outcomes in all three scoped cases:
+
+| LINE pair | Physical SPW inventory confirmed | Legacy context |
+| --- | --- | --- |
+| Definitively NOT_MET | No | INDETERMINATE |
+| Definitively NOT_MET | Yes | CRITERIA_NOT_MET |
+| Definitively MET | No | CRITERIA_MET |
+
+This is a **deterministic s_region assessment-path** test, not a complete
+`mosaic_backend.run` acquisition/discovery/mirror-switch test and not a live
+Archive query. It neither validates that the form blocks missing mandatory
+LINE fields nor claims the future requirement-scoped negative contract is
+implemented. Both completeness concepts are independently pinned: uploaded
+Mosaic **pointing** completeness is confirmed for position evaluation, while
+physical SPW inventory completeness varies only for LINE aggregation.
+
+**Step 02 fail-closed transition rule:** a new scope token must never be
+silently accepted by an evaluator that still runs `archive_line_context_or_1`.
+Before the new aggregation method is shipped, either reject explicitly requested
+new-scope evaluations with a precise unsupported-scope diagnostic or keep the
+new token unselectable outside versioned parsing/serialization tests. Old
+requests without a scope discriminator retain their old interpretation and
+method version. Do not infer the new scope from an existing LINE intent or
+from optional bandwidth rows.
+
 ## Acceptance / stop condition
 
 - Patch contains only this document and its integration test file.
