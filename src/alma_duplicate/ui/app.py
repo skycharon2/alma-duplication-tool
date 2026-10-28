@@ -334,7 +334,7 @@ def create_app(config=None):
             elif action == "cancel-remove":
                 edit_notice = "Window retained. Validate input to update the diagnostics."
             elif action in {"validate", "download", "assess"}:
-                document, result, issues = validate_form(values, rows)
+                document, result, issues = validate_form(values, rows, require_line_complete=action == "assess")
                 proposed_points = None
                 is_mosaic = values.get("target_kind") == "FIXED" and values.get("geometry") == "MOSAIC"
                 if is_mosaic:
