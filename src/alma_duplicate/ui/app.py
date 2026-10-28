@@ -437,4 +437,7 @@ def create_app(config=None):
     def index():
         return redirect(url_for("proposed"))
 
+    from alma_duplicate.ui.separated_editor import separated_editor
+    app.register_blueprint(separated_editor)
+
     return app
