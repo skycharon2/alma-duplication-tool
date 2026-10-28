@@ -17,6 +17,8 @@ from alma_duplicate.proposed_frequency import prepare_frequency
 
 from alma_duplicate.domain.proposed_observation import (
     CONTINUUM_SETUP_DECLARATION,
+    LINE_SCOPE_LEGACY,
+    LINE_SCOPE_SUBMITTED,
     CandidatePredicate,
     ProposedObservationRequest,
     ProposedSensitivity,
@@ -852,6 +854,7 @@ def validate_proposed_observation(
             "position",
             "setup_id",
             "setup_complete",
+            "line_evaluation_scope",
             "continuum_setup_declaration",
             "intents",
             "angular_resolution",
@@ -885,6 +888,18 @@ def validate_proposed_observation(
             "Use Boolean or missing; this describes list completeness only.",
         )
     intents = v.names(obj.get("intents"), "request.intents", {"CONTINUUM", "LINE"})
+    if "line_evaluation_scope" in obj:
+        line_scope = v.enum(
+            obj["line_evaluation_scope"], "request.line_evaluation_scope",
+            {LINE_SCOPE_LEGACY, LINE_SCOPE_SUBMITTED},
+        )
+        if line_scope == LINE_SCOPE_SUBMITTED:
+            # Fail before Archive retrieval, CLI execution or any science rules.
+            # Step 04 must implement and separately approve this scientific scope.
+            v.error(
+                "LINE_SCOPE_NOT_IMPLEMENTED", "request.line_evaluation_scope",
+                "SUBMITTED_LINE_REQUIREMENTS_V2 is reserved; this version cannot evaluate it.",
+            )
     declaration = None
     if obj.get("continuum_setup_declaration") is not None:
         declaration = v.enum(obj["continuum_setup_declaration"],

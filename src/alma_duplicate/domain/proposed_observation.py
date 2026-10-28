@@ -11,6 +11,10 @@ from typing import Mapping
 
 CONTINUUM_SETUP_DECLARATION = "AT_LEAST_TWO_USABLE_WINDOWS_GT_1_8_GHZ"
 
+# Explicit wire contract. The successor is reserved, not executable in step 02.
+LINE_SCOPE_LEGACY = "LEGACY_SETUP_ENUMERATION_V1"
+LINE_SCOPE_SUBMITTED = "SUBMITTED_LINE_REQUIREMENTS_V2"
+
 
 class SearchReadiness(StrEnum):
     READY = "READY"
@@ -119,6 +123,20 @@ class ProposedObservationRequest:
     model_version: str = "3"
     source_redshift: float | None = None
     continuum_setup_declaration: str | None = None
+
+    @property
+    def line_evaluation_scope(self) -> str:
+        """Read the explicit wire scope; absence preserves legacy semantics.
+
+        This is intentionally not a dataclass field: old request/report objects
+        must retain their exact serialized shape when the field is omitted.
+        """
+        return self.raw_input.get("line_evaluation_scope", LINE_SCOPE_LEGACY)
+
+    def require_implemented_line_scope(self) -> None:
+        """Protect direct evaluator callers that bypass wire validation."""
+        if self.line_evaluation_scope != LINE_SCOPE_LEGACY:
+            raise ValueError("LINE_SCOPE_NOT_IMPLEMENTED: submitted LINE requirements scope is reserved")
 
 
 @dataclass(frozen=True, slots=True)
