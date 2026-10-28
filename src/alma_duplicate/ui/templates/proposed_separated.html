@@ -60,6 +60,46 @@
 </section>
 <section><h2>Validate and export</h2><button type="submit" name="action" value="validate">Validate record structure</button>
 <button type="submit" name="action" value="download">Download separated request JSON</button>
-<p>Formal LINE/Continuum assessment is not yet available for this versioned input contract. The legacy form remains available for the existing assessment workflow.</p></section>
+<p>V2 Archive LINE evaluation is available only when an administrator enables it, for fixed Single Pointing and ARCHIVE only. The legacy form remains separate. Continuum and Mosaic V2 browser execution are not enabled.</p>
+{% if v2_enabled %}<button type="submit" name="action" value="assess-v2">Run V2 Archive LINE (Single Pointing)</button>
+<button type="submit" name="action" value="download-v2">Run V2 and download full JSON (re-runs Archive)</button>
+<p>These runs may access the configured live Archive. V2 results are candidate-context scoped and are not retained in the legacy browser report store.</p>{% endif %}</section>
 </form>
+{% if v2_report %}
+<section id="submitted-v2-results" aria-label="V2 Archive candidate evaluation">
+  <h2>V2 Archive candidate evaluation</h2>
+  <p><strong>Source status:</strong> {{ v2_report.get('assessment_status') }}
+  — <strong>Archive:</strong> {{ v2_report.get('sources', {}).get('ARCHIVE', {}).get('status') }}
+  — <strong>Context evaluation:</strong> {{ v2_report.get('v2_science', {}).get('line_context_method_version') }}
+  — <strong>Search-wide verdict:</strong> {{ v2_report.get('v2_science', {}).get('search_wide_duplication_verdict') }}</p>
+  <p><strong>No Archive-wide non-duplication conclusion.</strong> Each FALSE is limited to its original candidate context and the submitted requirements; missing or incomplete sources do not establish absence.</p>
+  <p><strong>Evaluated contexts:</strong> {{ v2_report.get('context_evaluations', [])|length }}.
+  <strong>Discovery scope:</strong> {{ v2_report.get('evaluation_scope', {}).get('context_scope') }}.</p>
+  {% for ctx in v2_report.get('context_evaluations', []) %}
+  <article><h3>Candidate context {{ loop.index }} — {{ ctx['context_id'] }}</h3>
+    <p>Source: {{ ctx.get('reference', {}).get('source') }}
+    | Project: {{ ctx.get('display_identity', {}).get('Project') or 'not supplied' }}
+    | SPW: {{ ctx.get('display_identity', {}).get('SPW') or 'not supplied' }}
+    | V2 context: {{ ctx['branches'][0]['truth'] }}</p>
+    <p>Context reasons: {{ ctx['branches'][0]['reasons']|join(', ') or 'None' }}</p>
+    {% for pair in ctx.get('line_pairs', []) %}
+    <details><summary>LINE requirement {{ pair['attempt']['proposed_window_id'] }} — {{ pair['truth'] }}</summary>
+      <p>Candidate association: {{ pair['attempt']['association_status'] }};
+      preparation: {{ pair['attempt']['evidence_status'] }};
+      method: {{ pair['method_version'] }}</p>
+      {% if pair['attempt'].get('reference') %}
+      <details><summary>Exact source/SPW component reference</summary><pre>{{ pair['attempt']['reference'] }}</pre></details>
+      {% endif %}
+      <table><thead><tr><th>Criterion</th><th>Outcome</th><th>Reasons</th></tr></thead><tbody>
+      {% for criterion in pair['criteria'] %}
+      <tr><td>{{ criterion['criterion_id'] }}</td><td>{{ criterion['outcome'] or 'UNKNOWN' }}</td>
+      <td>{{ criterion['reasons']|join(', ') }}</td></tr>
+      {% endfor %}
+      </tbody></table>
+    </details>
+    {% endfor %}
+  </article>
+  {% endfor %}
+</section>
+{% endif %}
 {% endblock %}
