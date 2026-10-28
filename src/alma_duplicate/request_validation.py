@@ -844,6 +844,22 @@ def validate_proposed_observation(
     raw_options = v.snapshot(
         {} if search_options_input is None else search_options_input, "search_options"
     )
+    # Step 03b-A: a separate input namespace must never be coerced into the
+    # legacy shared spectral_windows list or its setup_complete semantics.
+    if isinstance(raw, Mapping) and any(k in raw for k in (
+        "line_input_contract", "line_requirements", "physical_spw_evidence",
+        "physical_spw_inventory_complete",
+    )):
+        from alma_duplicate.separated_setup_input import parse_separated_setup
+        parse_separated_setup(v, raw)
+        v.error(
+            "SEPARATED_INPUT_NOT_EXECUTABLE", "request.line_input_contract",
+            "Separated LINE/SPW inputs are accepted for contract validation only; "
+            "the versioned formal evaluator is not implemented.",
+        )
+        return RequestValidationResult(
+            raw, raw_options, None, None, tuple(v.issues), SearchReadiness.BLOCKED,
+        )
     obj = v.obj(
         raw,
         "request",

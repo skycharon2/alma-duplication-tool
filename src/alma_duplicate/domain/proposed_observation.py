@@ -133,8 +133,17 @@ class ProposedObservationRequest:
         """
         return self.raw_input.get("line_evaluation_scope", LINE_SCOPE_LEGACY)
 
+    def require_legacy_input_contract(self) -> None:
+        """Never run legacy science on new, separately scoped raw operands."""
+        if any(k in self.raw_input for k in (
+            "line_input_contract", "line_requirements", "physical_spw_evidence",
+            "physical_spw_inventory_complete",
+        )):
+            raise ValueError("SEPARATED_INPUT_NOT_EXECUTABLE: versioned science not implemented")
+
     def require_implemented_line_scope(self) -> None:
         """Protect direct evaluator callers that bypass wire validation."""
+        self.require_legacy_input_contract()
         if self.line_evaluation_scope != LINE_SCOPE_LEGACY:
             raise ValueError("LINE_SCOPE_NOT_IMPLEMENTED: submitted LINE requirements scope is reserved")
 
