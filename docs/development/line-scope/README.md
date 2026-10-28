@@ -21,6 +21,20 @@ later work describe the boundary at that stage, not a separate current roadmap.
 In particular, 03b-C verifies the blocked execution boundary; it does not enable
 new-format LINE or Continuum assessment. Step 04 remains separate work.
 
+## Current versioned LINE implementation
+
+- [04A: submitted LINE context OR](step04a_submitted_line_aggregation.md): pure V2 aggregation.
+- [04B: reference-bound context evaluation](step04b_reference_bound_line_evaluation.md):
+  internal six-criterion V2 evaluator.
+- [04C: explicitly scoped Archive backend assessment](step04c_v2_archive_assessment.md):
+  candidate reports, not search-wide absence conclusions.
+- [05A: opt-in V2 Single Pointing browser](step05a_v2_browser_single.md):
+  new editor run and JSON export with standalone transient results.
+
+These links document separate, versioned execution paths. The default legacy
+assessment and its reports are unchanged; Continuum and Mosaic V2 browser runs
+are not enabled by 05A.
+
 ## Reading order
 
 - Input structure and identities: start with **03b-A**.

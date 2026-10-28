@@ -7,7 +7,7 @@ of the legacy /proposed form, its rows, and its working assessment routes.
 import re
 from uuid import uuid4
 
-from flask import Blueprint, Response, abort, render_template, request
+from flask import Blueprint, Response, abort, current_app, render_template, request
 
 from alma_duplicate.reporting import report_json_text
 from alma_duplicate.request_validation import (
@@ -174,6 +174,7 @@ def edit_separated():
     spw_rows = []
     errors = []
     notice = None
+    v2_report = None
     if request.method == "POST":
         try:
             values, line_rows, spw_rows = _read_form(request.form)
@@ -217,14 +218,44 @@ def edit_separated():
             if row not in spw_rows:
                 abort(400)
             spw_rows.remove(row)
-        elif action in {"validate", "download", "assess"}:
+        elif action in {"validate", "download", "assess", "assess-v2", "download-v2"}:
             doc = build_separated_document(values, line_rows, spw_rows)
             validation = validate_proposed_observation(doc["request"], doc["search_options"])
             errors.extend({"path": i.path, "code": i.code, "message": i.message}
                           for i in validation.errors if i.code != "SEPARATED_INPUT_NOT_EXECUTABLE")
             errors.extend(_additional_form_errors(values))
-            if action == "assess":
-                notice = "Assessment is unavailable for this separated contract until the versioned evaluator is approved."
+            # Server-side authorization must precede importing/calling the runner.
+            # Hidden buttons and client-supplied action values are not access gates.
+            if action in {"assess-v2", "download-v2"} and not errors:
+                if current_app.config.get("SUBMITTED_LINE_V2_UI_ENABLED") is not True:
+                    errors.append({"path": "assessment", "code": "SUBMITTED_LINE_V2_UI_DISABLED",
+                                   "message": "V2 browser assessment is not enabled."})
+                elif doc["request"]["geometry"] != "SINGLE_POINTING":
+                    errors.append({"path": "assessment", "code": "SUBMITTED_LINE_V2_SINGLE_ONLY",
+                                   "message": "V2 browser assessment supports Single Pointing only."})
+            if action in {"assess-v2", "download-v2"} and not errors:
+                from alma_duplicate.ui.separated_v2 import run_single_v2
+                try:
+                    v2_report = run_single_v2(doc, current_app.config)
+                except (ValueError, TypeError, OSError) as exc:
+                    # The form retains all values. No partial or fabricated
+                    # result is published on configuration/acquisition errors.
+                    code = str(exc)
+                    if not code.startswith("SUBMITTED_LINE_V2_"):
+                        current_app.logger.warning("Separated V2 assessment failed: %s", exc)
+                        code = "SUBMITTED_LINE_V2_ASSESSMENT_FAILED"
+                    errors.append({"path": "assessment", "code": code,
+                                   "message": "V2 Archive assessment was not completed."})
+                else:
+                    if action == "download-v2":
+                        return Response(
+                            report_json_text(v2_report), mimetype="application/json",
+                            headers={"Content-Disposition":
+                                     'attachment; filename="submitted-line-v2-report.json"'},
+                        )
+                    notice = "V2 candidate-only Archive results; not an Archive-wide verdict."
+            elif action == "assess":
+                notice = "Assessment is unavailable for the legacy separated route; use explicit V2 Single Pointing when enabled."
             elif not errors and action == "download":
                 return Response(report_json_text(doc), mimetype="application/json",
                                 headers={"Content-Disposition": 'attachment; filename="separated-proposed-request.json"'})
@@ -236,4 +267,6 @@ def edit_separated():
     return render_template("proposed_separated.html", values=values,
                            line_rows=line_rows, spw_rows=spw_rows,
                            line_ids=line_ids, errors=errors, notice=notice,
-                           max_rows=MAX_ROWS)
+                           max_rows=MAX_ROWS,
+                           v2_enabled=current_app.config.get("SUBMITTED_LINE_V2_UI_ENABLED") is True,
+                           v2_report=v2_report)
