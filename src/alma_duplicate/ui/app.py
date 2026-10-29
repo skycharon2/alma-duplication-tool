@@ -28,7 +28,8 @@ from alma_duplicate.reporting import report_json_text
 from alma_duplicate.ui.managed_queue import managed_queue_status
 from alma_duplicate.ui.archive_status import archive_configuration_status, archive_run_status
 from alma_duplicate.ui.workflow_policy import (
-    apply_browser_source_policy, is_fixed_mosaic, should_enable_mosaic_v2_on_scope_change,
+    apply_browser_source_policy, initial_mosaic_values, is_fixed_mosaic,
+    should_enable_mosaic_v2_on_scope_change,
 )
 
 
@@ -259,9 +260,14 @@ def create_app(config=None):
             abort(404)
         return state
 
+    # Transitional route split: legacy /proposed Mosaic POSTs remain supported.
+    @app.route("/proposed/mosaic", methods=["GET", "POST"], endpoint="proposed_mosaic")
     @app.route("/proposed", methods=["GET", "POST"])
     def proposed():
+        mosaic_entry = request.endpoint == "proposed_mosaic"
         values, rows = initial_form()
+        if mosaic_entry:
+            values = initial_mosaic_values(values)
         result, issues, document = None, [], None
         pending_removal = None
         edit_notice = None
@@ -279,6 +285,10 @@ def create_app(config=None):
                     raise ValueError("Invalid Archive connection selection")
             except ValueError as exc:
                 abort(400, description=str(exc))
+            # Keep the dedicated Mosaic endpoint in its own fixed-target scope.
+            # Existing /proposed submissions retain their compatibility path.
+            if mosaic_entry and not is_fixed_mosaic(values):
+                abort(400, description="Mosaic form requires a fixed-target Mosaic request")
             token = values.get("mosaic_upload_token", "")
             if token:
                 mosaic_preview = mosaic_uploads.get(owner, token)
@@ -426,6 +436,7 @@ def create_app(config=None):
         known_ids = {values[row + "_id"] for row in physical_rows}
         stale_ids = list(dict.fromkeys(value for value in selected if value not in known_ids))
         return render_template("proposed.html", values=values, rows=rows,
+                               mosaic_entry=mosaic_entry,
                                result=result, issues=issues, document=document,
                                selected_windows=selected, stale_ids=stale_ids,
                                pending_removal=pending_removal, edit_notice=edit_notice, added_row=added_row,
