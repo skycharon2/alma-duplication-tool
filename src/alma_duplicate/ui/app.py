@@ -23,11 +23,13 @@ from alma_duplicate.ui.runs import ARCHIVE_CONNECTIONS, BrowserAssessment, RunSt
 from alma_duplicate.ui.report_pages import report_page, report_projection
 from alma_duplicate.ui.visualization import visualization_data
 from alma_duplicate.ui.run_store import DEFAULT_DISK_BYTES, DEFAULT_MAX_AGE
-from alma_duplicate.ui.proposed import MAX_WINDOWS, bind_mosaic_input, assessment_supported, contributing_windows, initial_form, new_row, read_form, validate_form
+from alma_duplicate.ui.proposed import MAX_WINDOWS, assessment_supported, contributing_windows, initial_form, new_row, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
 from alma_duplicate.ui.managed_queue import managed_queue_status
 from alma_duplicate.ui.archive_status import archive_configuration_status, archive_run_status
-from alma_duplicate.ui.mosaic_form import restore_mosaic_upload, replace_mosaic_upload, remove_mosaic_upload
+from alma_duplicate.ui.mosaic_form import (
+    prepare_mosaic_validation, remove_mosaic_upload, replace_mosaic_upload, restore_mosaic_upload,
+)
 from alma_duplicate.ui.workflow_policy import (
     apply_browser_source_policy, initial_mosaic_values, is_fixed_mosaic,
     should_enable_mosaic_v2_on_scope_change,
@@ -261,11 +263,16 @@ def create_app(config=None):
             abort(404)
         return state
 
-    # Transitional route split: legacy /proposed Mosaic POSTs remain supported.
-    @app.route("/proposed/mosaic", methods=["GET", "POST"], endpoint="proposed_mosaic")
+    # Separate public controllers; keep old Mosaic POSTs on /proposed during migration.
     @app.route("/proposed", methods=["GET", "POST"])
     def proposed():
-        mosaic_entry = request.endpoint == "proposed_mosaic"
+        return _proposed_form(mosaic_entry=False)
+
+    @app.route("/proposed/mosaic", methods=["GET", "POST"])
+    def proposed_mosaic():
+        return _proposed_form(mosaic_entry=True)
+
+    def _proposed_form(*, mosaic_entry):
         values, rows = initial_form()
         if mosaic_entry:
             values = initial_mosaic_values(values)
@@ -356,16 +363,8 @@ def create_app(config=None):
                 proposed_points = None
                 is_mosaic = is_fixed_mosaic(values)
                 if is_mosaic:
-                    issues = [entry for entry in issues if not (
-                        (entry["issue"].category == "MISSING" and entry["issue"].path in
-                         {"request.position", "search_options.radius"}) or
-                        (entry["issue"].category == "CAPABILITY" and entry["issue"].path == "request"
-                         and entry["issue"].code == "METHOD_NOT_IMPLEMENTED"))]
-                    try:
-                        proposed_points = bind_mosaic_input(values, mosaic_preview)
-                        mosaic_ready = result.is_valid and configured.live_archive
-                    except ValueError as exc:
-                        execution_error = str(exc)
+                    issues, proposed_points, mosaic_ready, execution_error = prepare_mosaic_validation(
+                        values, mosaic_preview, issues, result, live_archive=configured.live_archive)
                 if action == "assess":
                     if values.get("target_kind") == "SUN":
                         execution_error = "Solar observations are exempt from duplication checking under Appendix A. No assessment or source search was run."
