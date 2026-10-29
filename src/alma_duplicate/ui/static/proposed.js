@@ -191,6 +191,8 @@ function initializeForm(form) {
   const updateScope = form.querySelector('[data-update-scope]');
   updateScope.hidden = true;
   form.addEventListener('change', event => {
+    if (window.maybeNavigateToMosaic?.(form, event.target,
+      url => window.location.assign(url), message => window.confirm(message))) return;
     if (event.target.matches('[name="intents"]')) {
       // Re-render the input groups on the server with all current values.
       // This action never validates, queries sources, or runs an assessment.
@@ -238,6 +240,13 @@ function initializeForm(form) {
 }
 
 initializeForm(document.querySelector('.proposed-form'));
+  document.querySelector('.workflow-switcher')?.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.getAttribute('aria-current') === 'page') return;
+    const activeForm = document.querySelector('.proposed-form');
+    if (activeForm && !window.confirmLeavingWorkflow?.(activeForm,
+      message => window.confirm(message))) event.preventDefault();
+  });
 })();
 
 // Reflect the form's selected connection without probing a remote service.

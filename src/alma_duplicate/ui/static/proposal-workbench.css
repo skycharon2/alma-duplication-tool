@@ -5,6 +5,10 @@
 .proposal-page .purpose-rules-panel { width: min(540px, calc(100vw - 32px)); line-height: 1.6; }
 .proposal-page .purpose-rules-panel li + li { margin-top: 8px; }
 .proposal-page .proposal-intro { margin: 0 0 16px; padding: 8px 12px; border: 1px solid var(--border); background: white; }
+.proposal-page .workflow-switcher { display:flex; gap:8px; margin:0 0 16px; flex-wrap:wrap; }
+.proposal-page .workflow-switcher a { padding:9px 15px; border:1px solid var(--border); border-radius:999px; background:white; text-decoration:none; }
+.proposal-page .workflow-switcher a[aria-current="page"] { font-weight:700; color:var(--blue-dark); border-color:var(--blue-dark); }
+.proposal-page .workflow-switcher a:focus-visible { outline:2px solid var(--blue-dark); outline-offset:2px; }
 .proposal-page .proposal-layout { grid-template-columns: minmax(0, 1fr) 248px; gap: 22px; }
 .proposal-page .proposal-summary { display: block; top: 16px; max-height: calc(100vh - 32px); scrollbar-width: thin; }
 .proposal-page .proposed-form section { padding: 14px 20px; margin: 0; border: 1px solid var(--border); }
