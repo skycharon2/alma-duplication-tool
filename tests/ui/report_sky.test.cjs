@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 
 // Exercise the controller through DOM events with an offline Aladin adapter.
-function setup() {
+function setup({init=Promise.resolve(),panStarrsAvailable=true}={}) {
   class Element {
     constructor() { this.children=[]; this.handlers={}; this.attrs={}; this.style={}; this.clientWidth=600; this.clientHeight=390; this.scrollLeft=0; }
     addEventListener(type, fn) { (this.handlers[type] ||= []).push(fn); }
@@ -24,12 +24,13 @@ function setup() {
   const layer=id=>({id,name:id,setBrightness(){},setContrast(){},setAlpha(value){this.alpha=value;}});
   let base=layer('P/DSS2/color');
   const viewer={addOverlay(){},addCatalog(c){catalogs.push(c);},gotoRaDec(){},setFoV(){},getFov(){return [.1];},getBaseImageLayer(){return base;},setBaseImageLayer(id){base=layer(id);return Promise.resolve(base);}};
-  const A={init:Promise.resolve(),aladin:()=>viewer,catalog:options=>({options,sources:[],removeAll(){this.sources=[];},addSources(rows){this.sources.push(...rows);}}),source:(ra,dec,data)=>({ra,dec,data}),graphicOverlay:()=>({removeAll(){},add(){},show(){}}),circle(){},polyline(){}};
+  const A={init,aladin:()=>viewer,catalog:options=>({options,sources:[],removeAll(){this.sources=[];},addSources(rows){this.sources.push(...rows);}}),source:(ra,dec,data)=>({ra,dec,data}),graphicOverlay:()=>({removeAll(){},add(){},show(){}}),circle(){},polyline(){}};
   const rows=['a','b','c'].map((id,i)=>({id,label:id,source:'ARCHIVE',intent:'LINE',spw:i,spatial:{available:true,center:i===2?[11,21]:[10,20],separation_arcsec:0,radius_arcsec:5}}));
   let selected='a', visible=rows, controller;
   const state={origin:[10,20],rows:()=>visible,selected:()=>selected,select:id=>{selected=id;controller.update();}};
-  const context={window:{addEventListener(){}},document:{querySelector:s=>get(s.slice(1)),getElementById:get,createElement:()=>new Element()},A,setTimeout,clearTimeout,setInterval,clearInterval,matchMedia:()=>({matches:true}),MutationObserver:class {observe(){}},ResizeObserver:class {observe(){}}};
+  const context={window:{addEventListener(){}},document:{querySelector:s=>get(s.slice(1)),getElementById:get,createElement:()=>new Element()},A,fetch:async()=>({ok:panStarrsAvailable}),AbortController,console:{warn(){}},setTimeout,clearTimeout,setInterval,clearInterval,matchMedia:()=>({matches:true}),MutationObserver:class {observe(){}},ResizeObserver:class {observe(){}}};
   context.window.A=A;
+  context.window.renderReportSkyFallback=()=>{get('report-sky-canvas').fallbackRendered=true;};
   vm.runInNewContext(fs.readFileSync('src/alma_duplicate/ui/static/report-sky.js','utf8'),context);
   controller=context.window.createReportSky(state);
   get('position-sky').emit('click');
@@ -74,7 +75,7 @@ test('survey controls show active, loading, failed and hidden states without cha
   const saved=JSON.stringify(h.rows);
   assert.equal(h.get('sky-survey-dss').attrs['aria-pressed'],'true');
   h.get('sky-survey-ps').emit('click');
-  assert.match(h.get('sky-imagery-status').textContent,/Loading/);
+  assert.match(h.get('sky-imagery-status').textContent,/Checking Pan-STARRS availability|Loading/);
   await settle();
   assert.equal(h.get('sky-survey-ps').attrs['aria-pressed'],'true');
   assert.equal(h.get('sky-survey-dss').attrs['aria-pressed'],'false');
@@ -101,4 +102,32 @@ test('an immediately returned HiPS does not report completion before activation'
   h.viewer.getBaseImageLayer=()=>pending;
   await new Promise(resolve=>setTimeout(resolve,120));
   assert.match(h.get('sky-imagery-status').textContent,/Coverage not verified/);
+});
+test('failed Aladin initialization falls back to saved geometry instead of a black panel', async()=>{
+  const h=setup({init:Promise.reject(new Error('WebGL unavailable'))});
+  await settle();
+  assert.equal(h.get('report-sky-canvas').fallbackRendered,true);
+  assert.equal(h.get('sky-retry').hidden,false);
+  assert.match(h.get('report-sky-status').textContent,/geometry only/);
+  assert.match(h.get('sky-imagery-status').textContent,/No reference image/);
+});
+
+
+test('unavailable Pan-STARRS preserves working DSS imagery', async()=>{
+  const h=setup({panStarrsAvailable:false});
+  await settle();
+
+  const original=h.viewer.getBaseImageLayer();
+  h.get('sky-survey-ps').emit('click');
+  await settle();
+
+  assert.equal(h.viewer.getBaseImageLayer(),original);
+  assert.match(
+    h.get('sky-imagery-status').textContent,
+    /Pan-STARRS unavailable/
+  );
+  assert.equal(
+    h.get('sky-survey-dss').attrs['aria-pressed'],
+    'true'
+  );
 });
