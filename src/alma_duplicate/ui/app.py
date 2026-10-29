@@ -423,7 +423,8 @@ def create_app(config=None):
         physical_rows = values.get('spw_rows', []) if uses_separated_input(values) else rows
         known_ids = {values[row + "_id"] for row in physical_rows}
         stale_ids = list(dict.fromkeys(value for value in selected if value not in known_ids))
-        return render_template("proposed.html", values=values, rows=rows,
+        return render_template("proposed_mosaic.html" if mosaic_entry else "proposed_single.html",
+                               values=values, rows=rows,
                                mosaic_entry=mosaic_entry,
                                result=result, issues=issues, document=document,
                                selected_windows=selected, stale_ids=stale_ids,
