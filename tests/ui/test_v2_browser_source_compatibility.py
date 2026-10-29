@@ -5,7 +5,6 @@ Requires the first-step Single Pointing compatibility patch (2ca3519).
 """
 
 import pytest
-from werkzeug.datastructures import MultiDict
 
 from alma_duplicate.separated_setup_input import SEPARATED_OBSERVATION_CONTRACT
 from alma_duplicate.ui import create_app
