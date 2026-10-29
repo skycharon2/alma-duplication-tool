@@ -66,7 +66,7 @@ def test_continuum_confirmation_is_explicit_preserved_and_removable(client):
             "radius": "30", "sources": "ARCHIVE", "intents": "CONTINUUM",
             "continuum_setup_declaration": "on", "action": "validate"}
     html = client.post("/proposed", data=data).get_data(as_text=True)
-    assert 'By selecting Continuum, I confirm at least two distinct spectral windows' in html
+    assert 'Continuum confirms ≥2 distinct windows' in html
     assert 'name="continuum_setup_declaration" aria-describedby="continuum_setup_declaration-notes" checked' in html
     assert "CONTINUUM_SETUP_USER_DECLARED" in html
     assert "Width evidence for setup qualification is incomplete" not in html
@@ -471,8 +471,25 @@ def test_purpose_rules_are_separate_non_submitting_popovers(client):
         assert f'id="rules-{purpose}"' in html
     assert 'class="appendix-guide"' not in html
     assert 'Continuum setup qualification</h3>' not in html
-    assert 'By selecting Continuum, I confirm' in html
+    assert 'Continuum confirms ≥2 distinct windows' in html
     assert 'coordinate-format-sync.js' in html
     assert 'continuum-choice.js' in html
     assert 'data-continuum-confirmation' in html  # Accessible without JavaScript.
     assert 'name="continuum_setup_declaration"' in html
+
+
+def test_return_from_mosaic_restores_both_sources(client):
+    from bs4 import BeautifulSoup
+    data = {"target_kind": "FIXED", "geometry": "SINGLE_POINTING",
+            "previous_geometry": "MOSAIC", "sources": "ARCHIVE", "action": "scope"}
+    page = BeautifulSoup(client.post("/proposed", data=data).data, "html.parser")
+    assert {el["value"] for el in page.select('input[name="sources"][checked]')} == {"ARCHIVE", "QUEUE"}
+    data["previous_geometry"] = "SINGLE_POINTING"
+    page = BeautifulSoup(client.post("/proposed", data=data).data, "html.parser")
+    assert {el["value"] for el in page.select('input[name="sources"][checked]')} == {"ARCHIVE"}
+
+
+def test_normal_form_has_no_candidate_display_cap(client):
+    html = client.get('/proposed').get_data(as_text=True)
+    assert 'Display options' not in html
+    assert 'name="result_limit"' not in html

@@ -309,6 +309,9 @@ def create_app(config=None):
                 mosaic_preview_error = None
                 edit_notice = "OT pointings removed."
             elif action == "scope":
+                if (values.get("geometry") == "SINGLE_POINTING"
+                        and request.form.get("previous_geometry") == "MOSAIC"):
+                    values["sources"] = ["ARCHIVE", "QUEUE"]
                 scope_updated = True
                 edit_notice = "Observation type updated. Entered values are retained; validate again."
             elif action == "purpose":

@@ -168,3 +168,51 @@
 [data-mosaic-canvas]:focus-visible {outline:3px solid #1688bc;outline-offset:3px}
 [data-map-status] {font-variant-numeric:tabular-nums;font-size:.9rem;margin:10px 0}
 @media(max-width:1000px){.mosaic-import-layout{grid-template-columns:1fr}[data-mosaic-canvas]{height:320px}}
+
+/* Compact shared input help and Mosaic controls. */
+.proposal-page .compact-section-heading { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.proposal-page .compact-section-heading h2 { margin:0; }
+.proposal-page .mosaic-array-control { max-width:190px; margin:16px 0; }
+.proposal-page .mosaic-import-controls > .field-note { margin-top:0; }
+.proposal-page .line-frequency-grid .control-label { align-items:center; }
+.proposal-page #continuum-choice-note { max-width:65ch; font-size:12px; line-height:1.5; }
+.proposal-page #continuum-choice-note .field-help-button { vertical-align:middle; }
+
+.proposal-page .source-choice { display:flex; align-items:center; gap:8px; flex:1; }
+.proposal-page .source-choice > label { flex:1; }
+.proposal-page .source-status-popover { width:min(460px, calc(100vw - 40px)); max-height:70vh; overflow:auto; padding:22px; border:1px solid #b8d2df; border-radius:14px; background:#f6fbff; color:#234b65; box-shadow:0 12px 36px #234b6526; }
+.proposal-page .source-status-popover::backdrop { background:#234b6510; }
+.proposal-page .optional-spw > summary { font-weight:600; }
+.proposal-page .mosaic-map-panel { padding:12px; }
+.proposal-page [data-mosaic-canvas] { height:240px; }
+.proposal-page .mosaic-map-panel > p { margin:8px 0; font-size:12px; }
+.proposal-page .mosaic-map-panel details { margin:8px 0 0; }
+@media(max-width:600px) { .proposal-page [data-mosaic-canvas] { height:220px; } }
+
+.proposal-page .queue-status-help-only > .queue-status-compact { display:none; }
+
+/* Wider scientific workspace; keep the glass surface behind crisp text. */
+
+
+
+.proposal-page .proposal-layout { grid-template-columns:minmax(0,1fr) 248px; gap:24px; }
+.proposal-page .proposed-form label,
+.proposal-page .choice-group legend { font-size:14px; color:#23485f; }
+.proposal-page .proposed-form input[type="text"],
+.proposal-page .proposed-form select { font-size:16px; min-height:40px; height:40px; }
+.proposal-page .field-note,
+.proposal-page .summary-values dd,
+.proposal-page #guide-content { font-size:14px; color:#486477; }
+.proposal-page .summary-values dt { font-size:12px; color:#486477; }
+.proposal-page .field-help-button { flex-basis:34px; width:34px; height:34px; font-size:19px; line-height:1; border-color:#729bb3; color:#14577b; }
+.proposal-page .field-help-button:focus-visible { outline:3px solid #007bb1; outline-offset:3px; }
+.proposal-page .control-label { min-height:34px; }
+.proposal-page .help-popover { color:#183b50; }
+@media(max-width:1000px) {
+  .proposal-page .proposal-layout { grid-template-columns:minmax(0,1fr); }
+
+}
+@media(max-width:600px) {
+
+
+}

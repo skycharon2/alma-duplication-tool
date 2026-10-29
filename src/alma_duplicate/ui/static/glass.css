@@ -3,8 +3,8 @@
 :root {
   --blue: #087bad;
   --blue-dark: #075b84;
-  --ink: #203e52;
-  --muted: #506b7e;
+  --ink: #183b50;
+  --muted: #486477;
   --border: rgba(83, 125, 155, .2);
   --control-border: rgba(71, 113, 144, .34);
   --paper: rgba(255, 255, 255, .76);
@@ -321,3 +321,15 @@ input[type="text"], .proposal-page .proposed-form input[type="text"],
 .report-library-welcome p { margin: 0 0 22px; }
 .report-library-welcome .button { display: inline-flex; }
 .report-retention-note { margin: 16px 4px 0; max-width: 78ch; color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+/* Shared workspace dimensions and readability across all application pages. */
+.page-width { max-width:1480px; padding-inline:28px; }
+.navigation { max-width:1424px; width:calc(100% - 56px); margin-inline:auto; }
+.field-note, .report-retention-note, .report-description, .popover-note { font-size:14px; line-height:1.6; color:var(--muted); }
+.field-help-button { width:34px; height:34px; flex-basis:34px; font-size:19px; line-height:1; }
+.field-help-button:focus-visible { outline:3px solid #007bb1; outline-offset:3px; }
+.queue-status-panel, .archive-status-panel, .help-popover { font-size:14px; }
+@media(max-width:600px) {
+  .page-width { padding-inline:16px; }
+  .navigation { width:calc(100% - 32px); }
+}
