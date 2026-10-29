@@ -7,6 +7,14 @@ from alma_duplicate.rules.submitted_line_evaluation import prepare_submitted_lin
 from alma_duplicate.separated_setup_input import SEPARATED_OBSERVATION_CONTRACT
 
 
+def uses_separated_input(values):
+    """The form version is explicit; never infer V2 from source selection."""
+    return (values.get('normal_line_records') == '1'
+            or (values.get('normal_form_version') == '2'
+                and values.get('target_kind', 'FIXED') == 'FIXED'
+                and bool(values.get('intents'))))
+
+
 def enabled(values):
     return (values.get('target_kind', 'FIXED') == 'FIXED'
             and values.get('geometry', 'SINGLE_POINTING') in {'MOSAIC', 'SINGLE_POINTING'}
@@ -92,3 +100,31 @@ def validate(document):
     issues += _continuum_inventory_errors(prepared.continuum_request)
     return replace(result, request=prepared.line_request, issues=issues,
                    search_readiness=SearchReadiness.BLOCKED if any(i.category == 'ERROR' for i in issues) else SearchReadiness.READY)
+
+
+def validate_for_browser(document, values):
+    """Fail closed on unsupported V2 sources without forging a wire-contract ID.
+
+    The exported input representation stays V2. Browser-level eligibility is
+    separate from the backend's scientific operand validation.
+    """
+    if enabled(values):
+        return validate(document)
+
+    result = validate_proposed_observation(document['request'], document['search_options'])
+    issues = tuple(issue for issue in result.issues
+                   if issue.code != 'SEPARATED_INPUT_NOT_EXECUTABLE')
+    single = (values.get('target_kind', 'FIXED') == 'FIXED'
+              and values.get('geometry', 'SINGLE_POINTING') == 'SINGLE_POINTING')
+    if single:
+        field = 'search_options.sources'
+        message = ('This optional separated V2 editor currently supports Archive-only assessment in this browser. '
+                   'Select Archive without Queue, or start a new legacy Single Pointing '
+                   'request for Archive + Queue. Your independent requirements and SPW '
+                   'evidence are retained.')
+    else:
+        field = 'request.geometry'
+        message = ('This separated V2 target/geometry/source combination is not executable '
+                   'in the browser. Your independent requirements and SPW evidence are retained.')
+    issue = RequestIssue('ERROR', 'BROWSER_V2_SCOPE_UNSUPPORTED', field, message)
+    return replace(result, issues=issues + (issue,), search_readiness=SearchReadiness.BLOCKED)

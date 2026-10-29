@@ -109,4 +109,6 @@ def test_single_pointing_editor_does_not_depend_on_source_selection(make_client)
     assert 'Physical SPW evidence' in html
     assert 'name="frequency_local_redshift"' in html
     assert 'id="shared-redshift"' not in html
-    assert 'select Archive without Queue before running' in html
+    assert 'This optional separated V2 editor currently runs Archive-only' in html
+    assert 'Standard Single Pointing still supports Archive + Queue' in html
+    assert 'Your V2 records are retained; no automatic downgrade occurs' in html

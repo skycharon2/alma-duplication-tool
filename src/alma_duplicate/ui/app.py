@@ -428,9 +428,8 @@ def create_app(config=None):
         for row in rows + values.get("spw_rows", []):
             values.setdefault(row + "_id", row)
         selected = contributing_windows(values)
-        from alma_duplicate.ui.normal_line_input import enabled as separated_enabled
-        physical_rows = (values.get('spw_rows', []) if values.get('normal_line_records') == '1'
-                         and separated_enabled(values) else rows)
+        from alma_duplicate.ui.normal_line_input import uses_separated_input
+        physical_rows = values.get('spw_rows', []) if uses_separated_input(values) else rows
         known_ids = {values[row + "_id"] for row in physical_rows}
         stale_ids = list(dict.fromkeys(value for value in selected if value not in known_ids))
         return render_template("proposed.html", values=values, rows=rows,
