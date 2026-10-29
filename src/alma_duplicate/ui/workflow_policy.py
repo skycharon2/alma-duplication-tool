@@ -6,6 +6,17 @@ fixed-target Mosaic browser workflow currently forces Archive-only.
 """
 
 
+def initial_mosaic_values(initial_values):
+    """Start Mosaic in Archive-only V2 without changing Single Pointing.
+
+    Explicit posted forms preserve their submitted input contract.
+    """
+    return initial_values | {
+        "target_kind": "FIXED", "geometry": "MOSAIC",
+        "sources": ["ARCHIVE"], "normal_form_version": "2",
+    }
+
+
 def is_fixed_mosaic(values):
     """Match the exact fixed-target Mosaic scope used by the browser runner."""
     return values.get("target_kind") == "FIXED" and values.get("geometry") == "MOSAIC"

@@ -17,8 +17,9 @@
 {% set geometry = values.get('geometry', 'SINGLE_POINTING') %}
 {% set normal_records = (values.get('normal_form_version') == '2' and target_kind == 'FIXED' and values.get('intents')) or values.get('normal_line_records') == '1' %}
 <div class="page-heading proposal-heading"><div><h1>Proposed observation</h1><p>Define your target and the sensitivity you plan to achieve.</p></div></div>
+<p class="proposal-intro" aria-label="Observation workflow navigation">Open a new <a href="{{ url_for('proposed') }}">Single Pointing form</a> or <a href="{{ url_for('proposed_mosaic') }}">Mosaic form</a>. Switching forms starts a separate input; export any data you need to retain first.</p>
 {% if not configured.enabled and target_kind != 'SUN' %}<p class="proposal-intro">Input validation only. No assessment source is configured.</p>{% endif %}
-<form method="post" enctype="multipart/form-data" action="{{ url_for('proposed') }}" class="proposed-form" data-progress-url="{{ url_for('assessment_progress', token='TOKEN') }}" novalidate>
+<form method="post" enctype="multipart/form-data" action="{{ url_for('proposed_mosaic') if mosaic_entry else url_for('proposed') }}" class="proposed-form" data-progress-url="{{ url_for('assessment_progress', token='TOKEN') }}" novalidate>
 {% if values.get('normal_form_version') == '2' %}<input type="hidden" name="normal_form_version" value="2">{% endif %}
 {% if normal_records %}<input type="hidden" name="normal_line_records" value="1">{% endif %}
 <button type="submit" name="action" value="validate" hidden>Validate input</button>
@@ -30,12 +31,18 @@
 
 <div class="form-pair target-identity-grid">
 <div>{{ input('target_name', 'Moving-object name' if target_kind == 'MOVING' else 'Target name' if geometry == 'MOSAIC' else 'Target name (optional label)') }}</div>
+{% if mosaic_entry %}
+<input type="hidden" name="target_kind" value="FIXED">
+<input type="hidden" name="geometry" value="MOSAIC">
+<p class="field-note">Fixed-target Mosaic · Archive-only. For Single Pointing and Queue, start a separate <a href="{{ url_for('proposed') }}">Single Pointing form</a>.</p>
+{% else %}
 <div><label for="target_kind">Target type</label><select id="target_kind" name="target_kind" aria-describedby="scope-support target_kind-notes">
 {% if target_kind not in ['FIXED','MOVING','SUN'] %}<option selected value="{{ target_kind }}">{{ target_kind }} (invalid selection)</option>{% endif %}
 {% for value, label in [('FIXED','Fixed target'),('MOVING','Moving target — assessment not available'),('SUN','Sun — exempt from duplication checking')] %}<option value="{{ value }}" {% if target_kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{{ messages('target_kind') }}</div>
 <div><label for="geometry">Observation geometry</label><select id="geometry" name="geometry" aria-describedby="scope-support geometry-notes">
 {% if geometry not in ['SINGLE_POINTING','MOSAIC'] %}<option selected value="{{ geometry }}">{{ geometry }} (invalid selection)</option>{% endif %}
 {% for value, label in [('SINGLE_POINTING','Single pointing'),('MOSAIC','Mosaic — Solar exemption applies' if target_kind == 'SUN' else 'Mosaic')] %}<option value="{{ value }}" {% if geometry == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{{ messages('geometry') }}</div>
+{% endif %}
 </div>
 <div id="scope-support" class="scope-support{% if assessment_supported %} scope-supported{% endif %}{% if not assessment_supported and target_kind != 'SUN' %} scope-unavailable{% endif %}" role="status">
 {% if assessment_supported %}<span>{{ 'Mosaic Archive assessment available with a live Archive source.' if geometry == 'MOSAIC' else 'Single-pointing assessment available.' }}</span>{% if geometry == 'MOSAIC' %}<p>Check whether more than 50% of the proposed pointings are within each Archive context’s s_region. Other criteria use the same Archive metadata rules as single pointing.</p>{% endif %}
