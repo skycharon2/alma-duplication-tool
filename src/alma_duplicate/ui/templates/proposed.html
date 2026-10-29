@@ -71,6 +71,7 @@
 {% if target_kind == 'FIXED' and geometry == 'MOSAIC' %}
 <section id="mosaic-pointings" aria-label="Archive Mosaic OT pointing preview">
 <h2>Mosaic positions</h2>
+<div class="mosaic-import-layout"><div class="mosaic-import-controls">
 <p class="field-note">Upload an ALMA OT Absolute pointings export in Sexagesimal, Degrees or Radians. Relative / Offset exports are not supported.</p>
 <p class="field-note">The uploaded rows define the complete pointing list for this check and are interpreted as fixed ICRS coordinates.</p>
 <div><label for="ot_pointings">OT pointings export (.txt or .csv; request limit 1 MiB)</label><input id="ot_pointings" name="ot_pointings" type="file" accept=".txt,.csv,text/plain,text/csv"></div>
@@ -86,8 +87,17 @@
 {% for point in mosaic_preview.points %}<tr><td>{{ point.id }}</td><td>{{ point.line_number }}</td><td>{{ point.ra_deg }}</td><td>{{ point.dec_deg }}</td></tr>{% endfor %}
 </tbody></table></div></details>
 {% if mosaic_preview.row_count > mosaic_preview.preview_limit %}<p>Preview limited to the first {{ mosaic_preview.preview_limit }} rows; all rows were parsed and counted.</p>{% endif %}
-<p class="field-note">For privacy and resource limits, uploaded file bytes are not stored. Select the file again when future browser assessment is available.</p>
+
 </div>{% endif %}
+</div><div class="mosaic-map-panel">
+<div class="mosaic-map-toolbar"><label>Preview frequency<select data-preview-frequency><option value="">Pointing centres only</option></select></label><button type="button" class="button" data-preview-reset>Reset view</button></div>
+<canvas data-mosaic-canvas width="600" height="400" tabindex="0" aria-label="Proposed pointing map. Use plus and minus to zoom; arrow keys to pan."></canvas>
+<p data-map-status role="status">Upload pointings to preview their positions.</p>
+<p class="field-note">North up · East left. Circles show proposed half-power beams, not Archive coverage. Drag to pan; scroll to zoom.</p>
+<details><summary>Preview model</summary><p>HPBW = 1.13 λ / D; circle radius = HPBW / 2. REST frequencies use the corresponding redshift. This preview does not change the duplication assessment.</p></details>
+<script type="application/json" data-mosaic-points>{{ (mosaic_preview.collection.points | map(attribute='ra_deg') | list if mosaic_preview else []) | tojson }}</script>
+<script type="application/json" data-mosaic-decs>{{ (mosaic_preview.collection.points | map(attribute='dec_deg') | list if mosaic_preview else []) | tojson }}</script>
+</div></div>
 </section>
 {% endif %}
 <section id="requirements" tabindex="-1" {% if purpose_updated %}data-purpose-updated{% endif %}><h2>Scientific requirements</h2>
@@ -251,5 +261,6 @@
 <script src="{{ url_for('static', filename='proposal-workbench.js') }}" defer></script>
 <script src="{{ url_for('static', filename='continuum-choice.js') }}" defer></script>
 <script src="{{ url_for('static', filename='coordinate-format-sync.js') }}" defer></script>
+<script src="{{ url_for('static', filename='mosaic-preview.js') }}" defer></script>
 <script src="{{ url_for('static', filename='proposed.js') }}" defer></script>
 {% endblock %}
