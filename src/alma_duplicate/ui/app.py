@@ -23,10 +23,11 @@ from alma_duplicate.ui.runs import ARCHIVE_CONNECTIONS, BrowserAssessment, RunSt
 from alma_duplicate.ui.report_pages import report_page, report_projection
 from alma_duplicate.ui.visualization import visualization_data
 from alma_duplicate.ui.run_store import DEFAULT_DISK_BYTES, DEFAULT_MAX_AGE
-from alma_duplicate.ui.proposed import MAX_WINDOWS, bind_mosaic_input, assessment_supported, contributing_windows, initial_form, new_row, preview_mosaic_ot, read_form, validate_form
+from alma_duplicate.ui.proposed import MAX_WINDOWS, bind_mosaic_input, assessment_supported, contributing_windows, initial_form, new_row, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
 from alma_duplicate.ui.managed_queue import managed_queue_status
 from alma_duplicate.ui.archive_status import archive_configuration_status, archive_run_status
+from alma_duplicate.ui.mosaic_form import restore_mosaic_upload, replace_mosaic_upload, remove_mosaic_upload
 from alma_duplicate.ui.workflow_policy import (
     apply_browser_source_policy, initial_mosaic_values, is_fixed_mosaic,
     should_enable_mosaic_v2_on_scope_change,
@@ -289,34 +290,22 @@ def create_app(config=None):
             # Existing /proposed submissions retain their compatibility path.
             if mosaic_entry and not is_fixed_mosaic(values):
                 abort(400, description="Mosaic form requires a fixed-target Mosaic request")
-            token = values.get("mosaic_upload_token", "")
-            if token:
-                mosaic_preview = mosaic_uploads.get(owner, token)
-                if mosaic_preview is None:
-                    values.pop("mosaic_upload_token", None)
-                    mosaic_preview_error = "The OT upload expired or is unavailable. Import the file again."
+            token, mosaic_preview, mosaic_preview_error = restore_mosaic_upload(
+                values, mosaic_uploads, owner)
             apply_browser_source_policy(values)
             action = values.get("action", "validate")
             if action == "preview-pointings":
                 if not is_fixed_mosaic(values):
                     abort(400, description="OT preview requires a fixed Mosaic request")
                 try:
-                    uploads = request.files.getlist("ot_pointings")
-                    if len(uploads) != 1:
-                        raise ValueError("Select one OT pointings file")
-                    replacement = preview_mosaic_ot(uploads[0], values)
-                    new_token = mosaic_uploads.put(owner, replacement)
-                    mosaic_uploads.remove(owner, token)
-                    values["mosaic_upload_token"] = new_token
-                    mosaic_preview = replacement
+                    mosaic_preview = replace_mosaic_upload(
+                        values, mosaic_uploads, owner, token,
+                        request.files.getlist("ot_pointings"))
                     mosaic_preview_error = None
                 except (ValueError, UnicodeError) as exc:
                     mosaic_preview_error = str(exc)
             elif action == "remove-pointings":
-                mosaic_uploads.remove(owner, token)
-                values.pop("mosaic_upload_token", None)
-                values.pop("mosaic_complete", None)
-                values.pop("mosaic_fixed_icrs", None)
+                remove_mosaic_upload(values, mosaic_uploads, owner, token)
                 mosaic_preview = None
                 mosaic_preview_error = None
                 edit_notice = "OT pointings removed."

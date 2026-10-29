@@ -29,7 +29,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "22"
-      - run: node --test tests/ui/visualization_view.test.cjs tests/ui/continuum_choice.test.cjs tests/ui/coordinate_format_sync.test.cjs
+      - run: node --test tests/ui/visualization_view.test.cjs tests/ui/continuum_choice.test.cjs tests/ui/coordinate_format_sync.test.cjs tests/ui/workflow_navigation.test.cjs
       - run: node --check src/alma_duplicate/ui/static/visualization.js
       - run: node --check src/alma_duplicate/ui/static/coordinate-format-sync.js
       - run: node --check src/alma_duplicate/ui/static/proposed.js
