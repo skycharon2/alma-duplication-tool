@@ -206,12 +206,11 @@ def build_document(values, rows):
     if request["target_kind"] == "FIXED" and request["geometry"] == "MOSAIC":
         search = {"sources": ["ARCHIVE"], "predicates": [], "radius_mode": "AUTO"}
     document = {"request": request, "search_options": search}
-    if values.get("normal_line_records") == "1":
-        from alma_duplicate.ui.normal_line_input import enabled, convert
-        if enabled(values):
-            document = convert(document, values, rows, bindings)
-        else:
-            request["line_input_contract"] = "UNSUPPORTED_BROWSER_LINE_SCOPE"
+    from alma_duplicate.ui.normal_line_input import uses_separated_input, convert
+    if uses_separated_input(values):
+        # Even for an unsupported source combination, retain the real V2 wire
+        # structure. Execution eligibility is enforced by validation below.
+        document = convert(document, values, rows, bindings)
     return document, bindings
 
 
@@ -304,8 +303,8 @@ def validate_form(values, rows, *, require_line_complete=False):
     document, bindings = build_document(values, rows)
     separated = "line_input_contract" in document["request"]
     if separated:
-        from alma_duplicate.ui.normal_line_input import validate
-        result = validate(document)
+        from alma_duplicate.ui.normal_line_input import validate_for_browser
+        result = validate_for_browser(document, values)
     else:
         result = validate_proposed_observation(document["request"], document["search_options"])
     line_errors = ()
