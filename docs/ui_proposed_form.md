@@ -340,3 +340,20 @@ are unchanged. Initial rendering never upgrades older unconfirmed selections.
 Those retain a visible confirmation control, and may still use window evidence.
 Without JavaScript, purpose and confirmation remain separate accessible controls.
 LINE and CONTINUUM POST fields and backend evaluation contracts remain unchanged.
+
+## Mosaic input preview
+
+Selecting an OT Absolute export automatically imports it when JavaScript is
+enabled. Without JavaScript, use the upload button. The coordinate preview uses
+all imported rows; the coordinate table may show only a subset.
+
+The map uses an azimuthal equidistant projection, north up and east left. It
+supports dragging, wheel zoom, keyboard arrows and +/−, and Reset view. A valid
+LINE or Continuum frequency enables approximate primary-beam outlines using
+HPBW = 1.13 λ/D, with radius HPBW/2 and the selected 7 m or 12 m diameter. REST
+frequencies use the corresponding requirement's redshift; SKY values are used
+directly. Multiple valid requirements are selectable in the preview.
+
+This is a proposal geometry preview without a sky-image background. It does not
+query candidates or determine duplication. Archive Mosaic position assessment
+continues to use candidate `s_region` coverage of the proposed centres.

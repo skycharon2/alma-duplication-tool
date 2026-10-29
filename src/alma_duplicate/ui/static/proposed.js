@@ -7,6 +7,7 @@ window.addEventListener('pagehide', () => pauseActive());
 function initializeForm(form) {
   if (!form) return;
   window.initializeProposalWorkbench?.(form);
+  window.initializeMosaicPreview?.(form);
   window.initializeContinuumChoice?.(form);
   window.initializeCoordinateFormatSync?.(form);
   let assessing = false;

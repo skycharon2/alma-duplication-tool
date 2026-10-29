@@ -60,7 +60,12 @@ def test_mosaic_normal_form_continuum(browser, intents):
             assert identity['Member OUS'] == candidate['member_ous_uid']
             assert identity['Target'] == candidate['source_name']
             assert 'ASDM' in identity and 'SPW' in identity
-    assert 'Execution (ASDM):' in client.get(url + '?view=all').text
+    rendered = client.get(url + '?view=all').text
+    assert 'Execution (ASDM):' in rendered
+    if 'LINE' in intents:
+        assert 'LINE requirement 1' in rendered
+        assert 'LINE requirement 2' in rendered
+        assert 'Input frequency' in rendered
     assert len(calls) == 1
 
 

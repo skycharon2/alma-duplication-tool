@@ -66,6 +66,36 @@ def _context_identity(context, member, target):
     return {'spws': _unique(spws), 'asdm_uids': _unique(executions)}
 
 
+def _line_presentations(candidate, context):
+    """Label stored pairs by submitted order, never by matching order."""
+    raw = ((candidate.get('evaluation') or {}).get('request') or {}).get('raw') or {}
+    requirements = raw.get('line_requirements') or []
+    by_id = {r.get('requirement_id'): (i + 1, r) for i, r in enumerate(requirements)}
+    result = []
+    for pair in context.get('line_pairs') or []:
+        attempt = pair.get('attempt') or {}
+        identifier = attempt.get('proposed_window_id') or (attempt.get('reference') or {}).get('proposed_window_id')
+        number, requirement = by_id.get(identifier, (None, {}))
+        fields = []
+        for label, key in [('Input frequency', 'window_center'),
+                           ('Spectral resolution', 'spectral_resolution'), ('RMS', 'rms')]:
+            quantity = requirement.get(key) or {}
+            if quantity.get('value') is not None:
+                fields.append((label, ' '.join(str(quantity[k]) for k in ('value', 'unit', 'kind')
+                                              if quantity.get(k) is not None)))
+        z = requirement.get('source_redshift', raw.get('source_redshift'))
+        if z is not None:
+            fields.append(('Redshift z', str(z)))
+        if requirement.get('correlator_mode'):
+            fields.append(('Mode', requirement['correlator_mode']))
+        result.append({'pair': pair, 'label': f'LINE requirement {number}' if number else
+                       f'LINE requirement {identifier}' if identifier else 'LINE pair',
+                       'fields': fields})
+    matches = [item for item in result if item['pair'].get('status') == 'CRITERIA_MET']
+    others = [item for item in result if item['pair'].get('status') != 'CRITERIA_MET']
+    return matches[:10] + others[:10]
+
+
 def _candidate_entry(index, summary, candidate):
     if summary.get('candidate_index') != index:
         raise ValueError('Mosaic candidate index identity mismatch')
@@ -78,6 +108,7 @@ def _candidate_entry(index, summary, candidate):
                        for branch in context.get('branches') or ())
         contexts.append({
             'index': context_index, 'record': context, 'matching': matching,
+            'line_presentations': _line_presentations(candidate, context),
             **_context_identity(context, candidate.get('member_ous_uid'), candidate.get('source_name')),
         })
     # Matching first in presentation only. Recorded Context numbers never change.

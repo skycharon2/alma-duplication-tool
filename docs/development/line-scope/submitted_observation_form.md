@@ -62,3 +62,13 @@ Continuum supplies `continuum_requirement.source_redshift` beside its representa
 frequency. REST conversion uses the corresponding value; SKY is not redshifted.
 Existing requests retain shared-redshift fallback semantics. The optional continuum
 redshift overrides that fallback only in the continuum calculation.
+
+## Mosaic LINE pair labels
+
+Pair cards use submitted requirement order for numbering, even when matching
+pairs are displayed first. They show the saved input frequency, redshift,
+resolution, RMS and mode when available. Older reports without input metadata
+fall back to recorded requirement IDs; no configuration is inferred.
+The LINE branch summary explicitly means at least one matching requirement.
+The existing ten-matching plus ten-other pair display limit remains unchanged;
+complete evidence stays in the saved JSON.
