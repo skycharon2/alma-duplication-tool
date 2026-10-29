@@ -40,11 +40,15 @@ def test_two_get_entrypoints_have_distinct_default_scope(client):
     assert 'name="sources" value="ARCHIVE"' in mosaic.text
     assert 'name="sources" value="QUEUE"' not in mosaic.text
     assert 'name="target_kind" value="FIXED"' in mosaic.text
-    assert 'name="geometry" value="MOSAIC"' in mosaic.text
-    assert 'select id="geometry"' not in mosaic.text
+    assert 'select id="geometry"' in mosaic.text
+    assert 'select id="geometry"' in single.text
+    assert '<option value="MOSAIC" selected' in mosaic.text
+    assert '<option value="SINGLE_POINTING" selected' in single.text
     assert 'id="mosaic-pointings"' in mosaic.text
-    assert 'href="/proposed/mosaic"' in single.text
-    assert 'href="/proposed"' in mosaic.text
+    assert 'class="workflow-switcher"' not in single.text
+    assert 'class="workflow-switcher"' not in mosaic.text
+    assert 'data-mosaic-url="/proposed/mosaic"' in single.text
+    assert 'data-single-url="/proposed"' in mosaic.text
 
 
 def test_standard_single_export_keeps_both_sources(client):

@@ -192,7 +192,9 @@ function initializeForm(form) {
   updateScope.hidden = true;
   form.addEventListener('change', event => {
     if (window.maybeNavigateToMosaic?.(form, event.target,
-      url => window.location.assign(url), message => window.confirm(message))) return;
+      url => window.location.assign(url), message => window.confirm(message)) ||
+        window.maybeNavigateToSingle?.(form, event.target,
+          url => window.location.assign(url), message => window.confirm(message))) return;
     if (event.target.matches('[name="intents"]')) {
       // Re-render the input groups on the server with all current values.
       // This action never validates, queries sources, or runs an assessment.
