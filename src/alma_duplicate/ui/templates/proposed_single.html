@@ -1,0 +1,15 @@
+{# Single Pointing UI; also preserves legacy Mosaic POSTs to /proposed. #}
+{% extends "_proposed_shared.html" %}
+{% block target_kind_control %}
+<div><label for="target_kind">Target type</label><select id="target_kind" name="target_kind" aria-describedby="scope-support target_kind-notes">
+{% if target_kind not in ['FIXED','MOVING','SUN'] %}<option selected value="{{ target_kind }}">{{ target_kind }} (invalid selection)</option>{% endif %}
+{% for value, label in [('FIXED','Fixed target'),('MOVING','Moving target — assessment not available'),('SUN','Sun — exempt from duplication checking')] %}<option value="{{ value }}" {% if target_kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{{ messages('target_kind') }}</div>
+{% endblock %}
+{% block source_choices %}
+{% for source in (['ARCHIVE'] if geometry == 'MOSAIC' else ['ARCHIVE','QUEUE']) %}<label><input type="checkbox" name="sources" value="{{ source }}" {% if source in values.get('sources', []) %}checked{% endif %}>{{ source }}</label>{% endfor %}
+{% endblock %}
+{% block mosaic_pointings %}
+{% if target_kind == 'FIXED' and geometry == 'MOSAIC' %}
+{% include "_mosaic_pointings.html" %}
+{% endif %}
+{% endblock %}

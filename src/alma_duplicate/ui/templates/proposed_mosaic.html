@@ -1,0 +1,12 @@
+{# Dedicated fixed-target Mosaic view; scientific fields stay shared. #}
+{% extends "_proposed_shared.html" %}
+{% block target_kind_control %}
+<input type="hidden" name="target_kind" value="FIXED">
+<div><label>Target type</label><p class="field-note">Fixed target · Archive-only</p></div>
+{% endblock %}
+{% block source_choices %}
+<label><input type="checkbox" name="sources" value="ARCHIVE" {% if 'ARCHIVE' in values.get('sources', []) %}checked{% endif %}>ARCHIVE</label>
+{% endblock %}
+{% block mosaic_pointings %}
+{% include "_mosaic_pointings.html" %}
+{% endblock %}
