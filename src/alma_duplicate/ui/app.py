@@ -27,6 +27,9 @@ from alma_duplicate.ui.proposed import MAX_WINDOWS, bind_mosaic_input, assessmen
 from alma_duplicate.reporting import report_json_text
 from alma_duplicate.ui.managed_queue import managed_queue_status
 from alma_duplicate.ui.archive_status import archive_configuration_status, archive_run_status
+from alma_duplicate.ui.workflow_policy import (
+    apply_browser_source_policy, is_fixed_mosaic, should_enable_mosaic_v2_on_scope_change,
+)
 
 
 def _env_flag(name):
@@ -282,11 +285,10 @@ def create_app(config=None):
                 if mosaic_preview is None:
                     values.pop("mosaic_upload_token", None)
                     mosaic_preview_error = "The OT upload expired or is unavailable. Import the file again."
-            if values.get("target_kind") == "FIXED" and values.get("geometry") == "MOSAIC":
-                values["sources"] = ["ARCHIVE"]
+            apply_browser_source_policy(values)
             action = values.get("action", "validate")
             if action == "preview-pointings":
-                if values.get("target_kind") != "FIXED" or values.get("geometry") != "MOSAIC":
+                if not is_fixed_mosaic(values):
                     abort(400, description="OT preview requires a fixed Mosaic request")
                 try:
                     uploads = request.files.getlist("ot_pointings")
@@ -311,16 +313,7 @@ def create_app(config=None):
             elif action == "scope":
                 # Upgrade a blank Mosaic form only; never reinterpret entered
                 # Single Pointing legacy science values as separated V2 records.
-                if (values.get("target_kind") == "FIXED"
-                        and values.get("geometry") == "MOSAIC"
-                        and not values.get("normal_form_version")
-                        and not values.get("normal_line_records")
-                        and not rows and not values.get("spw_rows")
-                        and not values.get("aggregate_windows")
-                        and values.get("setup_complete") != "on"
-                        and values.get("continuum_setup_declaration") != "on"
-                        and not any(values.get(key, "").strip() for key in (
-                            "redshift", "continuum_redshift", "representative", "aggregate"))):
+                if should_enable_mosaic_v2_on_scope_change(values, rows):
                     values["normal_form_version"] = "2"
                 scope_updated = True
                 edit_notice = "Observation type updated. Entered values are retained; validate again."
@@ -362,7 +355,7 @@ def create_app(config=None):
             elif action in {"validate", "download", "assess"}:
                 document, result, issues = validate_form(values, rows, require_line_complete=action == "assess")
                 proposed_points = None
-                is_mosaic = values.get("target_kind") == "FIXED" and values.get("geometry") == "MOSAIC"
+                is_mosaic = is_fixed_mosaic(values)
                 if is_mosaic:
                     issues = [entry for entry in issues if not (
                         (entry["issue"].category == "MISSING" and entry["issue"].path in
