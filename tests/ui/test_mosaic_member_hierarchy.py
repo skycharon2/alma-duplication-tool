@@ -221,3 +221,28 @@ def test_ambiguous_or_missing_execution_never_inherits_target_metadata():
     children = result['candidate_entries'][0]['children']
     assert len(children) == 3
     assert all(child['execution'] is None for child in children)
+
+
+def test_line_labels_keep_submission_order_and_distinguish_same_frequency():
+    candidate = _candidate('target-A', ['CRITERIA_MET'])
+    candidate['evaluation']['request'] = {'raw': {'line_requirements': [
+        {'requirement_id': 'a', 'window_center': {'value': '230', 'unit': 'GHz', 'kind': 'REST'},
+         'source_redshift': 0, 'rms': {'value': '1', 'unit': 'mJy/beam'}},
+        {'requirement_id': 'b', 'window_center': {'value': '230', 'unit': 'GHz', 'kind': 'REST'},
+         'source_redshift': 1, 'rms': {'value': '2', 'unit': 'mJy/beam'}},
+    ]}}
+    context = candidate['evaluation']['contexts'][0]
+    first = context['line_pairs'][0]
+    first['attempt']['proposed_window_id'] = 'a'
+    first['status'] = 'CRITERIA_NOT_MET'
+    second = deepcopy(first)
+    second['attempt']['proposed_window_id'] = 'b'
+    second['status'] = 'CRITERIA_MET'
+    context['line_pairs'].append(second)
+    before = deepcopy(candidate)
+    result, _ = _page(_document([candidate]))
+    pairs = result['candidate_entries'][0]['contexts'][0]['line_presentations']
+    assert [p['label'] for p in pairs] == ['LINE requirement 2', 'LINE requirement 1']
+    assert ('Redshift z', '0') in pairs[1]['fields']
+    assert ('RMS', '2 mJy/beam') in pairs[0]['fields']
+    assert candidate == before
