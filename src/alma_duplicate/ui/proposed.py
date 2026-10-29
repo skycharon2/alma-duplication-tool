@@ -17,7 +17,9 @@ def new_row():
 
 
 def initial_form():
-    return {"normal_form_version": "2", "setup_id": "setup-1", "radius_mode": "AUTO",
+    # Single Pointing defaults to its established Archive + Queue (legacy) contract.
+    # Explicit V2 inputs and the Mosaic editor remain available independently.
+    return {"setup_id": "setup-1", "radius_mode": "AUTO",
             "sources": ["ARCHIVE", "QUEUE"]}, []
 
 

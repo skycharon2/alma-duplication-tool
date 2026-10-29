@@ -309,6 +309,19 @@ def create_app(config=None):
                 mosaic_preview_error = None
                 edit_notice = "OT pointings removed."
             elif action == "scope":
+                # Upgrade a blank Mosaic form only; never reinterpret entered
+                # Single Pointing legacy science values as separated V2 records.
+                if (values.get("target_kind") == "FIXED"
+                        and values.get("geometry") == "MOSAIC"
+                        and not values.get("normal_form_version")
+                        and not values.get("normal_line_records")
+                        and not rows and not values.get("spw_rows")
+                        and not values.get("aggregate_windows")
+                        and values.get("setup_complete") != "on"
+                        and values.get("continuum_setup_declaration") != "on"
+                        and not any(values.get(key, "").strip() for key in (
+                            "redshift", "continuum_redshift", "representative", "aggregate"))):
+                    values["normal_form_version"] = "2"
                 scope_updated = True
                 edit_notice = "Observation type updated. Entered values are retained; validate again."
             elif action == "purpose":
