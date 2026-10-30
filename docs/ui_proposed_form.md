@@ -6,27 +6,6 @@ This document owns the current form controls and request mapping. Use
 [the report browser](ui_report_browser.md) for results and visualization.
 [Status](status.md) owns the implementation baseline and verification register.
 
-## Independent observations at one position
-
-Single Pointing offers **Add observation setup** above the target fields. It saves
-this draft and copies its settings into a new observation for editing. The drafts
-share RA/Dec, but keep separate scientific requirements, redshifts, SPW evidence,
-and source selections. **Add LINE window** still adds a window within the selected
-observation; it does not create another observation or report.
-
-**Run assessment** runs only the selected observation through the existing
-Single Pointing evaluator. Each run has its own report, input download and Explore
-URL. Report pages link to the saved reports for the other observations. There is no
-cross-observation scientific aggregation. An invalid draft does not prevent another
-observation from being run. Saved reports retain their original input snapshots;
-changing shared coordinates or other draft fields requires a new run.
-
-Draft sets are session-owned, limited to eight observations and 1 MiB per set, and
-expire after one hour or server restart. Stale submissions from another tab are
-rejected instead of overwriting newer edits. Report retention follows the existing
-run store. This editor applies only to fixed Single Pointing observations; the
-Mosaic controller and geometry evaluation are unchanged.
-
 ## Input scope and structure
 
 `/proposed` is the Single Pointing form; `/proposed/mosaic` has its own template,
