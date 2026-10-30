@@ -23,9 +23,15 @@ row identities, clears stale validation results, and never queries or assesses.
 Selecting LINE with no rows creates one blank entry, with no assumed mode or
 scientific values. Each entry is a requested correlator window, not an individual
 spectral feature. Its central frequency, reference, planned resolution, RMS and mode
-appear in Spectral line requirements. New Single Pointing forms use the separated
-input contract with Archive and Queue CSV both selected. Each LINE requirement
-has its own redshift for REST-to-SKY conversion; SKY inputs are not converted.
+appear in Spectral line requirements. The V2 browser currently permits one
+requested LINE configuration per assessment. The Add requested window control is
+not offered after the first LINE entry; old multi-LINE form POSTs are rejected
+before source retrieval, with the entered values retained for correction. Start
+a separate assessment for an independent setup, including its own angular
+resolution. This is a browser workflow limit, not a restriction on ALMA physical
+SPW counts or the historical V2 programmatic contract. New Single Pointing
+forms default to Legacy Archive + Queue; explicit V2 remains opt-in. Each LINE
+requirement has its own redshift for REST-to-SKY conversion; SKY is unchanged.
 Continuum has a separate frequency and redshift. Physical SPW evidence is optional
 and stored independently, with explicit links where needed. Adding evidence does
 not add a LINE requirement.

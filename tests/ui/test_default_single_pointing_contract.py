@@ -124,3 +124,33 @@ def test_explicit_v2_with_queue_does_not_silently_downgrade(client):
     exported = response.get_json()
     assert exported['request']['line_input_contract'] == 'SEPARATE_OBSERVATION_REQUIREMENTS_V2'
     assert exported['search_options']['sources'] == ['ARCHIVE', 'QUEUE']
+
+
+def test_single_point_v2_blocks_second_line_but_legacy_add_remains(client):
+    data = continuum_form()
+    data.setlist('intents', ['LINE'])
+    data['normal_form_version'] = '2'
+    a, b = 'w123456abcdef', 'wabcdef123456'
+    data.setlist('rows', [a, b])
+    for row, identifier, centre in ((a, 'line-a', '230.538'), (b, 'line-b', '345.796')):
+        data[row + '_id'] = identifier
+        data[row + '_center'] = centre
+        data[row + '_center_kind'] = 'SKY'
+        data[row + '_mode'] = 'FDM'
+        data[row + '_resolution'] = '10'
+        data[row + '_rms'] = '1'
+    data['action'] = 'validate'
+    page = client.post('/proposed', data=data)
+    assert page.status_code == 200
+    assert 'This browser assessment accepts one LINE configuration.' in page.get_data(as_text=True)
+
+    data.setlist('rows', [a])
+    data['action'] = 'add'
+    page = client.post('/proposed', data=data).get_data(as_text=True)
+    assert 'One LINE configuration per V2 browser assessment.' in page
+    assert page.count('name="rows"') == 1
+    assert 'Add requested window</button>' not in page
+
+    data.pop('normal_form_version')
+    page = client.post('/proposed', data=data).get_data(as_text=True)
+    assert 'Add requested window</button>' in page

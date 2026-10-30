@@ -63,11 +63,17 @@ def apply_common_edit(state: ProposalFormState, action: str) -> bool:
         values["spw_rows"].remove(row)
         state.edit_notice = "Physical SPW evidence removed. LINE requirements are unchanged."
     elif action == "add":
-        if len(rows) >= MAX_WINDOWS:
-            abort(400, description="Maximum 32 windows in this form")
-        state.added_row = new_row()
-        rows.append(state.added_row)
-        state.edit_notice = "Window added. Validate input to update the diagnostics."
+        from alma_duplicate.ui.normal_line_input import uses_separated_input
+        if ("LINE" in values.get("intents", []) and rows
+                and uses_separated_input(values)):
+            state.edit_notice = ("One LINE configuration per V2 browser assessment. "
+                                 "Start a new assessment for another independent setup.")
+        else:
+            if len(rows) >= MAX_WINDOWS:
+                abort(400, description="Maximum 32 windows in this form")
+            state.added_row = new_row()
+            rows.append(state.added_row)
+            state.edit_notice = "Window added. Validate input to update the diagnostics."
     elif action.startswith(("remove:", "confirm-remove:")):
         row = action.split(":", 1)[1]
         if row not in rows:

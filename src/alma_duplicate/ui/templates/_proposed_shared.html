@@ -97,7 +97,11 @@
 {% if normal_records and values.get(row + '_bandwidth', '') %}<details><summary>Linked SPW bandwidth evidence</summary>{{ quantity(row + '_bandwidth', 'Usable or nominal bandwidth', ['MHz','GHz','kHz','Hz'], 'MHz') }}{{ select(row + '_bandwidth_kind', 'Bandwidth interpretation', ['UNKNOWN','USABLE','NOMINAL'], 'UNKNOWN') }}</details>{% endif %}
 <div class="window-tools">{% if not normal_records %}<a href="#spw-{{ row }}">Window bandwidth and evidence</a>{% endif %}
 <button class="button" type="submit" name="action" value="remove:{{ row }}">Remove requested window {{ loop.index }}</button></div></fieldset>{% if not loop.first %}</details>{% endif %}{% endfor %}{% endif %}
+{% if normal_records and 'LINE' in values.get('intents', []) %}
+<p class="field-note">This V2 browser check accepts one LINE configuration. To check another independent setup, start a new assessment with its own planned angular resolution. Physical SPW evidence can still contain multiple windows.</p>
+{% else %}
 <button class="button" type="submit" name="action" value="add" {% if rows|length >= 32 %}disabled{% endif %}>Add requested window</button>
+{% endif %}
 <details class="field-help secondary-guidance"><summary>Which windows should I enter?</summary><p class="field-note">Missing scientific inputs can leave LINE criteria unresolved even when the target can be searched. Each listed window is considered for LINE when this purpose is selected. Any qualifying FDM window can satisfy the spectral-line condition; every window need not pass. Do not enter several lines in one physical window as separate windows.</p></details>
 </section>
 <section id="sensitivities" {% if not continuum_layout %}hidden{% endif %}><div class="section-title"><h2>Continuum requirements</h2>{{ help('continuum', 'continuum requirements') }}</div>

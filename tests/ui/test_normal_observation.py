@@ -2,7 +2,7 @@
 import pytest
 from tests.ui.test_separated_v2_browser_step05a import make_client as client_factory
 from tests.ui.test_mosaic_execution import browser as mosaic_fixture, upload
-from tests.ui.test_normal_line_records import fields, ROW, SECOND
+from tests.ui.test_normal_line_records import single_line_fields, ROW
 from tests.integration.test_line_preparation import EXAMPLE, payload
 
 make_client = client_factory
@@ -10,10 +10,9 @@ browser = mosaic_fixture
 
 
 def data(intents):
-    values = fields() | dict(intents=list(intents), representative='225.1', aggregate='0.3',
+    values = single_line_fields() | dict(intents=list(intents), representative='225.1', aggregate='0.3',
         continuum_setup_declaration='on', sources='ARCHIVE', setup_complete='')
-    values.update({ROW+'_center':'450.2', ROW+'_redshift':'1', ROW+'_rms':'0.3',
-                   SECOND+'_center':'450.2', SECOND+'_redshift':'0', SECOND+'_rms':'0.3'})
+    values.update({ROW+'_center':'450.2', ROW+'_redshift':'1', ROW+'_rms':'0.3'})
     if 'CONTINUUM' not in intents:
         values.pop('aggregate')
     if 'LINE' not in intents:
@@ -64,7 +63,7 @@ def test_mosaic_normal_form_continuum(browser, intents):
     assert 'Execution (ASDM):' in rendered
     if 'LINE' in intents:
         assert 'LINE requirement 1' in rendered
-        assert 'LINE requirement 2' in rendered
+        assert 'LINE requirement 2' not in rendered
         assert 'Input frequency' in rendered
     assert len(calls) == 1
 
@@ -83,7 +82,7 @@ def test_frequency_local_redshift_export_has_no_shared_default(make_client):
     raw = exported.json['request']
     assert 'source_redshift' not in raw
     assert raw['continuum_requirement']['source_redshift'] == '2'
-    assert [r['source_redshift'] for r in raw['line_requirements']] == ['1', '0']
+    assert [r['source_redshift'] for r in raw['line_requirements']] == ['1']
     from alma_duplicate.rules.submitted_line_evaluation import prepare_submitted_line_request
     prepared = prepare_submitted_line_request(raw)
     assert prepared.continuum_request.source_redshift == 2
