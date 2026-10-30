@@ -93,6 +93,18 @@ def create_app(config=None):
     )
     app.extensions["assessment_runs"] = runs
     weakref.finalize(app, runs.close)
+    from alma_duplicate.ui.observation_sets import ObservationSets
+    observation_sets = ObservationSets()
+    app.extensions['observation_sets'] = observation_sets
+
+    @app.context_processor
+    def observation_navigation():
+        group = observation_sets.get(session.get('observation_group'), session.get('mosaic_owner'))
+        report_id = (request.view_args or {}).get('report_id')
+        if group and report_id and any(report_id in o['reports'] for o in group['observations']):
+            return {'observation_navigation': group}
+        return {'observation_navigation': None}
+
     progress = ProgressStore()
     app.extensions["assessment_progress"] = progress
 
@@ -267,6 +279,8 @@ def create_app(config=None):
     # Scientific validation, common form edits, storage and progress stay shared.
     @app.route("/proposed", methods=["GET", "POST"])
     def proposed():
+        if request.method == "POST" and request.form.get('observation_group') and is_fixed_mosaic(request.form):
+            abort(400, description="Observation sets share one Single Pointing position; Mosaic uses its separate page.")
         if request.method == "POST" and is_fixed_mosaic(request.form):
             return _mosaic_controller(legacy_post=True)
         return _single_controller()
@@ -319,6 +333,9 @@ def create_app(config=None):
                 document, assessment, extra_input = dispatch(runner)
                 if assessment.document is not None:
                     run_id = runs.add(document | extra_input, assessment)
+                    if state.values.get('observation_group'):
+                        observation_sets.append_report(state.values['observation_group'], state.owner,
+                                                       state.values['observation_active'], run_id)
                     history = session.get('report_history', [])
                     session['report_history'] = ([run_id] + history)[:20]
                     report_url = url_for("run_view", report_id=run_id)
@@ -380,8 +397,42 @@ def create_app(config=None):
 
     def _single_controller():
         state = _form_state()
+        group = observation_sets.get(session.get('observation_group'), state.owner)
+        if request.method == 'GET' and group:
+            state.values, state.rows = observation_sets.load_draft(group)
         if request.method == "POST":
             action = _read_post(state)
+            key = state.values.get('observation_group')
+            try:
+                if key:
+                    group = observation_sets.get(key, state.owner)
+                    if group is None:
+                        abort(410, description='Observation drafts expired. Start a new observation.')
+                    expected = int(state.values.get('observation_revision', '-1'))
+                    if expected != group['revision']:
+                        abort(409, description='Observation set changed. Reload before editing.')
+                    observation_sets.save_draft(group, state.values, state.rows)
+                elif action == 'observation-add':
+                    group = observation_sets.create(state.owner, state.values, state.rows)
+                    session['observation_group'] = group['id']
+                else:
+                    group = None
+                if action == 'observation-add':
+                    observation_sets.add(group)
+                elif action.startswith('observation-switch:'):
+                    chosen = action.split(':', 1)[1]
+                    if not group or chosen not in [o['id'] for o in group['observations']]:
+                        abort(400)
+                    group['active'] = chosen
+                if group:
+                    group = observation_sets.put(group, expected=group['revision'])
+                    state.values, state.rows = observation_sets.load_draft(group)
+                    state.values['observation_active'] = group['active']
+                if action.startswith('observation-'):
+                    state.edit_notice = 'Each observation has its own inputs and report. Run assessment evaluates only the selected observation.'
+                    return _render_form(state, mosaic_entry=False)
+            except ValueError as exc:
+                abort(400, description=str(exc))
             if action in {"validate", "download", "assess"}:
                 response = _single_submission(state, action)
                 if response is not None:
@@ -396,6 +447,10 @@ def create_app(config=None):
                 state.edit_notice = "OT pointings removed."
             elif not apply_common_edit(state, action):
                 abort(400)
+            if group:
+                observation_sets.save_draft(group, state.values, state.rows)
+                group = observation_sets.put(group, expected=group['revision'])
+                state.values, state.rows = observation_sets.load_draft(group)
         return _render_form(state, mosaic_entry=False)
 
     def _mosaic_controller(*, legacy_post=False):
@@ -439,6 +494,7 @@ def create_app(config=None):
         stale_ids = list(dict.fromkeys(value for value in selected if value not in known_ids))
         return render_template("proposed_mosaic.html" if mosaic_entry else "proposed_single.html",
                                values=values, rows=rows,
+                               observation_set=observation_sets.get(values.get('observation_group'), state.owner),
                                mosaic_entry=mosaic_entry,
                                result=state.result, issues=state.issues, document=state.document,
                                selected_windows=selected, stale_ids=stale_ids,

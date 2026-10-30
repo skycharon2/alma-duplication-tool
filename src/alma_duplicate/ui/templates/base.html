@@ -37,6 +37,18 @@
     </nav>
   </header>
   <main id="main" class="page-width" tabindex="-1">
+    {% if observation_navigation %}
+    <nav class="card" aria-label="Reports for shared position">
+      <strong>Independent observations · shared position</strong>
+      {% for item in observation_navigation.observations %}
+      <p><strong>{{ item.label }}</strong>{% if report_id in item.reports %} · Current observation{% endif %}:
+        {% if item.reports %}<a href="{{ url_for('run_view', report_id=item.reports[-1]) }}">Report</a> · <a href="{{ url_for('run_visualization', report_id=item.reports[-1]) }}">Explore</a>
+        {% else %}Not run{% endif %}
+      </p>{% endfor %}
+      <p class="field-note">Saved reports retain the inputs used for that run. Editing a draft does not update its reports.</p>
+      <a href="{{ url_for('proposed') }}">Edit observations</a>
+    </nav>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
   <footer class="site-footer">
