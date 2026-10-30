@@ -17,9 +17,9 @@ def new_row():
 
 
 def initial_form():
-    # New forms separate submitted requirements from physical SPW evidence.
-    # Explicit legacy submissions retain their original input contract.
-    return {"setup_id": "setup-1", "radius_mode": "AUTO", "normal_form_version": "2",
+    # Restore the established Archive + Queue Legacy workflow for new Single Pointing forms.
+    # Explicit V2 requests and Mosaic's independent V2 default remain available.
+    return {"setup_id": "setup-1", "radius_mode": "AUTO",
             "sources": ["ARCHIVE", "QUEUE"]}, []
 
 
