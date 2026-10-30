@@ -114,7 +114,7 @@
 {{ messages('aggregate_windows') }}</fieldset></details>
 </section>
 {% if normal_records %}
-{% if target_kind != 'FIXED' or (geometry != 'MOSAIC' and values.get('sources') != ['ARCHIVE']) %}<p role="alert">This optional separated V2 editor currently runs Archive-only. Standard Single Pointing still supports Archive + Queue. Your V2 records are retained; no automatic downgrade occurs.</p>{% endif %}
+{% if target_kind != 'FIXED' %}<p role="alert">Assessment requires a supported fixed target. Your entered requirements and SPW evidence are retained.</p>{% endif %}
 <section id="windows"><h2>Physical SPW evidence <small>(optional)</small></h2>
 <p class="field-note">Record bandwidth evidence separately. Adding a record does not add a LINE requirement.</p>
 {% for row in values.get('spw_rows', []) %}

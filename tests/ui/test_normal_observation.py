@@ -109,6 +109,36 @@ def test_single_pointing_editor_does_not_depend_on_source_selection(make_client)
     assert 'Physical SPW evidence' in html
     assert 'name="frequency_local_redshift"' in html
     assert 'id="shared-redshift"' not in html
-    assert 'This optional separated V2 editor currently runs Archive-only' in html
-    assert 'Standard Single Pointing still supports Archive + Queue' in html
-    assert 'Your V2 records are retained; no automatic downgrade occurs' in html
+    assert 'This optional separated V2 editor currently runs Archive-only' not in html
+
+
+@pytest.mark.parametrize('intents', [('LINE',), ('CONTINUUM',), ('LINE', 'CONTINUUM')])
+def test_single_v2_form_runs_both_sources_and_downloads_report(make_client, tmp_path, intents):
+    from tests.unit.test_queue_csv_parser import _records, _indices, _render
+    records = _records()
+    columns = _indices(records)
+    p = payload()['request']['position']
+    row = records[41].copy()
+    for key, value in {'RA': str(p['ra']), 'Dec': str(p['dec']),
+                       'Long Offset': '0', 'Lat Offset': '0',
+                       'Use TP?': 'False', 'Use 7-m?': 'False'}.items():
+        row[columns[key]] = value
+    csv = tmp_path / 'queue.csv'
+    csv.write_bytes(_render(records[:41] + [row]))
+    client = make_client(OFFLINE_ARCHIVE_REPLAY=str(EXAMPLE / 'archive/manifest.json'),
+                         OFFLINE_QUEUE_CSV=str(csv))
+    values = data(intents) | dict(normal_form_version='2', frequency_local_redshift='1',
+        geometry='SINGLE_POINTING', ra=str(p['ra']), dec=str(p['dec']),
+        ra_format='DEG', dec_format='DEG', sources=['ARCHIVE', 'QUEUE'],
+        radius_mode='EXPLICIT', radius='30', angular='0.5', action='assess')
+    result = client.post('/proposed', data=values)
+    assert result.status_code == 303, result.text
+    url = result.headers['Location']
+    assert client.get(url + '?view=all').status_code == 200
+    report = client.get(url + '/download/report').json
+    assert all(report['sources'][s]['status'] == 'COMPLETED' for s in ['ARCHIVE', 'QUEUE'])
+    for source in ['ARCHIVE', 'QUEUE']:
+        contexts = [c for c in report['context_evaluations'] if c['reference']['source'] == source]
+        assert contexts
+        assert {b['branch'] for c in contexts for b in c['branches']} == set(intents)
+    assert report['request']['raw']['line_input_contract'] == 'SEPARATE_OBSERVATION_REQUIREMENTS_V2'

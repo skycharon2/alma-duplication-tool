@@ -128,22 +128,6 @@ class BrowserAssessment:
                 "Archive provider requested without Archive configuration"
             )
 
-        if document['request'].get('line_input_contract') in {
-                'SEPARATE_REQUIREMENTS_AND_SPW_EVIDENCE_V1', 'SEPARATE_OBSERVATION_REQUIREMENTS_V2'}:
-            if selected != ['ARCHIVE'] or archive_kind is None:
-                raise ValueError('Separated observation assessment requires Archive only')
-            from types import SimpleNamespace
-            from alma_duplicate.submitted_line_assessment import assess_submitted_line_single_v2
-            source = archive_provider()
-            fetcher = None
-            if self.live_aq and archive_kind == 'LIVE':
-                from alma_duplicate.clients.archive_mirrors import MirroredArchiveAqClient
-                fetcher = MirroredArchiveAqClient(origins=ARCHIVE_CONNECTIONS[self.archive_connection]).fetch_members
-            report = assess_submitted_line_single_v2(document['request'], document['search_options'],
-                archive_client=source.client, archive_arrays=source.array_catalog,
-                archive_replay_metadata=source.replay_metadata, archive_array_fetcher=fetcher)
-            return SimpleNamespace(document=report, status=report['assessment_status'])
-
         # Select and freeze Queue bytes now, before Archive/search work can
         # overlap with a later administrator activation of another snapshot.
         selection = None
@@ -162,6 +146,23 @@ class BrowserAssessment:
         else:
             loader = ((lambda: QueueCsvClient().load(self.queue_csv))
                       if self.queue_csv and queue else None)
+
+        if document['request'].get('line_input_contract') in {
+                'SEPARATE_REQUIREMENTS_AND_SPW_EVIDENCE_V1', 'SEPARATE_OBSERVATION_REQUIREMENTS_V2'}:
+            from types import SimpleNamespace
+            from alma_duplicate.submitted_line_assessment import assess_submitted_line_single_v2
+            source = archive_provider() if archive_kind else None
+            fetcher = None
+            if self.live_aq and archive_kind == 'LIVE':
+                from alma_duplicate.clients.archive_mirrors import MirroredArchiveAqClient
+                fetcher = MirroredArchiveAqClient(origins=ARCHIVE_CONNECTIONS[self.archive_connection]).fetch_members
+            report = assess_submitted_line_single_v2(document['request'], document['search_options'],
+                archive_client=source.client if source else None, archive_arrays=source.array_catalog if source else None,
+                archive_replay_metadata=source.replay_metadata if source else None, archive_array_fetcher=fetcher,
+                queue_loader=loader)
+            if selection is not None:
+                report["sources"]["QUEUE"]["managed_snapshot"] = dict(selection.provenance)
+            return SimpleNamespace(document=report, status=report['assessment_status'])
 
         def fetch_archive_arrays(members):
             # The shared entry calls this only after TAP retained linked Members.

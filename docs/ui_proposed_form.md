@@ -8,8 +8,9 @@ This document owns the current form controls and request mapping. Use
 
 ## Input scope and structure
 
-`/proposed` executes fixed ICRS single-pointing and Mosaic assessments, with one
-setup and up to 32 windows. Mosaic execution requires a live Archive source.
+`/proposed` is the Single Pointing form; `/proposed/mosaic` has its own template,
+POST controller and execution path. Each request contains one position or Mosaic
+pointing list. Mosaic execution uses Archive.
 Moving targets remain limited to validation and valid-request export. The initial form has no window rows. Detailed SPW input is optional;
 researchers need not enter SPW 0–3 to validate a partial request. The limit is
 local to this interface, not a scientific restriction.
@@ -22,18 +23,29 @@ row identities, clears stale validation results, and never queries or assesses.
 Selecting LINE with no rows creates one blank entry, with no assumed mode or
 scientific values. Each entry is a requested correlator window, not an individual
 spectral feature. Its central frequency, reference, planned resolution, RMS and mode
-appear in Spectral line requirements. Redshift is a single shared input. With JavaScript it sits beside the first visible LINE frequency, or the continuum frequency when no LINE panel is visible; without JavaScript it remains in shared scientific requirements. Both LINE and
-CONTINUUM REST frequencies use it through [backend preparation](proposed_frequency.md).
-Additional bandwidth evidence and IDs are in a separate optional section, linked
-to the same entries. Controls are not duplicated between sections.
+appear in Spectral line requirements. New Single Pointing forms use the separated
+input contract with Archive and Queue CSV both selected. Each LINE requirement
+has its own redshift for REST-to-SKY conversion; SKY inputs are not converted.
+Continuum has a separate frequency and redshift. Physical SPW evidence is optional
+and stored independently, with explicit links where needed. Adding evidence does
+not add a LINE requirement.
+
+Queue V2 keeps the existing per-pair numerical methods and uses
+`queue_line_context_submitted_or_2` to aggregate submitted requirements within
+one CSV row. Physical inventory completeness does not add an unknown LINE result;
+unresolved candidate evidence and unsupported scope still can. Both sources keep
+their identities, provenance and availability status in the report. A failed source
+does not discard successful results from the other source. Legacy requests without
+the separated contract retain their previous interpretation.
+
 
 Continuum has its own representative frequency, aggregate RMS, explicit setup
 qualification declaration and optional contributing-window links. When a purpose
 is deselected, entered scientific values stay visible with an inactive-purpose
 notice. They remain in request provenance and are still validated; only selected
 branches are evaluated. Blank unselected requirement panels are hidden.
-All listed windows remain subject to LINE preparation when LINE is selected;
-this increment does not introduce per-window purpose selection or new pairing.
+Only submitted LINE requirements enter LINE pairing. Physical SPW records are
+used as setup evidence, including Continuum qualification.
 The initial form still has no required four-SPW list. Proposed target type and
 geometry are explicit; candidate geometry remains independently checked by the backend.
 The home route redirects to this working input page. Global navigation separates

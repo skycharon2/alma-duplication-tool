@@ -190,11 +190,11 @@ def test_mosaic_duplicate_context_rejected_and_default_api_still_blocked():
 
 def test_search_options_are_checked_before_archive_access():
     document = _wire()
-    document["search_options"]["sources"] = ["ARCHIVE", "QUEUE"]
+    document["search_options"]["sources"] = ["ARCHIVE", "INVALID"]
     class Forbidden:
         def search(self, spec):
             pytest.fail("Unsupported source reached Archive")
-    with pytest.raises(ValueError, match="ARCHIVE only"):
+    with pytest.raises(ValueError, match="valid shared search fields"):
         assess_submitted_line_single_v2(
             document["request"], document["search_options"], archive_client=Forbidden(),
         )
@@ -206,7 +206,9 @@ def test_search_options_are_checked_before_archive_access():
         )
 
 
-def test_v2_archive_client_must_be_selected_explicitly():
+def test_v2_unconfigured_archive_is_reported_unavailable():
     document = _wire()
-    with pytest.raises(ValueError, match="exactly one Archive"):
-        assess_submitted_line_single_v2(document["request"], document["search_options"])
+    result = assess_submitted_line_single_v2(document["request"], document["search_options"])
+    assert result["assessment_status"] == "SOURCES_UNAVAILABLE"
+    assert result["sources"]["ARCHIVE"]["status"] != "COMPLETED"
+    assert result["assessment"] == "NOT_AGGREGATED"
