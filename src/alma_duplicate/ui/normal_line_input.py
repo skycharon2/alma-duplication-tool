@@ -78,6 +78,7 @@ def convert(document, values, rows, bindings):
     request.update(line_input_contract=SEPARATED_OBSERVATION_CONTRACT,
                    line_requirements=requirements, physical_spw_evidence=evidence,
                    physical_spw_inventory_complete=complete)
+    bindings['request.line_requirements'] = 'line_requirements'
     return document
 
 
@@ -108,6 +109,22 @@ def validate_for_browser(document, values):
     The exported input representation stays V2. Browser-level eligibility is
     separate from the backend's scientific operand validation.
     """
+    request = document['request']
+    # Product boundary, not an ALMA/SPW science restriction.  Historical V2
+    # programmatic calls and the versioned context-local OR remain unchanged.
+    # Reject old form POSTs before any Archive/Queue retrieval or report storage.
+    if (request.get('line_input_contract') == SEPARATED_OBSERVATION_CONTRACT
+            and 'LINE' in request.get('intents', ())
+            and len(request.get('line_requirements', ())) > 1):
+        result = validate(document)
+        issue = RequestIssue(
+            'ERROR', 'V2_BROWSER_MULTIPLE_LINE_REQUIREMENTS',
+            'request.line_requirements',
+            'This browser assessment accepts one LINE configuration. '
+            'Start a new assessment for another independent setup with its '
+            'own planned angular resolution.')
+        return replace(result, issues=result.issues + (issue,),
+                       search_readiness=SearchReadiness.BLOCKED)
     if enabled(values):
         return validate(document)
 
