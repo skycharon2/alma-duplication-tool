@@ -59,7 +59,6 @@
 {% if target_kind != 'FIXED' %}<details><summary>Retained coordinates</summary>{% endif %}
 {% if geometry != 'MOSAIC' %}
 <div class="form-pair"><div class="coordinate-control"><div>{{ input('ra', 'Right ascension') }}</div><div>{{ select('ra_format', 'RA format', ['DEG','HMS'], 'DEG') }}</div></div><div class="coordinate-control"><div>{{ input('dec', 'Declination') }}</div><div>{{ select('dec_format', 'Dec format', ['DEG','DMS'], 'DEG') }}</div></div></div>
-<p class="field-note">ICRS coordinates. Use colons for HMS / DMS, e.g. 18:33:39.920.</p>
 {% else %}<p class="field-note">The imported OT pointings define the Mosaic positions. A separate centre coordinate is not required.</p>{% for key in ['ra','dec','ra_format','dec_format'] %}{% if key in values %}<input type="hidden" name="{{ key }}" value="{{ values[key] }}">{% endif %}{% endfor %}{% endif %}
 {% if target_kind != 'FIXED' %}</details>{% endif %}
 
@@ -68,10 +67,10 @@
 <details><summary>Setup identity and frequency frame</summary>{{ input('setup_id', 'Setup ID (automatic)', true) }}<p>Frequency frame is recorded as UNKNOWN. No observing reference frame is inferred.</p></details>
 </section>
 {% block mosaic_pointings scoped %}{% endblock %}
-<section id="requirements" tabindex="-1" {% if purpose_updated %}data-purpose-updated{% endif %}><h2>Scientific requirements</h2>
+<section id="requirements" tabindex="-1" {% if purpose_updated %}data-purpose-updated{% endif %}>{% if geometry != 'MOSAIC' %}<div class="section-title"><h2>Scientific requirements</h2>{{ help('purposes', 'scientific purposes') }}</div>{% else %}<h2>Scientific requirements</h2>{% endif %}
 <div class="form-pair science-shared"><div>{{ quantity('angular', 'Planned angular resolution', ['arcsec','mas'], 'arcsec') }}</div><div><fieldset id="intents" class="choice-group"><legend>What should this observation be checked for?</legend><div class="inline-choices">{% for intent, label in [('LINE','Spectral line'),('CONTINUUM','Continuum')] %}<div class="purpose-option"><label><input type="checkbox" name="intents" value="{{ intent }}" {% if intent in values.get('intents', []) %}checked{% endif %}{% if intent == 'CONTINUUM' %} aria-describedby="continuum-choice-note"{% endif %}>{{ label }}</label><button type="button" class="purpose-rules-button" popovertarget="rules-{{ intent|lower }}" aria-label="{{ label }} rules">Rules ⓘ</button></div>{% endfor %}</div>{{ messages('intents') }}</fieldset>
-<p class="field-note">Select either or both.</p>
-<p id="continuum-choice-note" class="field-note" data-combined-continuum hidden>By selecting Continuum, I confirm at least two distinct spectral windows, each with usable bandwidth greater than 1.8 GHz. A detailed SPW inventory is optional.</p>
+{% if geometry == 'MOSAIC' %}<p class="field-note">Select either or both.</p>{% endif %}
+<p id="continuum-choice-note" class="field-note{% if geometry != "MOSAIC" %} sr-only{% endif %}" data-combined-continuum hidden>By selecting Continuum, I confirm at least two distinct spectral windows, each with usable bandwidth greater than 1.8 GHz. A detailed SPW inventory is optional.</p>
 <div data-continuum-confirmation><label class="complete-choice"><input type="checkbox" id="continuum_setup_declaration" name="continuum_setup_declaration" aria-describedby="continuum_setup_declaration-notes" {% if values.get('continuum_setup_declaration') == 'on' %}checked{% endif %}> I confirm at least two distinct spectral windows, each with usable bandwidth greater than 1.8 GHz.</label><p class="field-note">Selecting Continuum confirms this condition in the interactive form. Without JavaScript, confirm it here explicitly; detailed SPW rows remain optional. A complete SPW list must not contradict the declaration.</p></div>
 {{ messages('continuum_setup_declaration') }}</div></div>
 
@@ -165,8 +164,8 @@
 {% set radius_mode = values.get('radius_mode', 'EXPLICIT' if 'radius' in values else 'AUTO') %}
 {% if radius_mode == 'AUTO' %}
 <input type="hidden" name="radius_mode" value="AUTO">
-<p class="field-note">Search area is selected automatically.</p>
-<details><summary>How the search area is selected</summary>
+<p class="field-note">Automatic search area {{ help('search_scope', 'automatic search area') }}</p>
+<details id="auto-scope-details" class="single-only-advanced"><summary>How the search area is selected</summary>
 <p>Archive uses a {{ '%.2f'|format(auto_scope.archive_radius_deg * 3600) }} arcsec centre radius for the supported fixed, single-point scope, based on 7 m dishes at 35 GHz. Queue uses all rows in the supplied file. Position is then checked using each candidate's evidence.</p>
 <p>Archive records with missing centres, lower or unknown frequencies outside this area, and extended mosaics are not covered by this bound. Results do not establish a search-wide absence of duplication. Retrieval limits never silently reduce this radius.</p>
 <p>Policy: {{ auto_scope.method_version }}. Explicit-radius requests remain supported by the request API.</p></details>
@@ -174,8 +173,8 @@
 {% if values.get('radius', '') %}<p class="notice">This input contains an explicit radius that conflicts with automatic scope. Clear the value below to continue with AUTO.</p>{{ quantity('radius', 'Conflicting explicit radius', ['arcsec','arcmin','deg'], 'arcsec') }}{% endif %}
 {% else %}<input type="hidden" name="radius_mode" value="{{ radius_mode }}"><p>Explicit search scope retained from this request. Start a new observation to use automatic scope.</p>{{ quantity('radius', 'Search radius', ['arcsec','arcmin','deg'], 'arcsec') }}{% endif %}
 {% endif %}
-{% if geometry != 'MOSAIC' %}<details class="field-help"><summary>Display options</summary><div class="display-limit">{{ input('result_limit', 'Candidate display limit (optional positive integer)') }}</div><p class="field-note">Limits displayed candidates only; it does not limit retrieval or evaluation.</p></details>{% elif values.get('result_limit') %}<input type="hidden" name="result_limit" value="{{ values.result_limit }}">{% endif %}
-{% if configured.enabled %}<details id="assessment-sources" class="field-help"><summary>Data source details</summary>
+{% if geometry == 'MOSAIC' and values.get('result_limit') %}<input type="hidden" name="result_limit" value="{{ values.result_limit }}">{% endif %}
+{% if configured.enabled %}<details id="assessment-sources" class="field-help{% if geometry != 'MOSAIC' %} single-only-advanced{% endif %}"><summary>Data source details</summary>
 <p>Archive TAP: {% if configured.archive_kind == 'LIVE' %}live{% elif configured.archive_kind == 'REPLAY' %}replay{% else %}not provided{% endif %}. Queue CSV: {{ 'managed approved snapshot' if configured.managed_queue_root else ('configured' if configured.queue_csv else 'not provided') }}.</p>
 {% if geometry == 'MOSAIC' %}<p>Mosaic uses Archive TAP metadata only. Queue, AQ and auxiliary products are not queried.</p>{% else %}<p>Additional AQ evidence: {% if configured.live_aq %}live AQ enabled. After TAP retrieval, linked Members from retained candidates are queried for source-bound array evidence. Acquisition failures retain available candidates with unresolved array evidence; no fallback is used.{% elif configured.archive_array_evidence %}captured AQ manifest configured. A live TAP run does not perform a live AQ lookup; configured AQ evidence remains captured evidence.{% else %}not configured. A live TAP run does not perform a live AQ lookup; existing TAP-only array interpretation remains available.{% endif %}</p>
 {% if configured.archive_kind == 'REPLAY' %}<p>Archive replay requires the exact recorded query, including search mode and radius. Older explicit-radius recordings cannot be replayed by an AUTO request. A different query can fail; it will not fall back to a live search. These reference files do not establish current Archive or Queue coverage.</p>{% elif configured.archive_kind == 'LIVE' %}<p>The live Archive client is created only for a search-ready Run assessment that selected ARCHIVE. Archive query failures are not replaced by replay results.</p>{% endif %}
