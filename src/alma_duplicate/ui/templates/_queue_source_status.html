@@ -9,7 +9,7 @@
   <div class="queue-status-strip">
     <span class="queue-status-dot {{ 'queue-ready' if active else 'queue-unavailable' }}" aria-hidden="true"></span>
     <span><strong>Queue</strong> {% if active %}<span class="queue-strip-date">Data as of {{ queue_status.source_as_of }}</span>{% else %}<span class="queue-check-warning">Snapshot unavailable</span>{% endif %}</span>
-    <button type="button" class="queue-details-button" popovertarget="queue-source-popover" aria-label="View Queue snapshot details">Details <span aria-hidden="true">ⓘ</span></button>
+    {% if geometry == 'MOSAIC' %}<button type="button" class="queue-details-button" popovertarget="queue-source-popover" aria-label="View Queue snapshot details">Details <span aria-hidden="true">ⓘ</span></button>{% endif %}
   </div>
   {% if check_failed or queue_status.check_error %}<p class="queue-compact-warning">Update check needs attention.{% if active %} Using approved snapshot.{% endif %}</p>{% endif %}
   {% if queue_status.update_waiting_for_approval %}<p class="queue-compact-warning">New download awaiting approval.</p>{% endif %}

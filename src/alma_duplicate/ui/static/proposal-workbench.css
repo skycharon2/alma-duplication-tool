@@ -74,6 +74,11 @@
 .proposal-page .proposal-sections a { font-size: 12px; padding: 6px 12px; }
 .proposal-page .field-help-button { display: none; flex: 0 0 26px; align-items: center; justify-content: center; width: 26px; height: 26px; padding: 0; border: 1px solid #adc8d9; border-radius: 50%; color: #0073a6; background: white; cursor: pointer; font-weight: 600; }
 .proposal-page [data-workbench-ready] .field-help-button { display: inline-flex; }
+/* In enhanced Single Pointing forms, technical details are copied into their ? popovers.
+   Keep the original <details> available when JavaScript is disabled. */
+.proposal-page [data-workbench-ready] .single-only-advanced { display: none; }
+.proposal-page .help-popover .help-advanced-details { margin: 16px 0 0; border-top: 1px solid var(--border); padding-top: 12px; }
+.proposal-page .help-popover .help-advanced-details > summary { cursor: pointer; font-weight: 600; }
 .proposal-page .field-help-button:hover, .proposal-page .field-help-button[aria-expanded="true"] { background: #e4f2fa; border-color: #007bb1; }
 .proposal-page .help-popover { position: fixed; z-index: 30; background: white; border: 1px solid #c5d0d9; border-radius: 6px; box-shadow: 0 12px 40px rgb(22 48 68 / 17%); display: flex; flex-direction: column; }
 .proposal-page .help-popover[hidden] { display: none; }
@@ -118,6 +123,14 @@
 .proposal-page #search > .form-pair { display: block; margin: 0 0 8px; }
 .proposal-page #sources > legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .proposal-page #sources .inline-choices { display: grid; grid-template-columns: 1fr 1fr; }
+/* Single Pointing: popover triggers sit outside the checkbox labels, so they never toggle a source. */
+.proposal-page #sources .source-choice-option { display: flex; align-items: center; min-width: 0; border: 1px solid var(--border); border-radius: 5px; background: white; }
+.proposal-page #sources .source-choice-option:has(input:checked) { border-color: #65a5c6; background: var(--info); color: #00618d; }
+.proposal-page #sources .source-choice-option > label { flex: 1; min-width: 0; border: 0; background: transparent; color: inherit; }
+.proposal-page #sources .source-choice-option > label:has(input:checked) { border: 0; background: transparent; color: inherit; }
+.proposal-page #sources .source-choice-option:focus-within { outline: 2px solid #007bb1; outline-offset: 2px; }
+.proposal-page #sources .source-choice-help { flex: 0 0 26px; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; margin: 0 10px 0 4px; padding: 0; border: 1px solid #adc8d9; border-radius: 50%; background: white; color: #0073a6; cursor: pointer; font-weight: 600; }
+.proposal-page #sources .source-choice-help:hover { border-color: #007bb1; background: #e4f2fa; }
 .proposal-page .proposal-summary .observation-summary { margin-bottom: 0; border-radius: 5px 5px 0 0; padding-bottom: 6px; }
 .proposal-page .proposal-summary #validation { border-top: 0; border-radius: 0 0 5px 5px; padding: 8px 18px 14px; }
 .proposal-page .proposal-sections a[aria-current="location"] { border-left-color: var(--blue); background: var(--info); color: var(--blue-dark); }

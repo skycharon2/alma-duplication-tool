@@ -3,7 +3,7 @@
   <div class="queue-status-strip">
     <span class="queue-status-dot archive-neutral" aria-hidden="true"></span>
     <span><strong>Archive</strong> <span class="queue-strip-date" id="archive-connection-summary">{{ connection_labels.get(values.get('archive_connection', 'AUTO'), 'Automatic') }}</span></span>
-    <button type="button" class="archive-details-button" popovertarget="archive-connection-popover" aria-label="View Archive connection details">Details <span aria-hidden="true">ⓘ</span></button>
+    {% if geometry == 'MOSAIC' %}<button type="button" class="archive-details-button" popovertarget="archive-connection-popover" aria-label="View Archive connection details">Details <span aria-hidden="true">ⓘ</span></button>{% endif %}
   </div>
 </div>
 <div id="archive-connection-popover" class="archive-status-panel archive-connection-panel" popover="auto" role="dialog" aria-labelledby="archive-connection-title">

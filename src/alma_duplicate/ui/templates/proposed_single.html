@@ -6,7 +6,24 @@
 {% for value, label in [('FIXED','Fixed target'),('MOVING','Moving target — assessment not available'),('SUN','Sun — exempt from duplication checking')] %}<option value="{{ value }}" {% if target_kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{{ messages('target_kind') }}</div>
 {% endblock %}
 {% block source_choices %}
-{% for source in (['ARCHIVE'] if geometry == 'MOSAIC' else ['ARCHIVE','QUEUE']) %}<label><input type="checkbox" name="sources" value="{{ source }}" {% if source in values.get('sources', []) %}checked{% endif %}>{{ source }}</label>{% endfor %}
+{% for source in (['ARCHIVE'] if geometry == 'MOSAIC' else ['ARCHIVE','QUEUE']) %}
+{% if geometry == 'MOSAIC' %}
+<label><input type="checkbox" name="sources" value="{{ source }}" {% if source in values.get('sources', []) %}checked{% endif %}>{{ source }}</label>
+{% else %}
+<div class="source-choice-option">
+  <label><input type="checkbox" name="sources" value="{{ source }}" {% if source in values.get('sources', []) %}checked{% endif %}>{{ source }}</label>
+  <button type="button" class="source-choice-help" popovertarget="{{ ('archive-connection-popover' if configured.archive_kind == 'LIVE' else 'archive-source-popover') if source == 'ARCHIVE' else 'queue-source-popover' }}" aria-label="View {{ source|title }} details" title="{{ source|title }} details">?</button>
+</div>
+{% endif %}
+{% endfor %}
+{% if geometry != 'MOSAIC' and not queue_status %}
+<div id="queue-source-popover" class="queue-status-panel" popover="auto" role="dialog" aria-labelledby="queue-source-fallback-title">
+  <button type="button" class="queue-popover-close" popovertarget="queue-source-popover" popovertargetaction="hide" aria-label="Close Queue details">×</button>
+  <h3 id="queue-source-fallback-title">Queue CSV</h3>
+  {% if configured.queue_csv %}<p>A local Queue CSV is configured. It is read only when an assessment runs; no managed snapshot status is available for this source.</p>
+  {% else %}<p>No Queue CSV or approved managed snapshot is available. Selecting Queue does not make that source queryable.</p>{% endif %}
+</div>
+{% endif %}
 {% endblock %}
 {% block mosaic_pointings %}
 {% if target_kind == 'FIXED' and geometry == 'MOSAIC' %}

@@ -10,9 +10,11 @@ const guides = {
  mode: ['Correlator mode','Declare the mode of the proposed window. The LINE frequency condition requires FDM on both sides of the comparison.','Options','FDM, TDM or UNKNOWN','Example','FDM','Selecting Spectral line does not independently establish FDM. Retain UNKNOWN if the mode is not known.'],
  bandwidth: ['Window bandwidth','Declare whether the entered width is nominal or already usable. The connected backend applies the approved mapping to supported nominal widths.','Units','MHz, GHz, kHz or Hz','Method example','500 MHz nominal → 468.8 MHz usable','The backend applies the approved mapping during assessment. Unrecognized widths must not be silently treated as usable.'],
  continuum: ['Continuum requirements','Provide a SKY representative frequency, or REST representative frequency with source redshift, and RMS over the aggregate bandwidth.','Setup qualification','At least two distinct windows, each wider than 1.8 GHz usable.','Evidence','Use a setup declaration or qualifying window details.','Exactly 1.8 GHz does not qualify. The combined Continuum choice records your confirmation, not an independent measurement. Conflicting complete window evidence is still flagged.'],
- sources: ['Data sources','Archive and Queue are assessed as separate sources. Source availability is controlled by the connected application.','Archive','TAP retrieval with source-bound AQ evidence when configured.','Queue','A server-managed CSV snapshot; its date belongs in the report.','Automatic retrieval selects the search scope. Candidate position is evaluated separately. Selecting a source does not access it until you run assessment.']
+ sources: ['Data sources','Archive and Queue are assessed as separate sources. Source availability is controlled by the connected application.','Archive','TAP retrieval with source-bound AQ evidence when configured.','Queue','A server-managed CSV snapshot; its date belongs in the report.','Sources are accessed only when you run assessment. All retained candidates remain available in the report (which may paginate them); bounded Archive retrieval cannot prove search-wide absence.']
 };
 guides.redshift = ['Source redshift', 'This default is used for REST frequencies. In the Archive requirements form, each LINE requirement can override it with its own redshift.', 'Conversion', 'Observed frequency = REST frequency / (1 + z).', 'Example', '460 GHz REST at z = 1 corresponds to 230 GHz SKY.', 'Leave blank if unknown. No z = 0 is assumed. SKY inputs are already observed frequencies.'];
+guides.purposes = ['Scientific purposes', 'Select Spectral line, Continuum, or both. Only selected purposes are evaluated.', 'Spectral line', 'Compare requested line frequencies, spectral resolution and RMS.', 'Continuum', 'Compare representative frequency and planned aggregate RMS.', 'Selecting Continuum confirms at least two distinct spectral windows each above 1.8 GHz usable bandwidth. Detailed SPW evidence is optional; a conflicting complete inventory remains reviewable.'];
+guides.search_scope = ['Automatic search area', 'The Archive search radius is chosen by the fixed-target Single Pointing policy; Queue scans the supplied snapshot.', 'Retrieval', 'The Archive query is bounded by the selected area; Queue considers its CSV rows.', 'Important limitation', 'Missing positions, out-of-scope frequencies and mosaics may be outside this bound.', 'Candidate position is checked separately. The search does not establish the absence of all possible duplication. Open the technical policy below for the exact radius and version.'];
 const illustrations = {
 frequency: `<figure class="help-figure"><figcaption>Window centre <span>Illustration</span></figcaption>
 <svg viewBox="0 0 320 190" role="img" aria-labelledby="frequency-illustration-title frequency-illustration-desc">
@@ -88,6 +90,17 @@ function showHelp(button,lock=false){
   }
   guideContent.append(layout);
   const foot=document.createElement('p');foot.className='popover-note';foot.textContent=data[6];guideContent.append(foot);
+  // Preserve server-rendered technical facts without keeping them in the form's main flow.
+  const advancedId = button.dataset.help === 'search_scope' ? 'auto-scope-details'
+    : button.dataset.help === 'sources' ? 'assessment-sources' : null;
+  const details = advancedId && button.closest('form')?.querySelector(`#${advancedId}.single-only-advanced`);
+  if (details) {
+    const copy = details.cloneNode(true);
+    copy.removeAttribute('id');
+    copy.classList.remove('single-only-advanced');
+    copy.classList.add('help-advanced-details');
+    guideContent.append(copy);
+  }
   guide.hidden=false;positionHelp();
   guide.getAnimations().forEach(animation=>animation.cancel());
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
