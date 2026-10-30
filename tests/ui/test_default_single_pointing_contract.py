@@ -29,10 +29,12 @@ def continuum_form():
     ])
 
 
-def test_default_is_v2_but_explicit_legacy_submission_is_preserved(client):
+def test_default_is_legacy_dual_source_and_explicit_legacy_submission_is_preserved(client):
     initial = client.get("/proposed").get_data(as_text=True)
-    assert 'name="normal_form_version" value="2"' in initial
+    assert 'name="normal_form_version"' not in initial
     assert 'name="normal_line_records"' not in initial
+    assert 'name="sources" value="ARCHIVE" checked' in initial
+    assert 'name="sources" value="QUEUE" checked' in initial
 
     data = continuum_form()
     data["action"] = "purpose"

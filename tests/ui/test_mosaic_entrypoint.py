@@ -35,7 +35,7 @@ def test_two_get_entrypoints_have_distinct_default_scope(client):
     assert single.status_code == mosaic.status_code == 200
     assert 'action="/proposed"' in single.text
     assert 'action="/proposed/mosaic"' in mosaic.text
-    assert 'name="normal_form_version" value="2"' in single.text
+    assert 'name="normal_form_version"' not in single.text
     assert 'name="normal_form_version" value="2"' in mosaic.text
     assert 'name="sources" value="ARCHIVE"' in mosaic.text
     assert 'name="sources" value="QUEUE"' not in mosaic.text
