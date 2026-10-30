@@ -13,3 +13,22 @@
 {% include "_mosaic_pointings.html" %}
 {% endif %}
 {% endblock %}
+
+{% block observation_settings %}
+{% if target_kind == 'FIXED' and geometry == 'SINGLE_POINTING' %}
+<section aria-label="Independent observation settings">
+<h2>{{ ('Observation ' ~ observation_set.active) if observation_set else 'Observation 1' }}</h2>
+<p class="field-note">Shared position, independent observing settings. Run assessment creates a report for the selected observation only.</p>
+{% if observation_set %}
+<input type="hidden" name="observation_group" value="{{ observation_set.id }}">
+<input type="hidden" name="observation_revision" value="{{ observation_set.revision }}">
+<nav aria-label="Switch observation">{% for item in observation_set.observations %}
+<button class="button" type="submit" name="action" value="observation-switch:{{ item.id }}" {% if item.id == observation_set.active %}aria-current="true"{% endif %}>{{ item.label }}</button>
+{% if item.reports %}<a href="{{ url_for('run_view', report_id=item.reports[-1]) }}">{{ item.label }} report</a>{% endif %}
+{% endfor %}</nav>
+{% endif %}
+<button class="button" type="submit" name="action" value="observation-add" {% if observation_set and observation_set.observations|length >= 8 %}disabled{% endif %}>Add observation setup</button>
+<small>Drafts last up to one hour; download important reports. Copies this setup for editing. Add LINE window below adds a window within this observation.</small>
+</section>
+{% endif %}
+{% endblock %}

@@ -27,6 +27,7 @@
 <div class="proposal-layout">
 
 <div class="proposal-fields">
+{% block observation_settings scoped %}{% endblock %}
 <section id="observation-type" tabindex="-1" {% if scope_updated %}data-scope-updated{% endif %}><h2>Target</h2>
 
 <div class="form-pair target-identity-grid">
