@@ -1,4 +1,4 @@
-"""Separated LINE records in the existing Mosaic form."""
+"""Separated science requirements in the Single Pointing and Mosaic forms."""
 from dataclasses import replace
 
 from alma_duplicate.domain.proposed_observation import SearchReadiness, RequestIssue
@@ -19,7 +19,7 @@ def enabled(values):
     return (values.get('target_kind', 'FIXED') == 'FIXED'
             and values.get('geometry', 'SINGLE_POINTING') in {'MOSAIC', 'SINGLE_POINTING'}
             and bool(values.get('intents')) and not set(values.get('intents', [])) - {'LINE', 'CONTINUUM'}
-            and (values.get('geometry') == 'MOSAIC' or values.get('sources') == ['ARCHIVE']))
+            and (values.get('geometry') == 'MOSAIC' or bool(values.get('sources')) and not set(values['sources']) - {'ARCHIVE', 'QUEUE'}))
 
 
 def convert(document, values, rows, bindings):
@@ -118,10 +118,7 @@ def validate_for_browser(document, values):
               and values.get('geometry', 'SINGLE_POINTING') == 'SINGLE_POINTING')
     if single:
         field = 'search_options.sources'
-        message = ('This optional separated V2 editor currently supports Archive-only assessment in this browser. '
-                   'Select Archive without Queue, or start a new legacy Single Pointing '
-                   'request for Archive + Queue. Your independent requirements and SPW '
-                   'evidence are retained.')
+        message = 'Select Archive, Queue CSV, or both for Single Pointing assessment.'
     else:
         field = 'request.geometry'
         message = ('This separated V2 target/geometry/source combination is not executable '

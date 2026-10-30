@@ -17,9 +17,9 @@ def new_row():
 
 
 def initial_form():
-    # Single Pointing defaults to its established Archive + Queue (legacy) contract.
-    # Explicit V2 inputs and the Mosaic editor remain available independently.
-    return {"setup_id": "setup-1", "radius_mode": "AUTO",
+    # New forms separate submitted requirements from physical SPW evidence.
+    # Explicit legacy submissions retain their original input contract.
+    return {"setup_id": "setup-1", "radius_mode": "AUTO", "normal_form_version": "2",
             "sources": ["ARCHIVE", "QUEUE"]}, []
 
 

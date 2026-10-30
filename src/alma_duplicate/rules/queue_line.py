@@ -1,6 +1,6 @@
 """Formal Queue spectral-line rules evaluated without crossing row/SPW boundaries."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from fractions import Fraction
 
 from alma_duplicate.proposed_line import C_KMS, exact_prepared
@@ -336,7 +336,7 @@ def _numerical(request, context, attempt):
     return tuple(results)
 
 
-def evaluate_queue_line(request, context, common_criteria):
+def evaluate_queue_line(request, context, common_criteria, *, submitted_scope=False):
     """AND every complete Queue pair, then OR whole pairs in one coherent row context."""
     if "LINE" not in request.intents:
         raise ValueError("Queue line evaluation requires a selected LINE intent")
@@ -347,6 +347,13 @@ def evaluate_queue_line(request, context, common_criteria):
         raise ValueError("Common Queue line criteria belong to another context")
 
     pairing = build_queue_line_pairs(request, context)
+    if submitted_scope:
+        pairing = replace(
+            pairing, proposed_enumeration_complete=True,
+            reasons=tuple(r for r in pairing.reasons if r != "PROPOSED_ENUMERATION_INCOMPLETE"),
+            builder_version="queue_line_pair_builder_submitted_2",
+            scope="ONE_PHYSICAL_ROW_SUBMITTED_REQUIREMENTS_X_REGULAR_SPWS",
+        )
     supported = queue_common_scope_supported(tuple(common.values()))
     pairs = []
     for attempt in pairing.attempts:
@@ -367,7 +374,7 @@ def evaluate_queue_line(request, context, common_criteria):
 
     values = [p.truth for p in pairs]
     reasons = list(pairing.reasons)
-    if not pairing.proposed_enumeration_complete:
+    if not submitted_scope and not pairing.proposed_enumeration_complete:
         values.append(Truth.UNKNOWN)
         reasons.append("PROPOSED_ENUMERATION_INCOMPLETE")
     if not pairing.candidate_enumeration_complete:
@@ -385,7 +392,7 @@ def evaluate_queue_line(request, context, common_criteria):
         truth,
         LINE_CRITERIA,
         tuple(dict.fromkeys(reasons)),
-        method_version="queue_line_context_or_1",
+        method_version=("queue_line_context_submitted_or_2" if submitted_scope else "queue_line_context_or_1"),
         decision_refs=(DECISION_REF,),
     )
     return pairing, tuple(pairs), branch

@@ -1,4 +1,4 @@
-"""Step 04C: explicitly opted-in Archive V2 LINE assessments.
+"""Separated V2 assessments with source-specific scientific methods.
 
 Single Pointing executes the existing bounded search; Mosaic evaluates only
 supplied Archive contexts with the approved geometry evidence. Neither route
@@ -41,8 +41,8 @@ def _base_validation(prepared, raw_options):
     validation = validate_proposed_observation(shared, raw_options)
     if not validation.is_valid or not validation.can_search or validation.request is None:
         raise ValueError("V2 Archive search requires valid shared search fields and readiness")
-    if validation.search_options.sources != ("ARCHIVE",):
-        raise ValueError("V2 Archive LINE assessment requires ARCHIVE only")
+    if not validation.search_options.sources or set(validation.search_options.sources) - {"ARCHIVE", "QUEUE"}:
+        raise ValueError("V2 Single Pointing supports Archive and Queue sources")
     if validation.search_options.predicates:
         raise ValueError("V2 assessment does not accept candidate prefilter predicates")
     return replace(validation, request=prepared.line_request)
@@ -89,15 +89,16 @@ def _v2_fields(prepared):
 def assess_submitted_line_single_v2(
     raw_request, raw_search_options, *, archive_client=None, archive_result=None,
     input_sha256=None, archive_arrays=None, archive_array_fetcher=None, archive_replay_metadata=None,
+    queue_loader=None,
 ):
-    """Explicit Archive-only Single Pointing V2 search + reviewable full report.
+    """Single Pointing V2 search across selected Archive and Queue sources.
 
-    The caller must inject an Archive client or a query-bound recorded result.
+    Archive clients and CSV loaders are injected; missing sources remain unavailable.
     This entrypoint never silently activates V2 on the default public API.
     """
     prepared = prepare_submitted_line_request(raw_request)
-    if (archive_client is None) == (archive_result is None):
-        raise ValueError("Supply exactly one Archive client or query-bound recorded result")
+    if archive_client is not None and archive_result is not None:
+        raise ValueError("Supply at most one Archive client or query-bound recorded result")
     if prepared.line_request.geometry != "SINGLE_POINTING":
         raise ValueError("Single Pointing V2 entry requires SINGLE_POINTING geometry")
     if archive_arrays is not None and archive_array_fetcher is not None:
@@ -105,6 +106,7 @@ def assess_submitted_line_single_v2(
     validated = _base_validation(prepared, raw_search_options)
     search = search_candidates(
         validated, archive_client=archive_client, archive_result=archive_result,
+        queue_loader=queue_loader, queue_candidate_beam="QUEUE" in validated.search_options.sources,
     )
     from alma_duplicate.archive_array_acquisition import acquire_archive_arrays
     acquisition = (acquire_archive_arrays(search.archive, archive_array_fetcher)
@@ -146,12 +148,44 @@ def assess_submitted_line_single_v2(
         else:
             contexts.append(evaluate_row(row, evidence))
 
+    from alma_duplicate.rules.queue_common import evaluate_queue_common
+    from alma_duplicate.rules.queue_line import evaluate_queue_line
+    from alma_duplicate.rules.queue_continuum import evaluate_queue_continuum, scope_supported
+    from alma_duplicate.rules.aggregation import aggregate_continuum
+    from alma_duplicate.queue_row_beam import resolve_queue_beam_interpretation
     from alma_duplicate.submitted_observation import continuum_setup
     setup = continuum_setup(prepared)
+
+    def evaluate_queue_row(row, diameter=None):
+        common = tuple(evaluate_queue_common(prepared.line_request, row.context,
+                       row.spatial_evidence, beam_diameter_m=diameter))
+        branches, extra = [], ()
+        pairing, pairs = None, ()
+        if prepared.continuum_request is not None:
+            extra = tuple(evaluate_queue_continuum(prepared.continuum_request, row.context, common))
+            branches.append(aggregate_continuum(row.context, (setup, *common, *extra),
+                            supported=scope_supported(common), queue_method=True))
+        if "LINE" in prepared.line_request.intents:
+            pairing, pairs, branch = evaluate_queue_line(prepared.line_request, row.context,
+                                                        common, submitted_scope=True)
+            branches.append(branch)
+        return ContextEvaluation(candidate=row, criteria=common + extra,
+                                 branches=tuple(branches), line_pairing=pairing, line_pairs=pairs)
+
+    for row in search.queue.retained_rows:
+        diameters = resolve_queue_beam_interpretation(row.context.evidence.row).diameters_m
+        if len(diameters) == 2:
+            variants = tuple(BeamVariant(d, evaluate_queue_row(row, d)) for d in diameters)
+            contexts.append(ContextEvaluation(candidate=row, criteria=(),
+                branches=aggregate_beam_variants(variants, source="QUEUE"), beam_variants=variants))
+        else:
+            contexts.append(evaluate_queue_row(row, diameters[0] if diameters else None))
     report = EvaluationReport(
         search_result=search, request_criteria=() if setup is None else (setup,),
         context_evaluations=tuple(contexts),
-        evaluation_configuration=EvaluationConfiguration(),
+        evaluation_configuration=EvaluationConfiguration(queue_common="QUEUE" in validated.search_options.sources,
+            queue_line="QUEUE" in validated.search_options.sources and "LINE" in prepared.line_request.intents,
+            queue_continuum="QUEUE" in validated.search_options.sources and "CONTINUUM" in prepared.line_request.intents),
     )
     document = report_document(report, input_sha256=input_sha256, detail="full",
                                archive_replay_metadata=archive_replay_metadata)
@@ -171,16 +205,21 @@ def assess_submitted_line_single_v2(
         evaluation_version="submitted_line_v2_1",
         assessment_schema_version=SINGLE_REPORT_VERSION,
         report_kind="SUBMITTED_LINE_V2_CANDIDATE_EVALUATION",
-        v2_science=_v2_fields(prepared),
+        v2_science=_v2_fields(prepared) | {"queue_line_context_method_version": "queue_line_context_submitted_or_2",
+            "queue_pair_method_version": "queue_line_pair_and_1"},
     )
     # Explicitly separate successful orchestration from exhaustive discovery.
     document["assessment"] = "NOT_AGGREGATED"
+    selected_sources = [source for name, source in
+                        (("ARCHIVE", search.archive), ("QUEUE", search.queue))
+                        if name in validated.search_options.sources]
     document["assessment_status"] = (
-        "COMPLETED" if search.archive.status == "COMPLETED" and not (acquisition is not None and acquisition.unavailable)
+        "COMPLETED" if all(source.status == "COMPLETED" for source in selected_sources)
+        and not (acquisition is not None and acquisition.unavailable)
         else "SOURCES_UNAVAILABLE"
     )
     document["evaluation_scope"]["context_scope"] = (
-        "ALL_RETAINED_ARCHIVE_CONTEXTS_ONLY; no search-wide absence inference"
+        "ALL_RETAINED_SELECTED_SOURCE_CONTEXTS_ONLY; no search-wide absence inference"
     )
     if prepared.input_contract != SEPARATED_INPUT_CONTRACT:
         document.update(report_version="8", assessment_schema_version="submitted_observation_single_report_2",

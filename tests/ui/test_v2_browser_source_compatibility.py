@@ -1,8 +1,4 @@
-"""Explicit V2 unsupported sources are blocked without corrupting the input schema.
-
-Offline Flask tests: no Archive/Queue queries or scientific verdicts are run.
-Requires the first-step Single Pointing compatibility patch (2ca3519).
-"""
+"""V2 browser source selection preserves separated inputs and legacy compatibility."""
 
 import pytest
 
@@ -57,7 +53,7 @@ def test_unsupported_v2_preserves_real_schema_and_local_redshift():
     assert bindings["search_options.sources"] == "sources"
 
 
-@pytest.mark.parametrize("sources", [(), ("QUEUE",), ("ARCHIVE", "QUEUE")])
+@pytest.mark.parametrize("sources", [()])
 def test_unsupported_v2_is_specific_blocked_issue(sources):
     values, rows = unpack(v2_continuum(sources))
     _, result, issues = validate_form(values, rows)
@@ -66,7 +62,7 @@ def test_unsupported_v2_is_specific_blocked_issue(sources):
     scope = [item for item in issues if item["issue"].code == "BROWSER_V2_SCOPE_UNSUPPORTED"]
     assert len(scope) == 1
     assert scope[0]["field"] == "sources"
-    assert "Archive-only" in scope[0]["issue"].message
+    assert "Select Archive, Queue CSV, or both" in scope[0]["issue"].message
     assert not any(item["issue"].code == "INVALID_CHOICE"
                    and item["issue"].path == "request.line_input_contract" for item in issues)
     assert not any("Separated input must not include legacy" in item["issue"].message
@@ -81,7 +77,7 @@ def test_unsupported_v2_actions_retain_inputs_and_never_run(client, monkeypatch,
         pytest.fail("Unsupported V2 request attempted a source assessment")
 
     monkeypatch.setattr(BrowserAssessment, "assess", forbidden)
-    data = v2_continuum()
+    data = v2_continuum(())
     data["action"] = action
     response = client.post("/proposed", data=data)
     assert response.status_code == 200
@@ -92,11 +88,11 @@ def test_unsupported_v2_actions_retain_inputs_and_never_run(client, monkeypatch,
     assert "BROWSER_V2_SCOPE_UNSUPPORTED" in html
     assert "UNSUPPORTED_BROWSER_LINE_SCOPE" not in html
     assert "Separated input must not include legacy" not in html
-    assert "This optional separated V2 editor currently supports Archive-only assessment" in html
+    assert "Select Archive, Queue CSV, or both" in html
     assert 'Input valid: <strong>No</strong>' in html
     assert 'name="normal_line_records" value="1"' in html
     assert 'name="continuum_redshift" value="0.5"' in html
-    assert 'name="sources" value="QUEUE" checked' in html
+    assert 'name="sources" value="QUEUE" checked' not in html
 
 
 def test_physical_spw_selection_not_mislabeled_on_unsupported_sources(client):
@@ -112,7 +108,7 @@ def test_physical_spw_selection_not_mislabeled_on_unsupported_sources(client):
     assert 'name="spw_rows" value="w111111111111"' in html
     assert 'name="aggregate_windows" value="physical-a"' in html
     assert 'Unavailable window: physical-a' not in html
-    assert "This optional separated V2 editor currently supports Archive-only assessment" in html
+    assert "BROWSER_V2_SCOPE_UNSUPPORTED" not in html
 
 
 def test_explicit_v2_version_does_not_fall_back_if_hidden_flag_missing():
@@ -134,3 +130,10 @@ def test_archive_only_v2_and_default_legacy_stay_distinct():
     assert "line_input_contract" not in doc["request"]
     assert result.is_valid
     assert doc["search_options"]["sources"] == ["ARCHIVE", "QUEUE"]
+
+
+@pytest.mark.parametrize("sources", [("QUEUE",), ("ARCHIVE", "QUEUE")])
+def test_separated_requirements_support_queue_sources(sources):
+    values, rows = unpack(v2_continuum(sources))
+    _, result, _ = validate_form(values, rows)
+    assert result.is_valid and result.can_search, result.issues

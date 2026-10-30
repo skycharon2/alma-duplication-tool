@@ -29,9 +29,9 @@ def continuum_form():
     ])
 
 
-def test_new_single_pointing_continuum_uses_legacy_for_archive_and_queue(client):
+def test_default_is_v2_but_explicit_legacy_submission_is_preserved(client):
     initial = client.get("/proposed").get_data(as_text=True)
-    assert 'name="normal_form_version"' not in initial
+    assert 'name="normal_form_version" value="2"' in initial
     assert 'name="normal_line_records"' not in initial
 
     data = continuum_form()
@@ -118,7 +118,7 @@ def test_explicit_v2_with_queue_does_not_silently_downgrade(client):
     data["normal_line_records"] = "1"
     data["action"] = "download"
     response = client.post("/proposed", data=data)
-    # Until a dedicated V2 compatibility gate is added, this must remain blocked,
-    # not fall through into the legacy Archive + Queue evaluator.
-    assert response.mimetype == "text/html"
-    assert 'Input valid: <strong>No</strong>' in response.get_data(as_text=True)
+    assert response.is_json
+    exported = response.get_json()
+    assert exported['request']['line_input_contract'] == 'SEPARATE_OBSERVATION_REQUIREMENTS_V2'
+    assert exported['search_options']['sources'] == ['ARCHIVE', 'QUEUE']
