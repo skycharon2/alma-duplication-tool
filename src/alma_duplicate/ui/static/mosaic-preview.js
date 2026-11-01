@@ -29,6 +29,7 @@ function destination(ra, dec, distance, bearing) {
 }
 if (typeof module !== 'undefined') module.exports={sky,project,radius,destination};
 if (typeof window === 'undefined') return;
+window.MosaicPreviewGeometry={sky,project,radius,destination};
 window.initializeMosaicPreview = form => {
   const canvas=form.querySelector('[data-mosaic-canvas]'); if (!canvas) return;
   const ctx=canvas.getContext('2d'), select=form.querySelector('[data-preview-frequency]');

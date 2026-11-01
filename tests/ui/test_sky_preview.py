@@ -20,3 +20,15 @@ def test_invalid_input_never_renders_external_viewer(client, ra, dec, kind):
     response = client.post('/sky-preview', data=dict(ra=ra,dec=dec,ra_format='DEG',dec_format='DEG',target_kind=kind))
     assert response.status_code == 422
     assert 'html' not in response.json
+
+
+def test_sky_preview_uses_local_aladin_and_keeps_coordinate_fallback(client):
+    response = client.post('/sky-preview', data=dict(
+        ra='180', dec='-30', ra_format='DEG', dec_format='DEG', target_kind='FIXED'))
+    html = response.json['html']
+    assert 'vendor/aladin-lite/3.8.2/aladin.js' in html
+    assert '/static/alma-sky-runtime.js' in html
+    assert '/static/sky-preview-frame.js' in html
+    assert 'id="sky-geometry"' in html
+    assert 'id="retry"' in html
+    assert 'api/v3/latest/' not in html

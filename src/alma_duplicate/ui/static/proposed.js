@@ -8,6 +8,7 @@ function initializeForm(form) {
   if (!form) return;
   window.initializeProposalWorkbench?.(form);
   window.initializeMosaicPreview?.(form);
+  window.initializeMosaicSkyViewer?.(form);
   window.initializeContinuumChoice?.(form);
   window.initializeCoordinateFormatSync?.(form);
   let assessing = false;

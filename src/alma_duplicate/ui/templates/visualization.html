@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='visualization.css') }}">
 <script src="{{ url_for('static', filename='visualization_view.js') }}" defer></script>
 <script src="{{ url_for('static', filename='report-sky-fallback.js') }}" defer></script>
+<script src="{{ url_for('static', filename='alma-sky-runtime.js') }}" defer></script>
 <script src="{{ url_for('static', filename='report-sky.js') }}" defer></script>
 <script src="{{ url_for('static', filename='visualization.js') }}" defer></script>
 {% endblock %}
@@ -41,12 +42,7 @@
 <section id="report-sky-panel" class="evidence-slide visual-panel sky-stage" role="group" aria-label="2 of 2: Sky preview">
 <header><div><h2>Target &amp; observation coverage</h2><p>Where does your target fall within a candidate observation?</p></div><div class="sky-view-actions"><button type="button" id="sky-overview">Sky context</button><button type="button" id="sky-fit">Fit footprints</button><button type="button" id="sky-selected">Focus selected</button><button type="button" id="sky-retry" hidden>Retry loading</button></div></header>
 <div class="sky-workspace"><div class="sky-map-column">
-<div class="sky-survey-presets sky-view-actions" aria-label="Choose reference imagery">
-<span>Reference imagery</span>
-<button type="button" id="sky-survey-dss" aria-pressed="false" disabled>Use DSS color</button>
-<button type="button" id="sky-survey-ps" aria-pressed="false" disabled>Use Pan-STARRS color</button>
-<small>Pan-STARRS offers finer sampling where available. If blank, switch to DSS. Active survey and more options: layers icon.</small>
-</div>
+<p class="field-note">DSS Color reference imagery. Other surveys are available from the map’s layers menu.</p>
 <p class="sky-survey-status">Active layer: <strong id="sky-active-survey">Not loaded</strong><span id="sky-imagery-status" role="status">Reference image has not loaded yet.</span></p>
 <div class="sky-layer-controls"><label><input type="checkbox" id="sky-show-beams" checked> Show candidate boundaries</label><label><input type="checkbox" id="sky-show-others"> Show other candidates</label><label><input type="checkbox" id="sky-show-imagery" checked> Show reference image</label></div>
 <div id="report-sky-canvas" data-aladin-module="{{ url_for('static', filename='vendor/aladin-lite/3.8.2/aladin.js') }}"></div>
