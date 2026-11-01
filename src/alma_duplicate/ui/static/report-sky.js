@@ -124,11 +124,9 @@ window.createReportSky = function(state) {
     }
     if(focus) choices.querySelector('[aria-pressed="true"]')?.focus({preventScroll:true});
   }
-  let displayedSurvey, surveyRequest=0, surveyPending=false;
+  let displayedSurvey;
   const surveyStatus=document.querySelector('#sky-imagery-status');
-  const dss='https://skies.esac.esa.int/DSSColor/';
-  const panStarrs='https://alasky.cds.unistra.fr/Pan-STARRS/DR1/color-z-zg-g/';
-  const presets=[['sky-survey-dss',dss],['sky-survey-ps',panStarrs]];
+  const dss=window.AlmaSkyRuntime.surveys.dss;
   function imageryStatus(message) {
     surveyStatus.textContent=imagery.checked ? message : 'Reference image hidden · geometry remains visible.';
   }
@@ -139,45 +137,6 @@ window.createReportSky = function(state) {
     window.renderReportSkyFallback?.(document.querySelector('#report-sky-canvas'), state,
                                      {beams: beams.checked, others: others.checked});
   }
-  async function changeSurvey(survey) {
-    const request=++surveyRequest;
-    surveyPending=true;
-    imagery.checked=true;
-    imageryStatus('Loading reference layer…');
-    let timer, poll, ended=false;
-    try {
-      const requested=viewer.setBaseImageLayer(survey);
-      // Aladin returns a HiPS object immediately, before its metadata and
-      // renderer are ready. Wait for that exact layer to become active.
-      const ready=Promise.resolve(requested).then(async layer=>{
-        await layer?.query;
-        if(ended)return;
-        await new Promise(resolve=>{
-          const check=()=>{
-            const active=viewer.getBaseImageLayer();
-            if (active===layer || (layer?.id && active?.id===layer.id)) resolve();
-          };
-          poll=setInterval(check,100);check();
-        });
-      });
-      await Promise.race([
-        ready,
-        new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('timeout')),12000);})
-      ]);
-      if(request!==surveyRequest)return false;
-      syncSurvey();
-      viewer.getBaseImageLayer()?.setAlpha(1);
-      coverageStatus();
-      return true;
-    } catch (error) {
-      console.warn('Sky survey unavailable:', survey, error);
-      if(request===surveyRequest) imageryStatus('Reference layer could not be loaded. Retry a survey button, choose DSS, or hide the reference image.');
-      return false;
-    } finally {
-      ended=true;clearTimeout(timer);clearInterval(poll);
-      if(request===surveyRequest)surveyPending=false;
-    }
-  }
   const brightness=document.querySelector('#sky-brightness');
   const contrast=document.querySelector('#sky-contrast');
   function syncSurvey() {
@@ -185,10 +144,10 @@ window.createReportSky = function(state) {
     const layer=viewer.getBaseImageLayer();
     if (!layer) return;
     const id=layer.id;
-    for(const [button,survey] of presets) document.getElementById(button).setAttribute('aria-pressed',String(id===survey));
     if (displayedSurvey===id) return;
     displayedSurvey=id;
-    if(!surveyPending)coverageStatus();
+    coverageStatus();
+    layer.setOpacity(imagery.checked ? 1 : 0);
     document.querySelector('#sky-active-survey').textContent=layer.name || id || 'See layers menu';
     brightness.value=0;contrast.value=0;
     layer.setBrightness(0);layer.setContrast(0);
@@ -212,26 +171,8 @@ window.createReportSky = function(state) {
     loading=true; status.textContent='Loading CDS Aladin Lite and DSS2 color imagery…';
     imageryStatus('Loading sky viewer and reference imagery…');
     try {
-      if (!window.A) {
-        const moduleUrl = document.querySelector('#report-sky-canvas').dataset.aladinModule;
-        if (!moduleUrl) throw new Error('Local Aladin module URL missing');
-        const module = await import(moduleUrl);
-        if (!module.default?.aladin || !module.default.init) {
-          throw new Error('Invalid local Aladin module');
-        }
-        window.A = module.default;
-      }
-      // A.init can hang while loading WebAssembly/WebGL resources. Never leave a
-      // permanently black panel if that initialization stops making progress.
-      let initTimer;
-      try {
-        await Promise.race([
-          Promise.resolve(A.init),
-          new Promise((_, reject) => {
-            initTimer = setTimeout(() => reject(new Error('Aladin initialization timed out')), 15000);
-          }),
-        ]);
-      } finally { clearTimeout(initTimer); }
+      window.A = await window.AlmaSkyRuntime.load(
+        document.querySelector('#report-sky-canvas').dataset.aladinModule);
       fallbackActive=false;
       signature='';displayedSurvey=undefined;
       viewer=A.aladin('#report-sky-canvas',{target:state.origin.join(' '),survey:dss,fov:0.1,showReticle:false,showFullscreenControl:true,showLayersControl:true,showSettingsControl:true,showCooGridControl:true});
@@ -241,11 +182,10 @@ window.createReportSky = function(state) {
       selectedCenter=A.catalog({name:'Selected candidate center',color:'#ff525e',sourceSize:12,shape:'circle',onClick:choosePosition});viewer.addCatalog(selectedCenter);
       target=A.catalog({name:'Your proposed target',color:'#30eee2',sourceSize:18,shape:'cross',displayLabel:true,labelFont:'12px sans-serif',labelColumn:'label',labelColor:'#7ffff5',onClick:()=>{const row=available().find(r=>r.id===state.selected());if(row && distance(state.origin,row.spatial.center)<1e-10)choosePosition({data:{ids:available().filter(r=>distance(r.spatial.center,row.spatial.center)<1e-10).map(r=>r.id)}});}});
       viewer.addCatalog(target);target.addSources([A.source(...state.origin,{label:'Your target'})]);
-      for (const id of ['sky-survey-dss','sky-survey-ps']) document.getElementById(id).disabled=false;
+
       update();overview();syncSurvey();
-      if (!await changeSurvey(dss)) {
-        throw new Error('ESA DSS Color imagery unavailable');
-      }
+      await window.AlmaSkyRuntime.loadReferenceImagery(viewer);
+      syncSurvey();coverageStatus();
     } catch (error) {
       console.warn('Sky viewer unavailable; displaying recorded geometry instead:', error);
       viewer=null;
@@ -254,7 +194,9 @@ window.createReportSky = function(state) {
       document.querySelector('#sky-retry').hidden=false;
       status.textContent='Optical sky viewer unavailable. Showing recorded geometry only; retry loading or use Charts.';
       imageryStatus('No reference image loaded. The diagram uses saved positions and beam radii, not optical imagery.');
-    } finally {loading=false;}
+    } finally {
+      loading=false;
+    }
   }
   function go(index) {
     gallery.scrollTo({left:index*gallery.clientWidth,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
@@ -285,45 +227,9 @@ window.createReportSky = function(state) {
   beams.addEventListener('change',update);others.addEventListener('change',update);
   imagery.addEventListener('change',()=>{
     if (fallbackActive) {imageryStatus('No optical image available; geometry-only diagram remains visible.');return;}
-    if(viewer) viewer.getBaseImageLayer()?.setAlpha(imagery.checked?1:0);
+    if(viewer) viewer.getBaseImageLayer()?.setOpacity(imagery.checked?1:0);
     coverageStatus();
   });
-  for (const [id,survey] of presets) {
-    document.getElementById(id).addEventListener('click', async()=>{
-      if (!viewer) return;
-
-      if (id === 'sky-survey-ps') {
-        const url = panStarrs;
-        imageryStatus('Checking Pan-STARRS availability…');
-
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 5000);
-        let available = false;
-
-        try {
-          const response = await fetch(url + 'properties', {
-            signal: controller.signal,
-            cache: 'no-store'
-          });
-          available = response.ok;
-        } catch (_) {
-          // Keep the working DSS layer if Pan-STARRS cannot be reached.
-        } finally {
-          clearTimeout(timer);
-        }
-
-        if (!available) {
-          imageryStatus('Pan-STARRS unavailable. Keeping ESA DSS Color.');
-          return;
-        }
-
-        await changeSurvey(url);
-        return;
-      }
-
-      changeSurvey(survey);
-    });
-  }
   document.querySelector('#sky-overview').addEventListener('click',overview);
   document.querySelector('#sky-fit').addEventListener('click',()=>{others.checked=true;update();fit();});
   document.querySelector('#sky-selected').addEventListener('click',()=>fit(true));
