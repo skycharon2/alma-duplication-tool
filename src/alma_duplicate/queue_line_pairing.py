@@ -11,7 +11,7 @@ from alma_duplicate.domain.line_evidence import ProposedLineEvidence
 from alma_duplicate.domain.proposed_observation import ProposedObservationRequest
 from alma_duplicate.domain.queue import (
     QueueQuantity, QueueRowInput, QueueSensitivityRequest, QueueSpw,
-    RegularSpwEvidence,
+    RegularSpwEvidence, QueueMosaicKind,
 )
 from alma_duplicate.proposed_line import prepare_line_window
 from alma_duplicate.queue_mode_adapter import classify_spw
@@ -137,7 +137,7 @@ class QueueLinePairBuildResult:
 
 
 def build_queue_line_pairs(
-    request: ProposedObservationRequest, context: ComparisonContext
+    request: ProposedObservationRequest, context: ComparisonContext, *, mosaic=False
 ) -> QueueLinePairBuildResult:
     """Enumerate every proposed window x occupied SPW; never filter by coverage.
 
@@ -167,10 +167,13 @@ def build_queue_line_pairs(
     if not complete:
         reasons.append("PROPOSED_ENUMERATION_INCOMPLETE")
     scope_reasons = []
-    if request.target_kind != "FIXED" or request.geometry != "SINGLE_POINTING":
-        scope_reasons.append("FIXED_SINGLE_POINT_REQUEST_REQUIRED")
-    if not is_queue_single_point(row):
-        scope_reasons.append("QUEUE_SINGLE_FIELD_REQUIRED")
+    expected_geometry = "MOSAIC" if mosaic else "SINGLE_POINTING"
+    if request.target_kind != "FIXED" or request.geometry != expected_geometry:
+        scope_reasons.append("FIXED_MOSAIC_REQUEST_REQUIRED" if mosaic else "FIXED_SINGLE_POINT_REQUEST_REQUIRED")
+    candidate_supported = (row.spatial.mosaic_kind is QueueMosaicKind.CUSTOM_POINTING if mosaic
+                           else is_queue_single_point(row))
+    if not candidate_supported:
+        scope_reasons.append("QUEUE_CUSTOM_REQUIRED" if mosaic else "QUEUE_SINGLE_FIELD_REQUIRED")
     reasons.extend(scope_reasons)
     attempts = []
     for window in request.spectral_windows:
@@ -191,5 +194,6 @@ def build_queue_line_pairs(
             attempts.append(QueueLinePairAttempt(reference, proposed, candidate, tuple(dict.fromkeys(missing))))
     return QueueLinePairBuildResult(
         context.context_id, tuple(attempts), complete, bool(numbers), tuple(reasons),
-        builder_version="queue_line_pair_builder_2" if uses_blank_mosaic_interpretation(row) else "queue_line_pair_builder_1",
+        builder_version=("queue_custom_line_pair_builder_1" if mosaic else
+                         "queue_line_pair_builder_2" if uses_blank_mosaic_interpretation(row) else "queue_line_pair_builder_1"),
     )

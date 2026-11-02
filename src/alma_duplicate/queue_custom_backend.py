@@ -1,8 +1,8 @@
 """Offline Custom CSV position pipeline; OT is validation evidence, not an input.
 
-The versioned profile assigns explicit points to the main array when present,
-otherwise the sole inferred 7-m array. These are provisional source conventions,
-not measured array ownership or proof of complete Science Goal coverage.
+The user-selected CSV model shares explicit centres across every inferred array,
+with a separate beam radius and assessment per diameter. This is a coverage
+approximation, not a reconstruction of array-specific executed pointing grids.
 """
 import math
 
@@ -12,11 +12,11 @@ from alma_duplicate.rules.queue_mosaic_position import (
     QueueMosaicCoverage, _points, assess_queue_mosaic_position,
 )
 
-PROFILE = "QUEUE_CUSTOM_EXPLICIT_CSV_1"
+PROFILE = "QUEUE_CUSTOM_EXPLICIT_CSV_2"
 MAX_TOTAL_PAIRS = 1_000_000
 ASSUMPTIONS = (
     "STRICT_EXPORT_GROUP_AS_COHERENT_CANDIDATE",
-    "EXPLICIT_POINTS_MAIN_12M_IF_PRESENT_ELSE_SOLE_7M",
+    "CSV_EXPLICIT_CENTERS_SHARED_BY_INFERRED_ARRAYS",
     "BLANK_COORDINATE_FRAME_USES_ICRS_CONVENTION",
     "FIXED_COORDINATES_WITHOUT_EPHEMERIS_PLACEHOLDER",
 )
@@ -46,14 +46,14 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
         candidates = [c for c in all_candidates if c["candidate_id"] == candidate_id]
         if len(candidates) != 1 or candidates[0]["geometry_kind"] != "CUSTOM":
             raise ValueError("Select a Custom candidate from this snapshot")
-    if sum(len(c["source_rows"])*proposed_count for c in candidates) > MAX_TOTAL_PAIRS:
+    if sum(len(c["source_rows"])*proposed_count*len(c["array_inference"]["diameters_m"])
+           for c in candidates) > MAX_TOTAL_PAIRS:
         raise ValueError("Custom batch pointing comparison budget exceeded")
     typed = {r.raw_row.row_id.value: r for r in parsed.row_inputs}
     results = []
     for candidate in candidates:
         rows = candidate["source_rows"]
         diameters = candidate["array_inference"]["diameters_m"]
-        explicit_diameter = 12.0 if 12.0 in diameters else 7.0 if list(diameters) == [7.0] else None
         frequencies = [candidate_frequency(typed[r["source_row_id"]]) for r in rows]
         frequency, frequency_source, frequency_notes = frequencies[0]
         blockers = []
@@ -61,18 +61,19 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
             blockers.append("CANDIDATE_FREQUENCY_UNRESOLVED")
         if any(r["center"]["icrs_deg"] is None for r in rows):
             blockers.append("CUSTOM_CSV_COORDINATES_UNRESOLVED")
-        if explicit_diameter is None:
+        if not diameters:
             blockers.append("EXPLICIT_POINT_ARRAY_UNRESOLVED")
         coverages = []
         if not blockers:
             points = tuple(dict(id=r["source_row_id"], frame="ICRS",
                                 ra_deg=r["center"]["icrs_deg"][0], dec_deg=r["center"]["icrs_deg"][1])
                            for r in rows)
-            coverages.append(QueueMosaicCoverage(
-                candidate["candidate_id"], reconstruction["snapshot_sha256"],
-                tuple(r["source_row_id"] for r in rows), explicit_diameter, frequency,
-                f"{PROFILE}:{frequency_source}", points, f"{PROFILE}:{OFFSET_METHOD}",
-                True, False))
+            for diameter in diameters:
+                coverages.append(QueueMosaicCoverage(
+                    candidate["candidate_id"], reconstruction["snapshot_sha256"],
+                    tuple(r["source_row_id"] for r in rows), diameter, frequency,
+                    f"{PROFILE}:{frequency_source}", points, f"{PROFILE}:{OFFSET_METHOD}",
+                    True, False))
         # Only the selected source context enters the position evaluator.
         position = assess_queue_mosaic_position(proposed, reconstruction, candidate["candidate_id"],
             coverages, boundary_epsilon_arcsec=boundary_epsilon_arcsec)
@@ -80,15 +81,11 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
         for variant in position["beam_variants"]:
             variant["model_status"] = "PROVISIONAL"
             variant["association_basis"] = "PROFILE_CONVENTION_NOT_CALLER_CONFIRMATION"
-            if variant["diameter_m"] != explicit_diameter:
-                variant["geometry_model"] = "UNRESOLVED_ACA_GENERATED_GRID"
-                variant["reasons"].append("ACA_GENERATED_GRID_NOT_RECONSTRUCTED")
-            else:
-                variant["geometry_model"] = "CSV_EXPLICIT_POINT_BEAM_UNION"
-                variant["reasons"].extend(blockers)
+            variant["geometry_model"] = "CSV_SHARED_CENTERS_ARRAY_SPECIFIC_BEAM_UNION"
+            variant["reasons"].extend(blockers)
         results.append(dict(candidate_id=candidate["candidate_id"], group=candidate["group"],
             grouping_method=candidate["grouping_method"], association_status=candidate["association_status"],
-            source_rows=rows, explicit_point_diameter_m=explicit_diameter,
+            source_rows=rows, explicit_point_diameters_m=list(diameters),
             coverage_completeness="NOT_ESTABLISHED", profile_assumptions=list(ASSUMPTIONS),
             frequency=dict(value_ghz=frequency, source=frequency_source, reasons=list(frequency_notes)),
             position=position))
@@ -97,7 +94,7 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
                     reason="RECTANGLE_GRID_NOT_IMPLEMENTED" if c["geometry_kind"] != "CUSTOM"
                     else "OUTSIDE_SELECTED_CANDIDATE")
                for c in all_candidates if c["candidate_id"] not in selected_ids]
-    return dict(schema_version="queue_custom_csv_position_1", profile=PROFILE,
+    return dict(schema_version="queue_custom_csv_position_2", profile=PROFILE,
         model_status="PROVISIONAL", snapshot_sha256=reconstruction["snapshot_sha256"],
         source_as_of=reconstruction["source_as_of"], source_url=reconstruction["source_url"],
         operational_columns=reconstruction["operational_columns"], source_units=reconstruction["source_units"],

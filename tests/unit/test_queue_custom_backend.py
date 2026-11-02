@@ -43,12 +43,13 @@ def variants(result):
     return result["candidates"][0]["position"]["beam_variants"]
 
 
-def test_csv_only_mixed_arrays_computes_explicit_12m_and_keeps_aca_unknown():
+def test_csv_only_mixed_arrays_share_centers_with_distinct_beams():
     report = assess_queue_custom_csv(parsed(), proposed())
     seven, twelve = variants(report)
-    assert seven["outcome"] == "UNKNOWN"
-    assert seven["geometry_model"] == "UNRESOLVED_ACA_GENERATED_GRID"
-    assert seven["coverage"] is None
+    assert seven["outcome"] == "SATISFIED"
+    assert seven["coverage"]["points"] == twelve["coverage"]["points"]
+    assert seven["radius_arcsec"] / twelve["radius_arcsec"] == pytest.approx(12/7)
+    assert report["candidates"][0]["explicit_point_diameters_m"] == [7., 12.]
     assert twelve["outcome"] == "SATISFIED"
     assert twelve["coverage"]["complete"] is False
     assert twelve["model_status"] == "PROVISIONAL"
@@ -66,7 +67,7 @@ def test_12m_only_and_7m_only_reuse_array_inference():
     assert variants(seven)[0]["outcome"] == "SATISFIED"
     inferred = assess_queue_custom_csv(parsed(lambda r: r.update({"Req. Ang. Res.": "30"})), proposed())
     assert [v["diameter_m"] for v in variants(inferred)] == [7.]
-    assert "EXPLICIT_POINTS_MAIN_12M_IF_PRESENT_ELSE_SOLE_7M" in inferred["candidates"][0]["profile_assumptions"]
+    assert "CSV_EXPLICIT_CENTERS_SHARED_BY_INFERRED_ARRAYS" in inferred["candidates"][0]["profile_assumptions"]
 
 
 def test_no_match_and_incomplete_proposal_do_not_claim_negative_or_positive():
@@ -158,3 +159,24 @@ def test_direct_csv_retains_signed_spherical_coordinates(ra, dec, east, north, e
     for point in coverage["points"]:
         assert (point["ra_deg"], point["dec_deg"]) == pytest.approx(expected, abs=1e-9)
     assert variants(result)[1]["counts"]["INSIDE"] == 1
+
+
+def test_no_unrequested_7m_beam_is_computed(monkeypatch):
+    from alma_duplicate.rules import queue_mosaic_position
+    original = queue_mosaic_position.primary_beam_fwhm_deg
+    computed_diameters = []
+    def beam(frequency, diameter):
+        computed_diameters.append(diameter)
+        return original(frequency, diameter)
+    monkeypatch.setattr(queue_mosaic_position, 'primary_beam_fwhm_deg', beam)
+    result = assess_queue_custom_csv(parsed(lambda r: r.update({'Use 7-m?':'False'})), proposed())
+    assert computed_diameters == [12.]
+    assert [v['diameter_m'] for v in variants(result)] == [12.]
+
+
+def test_comparison_budget_counts_both_array_branches(monkeypatch):
+    monkeypatch.setattr('alma_duplicate.queue_custom_backend.MAX_TOTAL_PAIRS', 2)
+    with pytest.raises(ValueError, match='budget'):
+        assess_queue_custom_csv(parsed(), proposed())  # 2 centres × 1 proposal × 2 arrays
+    result = assess_queue_custom_csv(parsed(lambda r: r.update({'Use 7-m?':'False'})), proposed())
+    assert len(variants(result)) == 1

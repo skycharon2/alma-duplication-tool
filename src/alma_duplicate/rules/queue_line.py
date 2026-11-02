@@ -139,7 +139,7 @@ def _sensitivity(request, sensitivity_id):
     return matches[0] if len(matches) == 1 else None
 
 
-def _numerical(request, context, attempt):
+def evaluate_queue_line_numerical(request, context, attempt):
     """Resolve one row-bound reference once and evaluate only that Queue SPW."""
     planned, candidate = attempt.reference.resolve(request, context)
     window = _window(request, attempt.reference.proposed_window_id)
@@ -360,7 +360,7 @@ def evaluate_queue_line(request, context, common_criteria, *, submitted_scope=Fa
         criteria = (
             common["POS-SINGLE"],
             common["ANGULAR"],
-            *_numerical(request, context, attempt),
+            *evaluate_queue_line_numerical(request, context, attempt),
         )
         truth = three_and(criterion_truth(r) for r in criteria) if supported else Truth.UNKNOWN
         reasons = tuple(

@@ -5,7 +5,9 @@ CSV → Custom reconstruction → per-array beam coverage → POS-MOSAIC without
 file, manually written candidate pointing JSON, or per-candidate confirmation.
 OT exports remain development validation fixtures. This is an offline position
 backend; it is not yet wired into the shared assessment entry or browser, and
-does not evaluate complete duplication criteria.
+does not evaluate complete duplication criteria by itself. The optional
+[`--request` science extension](queue_custom_science.md) now composes complete
+per-array criteria under the same provisional CSV model.
 
 ## Run
 
@@ -38,7 +40,7 @@ An unconfirmed proposed list cannot establish a positive result. This interface
 compares the same supplied proposed list geometrically to each candidate array;
 it does not generate a separate proposed ACA grid or authorize cross-array policy.
 
-## Provisional model `QUEUE_CUSTOM_EXPLICIT_CSV_1`
+## Provisional model `QUEUE_CUSTOM_EXPLICIT_CSV_2`
 
 The report explicitly records these conventions rather than claiming observed
 array ownership or official Science Goal identity:
@@ -46,13 +48,13 @@ array ownership or official Science Goal identity:
 - Reuse strict same-snapshot export-field grouping from `queue_mosaic`.
 - Reuse `resolve_queue_beam_interpretation`, including standalone evidence,
   resolution-based inference and TP exclusion.
-- When an inferred 12-m branch exists, interpret explicit Custom CSV offsets as
-  its pointing list. For a sole inferred 7-m branch, interpret them as its list.
-  This mapping is a provisional model convention, including when standalone
-  status itself is inferred. It is not independently verified for each target.
-- In a mixed-array candidate, retain the generated ACA 7-m grid as UNKNOWN.
-  Do not reuse the 12-m centres, invent a bounding-grid approximation or discard
-  the usable 12-m branch.
+- Reconstruct the CSV pointing list once and share those centres across every
+  inferred array. Mixed 7-m/12-m candidates get two independently evaluated beam
+  unions with different radii. A sole inferred array gets only its own beam union.
+  No 7-m beam is constructed for a 12-m-only candidate.
+- This is the user-selected CSV coverage approximation, not a claim that the
+  actual array-specific OT/executed pointing lists are identical. No generated
+  ACA grid or runtime OT file is required, and its absence is not a blocker.
 - Use the existing spherical east/north offset transport. Blank frame follows
   the recorded ICRS convention; Galactic/unsupported frames and placeholder
   coordinates remain unresolved. The raw frame and diagnostic provenance remain
@@ -99,8 +101,21 @@ Read-only acceptance used the supplied 2026-03-03 snapshot
 `8657108b59295c62d3f1f6635bf3571404f5d43bc5800c4a2e7ea3ba51a111b5`.
 A synthetic single-point probe at the exported reference (300.162415,
 -0.088206) deg evaluated 420 Custom groups and 840 array branches: 2 provisional
-position SATISFIED, 838 UNKNOWN. All 420 mixed-array 7-m branches stayed UNKNOWN.
+position SATISFIED, 838 UNKNOWN. Under the historical v1 profile, all 420 mixed-array 7-m branches stayed UNKNOWN.
+This historical result does not describe the v2 shared-centre behavior.
 140 Rectangle records and 120 non-Mosaic rows were accounted for separately.
 This is pipeline acceptance with an engineering probe, not an actual proposed
 science request, current Queue census or duplication verdict. Full source and
 report remain untracked in `reports/queue-custom-csv-step4/`.
+
+Version 2 replaces scalar `explicit_point_diameter_m` with
+`explicit_point_diameters_m` and emits `queue_custom_csv_position_2`. The
+comparison budget counts proposed points × candidate centres × inferred arrays.
+The v2 mapping was explicitly requested by the user on 2026-11-02.
+
+The same full-snapshot engineering probe was replayed under v2: 420 Custom
+candidates, 840 calculated array coverages, 4 position SATISFIED and 836 UNKNOWN.
+Each mixed pair retained identical centre lists and radius ratio 12/7. Unknown
+unmatched positions still reflect unestablished candidate completeness; no branch
+is unknown merely because an external ACA grid is absent. The local report is
+`reports/queue-custom-csv-step4/full-snapshot-position-v2.json`.

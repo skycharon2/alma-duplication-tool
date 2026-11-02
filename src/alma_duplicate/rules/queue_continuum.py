@@ -9,6 +9,7 @@ import math
 from fractions import Fraction
 
 from alma_duplicate.domain.comparison import QueueContextEvidence
+from alma_duplicate.domain.queue import QueueMosaicKind
 from alma_duplicate.queue_normalization import QUEUE_USABLE_BANDWIDTH_DERIVATION_VERSION
 from alma_duplicate.rules.continuum import prepare_aggregate_rms, prepare_representative_frequency, _quantity_issue
 from alma_duplicate.rules.model import (
@@ -28,8 +29,8 @@ from alma_duplicate.rules.queue_common import queue_common_scope_supported
 DECISION_REF = "docs/evidence/queue_row_continuum_decision_2026-09-24.md"
 
 
-def scope_supported(common):
-    return queue_common_scope_supported(common)
+def scope_supported(common, *, mosaic=False):
+    return queue_common_scope_supported(common, mosaic=mosaic)
 
 
 def merge_intervals(intervals):
@@ -93,18 +94,21 @@ def _result(name, context, proposed, candidate, issues, passed, derived, details
     )
 
 
-def evaluate_queue_continuum(request, context, common):
+def evaluate_queue_continuum(request, context, common, *, mosaic=False):
     """Evaluate one coherent retained Queue row, using validated common scope."""
     if not isinstance(context.evidence, QueueContextEvidence):
         raise TypeError("Queue context required")
     if any(r.context_id != context.context_id for r in common):
         raise ValueError("Common evidence belongs to another context")
     row = context.evidence.row
+    if mosaic and (request.target_kind != "FIXED" or request.geometry != "MOSAIC"
+                   or row.spatial.mosaic_kind is not QueueMosaicKind.CUSTOM_POINTING):
+        raise ValueError("Custom Mosaic scope required")
     if context.evidence.association.raw_row_id != row.raw_row.row_id:
         raise ValueError("Queue association belongs to another source row")
     base = (
         []
-        if scope_supported(common)
+        if scope_supported(common, mosaic=mosaic)
         else [_issue("QUEUE_CONTINUUM_SCOPE_UNSUPPORTED", "context")]
     )
     details = [
