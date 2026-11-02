@@ -99,8 +99,8 @@ def test_auto_tap_aq_all_members_policy_and_display_independence():
     class Tap:
         def search(self, query):
             calls.append(query)
-            assert query.spatial_strategy == 'CENTER'
-            assert 's_region' not in build_count_adql(query)
+            assert query.spatial_strategy == 'CENTER_OR_MOSAIC_REGION'
+            assert "is_mosaic = 'T' AND 1 = INTERSECTS(s_region" in build_count_adql(query)
             assert query.radius_deg == automatic_radius().value
             return bind(source, query)
     fetch = fetcher(members)

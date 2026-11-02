@@ -13,6 +13,8 @@ from alma_duplicate.clients.archive_contract import (
 ARCHIVE_TABLE = "ivoa.obscore"
 COUNT_ALIAS = "total_matches"
 ARCHIVE_SCHEMA_VERSION = "3"
+# Outward margin exceeds the local 0.001 arcsec boundary tolerance.
+MOSAIC_DISCOVERY_MARGIN_DEG = 0.002 / 3600
 ARCHIVE_PROJECTION_VERSION = "1"
 ARCHIVE_QUERY_UNIT_CONTRACT_VERSION = "2"
 
@@ -91,7 +93,7 @@ class ArchiveQuerySpec:
         if self.member_ous_uid is not None:
             if any(not isinstance(v, str) or not v.strip() for v in (self.member_ous_uid, self.target_name)):
                 raise ValueError("Nonempty Member and target required")
-        if self.spatial_strategy not in {"REGION", "CENTER"}:
+        if self.spatial_strategy not in {"REGION", "CENTER", "CENTER_OR_MOSAIC_REGION"}:
             raise ValueError("Unknown spatial strategy")
         _validate_finite_real("ra_deg", self.ra_deg)
         _validate_finite_real("dec_deg", self.dec_deg)
@@ -178,8 +180,8 @@ def normalize_query_parameters(
     parameters = _legacy_parameters(spec)
     if spec.member_ous_uid is not None:
         return (("member_ous_uid", spec.member_ous_uid), ("target_name", spec.target_name)) + parameters
-    if spec.spatial_strategy == "CENTER":
-        return (("spatial_strategy", "CENTER"),) + parameters
+    if spec.spatial_strategy != "REGION":
+        return (("spatial_strategy", spec.spatial_strategy),) + parameters
     return parameters
 
 
@@ -286,6 +288,15 @@ def build_where_clause(
         clauses = [
             "1 = CONTAINS(POINT('ICRS', s_ra, s_dec), "
             f"CIRCLE('ICRS', {ra_text}, {dec_text}, {radius_text}))"
+        ]
+
+    if spec.spatial_strategy == "CENTER_OR_MOSAIC_REGION":
+        margin = _format_adql_number(MOSAIC_DISCOVERY_MARGIN_DEG)
+        clauses = [
+            "(1 = CONTAINS(POINT('ICRS', s_ra, s_dec), "
+            f"CIRCLE('ICRS', {ra_text}, {dec_text}, {radius_text})) OR "
+            "(is_mosaic = 'T' AND 1 = INTERSECTS(s_region, "
+            f"CIRCLE('ICRS', {ra_text}, {dec_text}, {margin}))))"
         ]
 
     if spec.member_ous_uid is not None:

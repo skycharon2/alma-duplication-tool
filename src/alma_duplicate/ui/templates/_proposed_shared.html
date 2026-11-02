@@ -171,7 +171,7 @@
 <p class="field-note">Automatic search area {{ help('search_scope', 'automatic search area') }}</p>
 <details id="auto-scope-details" class="single-only-advanced"><summary>How the search area is selected</summary>
 <p>Archive uses a {{ '%.2f'|format(auto_scope.archive_radius_deg * 3600) }} arcsec centre radius for the supported fixed, single-point scope, based on 7 m dishes at 35 GHz. Queue uses all rows in the supplied file. Position is then checked using each candidate's evidence.</p>
-<p>Archive records with missing centres, lower or unknown frequencies outside this area, and extended mosaics are not covered by this bound. Results do not establish a search-wide absence of duplication. Retrieval limits never silently reduce this radius.</p>
+<p>Archive records with missing centres, lower or unknown frequencies outside this area, are not covered by this bound. Identified Mosaic regions intersecting the target are additionally retrieved; missing or invalid regions outside the cone remain uncovered. Results do not establish a search-wide absence of duplication. Retrieval limits never silently reduce this radius.</p>
 <p>Policy: {{ auto_scope.method_version }}. Explicit-radius requests remain supported by the request API.</p></details>
 {{ messages('radius') }}{{ messages('search') }}
 {% if values.get('radius', '') %}<p class="notice">This input contains an explicit radius that conflicts with automatic scope. Clear the value below to continue with AUTO.</p>{{ quantity('radius', 'Conflicting explicit radius', ['arcsec','arcmin','deg'], 'arcsec') }}{% endif %}

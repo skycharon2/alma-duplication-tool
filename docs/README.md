@@ -228,3 +228,4 @@ limitations and reproducible commands.
 ## Single Pointing → Archive Mosaic development
 
 - [Step 01: scientific contract and legacy baseline](development/single-point-mosaic/step01_contract.md) — planned cross-geometry support; no production behavior change.
+- [Step 02: automatic Mosaic coverage discovery](development/single-point-mosaic/step02_discovery.md) — expanded retrieval; formal position evaluation remains pending.
