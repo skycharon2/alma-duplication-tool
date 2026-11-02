@@ -9,7 +9,7 @@ from alma_duplicate.rules.continuum_setup import PORTAL_SCRIPT_V1
 from alma_duplicate.rules.queue_mosaic_position import _points
 
 
-def assess_custom(validated, proposed, *, options, sources, input_sha256, report_detail):
+def assess_custom(validated, proposed, *, options, sources, input_sha256, report_detail, prepared=None):
     # Local import avoids an assessment -> adapter -> assessment import cycle.
     from alma_duplicate.assessment import AssessmentResult, AssessmentStatus
 
@@ -44,6 +44,7 @@ def assess_custom(validated, proposed, *, options, sources, input_sha256, report
                       and i.code == 'METHOD_NOT_IMPLEMENTED')))
     document = dict(schema_version='queue_custom_assessment_1', report_kind='QUEUE_CUSTOM_MOSAIC',
         input_sha256=input_sha256, source_mode='QUEUE_CSV',
+        proposed=proposed, scientific_request=json_value(request.raw_input),
         evaluation_configuration=dict(profile=PROFILE, nominal_conversion=options.nominal_conversion,
             science_intents=list(request.intents), report_detail='full',
             candidate_selection='ALL_CUSTOM_GROUPS_IN_SNAPSHOT',
@@ -55,7 +56,7 @@ def assess_custom(validated, proposed, *, options, sources, input_sha256, report
     if sources.queue_loader is not None:
         try:
             parsed = sources.queue_loader()
-        except OSError:
+        except (OSError, ValueError):
             source = dict(status='FAILED', reasons=['QUEUE_CSV_READ_FAILED'])
         else:
             source = dict(status='COMPLETE' if parsed.can_reconstruct else 'INCOMPLETE',
@@ -65,9 +66,27 @@ def assess_custom(validated, proposed, *, options, sources, input_sha256, report
     status = AssessmentStatus.SOURCES_UNAVAILABLE
     if parsed is not None and parsed.can_reconstruct:
         document.update(assess_queue_custom_science(parsed, request, proposed,
-            nominal_conversion=options.nominal_conversion))
+            nominal_conversion=options.nominal_conversion, prepared=prepared))
         document['science_schema_version'] = document['schema_version']
         document['schema_version'] = 'queue_custom_assessment_1'
         status = AssessmentStatus.COMPLETED
     document.update(assessment_status=status.value, sources={'QUEUE': source})
     return AssessmentResult(status, validated, document)
+
+
+def assess_custom_submitted(raw_request, search_options, proposed, *, sources):
+    """Reuse the browser's separated scientific operands without mixing inventories."""
+    from alma_duplicate.assessment import AssessmentOptions
+    from alma_duplicate.request_validation import validate_proposed_observation
+    from alma_duplicate.rules.submitted_line_evaluation import prepare_submitted_line_request
+    prepared = prepare_submitted_line_request(raw_request)
+    validation = validate_proposed_observation(json_value(prepared.line_request.raw_input), search_options)
+    if not validation.is_valid:
+        raise ValueError('Invalid Queue Mosaic request/search options')
+    validation = replace(validation, request=prepared.line_request)
+    result = assess_custom(validation, proposed, options=AssessmentOptions(), sources=sources,
+                           input_sha256=None, report_detail='full', prepared=prepared)
+    result.document['scientific_request'] = json_value(raw_request)
+    result.document['input_contract'] = prepared.input_contract
+    result.document['line_scope'] = 'SUBMITTED_REQUIREMENTS_ONLY'
+    return result

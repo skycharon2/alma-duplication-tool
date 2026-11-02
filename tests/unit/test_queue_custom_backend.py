@@ -51,7 +51,7 @@ def test_csv_only_mixed_arrays_share_centers_with_distinct_beams():
     assert seven["radius_arcsec"] / twelve["radius_arcsec"] == pytest.approx(12/7)
     assert report["candidates"][0]["explicit_point_diameters_m"] == [7., 12.]
     assert twelve["outcome"] == "SATISFIED"
-    assert twelve["coverage"]["complete"] is False
+    assert twelve["coverage"]["complete"] is True
     assert twelve["model_status"] == "PROVISIONAL"
     assert report["candidates"][0]["position"]["tp_treatment"] == "IGNORED"
     assert report["duplication_status"] == "NOT_EVALUATED"
@@ -70,10 +70,10 @@ def test_12m_only_and_7m_only_reuse_array_inference():
     assert "CSV_EXPLICIT_CENTERS_SHARED_BY_INFERRED_ARRAYS" in inferred["candidates"][0]["profile_assumptions"]
 
 
-def test_no_match_and_incomplete_proposal_do_not_claim_negative_or_positive():
+def test_outside_complete_csv_group_fails_but_incomplete_proposal_stays_unknown():
     outside = assess_queue_custom_csv(parsed(), proposed(50))
-    assert variants(outside)[1]["outcome"] == "UNKNOWN"
-    assert variants(outside)[1]["counts"]["UNKNOWN"] == 1
+    assert variants(outside)[1]["outcome"] == "NOT_SATISFIED"
+    assert variants(outside)[1]["counts"]["OUTSIDE"] == 1
     incomplete = assess_queue_custom_csv(parsed(), proposed(complete=False))
     assert variants(incomplete)[1]["outcome"] == "UNKNOWN"
 

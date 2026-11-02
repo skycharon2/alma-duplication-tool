@@ -21,6 +21,9 @@ from alma_duplicate.report_inspection import inspect_report
 from alma_duplicate.ui.report_pages import report_page, report_projection
 from alma_duplicate.ui.mosaic_report_view import mosaic_report_projection, MOSAIC_REPORT_SCHEMAS
 from alma_duplicate.ui.mosaic_report_pages import mosaic_report_page
+from alma_duplicate.ui.queue_custom_report import (
+    SCHEMA as QUEUE_CUSTOM_SCHEMA, projection as queue_custom_projection, report_page as queue_custom_page,
+)
 
 DEFAULT_DISK_BYTES = 1024 * 1024 * 1024
 DEFAULT_MAX_AGE = 24 * 60 * 60
@@ -56,7 +59,7 @@ def _indexed_report_blocks(document, offsets):
     for index, (key, value) in enumerate(document.items()):
         yield from emit([',\n' if index else '\n', '  ', encoder.encode(key), ': '])
         if (key == 'context_evaluations' or (key == 'candidates' and
-                document.get('schema_version') in MOSAIC_REPORT_SCHEMAS)) and value:
+                document.get('schema_version') in MOSAIC_REPORT_SCHEMAS | {QUEUE_CUSTOM_SCHEMA})) and value:
             yield from emit(['[\n    '])
             for context_index, context in enumerate(value):
                 if context_index:
@@ -208,7 +211,11 @@ class RunStore:
         emit_progress('inspection')
         with measure_stage("inspection"):
             mosaic = document.get("schema_version") in MOSAIC_REPORT_SCHEMAS
-            inspection = ({"schema_version": "mosaic_browser_inspection_1",
+            queue_custom = document.get('schema_version') == QUEUE_CUSTOM_SCHEMA
+            inspection = ({'schema_version': 'queue_custom_browser_inspection_1',
+                           'assessment_status': document['assessment_status'],
+                           'absence_interpretation': document['duplication_status']}
+                          if queue_custom else {"schema_version": "mosaic_browser_inspection_1",
                            "assessment_status": document["assessment_status"],
                            "absence_interpretation": document["absence_interpretation"]}
                           if mosaic else inspect_report(document, inspection_version='3'))
@@ -246,7 +253,8 @@ class RunStore:
                 with measure_stage('write_' + kind):
                     downloads[kind] = write(kind + '.json', _utf8_blocks(report_json_chunks(data)))
             with measure_stage("view_projection"):
-                projection = (mosaic_report_projection(document) if mosaic
+                projection = (queue_custom_projection(document) if queue_custom else
+                              mosaic_report_projection(document) if mosaic
                               else report_projection(document, inspection, compact=True))
             projection['offsets'] = offsets
             with measure_stage('write_view'):
@@ -287,13 +295,14 @@ class RunStore:
             if item is None:
                 return None
             projection = json.loads((item.directory / 'view.json').read_bytes())
-            if projection.get("mosaic"):
+            if projection.get("mosaic") or projection.get('queue_custom'):
                 with (item.directory / 'report.json').open('rb') as stream:
                     def candidate(index):
                         offset, length = projection['offsets'][index]
                         stream.seek(offset)
                         return json.loads(stream.read(length))
-                    data = mosaic_report_page(projection, page, view, candidate)
+                    data = (queue_custom_page if projection.get('queue_custom') else mosaic_report_page)(
+                        projection, page, view, candidate)
                 data.update(run=item, retention_hours=self.max_age / 3600,
                             remaining_minutes=max(0, math.ceil((item.expires_at - self._clock()) / 60)))
                 return data

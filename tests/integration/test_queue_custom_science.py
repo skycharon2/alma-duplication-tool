@@ -67,6 +67,14 @@ def test_frequency_failure_can_resolve_both_branches_without_known_position():
     assert science(result)["matching_arrays_by_intent"]["CONTINUUM"] == []
 
 
+def test_omitted_rms_basis_defaults_to_per_pointing():
+    req, _ = request()
+    p = pointings(req)
+    del p['sensitivity_basis']
+    s = science(assess_queue_custom_science(candidate(), req, p))
+    assert s['matching_arrays_by_intent']['CONTINUUM'] == [7., 12.]
+
+
 @pytest.mark.parametrize("basis", [None, "COMBINED_IMAGE"])
 def test_combined_or_missing_mosaic_rms_basis_is_not_assumed(basis):
     req, _ = request()
@@ -79,7 +87,7 @@ def test_combined_or_missing_mosaic_rms_basis_is_not_assumed(basis):
 def test_pointing_scope_and_source_identity_do_not_leak():
     req, _ = request()
     assert science(assess_queue_custom_science(candidate(), req, pointings(req, complete=False)))["branches"][0]["truth"] == "UNKNOWN"
-    assert science(assess_queue_custom_science(candidate(), req, pointings(req, ra=0)))["branches"][0]["truth"] == "UNKNOWN"
+    assert science(assess_queue_custom_science(candidate(), req, pointings(req, ra=0)))["branches"][0]["truth"] == "FALSE"
     for field in ("source_name", "setup_id"):
         p = pointings(req); p[field] = "other"
         with pytest.raises(ValueError, match="target and setup"):
@@ -226,7 +234,7 @@ def test_complementary_array_successes_cannot_be_borrowed(monkeypatch):
     assert s['matching_arrays_by_intent']['CONTINUUM'] == []
 
 
-def test_7m_only_spatial_hit_can_return_match_when_12m_is_unknown():
+def test_7m_only_spatial_hit_returns_match_when_12m_fails():
     from alma_duplicate.geometry import primary_beam_fwhm_deg
     req, _ = request()
     p = pointings(req)
@@ -235,7 +243,7 @@ def test_7m_only_spatial_hit_can_return_match_when_12m_is_unknown():
     p['points'][0]['dec_deg'] += (r7+r12)/2
     result = assess_queue_custom_science(candidate(), req, p)
     s = science(result)
-    assert [v['outcome'] for v in result['candidates'][0]['position']['beam_variants']] == ['SATISFIED','UNKNOWN']
-    assert [v['branches'][0]['truth'] for v in s['variants']] == ['TRUE','UNKNOWN']
+    assert [v['outcome'] for v in result['candidates'][0]['position']['beam_variants']] == ['SATISFIED','NOT_SATISFIED']
+    assert [v['branches'][0]['truth'] for v in s['variants']] == ['TRUE','FALSE']
     assert s['branches'][0]['truth'] == 'TRUE'
     assert s['matching_arrays_by_intent']['CONTINUUM'] == [7.]

@@ -39,7 +39,7 @@ def test_only_7m_match_is_preserved():
     p = pointings(req)
     p['points'][0]['dec_deg'] += sum(primary_beam_fwhm_deg(230, d)/2 for d in (7, 12))/2
     s = science(run(proposed=p).document)
-    assert [v['branches'][0]['truth'] for v in s['variants']] == ['TRUE', 'UNKNOWN']
+    assert [v['branches'][0]['truth'] for v in s['variants']] == ['TRUE', 'FALSE']
     assert s['matching_arrays_by_intent']['CONTINUUM'] == [7.]
 
 

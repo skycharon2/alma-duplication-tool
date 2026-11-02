@@ -77,11 +77,10 @@ Separation is spherical, including RA wrap and high declination. Candidate group
 are never pooled across setups or targets. Total batch work is limited to one
 million proposed/candidate point pairs; failure does not produce a partial report.
 
-CSV group completeness is NOT_ESTABLISHED. Known inside points can support a
-conditional SATISFIED result under the provisional profile. Unmatched points stay
-UNKNOWN rather than becoming negative evidence about a complete candidate.
-Consequently this increment generally returns SATISFIED or UNKNOWN, not a
-conclusive NOT_SATISFIED for the candidate. Boundary points remain uncertain.
+Under profile v3, when all recorded centres and the branch beam are resolved,
+coverage is complete for that CSV group. A proposed point outside every disk is
+OUTSIDE. If at most half the proposed points could be covered, position is
+NOT_SATISFIED. Unresolved centres and numerical boundaries retain uncertainty.
 Missing geometry/frequency produces UNKNOWN with specific reasons. Unresolved
 array inference retains the candidate without invented branches.
 

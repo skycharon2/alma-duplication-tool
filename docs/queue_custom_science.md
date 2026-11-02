@@ -27,7 +27,7 @@ Without `--request`, the existing position-only path remains unchanged. With it,
 the proposed pointing JSON must include `source_name` and `setup_id` matching the
 validated scientific request. It must also retain confirmed fixed ICRS and list
 completeness. `sensitivity_basis: PER_POINTING` declares that the supplied proposed
-RMS values apply per pointing. Missing or combined-image basis leaves RMS criteria
+RMS values apply per pointing. Omitting the field defaults to PER_POINTING. An explicitly unknown or combined-image basis leaves RMS criteria
 unresolved while independent frequency, resolution and position evidence remains.
 This is spatial sensitivity meaning, separate from the request's spectral
 AGGREGATE/SMOOTHED basis. Nonuniform per-pointing sensitivities are not supported.
@@ -152,8 +152,8 @@ rejected instead of silently changing scope. The Archive Mosaic and Single
 Pointing paths retain their existing behavior. The existing standalone Custom
 CLI remains available for candidate-specific and position-only diagnostics.
 
-This increment exposes the application API and main CLI JSON report. It does
-not connect the web form or the Archive HTML report renderer. Rectangle groups
+The application API and main CLI retain their explicit input contract. The
+browser integration below uses the existing Mosaic form and its own report view. Rectangle groups
 remain explicitly excluded; incomplete Custom coverage still yields UNKNOWN
 for positions outside known coverage.
 
@@ -163,3 +163,25 @@ points can establish coverage, and outside coverage remains UNKNOWN. Invalid
 candidate beam widths mark only that array's position UNKNOWN with
 `CANDIDATE_BEAM_UNREPRESENTABLE`; other groups continue. Request validation,
 identity binding and resource-budget failures still propagate.
+
+
+## Existing Mosaic browser source selection
+
+The existing `/proposed/mosaic` page offers Archive or Queue CSV. Queue reuses
+`BrowserAssessment._queue_input`, shared with Single Pointing: configured local
+CSV uses `QueueCsvClient.load`; managed data uses `pin_active_queue` once, retaining
+its exact snapshot bytes and provenance even if the active pointer changes.
+No new CSV upload, downloader, activation or separate proposal page is added.
+Archive remains the default; selecting Queue does not invoke Archive acquisition.
+
+The current Mosaic form's separated LINE/CONTINUUM operands are prepared using
+the same `prepare_submitted_line_request` implementation as Single Pointing.
+Only submitted LINE requirements enter LINE pairs; physical SPWs remain
+continuum/setup evidence. The original browser request is retained in the report,
+not replaced with the internal compatibility representation. The legacy API and
+CLI continue to reject separated wire input unless using the dedicated adapter.
+
+Proposed positions use the existing Mosaic input. The browser interprets planned RMS per pointing by default. Results
+show recorded independent array branches, matching arrays, source-row evidence,
+and paginated Custom groups. Full JSON downloads retain all conditions and pairs.
+No Rectangle support or search-wide absence verdict is introduced here.

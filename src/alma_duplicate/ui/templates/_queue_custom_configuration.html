@@ -1,0 +1,28 @@
+{% set raw = c.settings %}
+<h5>Requested observing configuration</h5>
+<dl class="queue-config-fields">
+{% for key, label, unit in [
+    ('Band','Receiver band',''), ('Polarization','Polarization',''),
+    ('Req. Ang. Res.','Angular resolution','arcsec'), ('Req. LAS','Largest angular scale','arcsec'),
+    ('Req.Sensitivity','Requested sensitivity','mJy'), ('Ref.Freq.Width','Sensitivity reference bandwidth','MHz'),
+    ('Ref.Frequency','Reference frequency','GHz'), ('Use 7-m?','7-m requested',''), ('Use TP?','TP requested',''),
+    ('Velocity','Velocity','km/s'), ('Vel. Frame','Velocity frame',''), ('Vel. Convention','Velocity convention',''),
+    ('Is Sky Freq?','SPW frequencies supplied as sky frequencies','')] %}
+<div><dt>{{ label }}</dt><dd>{{ raw.get(key) or 'Not provided' }}{% if raw.get(key) and unit %} {{ unit }}{% endif %}</dd></div>
+{% endfor %}
+</dl>
+<details class="queue-evidence"><summary>Spectral windows ({{ c.spws|length }})</summary>
+{% if c.spws %}<div class="report-table-scroll"><table><caption>Frequencies and nominal bandwidths as recorded in the Queue CSV</caption>
+<thead><tr><th>SPW</th><th>Frequency (GHz)</th><th>Bandwidth (MHz)</th><th>Spectral resolution (MHz)</th></tr></thead>
+<tbody>{% for number, freq, width, resolution in c.spws %}<tr><th scope="row">{{ number }}</th><td>{{ freq or '—' }}</td><td>{{ width or '—' }}</td><td>{{ resolution or '—' }}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+{% for key, unit in [('SPS Start Freq.','GHz'),('SPS End Freq.','GHz'),('SPS Bandwidth','GHz'),('SPS Spec. Res.','MHz')] if raw.get(key) %}<p>{{ key }}: {{ raw[key] }} {{ unit }}</p>{% endfor %}
+</details>
+<details class="queue-evidence"><summary>Custom pointings ({{ c.source_rows|length }})</summary>
+<p>Reference RA {{ raw.get('RA') or '—' }}°, Dec {{ raw.get('Dec') or '—' }}°. Offset frame in CSV: {{ raw.get('Mos. Coord.') or 'unspecified' }}.</p>
+<div class="report-table-scroll"><table><caption>CSV offsets and reconstructed pointing centres</caption>
+<thead><tr><th>CSV lines</th><th>Longitude offset (″)</th><th>Latitude offset (″)</th><th>ICRS RA (°)</th><th>ICRS Dec (°)</th></tr></thead>
+<tbody>{% for row in c.source_rows %}<tr><th scope="row">{{ row.physical_lines|unique|join('–') }}</th>
+{% for offset in row.offsets %}<td>{{ offset or '—' }}</td>{% endfor %}
+{% if row.center.icrs_deg %}{% for value in row.center.icrs_deg %}<td>{{ '%.9f'|format(value) }}</td>{% endfor %}{% else %}<td colspan="2">{{ row.center.reasons|join('; ') }}</td>{% endif %}
+</tr>{% endfor %}</tbody></table></div>
+</details>

@@ -26,14 +26,14 @@ def test_single_post_download_preserves_archive_and_queue(client):
     assert "line_input_contract" not in response.get_json()["request"]
 
 
-def test_mosaic_post_keeps_archive_only_and_v2(client):
+def test_mosaic_post_keeps_archive_default_and_v2(client):
     response = client.post("/proposed/mosaic", data={
         "target_kind": "FIXED", "geometry": "MOSAIC", "normal_form_version": "2",
         "sources": ["ARCHIVE", "QUEUE"], "action": "scope", "setup_id": "setup-1",
     })
     assert response.status_code == 200
     assert 'action="/proposed/mosaic"' in response.text
-    assert 'name="sources" value="QUEUE"' not in response.text
+    assert 'name="sources" value="QUEUE"' in response.text
     assert 'name="normal_form_version" value="2"' in response.text
 
 

@@ -60,10 +60,11 @@ def _common(request, context, position):
 
 def _rms_basis(criterion, proposed):
     """Never promote combined-image RMS to per-pointing RMS or add overlap gain."""
+    basis = proposed.get("sensitivity_basis", "PER_POINTING")
     details = criterion.details + (("candidate_mosaic_rms_basis", "CUSTOM_PER_POINTING_REQUEST"),
-        ("proposed_mosaic_rms_basis", str(proposed.get("sensitivity_basis", "UNKNOWN"))),
+        ("proposed_mosaic_rms_basis", str(basis)),
         ("mosaic_overlap_gain", "NONE"))
-    if proposed.get("sensitivity_basis") == "PER_POINTING":
+    if basis == "PER_POINTING":
         return replace(criterion, details=details)
     reason = "PROPOSED_MOSAIC_PER_POINTING_RMS_REQUIRED"
     return replace(criterion, outcome=None, applicability=A.UNRESOLVED,
@@ -72,8 +73,13 @@ def _rms_basis(criterion, proposed):
             CriterionIssue(EvidenceSide.PROPOSED, reason, "proposed.sensitivity_basis", reason),))
 
 
-def _line_branch(request, context, common, proposed):
+def _line_branch(request, context, common, proposed, *, submitted_scope=False):
     pairing = build_queue_line_pairs(request, context, mosaic=True)
+    if submitted_scope:
+        pairing = replace(pairing, proposed_enumeration_complete=True,
+            reasons=tuple(r for r in pairing.reasons if r != "PROPOSED_ENUMERATION_INCOMPLETE"),
+            builder_version="queue_custom_submitted_line_pair_builder_1",
+            scope="ONE_CUSTOM_GROUP_SUBMITTED_REQUIREMENTS_X_REGULAR_SPWS")
     pairs = []
     for attempt in pairing.attempts:
         numerical = tuple(_rms_basis(r, proposed) if r.criterion_id == "LINE-RMS" else r
@@ -119,7 +125,27 @@ def aggregate_custom_arrays(context_id, expected_diameters, variants):
     return tuple(result)
 
 
-def assess_queue_custom_science(parsed, request, proposed, *, candidate_id=None, nominal_conversion=None):
+def custom_object_results(candidates):
+    """Roll up complete setup/array results per project and target in one snapshot."""
+    objects = {}
+    for c in candidates:
+        group = c["group"]
+        key = (group["project_code"], group["target_name"])
+        obj = objects.setdefault(key, dict(project_code=key[0], target_name=key[1],
+            candidate_ids=[], truth_by_intent={}, matching_arrays_by_intent={}))
+        obj["candidate_ids"].append(c["candidate_id"])
+        for branch in c["science"]["branches"]:
+            intent = branch["branch"]
+            previous = obj["truth_by_intent"].get(intent)
+            truth = Truth(branch["truth"])
+            obj["truth_by_intent"][intent] = (truth if previous is None else three_or((previous, truth)))
+            arrays = obj["matching_arrays_by_intent"].get(intent, [])
+            obj["matching_arrays_by_intent"][intent] = sorted(set(arrays).union(
+                c["science"]["matching_arrays_by_intent"][intent]))
+    return list(objects.values())
+
+
+def assess_queue_custom_science(parsed, request, proposed, *, candidate_id=None, nominal_conversion=None, prepared=None):
     """Validated fixed Mosaic request plus caller point list; no OT runtime input.
 
     A source-row representative supplies unchanged scalar/spectral operands only
@@ -127,6 +153,10 @@ def assess_queue_custom_science(parsed, request, proposed, *, candidate_id=None,
     Original row identity stays attached to every SPW pair and the group retains
     every pointing row. No scientific evidence crosses candidate groups.
     """
+    if prepared is not None:
+        from alma_duplicate.rules.submitted_line_evaluation import PreparedSubmittedLineRequest
+        if not isinstance(prepared, PreparedSubmittedLineRequest) or prepared.line_request is not request:
+            raise ValueError("Prepared request must own these scientific operands")
     request.require_implemented_line_scope()
     if request.target_kind != "FIXED" or request.geometry != "MOSAIC":
         raise ValueError("Fixed Mosaic scientific request required")
@@ -138,8 +168,10 @@ def assess_queue_custom_science(parsed, request, proposed, *, candidate_id=None,
         raise ValueError("Proposed pointing list must bind to request target and setup")
     report = assess_queue_custom_csv(parsed, proposed, candidate_id=candidate_id)
     contexts = {c.reference.raw_row_id: c for c in build_queue_contexts(parsed).contexts}
-    setup = (approve_setup(evaluate_continuum_setup(request, nominal_conversion=nominal_conversion),
-                           nominal_conversion=nominal_conversion) if "CONTINUUM" in request.intents else None)
+    continuum_request = (prepared.continuum_request if prepared is not None else
+                         request if "CONTINUUM" in request.intents else None)
+    setup = (approve_setup(evaluate_continuum_setup(continuum_request, nominal_conversion=nominal_conversion),
+                           nominal_conversion=nominal_conversion) if continuum_request is not None else None)
     work = sum(len(contexts[c["source_rows"][0]["source_row_id"]].evidence.row.spectral.spws)
                * len(request.spectral_windows)*len(c["position"]["beam_variants"])
                for c in report["candidates"]
@@ -159,13 +191,13 @@ def assess_queue_custom_science(parsed, request, proposed, *, candidate_id=None,
             criteria, branches, pairs, pairing = list(common), [], [], None
             if setup is not None:
                 continuum = tuple(_rms_basis(r, proposed) if r.criterion_id == "CONT-RMS" else r
-                    for r in evaluate_queue_continuum(request, context, common, mosaic=True))
+                    for r in evaluate_queue_continuum(continuum_request, context, common, mosaic=True))
                 criteria.extend(continuum)
                 branch = aggregate_continuum(context, (setup, *common, *continuum), queue_method=True, mosaic=True)
                 branches.append(replace(branch, method_version="queue_custom_continuum_1", decision_refs=(DECISION,),
                     scope="ONE_CUSTOM_GROUP_SAME_ARRAY_PER_POINTING_RMS"))
             if "LINE" in request.intents:
-                branch, pairs, pairing = _line_branch(request, context, common, proposed)
+                branch, pairs, pairing = _line_branch(request, context, common, proposed, submitted_scope=prepared is not None)
                 branches.append(branch)
             variants.append(dict(diameter_m=position["diameter_m"], criteria=criteria,
                                  branches=branches, line_pairs=pairs, line_pairing=pairing))
@@ -199,5 +231,9 @@ def assess_queue_custom_science(parsed, request, proposed, *, candidate_id=None,
         science_method_ref=DECISION)
     report["summary"]["matching_candidates_by_intent"] = {intent: sum(
         bool(c["science"]["matching_arrays_by_intent"][intent]) for c in report["candidates"])
+        for intent in request.intents}
+    report["object_results"] = custom_object_results(report["candidates"])
+    report["summary"]["matching_objects_by_intent"] = {intent: sum(
+        obj["truth_by_intent"][intent] == Truth.TRUE for obj in report["object_results"])
         for intent in request.intents}
     return report

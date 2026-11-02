@@ -13,11 +13,12 @@ from alma_duplicate.rules.queue_mosaic_position import (
     QueueMosaicCoverage, _points, assess_queue_mosaic_position,
 )
 
-PROFILE = "QUEUE_CUSTOM_EXPLICIT_CSV_2"
+PROFILE = "QUEUE_CUSTOM_EXPLICIT_CSV_3"
 MAX_TOTAL_PAIRS = 1_000_000
 ASSUMPTIONS = (
     "STRICT_EXPORT_GROUP_AS_COHERENT_CANDIDATE",
     "CSV_EXPLICIT_CENTERS_SHARED_BY_INFERRED_ARRAYS",
+    "COVERAGE_SCOPE_ALL_RECORDED_ROWS_IN_THIS_CUSTOM_GROUP",
     "BLANK_COORDINATE_FRAME_USES_ICRS_CONVENTION",
     "FIXED_COORDINATES_WITHOUT_EPHEMERIS_PLACEHOLDER",
 )
@@ -26,9 +27,8 @@ ASSUMPTIONS = (
 def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_epsilon_arcsec=0.001):
     """Assess one selected or all Custom candidates in a complete CSV snapshot.
 
-    Candidate associations follow PROFILE provisionally. Coverage is always
-    incomplete: outside the known beam union is unknown, while known coverage
-    can establish a conditional strict-majority positive. No manual candidate
+    Candidate associations follow PROFILE provisionally. Coverage is scoped to recorded CSV rows.
+    Unresolved centres leave the union incomplete. No manual candidate
     binding, OT export, invented ACA grid, or cross-candidate union is required.
     """
     if not isinstance(proposed, dict) or proposed.get("frame_basis") != "USER_CONFIRMED_FIXED_ICRS":
@@ -87,7 +87,7 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
                     candidate["candidate_id"], reconstruction["snapshot_sha256"],
                     tuple(r["source_row_id"] for r in rows), diameter, frequency,
                     f"{PROFILE}:{frequency_source}", points, f"{PROFILE}:{OFFSET_METHOD}",
-                    True, False))
+                    association_confirmed=True, complete=len(known_rows) == len(rows)))
         # Only the selected source context enters the position evaluator.
         position = assess_queue_mosaic_position(proposed, reconstruction, candidate["candidate_id"],
             coverages, boundary_epsilon_arcsec=boundary_epsilon_arcsec)
@@ -102,7 +102,9 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
         results.append(dict(candidate_id=candidate["candidate_id"], group=candidate["group"],
             grouping_method=candidate["grouping_method"], association_status=candidate["association_status"],
             source_rows=rows, explicit_point_diameters_m=list(diameters),
-            coverage_completeness="NOT_ESTABLISHED", profile_assumptions=list(ASSUMPTIONS),
+            coverage_completeness=("COMPLETE_FOR_CSV_GROUP" if coverages and
+                len(coverages) == len(diameters) and all(c.complete for c in coverages)
+                else "NOT_ESTABLISHED"), profile_assumptions=list(ASSUMPTIONS),
             frequency=dict(value_ghz=frequency, source=frequency_source, reasons=list(frequency_notes)),
             position=position))
     selected_ids = {c["candidate_id"] for c in candidates}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from '_report_comparison.html' import comparison with context %}
+{% block content %}
+<article class="report-page">
+<div class="page-heading report-heading"><div><h1>Observation comparison</h1><p>{{ target }} · Queue Custom Mosaic assessment</p></div><nav class="report-actions"><a class="button" href="{{ url_for('proposed_mosaic') }}">Enter another observation</a><a class="button" href="{{ url_for('report_index') }}">Existing reports</a></nav></div>
+<section class="report-overview"><h2>Results in this search</h2>{% for intent, count in (document.summary or {}).get("matching_objects_by_intent", {}).items() %}<p class="result-finding"><strong>{{ intent }}:</strong> {% set config_count = document.summary.matching_candidates_by_intent[intent] %}{{ count }} matching target{{ '' if count == 1 else 's' }} · {{ config_count }} matching configuration{{ '' if config_count == 1 else 's' }}.</p>{% endfor %}
+<p>Each target is counted once per project. A configuration matches when one array meets all conditions for the selected purpose. Expand a configuration to inspect its array results.</p>
+</section><details class="source-coverage"><summary>Source coverage and downloads</summary><nav class="report-actions" aria-label="Report actions"><a href="{{ url_for('proposed_mosaic') }}">New Mosaic assessment</a><a href="{{ url_for('run_download', report_id=report_id, kind='report') }}">Download full report</a><a href="{{ url_for('run_download', report_id=report_id, kind='request') }}">Download request</a></nav>
+<p>Queue source: {{ document.sources.QUEUE.status }}{% if document.source_as_of %} · dated {{ document.source_as_of }}{% endif %}. {{ document.sources.QUEUE.reasons|join('; ') }}</p>
+{% if document.sources.QUEUE.status != 'COMPLETE' %}<p role="alert">The Queue source was unavailable or incomplete. No conclusion about duplication can be drawn.</p>{% endif %}
+<p>{{ counts.matching }} matching targets · {{ counts.review }} needing review · {{ counts.not_met }} not meeting criteria. Excluded: {{ document.exclusion_counts.mosaic }} other Mosaic groups and {{ document.exclusion_counts.non_mosaic }} non-Mosaic rows.</p>
+</details>
+<section id="candidates"><h2>Candidate results</h2><nav class="report-nav" aria-label="Result filters">{% for value, label in [('matching','Matches'),('review','Information insufficient'),('not_met','Criteria not met'),('all','All targets')] %}<a href="{{ url_for('run_view', report_id=report_id, view=value) }}" {% if result_view == value %}aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}</nav>
+</section>{% if candidates %}<h2 id="comparisons">Parameter comparisons</h2>{% endif %}{% for project, targets in candidates|groupby('project_code', case_sensitive=true) %}<section class="member-result">
+<h3>Project {{ project }}</h3>
+{% for obj in targets %}<article class="report-context queue-target"><h4>Target {{ obj.target_name }}</h4>
+{% for intent, truth in obj.truth_by_intent.items() %}<p><strong>{{ intent }}: {{ labels[truth] }}</strong> · Matching arrays: {% for d in obj.matching_arrays_by_intent[intent] %}{{ d|int }} m{% if not loop.last %}, {% endif %}{% else %}none{% endfor %}</p>{% endfor %}
+{% for c in obj.setups %}<details class="queue-setup" {% if obj.setups|length == 1 %}open{% endif %}><summary>CSV configuration {{ loop.index }}{% if c.frequency.value_ghz is not none %} · {{ display_number(c.frequency.value_ghz) }} GHz{% endif %} · {{ c.display_spws }} listed SPWs{% if c.display_resolution %} · {{ c.display_resolution }}″{% endif %}{% for b in c.science.branches %} · {{ b.branch }}: {{ labels[b.truth] }}{% for d in c.science.matching_arrays_by_intent[b.branch] %} {{ d|int }} m{% endfor %}{% endfor %}</summary>
+{% for b in c.science.branches %}<p><strong>{{ b.branch }}: {{ labels.get(b.truth, b.truth) }}</strong> · Matching arrays: {% for d in c.science.matching_arrays_by_intent[b.branch] %}{{ d|int }} m{% if not loop.last %}, {% endif %}{% else %}none{% endfor %}</p>{% endfor %}
+{% include '_queue_custom_configuration.html' %}
+<h5>Array comparisons</h5>
+{% if not c.science.variants %}<p>Array inference is unresolved.</p>{% endif %}
+{% for v in c.science.variants %}<details><summary>{{ v.diameter_m|int }} m — {% for b in v.branches %}{{ b.branch }}: {{ labels.get(b.truth,b.truth) }}{% if not loop.last %}; {% endif %}{% endfor %}</summary>
+{% set position = c.position.beam_variants | selectattr("diameter_m", "equalto", v.diameter_m) | first %}{{ comparison(v.criteria, "Candidate conditions", position) }}
+{% if v.line_pairs %}<p>LINE pair results: showing {{ [v.line_pairs|length, 20]|min }} of {{ v.line_pairs|length }} pairs. The full report includes every pair.</p>{% for pair in v.line_pairs[:20] %}<details><summary>{{ pair.reference.proposed_window_id }} / Queue SPW {{ pair.reference.spw_number }}: {{ labels.get(pair.truth,pair.truth) }}</summary>{{ comparison(pair.criteria, "Criteria for this LINE pair", position) }}</details>{% endfor %}{% endif %}
+</details>{% endfor %}
+
+</details>{% endfor %}</article>{% endfor %}</section>{% else %}<p>No targets in this view. This is not a search-wide non-duplication verdict.</p>{% endfor %}
+<nav class="report-nav" aria-label="Pagination">{% if page > 1 %}<a href="{{ url_for('run_view',report_id=report_id,view=result_view,page=page-1) }}">Previous</a>{% endif %}<span>Page {{ page }} / {{ pages }}</span>{% if page < pages %}<a href="{{ url_for('run_view',report_id=report_id,view=result_view,page=page+1) }}">Next</a>{% endif %}</nav>
+<p>Reports expire after {{ '%g'|format(retention_hours) }} hours and may be removed sooner on restart or when storage is full. Download results you need to retain.</p>
+</article>
+{% endblock %}

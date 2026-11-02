@@ -63,6 +63,44 @@ class BrowserAssessment:
     def enabled(self):
         return bool(self.archive_kind or self.queue_csv or self.managed_queue_root)
 
+    def _queue_input(self, selected=True):
+        """Shared Single Pointing/Mosaic snapshot selection; never auto-download."""
+        # Select and freeze Queue bytes now, before Archive/search work can
+        # overlap with a later administrator activation of another snapshot.
+        selection = None
+        if selected and self.managed_queue_root:
+            try:
+                selection = pin_active_queue(self.managed_queue_root)
+            except (QueueActiveError, OSError) as exc:
+                message = f"{type(exc).__name__}: {exc}"
+
+                def unavailable_queue():
+                    raise QueueActiveError(message)
+
+                loader = unavailable_queue  # Shared entry reports Queue FAILED, not empty.
+            else:
+                loader = selection.parse
+        else:
+            loader = ((lambda: QueueCsvClient().load(self.queue_csv))
+                      if self.queue_csv and selected else None)
+
+        return loader, selection
+
+    def assess_queue_custom(self, document, proposed):
+        """Use the same configured CSV/approved snapshot as Single Pointing."""
+        loader, selection = self._queue_input()
+        sources = AssessmentSources(queue_loader=loader)
+        if document['request'].get('line_input_contract'):
+            from alma_duplicate.queue_custom_assessment import assess_custom_submitted
+            result = assess_custom_submitted(document['request'], document['search_options'],
+                                             proposed, sources=sources)
+        else:
+            result = assess_observation(document['request'], document['search_options'],
+                                        sources=sources, queue_custom=proposed)
+        if selection is not None and result.document is not None:
+            result.document['sources']['QUEUE']['managed_snapshot'] = dict(selection.provenance)
+        return result
+
     def assess_mosaic(self, document, proposed):
         """Run metadata-only Mosaic science; temporary acquisition files are scoped to this call."""
         from pathlib import Path
@@ -128,24 +166,7 @@ class BrowserAssessment:
                 "Archive provider requested without Archive configuration"
             )
 
-        # Select and freeze Queue bytes now, before Archive/search work can
-        # overlap with a later administrator activation of another snapshot.
-        selection = None
-        if queue and self.managed_queue_root:
-            try:
-                selection = pin_active_queue(self.managed_queue_root)
-            except (QueueActiveError, OSError) as exc:
-                message = f"{type(exc).__name__}: {exc}"
-
-                def unavailable_queue():
-                    raise QueueActiveError(message)
-
-                loader = unavailable_queue  # Shared entry reports Queue FAILED, not empty.
-            else:
-                loader = selection.parse
-        else:
-            loader = ((lambda: QueueCsvClient().load(self.queue_csv))
-                      if self.queue_csv and queue else None)
+        loader, selection = self._queue_input(queue)
 
         if document['request'].get('line_input_contract') in {
                 'SEPARATE_REQUIREMENTS_AND_SPW_EVIDENCE_V1', 'SEPARATE_OBSERVATION_REQUIREMENTS_V2'}:

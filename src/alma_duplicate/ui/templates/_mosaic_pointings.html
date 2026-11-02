@@ -1,4 +1,4 @@
-<section id="mosaic-pointings" aria-label="Archive Mosaic OT pointing preview">
+<section id="mosaic-pointings" aria-label="Proposed Mosaic OT pointing preview">
 <h2>Mosaic positions</h2>
 <div class="mosaic-import-layout"><div class="mosaic-import-controls">
 <p class="field-note">Upload an ALMA OT Absolute pointings export in Sexagesimal, Degrees or Radians. Relative / Offset exports are not supported.</p>
@@ -27,7 +27,7 @@
 <p data-map-status role="status">Upload pointings to preview their positions.</p>
 <p data-mosaic-imagery-status class="field-note" role="status">Pointing geometry does not require reference imagery.</p>
 <div class="mosaic-map-image-actions"><button class="button" type="button" data-mosaic-imagery-retry hidden>Retry sky image</button><button class="button" type="button" data-mosaic-geometry-toggle hidden>Geometry only</button></div>
-<p class="field-note">North up · East left. Circles show proposed half-power beams, not Archive coverage. Drag to pan; scroll to zoom.</p>
+<p class="field-note">North up · East left. Circles show proposed half-power beams, not candidate coverage. Drag to pan; scroll to zoom.</p>
 <details><summary>Preview model</summary><p>HPBW = 1.13 λ / D; circle radius = HPBW / 2. REST frequencies use the corresponding redshift. This preview does not change the duplication assessment.</p></details>
 <script type="application/json" data-mosaic-points>{{ (mosaic_preview.collection.points | map(attribute='ra_deg') | list if mosaic_preview else []) | tojson }}</script>
 <script type="application/json" data-mosaic-decs>{{ (mosaic_preview.collection.points | map(attribute='dec_deg') | list if mosaic_preview else []) | tojson }}</script>

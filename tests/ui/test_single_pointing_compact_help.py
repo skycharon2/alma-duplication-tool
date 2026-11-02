@@ -45,10 +45,10 @@ def test_uncapped_single_pointing_exports_all_retained_candidates_by_default(cli
     assert 'line_input_contract' not in response.get_json()['request']
 
 
-def test_legacy_mosaic_keeps_its_source_details_and_archive_only_policy(client):
+def test_mosaic_keeps_source_details_and_offers_queue(client):
     html = client.get('/proposed/mosaic').get_data(as_text=True)
     assert 'id="assessment-sources" class="field-help"' in html
     assert 'data-help="search_scope"' not in html
-    assert 'name="sources" value="QUEUE"' not in html
+    assert 'name="sources" value="QUEUE"' in html
     assert 'name="normal_form_version" value="2"' in html
     assert 'Select either or both.' in html
