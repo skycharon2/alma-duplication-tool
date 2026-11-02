@@ -101,3 +101,18 @@ test('report exposes native layer menu instead of custom survey presets',()=>{
   assert.doesNotMatch(html,/id="sky-survey-(dss|ps)"/);
   assert.match(html,/layers menu/);
 });
+
+test('Mosaic uses saved region polyline without a fabricated circular beam or separation', async()=>{
+  const h=setup();await settle();
+  const outline=[[9.9,19.9],[10.1,19.9],[10,20.1],[9.9,19.9]];
+  const lines=[],circles=[];
+  h.A.polyline=(points)=>{lines.push(points);};
+  h.A.circle=(...args)=>{circles.push(args);};
+  Object.assign(h.rows[0].spatial,{sky_outline:outline,coverage_source:'ARCHIVE_S_REGION',
+    point_status:'INSIDE',s_region_sha256:'region1',radius_arcsec:null,separation_arcsec:null});
+  h.filter([h.rows[0]]);
+  assert.equal(lines.length,1);
+  assert.deepEqual(lines[0],outline);
+  assert.equal(circles.length,0);
+  assert.match(h.get('sky-relationship').textContent,/Mosaic coverage: inside/);
+});

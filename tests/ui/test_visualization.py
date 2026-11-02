@@ -199,3 +199,55 @@ def test_missing_frequency_cannot_borrow_from_request_or_other_pair():
     row = visualization_data(page(document))['rows'][0]
     assert not row['spectral']['available']
     assert row['spatial']['available']
+
+
+def test_mosaic_region_display_uses_bound_saved_geometry():
+    from hashlib import sha256
+    from alma_duplicate.ui.visualization import spatial_view
+    raw = 'Polygon ICRS 359 -1 1 -1 1 1 359 1'
+    context = {'context_id': 'm1', 'reference': {'source': 'ARCHIVE'}}
+    evidence = dict(context, geometry='MOSAIC')
+    record = {'criterion_id': 'POS-SINGLE', 'method_version': 'archive_pos_single_mosaic_s_region_1',
+              'eligible_for_formal_aggregation': True,
+              'derived': [('point_status', 'INSIDE')],
+              'details': [('raw_s_region', raw), ('s_region_sha256', sha256(raw.encode()).hexdigest())]}
+    result = spatial_view(context, [record], (0, 0), evidence)
+    assert result['available']
+    assert result['coverage_source'] == 'ARCHIVE_S_REGION'
+    assert result['radius_arcsec'] is None
+    assert len(result['sky_outline']) == 65
+    assert result['sky_outline'][0] == result['sky_outline'][-1]
+    assert all(abs(x) < 4000 and abs(y) < 4000 for x, y in result['outline'])
+    broken = deepcopy(record)
+    broken['details'][0] = ('raw_s_region', 'Circle ICRS 0 0 1')
+    assert not spatial_view(context, [broken], (0, 0), evidence)['available']
+    assert not spatial_view(context, [record], (0, 0), dict(evidence, context_id='other'))['available']
+
+
+def test_region_display_circle_and_pole():
+    from hashlib import sha256
+    from alma_duplicate.ui.region_display import saved_region_outline
+    for raw in ['Circle ICRS 359.99 0 .1', 'Polygon ICRS 0 89 120 89 240 89']:
+        center, points = saved_region_outline({'raw_s_region':raw, 's_region_sha256':sha256(raw.encode()).hexdigest()})
+        assert all(math.isfinite(x) for p in [center, *points] for x in p)
+        assert points[0] == pytest.approx(points[-1])
+
+
+def test_mosaic_candidate_backend_report_and_explore_roundtrip(tmp_path):
+    from tests.integration.test_line_evaluation import evaluate
+    original = report().search_result.archive.source_record
+    evaluation = evaluate(original, changes={'is_mosaic': 'T'})
+    document = serialized(evaluation)
+    directory = tmp_path / 'mosaic-candidate'
+    directory.mkdir()
+    raw = report_json_text(document).encode()
+    (directory / 'report.json').write_bytes(raw)
+    client = create_app({'TESTING': True, 'REPORT_DIRECTORY': tmp_path}).test_client()
+    assert 'Archive Mosaic s_region' in client.get('/reports/1').text
+    visual = visual_response(client, '/reports/1/visualization')
+    assert visual['rows']
+    spatial = visual['rows'][0]['spatial']
+    assert spatial['coverage_source'] == 'ARCHIVE_S_REGION'
+    assert spatial['sky_outline'] and spatial['outline']
+    assert spatial['radius_arcsec'] is None
+    assert client.get('/reports/1/download/report').data == raw

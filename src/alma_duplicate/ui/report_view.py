@@ -314,6 +314,10 @@ GAP_CATEGORIES = {
 
 
 def criterion_explanation(record):
+    if record.get('method_version') == 'archive_pos_single_mosaic_s_region_1':
+        state = dict(record.get('derived', [])).get('point_status', 'UNKNOWN')
+        if record.get('eligible_for_formal_aggregation'):
+            return f"Proposed point: {state.lower()} Archive Mosaic s_region, adopted as half-power coverage. Boundary tolerance: 0.001 arcsec."
     reasons = list(record.get('reasons', [])) + [i['code'] for i in record.get('issues', [])]
     specific = list(dict.fromkeys(REASON_HELP[r] for r in reasons if r in REASON_HELP))
     if record.get('evaluation') == 'NOT_APPLICABLE':
