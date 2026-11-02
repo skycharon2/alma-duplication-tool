@@ -86,9 +86,9 @@ Diagnostic CSV centres are not automatically promoted to verified coverage.
 Custom point ownership and OT offset parity require supporting evidence;
 Rectangle grid anchoring, PA sign and sampling, and the independently generated
 ACA grid remain unresolved. Verified absolute OT exports can supply bindings
-for either geometry without guessing those grids. Next work is the adapter from
-verified OT/CSV geometry into these bindings, followed by complete scientific
-branch integration.
+for either geometry without guessing those grids. The [Custom OT binding adapter](queue_mosaic_binding.md) now produces these
+bindings from CSV and a source-bound absolute OT export. One controlled seven-point offset case has passed native OT coordinate parity.
+Broader geometry validation and complete scientific branch integration remain pending.
 
 Tests use synthetic bindings over the reduced Queue fixture. They establish
 engineering behavior, not OT geometry parity or scientific acceptance of an
