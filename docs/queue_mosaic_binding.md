@@ -1,5 +1,9 @@
 # Custom CSV → OT-checked coverage bindings
 
+This is a development validation tool. Routine CSV-only evaluation now uses the
+[direct Custom backend](queue_custom_backend.md); OT exports are not required
+for each candidate.
+
 The third backend increment reads the CSV directly, reconstructs the selected
 Custom candidate and compares its diagnostic centres with a supplied OT Absolute
 pointing export. It produces an audit plus `coverages`, consumable directly by
