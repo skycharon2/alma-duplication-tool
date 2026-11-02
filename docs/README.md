@@ -224,3 +224,7 @@ for the Archive and current-cycle Queue sources.
 These references are navigation, not separate implementation or scientific-policy
 specifications. Follow the linked owning contracts for method versions, evidence
 limitations and reproducible commands.
+
+## Single Pointing → Archive Mosaic development
+
+- [Step 01: scientific contract and legacy baseline](development/single-point-mosaic/step01_contract.md) — planned cross-geometry support; no production behavior change.

@@ -1,0 +1,145 @@
+{
+  "fixture_kind": "SYNTHETIC_CONTRACT_CASES",
+  "cases": [
+    {
+      "id": "circle_inside",
+      "s_region": "Circle ICRS 0 0 1",
+      "point_deg": [
+        0.5,
+        0
+      ],
+      "candidate_center_deg": [
+        0,
+        0
+      ],
+      "geometry_status": "INSIDE",
+      "future_position_outcome": "SATISFIED"
+    },
+    {
+      "id": "circle_outside",
+      "s_region": "Circle ICRS 0 0 1",
+      "point_deg": [
+        2,
+        0
+      ],
+      "candidate_center_deg": [
+        0,
+        0
+      ],
+      "geometry_status": "OUTSIDE",
+      "future_position_outcome": "NOT_SATISFIED"
+    },
+    {
+      "id": "circle_boundary",
+      "s_region": "Circle ICRS 0 0 1",
+      "point_deg": [
+        1,
+        0
+      ],
+      "candidate_center_deg": [
+        0,
+        0
+      ],
+      "geometry_status": "BOUNDARY",
+      "future_position_outcome": "SATISFIED"
+    },
+    {
+      "id": "polygon_inside_far_metadata_center",
+      "s_region": "Polygon ICRS 359 -1 1 -1 1 1 359 1",
+      "point_deg": [
+        0,
+        0
+      ],
+      "candidate_center_deg": [
+        5,
+        0
+      ],
+      "geometry_status": "INSIDE",
+      "future_position_outcome": "SATISFIED"
+    },
+    {
+      "id": "polygon_outside",
+      "s_region": "Polygon ICRS 359 -1 1 -1 1 1 359 1",
+      "point_deg": [
+        2,
+        0
+      ],
+      "candidate_center_deg": [
+        0,
+        0
+      ],
+      "geometry_status": "OUTSIDE",
+      "future_position_outcome": "NOT_SATISFIED"
+    },
+    {
+      "id": "polygon_vertex",
+      "s_region": "Polygon ICRS 359 -1 1 -1 1 1 359 1",
+      "point_deg": [
+        359,
+        -1
+      ],
+      "candidate_center_deg": [
+        0,
+        0
+      ],
+      "geometry_status": "BOUNDARY",
+      "future_position_outcome": "SATISFIED"
+    },
+    {
+      "id": "polar_polygon",
+      "s_region": "Polygon ICRS 0 89 120 89 240 89",
+      "point_deg": [
+        0,
+        90
+      ],
+      "candidate_center_deg": [
+        0,
+        0
+      ],
+      "geometry_status": "INSIDE",
+      "future_position_outcome": "SATISFIED"
+    },
+    {
+      "id": "missing_region",
+      "s_region": null,
+      "point_deg": [
+        0,
+        0
+      ],
+      "candidate_center_deg": [
+        0,
+        0
+      ],
+      "geometry_status": "UNKNOWN",
+      "future_position_outcome": "UNKNOWN"
+    },
+    {
+      "id": "invalid_region",
+      "s_region": "Circle ICRS 0 0 -1",
+      "point_deg": [
+        0,
+        0
+      ],
+      "candidate_center_deg": [
+        0,
+        0
+      ],
+      "geometry_status": "UNKNOWN",
+      "future_position_outcome": "UNKNOWN"
+    },
+    {
+      "id": "compound_not_supported",
+      "s_region": "Union ICRS (Circle 0 0 1 Circle 5 0 1)",
+      "point_deg": [
+        0,
+        0
+      ],
+      "candidate_center_deg": [
+        0,
+        0
+      ],
+      "geometry_status": "UNKNOWN",
+      "future_position_outcome": "UNKNOWN"
+    }
+  ]
+}
