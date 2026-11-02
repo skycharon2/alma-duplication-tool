@@ -75,9 +75,10 @@ records; 120 non-Mosaic rows; 64 exact repeated Mosaic rows retained. This dated
 snapshot describes 2026-03-03, not a current Queue census. Full operational data
 and the generated report remain outside version control.
 
-Next: verify explicit-point array ownership and offset/absolute OT parity, then
-add per-array beam coverage and strict-majority POS-MOSAIC behind a separate
-scientific interface. Rectangle grid anchoring, PA sign, edge sampling and
+The [second increment](queue_mosaic_position.md) provides per-array beam coverage
+and strict-majority POS-MOSAIC for explicitly supplied coverage bindings. Automatic
+CSV geometry binding still requires explicit-point array ownership and
+offset/absolute OT parity evidence. Rectangle grid anchoring, PA sign, edge sampling and
 7-m patterns require OT export comparisons. Full branch OR belongs after
 position and the other criteria have been evaluated coherently.
 

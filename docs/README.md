@@ -21,7 +21,7 @@ boundaries and the current evaluation boundary.
   [single-pointing explorer](ui_report_browser.md#single-pointing-report-explorer).
 - Earlier delivery notes and test counts: [history](history/delivery_notes.md).
 - LINE input migration, stage contracts and acceptance: [LINE scope development](development/line-scope/README.md).
-- Queue Mosaic backend increment: [offline candidate reconstruction](queue_mosaic_reconstruction.md).
+- Queue Mosaic backend: [offline candidate reconstruction](queue_mosaic_reconstruction.md) and [per-array position checks](queue_mosaic_position.md).
 
 ## Reading paths
 
