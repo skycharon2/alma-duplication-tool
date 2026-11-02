@@ -42,7 +42,7 @@ def build_line_pairs(
         elif not isinstance(evidence, ArchiveContextEvidence):
             reasons.append("ARCHIVE_LINE_MAPPING_REQUIRED")
             status = "UNSUPPORTED"
-        elif not mosaic and evidence.prepared.normalized_metadata.is_mosaic.value is not False:
+        elif not mosaic and evidence.prepared.normalized_metadata.is_mosaic.value not in (False, True):
             reasons.append("SINGLE_FIELD_CANDIDATE_REQUIRED")
             status = "UNSUPPORTED"
         else:

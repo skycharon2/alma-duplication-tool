@@ -63,7 +63,7 @@ def test_far_or_near_mosaic_survives_with_member_identity_and_queue(center_ra):
     assert len({r.context.context_id for r in contexts}) == len(contexts)
     for row in contexts:
         assert 'BOUND_QUERY_REPORTED_CENTER_OR_MOSAIC_REGION_IN_SCOPE' in row.filters[0].reasons
-        assert evaluate_position_single(validation.request, row.context, row.spatial_evidence).outcome is None
+        assert evaluate_position_single(validation.request, row.context, row.spatial_evidence).outcome == "SATISFIED"
 
 
 def test_failed_combined_query_does_not_retry_center_only_or_stop_queue():

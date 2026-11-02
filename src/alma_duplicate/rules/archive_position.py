@@ -28,6 +28,14 @@ def evaluate_archive_position(request, context, spatial_evidence, *, array_evide
     else:
         if spatial_evidence.context.context_id != context.context_id:
             raise ValueError("Position evidence belongs to a different context")
+        if context.evidence.prepared.normalized_metadata.is_mosaic.value is True:
+            if array_evidence is not None and (
+                array_evidence.context_id != context.context_id
+                or array_evidence.source_record_id != context.reference.source_record_id
+            ):
+                raise ValueError("Array evidence belongs to another candidate")
+            from alma_duplicate.rules.single_mosaic_region import evaluate_single_mosaic_region
+            return evaluate_single_mosaic_region(request, context, spatial_evidence)
         # The confirmation defines the fixed celestial ICRS interpretation for this
         # restricted Archive workflow. This is recorded, never inferred from names.
         old = spatial_evidence.interpretation

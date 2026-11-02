@@ -104,7 +104,7 @@ def test_unique_diameter_not_majority_label(array,diameter):
     assert dict(result.derived)['antenna_diameter_m']==diameter
     assert (result.outcome is not None)==(diameter is not None)
 
-@pytest.mark.parametrize('mosaic',['T',None])
+@pytest.mark.parametrize('mosaic',[None])
 def test_mosaic_unknown_not_single_field(mosaic):
     r,c,e=case(mosaic=mosaic)
     assert evaluate_position_single(r,c,e).outcome is None
@@ -179,7 +179,7 @@ def test_false_and_unknown_is_false_but_does_not_claim_search_absence():
     assert aggregate_continuum(item.candidate.context,(*report.request_criteria,*criteria)).truth is T.FALSE
     assert report.assessment=='NOT_AGGREGATED'
 
-@pytest.mark.parametrize('change',[{'array':'TP'},{'array':'A001:DA01 J501:CM01'},{'mosaic':'T'}])
+@pytest.mark.parametrize('change',[{'array':'TP'},{'array':'A001:DA01 J501:CM01'}])
 def test_unsupported_scope_does_not_get_negative_branch_from_other_criteria(change):
     v=validated();source,_=archive(build_search_plan(v),frequency=100,**change)
     report=evaluate_candidate_search(search_candidates(v,archive_result=source))

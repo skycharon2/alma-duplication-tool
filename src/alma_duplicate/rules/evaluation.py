@@ -137,7 +137,7 @@ def _evaluate_context(row, request, setup, configuration, *, beam_diameter_m=Non
             criteria.extend((evaluate_continuum_frequency(request, context),
                              evaluate_continuum_rms(request, context)))
             supported = (archive_scope(request, context) and
-                context.evidence.prepared.normalized_metadata.is_mosaic.value is False and
+                context.evidence.prepared.normalized_metadata.is_mosaic.value in (False, True) and
                 not {"UNIQUE_INTERFEROMETRIC_DIAMETER_REQUIRED",
                      "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED",
                      "CONFLICTING_POSITION_INTERPRETATION"}.intersection(criteria[1].reasons))

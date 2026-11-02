@@ -1,4 +1,4 @@
-"""Step 01: legacy position gate and reusable geometry, not new-path acceptance."""
+"""Step 01 fixed cases, promoted to Step 03 position acceptance."""
 import json
 from pathlib import Path
 
@@ -26,8 +26,8 @@ def test_existing_region_geometry_for_future_single_point_contract(sample):
 
 
 @pytest.mark.parametrize("sample", CASES, ids=lambda sample: sample["id"])
-def test_legacy_single_point_mosaic_position_is_unresolved(sample):
-    """Pin the current limitation, even with a usable region containing the target."""
+def test_single_point_mosaic_position_contract(sample):
+    """Apply the approved single-point contract to each fixed geometry case."""
     request = payload()
     ra, dec = sample["point_deg"]
     request["request"]["position"].update(ra=ra, dec=dec)
@@ -37,5 +37,6 @@ def test_legacy_single_point_mosaic_position_is_unresolved(sample):
         s_ra=center_ra, s_dec=center_dec,
     )
     result = evaluate_position_single(proposed, context, evidence)
-    assert result.outcome is None
-    assert "MOSAIC_OR_UNKNOWN_GEOMETRY_UNSUPPORTED" in result.reasons
+    expected = sample["future_position_outcome"]
+    assert (result.outcome.value if result.outcome else "UNKNOWN") == expected
+    assert result.method_version == "archive_pos_single_mosaic_s_region_1"

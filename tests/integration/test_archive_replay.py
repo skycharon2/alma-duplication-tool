@@ -47,7 +47,8 @@ def test_real_dual_source_cli_no_network(tmp_path,monkeypatch):
     queue=[c for c in contexts if c['reference']['source']=='QUEUE']
     assert len(archive) == 144 and len(queue) == 13
     assert any(c['criteria'][1]['outcome'] is not None for c in archive)
-    assert all(c['criteria'][1]['method_version'] == 'archive_pos_single_1' for c in archive)
+    assert sum(c['criteria'][1]['method_version'] == 'archive_pos_single_mosaic_s_region_1' for c in archive) == 8
+    assert all(c['criteria'][1]['method_version'] in {'archive_pos_single_1', 'archive_pos_single_mosaic_s_region_1'} for c in archive)
     assert all(c['criteria'][3]['outcome'] is None for c in archive)  # no proposed RMS
     assert all(c['branches'][0]['status'] != 'CRITERIA_MET' for c in archive)
     assert queue[0]['criteria'][1]['outcome'] == 'SATISFIED'
