@@ -69,7 +69,7 @@ def assess_observation(request: dict, search_options: dict, *,
                        options: AssessmentOptions = AssessmentOptions(),
                        sources: AssessmentSources = AssessmentSources(),
                        input_sha256: str | None = None,
-                       report_detail: str = 'full', mosaic=None) -> AssessmentResult:
+                       report_detail: str = 'full', mosaic=None, queue_custom=None) -> AssessmentResult:
     """Run one assessment, preserving missing-source and independent branch states.
 
     COMPLETED describes execution only, never a search-wide duplication verdict.
@@ -86,6 +86,12 @@ def assess_observation(request: dict, search_options: dict, *,
             report_document(SolarExemptionReport(validation=validated),
                             input_sha256=input_sha256),
         )
+    if queue_custom is not None and validated.is_valid:
+        if mosaic is not None:
+            raise ValueError('Select one Mosaic workflow: Archive or Queue Custom')
+        from alma_duplicate.queue_custom_assessment import assess_custom
+        return assess_custom(validated, queue_custom, options=options, sources=sources,
+                             input_sha256=input_sha256, report_detail=report_detail)
     if mosaic is not None and validated.is_valid:
         from dataclasses import replace
         from alma_duplicate.domain.proposed_observation import SearchReadiness

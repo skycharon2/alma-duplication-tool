@@ -19,6 +19,8 @@ def main(argv=None, *, archive_client_factory=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--request", type=Path, required=True)
     parser.add_argument("--queue-csv", type=Path)
+    parser.add_argument("--queue-custom-pointings", type=Path,
+                        help="Fixed ICRS proposed JSON; evaluate all Custom CSV groups")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument('--report-detail', choices=('full', 'matches'), default='full',
                         help='Full v4 report or v6 matching details with shared nonmatching summaries')
@@ -55,7 +57,11 @@ def main(argv=None, *, archive_client_factory=None):
     try:
         if args.archive_array_evidence is not None and not (args.archive_replay or args.live_archive):
             raise ValueError("--archive-array-evidence requires --archive-replay or --live-archive")
+        if args.queue_custom_pointings is not None and args.mosaic_pointings is not None:
+            raise ValueError('Select one Mosaic workflow: Archive or Queue Custom')
         inputs = [args.request]
+        if args.queue_custom_pointings is not None:
+            inputs.append(args.queue_custom_pointings)
         if args.mosaic_pointings is not None:
             inputs.append(args.mosaic_pointings)
         if args.archive_array_evidence is not None:
@@ -93,6 +99,17 @@ def main(argv=None, *, archive_client_factory=None):
 
         archive_kind = "REPLAY" if args.archive_replay is not None else "LIVE" if args.live_archive else None
         loader = (lambda: QueueCsvClient().load(args.queue_csv)) if args.queue_csv is not None else None
+        queue_custom = None
+        if args.queue_custom_pointings is not None:
+            from alma_duplicate.cli.json_input import _reject_constant, _unique_object
+            with args.queue_custom_pointings.open('rb') as stream:
+                pointing_bytes = stream.read(5_000_001)
+            if len(pointing_bytes) > 5_000_000:
+                raise ValueError('Proposed pointing JSON exceeds 5 MB')
+            queue_custom = json.loads(pointing_bytes.decode('utf-8-sig'),
+                parse_constant=_reject_constant, object_pairs_hook=_unique_object)
+            if not isinstance(queue_custom, dict):
+                raise ValueError('Proposed pointing JSON must be an object')
         mosaic = None
         if args.mosaic_pointings is not None:
             if not args.live_archive or args.archive_replay:
@@ -123,7 +140,7 @@ def main(argv=None, *, archive_client_factory=None):
             ),
             sources=AssessmentSources(archive_kind, archive_provider if archive_kind else None, loader),
             input_sha256=hashlib.sha256(raw).hexdigest(),
-            report_detail=args.report_detail, mosaic=mosaic,
+            report_detail=args.report_detail, mosaic=mosaic, queue_custom=queue_custom,
         )
         if result.status == AssessmentStatus.REQUEST_NOT_SEARCH_READY:
             print(json.dumps({

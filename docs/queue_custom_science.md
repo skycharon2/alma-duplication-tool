@@ -114,3 +114,52 @@ behavior. The CLI engineering example exercises the complete pipeline without OT
 
 The science report schema is `queue_custom_csv_science_2`; the numerical
 science formulas and complete-branch OR are unchanged by the v2 point mapping.
+
+## Unified assessment entry
+
+The application entrypoint now accepts `assess_observation(...,
+queue_custom=proposed, sources=AssessmentSources(queue_loader=...))`. Select
+`search_options.sources = ["QUEUE"]` and a fixed MOSAIC request. Passing
+`queue_custom` explicitly selects the provisional shared-CSV-centre model and
+complete science for every requested intent. It does not require OT input.
+
+The main CLI uses the same entrypoint:
+
+```sh
+python -m alma_duplicate.cli.evaluate \
+  --request examples/queue-custom-check/request.json \
+  --queue-custom-pointings examples/queue-custom-check/proposed.json \
+  --queue-csv examples/queue-mosaic-ot/custom-engineering.csv \
+  --nominal-conversion NONE \
+  --output /tmp/custom-assessment.json
+```
+
+The JSON report uses `schema_version: queue_custom_assessment_1` and
+`report_kind: QUEUE_CUSTOM_MOSAIC`. It retains the complete science report's
+candidate source rows, per-array criteria and LINE pairs, complete branches,
+matching arrays, exclusions and snapshot identity. `science_schema_version`
+identifies the underlying science schema. `sources.QUEUE` records load/parse
+status; absent, unreadable or unreconstructable snapshots return
+`SOURCES_UNAVAILABLE` (CLI exit 3), never a successful empty match list.
+`COMPLETED` means execution completed within Custom scope, not that every Queue
+geometry was checked or that absence of duplication was proved.
+
+All Custom groups in the supplied snapshot are evaluated. The Single Pointing
+search radius and result limit are deliberately not applied; this is recorded
+in `evaluation_configuration`. Nonempty prefilter predicates, mixed Archive /
+Queue inputs, Single Pointing rule flags and `--report-detail matches` are
+rejected instead of silently changing scope. The Archive Mosaic and Single
+Pointing paths retain their existing behavior. The existing standalone Custom
+CLI remains available for candidate-specific and position-only diagnostics.
+
+This increment exposes the application API and main CLI JSON report. It does
+not connect the web form or the Archive HTML report renderer. Rectangle groups
+remain explicitly excluded; incomplete Custom coverage still yields UNKNOWN
+for positions outside known coverage.
+
+Candidate-local recovery retains usable evidence: an unresolved Custom row no
+longer removes its group's known centres. All source rows remain bound, known
+points can establish coverage, and outside coverage remains UNKNOWN. Invalid
+candidate beam widths mark only that array's position UNKNOWN with
+`CANDIDATE_BEAM_UNREPRESENTABLE`; other groups continue. Request validation,
+identity binding and resource-budget failures still propagate.

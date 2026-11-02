@@ -6,6 +6,7 @@ approximation, not a reconstruction of array-specific executed pointing grids.
 """
 import math
 
+from alma_duplicate.geometry import primary_beam_fwhm_deg
 from alma_duplicate.queue_mosaic import OFFSET_METHOD, reconstruct_queue_mosaics
 from alma_duplicate.queue_position import candidate_frequency
 from alma_duplicate.rules.queue_mosaic_position import (
@@ -59,16 +60,29 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
         blockers = []
         if frequency is None or any(f != frequencies[0] for f in frequencies):
             blockers.append("CANDIDATE_FREQUENCY_UNRESOLVED")
-        if any(r["center"]["icrs_deg"] is None for r in rows):
+        known_rows = [r for r in rows if r["center"]["icrs_deg"] is not None]
+        coordinate_notes = ([] if len(known_rows) == len(rows) else
+                            ["CUSTOM_CSV_COORDINATES_PARTIALLY_UNRESOLVED"])
+        if not known_rows:
             blockers.append("CUSTOM_CSV_COORDINATES_UNRESOLVED")
         if not diameters:
             blockers.append("EXPLICIT_POINT_ARRAY_UNRESOLVED")
         coverages = []
+        beam_errors = {}
         if not blockers:
             points = tuple(dict(id=r["source_row_id"], frame="ICRS",
                                 ra_deg=r["center"]["icrs_deg"][0], dec_deg=r["center"]["icrs_deg"][1])
-                           for r in rows)
+                           for r in known_rows)
             for diameter in diameters:
+                # Validate only candidate beam data here. Binding, proposal and
+                # resource errors must still propagate rather than being hidden.
+                try:
+                    width = primary_beam_fwhm_deg(frequency, diameter)
+                    if width >= 180:
+                        raise ValueError("Coverage beam must lie within a hemisphere")
+                except ValueError:
+                    beam_errors[diameter] = "CANDIDATE_BEAM_UNREPRESENTABLE"
+                    continue
                 coverages.append(QueueMosaicCoverage(
                     candidate["candidate_id"], reconstruction["snapshot_sha256"],
                     tuple(r["source_row_id"] for r in rows), diameter, frequency,
@@ -82,7 +96,9 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
             variant["model_status"] = "PROVISIONAL"
             variant["association_basis"] = "PROFILE_CONVENTION_NOT_CALLER_CONFIRMATION"
             variant["geometry_model"] = "CSV_SHARED_CENTERS_ARRAY_SPECIFIC_BEAM_UNION"
-            variant["reasons"].extend(blockers)
+            variant["reasons"].extend(blockers + coordinate_notes)
+            if variant["diameter_m"] in beam_errors:
+                variant["reasons"].append(beam_errors[variant["diameter_m"]])
         results.append(dict(candidate_id=candidate["candidate_id"], group=candidate["group"],
             grouping_method=candidate["grouping_method"], association_status=candidate["association_status"],
             source_rows=rows, explicit_point_diameters_m=list(diameters),
