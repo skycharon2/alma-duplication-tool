@@ -142,7 +142,7 @@ def evaluate_submitted_line_context_v2(
     }
     supported = (
         (archive_scope(request, context) or (mosaic and request.target_kind == "FIXED"))
-        and (mosaic or evidence.prepared.normalized_metadata.is_mosaic.value is False)
+        and (mosaic or evidence.prepared.normalized_metadata.is_mosaic.value in (False, True))
         and evidence.row_link.is_linked
         and not context.alternative_context_ids
         and not unsupported_position.intersection(by_id[position_id].reasons)

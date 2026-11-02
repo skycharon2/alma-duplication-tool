@@ -23,7 +23,7 @@
     const selected = state.selected();
     const shown = positions.filter(item => options.others || item.row.id === selected);
     const maxExtent = Math.max(10, ...shown.map(({row, xy}) =>
-      Math.hypot(...xy) + (Number.isFinite(row.spatial.radius_arcsec) ? Math.max(0, row.spatial.radius_arcsec) : 0)));
+      row.spatial.sky_outline ? Math.max(...row.spatial.sky_outline.map(p=>offset(state.origin,p)).filter(Boolean).map(p=>Math.hypot(...p))) : Math.hypot(...xy) + (Number.isFinite(row.spatial.radius_arcsec) ? Math.max(0, row.spatial.radius_arcsec) : 0)));
     const width = 600, height = 390, scale = 0.39 * Math.min(width, height) / maxExtent;
     const svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
@@ -45,6 +45,10 @@
       const highlight = row.id === selected;
       const color = highlight ? '#ff525e' : row.source === 'QUEUE' ? '#d78b36' : '#45a9eb';
       const radius = row.spatial.radius_arcsec;
+      if (options.beams && row.spatial.sky_outline) {
+        const outline = row.spatial.sky_outline.map(p=>offset(state.origin,p));
+        if (outline.every(Boolean)) shape('polyline', {points:outline.map(p=>`${cx+p[0]*scale},${cy+p[1]*scale}`).join(' '),fill:'none',stroke:color,'stroke-width':highlight?2:1.25});
+      }
       if (options.beams && Number.isFinite(radius) && radius > 0) {
         shape('circle', {cx:x, cy:y, r:radius * scale, fill:'none', stroke:color,
                          'stroke-width':highlight ? 2 : 1.25});

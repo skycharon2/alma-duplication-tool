@@ -323,7 +323,7 @@ def test_auto_browser_acquisition_exports_and_saved_report(wired, tmp_path):
     html = client.get(location).get_data(as_text=True)
     assert 'Automatic retrieval:' in html and 'Archive centre radius' in html
     assert 'Queue includes all supplied rows' not in html
-    assert 'auto_fixed_single_1' in html
+    assert 'auto_fixed_single_2' in html
     exports = {kind: client.get(location + '/download/' + kind).data
                for kind in ('report', 'inspection', 'request')}
     doc = json.loads(exports['report'])
@@ -343,6 +343,6 @@ def test_auto_browser_acquisition_exports_and_saved_report(wired, tmp_path):
     (case / 'report.json').write_bytes(exports['report'])
     saved = create_app(config(LIVE_ARCHIVE=False, LIVE_AQ=False, REPORT_DIRECTORY=tmp_path)).test_client()
     html = saved.get('/reports/1').get_data(as_text=True)
-    assert 'Automatic retrieval:' in html and 'auto_fixed_single_1' in html
+    assert 'Automatic retrieval:' in html and 'auto_fixed_single_2' in html
     assert 'AQ retrieval completed' in html
     assert wired['events'] == events

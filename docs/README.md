@@ -224,3 +224,10 @@ for the Archive and current-cycle Queue sources.
 These references are navigation, not separate implementation or scientific-policy
 specifications. Follow the linked owning contracts for method versions, evidence
 limitations and reproducible commands.
+
+## Single Pointing → Archive Mosaic development
+
+- [Step 01: scientific contract and legacy baseline](development/single-point-mosaic/step01_contract.md) — planned cross-geometry support; no production behavior change.
+- [Step 02: automatic Mosaic coverage discovery](development/single-point-mosaic/step02_discovery.md) — expanded retrieval; formal position evaluation remains pending.
+- [Step 03: Single Pointing region position](development/single-point-mosaic/step03_position.md) — formal coverage evaluation and spectral branch integration.
+- [Step 04: region report and Explore](development/single-point-mosaic/step04_report.md) — saved coverage outlines and offline end-to-end acceptance.

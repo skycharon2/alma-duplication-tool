@@ -96,7 +96,8 @@ def build_search_plan(
     broad_query = ArchiveQuerySpec(
         request.position.ra_deg, request.position.dec_deg, min(180., retrieval_radius),
         science_only=archive_science_only,
-        spatial_strategy="CENTER" if automatic or beam_decision_ref is not None else "REGION",
+        spatial_strategy=("CENTER_OR_MOSAIC_REGION" if automatic
+                          else "CENTER" if beam_decision_ref is not None else "REGION"),
     )
     plans = []
     for source in options.sources:
@@ -148,9 +149,9 @@ def build_search_plan(
             limitations = ("QUEUE_PORTAL_FRAME_CONVENTION", "QUEUE_AMBIGUOUS_ARRAYS_RETAINED",
                           "QUEUE_SCOPE_IS_SUPPLIED_FILE_AND_SOURCE_DATE", "NOT_A_FORMAL_POSITION_CRITERION")
         if automatic:
-            spatial = 'AUTO_ARCHIVE_CENTER' if source == 'ARCHIVE' else 'AUTO_QUEUE_ALL_ROWS'
+            spatial = 'AUTO_ARCHIVE_CENTER_OR_MOSAIC_REGION' if source == 'ARCHIVE' else 'AUTO_QUEUE_ALL_ROWS'
             # AUTO has no local spatial selector. Formal POS runs after acquisition.
-            predicates[:1] = ([PlannedPredicate('retrieval_scope', A.PLANNED_SERVER, 's_ra/s_dec')]
+            predicates[:1] = ([PlannedPredicate('retrieval_scope', A.PLANNED_SERVER, 's_ra/s_dec OR Mosaic s_region')]
                               if source == 'ARCHIVE' else [])
             limitations = tuple(automatic_scope()['limitations'])
         plans.append(SourceSearchPlan(
@@ -158,7 +159,7 @@ def build_search_plan(
             broad_query if source == "ARCHIVE" else None,
         ))
     return SearchPlan(validation, tuple(plans), options.result_limit,
-                      version="4" if automatic else ("3" if queue_candidate_beam else ("2" if beam_decision_ref is not None else "1")),
+                      version="5" if automatic else ("3" if queue_candidate_beam else ("2" if beam_decision_ref is not None else "1")),
                       beam_decision_ref=beam_decision_ref, retrieval_radius_deg=min(180., retrieval_radius),
                       archive_filter_semantics=AQ_EQUIVALENT_FILTERS if aq_equivalent_filters else None,
                       queue_candidate_beam=queue_candidate_beam,

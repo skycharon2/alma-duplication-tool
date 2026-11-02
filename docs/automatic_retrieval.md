@@ -87,3 +87,7 @@ compatibility, display independence, TAP-to-AQ binding, incomplete retrieval,
 Queue retention, browser downloads and saved report rendering. The earlier
 [real LINE smoke](evidence/live_browser_line_aq_smoke_2026-10-05.md) used an explicit
 radius and is not live validation of this new AUTO policy.
+
+## Mosaic coverage discovery update
+
+AUTO retrieval now uses `auto_fixed_single_2`: the center envelope below is retained, and an OR predicate additionally retrieves identified Mosaic `s_region` coverage at the target. See [Step 02](development/single-point-mosaic/step02_discovery.md) for provenance, limitations and compatibility. Historical center-only descriptions apply to version 1. This update does not enable formal Single Pointing-to-Mosaic position evaluation.

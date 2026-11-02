@@ -319,7 +319,7 @@ def test_context_and_pair_contracts_reject_mismatched_results():
 
 def test_unsupported_geometry_does_not_become_false_from_other_conditions(source):
     r = evaluate(
-        source, changes={"is_mosaic": "T", "spatial_resolution": 20, "em_xel": 128}
+        source, changes={"is_mosaic": None, "spatial_resolution": 20, "em_xel": 128}
     )
     assert r.context_evaluations[0].branches[0].truth is Truth.UNKNOWN
     assert all(p.truth is Truth.UNKNOWN for p in r.context_evaluations[0].line_pairs)
@@ -410,3 +410,13 @@ def test_queue_line_is_unknown_and_does_not_use_archive_mapping():
         assert item.branches[0].truth is Truth.UNKNOWN
         assert all(pair.truth is Truth.UNKNOWN for pair in item.line_pairs)
         assert all(pair.attempt.reference is None for pair in item.line_pairs)
+
+
+def test_mosaic_candidate_line_pairing_uses_region_position(source):
+    r = evaluate(source, changes={'is_mosaic': 'T'})
+    item = r.context_evaluations[0]
+    position = next(c for c in item.criteria if c.criterion_id == 'POS-SINGLE')
+    assert position.method_version == 'archive_pos_single_mosaic_s_region_1'
+    assert position.outcome == 'SATISFIED'
+    assert item.branches[0].truth is Truth.TRUE
+    assert item.line_pairs

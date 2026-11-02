@@ -76,7 +76,9 @@ def _evaluate_row(
                                                reasons, spatial=check))
             elif predicate.name == "retrieval_scope":
                 records.append(FilterExecution(index, predicate.name, "SERVER", "MATCH",
-                                               ("BOUND_QUERY_REPORTED_CENTER_IN_SCOPE",)))
+                                               (("BOUND_QUERY_REPORTED_CENTER_OR_MOSAIC_REGION_IN_SCOPE",)
+                                                if source.archive_query.spatial_strategy == "CENTER_OR_MOSAIC_REGION"
+                                                else ("BOUND_QUERY_REPORTED_CENTER_IN_SCOPE",))))
             elif predicate.name == "science_only" and predicate.action == "PLANNED_SERVER":
                 value = context.evidence.prepared.normalized_metadata.science_observation.value
                 records.append(FilterExecution(

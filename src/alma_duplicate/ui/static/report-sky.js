@@ -23,7 +23,7 @@ window.createReportSky = function(state) {
   function fit(selectedOnly=false,padding=2.6) {
     if (!viewer) return;
     const rows = selectedOnly ? available().filter(r=>r.id===state.selected()) : available();
-    const span = Math.max(0.005,...rows.map(r=>distance(state.origin,r.spatial.center)+radius(r)))*padding;
+    const span = Math.max(0.005,...rows.map(r=>r.spatial.sky_outline ? Math.max(...r.spatial.sky_outline.map(p=>distance(state.origin,p))) : distance(state.origin,r.spatial.center)+radius(r)))*padding;
     // Include vertical extent in a wide panel as well as the horizontal extent.
     const canvas=document.querySelector('#report-sky-canvas');
     viewer.gotoRaDec(...state.origin);
@@ -44,7 +44,9 @@ window.createReportSky = function(state) {
     const separation=spatial?.separation_arcsec, halfPower=spatial?.radius_arcsec;
     document.querySelector('#sky-separation').textContent=Number.isFinite(separation)&&separation>=0 ? separation.toFixed(2)+'″' : 'Not recorded';
     document.querySelector('#sky-radius-ratio').textContent=Number.isFinite(separation)&&separation>=0&&Number.isFinite(halfPower)&&halfPower>0 ? (100*separation/halfPower).toFixed(1)+'%' : 'Not available';
-    if (Number.isFinite(separation) && separation>=0 && Number.isFinite(halfPower) && halfPower>0) {
+    if (spatial?.coverage_source === 'ARCHIVE_S_REGION') {
+      explanation.textContent='Archive Mosaic coverage: '+spatial.point_status.toLowerCase();
+    } else if (Number.isFinite(separation) && separation>=0 && Number.isFinite(halfPower) && halfPower>0) {
       const location=separation<halfPower?'inside':separation===halfPower?'on':'outside';
       explanation.textContent={inside:'Inside half-power boundary',on:'On half-power boundary',outside:'Outside half-power boundary'}[location];
     } else {
@@ -54,6 +56,8 @@ window.createReportSky = function(state) {
     const format=(value,unit='')=>Number.isFinite(value)?Number(value.toPrecision(7))+' '+unit:'Not recorded';
     for(const [label,value] of [
       ['Selected comparison',selected?selected.label+' · '+selected.source+' · SPW '+selected.spw:'No confirmed position selected'],
+      ['Coverage source', spatial?.coverage_source || 'Recorded single-field beam'],
+      ['Reference point', spatial?.sky_outline ? 'Region display center (not observation center)' : 'Recorded candidate center'],
       ['Candidate frequency',format(spatial?.frequency_ghz,'GHz')],
       ['Recorded dish diameter',format(spatial?.diameter_m,'m')],
       ['Half-power radius',format(spatial?.radius_arcsec,'arcsec')],
@@ -81,7 +85,8 @@ window.createReportSky = function(state) {
       if (!grouped.has(key)) grouped.set(key,[]);
       grouped.get(key).push(row);
       if (!others.checked && row.id!==state.selected()) continue;
-      const outlineKey = [row.source,...row.spatial.center,radius(row)].join(',');
+      const outlineKey = row.spatial.s_region_sha256 || [row.source,...row.spatial.center,radius(row)].join(',');
+      if (beams.checked && row.spatial.sky_outline && (!outlines.has(outlineKey) || row.id===state.selected())) boundary.add(A.polyline(row.spatial.sky_outline,{color:row.id===state.selected()?'#ff525e':color(row),lineWidth:1.5}));
       if (beams.checked && radius(row) && (!outlines.has(outlineKey) || row.id===state.selected())) boundary.add(A.circle(...row.spatial.center,radius(row),{
         color:row.id===state.selected()?'#ff525e':color(row),lineWidth:row.id===state.selected()?1.5:1,opacity:row.id===state.selected()?1:0.4
       }));
@@ -93,14 +98,14 @@ window.createReportSky = function(state) {
     }
     const selected=rows.find(r=>r.id===state.selected());
     if(selected) {
-      selectedCenter.addSources([A.source(...selected.spatial.center,{label:'Candidate center',ids:grouped.get(selected.spatial.center.join(',')).map(r=>r.id)})]);
+      selectedCenter.addSources([A.source(...selected.spatial.center,{label:selected.spatial.sky_outline?'Region reference':'Candidate center',ids:grouped.get(selected.spatial.center.join(',')).map(r=>r.id)})]);
       const coincident=grouped.get(selected.spatial.center.join(',')).map(r=>r.id);
       if(coincident.length>1)renderChoices(coincident);
-      reference.add(A.polyline([state.origin,selected.spatial.center],{color:'#f5e4a6',lineWidth:2}));
+      if (!selected.spatial.sky_outline) reference.add(A.polyline([state.origin,selected.spatial.center],{color:'#f5e4a6',lineWidth:2}));
     }
     boundary.show(); reference.show();
     const missing=state.rows().length-rows.length;
-    const noRadius=rows.filter(r=>!radius(r)).length;
+    const noRadius=rows.filter(r=>!radius(r) && !r.spatial.sky_outline).length;
     const shown=others.checked?rows.length:Number(Boolean(selected));
     status.textContent=`Displayed candidate records: ${shown}; identical boundaries are drawn together. ${rows.length} / ${state.rows().length} visible comparisons have confirmed positions. ${noRadius} have unknown boundaries; ${missing} cannot be plotted. Click a marker to select. If imagery stays blank, use Charts to inspect the recorded geometry.`;
   }

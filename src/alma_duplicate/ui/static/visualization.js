@@ -89,7 +89,7 @@
     visibleRows().map(row => [row, rows.indexOf(row)]).sort(([a], [b]) => Number(a.id === highlighted()) - Number(b.id === highlighted())).forEach(([row, i]) => {
       if (!row.spatial.available) return;
       const spatial = row.spatial, active = row.id === highlighted();
-      const desc = `Center RA ${fmt(spatial.center[0])}, Dec ${fmt(spatial.center[1])} deg; half-power radius ${fmt(spatial.radius_arcsec)} arcsec`;
+      const desc = spatial.sky_outline ? `Archive Mosaic region; target ${spatial.point_status}; region reference only` : `Center RA ${fmt(spatial.center[0])}, Dec ${fmt(spatial.center[1])} deg; half-power radius ${fmt(spatial.radius_arcsec)} arcsec`;
       const g = selectable(layer, row, i, desc);
       const polygon = (spatial.outline || []).map(p => [sx(p[0]), sy(p[1])]);
       spatialShapes.push({id: row.id, polygon, center: [sx(spatial.offset[0]), sy(spatial.offset[1])]});

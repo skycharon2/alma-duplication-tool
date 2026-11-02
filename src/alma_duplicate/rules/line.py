@@ -325,7 +325,7 @@ def evaluate_line(request, context, common_criteria, *, mosaic=False):
     pairing = build_line_pairs(request, context, mosaic=mosaic)
     supported = (
         (archive_scope(request, context) or (mosaic and request.geometry == "MOSAIC" and request.target_kind == "FIXED"))
-        and (mosaic or context.evidence.prepared.normalized_metadata.is_mosaic.value is False)
+        and (mosaic or context.evidence.prepared.normalized_metadata.is_mosaic.value in (False, True))
         and context.evidence.row_link.is_linked
         and not context.alternative_context_ids
         and not {

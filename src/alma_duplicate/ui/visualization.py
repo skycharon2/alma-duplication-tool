@@ -76,6 +76,27 @@ def spatial_view(context, records, origin, evidence):
     missing = {'available': False, 'reason': 'Confirmed position evidence is unavailable for this comparison.'}
     if not record or not record.get('eligible_for_formal_aggregation'):
         return missing
+    if record.get('method_version') == 'archive_pos_single_mosaic_s_region_1':
+        from alma_duplicate.ui.region_display import saved_region_outline
+        detail = fields(record, 'details')
+        if (origin is None or not evidence or evidence.get('reference') != context['reference']
+                or evidence.get('context_id') != context['context_id']
+                or evidence.get('geometry') != 'MOSAIC'):
+            return missing
+        try:
+            center, vertices = saved_region_outline(detail)
+        except (ValueError, TypeError):
+            return missing
+        outline = [sky_offset(origin, vertex) for vertex in vertices]
+        offset = sky_offset(origin, center)
+        if offset is None or any(point is None for point in outline):
+            return {'available': False, 'reason': 'Region lies outside the display projection hemisphere.'}
+        return {'available': True, 'center': center, 'offset': offset, 'outline': outline,
+                'sky_outline': vertices, 'coverage_source': 'ARCHIVE_S_REGION',
+                'point_status': fields(record, 'derived').get('point_status'),
+                'center_kind': 'REGION_DISPLAY_REFERENCE', 'radius_arcsec': None,
+                's_region_sha256': detail.get('s_region_sha256'),
+                'reason': 'Archive Mosaic s_region; region center is a display reference only.'}
     derived = fields(record, 'derived')
     center = position({'ra_deg': derived.get('candidate_ra_deg'), 'dec_deg': derived.get('candidate_dec_deg')})
     if context['reference']['source'] == 'ARCHIVE':

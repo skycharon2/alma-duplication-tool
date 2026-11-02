@@ -1588,13 +1588,13 @@
               "source": "ARCHIVE",
               "branch": "LINE",
               "status": "CRITERIA_NOT_MET",
-              "count": 96
+              "count": 100
             },
             {
               "source": "ARCHIVE",
               "branch": "LINE",
               "status": "INDETERMINATE",
-              "count": 48
+              "count": 44
             },
             {
               "source": "QUEUE",
@@ -2168,13 +2168,13 @@
               "source": "ARCHIVE",
               "branch": "CONTINUUM",
               "status": "CRITERIA_NOT_MET",
-              "count": 91
+              "count": 95
             },
             {
               "source": "ARCHIVE",
               "branch": "CONTINUUM",
               "status": "INDETERMINATE",
-              "count": 53
+              "count": 49
             },
             {
               "source": "QUEUE",
