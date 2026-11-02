@@ -32,7 +32,15 @@ from alma_duplicate.rules.model import (
 DECISION_REF = "docs/evidence/queue_row_continuum_decision_2026-09-24.md"
 
 
-def queue_common_scope_supported(common):
+def queue_common_scope_supported(common, *, mosaic=False):
+    if mosaic:
+        return (
+            len(common) == 2
+            and {r.criterion_id for r in common} == {"ANGULAR", "POS-MOSAIC"}
+            and {r.method_version for r in common}
+            == {"queue_custom_angular_1", "queue_custom_position_1"}
+            and all(dict(r.details).get("common_scope") == "SUPPORTED_CUSTOM" for r in common)
+        )
     return (
         len(common) == 2
         and {r.method_version for r in common}

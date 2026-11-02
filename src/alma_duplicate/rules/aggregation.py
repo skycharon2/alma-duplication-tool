@@ -63,8 +63,8 @@ def aggregate_continuum(context, criteria, *, supported=True, queue_method=False
         from alma_duplicate.rules.queue_continuum import scope_supported
         if not isinstance(context.evidence, QueueContextEvidence):
             raise TypeError("Queue aggregation requires a Queue context")
-        common = tuple(results[k] for k in ("ANGULAR", "POS-SINGLE") if k in results)
-        supported = supported and scope_supported(common)
+        common = tuple(results[k] for k in ("ANGULAR", required[0]) if k in results)
+        supported = supported and scope_supported(common, mosaic=mosaic)
         if context.evidence.association.raw_row_id != context.evidence.row.raw_row.row_id:
             raise ValueError("Queue association belongs to another source row")
     reasons = []

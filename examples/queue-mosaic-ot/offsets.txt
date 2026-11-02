@@ -1,0 +1,9 @@
+RA,Dec,Coordinate Type,Coordinate Units
+-- Synthetic OT import input; not an OT export
+0,0,Offset,Arcsecs
+15,0,Offset,Arcsecs
+-15,0,Offset,Arcsecs
+0,15,Offset,Arcsecs
+0,-15,Offset,Arcsecs
+10,10,Offset,Arcsecs
+-10,-10,Offset,Arcsecs

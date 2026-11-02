@@ -130,6 +130,11 @@ def create_app(config=None):
 
     def render_report(data, report_id):
         is_run = data.get('run') is not None
+        if data.get('queue_custom'):
+            return render_template('queue_custom_report.html', **data, report_id=report_id,
+                criterion_view=criterion_view, criterion_status=criterion_status,
+                criterion_explanation=criterion_explanation, display_number=display_number,
+                calculation_view=calculation_view)
         if data.get("mosaic"):
             return render_template("mosaic_report.html", **data, report_id=report_id,
                                    criterion_view=criterion_view,
@@ -226,7 +231,7 @@ def create_app(config=None):
             abort(404)
         if data is None:
             return unavailable_run(report_id)
-        if data.get("mosaic"):
+        if data.get("mosaic") or data.get('queue_custom'):
             abort(404)
         return render_visualization(data, report_id, True)
 
@@ -353,20 +358,25 @@ def create_app(config=None):
     def _mosaic_submission(state, action):
         state.document, state.result, state.issues = validate_form(
             state.values, state.rows, require_line_complete=action == "assess")
+        queue_custom = state.values.get('sources') == ['QUEUE']
+        source_ready = bool(configured.queue_csv or configured.managed_queue_root) if queue_custom else configured.live_archive
         state.issues, points, state.mosaic_ready, state.execution_error = prepare_mosaic_validation(
             state.values, state.mosaic_preview, state.issues, state.result,
-            live_archive=configured.live_archive)
+            live_archive=source_ready)
         if action == "assess":
             if not assessment_supported(state.values):
                 state.execution_error = "This observation type cannot be assessed in this browser version. Your inputs are retained. You can validate and export a valid request."
-            elif not configured.live_archive:
-                state.execution_error = "Browser Mosaic assessment requires live Archive configuration. Replay and Queue sources cannot run this workflow."
+            elif not source_ready:
+                state.execution_error = ("Queue CSV is not configured. Configure the same Queue source used for Single Pointing."
+                    if queue_custom else "Browser Archive Mosaic assessment requires live Archive configuration.")
             elif not configured.enabled:
                 state.execution_error = "Assessment sources are not configured. You can still validate and download the request."
             elif state.result.is_valid and (state.result.can_search or points is not None):
                 def dispatch_mosaic(runner):
                     from alma_duplicate.ui.mosaic_line_input import is_mosaic_line, submitted_document
                     document = state.document
+                    if queue_custom:
+                        return document, runner.assess_queue_custom(document, points), {"mosaic_pointings": points}
                     if is_mosaic_line(document) and "line_input_contract" not in document["request"]:
                         document = submitted_document(document)
                     return document, runner.assess_mosaic(document, points), {"mosaic_pointings": points}

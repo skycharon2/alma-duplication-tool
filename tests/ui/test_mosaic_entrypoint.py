@@ -38,7 +38,7 @@ def test_two_get_entrypoints_have_distinct_default_scope(client):
     assert 'name="normal_form_version"' not in single.text
     assert 'name="normal_form_version" value="2"' in mosaic.text
     assert 'name="sources" value="ARCHIVE"' in mosaic.text
-    assert 'name="sources" value="QUEUE"' not in mosaic.text
+    assert 'name="sources" value="QUEUE"' in mosaic.text
     assert 'name="target_kind" value="FIXED"' in mosaic.text
     assert 'select id="geometry"' in mosaic.text
     assert 'select id="geometry"' in single.text
@@ -81,7 +81,8 @@ def test_new_mosaic_route_enforces_archive_only_on_post(client):
     assert result.status_code == 200
     assert 'action="/proposed/mosaic"' in result.text
     assert 'name="sources" value="ARCHIVE"' in result.text
-    assert 'name="sources" value="QUEUE"' not in result.text
+    assert 'name="sources" value="QUEUE"' in result.text
+    assert 'name="sources" value="ARCHIVE" checked' in result.text
 
 
 def test_new_mosaic_route_keeps_post_action_and_v2(client):

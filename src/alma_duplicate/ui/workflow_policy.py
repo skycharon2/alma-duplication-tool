@@ -2,7 +2,7 @@
 
 This is an extraction, not a new science contract or a route split.
 Single Pointing retains its selected Archive/Queue sources; only the
-fixed-target Mosaic browser workflow currently forces Archive-only.
+fixed-target Mosaic selects Archive by default or explicitly selects Queue Custom.
 """
 
 
@@ -23,8 +23,8 @@ def is_fixed_mosaic(values):
 
 
 def apply_browser_source_policy(values):
-    """Preserve the existing POST policy without modifying Single Pointing."""
-    if is_fixed_mosaic(values):
+    """Allow explicit Queue-only Mosaic; retain Archive default for old forms."""
+    if is_fixed_mosaic(values) and values.get("sources") != ["QUEUE"]:
         values["sources"] = ["ARCHIVE"]
 
 

@@ -28,7 +28,7 @@ def test_distinct_flask_entrypoints_preserve_url_contract(app):
         assert 'action="/proposed"' in single.text
         assert 'action="/proposed/mosaic"' in mosaic.text
         assert 'name="sources" value="QUEUE"' in single.text
-        assert 'name="sources" value="QUEUE"' not in mosaic.text
+        assert 'name="sources" value="QUEUE"' in mosaic.text
 
 
 def test_single_pointing_dual_source_download_unchanged(app):

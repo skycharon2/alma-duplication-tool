@@ -42,7 +42,7 @@ def test_get_routes_use_distinct_templates_and_source_defaults(app):
     assert 'name="sources" value="ARCHIVE" checked' in single
     assert 'name="sources" value="QUEUE" checked' in single
     assert 'name="sources" value="ARCHIVE" checked' in mosaic
-    assert 'name="sources" value="QUEUE"' not in mosaic
+    assert 'name="sources" value="QUEUE"' in mosaic
     assert 'name="target_kind" value="FIXED"' in mosaic
     assert 'id="geometry" name="geometry"' in single
     assert 'id="geometry" name="geometry"' in mosaic
@@ -67,4 +67,4 @@ def test_mosaic_post_keeps_dedicated_route(app):
     assert template == "proposed_mosaic.html"
     assert 'action="/proposed/mosaic"' in html
     assert 'id="mosaic-pointings"' in html
-    assert 'name="sources" value="QUEUE"' not in html
+    assert 'name="sources" value="QUEUE"' in html

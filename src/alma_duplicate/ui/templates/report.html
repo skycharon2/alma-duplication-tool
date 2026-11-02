@@ -2,18 +2,7 @@
 {% from '_calculation.html' import facts, calculation with context %}
 {% macro evidence(value) %}<pre class="report-json">{{ value | tojson(indent=2) }}</pre>{% endmacro %}
 {% macro status(value) %}<span class="report-status" data-status="{{ value }}">{{ status_labels.get(value, 'Needs review') }}</span>{% endmacro %}
-{% macro quantity(q) %}{% if q and q.value is not none %}<span class="report-number" title="Stored value: {{ q.value }}">{{ display_number(q.value) }} {{ q.unit or '' }}</span>{% else %}<span class="field-note">Not available</span>{% endif %}{% endmacro %}
-{% macro comparison(records, caption) %}
-<div class="report-table-scroll" role="region" aria-label="{{ caption }}" tabindex="0"><table class="comparison-table">
-<caption>{{ caption }}</caption><thead><tr><th scope="col">Criterion</th><th scope="col">Your requirement</th><th scope="col">Candidate comparison</th><th scope="col">Result and explanation</th></tr></thead>
-<tbody>{% for r in records %}{% set v = criterion_view(r) %}<tr data-criterion="{{ r.criterion_id }}">
-<th scope="row">{{ v.label }}</th>
-{% if r.criterion_id == 'POS-SINGLE' %}<td colspan="2">{% for entry in v.derived if entry.key in ['separation_deg', 'candidate_radius_deg'] %}<p>{{ entry.label }}: <span class="report-number">{{ display_number(entry.value) if entry.value is not none else 'Not available' }}{% if entry.value is not none %} {{ entry.unit }}{% endif %}</span></p>{% else %}Position evidence is not available for comparison.{% endfor %}</td>
-{% elif r.criterion_id == 'CONT-SETUP' %}<td>At least two windows, each wider than 1.8 GHz.</td><td>Proposed setup only.{% for entry in v.derived if entry.key == 'qualifying_windows' %}<p>Qualifying windows: {{ display_number(entry.value) }}</p>{% endfor %}</td>
-{% else %}<td>{{ quantity(v.proposed) }}</td><td>{{ quantity(v.candidate) }}{% if r.criterion_id == 'LINE-RMS' %}<small>At the requested spectral resolution and the backend's angular comparison basis.</small>{% endif %}</td>{% endif %}
-<td><span class="report-status" data-status="{{ r.outcome if r.eligible_for_formal_aggregation else 'INDETERMINATE' }}">{{ criterion_status(r) }}</span><p class="criterion-explanation">{{ criterion_explanation(r) }}</p></td>
-</tr><tr class="calculation-row"><td colspan="4">{{ calculation(r) }}</td></tr>{% endfor %}</tbody></table></div>
-{% endmacro %}
+{% from '_report_comparison.html' import comparison, quantity with context %}
 {% macro record_fields(records) %}{% for r in records %}<p>{{ criterion_view(r).label }} · <code>{{ r.criterion_id }}</code> · Method <code>{{ r.method_version }}</code> · {{ r.evaluation }} · {{ r.approval }}. Stored candidate field: {{ (r.candidate or {}).get('source_field', 'Not recorded') }}.</p>{% endfor %}{% endmacro %}
 {% macro decision_summary(records) %}
 <ul class="decision-summary">{% for r in records %}<li><strong>{{ criterion_view(r).label }}:</strong> {{ criterion_status(r) }}. {{ criterion_explanation(r) }}</li>{% endfor %}</ul>

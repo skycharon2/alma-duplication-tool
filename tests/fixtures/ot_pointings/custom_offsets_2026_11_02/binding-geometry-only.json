@@ -1,0 +1,10 @@
+{
+  "candidate_id": "queue-mosaic:baae5af8c57ea5b0be9a8aa3bc6b4eda835c07a08b5944f09a44f9a4d28a76a1",
+  "snapshot_sha256": "ca8b9f21e59601e5efa44425a4fb804ff601dbddb252dc007ef66cb934279b5a",
+  "ot_sha256": "dd3e4c2441af338c6871cbdd89ad9880d06f350e9b67afbdea36c85f81dcc944",
+  "diameter_m": 12,
+  "evidence_ref": "tests/fixtures/ot_pointings/custom_offsets_2026_11_02/README.md",
+  "confirm_fixed_icrs": true,
+  "association_confirmed": false,
+  "complete": false
+}

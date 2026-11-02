@@ -204,7 +204,8 @@ def build_document(values, rows):
         # The backend expects an integer here, unlike quantity values.
         search["result_limit"] = int(limit) if re.fullmatch(r"[0-9]{1,9}", limit) else limit
     if request["target_kind"] == "FIXED" and request["geometry"] == "MOSAIC":
-        search = {"sources": ["ARCHIVE"], "predicates": [], "radius_mode": "AUTO"}
+        search = {"sources": ["QUEUE"] if values.get("sources") == ["QUEUE"] else ["ARCHIVE"],
+                  "predicates": [], "radius_mode": "AUTO"}
     document = {"request": request, "search_options": search}
     from alma_duplicate.ui.normal_line_input import uses_separated_input, convert
     if uses_separated_input(values):
@@ -345,5 +346,8 @@ def bind_mosaic_input(values, preview):
                     binding_basis="USER_SUPPLIED_NOT_ENCODED_IN_OT_FILE",
                     frame_basis="USER_CONFIRMED_FIXED_ICRS",
                     completeness="USER_CONFIRMED_COMPLETE")
+    if values.get("sources") == ["QUEUE"]:
+        proposed['setup_id'] = values.get('setup_id', '').strip()
+        proposed['sensitivity_basis'] = 'PER_POINTING'
     plan_discovery(proposed, margin_arcsec=1.0)
     return proposed

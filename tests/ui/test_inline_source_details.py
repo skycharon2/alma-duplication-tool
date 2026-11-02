@@ -57,13 +57,13 @@ def test_single_source_help_buttons_are_non_submitting_and_target_existing_popov
         app.extensions['assessment_runs'].close()
 
 
-def test_mosaic_source_controls_remain_unchanged():
+def test_mosaic_source_controls_offer_archive_and_queue():
     app = create_app(config(LIVE_ARCHIVE=True, OFFLINE_ARCHIVE_REPLAY=None))
     try:
         html = app.test_client().get('/proposed/mosaic').text
         parsed = Controls()
         parsed.feed(html)
-        assert parsed.sources == ['ARCHIVE']
+        assert parsed.sources == ['ARCHIVE', 'QUEUE']
         assert not parsed.help_controls
         assert 'class="archive-details-button"' in html
         assert 'popovertarget="archive-connection-popover"' in html

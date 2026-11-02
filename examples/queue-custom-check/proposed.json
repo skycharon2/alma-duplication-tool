@@ -1,0 +1,15 @@
+{
+  "source_name": "OT_CUSTOM_GEOMETRY_TEST",
+  "setup_id": "setup-1",
+  "sensitivity_basis": "PER_POINTING",
+  "frame_basis": "USER_CONFIRMED_FIXED_ICRS",
+  "completeness": "USER_CONFIRMED_COMPLETE",
+  "points": [
+    {
+      "id": "engineering-probe",
+      "frame": "ICRS",
+      "ra_deg": 150,
+      "dec_deg": -30
+    }
+  ]
+}
