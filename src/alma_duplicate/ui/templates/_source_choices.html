@@ -1,0 +1,15 @@
+{% for source in ['ARCHIVE','QUEUE'] %}
+<div class="source-choice-option">
+  <label><input type="checkbox" name="sources" value="{{ source }}" {% if source in values.get('sources', []) %}checked{% endif %}>{{ source }}</label>
+  <button type="button" class="source-choice-help" popovertarget="{{ ('archive-connection-popover' if configured.archive_kind == 'LIVE' else 'archive-source-popover') if source == 'ARCHIVE' else 'queue-source-popover' }}" aria-label="View {{ source|title }} details" title="{{ source|title }} details">?</button>
+</div>
+{% endfor %}
+{% if not queue_status %}
+<div id="queue-source-popover" class="queue-status-panel" popover="auto" role="dialog" aria-labelledby="queue-source-fallback-title">
+  <button type="button" class="queue-popover-close" popovertarget="queue-source-popover" popovertargetaction="hide" aria-label="Close Queue details">×</button>
+  <h3 id="queue-source-fallback-title">Queue CSV</h3>
+{% if geometry == 'MOSAIC' %}<p>Queue CSV evaluates Custom Mosaic groups. Rectangle and Single Pointing candidates are excluded. TP is ignored.</p>{% endif %}
+  {% if configured.queue_csv %}<p>A local Queue CSV is configured. It is read only when an assessment runs; no managed snapshot status is available for this source.</p>
+  {% else %}<p>No Queue CSV or approved managed snapshot is available. Selecting Queue does not make that source queryable.</p>{% endif %}
+</div>
+{% endif %}

@@ -1,8 +1,14 @@
 <section id="mosaic-pointings" aria-label="Proposed Mosaic OT pointing preview">
-<h2>Mosaic positions</h2>
-<div class="mosaic-import-layout"><div class="mosaic-import-controls">
+<div class="section-title"><h2>Mosaic positions</h2><button type="button" class="field-help-button" popovertarget="mosaic-positions-help" aria-label="Help with Mosaic pointings">?</button></div>
+<div id="mosaic-positions-help" class="queue-status-panel" popover="auto" role="dialog" aria-label="Mosaic pointing and preview details">
+<button type="button" class="queue-popover-close" popovertarget="mosaic-positions-help" popovertargetaction="hide" aria-label="Close pointing details">×</button>
+<h3>Pointing list and preview</h3>
 <p class="field-note">Upload an ALMA OT Absolute pointings export in Sexagesimal, Degrees or Radians. Relative / Offset exports are not supported.</p>
 <p class="field-note">The uploaded rows define the complete pointing list for this check and are interpreted as fixed ICRS coordinates.</p>
+<p class="field-note">North up · East left. Circles show proposed half-power beams, not candidate coverage. Drag to pan; scroll to zoom.</p>
+<p>HPBW = 1.13 λ / D; circle radius = HPBW / 2. REST frequencies use the corresponding redshift. This preview does not change the duplication assessment.</p>
+</div>
+<div class="mosaic-import-layout"><div class="mosaic-import-controls">
 <div><label for="ot_pointings">OT pointings export (.txt or .csv; request limit 1 MiB)</label><input id="ot_pointings" name="ot_pointings" type="file" accept=".txt,.csv,text/plain,text/csv"></div>
 <div><label for="mosaic_array">Proposed antenna array</label><select id="mosaic_array" name="mosaic_array"><option value="12m" {% if values.get('mosaic_array', '12m') == '12m' %}selected{% endif %}>12 m</option><option value="7m" {% if values.get('mosaic_array') == '7m' %}selected{% endif %}>7 m (ACA)</option></select></div>
 <button class="button" type="submit" name="action" value="preview-pointings">{{ 'Replace pointings' if mosaic_preview else 'Upload pointings' }}</button>
@@ -27,8 +33,6 @@
 <p data-map-status role="status">Upload pointings to preview their positions.</p>
 <p data-mosaic-imagery-status class="field-note" role="status">Pointing geometry does not require reference imagery.</p>
 <div class="mosaic-map-image-actions"><button class="button" type="button" data-mosaic-imagery-retry hidden>Retry sky image</button><button class="button" type="button" data-mosaic-geometry-toggle hidden>Geometry only</button></div>
-<p class="field-note">North up · East left. Circles show proposed half-power beams, not candidate coverage. Drag to pan; scroll to zoom.</p>
-<details><summary>Preview model</summary><p>HPBW = 1.13 λ / D; circle radius = HPBW / 2. REST frequencies use the corresponding redshift. This preview does not change the duplication assessment.</p></details>
 <script type="application/json" data-mosaic-points>{{ (mosaic_preview.collection.points | map(attribute='ra_deg') | list if mosaic_preview else []) | tojson }}</script>
 <script type="application/json" data-mosaic-decs>{{ (mosaic_preview.collection.points | map(attribute='dec_deg') | list if mosaic_preview else []) | tojson }}</script>
 </div></div>

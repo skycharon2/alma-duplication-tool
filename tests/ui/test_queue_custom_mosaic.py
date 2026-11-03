@@ -67,7 +67,14 @@ def test_existing_form_runs_queue_without_archive(browser, version, intents):
     assert report['schema_version'] == 'queue_custom_assessment_1'
     assert report['assessment_status'] == 'COMPLETED'
     assert set(report['sources']) == {'QUEUE'}
-    assert report['candidates'][0]['science']['matching_arrays_by_intent'] == {i:[7.,12.] for i in intents}
+    assert report['candidates'][0]['science']['matching_arrays_by_intent'] == {intents[0]: [7., 12.]}
+    if len(intents) == 2:
+        first_page = client.get(response.location).text
+        sibling = re.search(r'href="([^"]+)">Continuum report</a>', first_page).group(1)
+        assert sibling != response.location
+        assert response.location in client.get(sibling).text
+        continuum = client.get(sibling + '/download/report').json
+        assert continuum['candidates'][0]['science']['matching_arrays_by_intent'] == {'CONTINUUM': [7., 12.]}
     assert report['proposed']['sensitivity_basis'] == 'PER_POINTING'
     assert report['proposed']['setup_id'] == 'setup-1'
     if version == '2':
@@ -114,7 +121,8 @@ def test_unreadable_csv_gets_source_failure_report(browser):
     assert 'unavailable or incomplete' in client.get(response.location).text
 
 
-def test_managed_queue_source_uses_existing_pin_and_provenance(tmp_path, monkeypatch):
+@pytest.mark.parametrize("intents", [("CONTINUUM",), ("LINE", "CONTINUUM")])
+def test_managed_queue_source_uses_existing_pin_and_provenance(tmp_path, monkeypatch, intents):
     from tests.ui.test_managed_queue import acquired, NOW
     from alma_duplicate.storage.queue_active import QueueActiveRegistry
     from alma_duplicate.ui import runs
@@ -123,7 +131,9 @@ def test_managed_queue_source_uses_existing_pin_and_provenance(tmp_path, monkeyp
     registry.activate(first['source_id'], first['run_id'], reason='Reviewed')
     later = acquired(tmp_path, csv_bytes().replace(b'2026 March 3.', b'2026 March 10.'))
     original = runs.pin_active_queue
+    pins = []
     def pin(root):
+        pins.append(root)
         selected = original(root)
         registry.activate(later['source_id'], later['run_id'], reason='Later')
         return selected
@@ -131,10 +141,18 @@ def test_managed_queue_source_uses_existing_pin_and_provenance(tmp_path, monkeyp
     app = create_app(dict(TESTING=True, REPORT_DIRECTORY=None, OFFLINE_QUEUE_CSV=None,
         MANAGED_QUEUE_ROOT=str(tmp_path), OFFLINE_ARCHIVE_REPLAY=None, LIVE_ARCHIVE=False, LIVE_AQ=False))
     client = app.test_client()
-    response = submit(client, form())
+    response = submit(client, form(intents=intents))
     assert response.status_code == 303, response.text
     report = client.get(response.location+'/download/report').json
     assert report['sources']['QUEUE']['managed_snapshot']['source_id'] == first['source_id']
     assert report['snapshot_sha256'] == first['snapshot_sha256']
+    with client.session_transaction() as session:
+        ids = session["report_history"]
+    assert len(ids) == len(intents)
+    assert len(pins) == 1
+    for report_id in ids:
+        saved = client.get("/runs/" + report_id + "/download/report").json
+        assert saved["sources"]["QUEUE"]["managed_snapshot"]["source_id"] == first["source_id"]
+        assert saved["snapshot_sha256"] == first["snapshot_sha256"]
     assert registry.current()['source_id'] == later['source_id']
     app.extensions['assessment_runs'].close()

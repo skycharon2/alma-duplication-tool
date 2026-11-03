@@ -7,12 +7,12 @@
 .proposal-page .proposal-intro { margin: 0 0 16px; padding: 8px 12px; border: 1px solid var(--border); background: white; }
 .proposal-page .proposal-layout { grid-template-columns: minmax(0, 1fr) 248px; gap: 22px; }
 .proposal-page .proposal-summary { display: block; top: 16px; max-height: calc(100vh - 32px); scrollbar-width: thin; }
-.proposal-page .proposed-form section { padding: 14px 20px; margin: 0; border: 1px solid var(--border); }
+.proposal-page .proposed-form section { padding: 12px 18px; margin: 0; border: 1px solid var(--border); }
 .proposal-page .proposal-fields > section + section { border-top: 0; }
 .proposal-page .proposal-fields > section:first-child { border-radius: 6px 6px 0 0; }
 .proposal-page .proposed-form h2 { font-size: 18px; font-weight: 600; color: var(--ink); }
-.proposal-page .proposal-fields > section > h2, .proposal-page .solar-retained > section > h2 { background: none; margin: 0 0 12px; padding: 0; border: 0; }
-.proposal-page .section-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.proposal-page .proposal-fields > section > h2, .proposal-page .solar-retained > section > h2 { background: none; margin: 0 0 8px; padding: 0; border: 0; }
+.proposal-page .section-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
 .proposal-page .section-title h2 { margin: 0; }
 .proposal-page .proposed-form h3 { border: 0; padding: 0; font-size: 14px; margin: 0 0 10px; }
 .proposal-page .proposed-form label, .proposal-page .choice-group legend { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
@@ -24,7 +24,7 @@
 .proposal-page .proposed-form input[aria-invalid="true"] { border-color: #a42828; background: #fff9f9; }
 .proposal-page .proposed-form input[readonly] { background: #f2f6f8; }
 .proposal-page input[type="checkbox"] { accent-color: var(--blue); width: 17px; height: 17px; flex-shrink: 0; }
-.proposal-page .proposed-form .form-pair { margin: 10px 0; gap: 10px 16px; }
+.proposal-page .proposed-form .form-pair { margin: 6px 0; gap: 8px 12px; }
 .proposal-page .proposed-form .quantity-grid { grid-template-columns: minmax(0, 1fr) 104px; gap: 0; margin: 0; }
 .proposal-page .quantity-grid > div:first-child > .control-label { grid-area: 1 / 1 / 2 / 3; }
 .proposal-page .quantity-grid > div:first-child > input { border-radius: 4px 0 0 4px; position: relative; z-index: 1; }
@@ -33,7 +33,7 @@
 .proposal-page .coordinate-control { margin: 0; grid-template-columns: minmax(0, 1fr) 85px; align-items: start; }
 .proposal-page .coordinate-control > div:last-child > label { display: flex; align-items: center; min-height: 28px; margin-bottom: 4px; }
 .proposal-page .field-note { font-size: 12px; line-height: 1.6; margin-block: 6px; color: var(--muted); }
-.proposal-page .line-frequency-grid, .proposal-page .continuum-frequency-grid { display: grid; grid-template-columns: minmax(200px, 1.6fr) minmax(120px, 1fr) minmax(110px, .9fr) minmax(120px, 1fr); gap: 12px; align-items: start; margin-block: 6px 10px; }
+.proposal-page .line-frequency-grid, .proposal-page .continuum-frequency-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; align-items: start; margin-block: 4px 6px; }
 .proposal-page .line-frequency-grid > div > label, .proposal-page .continuum-frequency-grid > div > label { display: flex; align-items: center; min-height: 28px; margin-bottom: 4px; }
 .proposal-page .continuum-frequency-grid { grid-template-columns: minmax(200px, 1.4fr) minmax(150px, 1fr); }
 .proposal-page #shared-redshift { max-width: 360px; }
@@ -96,7 +96,7 @@
 .proposal-page .help-figure figcaption span { float: right; color: var(--muted); font-size: 10px; font-weight: 400; }
 .proposal-page .help-figure svg { width: 100%; height: auto; }
 .proposal-page .figure-caption { font-size: 11px; color: var(--muted); }
-.proposal-page .proposed-form .target-identity-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+.proposal-page .proposed-form .target-identity-grid { grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 1fr)) minmax(0, .8fr); align-items: start; }
 .proposal-page .target-identity-grid > div > label { display: flex; align-items: center; min-height: 28px; margin-bottom: 4px; }
 .proposal-page .science-shared { padding-bottom: 8px; border-bottom: 1px solid #e6edf2; }
 .proposal-page .continuum-frequency-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
@@ -106,16 +106,14 @@
 .proposal-page .proposal-fields #position { padding-top: 4px; }
 .proposal-page .proposal-fields #requirements { padding-bottom: 6px; border-bottom: 0; }
 .proposal-page .proposal-fields #line-requirements,
-.proposal-page .proposal-fields #sensitivities { padding-top: 10px; padding-bottom: 10px; border-block: 0; }
-.proposal-page .proposal-fields #windows { display: flow-root; padding-top: 0; padding-bottom: 6px; border-block: 0; }
+.proposal-page .proposal-fields #sensitivities { padding-top: 8px; padding-bottom: 8px; border-block: 0; }
+.proposal-page .proposal-fields #windows:not([hidden]) { display: flow-root; padding-top: 0; padding-bottom: 6px; border-block: 0; }
 .proposal-page .proposal-fields .section-title h2 { font-size: 16px; }
 .proposal-page .proposal-fields .appendix-guide { margin: 0; padding: 2px 20px 10px; border: 1px solid var(--border); border-top: 0; background: white; }
 .proposal-page .proposal-fields .appendix-guide > summary { padding: 0; background: none; font-weight: 400; }
 .proposal-page #line-requirements > .spectral-window { padding: 0; border: 0; }
 .proposal-page [data-workbench-ready] .secondary-guidance { display: none; }
 .proposal-page [data-workbench-ready] .scope-supported { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.proposal-page .window-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; font-size: 12px; }
-.proposal-page .window-tools .button { min-height: 32px; padding: 4px 8px; font-size: 11px; background: transparent; border-color: transparent; color: var(--muted); font-weight: 400; }
 .proposal-page .detail-context { margin-left: 8px; color: var(--muted); font-size: 11px; }
 .proposal-page .mode-control { position: relative; }
 .proposal-page .mode-control .field-help-button { position: absolute; right: 0; top: 0; }
@@ -140,6 +138,9 @@
   .proposal-page .line-frequency-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .proposal-page .proposal-layout { grid-template-columns: minmax(0, 1fr) 230px; gap: 16px; }
   .proposal-page .proposed-form section { padding: 14px 18px; }
+}
+@media (min-width: 601px) and (max-width: 1000px) {
+  .proposal-page .proposed-form .target-identity-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 850px) {
   .proposal-page .proposal-layout { grid-template-columns: 1fr; }

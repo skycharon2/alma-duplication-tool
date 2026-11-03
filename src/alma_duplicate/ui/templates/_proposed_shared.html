@@ -36,6 +36,11 @@
 <div><label for="geometry">Observation geometry</label><select id="geometry" name="geometry" aria-describedby="scope-support geometry-notes">
 {% if geometry not in ['SINGLE_POINTING','MOSAIC'] %}<option selected value="{{ geometry }}">{{ geometry }} (invalid selection)</option>{% endif %}
 {% for value, label in [('SINGLE_POINTING','Single pointing'),('MOSAIC','Mosaic — Solar exemption applies' if target_kind == 'SUN' else 'Mosaic')] %}<option value="{{ value }}" {% if geometry == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{{ messages('geometry') }}</div>
+{% if not normal_records %}<div id="shared-redshift">{{ input('redshift', 'Source redshift z') }}
+</div>{% else %}<input type="hidden" name="frequency_local_redshift" value="1"><input type="hidden" name="redshift" value="{{ values.get('redshift', '') }}">
+{% if line_layout %}{% for row in rows %}<div>{{ input(row + '_redshift', 'Source redshift z — window ' ~ loop.index) }}<p class="field-note">Used only to convert this REST frequency to SKY. Required for REST; unused for SKY.</p></div>{% endfor %}{% endif %}
+<div {% if not continuum_layout %}hidden{% endif %}><div>{{ input('continuum_redshift', 'Source redshift z — continuum') }}<p class="field-note">For this representative REST frequency only; unused for SKY.</p></div></div>
+{% endif %}
 </div>
 <div id="scope-support" class="scope-support{% if assessment_supported %} scope-supported{% endif %}{% if not assessment_supported and target_kind != 'SUN' %} scope-unavailable{% endif %}" role="status">
 {% if assessment_supported %}<span>{{ 'Queue Custom Mosaic assessment uses the configured CSV source.' if queue_mosaic else 'Mosaic Archive assessment available with a live Archive source.' if geometry == 'MOSAIC' else 'Single-pointing assessment available.' }}</span>{% if geometry == 'MOSAIC' %}{% if queue_mosaic %}<p>Check whether more than 50% of the proposed pointings lie inside each Custom group's reconstructed half-power coverage, then evaluate the scientific criteria separately for each inferred array.</p>{% else %}<p>Check whether more than 50% of the proposed pointings are within each Archive context’s s_region. Other criteria use the same Archive metadata rules as single pointing.</p>{% endif %}{% endif %}
@@ -68,19 +73,18 @@
 <details><summary>Setup identity and frequency frame</summary>{{ input('setup_id', 'Setup ID (automatic)', true) }}<p>Frequency frame is recorded as UNKNOWN. No observing reference frame is inferred.</p></details>
 </section>
 {% block mosaic_pointings scoped %}{% endblock %}
-<section id="requirements" tabindex="-1" {% if purpose_updated %}data-purpose-updated{% endif %}>{% if geometry != 'MOSAIC' %}<div class="section-title"><h2>Scientific requirements</h2>{{ help('purposes', 'scientific purposes') }}</div>{% else %}<h2>Scientific requirements</h2>{% endif %}
+<section id="requirements" tabindex="-1" {% if purpose_updated %}data-purpose-updated{% endif %}><div class="section-title"><h2>Scientific requirements</h2>{{ help('purposes', 'scientific purposes') }}</div>
 <div class="form-pair science-shared"><div>{{ quantity('angular', 'Planned angular resolution', ['arcsec','mas'], 'arcsec') }}</div><div><fieldset id="intents" class="choice-group"><legend>What should this observation be checked for?</legend><div class="inline-choices">{% for intent, label in [('LINE','Spectral line'),('CONTINUUM','Continuum')] %}<div class="purpose-option"><label><input type="checkbox" name="intents" value="{{ intent }}" {% if intent in values.get('intents', []) %}checked{% endif %}{% if intent == 'CONTINUUM' %} aria-describedby="continuum-choice-note"{% endif %}>{{ label }}</label><button type="button" class="purpose-rules-button" popovertarget="rules-{{ intent|lower }}" aria-label="{{ label }} rules">Rules ⓘ</button></div>{% endfor %}</div>{{ messages('intents') }}</fieldset>
-{% if geometry == 'MOSAIC' %}<p class="field-note">Select either or both.</p>{% endif %}
-<p id="continuum-choice-note" class="field-note{% if geometry != "MOSAIC" %} sr-only{% endif %}" data-combined-continuum hidden>By selecting Continuum, I confirm at least two distinct spectral windows, each with usable bandwidth greater than 1.8 GHz. A detailed SPW inventory is optional.</p>
+
+<p id="continuum-choice-note" class="field-note sr-only" data-combined-continuum hidden>By selecting Continuum, I confirm at least two distinct spectral windows, each with usable bandwidth greater than 1.8 GHz. A detailed SPW inventory is optional.</p>
 <div data-continuum-confirmation><label class="complete-choice"><input type="checkbox" id="continuum_setup_declaration" name="continuum_setup_declaration" aria-describedby="continuum_setup_declaration-notes" {% if values.get('continuum_setup_declaration') == 'on' %}checked{% endif %}> I confirm at least two distinct spectral windows, each with usable bandwidth greater than 1.8 GHz.</label><p class="field-note">Selecting Continuum confirms this condition in the interactive form. Without JavaScript, confirm it here explicitly; detailed SPW rows remain optional. A complete SPW list must not contradict the declaration.</p></div>
 {{ messages('continuum_setup_declaration') }}</div></div>
 
 
-{% if not normal_records %}<div id="shared-redshift" {% if not values.get('intents', []) %}hidden{% endif %}>{{ input('redshift', 'Default source redshift z') }}
-<p class="field-note">Used for REST frequencies unless a LINE requirement supplies its own redshift. SKY frequencies are unchanged.</p></div>{% else %}<input type="hidden" name="frequency_local_redshift" value="1">{% endif %}
+
 <button class="button" type="submit" name="action" value="purpose" data-update-purpose>Update requirement sections</button>
 </section>
-<section id="line-requirements" {% if not line_layout %}hidden{% endif %}><div class="section-title"><h2>Spectral line requirements</h2>{{ help('line', 'spectral line requirements') }}</div>
+<section id="line-requirements" {% if 'LINE' not in values.get('intents', []) %}hidden{% endif %}><div class="section-title"><h2>Spectral line requirements</h2>{{ help('line', 'spectral line requirements') }}</div>
 {% if 'LINE' not in values.get('intents', []) %}<p class="purpose-retained">Spectral line is not selected. These retained inputs will not enable the LINE branch.</p>{% endif %}
 <p class="field-note secondary-guidance">Enter the line you want to check. Additional requested windows are optional.</p>
 {{ messages('line_requirements') }}
@@ -88,29 +92,26 @@
 {% if line_layout %}{% for row in rows %}{% if not loop.first %}<details class="additional-line"><summary>Additional requested window {{ loop.index }}</summary>{% endif %}<fieldset id="{{ row }}" class="spectral-window" {% if added_row == row %}data-added-row{% endif %}><legend{% if loop.first %} class="sr-only"{% endif %}>Requested window {{ loop.index }}</legend>
 {{ messages(row) }}
 {% if normal_records %}<input type="hidden" name="rows" value="{{ row }}"><input type="hidden" name="{{ row }}_id" value="{{ values.get(row + '_id', row) }}">{% endif %}
-<div class="line-frequency-grid">{{ quantity(row + '_center', 'Window central frequency (REST or SKY)', ['GHz','MHz','kHz','Hz'], 'GHz') }}<div>{{ select(row + '_center_kind', 'Frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>{% if normal_records %}<div>{{ input(row + '_redshift', 'Source redshift z') }}<p class="field-note">Used only to convert this REST frequency to SKY. Required for REST; unused for SKY.</p></div>{% endif %}<div class="mode-control">{{ help('mode', 'correlator mode') }}{{ select(row + '_mode', 'Correlator mode', ['UNKNOWN','FDM','TDM'], 'UNKNOWN') }}</div></div>
+<div class="line-frequency-grid">{{ quantity(row + '_center', 'Window central frequency (REST or SKY)', ['GHz','MHz','kHz','Hz'], 'GHz') }}<div>{{ select(row + '_center_kind', 'Frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div><input type="hidden" name="{{ row }}_mode" value="{{ 'FDM' if 'LINE' in values.get('intents', []) else values.get(row + '_mode', 'UNKNOWN') }}"></div>
 
 
 {{ messages(row + '_mode') }}
 <div class="form-pair">{{ quantity(row + '_resolution', 'Planned spectral resolution', ['km/s','m/s','MHz','GHz','kHz','Hz'], 'km/s') }}{{ quantity(row + '_rms', 'Planned RMS at this resolution', ['mJy/beam','Jy/beam'], 'mJy/beam') }}</div>
 
-<details class="field-help secondary-guidance"><summary>Correlator mode and resolution</summary><p class="field-note">Appendix A requires FDM on both the proposed and comparison sides. Selecting Spectral line does not declare FDM. Spectral resolution, channel spacing and noise bandwidth are different quantities.</p></details>
+<details class="field-help secondary-guidance"><summary>Correlator mode and resolution</summary><p class="field-note">Appendix A requires FDM on both the proposed and comparison sides. The form uses FDM for proposed spectral-line windows. Spectral resolution, channel spacing and noise bandwidth are different quantities.</p></details>
 {% if normal_records and values.get(row + '_bandwidth', '') %}<details><summary>Linked SPW bandwidth evidence</summary>{{ quantity(row + '_bandwidth', 'Usable or nominal bandwidth', ['MHz','GHz','kHz','Hz'], 'MHz') }}{{ select(row + '_bandwidth_kind', 'Bandwidth interpretation', ['UNKNOWN','USABLE','NOMINAL'], 'UNKNOWN') }}</details>{% endif %}
-<div class="window-tools">{% if not normal_records %}<a href="#spw-{{ row }}">Window bandwidth and evidence</a>{% endif %}
-<button class="button" type="submit" name="action" value="remove:{{ row }}">Remove requested window {{ loop.index }}</button></div></fieldset>{% if not loop.first %}</details>{% endif %}{% endfor %}{% endif %}
+</fieldset>{% if not loop.first %}</details>{% endif %}{% endfor %}{% endif %}
 {% if normal_records and 'LINE' in values.get('intents', []) %}
-<p class="field-note">This V2 browser check accepts one LINE configuration. To check another independent setup, start a new assessment with its own planned angular resolution. Physical SPW evidence can still contain multiple windows.</p>
-{% else %}
-<button class="button" type="submit" name="action" value="add" {% if rows|length >= 32 %}disabled{% endif %}>Add requested window</button>
+<p class="field-note">This V2 browser check accepts one LINE configuration. To check another independent setup, start a new assessment with its own planned angular resolution.</p>
 {% endif %}
 <details class="field-help secondary-guidance"><summary>Which windows should I enter?</summary><p class="field-note">Missing scientific inputs can leave LINE criteria unresolved even when the target can be searched. Each listed window is considered for LINE when this purpose is selected. Any qualifying FDM window can satisfy the spectral-line condition; every window need not pass. Do not enter several lines in one physical window as separate windows.</p></details>
 </section>
-<section id="sensitivities" {% if not continuum_layout %}hidden{% endif %}><div class="section-title"><h2>Continuum requirements</h2>{{ help('continuum', 'continuum requirements') }}</div>
+<section id="sensitivities" {% if 'CONTINUUM' not in values.get('intents', []) %}hidden{% endif %}><div class="section-title"><h2>Continuum requirements</h2>{{ help('continuum', 'continuum requirements') }}</div>
 {% if 'CONTINUUM' not in values.get('intents', []) %}<p class="purpose-retained">Continuum is not selected. These retained inputs will not enable the CONTINUUM branch.</p>{% endif %}
 {{ messages('sensitivities') }}
 
-<div class="continuum-frequency-grid"><div>{{ quantity('representative', 'Representative frequency', ['GHz','MHz','kHz','Hz'], 'GHz') }}</div><div>{{ select('representative_kind', 'Representative frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>{% if normal_records %}<div>{{ input('continuum_redshift', 'Source redshift z') }}<p class="field-note">For this representative REST frequency only; unused for SKY.</p></div>{% endif %}{{ quantity('aggregate', 'Planned aggregate RMS', ['mJy/beam','Jy/beam'], 'mJy/beam') }}</div>
-<details {% if stale_ids %}open{% endif %}><summary>Contributing windows (optional)</summary><fieldset id="aggregate_windows" class="choice-group" tabindex="-1"><legend>Windows contributing to the declared aggregate RMS</legend>
+<div class="continuum-frequency-grid"><div>{{ quantity('representative', 'Representative frequency', ['GHz','MHz','kHz','Hz'], 'GHz') }}</div><div>{{ select('representative_kind', 'Representative frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>{{ quantity('aggregate', 'Planned aggregate RMS', ['mJy/beam','Jy/beam'], 'mJy/beam') }}</div>
+<details {% if stale_ids or selected_windows %}open{% else %}hidden{% endif %}><summary>Contributing windows (optional)</summary><fieldset id="aggregate_windows" class="choice-group" tabindex="-1"><legend>Windows contributing to the declared aggregate RMS</legend>
 {% if not rows and not stale_ids %}<p class="field-note">No window list is required to declare the aggregate RMS for this setup.</p>{% endif %}
 {% for row in (values.get('spw_rows', []) if normal_records else rows) %}<label><input type="checkbox" name="aggregate_windows" value="{{ values[row + '_id'] }}" {% if values[row + '_id'] in selected_windows %}checked{% endif %}>{{ 'Physical SPW' if normal_records else 'Window' }} {{ loop.index }}</label>{% endfor %}
 {% for window_id in stale_ids %}<label class="stale-reference"><input type="checkbox" name="aggregate_windows" value="{{ window_id }}" checked>Unavailable window: {{ window_id }}</label>{% endfor %}
@@ -119,7 +120,7 @@
 </section>
 {% if normal_records %}
 {% if target_kind != 'FIXED' %}<p role="alert">Assessment requires a supported fixed target. Your entered requirements and SPW evidence are retained.</p>{% endif %}
-<section id="windows"><h2>Physical SPW evidence <small>(optional)</small></h2>
+<section id="windows" hidden><h2>Physical SPW evidence <small>(optional)</small></h2>
 <p class="field-note">Record bandwidth evidence separately. Adding a record does not add a LINE requirement.</p>
 {% for row in values.get('spw_rows', []) %}
 <fieldset class="spectral-window" id="{{ row }}"><legend>Physical SPW {{ loop.index }}</legend>
@@ -136,7 +137,7 @@
 <details><summary>Physical SPW inventory completeness</summary><label><input type="checkbox" name="setup_complete" {% if values.get('setup_complete') == 'on' %}checked{% endif %}> I have listed every physical SPW in this setup</label><p class="field-note">Optional inventory declaration. It does not change which LINE requirements are checked or their result.</p></details>
 </section>
 {% else %}
-<section id="windows"><h2 class="sr-only">Optional spectral window evidence</h2>
+<section id="windows" hidden><h2 class="sr-only">Optional spectral window evidence</h2>
 {{ messages('windows') }}
 <details id="window-evidence" {% if rows and not line_layout %}open{% endif %}><summary>SPW bandwidth details <span class="detail-context">{{ rows|length }} of 32 windows</span></summary>
 {% for row in rows %}<fieldset id="spw-{{ row }}" class="spectral-window"><legend>Window {{ loop.index }}{% if line_layout %} — same requested window{% endif %}</legend><input type="hidden" name="rows" value="{{ row }}">
@@ -160,12 +161,12 @@
 <section id="search"><div class="section-title"><h2>Data sources</h2>{{ help('sources', 'data sources') }}</div>
 <div class="form-pair">
 <fieldset id="sources" class="choice-group"><legend>Sources</legend><div class="inline-choices">{% block source_choices scoped %}{% endblock %}</div>{{ messages('sources') }}</fieldset></div>
-<p class="field-note">Archive: {{ 'live' if configured.archive_kind == 'LIVE' else ('replay' if configured.archive_kind == 'REPLAY' else 'not configured') }} · Queue CSV: {{ 'managed snapshot' if configured.managed_queue_root else ('available' if configured.queue_csv else 'not configured') }}. Sources are accessed when you run the assessment.</p>
+<p class="field-note{% if geometry == 'MOSAIC' %} sr-only{% endif %}">Archive: {{ 'live' if configured.archive_kind == 'LIVE' else ('replay' if configured.archive_kind == 'REPLAY' else 'not configured') }} · Queue CSV: {{ 'managed snapshot' if configured.managed_queue_root else ('available' if configured.queue_csv else 'not configured') }}. Sources are accessed when you run the assessment.</p>
 {% if queue_status %}{% include '_queue_source_status.html' %}{% endif %}
 {% if configured.archive_kind == 'LIVE' %}
 {% include '_archive_connection.html' %}
 {% else %}{% include '_archive_source_status.html' %}{% endif %}
-{% if geometry == 'MOSAIC' %}{% for key in ['radius','radius_unit','radius_mode'] %}{% if key in values %}<input type="hidden" name="{{ key }}" value="{{ values[key] }}">{% endif %}{% endfor %}<p>{% if queue_mosaic %}All Custom groups in the configured CSV are checked. Rectangle groups remain unsupported; no circular candidate prefilter is applied.{% else %}Archive candidate discovery uses the imported pointing collection. Select Queue CSV above to check Custom Mosaic candidates in the configured CSV.{% endif %}</p>{% else %}
+{% if geometry == 'MOSAIC' %}{% for key in ['radius','radius_unit','radius_mode'] %}{% if key in values %}<input type="hidden" name="{{ key }}" value="{{ values[key] }}">{% endif %}{% endfor %}{% else %}
 {% set radius_mode = values.get('radius_mode', 'EXPLICIT' if 'radius' in values else 'AUTO') %}
 {% if radius_mode == 'AUTO' %}
 <input type="hidden" name="radius_mode" value="AUTO">
@@ -179,11 +180,11 @@
 {% else %}<input type="hidden" name="radius_mode" value="{{ radius_mode }}"><p>Explicit search scope retained from this request. Start a new observation to use automatic scope.</p>{{ quantity('radius', 'Search radius', ['arcsec','arcmin','deg'], 'arcsec') }}{% endif %}
 {% endif %}
 {% if geometry == 'MOSAIC' and values.get('result_limit') %}<input type="hidden" name="result_limit" value="{{ values.result_limit }}">{% endif %}
-{% if configured.enabled %}<details id="assessment-sources" class="field-help{% if geometry != 'MOSAIC' %} single-only-advanced{% endif %}"><summary>Data source details</summary>
+{% if configured.enabled and geometry != 'MOSAIC' %}<details id="assessment-sources" class="field-help{% if geometry != 'MOSAIC' %} single-only-advanced{% endif %}"><summary>Data source details</summary>
 <p>Archive TAP: {% if configured.archive_kind == 'LIVE' %}live{% elif configured.archive_kind == 'REPLAY' %}replay{% else %}not provided{% endif %}. Queue CSV: {{ 'managed approved snapshot' if configured.managed_queue_root else ('configured' if configured.queue_csv else 'not provided') }}.</p>
-{% if geometry == 'MOSAIC' %}{% if queue_mosaic %}<p>Uses the same configured Queue CSV snapshot as Single Pointing. Only Custom Mosaic groups are evaluated; Rectangle and Single Pointing candidates are excluded. TP is ignored.</p>{% else %}<p>Mosaic uses Archive TAP metadata only. Queue, AQ and auxiliary products are not queried.</p>{% endif %}{% else %}<p>Additional AQ evidence: {% if configured.live_aq %}live AQ enabled. After TAP retrieval, linked Members from retained candidates are queried for source-bound array evidence. Acquisition failures retain available candidates with unresolved array evidence; no fallback is used.{% elif configured.archive_array_evidence %}captured AQ manifest configured. A live TAP run does not perform a live AQ lookup; configured AQ evidence remains captured evidence.{% else %}not configured. A live TAP run does not perform a live AQ lookup; existing TAP-only array interpretation remains available.{% endif %}</p>
+<p>Additional AQ evidence: {% if configured.live_aq %}live AQ enabled. After TAP retrieval, linked Members from retained candidates are queried for source-bound array evidence. Acquisition failures retain available candidates with unresolved array evidence; no fallback is used.{% elif configured.archive_array_evidence %}captured AQ manifest configured. A live TAP run does not perform a live AQ lookup; configured AQ evidence remains captured evidence.{% else %}not configured. A live TAP run does not perform a live AQ lookup; existing TAP-only array interpretation remains available.{% endif %}</p>
 {% if configured.archive_kind == 'REPLAY' %}<p>Archive replay requires the exact recorded query, including search mode and radius. Older explicit-radius recordings cannot be replayed by an AUTO request. A different query can fail; it will not fall back to a live search. These reference files do not establish current Archive or Queue coverage.</p>{% elif configured.archive_kind == 'LIVE' %}<p>The live Archive client is created only for a search-ready Run assessment that selected ARCHIVE. Archive query failures are not replaced by replay results.</p>{% endif %}
-<p>When Queue is selected, common criteria and the formal methods for each selected purpose are explicitly enabled. The report shows the effective configuration.</p>{% endif %}</details>{% endif %}
+<p>When Queue is selected, common criteria and the formal methods for each selected purpose are explicitly enabled. The report shows the effective configuration.</p></details>{% endif %}
 </section>
 {% if target_kind == 'SUN' %}</details>{% endif %}
 <div id="assessment-busy" class="assessment-progress" hidden>
@@ -193,7 +194,7 @@
 <p id="assessment-progress-description">Searching and preparing your report. It will open when ready.</p>
 <p id="assessment-waiting-note" role="status" hidden>This can take several minutes. Keep this page open. The timer shows waiting time, not completion progress.</p>
 </div>
-<div class="input-actions" id="form-actions">{% if configured.enabled and target_kind != 'SUN' %}<button class="button primary" type="submit" name="action" value="assess" {% if not assessment_supported or (geometry == 'MOSAIC' and not ((configured.queue_csv or configured.managed_queue_root) if queue_mosaic else configured.live_archive)) %}disabled aria-describedby="scope-support"{% endif %}>Run assessment</button>{% endif %}<button class="button{% if not configured.enabled or not assessment_supported %} primary{% endif %}" type="submit" name="action" value="validate">Validate input</button></div>
+<div class="input-actions" id="form-actions">{% if configured.enabled and target_kind != 'SUN' %}<button class="button primary" type="submit" name="action" value="assess" {% if not assessment_supported or (geometry == 'MOSAIC' and (not values.get('sources') or ('ARCHIVE' in values.sources and not configured.live_archive) or ('QUEUE' in values.sources and not (configured.queue_csv or configured.managed_queue_root)))) %}disabled aria-describedby="scope-support"{% endif %}>Run assessment</button>{% endif %}<button class="button{% if not configured.enabled or not assessment_supported %} primary{% endif %}" type="submit" name="action" value="validate">Validate input</button></div>
 <details class="input-export"><summary>Export input</summary>{% if geometry == 'MOSAIC' %}<p>The request JSON contains observing requirements only. Keep the original OT file separately; the temporary upload is not included in this export.</p>{% endif %}<button class="button" type="submit" name="action" value="download">Validate and download request JSON</button>
 <p class="field-note">{% if target_kind == 'SUN' %}Export validates the retained input only. Solar observations do not require a duplication check.{% else %}Download checks the current input. Valid inputs may still lack scientific evidence. Validation and request download do not run an assessment.{% endif %}</p>
 <p class="field-note">Reports are retained temporarily. Use the report’s technical downloads to keep a copy.</p></details>

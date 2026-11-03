@@ -36,10 +36,13 @@ def test_single_normal_form_roundtrip(make_client, intents):
     assert client.get(url).status_code == 200
     assert client.get(url+'?view=all').status_code == 200
     raw = client.get(url+'/download/request').json
-    assert raw == export.json
+    if len(intents) == 1:
+        assert raw == export.json
+    else:
+        assert raw["request"]["intents"] == [intents[0]]
     report = client.get(url+'/download/report').json
     assert report['report_version'] == '8'
-    assert {b['branch'] for c in report['context_evaluations'] for b in c['branches']} == set(intents)
+    assert {b['branch'] for c in report['context_evaluations'] for b in c['branches']} == {intents[0]}
     assert client.get(url+'/download/inspection').status_code == 200
 
 
@@ -52,7 +55,7 @@ def test_mosaic_normal_form_continuum(browser, intents):
     url = result.headers['Location']
     assert client.get(url).status_code == 200
     report = client.get(url+'/download/report').json
-    assert {b['branch'] for candidate in report['candidates'] for c in candidate['evaluation']['contexts'] for b in c['branches']} == set(intents)
+    assert {b['branch'] for candidate in report['candidates'] for c in candidate['evaluation']['contexts'] for b in c['branches']} == {intents[0]}
     for candidate in report['candidates']:
         for context in candidate['evaluation']['contexts']:
             identity = context['display_identity']
@@ -65,7 +68,7 @@ def test_mosaic_normal_form_continuum(browser, intents):
         assert 'LINE requirement 1' in rendered
         assert 'LINE requirement 2' not in rendered
         assert 'Input frequency' in rendered
-    assert len(calls) == 1
+    assert len(calls) == len(intents)
 
 
 def test_frequency_local_redshift_export_has_no_shared_default(make_client):
@@ -92,11 +95,11 @@ def test_frequency_local_redshift_export_has_no_shared_default(make_client):
     assert 'id="continuum_redshift"' in html
 
 
-def test_no_selected_science_hides_shared_redshift(make_client):
+def test_initial_target_shows_shared_redshift(make_client):
     client = make_client()
     html = client.get('/proposed').text
-    import re
-    assert re.search(r'<div id="shared-redshift"[^>]*\bhidden\b', html)
+    target = html.split('class="form-pair target-identity-grid"', 1)[1].split('id="scope-support"', 1)[0]
+    assert '<div id="shared-redshift">' in target
 
 
 def test_single_pointing_editor_does_not_depend_on_source_selection(make_client):
@@ -139,5 +142,39 @@ def test_single_v2_form_runs_both_sources_and_downloads_report(make_client, tmp_
     for source in ['ARCHIVE', 'QUEUE']:
         contexts = [c for c in report['context_evaluations'] if c['reference']['source'] == source]
         assert contexts
-        assert {b['branch'] for c in contexts for b in c['branches']} == set(intents)
+        assert {b['branch'] for c in contexts for b in c['branches']} == {intents[0]}
     assert report['request']['raw']['line_input_contract'] == 'SEPARATE_OBSERVATION_REQUIREMENTS_V2'
+
+
+@pytest.mark.parametrize("selected", [[], ["LINE"], ["CONTINUUM"], ["LINE", "CONTINUUM"]])
+def test_purpose_edit_only_opens_selected_sections(make_client, selected):
+    client = make_client()
+    values = data(("LINE", "CONTINUUM")) | dict(
+        geometry="SINGLE_POINTING", intents=selected, action="purpose")
+    html = client.post("/proposed", data=values).text
+    for intent, section in [("LINE", "line-requirements"), ("CONTINUUM", "sensitivities")]:
+        opening = html.split(f'<section id="{section}"', 1)[1].split(">", 1)[0]
+        assert ("hidden" in opening) == (intent not in selected)
+
+
+@pytest.mark.parametrize("geometry", ["SINGLE_POINTING", "MOSAIC"])
+def test_target_redshift_survives_purpose_changes(make_client, geometry):
+    from bs4 import BeautifulSoup
+    client = make_client()
+    values = dict(target_kind="FIXED", geometry=geometry, normal_form_version="2",
+                  redshift="0.5", sources=["ARCHIVE", "QUEUE"], action="purpose")
+    url = "/proposed/mosaic" if geometry == "MOSAIC" else "/proposed"
+    for intents in [["CONTINUUM"], ["LINE", "CONTINUUM"], [], ["CONTINUUM"]]:
+        page = BeautifulSoup(client.post(url, data=values | {"intents": intents}).text, "html.parser")
+        assert page.select_one('[name="redshift"]')["value"] == "0.5"
+        continuum = page.select_one('[name="continuum_redshift"]')
+        if continuum:
+            assert continuum["value"] == "0.5"
+        for field in page.select('input[name]'):
+            name = field["name"]
+            if name.endswith("_redshift") or name in {"frequency_local_redshift", "normal_line_records"}:
+                values[name] = field.get("value", "")
+        values["rows"] = [field["value"] for field in page.select('input[name="rows"]')]
+    values.update(continuum_redshift="", intents=["CONTINUUM"])
+    page = BeautifulSoup(client.post(url, data=values).text, "html.parser")
+    assert page.select_one('[name="continuum_redshift"]')["value"] == ""

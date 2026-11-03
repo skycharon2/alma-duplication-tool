@@ -153,4 +153,5 @@ def test_single_point_v2_blocks_second_line_but_legacy_add_remains(client):
 
     data.pop('normal_form_version')
     page = client.post('/proposed', data=data).get_data(as_text=True)
-    assert 'Add requested window</button>' in page
+    assert 'Add requested window</button>' not in page
+    assert 'Remove requested window' not in page

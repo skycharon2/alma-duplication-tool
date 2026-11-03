@@ -9,14 +9,14 @@
   <div class="queue-status-strip">
     <span class="queue-status-dot {{ 'queue-ready' if active else 'queue-unavailable' }}" aria-hidden="true"></span>
     <span><strong>Queue</strong> {% if active %}<span class="queue-strip-date">Data as of {{ queue_status.source_as_of }}</span>{% else %}<span class="queue-check-warning">Snapshot unavailable</span>{% endif %}</span>
-    {% if geometry == 'MOSAIC' %}<button type="button" class="queue-details-button" popovertarget="queue-source-popover" aria-label="View Queue snapshot details">Details <span aria-hidden="true">ⓘ</span></button>{% endif %}
   </div>
   {% if check_failed or queue_status.check_error %}<p class="queue-compact-warning">Update check needs attention.{% if active %} Using approved snapshot.{% endif %}</p>{% endif %}
   {% if queue_status.update_waiting_for_approval %}<p class="queue-compact-warning">New download awaiting approval.</p>{% endif %}
 </div>
 <div id="queue-source-popover" class="queue-status-panel" popover="auto" role="dialog" aria-labelledby="queue-status-title">
   <button type="button" class="queue-popover-close" popovertarget="queue-source-popover" popovertargetaction="hide" aria-label="Close Queue snapshot details">×</button>
-  <div class="queue-status-heading">
+  {% if geometry == 'MOSAIC' %}<p>Queue CSV evaluates Custom Mosaic groups using the imported pointings. Rectangle and Single Pointing candidates are excluded. TP is ignored.</p>{% endif %}
+<div class="queue-status-heading">
     <h3 id="queue-status-title">Queue snapshot</h3>
     <span class="queue-status-badge {{ 'queue-ready' if active else 'queue-unavailable' }}">{{ 'Approved snapshot available' if active else 'Unavailable' }}</span>
   </div>

@@ -416,7 +416,8 @@ def test_continuum_rest_redshift_is_visible_and_missing_links_to_shared_control(
             "representative_kind": "REST", "redshift": "", "action": "validate"}
     html = client.post('/proposed', data=data).get_data(as_text=True)
     assert html.count('id="redshift"') == 1
-    assert html.index('id="redshift"') < html.index('<section id="line-requirements"')
+    target = html.split('class="form-pair target-identity-grid"', 1)[1].split('id="scope-support"', 1)[0]
+    assert 'id="redshift"' in target
     assert 'href="#redshift"' in html and 'SOURCE_REDSHIFT_REQUIRED' in html
     data['redshift'] = '1'
     html = client.post('/proposed', data=data).get_data(as_text=True)

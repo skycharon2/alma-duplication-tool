@@ -132,3 +132,32 @@ def test_managed_and_manual_config_conflict(tmp_path):
 def test_no_managed_mode_leaves_legacy_ui_unchanged(tmp_path):
     client = app(tmp_path, MANAGED_QUEUE_ROOT=None).test_client()
     assert b"queue-source-status" not in client.get("/proposed").data
+
+
+def test_submission_pins_local_csv_bytes_and_does_not_share_parsed_objects(tmp_path):
+    path = tmp_path / "queue.csv"
+    original = FIXTURE.read_bytes()
+    path.write_bytes(original)
+    runner = execution.BrowserAssessment(queue_csv=str(path))
+    pinned = runner.pin_queue_for_submission(True)
+    path.write_bytes(original.replace(b"2026 March 3.", b"2026 March 10."))
+    loader, selection = pinned._queue_input()
+    first, second = loader(), loader()
+    assert first is not second
+    assert first.snapshot.source_as_of.isoformat() == "2026-03-03"
+    assert first.snapshot.snapshot_sha256 == second.snapshot.snapshot_sha256
+    assert selection is None
+    assert pinned._queue_input(False) == (None, None)
+    fresh, _ = runner.pin_queue_for_submission(True)._queue_input()
+    assert fresh().snapshot.source_as_of.isoformat() == "2026-03-10"
+
+
+def test_submission_retains_initial_local_read_failure(tmp_path):
+    path = tmp_path / "missing.csv"
+    runner = execution.BrowserAssessment(queue_csv=str(path))
+    assert runner.pin_queue_for_submission(False) is runner
+    pinned = runner.pin_queue_for_submission(True)
+    path.write_bytes(FIXTURE.read_bytes())
+    loader, _ = pinned._queue_input()
+    with pytest.raises(OSError, match="could not read Queue"):
+        loader()

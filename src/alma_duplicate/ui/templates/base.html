@@ -37,6 +37,20 @@
     </nav>
   </header>
   <main id="main" class="page-width" tabindex="-1">
+    {% if failed_branches %}<section class="notice" role="status" aria-label="Incomplete assessment">
+      <h2>Some checks could not be completed</h2>
+      <p>Completed reports are available below. Failed checks have no duplication verdict.</p>
+      <ul>{% for branch in failed_branches %}<li>{{ branch }}</li>{% endfor %}</ul>
+      <p>To retry, return to the observation form and select the failed purpose and source.</p>
+    </section>{% endif %}
+    {% if source_group %}<nav class="report-actions" aria-label="Mosaic assessment reports">
+      {% for id, label in source_group.items() %}<a class="button" href="{{ url_for('run_view', report_id=id) }}"{% if id == report_id %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}
+    </nav>{% endif %}
+    {% if purpose_pair %}<nav class="report-actions" aria-label="Assessment reports">
+      {% for label in ['Spectral line report', 'Continuum report'] %}{% set id = purpose_pair[loop.index0] %}
+      <a class="button" href="{{ url_for('run_view', report_id=id) }}"{% if id == report_id %} aria-current="page"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>{% endif %}
     {% block content %}{% endblock %}
   </main>
   <footer class="site-footer">

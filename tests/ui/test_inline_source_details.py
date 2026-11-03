@@ -64,8 +64,9 @@ def test_mosaic_source_controls_offer_archive_and_queue():
         parsed = Controls()
         parsed.feed(html)
         assert parsed.sources == ['ARCHIVE', 'QUEUE']
-        assert not parsed.help_controls
-        assert 'class="archive-details-button"' in html
+        assert len(parsed.help_controls) == 2
+        assert all(attrs["popovertarget"] in parsed.ids and depth == 0 for attrs, depth in parsed.help_controls)
+        assert 'class="archive-details-button"' not in html
         assert 'popovertarget="archive-connection-popover"' in html
     finally:
         app.extensions['assessment_runs'].close()

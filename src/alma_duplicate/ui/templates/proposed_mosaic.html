@@ -4,10 +4,7 @@
 <input type="hidden" name="target_kind" value="FIXED">
 <div><label>Target type</label><p class="field-note">Fixed target · Mosaic</p></div>
 {% endblock %}
-{% block source_choices %}
-<label><input type="radio" name="sources" value="ARCHIVE" {% if values.get('sources') != ['QUEUE'] %}checked{% endif %}>Archive</label>
-<label><input type="radio" name="sources" value="QUEUE" {% if values.get('sources') == ['QUEUE'] %}checked{% endif %}>Queue CSV (Custom Mosaic)</label>
-{% endblock %}
+{% block source_choices %}{% include "_source_choices.html" %}{% endblock %}
 {% block mosaic_pointings %}
 {% include "_mosaic_pointings.html" %}
 {% endblock %}

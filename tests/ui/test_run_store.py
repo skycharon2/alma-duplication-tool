@@ -296,7 +296,7 @@ def test_close_waits_for_staged_write_and_rejects_later_add(store, assessment, m
 
     request, result = assessment
     entered, release, close_started = Event(), Event(), Event()
-    original = store._add
+    original = store._stage
 
     def paused_add(*args):
         entered.set()
@@ -307,7 +307,7 @@ def test_close_waits_for_staged_write_and_rejects_later_add(store, assessment, m
         close_started.set()
         store.close()
 
-    monkeypatch.setattr(store, '_add', paused_add)
+    monkeypatch.setattr(store, '_stage', paused_add)
     with ThreadPoolExecutor(max_workers=2) as executor:
         writer = executor.submit(store.add, request, result)
         assert entered.wait(5)
@@ -323,3 +323,55 @@ def test_close_waits_for_staged_write_and_rejects_later_add(store, assessment, m
     assert not store.directory.exists()
     with pytest.raises(ValueError, match='closed'):
         store.add(request, result)
+
+
+def test_group_rejects_count_and_total_bytes_without_evicting(assessment, tmp_path):
+    request, result = assessment
+    store = RunStore(max_runs=2, directory=tmp_path)
+    try:
+        old = store.add(request, result)
+        size = store._runs[old].byte_size
+        with pytest.raises(ValueError, match="run retention"):
+            store.add_group([(request, result)] * 3)
+        store._max_bytes = size + size // 2
+        with pytest.raises(ValueError, match="disk retention"):
+            store.add_group([(request, result)] * 2)
+        assert list(store._runs) == [old]
+        assert list(store.directory.iterdir()) == [store._runs[old].directory]
+        assert download(store, old, "report")
+    finally:
+        store.close()
+
+
+def test_group_second_rename_failure_preserves_old_reports(assessment, store, monkeypatch):
+    request, result = assessment
+    old = store.add(request, result)
+    original = Path.rename
+    calls = 0
+
+    def fail_second(path, target):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise OSError("simulated second rename failure")
+        return original(path, target)
+
+    monkeypatch.setattr(Path, "rename", fail_second)
+    with pytest.raises(OSError, match="second rename"):
+        store.add_group([(request, result)] * 2)
+    assert list(store._runs) == [old]
+    assert list(store.directory.iterdir()) == [store._runs[old].directory]
+
+
+def test_group_keeps_all_members_when_replacing_old_reports(assessment, tmp_path):
+    request, result = assessment
+    store = RunStore(max_runs=2, directory=tmp_path)
+    try:
+        old = store.add(request, result)
+        ids = store.add_group([(request, result)] * 2)
+        assert list(store._runs) == ids
+        assert store.unavailable_reason(old) == "EVICTED"
+        for run_id in ids:
+            assert download(store, run_id, "report") == report_json_text(result.document).encode()
+    finally:
+        store.close()

@@ -1,6 +1,7 @@
 """Explicit browser source execution and temporary disk report retention."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
+from collections.abc import Callable
 
 from alma_duplicate.assessment import (
     ArchiveInput, AssessmentOptions, AssessmentSources, assess_observation,
@@ -8,7 +9,7 @@ from alma_duplicate.assessment import (
 from alma_duplicate.clients.archive_replay import RecordedArchiveClient
 from alma_duplicate.clients.queue_csv_client import QueueCsvClient
 from alma_duplicate.storage.queue_active import QueueActiveError
-from alma_duplicate.ui.managed_queue import pin_active_queue
+from alma_duplicate.ui.managed_queue import PinnedQueue, pin_active_queue
 from alma_duplicate.ui.run_store import RunStore as RunStore
 from alma_duplicate.archive_endpoints import ARCHIVE_ORIGINS
 
@@ -30,6 +31,29 @@ class BrowserAssessment:
     report_detail: str = 'matches'
     managed_queue_root: str | None = None
     archive_connection: str = "AUTO"
+    _pinned_queue: tuple[Callable | None, PinnedQueue | None] | None = field(
+        default=None, repr=False, compare=False)
+
+    def pin_queue_for_submission(self, selected):
+        """Freeze source bytes or acquisition failure for every submitted branch."""
+        if not selected or self._pinned_queue is not None:
+            return self
+        if self.managed_queue_root or not self.queue_csv:
+            return replace(self, _pinned_queue=self._queue_input())
+        from pathlib import Path
+        try:
+            raw = Path(self.queue_csv).read_bytes()
+        except OSError as exc:
+            message = f"could not read Queue CSV snapshot {self.queue_csv}: {exc}"
+
+            def loader():
+                raise OSError(message)
+        else:
+            # Parse independently per branch so downstream objects are never shared.
+            def loader():
+                return QueueCsvClient().parse_bytes(raw)
+        return replace(self, _pinned_queue=(loader, None))
+
 
     def __post_init__(self):
         if self.archive_connection not in ARCHIVE_CONNECTIONS:
@@ -67,6 +91,10 @@ class BrowserAssessment:
         """Shared Single Pointing/Mosaic snapshot selection; never auto-download."""
         # Select and freeze Queue bytes now, before Archive/search work can
         # overlap with a later administrator activation of another snapshot.
+        if not selected:
+            return None, None
+        if self._pinned_queue is not None:
+            return self._pinned_queue
         selection = None
         if selected and self.managed_queue_root:
             try:
