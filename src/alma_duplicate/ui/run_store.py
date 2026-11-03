@@ -1,7 +1,7 @@
 """Private temporary disk storage for browser runs and indexed report pages."""
 
 from collections import OrderedDict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import hashlib
 import json
 import math
@@ -195,16 +195,57 @@ class RunStore:
                 self._temporary.cleanup()
 
     def add(self, request_document, result):
-        # One staging run at a time bounds temporary space, and close waits for
-        # publication/rollback before removing the private root directory.
+        return self.add_group([(request_document, result)])[0]
+
+    def add_group(self, assessments):
+        """Stage all reports, then publish them under one retention decision."""
+        assessments = list(assessments)
+        if not assessments or len(assessments) > self._max_runs:
+            raise ValueError("Report group exceeds the run retention limit")
         emit_progress("storage_wait")
         with self._write_lock:
             with self._lock:
                 if self._closed:
-                    raise ValueError('Run store is closed')
-            return self._add(request_document, result)
+                    raise ValueError("Run store is closed")
+            staged = []
+            total_size = 0
+            try:
+                for request_document, result in assessments:
+                    entry = self._stage(request_document, result, self._max_bytes - total_size)
+                    staged.append(entry)
+                    total_size += entry[1].byte_size
+                with self._lock:
+                    self._prune_locked()
+                    victims = []
+                    projected_size = self._size + total_size
+                    remaining = len(self._runs) + len(staged)
+                    for old_id, old in self._runs.items():
+                        if remaining <= self._max_runs and projected_size <= self._max_bytes:
+                            break
+                        victims.append(old_id)
+                        remaining -= 1
+                        if not self._leases.get(old_id):
+                            projected_size -= old.byte_size
+                    if projected_size > self._max_bytes:
+                        raise ValueError("Disk retention budget is occupied by active downloads")
+                    # Rename every staged directory before publishing any entry.
+                    for index, (run_id, item) in enumerate(staged):
+                        target = self.directory / run_id
+                        item.directory.rename(target)
+                        staged[index] = (run_id, replace(item, directory=target))
+                    for old_id in victims:
+                        self._retire(old_id, "EVICTED")
+                    expires_at = self._clock() + self.max_age
+                    for run_id, item in staged:
+                        self._runs[run_id] = replace(item, expires_at=expires_at)
+                        self._size += item.byte_size
+                return [run_id for run_id, _ in staged]
+            finally:
+                for run_id, item in staged:
+                    if run_id not in self._runs and item.directory.exists():
+                        shutil.rmtree(item.directory)
 
-    def _add(self, request_document, result):
+    def _stage(self, request_document, result, byte_budget):
         if result.document is None:
             raise ValueError('An assessment without a report cannot be retained')
         document = result.document
@@ -236,7 +277,7 @@ class RunStore:
                 os.chmod(stream.name, 0o600)
                 for raw in blocks:
                     size += len(raw)
-                    if size > self._max_bytes:
+                    if size > byte_budget:
                         raise ValueError("Report exceeds this application's disk retention limit")
                     stream.write(raw)
                     emit_progress("storage", size, unit="bytes")
@@ -259,34 +300,12 @@ class RunStore:
             projection['offsets'] = offsets
             with measure_stage('write_view'):
                 write('view.json', _utf8_blocks(report_json_chunks(projection)))
-            with self._lock:
-                if self._closed:
-                    raise ValueError('Run store is closed')
-                self._prune_locked()
-                # Plan eviction before modifying any still-valid run. Leased files
-                # still consume disk and cannot be counted as immediately freed.
-                victims, projected_size, remaining = [], self._size + size, len(self._runs) + 1
-                for old_id, old in self._runs.items():
-                    if remaining <= self._max_runs and projected_size <= self._max_bytes:
-                        break
-                    victims.append(old_id)
-                    remaining -= 1
-                    if not self._leases.get(old_id):
-                        projected_size -= old.byte_size
-                if projected_size > self._max_bytes:
-                    raise ValueError('Disk retention budget is occupied by active downloads')
-                target = self.directory / run_id
-                staging.rename(target)
-                item = StoredRun(target, str(result.status), downloads['report'][1], size,
-                                 self._clock() + self.max_age, downloads)
-                for old_id in victims:
-                    self._retire(old_id, 'EVICTED')
-                self._runs[run_id] = item
-                self._size += size
-            return run_id
-        finally:
+            return run_id, StoredRun(staging, str(result.status), downloads['report'][1], size,
+                                     self._clock() + self.max_age, downloads)
+        except BaseException:
             if staging.exists():
                 shutil.rmtree(staging)
+            raise
 
     def page(self, run_id, page=1, view='matches'):
         with self._lock:

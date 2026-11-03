@@ -361,7 +361,7 @@ def create_app(config=None):
                     if assessment.document is None:
                         return None, "Assessment returned no report. Review input readiness."
                     completed.append((document | extra_input, assessment))
-                ids = [runs.add(document, assessment) for document, assessment in completed]
+                ids = runs.add_group(completed)
                 history = (ids + session.get("report_history", []))[:20]
                 session["report_history"] = history
                 if dual_source:
