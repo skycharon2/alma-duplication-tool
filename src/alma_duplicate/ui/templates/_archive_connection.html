@@ -3,13 +3,13 @@
   <div class="queue-status-strip">
     <span class="queue-status-dot archive-neutral" aria-hidden="true"></span>
     <span><strong>Archive</strong> <span class="queue-strip-date" id="archive-connection-summary">{{ connection_labels.get(values.get('archive_connection', 'AUTO'), 'Automatic') }}</span></span>
-    {% if geometry == 'MOSAIC' %}<button type="button" class="archive-details-button" popovertarget="archive-connection-popover" aria-label="View Archive connection details">Details <span aria-hidden="true">ⓘ</span></button>{% endif %}
   </div>
 </div>
 <div id="archive-connection-popover" class="archive-status-panel archive-connection-panel" popover="auto" role="dialog" aria-labelledby="archive-connection-title">
   <button type="button" class="archive-popover-close" popovertarget="archive-connection-popover" popovertargetaction="hide" aria-label="Close Archive connection details">×</button>
   <h3 id="archive-connection-title">Archive connection</h3>
-  <p class="archive-panel-intro">Choose where this assessment retrieves Archive data.</p>
+  {% if geometry == 'MOSAIC' %}<p>Archive searches the footprint of the imported pointings using TAP metadata.</p>{% endif %}
+<p class="archive-panel-intro">Choose where this assessment retrieves Archive data.</p>
   <dl class="archive-connection-state"><div><dt>Connection status</dt><dd>Not checked</dd></div></dl>
   <p class="archive-panel-caption">Connection starts when you run the assessment.</p>
   <div class="archive-connection-control">

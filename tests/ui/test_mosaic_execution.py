@@ -22,7 +22,7 @@ def form():
 
 
 @pytest.fixture
-def browser(monkeypatch):
+def browser(monkeypatch, tmp_path):
     import requests
     from alma_duplicate import mosaic_backend
     from alma_duplicate.clients import archive_mirrors
@@ -34,7 +34,10 @@ def browser(monkeypatch):
         calls.append((proposed, kwargs))
         return json.loads((ROOT / 'selection/discovery.json').read_text())
     monkeypatch.setattr(mosaic_backend, 'discover_candidates', discover)
-    app = create_app(dict(TESTING=True, LIVE_ARCHIVE=True, LIVE_AQ=True, REPORT_DIRECTORY=None,
+    from tests.ui.test_queue_custom_mosaic import csv_bytes
+    queue_file = tmp_path / "queue.csv"
+    queue_file.write_bytes(csv_bytes())
+    app = create_app(dict(OFFLINE_QUEUE_CSV=str(queue_file), TESTING=True, LIVE_ARCHIVE=True, LIVE_AQ=True, REPORT_DIRECTORY=None,
                           OFFLINE_ARCHIVE_REPLAY=None))
     yield app.test_client(), calls
     app.extensions['assessment_runs'].close()
@@ -163,3 +166,23 @@ def test_upload_is_sufficient_without_separate_confirmations(browser):
     response = client.post('/proposed', data=data)
     assert response.status_code == 303
     assert calls
+
+@pytest.mark.parametrize("intents", [["LINE"], ["LINE", "CONTINUUM"]])
+def test_mosaic_both_sources_produce_navigable_source_reports(browser, intents):
+    client, calls = browser
+    data = form() | dict(sources=["ARCHIVE", "QUEUE"], mosaic_upload_token=upload(client),
+                         normal_form_version="2", action="assess", intents=intents, aggregate="1",
+                         representative="690", continuum_setup_declaration="on", setup_complete="")
+    response = client.post("/proposed/mosaic", data=data)
+    assert response.status_code == 303, response.text
+    with client.session_transaction() as state:
+        group, = state["mosaic_report_groups"]
+    assert set(group.values()) == {intent.title() + " · " + source for intent in intents for source in ("Archive", "Queue")}
+    for key, label in group.items():
+        url = "/runs/" + key
+        page = client.get(url).text
+        assert all("/runs/" + other in page for other in group)
+        source = label.split()[-1].upper()
+        assert client.get(url + "/download/request").json["search_options"]["sources"] == [source]
+        assert client.get(url + "/download/report").status_code == 200
+    assert len(calls) == len(intents)

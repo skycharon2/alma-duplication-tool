@@ -131,7 +131,7 @@ def test_upload_survives_edit_and_failed_replacement_then_removal(client):
     assert '3 input rows' in html
     assert 'proposed array: 7m' in html
     assert 'All 3 uploaded rows will be checked' in html
-    assert 'name="sources" value="QUEUE"' not in html
+    assert 'name="sources" value="QUEUE" checked' in html
     assert 'id="ra"' not in html
     assert 'centre radius for the supported' not in html
     failed = upload(client, {'mosaic_upload_token': token}, raw=b'invalid')

@@ -204,7 +204,7 @@ def build_document(values, rows):
         # The backend expects an integer here, unlike quantity values.
         search["result_limit"] = int(limit) if re.fullmatch(r"[0-9]{1,9}", limit) else limit
     if request["target_kind"] == "FIXED" and request["geometry"] == "MOSAIC":
-        search = {"sources": ["QUEUE"] if values.get("sources") == ["QUEUE"] else ["ARCHIVE"],
+        search = {"sources": values.get("sources", []),
                   "predicates": [], "radius_mode": "AUTO"}
     document = {"request": request, "search_options": search}
     from alma_duplicate.ui.normal_line_input import uses_separated_input, convert

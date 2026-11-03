@@ -1,19 +1,14 @@
-"""Pure browser workflow policies shared by the existing /proposed route.
-
-This is an extraction, not a new science contract or a route split.
-Single Pointing retains its selected Archive/Queue sources; only the
-fixed-target Mosaic selects Archive by default or explicitly selects Queue Custom.
-"""
+"""Browser source and geometry policies for observation forms."""
 
 
 def initial_mosaic_values(initial_values):
-    """Start Mosaic in Archive-only V2 without changing Single Pointing.
+    """Start Mosaic with both sources selected.
 
     Explicit posted forms preserve their submitted input contract.
     """
     return initial_values | {
         "target_kind": "FIXED", "geometry": "MOSAIC",
-        "sources": ["ARCHIVE"], "normal_form_version": "2",
+        "sources": ["ARCHIVE", "QUEUE"], "normal_form_version": "2",
     }
 
 
@@ -23,9 +18,10 @@ def is_fixed_mosaic(values):
 
 
 def apply_browser_source_policy(values):
-    """Allow explicit Queue-only Mosaic; retain Archive default for old forms."""
-    if is_fixed_mosaic(values) and values.get("sources") != ["QUEUE"]:
-        values["sources"] = ["ARCHIVE"]
+    """Keep Mosaic source choices in display order, including an empty selection."""
+    if is_fixed_mosaic(values):
+        values["sources"] = [s for s in ("ARCHIVE", "QUEUE") if s in values.get("sources", [])]
+
 
 
 def should_enable_mosaic_v2_on_scope_change(values, rows):

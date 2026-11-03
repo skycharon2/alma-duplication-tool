@@ -25,7 +25,7 @@ def test_workflow_identity_preserves_original_scope(kind, geometry, mosaic):
 
 
 @pytest.mark.parametrize("kind,geometry,expected", [
-    ("FIXED", "MOSAIC", ["ARCHIVE"]),
+    ("FIXED", "MOSAIC", ["ARCHIVE", "QUEUE"]),
     ("FIXED", "SINGLE_POINTING", ["ARCHIVE", "QUEUE"]),
     ("MOVING", "MOSAIC", ["ARCHIVE", "QUEUE"]),
 ])
@@ -96,7 +96,7 @@ def test_actual_blank_mosaic_scope_uses_archive_and_v2(client):
     html = response.get_data(as_text=True)
     assert 'name="normal_form_version" value="2"' in html
     assert 'name="sources" value="ARCHIVE"' in html
-    assert 'name="sources" value="QUEUE"' not in html
+    assert 'name="sources" value="QUEUE" checked' in html
 
 
 def test_actual_populated_single_to_mosaic_scope_does_not_upgrade(client):

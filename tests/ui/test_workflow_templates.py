@@ -56,7 +56,7 @@ def test_legacy_mosaic_post_keeps_single_route_and_upload_ui(app):
     assert template == "proposed_single.html"
     assert 'action="/proposed"' in html
     assert 'id="mosaic-pointings"' in html
-    assert 'name="sources" value="QUEUE"' not in html
+    assert 'name="sources" value="QUEUE" checked' not in html
 
 
 def test_mosaic_post_keeps_dedicated_route(app):

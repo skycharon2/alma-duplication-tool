@@ -23,7 +23,7 @@ def test_isolated_mosaic_initial_state_does_not_mutate_single():
     mosaic = initial_mosaic_values(original)
     assert original["sources"] == ["ARCHIVE", "QUEUE"]
     assert "normal_form_version" not in original
-    assert mosaic["sources"] == ["ARCHIVE"]
+    assert mosaic["sources"] == ["ARCHIVE", "QUEUE"]
     assert mosaic["normal_form_version"] == "2"
     assert mosaic["geometry"] == "MOSAIC"
     assert mosaic["target_kind"] == "FIXED"

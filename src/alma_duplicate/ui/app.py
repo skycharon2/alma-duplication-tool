@@ -214,6 +214,7 @@ def create_app(config=None):
             abort(404)
         if data is None:
             return unavailable_run(report_id)
+        data["source_group"] = next((g for g in session.get("mosaic_report_groups", []) if report_id in g), None)
         data["purpose_pair"] = next((pair for pair in session.get("purpose_report_pairs", [])
                                      if report_id in pair), None)
         return render_report(data, report_id)
@@ -350,6 +351,10 @@ def create_app(config=None):
                     from alma_duplicate.ui.proposed import build_document
                     documents = [build_document(state.values | {"intents": [intent]}, state.rows)[0]
                                  for intent in ("LINE", "CONTINUUM")]
+                dual_source = is_fixed_mosaic(state.values) and len(state.values["sources"]) == 2
+                if dual_source:
+                    documents = [doc | {"search_options": doc["search_options"] | {"sources": [source]}}
+                                 for doc in documents for source in state.values["sources"]]
                 completed = []
                 for document in documents:
                     document, assessment, extra_input = dispatch(runner, document)
@@ -359,7 +364,11 @@ def create_app(config=None):
                 ids = [runs.add(document, assessment) for document, assessment in completed]
                 history = (ids + session.get("report_history", []))[:20]
                 session["report_history"] = history
-                if both:
+                if dual_source:
+                    groups = session.get("mosaic_report_groups", [])
+                    group = {key: doc["request"]["intents"][0].title() + " · " + doc["search_options"]["sources"][0].title() for key, (doc, _) in zip(ids, completed)}
+                    session["mosaic_report_groups"] = [group] + [g for g in groups if all(i in history for i in g)]
+                elif both:
                     pairs = [pair for pair in session.get("purpose_report_pairs", [])
                              if all(item in history for item in pair)]
                     session["purpose_report_pairs"] = [ids] + pairs
@@ -394,8 +403,9 @@ def create_app(config=None):
     def _mosaic_submission(state, action):
         state.document, state.result, state.issues = validate_form(
             state.values, state.rows, require_line_complete=action == "assess")
-        queue_custom = state.values.get('sources') == ['QUEUE']
-        source_ready = bool(configured.queue_csv or configured.managed_queue_root) if queue_custom else configured.live_archive
+        sources = state.values["sources"]
+        source_ready = bool(sources) and ("ARCHIVE" not in sources or configured.live_archive) and (
+            "QUEUE" not in sources or bool(configured.queue_csv or configured.managed_queue_root))
         state.issues, points, state.mosaic_ready, state.execution_error = prepare_mosaic_validation(
             state.values, state.mosaic_preview, state.issues, state.result,
             live_archive=source_ready)
@@ -403,15 +413,21 @@ def create_app(config=None):
             if not assessment_supported(state.values):
                 state.execution_error = "This observation type cannot be assessed in this browser version. Your inputs are retained. You can validate and export a valid request."
             elif not source_ready:
-                state.execution_error = ("Queue CSV is not configured. Configure the same Queue source used for Single Pointing."
-                    if queue_custom else "Browser Archive Mosaic assessment requires live Archive configuration.")
+                missing = []
+                if "ARCHIVE" in sources and not configured.live_archive:
+                    missing.append("Mosaic Archive assessment requires live Archive configuration.")
+                if "QUEUE" in sources and not (configured.queue_csv or configured.managed_queue_root):
+                    missing.append("Queue CSV is not configured.")
+                state.execution_error = " ".join(missing) or "Select at least one data source."
             elif not configured.enabled:
                 state.execution_error = "Assessment sources are not configured. You can still validate and download the request."
-            elif state.result.is_valid and (state.result.can_search or points is not None):
+            elif state.result.is_valid and points is not None:
                 def dispatch_mosaic(runner, document):
                     from alma_duplicate.ui.mosaic_line_input import is_mosaic_line, submitted_document
-                    if queue_custom:
-                        return document, runner.assess_queue_custom(document, points), {"mosaic_pointings": points}
+                    if document["search_options"]["sources"] == ["QUEUE"]:
+                        queue_points = points | {"setup_id": state.values.get("setup_id", "").strip(),
+                                                 "sensitivity_basis": "PER_POINTING"}
+                        return document, runner.assess_queue_custom(document, queue_points), {"mosaic_pointings": queue_points}
                     if is_mosaic_line(document) and "line_input_contract" not in document["request"]:
                         document = submitted_document(document)
                     return document, runner.assess_mosaic(document, points), {"mosaic_pointings": points}
