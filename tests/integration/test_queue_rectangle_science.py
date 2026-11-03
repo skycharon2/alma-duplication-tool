@@ -60,7 +60,7 @@ def test_context_binding_and_budget(monkeypatch):
     p=pointings(req);p['setup_id']='foreign'
     with pytest.raises(ValueError,match='target and setup'):
         assess_queue_rectangle_science(candidate(),req,p)
-    monkeypatch.setattr('alma_duplicate.queue_rectangle_science.MAX_SPECTRAL_PAIRS',1)
+    monkeypatch.setattr('alma_duplicate.queue_mosaic_row_science.MAX_SPECTRAL_PAIRS',1)
     with pytest.raises(ValueError,match='budget'):
         assess_queue_rectangle_science(candidate(),req,pointings(req))
 
@@ -68,23 +68,24 @@ def test_context_binding_and_budget(monkeypatch):
 def test_wrong_geometry_contract_is_not_accepted():
     from alma_duplicate.rules.queue_common import queue_mosaic_common_matches_kind
     from alma_duplicate.domain.queue import QueueMosaicKind
-    from alma_duplicate.queue_rectangle_science import _common
+    from alma_duplicate.queue_mosaic_row_science import _common
+    from alma_duplicate.queue_rectangle_science import DECISION
     from alma_duplicate.queue_rectangle_backend import assess_queue_rectangle_csv
     from alma_duplicate.comparison import build_queue_contexts
     req,_=request();src=candidate()
     pos=assess_queue_rectangle_csv(src,pointings(req))['candidates'][0]['position']['beam_variants'][0]
-    common=_common(req,build_queue_contexts(src).contexts[0],pos)
+    common=_common(req,build_queue_contexts(src).contexts[0],pos,'rectangle',DECISION)
     assert queue_mosaic_common_matches_kind(common,QueueMosaicKind.RECTANGULAR_MOSAIC)
     assert not queue_mosaic_common_matches_kind(common,QueueMosaicKind.CUSTOM_POINTING)
 
 
 def test_mixed_array_position_and_no_complementary_science_borrowing(monkeypatch):
-    import alma_duplicate.queue_rectangle_science as backend
+    import alma_duplicate.queue_mosaic_row_science as backend
     from alma_duplicate.geometry import primary_beam_fwhm_deg
     from alma_duplicate.rules.model import CriterionOutcome as O
     req,_=request();p=pointings(req)
     p['points'][0]['dec_deg']+=(primary_beam_fwhm_deg(230,7)+primary_beam_fwhm_deg(230,12))/4
-    r=backend.assess_queue_rectangle_science(candidate(),req,p)
+    r=assess_queue_rectangle_science(candidate(),req,p)
     assert science(r)['matching_arrays_by_intent']['CONTINUUM']==[7.]
     original=backend.evaluate_queue_continuum
     def numerical(request, context, common, **kw):
@@ -92,7 +93,7 @@ def test_mixed_array_position_and_no_complementary_science_borrowing(monkeypatch
         d=dict(common[1].derived)['antenna_diameter_m']
         return freq,replace(rms,outcome=O.NOT_SATISFIED if d==7 else O.SATISFIED)
     monkeypatch.setattr(backend,'evaluate_queue_continuum',numerical)
-    r=backend.assess_queue_rectangle_science(candidate(),req,p)
+    r=assess_queue_rectangle_science(candidate(),req,p)
     assert science(r)['branches'][0]['truth']=='FALSE'
 
 

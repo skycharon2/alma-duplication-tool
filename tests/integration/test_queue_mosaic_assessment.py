@@ -20,7 +20,7 @@ def test_one_snapshot_two_independent_assessments():
     report = run(loader)
     loader.assert_called_once_with()
     inventory = report['inventory']
-    assert inventory['unevaluated_rows'] == 1
+    assert inventory['unevaluated_rows'] == 0
     assert len(inventory['source_rows']) == len(rows) + 1
     for kind, truths in [('CUSTOM_POINTING', ['TRUE']), ('RECTANGULAR_MOSAIC', ['FALSE', 'FALSE'])]:
         result = report['geometry_reports'][kind]

@@ -36,6 +36,7 @@ def queue_common_scope_supported(common, *, mosaic=False):
     if mosaic:
         contracts = {
             "SUPPORTED_CUSTOM": {"queue_custom_angular_1", "queue_custom_position_1"},
+            "SUPPORTED_SINGLE_FIELD": {"queue_single_field_angular_1", "queue_single_field_position_1"},
             "SUPPORTED_RECTANGLE": {"queue_rectangle_angular_1", "queue_rectangle_position_1"},
         }
         scopes = {dict(r.details).get("common_scope") for r in common}
@@ -259,7 +260,8 @@ def evaluate_queue_common(request, context, spatial_evidence, *, beam_diameter_m
 
 def queue_mosaic_common_matches_kind(common, kind):
     """Prevent accepting a different geometry's adopted common contract."""
-    expected = {QueueMosaicKind.CUSTOM_POINTING: "SUPPORTED_CUSTOM",
+    expected = {QueueMosaicKind.SINGLE_FIELD: "SUPPORTED_SINGLE_FIELD",
+                QueueMosaicKind.CUSTOM_POINTING: "SUPPORTED_CUSTOM",
                 QueueMosaicKind.RECTANGULAR_MOSAIC: "SUPPORTED_RECTANGLE"}.get(kind)
     return (expected is not None and queue_common_scope_supported(common, mosaic=True)
             and all(dict(r.details).get("common_scope") == expected for r in common))
