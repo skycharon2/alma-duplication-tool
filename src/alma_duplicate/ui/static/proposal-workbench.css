@@ -107,7 +107,7 @@
 .proposal-page .proposal-fields #requirements { padding-bottom: 6px; border-bottom: 0; }
 .proposal-page .proposal-fields #line-requirements,
 .proposal-page .proposal-fields #sensitivities { padding-top: 10px; padding-bottom: 10px; border-block: 0; }
-.proposal-page .proposal-fields #windows { display: flow-root; padding-top: 0; padding-bottom: 6px; border-block: 0; }
+.proposal-page .proposal-fields #windows:not([hidden]) { display: flow-root; padding-top: 0; padding-bottom: 6px; border-block: 0; }
 .proposal-page .proposal-fields .section-title h2 { font-size: 16px; }
 .proposal-page .proposal-fields .appendix-guide { margin: 0; padding: 2px 20px 10px; border: 1px solid var(--border); border-top: 0; background: white; }
 .proposal-page .proposal-fields .appendix-guide > summary { padding: 0; background: none; font-weight: 400; }

@@ -100,10 +100,10 @@
 
 <details class="field-help secondary-guidance"><summary>Correlator mode and resolution</summary><p class="field-note">Appendix A requires FDM on both the proposed and comparison sides. Selecting Spectral line does not declare FDM. Spectral resolution, channel spacing and noise bandwidth are different quantities.</p></details>
 {% if normal_records and values.get(row + '_bandwidth', '') %}<details><summary>Linked SPW bandwidth evidence</summary>{{ quantity(row + '_bandwidth', 'Usable or nominal bandwidth', ['MHz','GHz','kHz','Hz'], 'MHz') }}{{ select(row + '_bandwidth_kind', 'Bandwidth interpretation', ['UNKNOWN','USABLE','NOMINAL'], 'UNKNOWN') }}</details>{% endif %}
-<div class="window-tools">{% if not normal_records %}<a href="#spw-{{ row }}">Window bandwidth and evidence</a>{% endif %}
+<div class="window-tools">
 <button class="button" type="submit" name="action" value="remove:{{ row }}">Remove requested window {{ loop.index }}</button></div></fieldset>{% if not loop.first %}</details>{% endif %}{% endfor %}{% endif %}
 {% if normal_records and 'LINE' in values.get('intents', []) %}
-<p class="field-note">This V2 browser check accepts one LINE configuration. To check another independent setup, start a new assessment with its own planned angular resolution. Physical SPW evidence can still contain multiple windows.</p>
+<p class="field-note">This V2 browser check accepts one LINE configuration. To check another independent setup, start a new assessment with its own planned angular resolution.</p>
 {% else %}
 <button class="button" type="submit" name="action" value="add" {% if rows|length >= 32 %}disabled{% endif %}>Add requested window</button>
 {% endif %}
@@ -114,7 +114,7 @@
 {{ messages('sensitivities') }}
 
 <div class="continuum-frequency-grid"><div>{{ quantity('representative', 'Representative frequency', ['GHz','MHz','kHz','Hz'], 'GHz') }}</div><div>{{ select('representative_kind', 'Representative frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>{{ quantity('aggregate', 'Planned aggregate RMS', ['mJy/beam','Jy/beam'], 'mJy/beam') }}</div>
-<details {% if stale_ids %}open{% endif %}><summary>Contributing windows (optional)</summary><fieldset id="aggregate_windows" class="choice-group" tabindex="-1"><legend>Windows contributing to the declared aggregate RMS</legend>
+<details {% if stale_ids or selected_windows %}open{% else %}hidden{% endif %}><summary>Contributing windows (optional)</summary><fieldset id="aggregate_windows" class="choice-group" tabindex="-1"><legend>Windows contributing to the declared aggregate RMS</legend>
 {% if not rows and not stale_ids %}<p class="field-note">No window list is required to declare the aggregate RMS for this setup.</p>{% endif %}
 {% for row in (values.get('spw_rows', []) if normal_records else rows) %}<label><input type="checkbox" name="aggregate_windows" value="{{ values[row + '_id'] }}" {% if values[row + '_id'] in selected_windows %}checked{% endif %}>{{ 'Physical SPW' if normal_records else 'Window' }} {{ loop.index }}</label>{% endfor %}
 {% for window_id in stale_ids %}<label class="stale-reference"><input type="checkbox" name="aggregate_windows" value="{{ window_id }}" checked>Unavailable window: {{ window_id }}</label>{% endfor %}
@@ -123,7 +123,7 @@
 </section>
 {% if normal_records %}
 {% if target_kind != 'FIXED' %}<p role="alert">Assessment requires a supported fixed target. Your entered requirements and SPW evidence are retained.</p>{% endif %}
-<section id="windows"><h2>Physical SPW evidence <small>(optional)</small></h2>
+<section id="windows" hidden><h2>Physical SPW evidence <small>(optional)</small></h2>
 <p class="field-note">Record bandwidth evidence separately. Adding a record does not add a LINE requirement.</p>
 {% for row in values.get('spw_rows', []) %}
 <fieldset class="spectral-window" id="{{ row }}"><legend>Physical SPW {{ loop.index }}</legend>
@@ -140,7 +140,7 @@
 <details><summary>Physical SPW inventory completeness</summary><label><input type="checkbox" name="setup_complete" {% if values.get('setup_complete') == 'on' %}checked{% endif %}> I have listed every physical SPW in this setup</label><p class="field-note">Optional inventory declaration. It does not change which LINE requirements are checked or their result.</p></details>
 </section>
 {% else %}
-<section id="windows"><h2 class="sr-only">Optional spectral window evidence</h2>
+<section id="windows" hidden><h2 class="sr-only">Optional spectral window evidence</h2>
 {{ messages('windows') }}
 <details id="window-evidence" {% if rows and not line_layout %}open{% endif %}><summary>SPW bandwidth details <span class="detail-context">{{ rows|length }} of 32 windows</span></summary>
 {% for row in rows %}<fieldset id="spw-{{ row }}" class="spectral-window"><legend>Window {{ loop.index }}{% if line_layout %} — same requested window{% endif %}</legend><input type="hidden" name="rows" value="{{ row }}">
