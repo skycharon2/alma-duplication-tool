@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 
 import pytest
-from astropy import units as u
 from astropy.coordinates import SkyCoord
 
 from alma_duplicate.queue_rectangle_grid import RectangleGeometry, generate_rectangle_grid, reconstruct_queue_rectangles
