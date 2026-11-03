@@ -177,7 +177,7 @@ def test_mosaic_both_sources_produce_navigable_source_reports(browser, intents):
     assert response.status_code == 303, response.text
     with client.session_transaction() as state:
         group, = state["mosaic_report_groups"]
-    assert set(group.values()) == {intent.title() + " · " + source for intent in intents for source in ("Archive", "Queue")}
+    assert set(group.values()) == {{"LINE": "Spectral line", "CONTINUUM": "Continuum"}[intent] + " · " + source for intent in intents for source in ("ARCHIVE", "QUEUE")}
     for key, label in group.items():
         url = "/runs/" + key
         page = client.get(url).text

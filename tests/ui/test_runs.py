@@ -404,3 +404,41 @@ def test_continuum_rest_browser_to_dual_source_report(unit, value):
             if left['criterion_id'] == 'CONT-RMS':
                 assert left == right  # frequency conversion never rescales sensitivity
     assert client.get(location + '/download/inspection').status_code == 200
+
+
+@pytest.mark.parametrize("failed", [{"LINE"}, {"CONTINUUM"}, {"LINE", "CONTINUUM"}])
+def test_partial_assessment_retains_successful_reports(monkeypatch, failed):
+    original = execution.BrowserAssessment.assess
+    calls = []
+
+    def assess(runner, document):
+        intent = document["request"]["intents"][0]
+        calls.append(intent)
+        if intent in failed:
+            raise OSError("simulated source failure")
+        return original(runner, document)
+
+    monkeypatch.setattr(execution.BrowserAssessment, "assess", assess)
+    app = create_app(config())
+    client = app.test_client()
+    data = line_form()
+    data.setlist("intents", ["LINE", "CONTINUUM"])
+    data.update(dict(representative="230", aggregate="0.1", aggregate_windows="line-0"))
+    try:
+        response = client.post("/proposed", data=data)
+        assert calls == ["LINE", "CONTINUUM"]
+        if len(failed) == 2:
+            assert response.status_code == 200
+            assert "No report was created" in response.text
+            assert not app.extensions["assessment_runs"]._runs
+        else:
+            assert response.status_code == 303
+            page = client.get(response.location)
+            assert "Some checks could not be completed" in page.text
+            exported = client.get(response.location + "/download/request").json
+            assert set(exported["request"]["intents"]) == {"LINE", "CONTINUUM"} - failed
+            assert client.get(response.location + "/visualization").status_code == 200
+            assert len(app.extensions["assessment_runs"]._runs) == 1
+            assert calls == ["LINE", "CONTINUUM"]
+    finally:
+        app.extensions["assessment_runs"].close()

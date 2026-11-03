@@ -214,6 +214,8 @@ def create_app(config=None):
             abort(404)
         if data is None:
             return unavailable_run(report_id)
+        data["failed_branches"] = next((group["branches"] for group in
+            session.get("partial_assessments", []) if report_id in group["report_ids"]), [])
         data["source_group"] = next((g for g in session.get("mosaic_report_groups", []) if report_id in g), None)
         data["purpose_pair"] = next((pair for pair in session.get("purpose_report_pairs", [])
                                      if report_id in pair), None)
@@ -356,17 +358,35 @@ def create_app(config=None):
                     documents = [doc | {"search_options": doc["search_options"] | {"sources": [source]}}
                                  for doc in documents for source in state.values["sources"]]
                 completed = []
+                failures = []
+                successful_labels = []
                 for document in documents:
-                    document, assessment, extra_input = dispatch(runner, document)
-                    if assessment.document is None:
-                        return None, "Assessment returned no report. Review input readiness."
-                    completed.append((document | extra_input, assessment))
+                    label = ({"LINE": "Spectral line", "CONTINUUM": "Continuum"}[
+                        document["request"]["intents"][0]] + " · " +
+                        " + ".join(document["search_options"]["sources"]))
+                    try:
+                        saved_document, assessment, extra_input = dispatch(runner, document)
+                        if assessment.document is None:
+                            raise ValueError("Assessment returned no report")
+                    except (OSError, UnicodeError, ValueError, TypeError) as exc:
+                        app.logger.warning("Assessment branch %s failed: %s", label, exc)
+                        failures.append(label)
+                        continue
+                    completed.append((saved_document | extra_input, assessment))
+                    successful_labels.append(label)
+                if not completed:
+                    return None, "Assessment could not be completed. No report was created. Check the configured sources and server log."
                 ids = runs.add_group(completed)
                 history = (ids + session.get("report_history", []))[:20]
                 session["report_history"] = history
-                if dual_source:
+                partial = [group for group in session.get("partial_assessments", [])
+                           if all(key in history for key in group["report_ids"])]
+                if failures:
+                    partial.insert(0, {"report_ids": ids, "branches": failures})
+                session["partial_assessments"] = partial
+                if dual_source or failures:
                     groups = session.get("mosaic_report_groups", [])
-                    group = {key: doc["request"]["intents"][0].title() + " · " + doc["search_options"]["sources"][0].title() for key, (doc, _) in zip(ids, completed)}
+                    group = dict(zip(ids, successful_labels))
                     session["mosaic_report_groups"] = [group] + [g for g in groups if all(i in history for i in g)]
                 elif both:
                     pairs = [pair for pair in session.get("purpose_report_pairs", [])
