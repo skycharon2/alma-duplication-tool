@@ -96,7 +96,7 @@
 .proposal-page .help-figure figcaption span { float: right; color: var(--muted); font-size: 10px; font-weight: 400; }
 .proposal-page .help-figure svg { width: 100%; height: auto; }
 .proposal-page .figure-caption { font-size: 11px; color: var(--muted); }
-.proposal-page .proposed-form .target-identity-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+.proposal-page .proposed-form .target-identity-grid { grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 1fr)) minmax(0, .8fr); align-items: start; }
 .proposal-page .target-identity-grid > div > label { display: flex; align-items: center; min-height: 28px; margin-bottom: 4px; }
 .proposal-page .science-shared { padding-bottom: 8px; border-bottom: 1px solid #e6edf2; }
 .proposal-page .continuum-frequency-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }

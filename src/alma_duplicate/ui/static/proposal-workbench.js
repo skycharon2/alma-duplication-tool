@@ -168,19 +168,7 @@ window.initializeProposalWorkbench = function(form) {
   const selected = name => [...form.querySelectorAll(`input[name="${name}"]:checked`)].map(el => el.value);
   const labels = {LINE:'Spectral line', CONTINUUM:'Continuum', ARCHIVE:'Archive', QUEUE:'Queue CSV', FIXED:'Fixed target', MOVING:'Moving target', SUN:'Sun', SINGLE_POINTING:'Single pointing', MOSAIC:'Mosaic'};
   const write = (key, text) => {const el=form.querySelector(`[data-summary="${key}"]`); if(el) el.textContent=text;};
-  const redshift = form.querySelector('#shared-redshift');
-  const lineGrid = form.querySelector('#line-requirements:not([hidden]) .line-frequency-grid');
-  const continuumGrid = form.querySelector('#sensitivities:not([hidden]) .continuum-frequency-grid');
-  const separateRecords = !!form.querySelector('[name=normal_line_records]');
-  if (lineGrid && !separateRecords) lineGrid.insertBefore(redshift, lineGrid.querySelector('.mode-control'));
-  else if (continuumGrid && !separateRecords) continuumGrid.insertBefore(redshift, continuumGrid.lastElementChild);
-  if (redshift) {
-    redshift.querySelector('label').textContent=separateRecords ? 'Default source redshift z' : 'Source redshift z';
-    const help=redshift.querySelector('[data-help]');
-    if(help) help.setAttribute('aria-label','Help with source redshift');
-  }
   function update() {
-    if (redshift) redshift.hidden = selected('intents').length === 0;
     write('target', value('target_name') || 'Unnamed target');
     write('position', `RA ${value('ra') || '—'} ${value('ra_format')} / Dec ${value('dec') || '—'} ${value('dec_format')}`);
     write('scope', `${labels[value('target_kind')] || value('target_kind')} / ${labels[value('geometry')] || value('geometry')}`);

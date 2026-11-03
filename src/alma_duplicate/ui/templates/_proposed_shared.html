@@ -36,6 +36,11 @@
 <div><label for="geometry">Observation geometry</label><select id="geometry" name="geometry" aria-describedby="scope-support geometry-notes">
 {% if geometry not in ['SINGLE_POINTING','MOSAIC'] %}<option selected value="{{ geometry }}">{{ geometry }} (invalid selection)</option>{% endif %}
 {% for value, label in [('SINGLE_POINTING','Single pointing'),('MOSAIC','Mosaic — Solar exemption applies' if target_kind == 'SUN' else 'Mosaic')] %}<option value="{{ value }}" {% if geometry == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{{ messages('geometry') }}</div>
+{% if not normal_records %}<div id="shared-redshift">{{ input('redshift', 'Source redshift z') }}
+</div>{% else %}<input type="hidden" name="frequency_local_redshift" value="1">
+{% if line_layout %}{% for row in rows %}<div>{{ input(row + '_redshift', 'Source redshift z — window ' ~ loop.index) }}<p class="field-note">Used only to convert this REST frequency to SKY. Required for REST; unused for SKY.</p></div>{% endfor %}{% endif %}
+<div {% if not continuum_layout %}hidden{% endif %}><div>{{ input('continuum_redshift', 'Source redshift z — continuum') }}<p class="field-note">For this representative REST frequency only; unused for SKY.</p></div></div>
+{% endif %}
 </div>
 <div id="scope-support" class="scope-support{% if assessment_supported %} scope-supported{% endif %}{% if not assessment_supported and target_kind != 'SUN' %} scope-unavailable{% endif %}" role="status">
 {% if assessment_supported %}<span>{{ 'Queue Custom Mosaic assessment uses the configured CSV source.' if queue_mosaic else 'Mosaic Archive assessment available with a live Archive source.' if geometry == 'MOSAIC' else 'Single-pointing assessment available.' }}</span>{% if geometry == 'MOSAIC' %}{% if queue_mosaic %}<p>Check whether more than 50% of the proposed pointings lie inside each Custom group's reconstructed half-power coverage, then evaluate the scientific criteria separately for each inferred array.</p>{% else %}<p>Check whether more than 50% of the proposed pointings are within each Archive context’s s_region. Other criteria use the same Archive metadata rules as single pointing.</p>{% endif %}{% endif %}
@@ -76,8 +81,7 @@
 {{ messages('continuum_setup_declaration') }}</div></div>
 
 
-{% if not normal_records %}<div id="shared-redshift" {% if not values.get('intents', []) %}hidden{% endif %}>{{ input('redshift', 'Default source redshift z') }}
-<p class="field-note">Used for REST frequencies unless a LINE requirement supplies its own redshift. SKY frequencies are unchanged.</p></div>{% else %}<input type="hidden" name="frequency_local_redshift" value="1">{% endif %}
+
 <button class="button" type="submit" name="action" value="purpose" data-update-purpose>Update requirement sections</button>
 </section>
 <section id="line-requirements" {% if not line_layout %}hidden{% endif %}><div class="section-title"><h2>Spectral line requirements</h2>{{ help('line', 'spectral line requirements') }}</div>
@@ -88,7 +92,7 @@
 {% if line_layout %}{% for row in rows %}{% if not loop.first %}<details class="additional-line"><summary>Additional requested window {{ loop.index }}</summary>{% endif %}<fieldset id="{{ row }}" class="spectral-window" {% if added_row == row %}data-added-row{% endif %}><legend{% if loop.first %} class="sr-only"{% endif %}>Requested window {{ loop.index }}</legend>
 {{ messages(row) }}
 {% if normal_records %}<input type="hidden" name="rows" value="{{ row }}"><input type="hidden" name="{{ row }}_id" value="{{ values.get(row + '_id', row) }}">{% endif %}
-<div class="line-frequency-grid">{{ quantity(row + '_center', 'Window central frequency (REST or SKY)', ['GHz','MHz','kHz','Hz'], 'GHz') }}<div>{{ select(row + '_center_kind', 'Frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>{% if normal_records %}<div>{{ input(row + '_redshift', 'Source redshift z') }}<p class="field-note">Used only to convert this REST frequency to SKY. Required for REST; unused for SKY.</p></div>{% endif %}<div class="mode-control">{{ help('mode', 'correlator mode') }}{{ select(row + '_mode', 'Correlator mode', ['UNKNOWN','FDM','TDM'], 'UNKNOWN') }}</div></div>
+<div class="line-frequency-grid">{{ quantity(row + '_center', 'Window central frequency (REST or SKY)', ['GHz','MHz','kHz','Hz'], 'GHz') }}<div>{{ select(row + '_center_kind', 'Frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div><div class="mode-control">{{ help('mode', 'correlator mode') }}{{ select(row + '_mode', 'Correlator mode', ['UNKNOWN','FDM','TDM'], 'UNKNOWN') }}</div></div>
 
 
 {{ messages(row + '_mode') }}
@@ -109,7 +113,7 @@
 {% if 'CONTINUUM' not in values.get('intents', []) %}<p class="purpose-retained">Continuum is not selected. These retained inputs will not enable the CONTINUUM branch.</p>{% endif %}
 {{ messages('sensitivities') }}
 
-<div class="continuum-frequency-grid"><div>{{ quantity('representative', 'Representative frequency', ['GHz','MHz','kHz','Hz'], 'GHz') }}</div><div>{{ select('representative_kind', 'Representative frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>{% if normal_records %}<div>{{ input('continuum_redshift', 'Source redshift z') }}<p class="field-note">For this representative REST frequency only; unused for SKY.</p></div>{% endif %}{{ quantity('aggregate', 'Planned aggregate RMS', ['mJy/beam','Jy/beam'], 'mJy/beam') }}</div>
+<div class="continuum-frequency-grid"><div>{{ quantity('representative', 'Representative frequency', ['GHz','MHz','kHz','Hz'], 'GHz') }}</div><div>{{ select('representative_kind', 'Representative frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div>{{ quantity('aggregate', 'Planned aggregate RMS', ['mJy/beam','Jy/beam'], 'mJy/beam') }}</div>
 <details {% if stale_ids %}open{% endif %}><summary>Contributing windows (optional)</summary><fieldset id="aggregate_windows" class="choice-group" tabindex="-1"><legend>Windows contributing to the declared aggregate RMS</legend>
 {% if not rows and not stale_ids %}<p class="field-note">No window list is required to declare the aggregate RMS for this setup.</p>{% endif %}
 {% for row in (values.get('spw_rows', []) if normal_records else rows) %}<label><input type="checkbox" name="aggregate_windows" value="{{ values[row + '_id'] }}" {% if values[row + '_id'] in selected_windows %}checked{% endif %}>{{ 'Physical SPW' if normal_records else 'Window' }} {{ loop.index }}</label>{% endfor %}

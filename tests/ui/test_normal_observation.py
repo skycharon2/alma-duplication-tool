@@ -92,11 +92,11 @@ def test_frequency_local_redshift_export_has_no_shared_default(make_client):
     assert 'id="continuum_redshift"' in html
 
 
-def test_no_selected_science_hides_shared_redshift(make_client):
+def test_initial_target_shows_shared_redshift(make_client):
     client = make_client()
     html = client.get('/proposed').text
-    import re
-    assert re.search(r'<div id="shared-redshift"[^>]*\bhidden\b', html)
+    target = html.split('class="form-pair target-identity-grid"', 1)[1].split('id="scope-support"', 1)[0]
+    assert '<div id="shared-redshift">' in target
 
 
 def test_single_pointing_editor_does_not_depend_on_source_selection(make_client):
