@@ -3,7 +3,7 @@
 from dataclasses import replace
 
 from alma_duplicate.domain.comparison import QueueContextEvidence
-from alma_duplicate.domain.queue import RegularSpwEvidence
+from alma_duplicate.domain.queue import RegularSpwEvidence, QueueMosaicKind
 from alma_duplicate.queue_pointing_scope import (
     DECISION_REF as BLANK_MOSAIC_REF, is_queue_single_point, uses_blank_mosaic_interpretation,
 )
@@ -34,13 +34,15 @@ DECISION_REF = "docs/evidence/queue_row_continuum_decision_2026-09-24.md"
 
 def queue_common_scope_supported(common, *, mosaic=False):
     if mosaic:
-        return (
-            len(common) == 2
-            and {r.criterion_id for r in common} == {"ANGULAR", "POS-MOSAIC"}
-            and {r.method_version for r in common}
-            == {"queue_custom_angular_1", "queue_custom_position_1"}
-            and all(dict(r.details).get("common_scope") == "SUPPORTED_CUSTOM" for r in common)
-        )
+        contracts = {
+            "SUPPORTED_CUSTOM": {"queue_custom_angular_1", "queue_custom_position_1"},
+            "SUPPORTED_RECTANGLE": {"queue_rectangle_angular_1", "queue_rectangle_position_1"},
+        }
+        scopes = {dict(r.details).get("common_scope") for r in common}
+        return (len(common) == 2
+                and {r.criterion_id for r in common} == {"ANGULAR", "POS-MOSAIC"}
+                and len(scopes) == 1
+                and {r.method_version for r in common} == contracts.get(next(iter(scopes)), set()))
     return (
         len(common) == 2
         and {r.method_version for r in common}
@@ -253,3 +255,11 @@ def evaluate_queue_common(request, context, spatial_evidence, *, beam_diameter_m
         numeric_method="SPHERICAL_FLOAT64_INCLUSIVE_NO_EQUALITY_BAND",
     )
     return angular, position
+
+
+def queue_mosaic_common_matches_kind(common, kind):
+    """Prevent accepting a different geometry's adopted common contract."""
+    expected = {QueueMosaicKind.CUSTOM_POINTING: "SUPPORTED_CUSTOM",
+                QueueMosaicKind.RECTANGULAR_MOSAIC: "SUPPORTED_RECTANGLE"}.get(kind)
+    return (expected is not None and queue_common_scope_supported(common, mosaic=True)
+            and all(dict(r.details).get("common_scope") == expected for r in common))

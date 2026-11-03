@@ -170,7 +170,7 @@ def build_queue_line_pairs(
     expected_geometry = "MOSAIC" if mosaic else "SINGLE_POINTING"
     if request.target_kind != "FIXED" or request.geometry != expected_geometry:
         scope_reasons.append("FIXED_MOSAIC_REQUEST_REQUIRED" if mosaic else "FIXED_SINGLE_POINT_REQUEST_REQUIRED")
-    candidate_supported = (row.spatial.mosaic_kind is QueueMosaicKind.CUSTOM_POINTING if mosaic
+    candidate_supported = (row.spatial.mosaic_kind in (QueueMosaicKind.CUSTOM_POINTING, QueueMosaicKind.RECTANGULAR_MOSAIC) if mosaic
                            else is_queue_single_point(row))
     if not candidate_supported:
         scope_reasons.append("QUEUE_CUSTOM_REQUIRED" if mosaic else "QUEUE_SINGLE_FIELD_REQUIRED")
