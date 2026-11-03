@@ -114,8 +114,6 @@
 .proposal-page #line-requirements > .spectral-window { padding: 0; border: 0; }
 .proposal-page [data-workbench-ready] .secondary-guidance { display: none; }
 .proposal-page [data-workbench-ready] .scope-supported { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.proposal-page .window-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; font-size: 12px; }
-.proposal-page .window-tools .button { min-height: 32px; padding: 4px 8px; font-size: 11px; background: transparent; border-color: transparent; color: var(--muted); font-weight: 400; }
 .proposal-page .detail-context { margin-left: 8px; color: var(--muted); font-size: 11px; }
 .proposal-page .mode-control { position: relative; }
 .proposal-page .mode-control .field-help-button { position: absolute; right: 0; top: 0; }
@@ -139,10 +137,10 @@
 @media (max-width: 1180px) {
   .proposal-page .line-frequency-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .proposal-page .proposal-layout { grid-template-columns: minmax(0, 1fr) 230px; gap: 16px; }
+  .proposal-page .proposed-form section { padding: 14px 18px; }
+}
 @media (min-width: 601px) and (max-width: 1000px) {
   .proposal-page .proposed-form .target-identity-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-  .proposal-page .proposed-form section { padding: 14px 18px; }
 }
 @media (max-width: 850px) {
   .proposal-page .proposal-layout { grid-template-columns: 1fr; }
