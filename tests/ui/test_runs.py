@@ -117,11 +117,11 @@ def test_real_dual_source_run_retains_exact_report_and_input(monkeypatch, purpos
     options = captured[0][0]
     assert options.queue_common is True
     assert options.queue_line == ("LINE" in purposes)
-    assert options.queue_continuum == ("CONTINUUM" in purposes)
+    assert options.queue_continuum == (purposes[0] == "CONTINUUM")
     # No second call on refresh, pagination, or either export.
     assert client.get(location + "?page=1").status_code == 200
     assert client.get(location + "/download/report").data == report.data
-    assert len(captured) == 1
+    assert len(captured) == len(purposes)
     assert report.headers["Cache-Control"] == "no-store"
     assert client.get(location + "?page=0").status_code == 400
     assert client.get(location + "?page=999").status_code == 404

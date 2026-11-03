@@ -170,27 +170,30 @@ def run_form_parity(tmp_path, monkeypatch, inputs, data, expected_code):
     }).test_client()
     response = client.post("/proposed", data=data)
     assert response.status_code == 303
-    assert len(completed) == 1
-    url = response.location
-    request_bytes = client.get(url + "/download/request").data
-    raw = client.get(url + "/download/report").data
-    assert raw == completed[0]
-    document = json.loads(raw)
-    code, cli = cli_run(tmp_path, request_bytes, inputs)
-    assert code == expected_code
-    assert_same_report(document, cli, request_bytes)
-    inspection_bytes = client.get(url + "/download/inspection").data
-    assert json.loads(inspection_bytes) == inspect_report(cli, inspection_version="3")
-    contexts = document["context_evaluations"]
-    for page in range(1, max(1, (len(contexts) + 19) // 20) + 1):
-        html = client.get(url + f"?page={page}&view=all").get_data(as_text=True)
-        assert "NOT_AGGREGATED" in html
-        for context in contexts[(page - 1) * 20:page * 20]:
-            assert context["context_id"] in html
-        assert client.get(url + "/download/report").data == raw
-        assert client.get(url + "/download/inspection").data == inspection_bytes
-        assert client.get(url + "/download/request").data == request_bytes
-    assert len(completed) == 1, "refresh/pagination/export reran assessment"
+    assert len(completed) == len(data.getlist("intents"))
+    with client.session_transaction() as history:
+        urls = ["/runs/" + item for item in history["report_history"]]
+    assert urls[0] == response.location
+    for index, url in enumerate(urls):
+        request_bytes = client.get(url + "/download/request").data
+        raw = client.get(url + "/download/report").data
+        assert raw == completed[index]
+        document = json.loads(raw)
+        code, cli = cli_run(tmp_path, request_bytes, inputs, suffix=str(index))
+        assert code == expected_code
+        assert_same_report(document, cli, request_bytes)
+        inspection_bytes = client.get(url + "/download/inspection").data
+        assert json.loads(inspection_bytes) == inspect_report(cli, inspection_version="3")
+        contexts = document["context_evaluations"]
+        for page in range(1, max(1, (len(contexts) + 19) // 20) + 1):
+            html = client.get(url + f"?page={page}&view=all").get_data(as_text=True)
+            assert "NOT_AGGREGATED" in html
+            for context in contexts[(page - 1) * 20:page * 20]:
+                assert context["context_id"] in html
+            assert client.get(url + "/download/report").data == raw
+            assert client.get(url + "/download/inspection").data == inspection_bytes
+            assert client.get(url + "/download/request").data == request_bytes
+    assert len(completed) == len(data.getlist("intents")), "refresh/pagination/export reran assessment"
     return document, client, url
 
 
@@ -318,7 +321,7 @@ def test_additional_form_contracts(tmp_path, monkeypatch, cases, variant):
         return
     document, _, _ = run_form_parity(tmp_path, monkeypatch, inputs, data, 0)
     if variant == "dual-mixed":
-        assert {b["branch"] for c in document["context_evaluations"] for b in c["branches"]} == {"LINE", "CONTINUUM"}
+        assert {b["branch"] for c in document["context_evaluations"] for b in c["branches"]} == {"CONTINUUM"}
 
 
 def test_pagination_keeps_all_evaluations_and_exact_downloads(tmp_path, monkeypatch, cases):

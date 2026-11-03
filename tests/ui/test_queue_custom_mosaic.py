@@ -67,7 +67,14 @@ def test_existing_form_runs_queue_without_archive(browser, version, intents):
     assert report['schema_version'] == 'queue_custom_assessment_1'
     assert report['assessment_status'] == 'COMPLETED'
     assert set(report['sources']) == {'QUEUE'}
-    assert report['candidates'][0]['science']['matching_arrays_by_intent'] == {i:[7.,12.] for i in intents}
+    assert report['candidates'][0]['science']['matching_arrays_by_intent'] == {intents[0]: [7., 12.]}
+    if len(intents) == 2:
+        first_page = client.get(response.location).text
+        sibling = re.search(r'href="([^"]+)">Continuum report</a>', first_page).group(1)
+        assert sibling != response.location
+        assert response.location in client.get(sibling).text
+        continuum = client.get(sibling + '/download/report').json
+        assert continuum['candidates'][0]['science']['matching_arrays_by_intent'] == {'CONTINUUM': [7., 12.]}
     assert report['proposed']['sensitivity_basis'] == 'PER_POINTING'
     assert report['proposed']['setup_id'] == 'setup-1'
     if version == '2':

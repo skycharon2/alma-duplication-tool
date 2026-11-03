@@ -214,6 +214,8 @@ def create_app(config=None):
             abort(404)
         if data is None:
             return unavailable_run(report_id)
+        data["purpose_pair"] = next((pair for pair in session.get("purpose_report_pairs", [])
+                                     if report_id in pair), None)
         return render_report(data, report_id)
 
     def render_visualization(data, report_id, is_run):
@@ -342,14 +344,27 @@ def create_app(config=None):
                         if token else nullcontext())
             with observer:
                 runner = replace(configured, archive_connection=state.values.get("archive_connection", "AUTO"))
-                document, assessment, extra_input = dispatch(runner)
-                if assessment.document is not None:
-                    run_id = runs.add(document | extra_input, assessment)
-                    history = session.get('report_history', [])
-                    session['report_history'] = ([run_id] + history)[:20]
-                    report_url = url_for("run_view", report_id=run_id)
-                    return ({"report_url": report_url} if token else redirect(report_url, code=303)), None
-                return None, "Assessment returned no report. Review input readiness."
+                documents = [state.document]
+                both = set(state.values["intents"]) == {"LINE", "CONTINUUM"}
+                if both:
+                    from alma_duplicate.ui.proposed import build_document
+                    documents = [build_document(state.values | {"intents": [intent]}, state.rows)[0]
+                                 for intent in ("LINE", "CONTINUUM")]
+                completed = []
+                for document in documents:
+                    document, assessment, extra_input = dispatch(runner, document)
+                    if assessment.document is None:
+                        return None, "Assessment returned no report. Review input readiness."
+                    completed.append((document | extra_input, assessment))
+                ids = [runs.add(document, assessment) for document, assessment in completed]
+                history = (ids + session.get("report_history", []))[:20]
+                session["report_history"] = history
+                if both:
+                    pairs = [pair for pair in session.get("purpose_report_pairs", [])
+                             if all(item in history for item in pair)]
+                    session["purpose_report_pairs"] = [ids] + pairs
+                report_url = url_for("run_view", report_id=ids[0])
+                return ({"report_url": report_url} if token else redirect(report_url, code=303)), None
         except (OSError, UnicodeError, ValueError, TypeError) as exc:
             app.logger.warning("Browser assessment failed: %s", exc)
             return None, "Assessment could not be completed. Check the configured sources and server log. No report was created."
@@ -369,7 +384,7 @@ def create_app(config=None):
                 state.execution_error = "Assessment sources are not configured. You can still validate and download the request."
             elif state.result.is_valid and state.result.can_search:
                 response, state.execution_error = _run_and_store(
-                    state, lambda runner: (state.document, runner.assess(state.document), {}))
+                    state, lambda runner, document: (document, runner.assess(document), {}))
                 if response is not None:
                     return response
             else:
@@ -393,9 +408,8 @@ def create_app(config=None):
             elif not configured.enabled:
                 state.execution_error = "Assessment sources are not configured. You can still validate and download the request."
             elif state.result.is_valid and (state.result.can_search or points is not None):
-                def dispatch_mosaic(runner):
+                def dispatch_mosaic(runner, document):
                     from alma_duplicate.ui.mosaic_line_input import is_mosaic_line, submitted_document
-                    document = state.document
                     if queue_custom:
                         return document, runner.assess_queue_custom(document, points), {"mosaic_pointings": points}
                     if is_mosaic_line(document) and "line_input_contract" not in document["request"]:

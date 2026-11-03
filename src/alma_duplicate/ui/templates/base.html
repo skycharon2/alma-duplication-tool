@@ -37,6 +37,11 @@
     </nav>
   </header>
   <main id="main" class="page-width" tabindex="-1">
+    {% if purpose_pair %}<nav class="report-actions" aria-label="Assessment reports">
+      {% for label in ['Spectral line report', 'Continuum report'] %}{% set id = purpose_pair[loop.index0] %}
+      <a class="button" href="{{ url_for('run_view', report_id=id) }}"{% if id == report_id %} aria-current="page"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>{% endif %}
     {% block content %}{% endblock %}
   </main>
   <footer class="site-footer">
