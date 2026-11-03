@@ -92,13 +92,13 @@
 {% if line_layout %}{% for row in rows %}{% if not loop.first %}<details class="additional-line"><summary>Additional requested window {{ loop.index }}</summary>{% endif %}<fieldset id="{{ row }}" class="spectral-window" {% if added_row == row %}data-added-row{% endif %}><legend{% if loop.first %} class="sr-only"{% endif %}>Requested window {{ loop.index }}</legend>
 {{ messages(row) }}
 {% if normal_records %}<input type="hidden" name="rows" value="{{ row }}"><input type="hidden" name="{{ row }}_id" value="{{ values.get(row + '_id', row) }}">{% endif %}
-<div class="line-frequency-grid">{{ quantity(row + '_center', 'Window central frequency (REST or SKY)', ['GHz','MHz','kHz','Hz'], 'GHz') }}<div>{{ select(row + '_center_kind', 'Frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div><div class="mode-control">{{ help('mode', 'correlator mode') }}{{ select(row + '_mode', 'Correlator mode', ['UNKNOWN','FDM','TDM'], 'UNKNOWN') }}</div></div>
+<div class="line-frequency-grid">{{ quantity(row + '_center', 'Window central frequency (REST or SKY)', ['GHz','MHz','kHz','Hz'], 'GHz') }}<div>{{ select(row + '_center_kind', 'Frequency reference', ['SKY','REST','UNKNOWN'], 'SKY') }}</div><input type="hidden" name="{{ row }}_mode" value="{{ 'FDM' if 'LINE' in values.get('intents', []) else values.get(row + '_mode', 'UNKNOWN') }}"></div>
 
 
 {{ messages(row + '_mode') }}
 <div class="form-pair">{{ quantity(row + '_resolution', 'Planned spectral resolution', ['km/s','m/s','MHz','GHz','kHz','Hz'], 'km/s') }}{{ quantity(row + '_rms', 'Planned RMS at this resolution', ['mJy/beam','Jy/beam'], 'mJy/beam') }}</div>
 
-<details class="field-help secondary-guidance"><summary>Correlator mode and resolution</summary><p class="field-note">Appendix A requires FDM on both the proposed and comparison sides. Selecting Spectral line does not declare FDM. Spectral resolution, channel spacing and noise bandwidth are different quantities.</p></details>
+<details class="field-help secondary-guidance"><summary>Correlator mode and resolution</summary><p class="field-note">Appendix A requires FDM on both the proposed and comparison sides. The form uses FDM for proposed spectral-line windows. Spectral resolution, channel spacing and noise bandwidth are different quantities.</p></details>
 {% if normal_records and values.get(row + '_bandwidth', '') %}<details><summary>Linked SPW bandwidth evidence</summary>{{ quantity(row + '_bandwidth', 'Usable or nominal bandwidth', ['MHz','GHz','kHz','Hz'], 'MHz') }}{{ select(row + '_bandwidth_kind', 'Bandwidth interpretation', ['UNKNOWN','USABLE','NOMINAL'], 'UNKNOWN') }}</details>{% endif %}
 <div class="window-tools">
 <button class="button" type="submit" name="action" value="remove:{{ row }}">Remove requested window {{ loop.index }}</button></div></fieldset>{% if not loop.first %}</details>{% endif %}{% endfor %}{% endif %}

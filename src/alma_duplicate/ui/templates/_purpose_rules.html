@@ -15,7 +15,7 @@
 <li><strong>Sensitivity:</strong> requested per-channel sensitivity is better by a factor of ≤ 2 after smoothing to the same spectral resolution. Coverage, mode and sensitivity must belong to the same coherent comparison.</li>
 {% endif %}
 </ul>
-{% if purpose == 'continuum' %}<p>The combined Continuum choice records your setup confirmation; it does not independently verify window widths or confirm duplication. A conflicting complete window list is flagged.</p>{% else %}<p>Selecting Spectral line does not declare FDM or establish these conditions. Enter mode, frequency, resolution and RMS below.</p>{% endif %}
+{% if purpose == 'continuum' %}<p>The combined Continuum choice records your setup confirmation; it does not independently verify window widths or confirm duplication. A conflicting complete window list is flagged.</p>{% else %}<p>Proposed spectral-line windows use FDM. Candidate modes are evaluated from source evidence. Enter frequency, resolution and RMS below.</p>{% endif %}
 <p>When both purposes are selected, complete branches are evaluated independently: either can qualify. Conditions cannot be borrowed across branches, array diameters, spectral windows or sources. Missing evidence may leave a result unresolved.</p>
 <details><summary>Scope and other observation types</summary>
 <p>Fixed single pointing uses supported 7m and 12m array evidence; TP does not create a position branch. Retrieval radius is separate from the scientific position test.</p>
