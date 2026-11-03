@@ -155,3 +155,26 @@ def test_purpose_edit_only_opens_selected_sections(make_client, selected):
     for intent, section in [("LINE", "line-requirements"), ("CONTINUUM", "sensitivities")]:
         opening = html.split(f'<section id="{section}"', 1)[1].split(">", 1)[0]
         assert ("hidden" in opening) == (intent not in selected)
+
+
+@pytest.mark.parametrize("geometry", ["SINGLE_POINTING", "MOSAIC"])
+def test_target_redshift_survives_purpose_changes(make_client, geometry):
+    from bs4 import BeautifulSoup
+    client = make_client()
+    values = dict(target_kind="FIXED", geometry=geometry, normal_form_version="2",
+                  redshift="0.5", sources=["ARCHIVE", "QUEUE"], action="purpose")
+    url = "/proposed/mosaic" if geometry == "MOSAIC" else "/proposed"
+    for intents in [["CONTINUUM"], ["LINE", "CONTINUUM"], [], ["CONTINUUM"]]:
+        page = BeautifulSoup(client.post(url, data=values | {"intents": intents}).text, "html.parser")
+        assert page.select_one('[name="redshift"]')["value"] == "0.5"
+        continuum = page.select_one('[name="continuum_redshift"]')
+        if continuum:
+            assert continuum["value"] == "0.5"
+        for field in page.select('input[name]'):
+            name = field["name"]
+            if name.endswith("_redshift") or name in {"frequency_local_redshift", "normal_line_records"}:
+                values[name] = field.get("value", "")
+        values["rows"] = [field["value"] for field in page.select('input[name="rows"]')]
+    values.update(continuum_redshift="", intents=["CONTINUUM"])
+    page = BeautifulSoup(client.post(url, data=values).text, "html.parser")
+    assert page.select_one('[name="continuum_redshift"]')["value"] == ""

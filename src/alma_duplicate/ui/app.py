@@ -493,6 +493,12 @@ def create_app(config=None):
             state.mosaic_preview["complete_confirmed"] = values.get("mosaic_complete") == "on"
         for row in rows + values.get("spw_rows", []):
             values.setdefault(row + "_id", row)
+        # Carry the shared target value into new local controls without replacing
+        # explicit per-frequency values, including deliberately cleared inputs.
+        if values.get("redshift", "").strip():
+            values.setdefault("continuum_redshift", values["redshift"])
+            for row in rows:
+                values.setdefault(row + "_redshift", values["redshift"])
         selected = contributing_windows(values)
         from alma_duplicate.ui.normal_line_input import uses_separated_input
         physical_rows = values.get('spw_rows', []) if uses_separated_input(values) else rows

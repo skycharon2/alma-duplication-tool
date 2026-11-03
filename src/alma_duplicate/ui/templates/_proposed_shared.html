@@ -37,7 +37,7 @@
 {% if geometry not in ['SINGLE_POINTING','MOSAIC'] %}<option selected value="{{ geometry }}">{{ geometry }} (invalid selection)</option>{% endif %}
 {% for value, label in [('SINGLE_POINTING','Single pointing'),('MOSAIC','Mosaic — Solar exemption applies' if target_kind == 'SUN' else 'Mosaic')] %}<option value="{{ value }}" {% if geometry == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{{ messages('geometry') }}</div>
 {% if not normal_records %}<div id="shared-redshift">{{ input('redshift', 'Source redshift z') }}
-</div>{% else %}<input type="hidden" name="frequency_local_redshift" value="1">
+</div>{% else %}<input type="hidden" name="frequency_local_redshift" value="1"><input type="hidden" name="redshift" value="{{ values.get('redshift', '') }}">
 {% if line_layout %}{% for row in rows %}<div>{{ input(row + '_redshift', 'Source redshift z — window ' ~ loop.index) }}<p class="field-note">Used only to convert this REST frequency to SKY. Required for REST; unused for SKY.</p></div>{% endfor %}{% endif %}
 <div {% if not continuum_layout %}hidden{% endif %}><div>{{ input('continuum_redshift', 'Source redshift z — continuum') }}<p class="field-note">For this representative REST frequency only; unused for SKY.</p></div></div>
 {% endif %}
