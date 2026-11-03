@@ -52,3 +52,20 @@ def test_rejected_pr1_download_cannot_displace_active_pointer(tmp_path):
                         clock=lambda: NOW)
     assert failed["status"] in {"VALIDATION_FAILED", "KNOWN_INVALID"}
     assert registry.current() == active
+
+
+def test_website_startup_selects_verified_download_and_preserves_it_on_failure(tmp_path, monkeypatch):
+    from alma_duplicate.ui import app as website
+    from alma_duplicate.ui.managed_queue import pin_active_queue
+
+    monkeypatch.chdir(tmp_path)
+    raw = FIXTURE.read_bytes()
+    monkeypatch.setattr(website, "run_update", lambda root: run_update(root, downloader=_download(raw)))
+    config = dict(TESTING=True, AUTO_QUEUE=True, OFFLINE_QUEUE_CSV=None, MANAGED_QUEUE_ROOT=None)
+    app = website.create_app(config)
+    root = app.config["MANAGED_QUEUE_ROOT"]
+    assert pin_active_queue(root).raw_bytes == raw
+    revision = QueueActiveRegistry(root).current()["revision"]
+    raw = b"invalid CSV"
+    website.create_app(config)
+    assert QueueActiveRegistry(root).current()["revision"] == revision
