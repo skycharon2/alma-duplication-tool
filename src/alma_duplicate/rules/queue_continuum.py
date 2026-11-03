@@ -102,13 +102,15 @@ def evaluate_queue_continuum(request, context, common, *, mosaic=False):
         raise ValueError("Common evidence belongs to another context")
     row = context.evidence.row
     if mosaic and (request.target_kind != "FIXED" or request.geometry != "MOSAIC"
-                   or row.spatial.mosaic_kind is not QueueMosaicKind.CUSTOM_POINTING):
-        raise ValueError("Custom Mosaic scope required")
+                   or row.spatial.mosaic_kind not in (QueueMosaicKind.CUSTOM_POINTING, QueueMosaicKind.RECTANGULAR_MOSAIC)):
+        raise ValueError("Supported Queue Mosaic scope required")
     if context.evidence.association.raw_row_id != row.raw_row.row_id:
         raise ValueError("Queue association belongs to another source row")
+    from alma_duplicate.rules.queue_common import queue_mosaic_common_matches_kind
     base = (
         []
-        if scope_supported(common, mosaic=mosaic)
+        if scope_supported(common, mosaic=mosaic) and (not mosaic or
+            queue_mosaic_common_matches_kind(common, row.spatial.mosaic_kind))
         else [_issue("QUEUE_CONTINUUM_SCOPE_UNSUPPORTED", "context")]
     )
     details = [
