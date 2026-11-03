@@ -347,6 +347,7 @@ def create_app(config=None):
                         if token else nullcontext())
             with observer:
                 runner = replace(configured, archive_connection=state.values.get("archive_connection", "AUTO"))
+                runner = runner.pin_queue_for_submission("QUEUE" in state.values["sources"])
                 documents = [state.document]
                 both = set(state.values["intents"]) == {"LINE", "CONTINUUM"}
                 if both:
