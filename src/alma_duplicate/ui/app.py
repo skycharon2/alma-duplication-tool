@@ -9,6 +9,9 @@ import weakref
 from flask import Flask, Response, abort, redirect, render_template, request, session, url_for
 from secrets import token_hex
 
+from alma_duplicate.cli.queue_update import QueueUpdateBusyError, SUCCESS_STATUSES, run_update
+from alma_duplicate.storage.queue_active import QueueActiveError, QueueActiveRegistry
+from alma_duplicate.storage import QueueSnapshotStoreError
 from alma_duplicate.progress import observe_progress
 from alma_duplicate.ui.progress import ProgressStore
 from alma_duplicate.ui.reports import load_reports
@@ -53,7 +56,7 @@ def _env_flag(name):
 
 
 def create_app(config=None):
-    """Create the browser application without accessing assessment sources."""
+    """Create the browser application and prepare the default Queue source."""
     app = Flask(__name__)
     from alma_duplicate.ui.mosaic_uploads import MosaicUploadStore
     mosaic_uploads = MosaicUploadStore()
@@ -75,6 +78,24 @@ def create_app(config=None):
     app.config["RUN_STORAGE_PARENT"] = None
     if config is not None:
         app.config.from_mapping(config)
+
+    auto_queue = app.config.get("AUTO_QUEUE")
+    if auto_queue is None:
+        auto_queue = (_env_flag("ALMA_UI_AUTO_QUEUE") if "ALMA_UI_AUTO_QUEUE" in os.environ
+                      else not app.testing)
+    if auto_queue and not (app.config["OFFLINE_QUEUE_CSV"] or app.config["MANAGED_QUEUE_ROOT"]):
+        root = "data/cache/queue-snapshots"
+        app.config["MANAGED_QUEUE_ROOT"] = root
+        try:
+            check = run_update(root)
+            if check["status"] in SUCCESS_STATUSES:
+                QueueActiveRegistry(root).activate(
+                    check["source_id"], check["run_id"], reason="Website startup verified official Queue CSV",
+                )
+            else:
+                app.logger.warning("Queue update failed: %s", check.get("error", check["status"]))
+        except (QueueUpdateBusyError, QueueActiveError, QueueSnapshotStoreError, OSError) as exc:
+            app.logger.warning("Queue startup update unavailable: %s", exc)
 
     reports = load_reports(app.config["REPORT_DIRECTORY"])
     configured = BrowserAssessment(
