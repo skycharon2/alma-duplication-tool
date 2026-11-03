@@ -5,6 +5,7 @@ from alma_duplicate.domain.queue import QueueMosaicKind, SpectralScanEvidence
 from alma_duplicate.queue_custom_science import assess_queue_custom_science
 from alma_duplicate.queue_mosaic_inputs import load_snapshot, validate_inputs
 from alma_duplicate.queue_rectangle_science import assess_queue_rectangle_science
+from alma_duplicate.queue_single_field_mosaic import assess_single_field_science
 from alma_duplicate.reporting import json_value
 
 
@@ -27,12 +28,13 @@ def assess_queue_mosaic(validated, proposed, *, options, sources, input_sha256, 
         counts = {}
         represented = Counter()
         for kind, evaluate in ((QueueMosaicKind.CUSTOM_POINTING, assess_queue_custom_science),
-                               (QueueMosaicKind.RECTANGULAR_MOSAIC, assess_queue_rectangle_science)):
+                               (QueueMosaicKind.RECTANGULAR_MOSAIC, assess_queue_rectangle_science),
+                               (QueueMosaicKind.SINGLE_FIELD, assess_single_field_science)):
             result = evaluate(parsed, request, proposed, nominal_conversion=options.nominal_conversion)
             reports[kind.value] = result
             candidates = result['candidates']
             for candidate in candidates:
-                if kind is QueueMosaicKind.CUSTOM_POINTING:
+                if kind is not QueueMosaicKind.RECTANGULAR_MOSAIC:
                     represented.update(row['source_row_id'] for row in candidate['source_rows'])
                 else:
                     represented[candidate['geometry']['source_row_id']] += 1
