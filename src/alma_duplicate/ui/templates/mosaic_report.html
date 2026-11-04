@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "report_fragment.html" if embedded else "base.html" %}
 {% block title %}Archive Mosaic comparison · ALMA Duplication Assessment{% endblock %}
 {% block extra_head %}<link rel="stylesheet" href="{{ url_for('static', filename='mosaic-report.css') }}">{% endblock %}
 
@@ -60,16 +60,16 @@
 </section>
 
 <nav class="report-nav mosaic-filters" aria-label="Mosaic candidate filters">
-<a href="{{ url_for('run_view', report_id=report_id, view='matching') }}#candidates"{% if result_view == 'matching' %} aria-current="page"{% endif %}>Matching branches ({{ mosaic_overview.candidate_buckets.MATCH }})</a>
+<a href="{{ url_for('run_view', report_id=report_id, view='matching') }}#{{ report_id }}-candidates"{% if result_view == 'matching' %} aria-current="page"{% endif %}>Matching branches ({{ mosaic_overview.candidate_buckets.MATCH }})</a>
 </nav>
 <details class="report-retention"><summary>Inspect unresolved and nonmatching candidates</summary>
 <nav class="report-nav mosaic-filters" aria-label="Additional Mosaic diagnostic views">
-<a href="{{ url_for('run_view', report_id=report_id, view='review') }}#candidates"{% if result_view == 'review' %} aria-current="page"{% endif %}>Needs review ({{ mosaic_overview.candidate_buckets.NEEDS_REVIEW + mosaic_overview.candidate_buckets.UNAVAILABLE }})</a>
-<a href="{{ url_for('run_view', report_id=report_id, view='not_met') }}#candidates"{% if result_view == 'not_met' %} aria-current="page"{% endif %}>Not met ({{ mosaic_overview.candidate_buckets.NOT_MET }})</a>
-<a href="{{ url_for('run_view', report_id=report_id, view='all') }}#candidates"{% if result_view == 'all' %} aria-current="page"{% endif %}>All candidates ({{ candidate_count }})</a>
+<a href="{{ url_for('run_view', report_id=report_id, view='review') }}#{{ report_id }}-candidates"{% if result_view == 'review' %} aria-current="page"{% endif %}>Needs review ({{ mosaic_overview.candidate_buckets.NEEDS_REVIEW + mosaic_overview.candidate_buckets.UNAVAILABLE }})</a>
+<a href="{{ url_for('run_view', report_id=report_id, view='not_met') }}#{{ report_id }}-candidates"{% if result_view == 'not_met' %} aria-current="page"{% endif %}>Not met ({{ mosaic_overview.candidate_buckets.NOT_MET }})</a>
+<a href="{{ url_for('run_view', report_id=report_id, view='all') }}#{{ report_id }}-candidates"{% if result_view == 'all' %} aria-current="page"{% endif %}>All candidates ({{ candidate_count }})</a>
 </nav></details>
 
-<section id="candidates" aria-label="Mosaic candidate results"><h2>Candidate results</h2>
+<section id="{{ report_id }}-candidates" aria-label="Mosaic candidate results"><h2>Candidate results</h2>
 {% if result_view == 'matching' %}<p>{{ matching_member_count }} matching Archive Member groups · {{ visible_count }} recorded candidate identities in those Members · Page {{ page }} of {{ pages }}. Each page contains up to 20 complete Member groups; all recorded target identities in a matching Member remain together.</p>
 {% else %}<p>{{ visible_count }} candidate identities in this diagnostic view · Page {{ page }} of {{ pages }}. Each page contains at most 20 candidate identities; Members may span diagnostic pages. Results retain their original discovery order.</p>{% endif %}
 {% if result_view == 'review' %}<p class="mosaic-status-note">This view contains uncertain evaluated candidates and candidates with unavailable metadata. Matching candidates with unresolved additional branches remain in the matching view.</p>{% endif %}
@@ -114,9 +114,9 @@
 </section>{% endfor %}
 </section>{% endfor %}
 <nav aria-label="Mosaic result pages">
-{% if page > 1 %}<a href="{{ url_for('run_view', report_id=report_id, page=page-1, view=result_view) }}#candidates">Previous page</a>{% endif %}
+{% if page > 1 %}<a href="{{ url_for('run_view', report_id=report_id, page=page-1, view=result_view) }}#{{ report_id }}-candidates">Previous page</a>{% endif %}
 <span>Page {{ page }} of {{ pages }}</span>
-{% if page < pages %}<a href="{{ url_for('run_view', report_id=report_id, page=page+1, view=result_view) }}#candidates">Next page</a>{% endif %}
+{% if page < pages %}<a href="{{ url_for('run_view', report_id=report_id, page=page+1, view=result_view) }}#{{ report_id }}-candidates">Next page</a>{% endif %}
 </nav></section>
 
 <section class="mosaic-technical" id="technical-records" aria-label="Technical records"><details><summary>Complete technical records and downloads</summary>

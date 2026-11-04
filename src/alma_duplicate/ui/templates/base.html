@@ -47,7 +47,7 @@
       {% for id, label in source_group.items() %}<a class="button" href="{{ url_for('run_view', report_id=id) }}"{% if id == report_id %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}
     </nav>{% endif %}
     {% if purpose_pair %}<nav class="report-actions" aria-label="Assessment reports">
-      {% for label in ['Spectral line report', 'Continuum report'] %}{% set id = purpose_pair[loop.index0] %}
+      {% for label in ['Spectral line', 'Continuum'] %}{% set id = purpose_pair[loop.index0] %}
       <a class="button" href="{{ url_for('run_view', report_id=id) }}"{% if id == report_id %} aria-current="page"{% endif %}>{{ label }}</a>
       {% endfor %}
     </nav>{% endif %}

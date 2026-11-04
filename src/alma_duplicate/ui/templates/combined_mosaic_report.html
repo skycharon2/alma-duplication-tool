@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ purpose }} assessment · ALMA Duplication Assessment{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{{ url_for('static', filename='mosaic-report.css') }}">{% endblock %}
+{% block content %}
+{% if purpose_tabs|length > 1 %}
+<nav class="report-actions" aria-label="Assessment reports">
+  {% for label in ["Spectral line", "Continuum"] if label in purpose_tabs %}{% set id = purpose_tabs[label] %}
+  <a class="button" href="{{ url_for('run_view', report_id=id) }}"{% if label == purpose %} aria-current="page"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</nav>
+{% endif %}
+<h1>{{ purpose }} assessment</h1>
+{% for section in sections %}
+<section aria-label="{{ section.source }} results">
+  <h2>{{ section.source }} results</h2>
+  {% if section.html is none %}
+  <p role="status">This source report is no longer available. Run the assessment again to retrieve its results.</p>
+  {% else %}
+  {{ section.html | safe }}
+  {% endif %}
+</section>
+{% endfor %}
+{% endblock %}
