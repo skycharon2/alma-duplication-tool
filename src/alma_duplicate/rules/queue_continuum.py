@@ -94,7 +94,7 @@ def _result(name, context, proposed, candidate, issues, passed, derived, details
     )
 
 
-def evaluate_queue_continuum(request, context, common, *, mosaic=False):
+def evaluate_queue_continuum(request, context, common, *, mosaic=False, candidate_mosaic=False):
     """Evaluate one coherent retained Queue row, using validated common scope."""
     if not isinstance(context.evidence, QueueContextEvidence):
         raise TypeError("Queue context required")
@@ -104,6 +104,14 @@ def evaluate_queue_continuum(request, context, common, *, mosaic=False):
     if mosaic and (request.target_kind != "FIXED" or request.geometry != "MOSAIC"
                    or row.spatial.mosaic_kind not in (QueueMosaicKind.CUSTOM_POINTING, QueueMosaicKind.RECTANGULAR_MOSAIC, QueueMosaicKind.SINGLE_FIELD)):
         raise ValueError("Supported Queue Mosaic scope required")
+    if candidate_mosaic:
+        expected = {QueueMosaicKind.CUSTOM_POINTING: "SUPPORTED_SINGLE_TO_CUSTOM",
+                    QueueMosaicKind.RECTANGULAR_MOSAIC: "SUPPORTED_SINGLE_TO_RECTANGLE"}
+        if (mosaic or request.geometry != "SINGLE_POINTING" or request.target_kind != "FIXED"
+                or row.spatial.mosaic_kind not in expected
+                or any(dict(c.details).get("common_scope") != expected[row.spatial.mosaic_kind]
+                       for c in common)):
+            raise ValueError("Single Pointing to Queue Mosaic scope required")
     if context.evidence.association.raw_row_id != row.raw_row.row_id:
         raise ValueError("Queue association belongs to another source row")
     from alma_duplicate.rules.queue_common import queue_mosaic_common_matches_kind

@@ -44,6 +44,16 @@ def queue_common_scope_supported(common, *, mosaic=False):
                 and {r.criterion_id for r in common} == {"ANGULAR", "POS-MOSAIC"}
                 and len(scopes) == 1
                 and {r.method_version for r in common} == contracts.get(next(iter(scopes)), set()))
+    cross_scopes = {
+        "SUPPORTED_SINGLE_TO_CUSTOM": {"queue_single_to_custom_angular_1", "queue_single_to_custom_position_1"},
+        "SUPPORTED_SINGLE_TO_RECTANGLE": {"queue_single_to_rectangle_angular_1", "queue_single_to_rectangle_position_1"},
+    }
+    scopes = {dict(r.details).get("common_scope") for r in common}
+    if len(scopes) == 1 and next(iter(scopes)) in cross_scopes:
+        return (len(common) == 2
+                and {r.criterion_id for r in common} == {"ANGULAR", "POS-SINGLE"}
+                and {r.method_version for r in common} == cross_scopes[next(iter(scopes))])
+
     return (
         len(common) == 2
         and {r.method_version for r in common}
