@@ -1,0 +1,21 @@
+{% from '_report_comparison.html' import comparison with context %}
+{% macro rows(entries) %}
+{% for entry in entries %}<tr><th scope="row"><a href="#queue-{{ entry.candidate.candidate_id }}">{{ entry.target }} · {{ entry.project }}</a></th><td>Queue<small>{{ entry.kind }} · {{ entry.candidate.candidate_id }}</small></td><td>{{ entry.candidate.science.branches|selectattr('truth', 'equalto', 'TRUE')|list|length }} matching branches</td></tr>{% endfor %}
+{% endmacro %}
+{% macro details(entries) %}
+{% for entry in entries %}
+{% set c = entry.candidate %}
+<details class="report-context" id="queue-{{ c.candidate_id }}"><summary>{{ entry.project }} · {{ entry.target }} · {{ entry.kind }}{% for b in c.science.branches %} · {{ b.branch }}: {{ b.status }}{% endfor %}</summary>
+<p>Queue CSV · Model: {{ c.science.model_status or 'PROVISIONAL' }} · Candidate completeness: {{ c.science.scientific_candidate_completeness or 'NOT_ESTABLISHED' }}</p>
+<p>Candidate ID: {{ c.candidate_id }}. Full configuration and provenance are retained in the report download.</p>
+{% for v in c.science.variants %}
+<details><summary>{{ v.diameter_m }} m{% for b in v.branches %} · {{ b.branch }}: {{ b.status }}{% endfor %}</summary>
+{% set position = c.position.beam_variants | selectattr('diameter_m', 'equalto', v.diameter_m) | first %}
+{{ comparison(v.criteria, 'Candidate conditions', position) }}
+{% for pair in v.line_pairs %}<details><summary>LINE · {{ pair.reference.proposed_window_id }} · SPW {{ pair.reference.spw_number }}: {{ pair.status or pair.truth }}</summary>{{ comparison(pair.criteria, 'LINE comparison', position) }}</details>{% endfor %}
+</details>
+{% else %}<p>UNKNOWN: array inference is unresolved.</p>{% endfor %}
+</details>
+{% endfor %}
+
+{% endmacro %}

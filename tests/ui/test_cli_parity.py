@@ -177,11 +177,13 @@ def run_form_parity(tmp_path, monkeypatch, inputs, data, expected_code):
     for index, url in enumerate(urls):
         request_bytes = client.get(url + "/download/request").data
         raw = client.get(url + "/download/report").data
-        assert raw == completed[index]
         document = json.loads(raw)
+        baseline = dict(document)
+        baseline.pop('queue_geometry_assessment', None)
+        assert baseline == json.loads(completed[index])
         code, cli = cli_run(tmp_path, request_bytes, inputs, suffix=str(index))
         assert code == expected_code
-        assert_same_report(document, cli, request_bytes)
+        assert_same_report(baseline, cli, request_bytes)
         inspection_bytes = client.get(url + "/download/inspection").data
         assert json.loads(inspection_bytes) == inspect_report(cli, inspection_version="3")
         contexts = document["context_evaluations"]

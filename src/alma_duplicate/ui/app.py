@@ -129,8 +129,16 @@ def create_app(config=None):
 
     @app.get("/reports")
     def report_index():
+        recent = runs.summaries(session.get('report_history', []))
+        groups = session.get('mosaic_report_groups', [])
+        hidden = set()
+        available = {row['id'] for row in recent}
+        for group in groups:
+            retained = [key for key in group if key in available]
+            if retained:
+                hidden.update(retained[1:])
         return render_template("reports.html", reports=reports,
-                               recent_runs=runs.summaries(session.get('report_history', [])),
+                               recent_runs=[row for row in recent if row['id'] not in hidden],
                                retention_hours=runs.max_age / 3600)
 
     def artifact(report_id):
@@ -149,8 +157,24 @@ def create_app(config=None):
             abort(400)
         return int(page), view
 
+    from alma_duplicate.ui.queue_browser import presentation as queue_geometry_candidates
+    app.jinja_env.globals['queue_geometry_candidates'] = queue_geometry_candidates
+
     def render_report(data, report_id):
         is_run = data.get('run') is not None
+        if (data.get('unified_queue') or data.get('mosaic')) and data['result_view'] in {'matches', 'matching'}:
+            return render_template('combined_mosaic_report.html',
+                sections=[dict(source='QUEUE' if data.get('unified_queue') else 'ARCHIVE', data=data, report_id=report_id)],
+                purpose='Mosaic assessment', purpose_tabs={}, purpose_pair=data.get('purpose_pair'), report_id=report_id,
+                failed_branches=data.get('failed_branches', []), criterion_view=criterion_view,
+                criterion_status=criterion_status, criterion_explanation=criterion_explanation,
+                display_number=display_number, calculation_view=calculation_view,
+                status_labels=STATUS_LABELS, pair_title=pair_title)
+        if data.get('unified_queue'):
+            return render_template('queue_unified_report.html', **data, report_id=report_id,
+                criterion_view=criterion_view, criterion_status=criterion_status,
+                criterion_explanation=criterion_explanation, display_number=display_number,
+                calculation_view=calculation_view)
         if data.get('queue_custom'):
             return render_template('queue_custom_report.html', **data, report_id=report_id,
                 criterion_view=criterion_view, criterion_status=criterion_status,
@@ -205,6 +229,17 @@ def create_app(config=None):
         ))
         return render_template('run_unavailable.html', title=title, explanation=explanation), 404
 
+    @app.get("/runs/<report_id>/queue")
+    def run_queue_view(report_id):
+        page, view = page_selection(allow_mosaic_views=True)
+        try:
+            data = runs.queue_page(report_id, page, view)
+        except IndexError:
+            abort(404)
+        if data is None:
+            return unavailable_run(report_id)
+        return render_report(data, report_id)
+
     @app.get("/runs/<report_id>")
     def run_view(report_id):
         page, view = page_selection(allow_mosaic_views=True)
@@ -214,13 +249,24 @@ def create_app(config=None):
             abort(404)
         if data is None:
             return unavailable_run(report_id)
+        if data.get('document', {}).get('queue_geometry_assessment'):
+            queue_number = request.args.get('queue_page', '1')
+            if not queue_number.isdecimal() or len(queue_number) > 8 or int(queue_number) < 1:
+                abort(400)
+            try:
+                queue_data = runs.queue_page(report_id, int(queue_number), 'matches')
+            except IndexError:
+                abort(404)
+            if queue_data:
+                data['document']['queue_geometry_assessment'] = queue_data['document']
+                data['queue_pagination'] = queue_data
         data["failed_branches"] = next((group["branches"] for group in
             session.get("partial_assessments", []) if report_id in group["report_ids"]), [])
         data["source_group"] = next((g for g in session.get("mosaic_report_groups", []) if report_id in g), None)
         data["purpose_pair"] = next((pair for pair in session.get("purpose_report_pairs", [])
                                      if report_id in pair), None)
         group = data.get("source_group")
-        if group:
+        if group and view in {"matches", "matching"}:
             purpose = group[report_id].split(" · ", 1)[0]
             tabs = {}
             sections = []
@@ -231,13 +277,15 @@ def create_app(config=None):
                     continue
                 sibling = data if sibling_id == report_id else runs.page(sibling_id, 1, "matches")
                 if sibling is None:
-                    sections.append(dict(source=source, html=None))
+                    sections.append(dict(source=source, data=None, report_id=sibling_id))
                     continue
-                fragment = dict(sibling, embedded=True, source_group=None, purpose_pair=None)
-                sections.append(dict(source=source, html=render_report(fragment, sibling_id)))
+                sections.append(dict(source=source, data=sibling, report_id=sibling_id))
             return render_template("combined_mosaic_report.html", sections=sections,
                 purpose=purpose, purpose_tabs=tabs, failed_branches=data["failed_branches"],
-                report_id=report_id)
+                report_id=report_id, criterion_view=criterion_view,
+                criterion_status=criterion_status, criterion_explanation=criterion_explanation,
+                display_number=display_number, calculation_view=calculation_view,
+                status_labels=STATUS_LABELS, pair_title=pair_title)
         return render_report(data, report_id)
 
     def render_visualization(data, report_id, is_run):
@@ -276,7 +324,7 @@ def create_app(config=None):
             abort(404)
         if data is None:
             return unavailable_run(report_id)
-        if data.get("mosaic") or data.get('queue_custom'):
+        if data.get("mosaic") or data.get('queue_custom') or data.get('unified_queue'):
             abort(404)
         return render_visualization(data, report_id, True)
 
@@ -444,8 +492,8 @@ def create_app(config=None):
         state.document, state.result, state.issues = validate_form(
             state.values, state.rows, require_line_complete=action == "assess")
         sources = state.values["sources"]
-        source_ready = bool(sources) and ("ARCHIVE" not in sources or configured.live_archive) and (
-            "QUEUE" not in sources or bool(configured.queue_csv or configured.managed_queue_root))
+        source_ready = (("ARCHIVE" in sources and configured.live_archive) or
+                        ("QUEUE" in sources and bool(configured.queue_csv or configured.managed_queue_root)))
         state.issues, points, state.mosaic_ready, state.execution_error = prepare_mosaic_validation(
             state.values, state.mosaic_preview, state.issues, state.result,
             live_archive=source_ready)

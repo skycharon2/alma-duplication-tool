@@ -204,11 +204,21 @@ def member_groups(entries):
     return result
 
 
+def geometry_assessed_elsewhere(context, document):
+    """Legacy row scope is superseded only after geometry assessment completes."""
+    extension = document.get('queue_geometry_assessment') or {}
+    if extension.get('assessment_status') != 'COMPLETED':
+        return False
+    scope = queue_scope_help(context, document)
+    return bool(scope and scope[0] in {'QUEUE_CUSTOM', 'QUEUE_RECTANGLE'})
+
+
 def report_summary(document):
     """Count stored context branch results; no new observation-level verdict."""
     request = document.get('request') or {}
     request = request.get('normalized') or request.get('raw') or {}
-    contexts = document.get('context_evaluations', [])
+    contexts = [c for c in document.get('context_evaluations', [])
+                if not geometry_assessed_elsewhere(c, document)]
     intents = request.get('intents') or list(dict.fromkeys(
         b['branch'] for c in contexts for b in c.get('branches', [])))
     counts = []
@@ -461,7 +471,10 @@ def attention_groups(document, inspection):
     indices = {c['context_id']: i for i, c in enumerate(contexts)}
     scope_help = {c['context_id']: queue_scope_help(c, document) for c in contexts}
     groups = {}
+    superseded = {c['context_id'] for c in contexts if geometry_assessed_elsewhere(c, document)}
     for gap in inspection.get('gap_occurrences', []):
+        if gap.get('context_id') in superseded:
+            continue
         category = gap.get('category', 'UNCLASSIFIED')
         title, fallback = GAP_CATEGORIES.get(category, GAP_CATEGORIES['UNCLASSIFIED'])
         help_text = scope_help.get(gap.get('context_id')) if gap['code'] in QUEUE_SCOPE_CODES else None

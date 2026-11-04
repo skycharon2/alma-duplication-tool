@@ -177,6 +177,11 @@ def test_mosaic_both_sources_share_page_with_purpose_navigation(browser, intents
     assert response.status_code == 303, response.text
     with client.session_transaction() as state:
         group, = state["mosaic_report_groups"]
+    from bs4 import BeautifulSoup
+    index = BeautifulSoup(client.get('/reports').text, 'html.parser')
+    report_links = [a for a in index.find_all('a', href=True)
+                    if a['href'].startswith('/runs/')]
+    assert len(report_links) == 1
     assert set(group.values()) == {{"LINE": "Spectral line", "CONTINUUM": "Continuum"}[intent] + " · " + source for intent in intents for source in ("ARCHIVE", "QUEUE")}
     for key, label in group.items():
         url = "/runs/" + key
@@ -184,8 +189,10 @@ def test_mosaic_both_sources_share_page_with_purpose_navigation(browser, intents
         from bs4 import BeautifulSoup
         soup = BeautifulSoup(page, "html.parser")
         assert len(soup.find_all("html")) == 1
-        assert soup.select_one('section[aria-label="ARCHIVE results"]')
-        assert soup.select_one('section[aria-label="QUEUE results"]')
+        assert page.count('Results in this search') == 1
+        assert page.count('<h2>Matching candidates</h2>') == 1
+        assert 'matching Queue candidate configurations' in page
+        assert 'matching Archive Member' in page
         nav = soup.select_one('nav[aria-label="Assessment reports"]')
         if len(intents) == 2:
             assert [a.get_text(strip=True) for a in nav.find_all("a")] == ["Spectral line", "Continuum"]

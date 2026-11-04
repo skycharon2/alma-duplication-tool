@@ -134,7 +134,7 @@ def test_no_managed_mode_leaves_legacy_ui_unchanged(tmp_path):
     assert b"queue-source-status" not in client.get("/proposed").data
 
 
-def test_submission_pins_local_csv_bytes_and_does_not_share_parsed_objects(tmp_path):
+def test_submission_pins_local_csv_bytes_and_parses_once(tmp_path):
     path = tmp_path / "queue.csv"
     original = FIXTURE.read_bytes()
     path.write_bytes(original)
@@ -143,7 +143,7 @@ def test_submission_pins_local_csv_bytes_and_does_not_share_parsed_objects(tmp_p
     path.write_bytes(original.replace(b"2026 March 3.", b"2026 March 10."))
     loader, selection = pinned._queue_input()
     first, second = loader(), loader()
-    assert first is not second
+    assert first is second
     assert first.snapshot.source_as_of.isoformat() == "2026-03-03"
     assert first.snapshot.snapshot_sha256 == second.snapshot.snapshot_sha256
     assert selection is None

@@ -89,7 +89,7 @@ def _v2_fields(prepared):
 def assess_submitted_line_single_v2(
     raw_request, raw_search_options, *, archive_client=None, archive_result=None,
     input_sha256=None, archive_arrays=None, archive_array_fetcher=None, archive_replay_metadata=None,
-    queue_loader=None,
+    queue_loader=None, report_detail="full",
 ):
     """Single Pointing V2 search across selected Archive and Queue sources.
 
@@ -106,7 +106,8 @@ def assess_submitted_line_single_v2(
     validated = _base_validation(prepared, raw_search_options)
     search = search_candidates(
         validated, archive_client=archive_client, archive_result=archive_result,
-        queue_loader=queue_loader, queue_candidate_beam="QUEUE" in validated.search_options.sources,
+        queue_loader=queue_loader, queue_candidate_beam=(
+            "QUEUE" in validated.search_options.sources and validated.search_options.radius_mode != "AUTO"),
     )
     from alma_duplicate.archive_array_acquisition import acquire_archive_arrays
     acquisition = (acquire_archive_arrays(search.archive, archive_array_fetcher)
@@ -187,7 +188,7 @@ def assess_submitted_line_single_v2(
             queue_line="QUEUE" in validated.search_options.sources and "LINE" in prepared.line_request.intents,
             queue_continuum="QUEUE" in validated.search_options.sources and "CONTINUUM" in prepared.line_request.intents),
     )
-    document = report_document(report, input_sha256=input_sha256, detail="full",
+    document = report_document(report, input_sha256=input_sha256, detail=report_detail,
                                archive_replay_metadata=archive_replay_metadata)
     if acquisition is not None:
         document['sources']['ARCHIVE']['array_evidence'] = acquisition.metadata

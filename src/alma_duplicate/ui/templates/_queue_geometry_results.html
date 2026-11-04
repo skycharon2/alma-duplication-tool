@@ -1,0 +1,29 @@
+{% from '_report_comparison.html' import comparison with context %}
+<section class="report-overview">
+<h2>Queue candidate results</h2>
+<p>Assessment: {{ geometry_report.assessment_status }}. Search completeness: {{ geometry_report.search_completeness or 'NOT_ESTABLISHED' }}.</p>
+{% if geometry_report.error %}<p role="alert">Queue geometry assessment failed: {{ geometry_report.error }}. Other recorded results remain available.</p>{% endif %}
+<p>Each configuration and array is evaluated independently. Unresolved or unsupported comparisons do not establish absence of duplication.</p>
+{% set entries = queue_geometry_candidates(geometry_report) %}
+{% set counts = geometry_report.candidate_counts %}
+{% if counts %}<p><strong>{{ counts.matching }} matching candidate configurations.</strong> {{ counts.review }} unresolved; {{ counts.not_met }} do not meet the criteria.</p>{% endif %}
+<p><a href="{{ url_for('run_queue_view', report_id=report_id) }}">Matching candidates</a> · <a href="{{ url_for('run_queue_view', report_id=report_id, view='review') }}">Unresolved comparisons</a> · <a href="{{ url_for('run_queue_view', report_id=report_id, view='not_met') }}">Criteria not met</a></p>
+{% if not entries %}<p>No candidates in this view. Unresolved comparisons are not evidence of absence of duplication.</p>{% endif %}
+{% if geometry_report.inventory %}<details><summary>Candidate inventory and limitations</summary>
+{% for row in geometry_report.inventory.source_rows %}{% if row.limitations %}<p>{{ row.source_row_id }} · {{ row.geometry_kind }}: {{ row.limitations|join('; ') }}</p>{% endif %}{% endfor %}
+</details>{% endif %}
+{% for entry in entries %}
+{% set c = entry.candidate %}
+<details class="report-context"><summary>{{ entry.project }} · {{ entry.target }} · {{ entry.kind }}{% for b in c.science.branches %} · {{ b.branch }}: {{ b.status }}{% endfor %}</summary>
+<p>Queue CSV · Model: {{ c.science.model_status or 'PROVISIONAL' }} · Candidate completeness: {{ c.science.scientific_candidate_completeness or 'NOT_ESTABLISHED' }}</p>
+<p>Candidate ID: {{ c.candidate_id }}. Full configuration and provenance are retained in the report download.</p>
+{% for v in c.science.variants %}
+<details><summary>{{ v.diameter_m }} m{% for b in v.branches %} · {{ b.branch }}: {{ b.status }}{% endfor %}</summary>
+{% set position = c.position.beam_variants | selectattr('diameter_m', 'equalto', v.diameter_m) | first %}
+{{ comparison(v.criteria, 'Candidate conditions', position) }}
+{% for pair in v.line_pairs %}<details><summary>LINE · {{ pair.reference.proposed_window_id }} · SPW {{ pair.reference.spw_number }}: {{ pair.status or pair.truth }}</summary>{{ comparison(pair.criteria, 'LINE comparison', position) }}</details>{% endfor %}
+</details>
+{% else %}<p>UNKNOWN: array inference is unresolved.</p>{% endfor %}
+</details>
+{% endfor %}
+</section>

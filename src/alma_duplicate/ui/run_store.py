@@ -251,12 +251,13 @@ class RunStore:
         document = result.document
         emit_progress('inspection')
         with measure_stage("inspection"):
+            unified_queue = document.get('schema_version') == 'queue_mosaic_assessment_1'
             mosaic = document.get("schema_version") in MOSAIC_REPORT_SCHEMAS
             queue_custom = document.get('schema_version') == QUEUE_CUSTOM_SCHEMA
             inspection = ({'schema_version': 'queue_custom_browser_inspection_1',
                            'assessment_status': document['assessment_status'],
                            'absence_interpretation': document['duplication_status']}
-                          if queue_custom else {"schema_version": "mosaic_browser_inspection_1",
+                          if queue_custom or unified_queue else {"schema_version": "mosaic_browser_inspection_1",
                            "assessment_status": document["assessment_status"],
                            "absence_interpretation": document["absence_interpretation"]}
                           if mosaic else inspect_report(document, inspection_version='3'))
@@ -293,10 +294,29 @@ class RunStore:
             for kind, data in [('inspection', inspection), ('request', request_document)]:
                 with measure_stage('write_' + kind):
                     downloads[kind] = write(kind + '.json', _utf8_blocks(report_json_chunks(data)))
+            geometry = document if unified_queue else document.get('queue_geometry_assessment')
+            queue_index = None
+            if geometry is not None:
+                from alma_duplicate.ui.queue_browser import presentation, result_bucket, report_header
+                queue_index = dict(header=report_header(geometry), entries=[])
+                def candidate_blocks():
+                    offset = 0
+                    for entry in presentation(geometry):
+                        raw = json.dumps(entry['candidate'], ensure_ascii=False, allow_nan=False).encode('utf-8')
+                        queue_index['entries'].append(dict(kind=entry['kind'], bucket=result_bucket(entry['candidate']),
+                                                          offset=offset, length=len(raw)))
+                        yield raw + b'\n'
+                        offset += len(raw) + 1
+                write('queue-candidates.jsonl', candidate_blocks())
             with measure_stage("view_projection"):
-                projection = (queue_custom_projection(document) if queue_custom else
+                projection = (dict(unified_queue=True, document={'generated_at': document.get('generated_at')},
+                                   summary={'target': document['proposed']['source_name']}) if unified_queue else
+                              queue_custom_projection(document) if queue_custom else
                               mosaic_report_projection(document) if mosaic
-                              else report_projection(document, inspection, compact=True))
+                              else report_projection(dict(document, queue_geometry_assessment=queue_index['header'])
+                                   if queue_index is not None else document, inspection, compact=True))
+            if queue_index is not None:
+                projection['queue_index'] = queue_index
             projection['offsets'] = offsets
             with measure_stage('write_view'):
                 write('view.json', _utf8_blocks(report_json_chunks(projection)))
@@ -314,6 +334,8 @@ class RunStore:
             if item is None:
                 return None
             projection = json.loads((item.directory / 'view.json').read_bytes())
+            if projection.get('unified_queue'):
+                return self._queue_page(item, projection, page, view)
             if projection.get("mosaic") or projection.get('queue_custom'):
                 with (item.directory / 'report.json').open('rb') as stream:
                     def candidate(index):
@@ -333,9 +355,41 @@ class RunStore:
                     stream.seek(offset)
                     return json.loads(stream.read(length))
                 data = report_page(projection, page, view, context)
+            if 'queue_index' in projection:
+                data['document']['queue_geometry_assessment'] = self._queue_page(item, projection, 1, 'matches')['document']
             data.update(item=item, run=item, disk_backed=True, retention_hours=self.max_age / 3600,
                         remaining_minutes=max(0, math.ceil((item.expires_at - self._clock()) / 60)))
             return data
+
+    def _queue_page(self, item, projection, page, view):
+        from copy import deepcopy
+        view = 'matching' if view == 'matches' else view
+        index = projection['queue_index']
+        if view not in {'matching', 'all', 'review', 'not_met'}:
+            raise IndexError('Invalid Queue view')
+        visible = [e for e in index['entries'] if view == 'all' or e['bucket'] == view]
+        pages = max(1, math.ceil(len(visible) / 20))
+        if page < 1 or page > pages:
+            raise IndexError('Queue report page unavailable')
+        document = deepcopy(index['header'])
+        with (item.directory / 'queue-candidates.jsonl').open('rb') as stream:
+            for entry in visible[(page - 1) * 20:page * 20]:
+                stream.seek(entry['offset'])
+                candidate = json.loads(stream.read(entry['length']))
+                document['geometry_reports'].setdefault(entry['kind'], {'candidates': []})['candidates'].append(candidate)
+        return dict(unified_queue=True, document=document, run=item, page=page, pages=pages,
+                    result_view=view, visible_count=len(visible), retention_hours=self.max_age / 3600)
+
+    def queue_page(self, run_id, page=1, view='matches'):
+        with self._lock:
+            self._prune_locked()
+            item = self._runs.get(run_id)
+            if item is None:
+                return None
+            projection = json.loads((item.directory / 'view.json').read_bytes())
+            if 'queue_index' not in projection:
+                return None
+            return self._queue_page(item, projection, page, view)
 
     def summaries(self, run_ids):
         """List only explicitly supplied browser links, without loading contexts."""
