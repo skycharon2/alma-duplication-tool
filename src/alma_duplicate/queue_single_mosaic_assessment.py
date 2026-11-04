@@ -8,7 +8,7 @@ from alma_duplicate.queue_mosaic_row_science import evaluate_row_candidates
 from alma_duplicate.reporting import json_value
 
 
-def assess_single_mosaics(validated, *, options, sources, input_sha256, report_detail):
+def assess_single_mosaics(validated, *, options, sources, input_sha256, report_detail, prepared=None):
     from alma_duplicate.assessment import AssessmentResult, AssessmentStatus
 
     request = validated.request
@@ -71,7 +71,7 @@ def assess_single_mosaics(validated, *, options, sources, input_sha256, report_d
 
             document['geometry_reports'][kind.upper()] = evaluate_row_candidates(
                 report, contexts, request, proposed, kind=kind,
-                decision='docs/queue_single_mosaics.md', nominal_conversion=options.nominal_conversion)
+                decision='docs/queue_single_mosaics.md', nominal_conversion=options.nominal_conversion, prepared=prepared)
         expected = {r.raw_row.row_id.value for r in parsed.row_inputs
                     if r.spatial.mosaic_kind in (QueueMosaicKind.CUSTOM_POINTING,
                                                  QueueMosaicKind.RECTANGULAR_MOSAIC)}

@@ -9,7 +9,7 @@ from alma_duplicate.queue_single_field_mosaic import assess_single_field_science
 from alma_duplicate.reporting import json_value
 
 
-def assess_queue_mosaic(validated, proposed, *, options, sources, input_sha256, report_detail):
+def assess_queue_mosaic(validated, proposed, *, options, sources, input_sha256, report_detail, prepared=None):
     from alma_duplicate.assessment import AssessmentResult, AssessmentStatus
 
     validated = validate_inputs(validated, proposed, options, sources, report_detail)
@@ -30,7 +30,7 @@ def assess_queue_mosaic(validated, proposed, *, options, sources, input_sha256, 
         for kind, evaluate in ((QueueMosaicKind.CUSTOM_POINTING, assess_queue_custom_science),
                                (QueueMosaicKind.RECTANGULAR_MOSAIC, assess_queue_rectangle_science),
                                (QueueMosaicKind.SINGLE_FIELD, assess_single_field_science)):
-            result = evaluate(parsed, request, proposed, nominal_conversion=options.nominal_conversion)
+            result = evaluate(parsed, request, proposed, nominal_conversion=options.nominal_conversion, prepared=prepared)
             reports[kind.value] = result
             candidates = result['candidates']
             for candidate in candidates:

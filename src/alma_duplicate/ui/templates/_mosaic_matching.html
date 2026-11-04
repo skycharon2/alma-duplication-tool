@@ -1,0 +1,76 @@
+{% macro branch_status(value) %}<span class="report-status" data-status="{{ value or 'INDETERMINATE' }}">{{ status_labels.get(value, 'Needs review') }}</span>{% endmacro %}
+{% macro candidate_bucket(value) %}<span class="report-status" data-status="{{ {'MATCH': 'CRITERIA_MET', 'NOT_MET': 'CRITERIA_NOT_MET'}.get(value, 'INDETERMINATE') }}">{{ {'MATCH': 'At least one matching branch', 'NOT_MET': 'Recorded branches do not meet conditions', 'NEEDS_REVIEW': 'Scientific review required', 'UNAVAILABLE': 'Candidate evidence unavailable'}.get(value, 'Needs review') }}</span>{% endmacro %}
+{% macro quantity(value) %}{% if value and value.value is not none %}{{ display_number(value.value) }} {{ value.unit or '' }}{% else %}<span class="field-note">Not recorded</span>{% endif %}{% endmacro %}
+{% macro criteria_table(records, heading, coverage=none) %}
+{% if records %}<div class="report-table-scroll mosaic-criteria" role="region" aria-label="{{ heading }}" tabindex="0"><table class="comparison-table">
+<caption>{{ heading }}</caption><thead><tr><th scope="col">Criterion</th><th scope="col">Proposed</th><th scope="col">Archive comparison</th><th scope="col">Recorded result and explanation</th></tr></thead>
+<tbody>{% for record in records %}{% set item = criterion_view(record) %}<tr data-criterion="{{ record.criterion_id }}">
+<th scope="row">{{ item.label }}<small>{{ record.criterion_id }}</small></th>
+{% if record.criterion_id == 'POS-MOSAIC' %}
+<td>{% if coverage and coverage.pointing_count is not none %}{{ coverage.pointing_count }} proposed pointings{% else %}Pointing count unavailable{% endif %}</td>
+<td>{% if coverage %}{{ coverage.inside_count if coverage.inside_count is not none else 'Unknown' }} / {{ coverage.pointing_count if coverage.pointing_count is not none else 'Unknown' }} inside Archive s_region{% else %}Archive coverage evidence unavailable{% endif %}</td>
+{% else %}<td>{{ quantity(item.proposed) }}</td><td>{{ quantity(item.candidate) }}</td>{% endif %}
+<td><span class="report-status" data-status="{{ 'INDETERMINATE' if record.eligible_for_formal_aggregation is sameas false else (record.outcome or 'INDETERMINATE') }}">{{ criterion_status(record) }}</span>
+<p class="criterion-explanation">{{ criterion_explanation(record) }}</p>
+{% if record.reasons or record.issues %}<details><summary>Recorded reasons and evidence issues</summary>
+{% if record.reasons %}<p>{{ record.reasons|join(', ') }}</p>{% endif %}
+{% if record.issues %}<ul>{% for issue in record.issues %}<li>{{ issue.code or 'Unspecified issue' }}{% if issue.message %}: {{ issue.message }}{% endif %}</li>{% endfor %}</ul>{% endif %}
+</details>{% endif %}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+{% endmacro %}
+{% macro coverage_view(coverage) %}
+{% if coverage %}<section class="mosaic-coverage" aria-label="Mosaic pointing coverage">
+<h5>Mosaic spatial coverage</h5>
+<p class="mosaic-coverage-counts"><span><strong>Inside:</strong> {{ coverage.inside_count if coverage.inside_count is not none else 'Unknown' }} / {{ coverage.pointing_count if coverage.pointing_count is not none else 'Unknown' }}</span>
+<span>Outside: {{ coverage.outside_count if coverage.outside_count is not none else 'Unknown' }}</span>
+<span>Boundary: {{ coverage.boundary_count if coverage.boundary_count is not none else 'Unknown' }}</span>
+<span>Unknown: {{ coverage.unknown_count if coverage.unknown_count is not none else 'Unknown' }}</span></p>
+<p class="mosaic-status-note">The recorded position rule requires strictly more than 50% inside the candidate Archive s_region. Boundary and unknown classifications may prevent a definitive result. This is not a reconstructed primary-beam comparison.</p>
+{% if coverage.points %}<details><summary>Point-by-point evidence (first {{ [coverage.points|length, 20]|min }} of {{ coverage.points|length }})</summary>
+<div class="report-table-scroll mosaic-pointing-table" role="region" aria-label="Pointing classifications" tabindex="0"><table class="comparison-table"><thead><tr><th>Pointing</th><th>RA (deg)</th><th>Dec (deg)</th><th>Recorded classification</th></tr></thead><tbody>
+{% for pointing in coverage.points[:20] %}<tr><th scope="row">{{ pointing.id or loop.index }}</th><td>{{ display_number(pointing.ra_deg) }}</td><td>{{ display_number(pointing.dec_deg) }}</td><td>{{ pointing.status or 'UNKNOWN' }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% if coverage.points|length > 20 %}<p>Additional rows are available in the complete report download.</p>{% endif %}</details>{% endif %}
+</section>{% endif %}
+{% endmacro %}
+
+{% macro details() %}
+{% for group in member_groups %}<section class="member-result" id="{{ group.anchor }}">
+<h3>Archive Member OUS: {{ group.member_ous_uid or 'Identity unavailable' }}</h3>
+<p class="mosaic-member-identities"><strong>Proposal / Project:</strong> {% if group.projects|length == 1 %}{{ group.projects[0] }}{% elif group.projects|length > 1 %}Conflicting recorded proposals: {{ group.projects|join(', ') }}{% else %}Not available in saved Member metadata{% endif %}</p>
+<p class="mosaic-member-identities"><strong>Group OUS:</strong> {% if group.group_ous_uids %}{{ group.group_ous_uids|join(', ') }}{% else %}Not recorded{% endif %}</p>
+{% if not group.member_ous_uid %}<p class="mosaic-status-note">Member identity is missing; this candidate remains separate.</p>{% endif %}
+{% if result_view == 'matching' %}<p class="mosaic-status-note">This Member contains at least one matching candidate. Other recorded targets and contexts below retain their own independent results.</p>{% endif %}
+{% for entry in group.entries if result_view != 'matching' or entry.summary.bucket == 'MATCH' %}{% set candidate = entry.candidate %}{% set index = entry.candidate_index %}
+<section class="member-execution mosaic-candidate" id="mosaic-candidate-{{ index }}">
+<h4>Target: {{ candidate.source_name or 'Not recorded' }}</h4>
+<p>Candidate {{ index + 1 }} · Metadata assessment: <strong>{{ candidate.status or 'UNKNOWN' }}</strong> · {{ candidate_bucket(entry.summary.bucket) }}</p>
+<p class="mosaic-member-identities"><strong>Recorded execution(s) / ASDM:</strong> {% if entry.identity.asdm_uids %}{{ entry.identity.asdm_uids|join(', ') }}{% else %}Not recorded for this target{% endif %}</p>
+{% if candidate.error %}<p role="alert" class="notice">Metadata retrieval error: {{ candidate.error }}</p>{% endif %}
+{% if candidate.reasons %}<p>Candidate reasons: {{ candidate.reasons|join(', ') }}</p>{% endif %}
+{% if not candidate.get('evaluation', {}).get('contexts') %}<p>No evaluable comparison contexts were returned for this candidate.</p>{% endif %}
+{% for child in entry.children %}<section class="member-execution">
+<p class="execution-identity">Execution (ASDM): {{ child.execution or 'Not unambiguously recorded; context kept separate' }}</p>
+{% for context_item in child.contexts if result_view != 'matching' or context_item.matching or (child.execution and child.contexts|selectattr('matching')|list) %}{% set context = context_item.record %}
+<details class="candidate-comparison mosaic-context" id="mosaic-context-{{ index }}-{{ context_item.index }}"{% if context_item.matching %} open{% endif %}>
+<summary>Context {{ context_item.index + 1 }}{% if context_item.spws %} · Archive SPW {{ context_item.spws|join(', ') }}{% endif %} · {% for branch in context.branches %}{{ branch.branch }}: {{ status_labels.get(branch.status, 'Needs review') }}{% if not loop.last %}; {% endif %}{% else %}No branch result{% endfor %}</summary>
+<div class="mosaic-context-body"><p class="mosaic-context-id">Recorded context ID: {{ context.context_id }}</p>
+{% if context_item.asdm_uids %}<p class="mosaic-context-id">Recorded context ASDM association: {{ context_item.asdm_uids|join(', ') }}</p>{% endif %}
+<p>{% for branch in context.branches %}{{ branch.branch }}: {{ branch_status(branch.status) }} {% else %}<span class="report-status" data-status="INDETERMINATE">No recorded branch</span>{% endfor %}</p>
+{{ coverage_view(context.coverage) }}
+{{ criteria_table(context.criteria, 'Common comparison conditions', context.coverage) }}
+{{ criteria_table(context.request_criteria, 'Proposed setup qualification recorded in this context') }}
+{% if context.line_pairs %}<section aria-label="LINE spectral-window comparisons"><h5>Spectral line comparisons · {{ context.line_pairs|length }} recorded pairs</h5>
+<p class="mosaic-status-note">A matching LINE branch means at least one submitted requirement meets these conditions, not necessarily all of them. Each pair below retains its own result.</p>
+<p class="field-note">The first 10 matching and first 10 other pairs are shown, with matches first. All pairs remain in the report download.</p>
+{% for presentation in context_item.line_presentations[:20] %}{% set pair = presentation.pair %}<details class="line-pair"{% if loop.first and pair.status == 'CRITERIA_MET' %} open{% endif %}>
+<summary>{{ presentation.label }} · {{ pair_title(pair) }} · {{ status_labels.get(pair.status, 'Needs review') }}</summary>
+{% if presentation.fields %}<dl>{% for label, value in presentation.fields %}<dt>{{ label }}</dt><dd>{{ value }}</dd>{% endfor %}</dl>{% endif %}
+<p>Recorded pair status: {{ branch_status(pair.status) }}</p>
+{{ criteria_table(pair.criteria, 'Criteria for this spectral-window pair', context.coverage) }}
+</details>{% endfor %}
+</section>{% endif %}
+</div></details>{% endfor %}
+</section>{% endfor %}
+</section>{% endfor %}
+</section>{% endfor %}
+{% endmacro %}

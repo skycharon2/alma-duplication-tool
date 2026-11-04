@@ -64,31 +64,34 @@ def test_existing_form_runs_queue_without_archive(browser, version, intents):
     response = submit(client, form(version=version, intents=intents))
     assert response.status_code == 303, response.text
     report = client.get(response.location+'/download/report').json
-    assert report['schema_version'] == 'queue_custom_assessment_1'
+    assert report['schema_version'] == 'queue_mosaic_assessment_1'
     assert report['assessment_status'] == 'COMPLETED'
     assert set(report['sources']) == {'QUEUE'}
-    assert report['candidates'][0]['science']['matching_arrays_by_intent'] == {intents[0]: [7., 12.]}
+    assert report['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['matching_arrays_by_intent'] == {intents[0]: [7., 12.]}
     if len(intents) == 2:
         first_page = client.get(response.location).text
         sibling = re.search(r'href="([^"]+)">Continuum</a>', first_page).group(1)
         assert sibling != response.location
         assert response.location in client.get(sibling).text
         continuum = client.get(sibling + '/download/report').json
-        assert continuum['candidates'][0]['science']['matching_arrays_by_intent'] == {'CONTINUUM': [7., 12.]}
+        assert continuum['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['matching_arrays_by_intent'] == {'CONTINUUM': [7., 12.]}
     assert report['proposed']['sensitivity_basis'] == 'PER_POINTING'
     assert report['proposed']['setup_id'] == 'setup-1'
     if version == '2':
         assert report['scientific_request']['line_input_contract'] == 'SEPARATE_OBSERVATION_REQUIREMENTS_V2'
         if 'LINE' in intents:
-            assert report['candidates'][0]['science']['variants'][0]['line_pairing']['proposed_enumeration_complete']
+            assert report['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['variants'][0]['line_pairing']['proposed_enumeration_complete']
     page = client.get(response.location)
     assert page.status_code == 200
-    assert 'Queue Custom Mosaic assessment' in page.text
-    for label in ('Observation comparison', 'Results in this search', 'Parameter comparisons',
+    assert 'Matching candidates' in page.text
+    assert page.text.count('Results in this search') == 1
+    assert 'matching Queue candidate configurations' in page.text
+    assert 'href="#queue-' in page.text
+    for label in ('Results in this search', 'Matching comparisons',
                   'Your requirement', 'Candidate comparison', 'Result and explanation',
                   'How this comparison was made', 'Half-power radius', '3/3 inside'):
         assert label in page.text
-    assert '7 m' in page.text and '12 m' in page.text and 'POS-MOSAIC' in page.text
+    assert '7.0 m' in page.text and '12.0 m' in page.text and 'POS-MOSAIC' in page.text
     assert client.get(response.location+'?view=all').status_code == 200
     assert client.get(response.location+'?page=2').status_code == 404
     assert client.get(response.location+'/visualization').status_code == 404
@@ -145,7 +148,7 @@ def test_managed_queue_source_uses_existing_pin_and_provenance(tmp_path, monkeyp
     assert response.status_code == 303, response.text
     report = client.get(response.location+'/download/report').json
     assert report['sources']['QUEUE']['managed_snapshot']['source_id'] == first['source_id']
-    assert report['snapshot_sha256'] == first['snapshot_sha256']
+    assert report['sources']['QUEUE']['snapshot']['snapshot_sha256'] == first['snapshot_sha256']
     with client.session_transaction() as session:
         ids = session["report_history"]
     assert len(ids) == len(intents)
@@ -153,6 +156,6 @@ def test_managed_queue_source_uses_existing_pin_and_provenance(tmp_path, monkeyp
     for report_id in ids:
         saved = client.get("/runs/" + report_id + "/download/report").json
         assert saved["sources"]["QUEUE"]["managed_snapshot"]["source_id"] == first["source_id"]
-        assert saved["snapshot_sha256"] == first["snapshot_sha256"]
+        assert saved["sources"]["QUEUE"]["snapshot"]["snapshot_sha256"] == first["snapshot_sha256"]
     assert registry.current()['source_id'] == later['source_id']
     app.extensions['assessment_runs'].close()

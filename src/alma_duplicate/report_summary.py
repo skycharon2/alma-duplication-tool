@@ -6,7 +6,7 @@ def criterion_record(value, document):
     if isinstance(value, dict):
         return value
     table = document.get('summary_criteria')
-    if (document.get('report_version') != '6' or type(value) is not int
+    if (document.get('report_version') not in {'6', '7', '8'} or type(value) is not int
             or not isinstance(table, list) or not 0 <= value < len(table)
             or not isinstance(table[value], dict)):
         raise ValueError('Invalid shared criterion summary reference')
@@ -15,7 +15,7 @@ def criterion_record(value, document):
 
 def resolve_context_summary(context, document):
     """Resolve one displayed page, sharing immutable records instead of copying them."""
-    if document.get('report_version') != '6' or context.get('detail_level') != 'SUMMARY':
+    if document.get('report_version') not in {'6', '7', '8'} or context.get('detail_level') != 'SUMMARY':
         return context
 
     def scope(value):

@@ -1,0 +1,17 @@
+{% extends "report_fragment.html" if embedded else "base.html" %}
+{% block content %}
+<article class="report-page"><h1>Queue Mosaic assessment</h1>
+<p>{{ document.proposed.source_name if document.proposed else document.scientific_request.target_name }}</p>
+<details><summary>Source coverage and downloads</summary>
+<p>Queue: {{ document.sources.QUEUE.status }} · {{ document.sources.QUEUE.reasons|join('; ') }}</p>
+{% if document.sources.QUEUE.status != 'COMPLETE' %}<p role="alert">Queue unavailable or incomplete; no absence conclusion is established.</p>{% endif %}
+<a href="{{ url_for('run_download', report_id=report_id, kind='report') }}">Download full report</a>
+<a href="{{ url_for('run_download', report_id=report_id, kind='request') }}">Download request</a>
+{% if document.sources.QUEUE.managed_snapshot %}<pre class="report-json">{{ document.sources.QUEUE.managed_snapshot|tojson(indent=2) }}</pre>{% endif %}
+</details>
+{% set geometry_report = document %}{% include '_queue_geometry_results.html' %}
+<nav aria-label="Queue result pages"><p>Page {{ page }} / {{ pages }} · {{ visible_count }} candidates in this view</p>
+{% if page > 1 %}<a href="{{ url_for('run_queue_view', report_id=report_id, page=page-1, view=result_view) }}">Previous</a>{% endif %}
+{% if page < pages %}<a href="{{ url_for('run_queue_view', report_id=report_id, page=page+1, view=result_view) }}">Next</a>{% endif %}
+</nav></article>
+{% endblock %}

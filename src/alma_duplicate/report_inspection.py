@@ -117,12 +117,15 @@ def inspect_report(document, *, inspection_version="3"):
         raise ValueError("Inspection version must be 1, 2 or 3")
     if document.get("report_version") not in {"4", "5", "6", "7", "8"}:
         raise ValueError("Inspection requires report version 4, 5, 6, 7 or 8")
-    if document['report_version'] in {'5', '6'}:
+    compact = document['report_version'] in {'5', '6'} or (
+        document['report_version'] in {'7', '8'} and 'report_detail' in document)
+    shared = compact and document['report_version'] != '5'
+    if compact:
         detail = document.get('report_detail') or {}
-        expected_policy = '2' if document['report_version'] == '6' else '1'
+        expected_policy = '2' if shared else '1'
         if detail.get('mode') != 'MATCHES_FULL_OTHER_SUMMARIES' or detail.get('version') != expected_policy:
             raise ValueError('Unknown report detail policy')
-        if document['report_version'] == '6':
+        if shared:
             table = document.get('summary_criteria')
             required = {'criterion_id', 'method_version', 'approval', 'applicability',
                         'evaluation', 'outcome', 'issues', 'reasons', 'decision_refs',
@@ -255,7 +258,7 @@ def inspect_report(document, *, inspection_version="3"):
             ):
                 raise ValueError("Invalid coherent source beam variants")
             for variant_index, scope in enumerate(variants or [c]):
-                if document['report_version'] == '6':
+                if shared:
                     records = list(scope['criteria']) + [r for p in scope['line_pairs'] for r in p['criteria']]
                     expected = int if c['detail_level'] == 'SUMMARY' else dict
                     if any(type(r) is not expected for r in records):

@@ -12,6 +12,7 @@ from alma_duplicate.storage.queue_active import QueueActiveError
 from alma_duplicate.ui.managed_queue import PinnedQueue, pin_active_queue
 from alma_duplicate.ui.run_store import RunStore as RunStore
 from alma_duplicate.archive_endpoints import ARCHIVE_ORIGINS
+from alma_duplicate.reporting import json_value
 
 ARCHIVE_CONNECTIONS = {
     "AUTO": ARCHIVE_ORIGINS,
@@ -39,7 +40,9 @@ class BrowserAssessment:
         if not selected or self._pinned_queue is not None:
             return self
         if self.managed_queue_root or not self.queue_csv:
-            return replace(self, _pinned_queue=self._queue_input())
+            loader, selection = self._queue_input()
+            from alma_duplicate.ui.queue_browser import memoized_loader
+            return replace(self, _pinned_queue=(memoized_loader(loader), selection))
         from pathlib import Path
         try:
             raw = Path(self.queue_csv).read_bytes()
@@ -49,10 +52,11 @@ class BrowserAssessment:
             def loader():
                 raise OSError(message)
         else:
-            # Parse independently per branch so downstream objects are never shared.
+            # Parse once so every branch consumes the same pinned snapshot.
             def loader():
                 return QueueCsvClient().parse_bytes(raw)
-        return replace(self, _pinned_queue=(loader, None))
+        from alma_duplicate.ui.queue_browser import memoized_loader
+        return replace(self, _pinned_queue=(memoized_loader(loader), None))
 
 
     def __post_init__(self):
@@ -117,14 +121,8 @@ class BrowserAssessment:
     def assess_queue_custom(self, document, proposed):
         """Use the same configured CSV/approved snapshot as Single Pointing."""
         loader, selection = self._queue_input()
-        sources = AssessmentSources(queue_loader=loader)
-        if document['request'].get('line_input_contract'):
-            from alma_duplicate.queue_custom_assessment import assess_custom_submitted
-            result = assess_custom_submitted(document['request'], document['search_options'],
-                                             proposed, sources=sources)
-        else:
-            result = assess_observation(document['request'], document['search_options'],
-                                        sources=sources, queue_custom=proposed)
+        from alma_duplicate.ui.queue_browser import assess_geometry
+        result = assess_geometry(document, loader, proposed)
         if selection is not None and result.document is not None:
             result.document['sources']['QUEUE']['managed_snapshot'] = dict(selection.provenance)
         return result
@@ -195,6 +193,8 @@ class BrowserAssessment:
             )
 
         loader, selection = self._queue_input(queue)
+        from alma_duplicate.ui.queue_browser import memoized_loader
+        loader = memoized_loader(loader)
 
         if document['request'].get('line_input_contract') in {
                 'SEPARATE_REQUIREMENTS_AND_SPW_EVIDENCE_V1', 'SEPARATE_OBSERVATION_REQUIREMENTS_V2'}:
@@ -208,9 +208,10 @@ class BrowserAssessment:
             report = assess_submitted_line_single_v2(document['request'], document['search_options'],
                 archive_client=source.client if source else None, archive_arrays=source.array_catalog if source else None,
                 archive_replay_metadata=source.replay_metadata if source else None, archive_array_fetcher=fetcher,
-                queue_loader=loader)
+                queue_loader=loader, report_detail=self.report_detail)
             if selection is not None:
                 report["sources"]["QUEUE"]["managed_snapshot"] = dict(selection.provenance)
+            self._append_queue_geometry(document, report, loader, queue)
             return SimpleNamespace(document=report, status=report['assessment_status'])
 
         def fetch_archive_arrays(members):
@@ -244,7 +245,23 @@ class BrowserAssessment:
             queue_report = assessment.document.get("sources", {}).get("QUEUE")
             if queue_report is not None:
                 queue_report["managed_snapshot"] = dict(selection.provenance)
+        if assessment.document is not None:
+            self._append_queue_geometry(document, assessment.document, loader, queue)
         return assessment
+
+    def _append_queue_geometry(self, document, report, loader, selected):
+        if not selected or document['request'].get('target_kind') != 'FIXED':
+            return
+        from alma_duplicate.ui.queue_browser import assess_geometry
+        try:
+            geometry = assess_geometry(document, loader)
+            report['queue_geometry_assessment'] = json_value(geometry.document)
+        except (OSError, ValueError) as exc:
+            report['queue_geometry_assessment'] = {
+                'assessment_status': 'SOURCES_UNAVAILABLE', 'geometry_reports': {},
+                'search_completeness': 'NOT_ESTABLISHED',
+                'error': str(exc),
+            }
 
 
 # Historical internal name retained for import compatibility.

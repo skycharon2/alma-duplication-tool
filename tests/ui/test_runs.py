@@ -101,7 +101,10 @@ def test_real_dual_source_run_retains_exact_report_and_input(monkeypatch, purpos
     assert "Execution status: COMPLETED" in html
     assert "Effective evaluation configuration" in html
     report = client.get(location + "/download/report")
-    assert report.data == captured[0][1]
+    recorded = report.get_json()
+    extension = recorded.pop('queue_geometry_assessment')
+    assert extension['search_completeness'] == 'NOT_ESTABLISHED'
+    assert recorded == json.loads(captured[0][1])
     assert hashlib.sha256(report.data).hexdigest() in html
     doc = report.get_json()
     assert doc["report_version"] == "6" and doc["input_sha256"] is None

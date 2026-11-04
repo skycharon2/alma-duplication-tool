@@ -12,7 +12,7 @@ from alma_duplicate.queue_row_beam import DECISION_REF, resolve_queue_beam_inter
 from alma_duplicate.rules.queue_mosaic_position import QueueMosaicCoverage, assess_queue_mosaic_position
 
 
-def assess_single_field_science(parsed, request, proposed, *, nominal_conversion=None):
+def assess_single_field_science(parsed, request, proposed, *, nominal_conversion=None, prepared=None):
     snapshot = parsed.snapshot.snapshot_sha256
     contexts = {}
     groups = defaultdict(list)
@@ -65,4 +65,4 @@ def assess_single_field_science(parsed, request, proposed, *, nominal_conversion
         candidates.append(candidate)
     return evaluate_row_candidates(dict(snapshot_sha256=snapshot, candidates=candidates, summary={}),
         contexts, request, proposed, kind='single_field', decision=DECISION_REF,
-        nominal_conversion=nominal_conversion)
+        nominal_conversion=nominal_conversion, prepared=prepared)

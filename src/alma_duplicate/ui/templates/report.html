@@ -40,6 +40,10 @@
 <p><a href="#candidates">Back to candidate results</a></p></details></article>
 {% endmacro %}
 {% block content %}
+{% from '_queue_matching.html' import rows as queue_rows, details as queue_details with context %}
+{% set geometry_report = document.queue_geometry_assessment or {} %}
+{% set queue_entries = queue_geometry_candidates(geometry_report) %}
+{% set geometry_counts = geometry_report.candidate_counts or {} %}
 <div class="report-page">
 <div class="page-heading report-heading"><div><h1>Observation comparison</h1><p>{{ summary.target }}</p></div>
 <nav class="report-actions" aria-label="Report actions">{% if document.report_kind != 'SOLAR_EXEMPTION' %}<a class="button" href="{{ visualization_url }}">Explore this report</a>{% endif %}<a class="button" href="{{ url_for('proposed') }}">Enter another observation</a><a class="button" href="{{ url_for('report_index') }}">Existing reports</a></nav></div>
@@ -48,12 +52,15 @@
 {% if document.report_kind == 'SOLAR_EXEMPTION' %}<p><strong>Solar exemption: search not performed.</strong> Solar observations are exempt from duplication checking. This is not a completed search with zero matches.</p>
 {% else %}
 {% if source_overview | selectattr('attention') | list %}<p class="notice"><strong>Search or evidence is incomplete.</strong> Interpret the available comparisons within their recorded scope. <a href="#sources">Review source coverage</a>.</p>{% endif %}
+
 {% for finding in summary.findings %}{% set count = summary.counts[loop.index0] %}
 <p class="result-finding"><strong>{{ purpose_labels.get(finding.intent, 'Recorded purpose') }}:</strong> {% if count.met %}<strong>{{ count.met }}</strong> matching comparison{{ '' if count.met == 1 else 's' }}.{% else %}{{ finding.text }}{% endif %}</p>
 {% if count.review or count.unreported %}<p class="unresolved-notice">{{ count.review + count.unreported }} comparison{{ '' if count.review + count.unreported == 1 else 's' }} {{ 'remains' if count.review + count.unreported == 1 else 'remain' }} unresolved.{% if attention %} <a href="#evidence">Review reasons</a>.{% endif %}</p>{% endif %}
 {% endfor %}
 {% if summary.total == 0 %}<p>Check source coverage and the recorded search scope before running again. An empty result does not establish that there is no duplication.</p>{% endif %}
-{% if member_count or queue_count or ungrouped_count %}<p class="matching-sources">{% if member_count %}{{ member_count }} matching Archive Member{{ '' if member_count == 1 else 's' }}{% endif %}{% if queue_count %}{{ ' · ' if member_count }}{{ queue_count }} matching Queue record{{ '' if queue_count == 1 else 's' }}{% endif %}{% if ungrouped_count %}{{ ' · ' if member_count or queue_count }}{{ ungrouped_count }} matching context{{ '' if ungrouped_count == 1 else 's' }} without an unambiguous Member identity{% endif %}.</p>{% endif %}
+<p class="matching-sources">{{ member_count }} matching Archive Member{{ '' if member_count == 1 else 's' }}. {{ queue_count + geometry_counts.get('matching', 0) }} matching Queue candidate configurations.</p>
+{% if geometry_report.error %}<p role="alert">Queue geometry assessment unavailable: {{ geometry_report.error }}</p>{% endif %}
+{% if geometry_counts.get('review') %}<p>{{ geometry_counts.review }} Queue candidate configurations remain unresolved. <a href="{{ url_for('run_queue_view', report_id=report_id, view='review') }}">Review reasons</a>.</p>{% endif %}
 {% if member_count %}<p class="field-note">Only the listed comparisons meet the conditions; this is not a verdict on the entire Member OUS.</p>{% endif %}
 {% if result_view == 'all' %}<p>{{ summary.total }} candidate comparisons evaluated. This optional audit view includes non-matches and unresolved results.</p>{% endif %}
 <p>Results apply to the retrieved candidates. They do not establish that the entire Archive or Queue is free of duplication.</p>
@@ -87,18 +94,22 @@
 {% if run %}<details class="report-retention"><summary>Temporary report · retained for up to {{ display_number(retention_hours) }} hours</summary><p>{% if remaining_minutes is defined %}Approximately {{ remaining_minutes }} minute{% if remaining_minutes != 1 %}s{% endif %} remaining. {% endif %}Opening this page does not extend that period. A server restart or storage limit may remove it earlier.</p></details>{% endif %}
 <nav class="report-nav" aria-label="Report sections"><a href="#candidates">Candidate results</a>{% if contexts %}<a href="#comparisons">Parameter comparisons</a>{% endif %}{% if attention %}<a href="#evidence">Information to review</a>{% endif %}{% if show_technical %}<a href="#technical-records">Technical records</a>{% endif %}</nav>
 {% if document.report_kind != 'SOLAR_EXEMPTION' %}
+
 <section id="candidates"><h2>{{ 'All candidate comparisons' if result_view == 'all' else 'Matching candidates' }}</h2><p>Page {{ page }} of {{ pages }} · {% if result_view == 'all' %}{{ visible_count }} recorded comparisons.{% else %}{{ group_count }} result groups · {{ visible_count }} matching comparisons. Each page holds up to 20 complete Member groups or independent source contexts.{% endif %}</p>
 {% if result_view == 'matches' %}<p>Select a result to review its matching comparisons.</p>{% else %}<p><a href="{{ url_for(view_endpoint, report_id=report_id) }}#candidates">Return to matching candidates only</a></p>{% endif %}
-{% if contexts %}{% if result_view == 'matches' %}
+{% if contexts or queue_entries %}{% if result_view == 'matches' %}
 <div class="report-table-scroll" role="region" aria-label="Matching Member results" tabindex="0"><table class="member-table"><caption class="sr-only">Member OUS and independent source contexts containing matching comparisons.</caption><thead><tr><th scope="col">Target and project</th><th scope="col">Source / Member OUS</th><th scope="col">Matching comparisons</th></tr></thead><tbody>
 {% for group in member_groups %}<tr><th scope="row"><a href="#{{ group.anchor }}">{{ group.title }}</a></th><td>{{ group.source|title }}{% if group.member %}<small>{{ group.member }}</small>{% endif %}</td><td>{{ group.entries|length }}</td></tr>{% endfor %}
-</tbody></table></div>
+{{ queue_rows(queue_entries) }}</tbody></table></div>
 {% else %}<div class="report-table-scroll" role="region" aria-label="Candidate results" tabindex="0"><table class="candidate-table"><caption>Results for each candidate; spectral windows remain separate.</caption><thead><tr><th scope="col">Candidate</th><th scope="col">Source</th>{% for branch in summary.intents %}<th scope="col">{{ purpose_labels.get(branch, 'Recorded purpose') }}</th>{% endfor %}</tr></thead><tbody>
 {% for c in contexts %}<tr><th scope="row"><a href="#context-{{ context_indices[loop.index0] }}">Candidate {{ context_indices[loop.index0] + 1 }}</a>{% for label, value in context_identity(c) if label in ['Target', 'Project', 'SPW'] %}<small>{{ label }}: {{ value }}</small>{% endfor %}</th><td>{{ c.reference.source|title }}</td>{% for branch in summary.intents %}<td>{% for b in c.branches if b.branch == branch %}{{ status(b.status) }}{% else %}{{ 'Not requested' if branch not in summary.intents else 'No branch result' }}{% endfor %}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div>
 {% endif %}{% else %}<p>No matching candidates are available in this view. Review source coverage and unresolved evidence below; this does not establish an absence of duplication.</p>{% endif %}
+{% if queue_pagination and queue_pagination.pages > 1 %}<nav aria-label="Queue result pages">Queue page {{ queue_pagination.page }} of {{ queue_pagination.pages }}
+{% if queue_pagination.page > 1 %}<a href="{{ url_for(view_endpoint, report_id=report_id, page=page, queue_page=queue_pagination.page-1) }}#candidates">Previous Queue candidates</a>{% endif %}
+{% if queue_pagination.page < queue_pagination.pages %}<a href="{{ url_for(view_endpoint, report_id=report_id, page=page, queue_page=queue_pagination.page+1) }}#candidates">Next Queue candidates</a>{% endif %}</nav>{% endif %}
 <nav aria-label="Report pages">{% if page > 1 %}<a href="{{ url_for(view_endpoint, report_id=report_id, page=page-1, view=result_view) }}">Previous</a>{% endif %} {% if page < pages %}<a href="{{ url_for(view_endpoint, report_id=report_id, page=page+1, view=result_view) }}">Next</a>{% endif %}</nav></section>
 
-{% if contexts %}<section id="comparisons"><h2>Parameter comparisons</h2>
+{% if contexts or queue_entries %}<section id="comparisons"><h2>Matching comparisons</h2>
 {% if result_view == 'matches' %}
 {% for group in member_groups %}<section class="member-result" id="{{ group.anchor }}">
 <h3>{{ group.title }}</h3>
@@ -108,9 +119,9 @@
 {% for child in group.children %}<section class="member-execution">
 <h4>Target: {{ child.target or 'Not unambiguously recorded' }}</h4>
 {% if group.source == 'ARCHIVE' %}<p class="execution-identity">Execution (ASDM): {{ child.execution or 'Not unambiguously recorded; context kept separate' }}</p>{% endif %}
-{% for index, c in child.entries %}{{ candidate_comparison(c, index, index == context_indices[0], true) }}{% endfor %}
+{% for index, c in child.entries %}{{ candidate_comparison(c, index, index == context_indices[0], true) }}{% endfor %}{% if child.other_entries %}<details><summary>Other SPW comparisons in this Source–Execution ({{ child.other_count }})</summary><p>These retain their own results and are not counted as matching comparisons. Up to 20 are shown; the full report retains all records.</p>{% for index, c in child.other_entries %}{{ candidate_comparison(c, index, false, true) }}{% endfor %}</details>{% endif %}
 </section>{% endfor %}</section>{% endfor %}
-{% else %}{% for c in contexts %}{{ candidate_comparison(c, context_indices[loop.index0], loop.first) }}{% endfor %}{% endif %}</section>{% endif %}
+{% else %}{% for c in contexts %}{{ candidate_comparison(c, context_indices[loop.index0], loop.first) }}{% endfor %}{% endif %}{{ queue_details(queue_entries) }}</section>{% endif %}
 {% endif %}
 {% if attention %}<section id="evidence"><h2>Information to review</h2><p>Counts refer to affected comparisons across all pages, not duplicate observations.</p>
 {% for group in attention %}<details class="review-group"{% if not match_count or group.title == 'Proposed observation' %} open{% endif %}><summary>{{ group.title }}{% if group.candidates %} · {{ group.candidates|length }} affected comparison{{ '' if group.candidates|length == 1 else 's' }}{% endif %}</summary><p>{% if group.candidates %}{{ group.candidates|length }} affected candidate comparison{{ '' if group.candidates|length == 1 else 's' }}.{% else %}Report-level issue; no individual candidate is identified.{% endif %}</p><ul>{% for message in group.messages %}<li>{{ message }}</li>{% endfor %}</ul>{% if group.candidates %}<details><summary>Affected comparisons</summary><p>{% for index in group.candidates[:8] %}<a href="{{ url_for(view_endpoint, report_id=report_id, page=index // 20 + 1, view='all') }}#context-{{ index }}">Candidate {{ index + 1 }}</a>{{ ', ' if not loop.last }}{% endfor %}{% if group.candidates|length > 8 %}. Another {{ group.candidates|length - 8 }} are listed in the complete inspection record.{% endif %}</p></details>{% endif %}</details>{% endfor %}

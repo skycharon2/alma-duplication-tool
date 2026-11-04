@@ -12,7 +12,15 @@ def report_projection(document, inspection, *, compact=False):
     """Index exact recorded matches and identities, without deriving new verdicts."""
     matches = matching_contexts(document)
     groups = member_groups(matches)
+    all_groups = member_groups(list(enumerate(document.get('context_evaluations', []))))
+    siblings = {(g['member'], c['target'], c['execution']): c['entries']
+                for g in all_groups if g['source'] == 'ARCHIVE' and g['member']
+                for c in g['children'] if c['target'] and c['execution']}
     for group in groups:
+        for child in group['children']:
+            matched = {index for index, _ in child['entries']}
+            child['other_entries'] = [index for index, _ in siblings.get(
+                (group['member'], child['target'], child['execution']), []) if index not in matched]
         group['entries'] = [index for index, _ in group['entries']]
         for child in group['children']:
             child['entries'] = [index for index, _ in child['entries']]
@@ -66,6 +74,9 @@ def report_page(projection, page, view, load_context):
         group['title'] = group_title(group)
         for child in group['children']:
             child['entries'] = [(index, contexts[index]) for index in child['entries']]
+            child['other_count'] = len(child.get('other_entries', []))
+            child['other_entries'] = [(index, resolve_context_summary(load_context(index), projection['document']))
+                                      for index in child.get('other_entries', [])[:20]]
     return {
         'document': projection['document'], 'summary': projection['summary'],
         'source_overview': projection['source_overview'], 'attention': projection['attention'],
