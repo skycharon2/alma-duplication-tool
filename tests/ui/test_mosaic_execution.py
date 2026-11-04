@@ -168,7 +168,7 @@ def test_upload_is_sufficient_without_separate_confirmations(browser):
     assert calls
 
 @pytest.mark.parametrize("intents", [["LINE"], ["LINE", "CONTINUUM"]])
-def test_mosaic_both_sources_produce_navigable_source_reports(browser, intents):
+def test_mosaic_both_sources_share_page_with_purpose_navigation(browser, intents):
     client, calls = browser
     data = form() | dict(sources=["ARCHIVE", "QUEUE"], mosaic_upload_token=upload(client),
                          normal_form_version="2", action="assess", intents=intents, aggregate="1",
@@ -181,7 +181,18 @@ def test_mosaic_both_sources_produce_navigable_source_reports(browser, intents):
     for key, label in group.items():
         url = "/runs/" + key
         page = client.get(url).text
-        assert all("/runs/" + other in page for other in group)
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(page, "html.parser")
+        assert len(soup.find_all("html")) == 1
+        assert soup.select_one('section[aria-label="ARCHIVE results"]')
+        assert soup.select_one('section[aria-label="QUEUE results"]')
+        nav = soup.select_one('nav[aria-label="Assessment reports"]')
+        if len(intents) == 2:
+            assert [a.get_text(strip=True) for a in nav.find_all("a")] == ["Spectral line", "Continuum"]
+            assert len(nav.select('[aria-current="page"]')) == 1
+        else:
+            assert nav is None
+        assert soup.select_one('nav[aria-label="Mosaic assessment reports"]') is None
         source = label.split()[-1].upper()
         assert client.get(url + "/download/request").json["search_options"]["sources"] == [source]
         assert client.get(url + "/download/report").status_code == 200

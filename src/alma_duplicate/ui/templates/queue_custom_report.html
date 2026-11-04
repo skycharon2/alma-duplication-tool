@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "report_fragment.html" if embedded else "base.html" %}
 {% from '_report_comparison.html' import comparison with context %}
 {% block content %}
 <article class="report-page">
@@ -10,7 +10,7 @@
 {% if document.sources.QUEUE.status != 'COMPLETE' %}<p role="alert">The Queue source was unavailable or incomplete. No conclusion about duplication can be drawn.</p>{% endif %}
 <p>{{ counts.matching }} matching targets · {{ counts.review }} needing review · {{ counts.not_met }} not meeting criteria. Excluded: {{ document.exclusion_counts.mosaic }} other Mosaic groups and {{ document.exclusion_counts.non_mosaic }} non-Mosaic rows.</p>
 </details>
-<section id="candidates"><h2>Candidate results</h2><nav class="report-nav" aria-label="Result filters">{% for value, label in [('matching','Matches'),('review','Information insufficient'),('not_met','Criteria not met'),('all','All targets')] %}<a href="{{ url_for('run_view', report_id=report_id, view=value) }}" {% if result_view == value %}aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}</nav>
+<section id="{{ report_id }}-candidates"><h2>Candidate results</h2><nav class="report-nav" aria-label="Result filters">{% for value, label in [('matching','Matches'),('review','Information insufficient'),('not_met','Criteria not met'),('all','All targets')] %}<a href="{{ url_for('run_view', report_id=report_id, view=value) }}" {% if result_view == value %}aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}</nav>
 </section>{% if candidates %}<h2 id="comparisons">Parameter comparisons</h2>{% endif %}{% for project, targets in candidates|groupby('project_code', case_sensitive=true) %}<section class="member-result">
 <h3>Project {{ project }}</h3>
 {% for obj in targets %}<article class="report-context queue-target"><h4>Target {{ obj.target_name }}</h4>

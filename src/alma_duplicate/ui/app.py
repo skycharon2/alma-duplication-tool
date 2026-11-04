@@ -219,6 +219,25 @@ def create_app(config=None):
         data["source_group"] = next((g for g in session.get("mosaic_report_groups", []) if report_id in g), None)
         data["purpose_pair"] = next((pair for pair in session.get("purpose_report_pairs", [])
                                      if report_id in pair), None)
+        group = data.get("source_group")
+        if group:
+            purpose = group[report_id].split(" · ", 1)[0]
+            tabs = {}
+            sections = []
+            for sibling_id, label in sorted(group.items(), key=lambda item: item[1]):
+                sibling_purpose, _, source = label.partition(" · ")
+                tabs.setdefault(sibling_purpose, sibling_id)
+                if sibling_purpose != purpose:
+                    continue
+                sibling = data if sibling_id == report_id else runs.page(sibling_id, 1, "matches")
+                if sibling is None:
+                    sections.append(dict(source=source, html=None))
+                    continue
+                fragment = dict(sibling, embedded=True, source_group=None, purpose_pair=None)
+                sections.append(dict(source=source, html=render_report(fragment, sibling_id)))
+            return render_template("combined_mosaic_report.html", sections=sections,
+                purpose=purpose, purpose_tabs=tabs, failed_branches=data["failed_branches"],
+                report_id=report_id)
         return render_report(data, report_id)
 
     def render_visualization(data, report_id, is_run):

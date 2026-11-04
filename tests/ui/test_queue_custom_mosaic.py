@@ -70,7 +70,7 @@ def test_existing_form_runs_queue_without_archive(browser, version, intents):
     assert report['candidates'][0]['science']['matching_arrays_by_intent'] == {intents[0]: [7., 12.]}
     if len(intents) == 2:
         first_page = client.get(response.location).text
-        sibling = re.search(r'href="([^"]+)">Continuum report</a>', first_page).group(1)
+        sibling = re.search(r'href="([^"]+)">Continuum</a>', first_page).group(1)
         assert sibling != response.location
         assert response.location in client.get(sibling).text
         continuum = client.get(sibling + '/download/report').json
