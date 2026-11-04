@@ -122,7 +122,82 @@ def spatial_view(context, records, origin, evidence):
             'reason': '' if outline else 'Half-power boundary is unavailable; only the recorded center is shown.'}
 
 
-def spectral_view(records, intent):
+def continuum_coverage(context):
+    """Display only the component bound to this saved Archive comparison."""
+    from alma_duplicate.rules.numeric import explicit_unit_quantity
+    saved = context.get('spectral_display') or {}
+    reference = context.get('reference') or {}
+    if (reference.get('source') != 'ARCHIVE' or saved.get('reference') != reference
+            or saved.get('source') != 'frequency_support.assigned_component'):
+        return []
+    component = saved.get('component') or {}
+    interval = component.get('frequency_interval') or {}
+    if component.get('component_index') != reference.get('component_index'):
+        return []
+    low, high = interval.get('low'), interval.get('high')
+    if not all(number(v) and v > 0 for v in (low, high)):
+        return []
+    low = explicit_unit_quantity(low, interval.get('unit'), 'GHz')
+    high = explicit_unit_quantity(high, interval.get('unit'), 'GHz')
+    if low is None or high is None or low >= high:
+        return []
+    return [dict(low=float(low), high=float(high), bandwidth_ghz=float(high-low),
+                 resolution=component.get('resolution'), component_index=component['component_index'])]
+
+
+
+def spectral_setup(context):
+    """Full row-scoped support for exploration, never scientific aggregation."""
+    import hashlib
+    import json
+    saved = context.get('spectral_setup_display') or {}
+    reference = context.get('reference') or {}
+    evidence = saved.get('evidence') or {}
+    if (reference.get('source') != 'ARCHIVE' or saved.get('reference') != reference
+            or evidence.get('raw_row_id') != reference.get('raw_row_id')):
+        return None
+    parsed = evidence.get('parse_result') or {}
+    components = []
+    for component in parsed.get('components', []):
+        temporary = {'reference': {**reference, 'component_index': component.get('component_index')}}
+        temporary['spectral_display'] = {
+            'reference': temporary['reference'], 'source': 'frequency_support.assigned_component',
+            'component': component}
+        intervals = continuum_coverage(temporary) if (
+            component.get('parse_status') == 'PARSED' and not component.get('validation_issues')) else []
+        components.append({
+            'index': component.get('component_index'), 'interval': intervals[0] if intervals else None,
+            'center': component.get('displayed_center'), 'resolution': component.get('resolution'),
+            'sensitivities': component.get('sensitivities', []),
+            'polarization': component.get('polarization_products', []),
+            'status': component.get('parse_status'),
+        })
+    if not components:
+        return None
+    scope = {k: v for k, v in reference.items() if k not in {'component_index', 'raw_row_id'}}
+    identity = context.get('display_identity') or {}
+    execution = {k: identity.get(k) for k in ('Member OUS', 'ASDM', 'Target')}
+    # Raw TAP rows repeat a context-wide support across SPWs. Row identity is
+    # provenance, not setup identity, when the execution identity is complete.
+    if not all(isinstance(v, str) and v.strip() for v in execution.values()):
+        execution = {'unresolved_row': reference.get('raw_row_id')}
+    def semantic(value):
+        if isinstance(value, dict):
+            return {k: semantic(v) for k, v in value.items()
+                    if k not in {'raw_value', 'normalized_value', 'raw_text', 'raw_token'}}
+        if isinstance(value, list):
+            return [semantic(v) for v in value]
+        return value
+    signature = hashlib.sha256(json.dumps(semantic(parsed), sort_keys=True).encode()).hexdigest()
+    key = hashlib.sha256(json.dumps([scope, execution, signature], sort_keys=True).encode()).hexdigest()
+    bound = continuum_coverage(context)
+    return {'id': key, 'reference': scope, 'parser_version': parsed.get('parser_version'),
+            'components': components, 'execution': execution, 'signature': signature,
+            'source_rows': [reference.get('raw_row_id')],
+            'selected_component': bound[0]['component_index'] if bound else None}
+
+
+def spectral_view(records, intent, context=None):
     record = unique_record(records, 'LINE-COVERAGE' if intent == 'LINE' else 'CONT-FREQ')
     missing = {'available': False, 'reason': 'Recorded comparison frequencies are unavailable.'}
     if not record:
@@ -138,7 +213,7 @@ def spectral_view(records, intent):
     if not all(q.get('unit') == 'GHz' and number(q.get('value')) and q['value'] > 0 for q in (p, c)):
         return missing
     return {'available': True, 'kind': 'representative', 'proposed': p['value'], 'candidate': c['value'],
-            'result': criterion_status(record)}
+            'result': criterion_status(record), 'coverage': continuum_coverage(context or {})}
 
 
 def visualization_data(data, plot_page=1):
@@ -160,6 +235,7 @@ def visualization_data(data, plot_page=1):
     if plot_page < 1 or plot_page > pages:
         raise IndexError('Visualization page unavailable')
     rows = []
+    setups = {}
     for index, variant, pair_index, context, records, intent, pair in items[(plot_page-1)*CHART_ROWS:plot_page*CHART_ROWS]:
         identity = dict(context_identity(context))
         ref = ((pair or {}).get('attempt') or {}).get('reference') or {}
@@ -186,10 +262,19 @@ def visualization_data(data, plot_page=1):
                'source': context['reference']['source'], 'intent': intent, 'spw': str(spw),
                'window': ref.get('proposed_window_id'), 'beam_variant': variant if context.get('beam_variants') else None,
                'spatial': spatial_view(context, records, origin, data.get('spatial', {}).get(context['context_id'])),
-               'spectral': spectral_view(records, intent),
+               'spectral': spectral_view(records, intent, context),
                'criteria': comparisons}
+        setup = spectral_setup(context)
+        if setup:
+            row['spectral_setup_id'] = setup['id']
+            row['spectral_setup_component'] = setup.pop('selected_component')
+            previous = setups.get(setup['id'])
+            if previous:
+                previous['source_rows'] = list(dict.fromkeys(previous['source_rows'] + setup['source_rows']))
+            else:
+                setups[setup['id']] = setup
         rows.append(row)
-    return {'rows': rows, 'origin': list(origin) if origin else None, 'supported': supported,
+    return {'rows': rows, 'spectral_setups': setups, 'origin': list(origin) if origin else None, 'supported': supported,
             'plot_page': plot_page, 'plot_pages': pages, 'total': len(items),
             'spatial_available': sum(r['spatial']['available'] for r in rows),
             'spectral_available': sum(r['spectral']['available'] for r in rows),

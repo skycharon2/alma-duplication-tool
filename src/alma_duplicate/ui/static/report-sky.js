@@ -222,6 +222,7 @@ window.createReportSky = function(state) {
   panel.inert=true;
   // Match the active page height so a tall hidden chart does not leave empty space.
   const resizeGallery = () => {
+    gallery.scrollTop = 0;
     gallery.style.height = Math.ceil((page === 1 ? panel : charts).getBoundingClientRect().height) + 'px';
   };
   const sizeObserver = new ResizeObserver(resizeGallery);

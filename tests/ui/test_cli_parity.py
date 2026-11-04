@@ -269,10 +269,10 @@ def test_proposed_nominal_mapping_form_cli_and_both_sources(tmp_path, monkeypatc
     elif outcome is None:
         assert all(c['branches'][0]['status'] != 'CRITERIA_MET' for c in document['context_evaluations'])
     html = client.get(url).get_data(as_text=True).split('<details id="technical-records"')[0]
-    assert 'Proposed window bandwidth qualification' in html
-    assert 'NOMINAL' in html
-    if outcome == 'SATISFIED':
-        assert '1.875' in html
+    assert 'Proposed window bandwidth qualification' not in html
+    assert 'id="setup-qualification"' not in html
+    # Qualification remains in the saved scientific report, not the main UI.
+    assert client.get(url + '/download/report').get_json()['request_criteria'][0] == setup
     exported = client.get(url + '/download/request').get_json()['request']
     assert all(w['bandwidth_kind'] == 'NOMINAL' and w['bandwidth']['value'] == width
                for w in exported['spectral_windows'])

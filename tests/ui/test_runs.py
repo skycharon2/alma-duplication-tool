@@ -283,7 +283,7 @@ def test_declared_continuum_report_matches_cli_and_preserves_provenance(tmp_path
     assert req["request"]["continuum_setup_declaration"] == CONTINUUM_SETUP_DECLARATION
     assert req["request"]["spectral_windows"] == [] and req["request"]["setup_complete"] is False
     assert doc["request"]["normalized"]["continuum_setup_declaration"] == CONTINUUM_SETUP_DECLARATION
-    assert b"continuum setup qualification uses a researcher declaration" in client.get(response.location).data
+    assert b'id="setup-qualification"' not in client.get(response.location).data
     assert any(c["branches"][0]["status"] == "CRITERIA_MET" for c in doc["context_evaluations"])
     path = tmp_path / "request.json"
     path.write_text(json.dumps(req))

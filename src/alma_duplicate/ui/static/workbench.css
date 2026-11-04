@@ -433,3 +433,11 @@ summary { cursor: pointer; padding: .4rem; }
 .queue-config-fields dt { font-size: .85rem; color: var(--muted); }
 .queue-config-fields dd { margin: .15rem 0 0; overflow-wrap: anywhere; }
 .queue-evidence { margin-block: .6rem; }
+
+.source-states > div { position: relative; }
+.source-states > div > h3 { padding-right: 36px; }
+.source-retrieval-help > summary { position: absolute; right: 16px; top: 16px; display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid #adc7d9; border-radius: 50%; cursor: pointer; color: #17689e; list-style: none; background: white; }
+.source-retrieval-help > summary::-webkit-details-marker { display: none; }
+.source-retrieval-help > summary:focus-visible { outline: 2px solid #007cb0; outline-offset: 2px; }
+.source-retrieval-help[open] { margin-top: 12px; border-top: 1px solid #c4d5e0; overflow-wrap: anywhere; }
+.source-retrieval-help h2 { font-size: 1rem; }
