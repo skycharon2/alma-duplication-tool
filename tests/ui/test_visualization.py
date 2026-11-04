@@ -251,3 +251,119 @@ def test_mosaic_candidate_backend_report_and_explore_roundtrip(tmp_path):
     assert spatial['sky_outline'] and spatial['outline']
     assert spatial['radius_arcsec'] is None
     assert client.get('/reports/1/download/report').data == raw
+
+
+def test_continuum_coverage_uses_saved_component_and_preserves_frequency_points():
+    from alma_duplicate.ui.visualization import spectral_view
+    document = serialized(report())
+    context = document['context_evaluations'][0]
+    before = deepcopy(document)
+    records = [dict(criterion_id='CONT-FREQ',
+                    proposed=dict(unit='GHz', value=230.),
+                    candidate=dict(unit='GHz', value=225.1))]
+    result = spectral_view(records, 'CONTINUUM', context)
+    assert result['candidate'] == 225.1
+    assert result['proposed'] == 230.
+    assert len(result['coverage']) == 1
+    interval = result['coverage'][0]
+    assert interval['low'] == 224.8
+    assert interval['high'] == 225.4
+    assert interval['bandwidth_ghz'] == pytest.approx(.6)
+    assert interval['resolution'] is not None
+    assert document == before
+
+
+@pytest.mark.parametrize('damage', ['missing', 'reference', 'component', 'invalid'])
+def test_display_coverage_never_guesses_or_crosses_context(damage):
+    from alma_duplicate.ui.visualization import continuum_coverage
+    context = serialized(report())['context_evaluations'][0]
+    if damage == 'missing':
+        del context['spectral_display']
+    elif damage == 'reference':
+        context['spectral_display']['reference']['raw_row_id'] = 'other'
+    elif damage == 'component':
+        context['spectral_display']['component']['component_index'] = 999
+    else:
+        context['spectral_display']['component']['frequency_interval']['low'] = -1
+    assert continuum_coverage(context) == []
+
+
+def test_full_spectral_setup_preserves_components_without_unique_mapping():
+    from alma_duplicate.ui.visualization import spectral_setup
+    document = serialized(report())
+    context = document['context_evaluations'][0]
+    parsed = context['spectral_setup_display']['evidence']['parse_result']
+    original = deepcopy(parsed['components'][0])
+    overlap = deepcopy(original)
+    overlap['component_index'] = 5
+    overlap['frequency_interval'].update(low=225.0, high=226.0)
+    gap = deepcopy(original)
+    gap['component_index'] = 6
+    gap['frequency_interval'].update(low=240.0, high=241.0)
+    centre = deepcopy(original)
+    centre.update(component_index=7, frequency_interval=None,
+                  displayed_center={'value': 250, 'unit': 'GHz'})
+    parsed['components'] = [original, overlap, gap, centre]
+    before = deepcopy(context)
+    setup = spectral_setup(context)
+    assert len(setup['components']) == 4
+    assert setup['components'][1]['interval']['low'] == 225.0
+    assert setup['components'][2]['interval']['low'] == 240.0
+    assert setup['components'][3]['interval'] is None
+    assert setup['selected_component'] == original['component_index']
+    assert context == before
+    del context['spectral_display']
+    unbound = spectral_setup(context)
+    assert unbound['id'] == setup['id']
+    assert unbound['selected_component'] is None
+    assert unbound['components'] == setup['components']
+
+
+def test_full_spectral_setup_scope_and_version_are_not_globally_merged():
+    from alma_duplicate.ui.visualization import spectral_setup
+    context = serialized(report())['context_evaluations'][0]
+    first = spectral_setup(context)
+    altered = deepcopy(context)
+    altered['reference']['source_record_id'] = 'other-run'
+    altered['spectral_setup_display']['reference'] = deepcopy(altered['reference'])
+    assert spectral_setup(altered)['id'] != first['id']
+    altered = deepcopy(context)
+    altered['spectral_setup_display']['evidence']['parse_result']['parser_version'] = 'other-parser'
+    assert spectral_setup(altered)['id'] != first['id']
+    altered['spectral_setup_display']['evidence']['raw_row_id'] = 'other-row'
+    assert spectral_setup(altered) is None
+
+
+def test_visualization_payload_shares_setup_and_handles_legacy_reports():
+    document = serialized(report())
+    visual = visualization_data(page(document))
+    assert len(visual['spectral_setups']) == 1
+    assert visual['rows'][0]['spectral_setup_id'] in visual['spectral_setups']
+    for context in document['context_evaluations']:
+        context.pop('spectral_setup_display', None)
+    legacy = visualization_data(page(document))
+    assert not legacy['spectral_setups']
+    assert 'spectral_setup_id' not in legacy['rows'][0]
+
+
+def test_setup_groups_repeated_spw_rows_only_with_same_execution_and_signature():
+    from alma_duplicate.ui.visualization import spectral_setup
+    first = serialized(report())['context_evaluations'][0]
+    first['display_identity'].update({'Member OUS': 'member-a', 'ASDM': 'execution-a', 'Target': 'source-a'})
+    second = deepcopy(first)
+    second['reference'].update(raw_row_id='another-spw-row', component_index=2)
+    second['spectral_setup_display']['reference'] = deepcopy(second['reference'])
+    second['spectral_setup_display']['evidence']['raw_row_id'] = 'another-spw-row'
+    second.pop('spectral_display', None)
+    assert spectral_setup(first)['id'] == spectral_setup(second)['id']
+    assert spectral_setup(first)['source_rows'] != spectral_setup(second)['source_rows']
+    for field in ('Member OUS', 'ASDM', 'Target'):
+        other = deepcopy(second)
+        other['display_identity'][field] = 'different'
+        assert spectral_setup(first)['id'] != spectral_setup(other)['id']
+    other = deepcopy(second)
+    other['spectral_setup_display']['evidence']['parse_result']['components'][0]['frequency_interval']['high'] += 1
+    assert spectral_setup(first)['id'] != spectral_setup(other)['id']
+    for record in (first, second):
+        record['display_identity']['ASDM'] = None
+    assert spectral_setup(first)['id'] != spectral_setup(second)['id']

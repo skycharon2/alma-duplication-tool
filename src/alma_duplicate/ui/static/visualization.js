@@ -15,9 +15,11 @@
   const visibleRows = () => viewport.visible(filteredRows(), selected, isolated);
   const number = row => rows.indexOf(row) + data.start;
   const spatialPoints = list => list.flatMap(row => row.spatial.available ? (row.spatial.outline || [row.spatial.offset]) : []);
+  const expandedSetups = new Set();
   const frequencyValues = list => list.flatMap(row => {
     const f = row.spectral;
-    return !f.available ? [] : f.kind === "interval" ? [f.proposed, f.low, f.high] : [f.proposed, f.candidate];
+    const support = ((data.spectral_setups || {})[row.spectral_setup_id]?.components || []).flatMap(c => c.interval ? [c.interval.low, c.interval.high] : []);
+    return [...support, ...(!f.available ? [] : f.kind === "interval" ? [f.proposed, f.low, f.high] : [f.proposed, f.candidate, ...(f.coverage || []).flatMap(c => [c.low, c.high])])];
   });
   const extent = Math.max(10, ...spatialPoints(rows).flat().map(Math.abs)) * 1.15;
   const frequencies = frequencyValues(rows);
@@ -110,10 +112,25 @@
     if (data.origin) { marker(layer, sx(0), sy(0)); draw(svg, "text", {x: 60, y: 22}, "◆ Your target at (0, 0)"); }
     if (!points.length) draw(svg, "text", {x: 240, y: 190, "text-anchor": "middle"}, "Candidate position evidence unavailable");
   }
+  function coverageLabel(row, c) {
+    const resolution = c.resolution ? `${fmt(c.resolution.value)} ${c.resolution.unit}` : "not recorded";
+    return `SPW ${row.spw} · Representative ${fmt(row.spectral.candidate)} GHz · Coverage ${fmt(c.low)}–${fmt(c.high)} GHz · Interval width ${fmt(c.bandwidth_ghz)} GHz · Spectral resolution ${resolution}`;
+  }
   function spectralChart() {
     const svg = document.getElementById("spectral-chart");
     const shown = visibleRows();
-    const height = Math.max(330, 90 + shown.length * 34);
+    const entries = [], groups = new Map();
+    shown.forEach(row => {
+      const setup = (data.spectral_setups || {})[row.spectral_setup_id];
+      if (!setup || !setup.components.some(c => c.interval)) { entries.push({row}); return; }
+      if (!groups.has(setup.id)) groups.set(setup.id, {setup, rows:[]});
+      groups.get(setup.id).rows.push(row);
+    });
+    groups.forEach(group => {
+      entries.push({group});
+      if (expandedSetups.has(group.setup.id)) group.rows.forEach(row => entries.push({row}));
+    });
+    const height = Math.max(330, 90 + entries.length * 40);
     svg.setAttribute("viewBox", `0 0 600 ${height}`);
     svg.replaceChildren();
     const values = frequencyValues(shown);
@@ -133,22 +150,57 @@
     }
     draw(svg, "text", {x: 350, y: height-3, "text-anchor": "middle"}, "Frequency (GHz)");
     clip(svg, "frequency-clip", 135, 30, 430, bottom-30);
-    shown.forEach((row, i) => {
-      const y = 48 + i*34, f = row.spectral, active = row.id === highlighted();
+    entries.forEach((entry, i) => {
+      const y = 48 + i*40;
+      if (entry.group) {
+        const {setup, rows: members} = entry.group;
+        const opened = expandedSetups.has(setup.id);
+        const g = draw(svg, "g", {role:"button", tabindex:"0", "aria-expanded":String(opened),
+          "aria-label":`${opened ? "Collapse" : "Expand"} SPW comparisons for ${members[0].label}`});
+        draw(g, "rect", {x:5,y:y-17,width:585,height:34,fill:members.some(r => r.id === highlighted()) ? "#e9f4fa" : "transparent"});
+        draw(g, "text", {x:12,y:y+3}, `${opened ? "▾" : "▸"} Setup · ${members.length} rows`);
+        draw(g, "title", {}, members[0].label+" · ASDM "+(setup.execution?.ASDM || "not recorded")+" · "+members.length+" comparisons · Full frequency_support; expand for SPWs");
+        const toggle = () => { if (opened) expandedSetups.delete(setup.id); else expandedSetups.add(setup.id); spectralChart(); };
+        g.addEventListener("click", event => { if (suppressClick) return; event.stopPropagation(); toggle(); });
+        g.addEventListener("keydown", event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle(); } });
+        const layer = draw(g, "g", {"clip-path":"url(#frequency-clip)"});
+        setup.components.filter(c => c.interval).forEach((c, j) => {
+          const bar = draw(layer, "rect", {x:x(c.interval.low),y:y-7+(j%2)*7,
+            width:Math.max(.5,x(c.interval.high)-x(c.interval.low)),height:6,fill:"#17689e",opacity:.65});
+          draw(bar, "title", {}, componentText(c));
+        });
+        const requested = [...new Set(members.filter(r => r.spectral.available).map(r => r.spectral.proposed))];
+        requested.forEach(v => marker(layer,x(v),y));
+        return;
+      }
+      const row = entry.row, f = row.spectral, active = row.id === highlighted();
       const description = !f.available ? f.reason : f.kind === "interval" ?
         `Requested ${fmt(f.proposed)} GHz; candidate interval ${fmt(f.low)} to ${fmt(f.high)} GHz` :
         `Requested ${fmt(f.proposed)} GHz; candidate representative frequency ${fmt(f.candidate)} GHz`;
       const g = selectable(svg, row, rows.indexOf(row), description);
       draw(g, "rect", {x: 5, y: y-15, width: 585, height: 30, fill: active ? "#e9f4fa" : "transparent"});
-      draw(g, "text", {x: 12, y: y+3}, `#${number(row)} ${row.intent === "LINE" ? "LINE" : "CONT"} · ${row.source === "QUEUE" ? "Queue" : "Archive"}`);
+      draw(g, "text", {x: 12, y: y+3}, `#${number(row)} ${row.intent === "LINE" ? "LINE" : "CONT"} · SPW ${row.spw}`);
       if (!f.available) { draw(g, "text", {x: 145, y: y+3}, "Frequency evidence unavailable"); return; }
       const layer = draw(g, "g", {"clip-path": "url(#frequency-clip)"});
       if (f.kind === "interval") {
         draw(layer, "rect", {x: x(f.low), y: y-4, width: Math.max(.5, x(f.high)-x(f.low)), height: 8, rx: 1,
           fill: color(row), opacity: active ? 1 : .55});
-      } else draw(layer, "circle", {cx: x(f.candidate), cy: y, r: 5, fill: color(row)});
+      } else {
+        for (const coverage of f.coverage || []) {
+          const bar = draw(layer, "rect", {x: x(coverage.low), y: y-5,
+            width: Math.max(.5, x(coverage.high)-x(coverage.low)), height: 10,
+            fill: color(row), opacity: .25});
+          draw(bar, "title", {}, coverageLabel(row, coverage));
+        }
+        draw(layer, "circle", {cx: x(f.candidate), cy: y, r: 5, fill: color(row)});
+      }
       marker(layer, x(f.proposed), y);
     });
+  }
+  const sensitivityText = entries => entries.length ?
+    entries.map(e => `${fmt(e.value)} ${e.unit} (${e.basis})`).join("; ") : "Not recorded";
+  function componentText(c) {
+    return `Component ${c.index} · ${fmt(c.interval.low)}–${fmt(c.interval.high)} GHz · Width ${fmt(c.interval.bandwidth_ghz)} GHz · Resolution ${c.resolution ? fmt(c.resolution.value)+" "+c.resolution.unit : "not recorded"} · Sensitivity ${sensitivityText(c.sensitivities)} · Polarization ${c.polarization.join(", ")}`;
   }
   function details() {
     const row = rows.find(r => r.id === selected), body = document.getElementById("visual-detail-body");
@@ -169,6 +221,7 @@
     node("p", {}, !f.available ? f.reason : f.kind === "interval" ?
       `Requested: ${fmt(f.proposed)} GHz · Candidate: ${fmt(f.low)}–${fmt(f.high)} GHz` :
       `Representative frequencies: requested ${fmt(f.proposed)} GHz · candidate ${fmt(f.candidate)} GHz`, body);
+    for (const coverage of f.coverage || []) node("p", {}, coverageLabel(row, coverage), body);
     const quantity = q => q && q.value !== null ? `${fmt(q.value)} ${q.unit || ""}` : "Not recorded";
     row.criteria.forEach(record => {
       const d = node("details", {class: "visual-condition"}, null, body);

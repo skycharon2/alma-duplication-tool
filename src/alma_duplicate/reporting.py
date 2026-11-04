@@ -155,6 +155,24 @@ def _reported_context(item, detail, summaries):
         'reference': item.candidate.context.reference,
         'display_identity': _display_identity(item.candidate.context),
     }
+    from alma_duplicate.domain.comparison import ArchiveContextEvidence
+    context = item.candidate.context
+    if full and isinstance(context.evidence, ArchiveContextEvidence):
+        support = context.evidence.support_evidence
+        if support.raw_row_id == context.reference.raw_row_id:
+            data['spectral_setup_display'] = {
+                'reference': context.reference,
+                'evidence': support,
+            }
+        component = context.evidence.selected_component
+        if (component is not None and component.is_valid
+                and context.reference.component_index == component.component_index
+                and context.evidence.row_link.is_linked):
+            data['spectral_display'] = {
+                'source': 'frequency_support.assigned_component',
+                'reference': context.reference,
+                'component': component,
+            }
     if full:
         data.update(evidence_states=item.candidate.context.items, **_context_results(item))
     else:
