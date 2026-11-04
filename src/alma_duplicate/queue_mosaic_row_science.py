@@ -18,21 +18,23 @@ MAX_SPECTRAL_PAIRS = 100_000
 
 
 def _common(request, context, position, kind, decision):
+    single = request.geometry == 'SINGLE_POINTING'
+    method_kind = f'single_to_{kind}' if single else kind
     supported = isinstance(context.evidence.row.spectral, RegularSpwEvidence)
-    details = (('common_scope', f'SUPPORTED_{kind.upper()}' if supported else 'UNRESOLVED'),
+    details = (('common_scope', f'SUPPORTED_{method_kind.upper()}' if supported else 'UNRESOLVED'),
                ('array_scope', 'CSV_INFERRED'), ('geometry_model_status', 'PROVISIONAL'))
     angular = replace(evaluate_angular_resolution(request, context),
-        method_version=f'queue_{kind}_angular_1', approval=MethodApproval.APPROVED,
+        method_version=f'queue_{method_kind}_angular_1', approval=MethodApproval.APPROVED,
         details=details, decision_refs=(decision,))
     known = position['outcome'] != 'UNKNOWN'
-    spatial = CriterionResult(criterion_id='POS-MOSAIC', policy_ref=f'{POLICY_DOCUMENT}, Position',
-        method_version=f'queue_{kind}_position_1', approval=MethodApproval.APPROVED,
+    spatial = CriterionResult(criterion_id='POS-SINGLE' if single else 'POS-MOSAIC', policy_ref=f'{POLICY_DOCUMENT}, Position',
+        method_version=f'queue_{method_kind}_position_1', approval=MethodApproval.APPROVED,
         applicability=A.APPLICABLE if known else A.UNRESOLVED,
         evaluation=E.EVALUATED if known else E.INSUFFICIENT_INFORMATION,
         outcome=O(position['outcome']) if known else None, context_id=context.context_id,
         proposed=None, candidate=None, reasons=tuple(position['reasons']), details=details,
         decision_refs=(decision,), derived=(('antenna_diameter_m', position['diameter_m']),),
-        numeric_method='SPHERICAL_EXPLICIT_BOUNDARY_INTEGER_MAJORITY')
+        numeric_method='SPHERICAL_BEAM_UNION_SINGLE_POINT' if single else 'SPHERICAL_EXPLICIT_BOUNDARY_INTEGER_MAJORITY')
     return angular, spatial
 
 
@@ -40,13 +42,16 @@ def _rms_metadata(criterion, proposed, kind):
     if criterion.criterion_id not in ('CONT-RMS', 'LINE-RMS'):
         return criterion
     return replace(criterion, details=criterion.details + (
-        ('candidate_mosaic_rms_basis', 'RECTANGLE_COMBINED_IMAGE_REQUEST' if kind == 'rectangle' else 'SINGLE_FIELD_REQUEST'),
+        ('candidate_mosaic_rms_basis', {'rectangle': 'RECTANGLE_COMBINED_IMAGE_REQUEST', 'custom': 'CUSTOM_PER_POINTING_REQUEST', 'single_field': 'SINGLE_FIELD_REQUEST'}[kind]),
         ('proposed_mosaic_rms_basis', str(proposed.get('sensitivity_basis', 'UNSPECIFIED'))),
         ('rms_comparison_basis', 'REQUESTED_RMS_EXISTING_APPENDIX_A_NUMERICS'),
         ('mosaic_overlap_gain', 'NONE'), ('rms_basis_conversion', 'NONE')))
 
 
 def evaluate_row_candidates(report, contexts, request, proposed, *, kind, decision, nominal_conversion, prepared=None):
+    single = request.geometry == 'SINGLE_POINTING'
+    method_kind = f'single_to_{kind}' if single else kind
+    required = {intent: ('POS-SINGLE', *criteria[1:]) for intent, criteria in REQUIRED.items()} if single else REQUIRED
     cont_request = prepared.continuum_request if prepared is not None else request if 'CONTINUUM' in request.intents else None
     setup = (approve_setup(evaluate_continuum_setup(cont_request, nominal_conversion=nominal_conversion),
              nominal_conversion=nominal_conversion) if cont_request is not None else None)
@@ -65,12 +70,12 @@ def evaluate_row_candidates(report, contexts, request, proposed, *, kind, decisi
             criteria, branches, pairs = list(common), [], []
             if setup is not None:
                 numerical = tuple(_rms_metadata(c, proposed, kind) for c in
-                    evaluate_queue_continuum(cont_request, context, common, mosaic=True))
+                    evaluate_queue_continuum(cont_request, context, common, mosaic=not single, candidate_mosaic=single))
                 criteria.extend(numerical)
                 branches.append(aggregate_continuum(context, (setup, *common, *numerical),
-                                                    queue_method=True, mosaic=True))
+                                                    queue_method=True, mosaic=not single))
             if 'LINE' in request.intents:
-                pairing = build_queue_line_pairs(request, context, mosaic=True)
+                pairing = build_queue_line_pairs(request, context, mosaic=not single, candidate_mosaic=single)
                 if prepared is not None:
                     pairing = replace(pairing, proposed_enumeration_complete=True,
                         reasons=tuple(r for r in pairing.reasons if r != 'PROPOSED_ENUMERATION_INCOMPLETE'))
@@ -86,18 +91,18 @@ def evaluate_row_candidates(report, contexts, request, proposed, *, kind, decisi
                     truths.append(Truth.UNKNOWN)
                 truth = three_or(truths)
                 branches.append(BranchAssessment('LINE', context.context_id, STATUS[truth], truth,
-                    REQUIRED['LINE'], tuple(pairing.reasons), method_version=f'queue_{kind}_line_pairs_1'))
-            branches = [replace(b, method_version=f'queue_{kind}_{b.branch.lower()}_1',
+                    required['LINE'], tuple(pairing.reasons), method_version=f'queue_{method_kind}_line_pairs_1'))
+            branches = [replace(b, method_version=f'queue_{method_kind}_{b.branch.lower()}_1',
                 decision_refs=(decision,), scope=f'ONE_{kind.upper()}_ROW_SAME_ARRAY_MODEL_CONDITIONAL') for b in branches]
             variants.append(dict(diameter_m=position['diameter_m'], criteria=criteria, branches=branches, line_pairs=pairs))
         # Existing validator enforces exact array inventory, context and required
         # criteria. Its Custom-labelled metadata is replaced for this adapter.
         combined = aggregate_custom_arrays(context.context_id,
-            candidate['position']['array_inference']['diameters_m'], variants)
+            candidate['position']['array_inference']['diameters_m'], variants, required=required)
         if not variants:
             combined = tuple(BranchAssessment(i, context.context_id, 'INDETERMINATE', Truth.UNKNOWN,
-                REQUIRED[i], ('ARRAY_INFERENCE_UNRESOLVED',)) for i in request.intents)
-        combined = tuple(replace(b, method_version=f'queue_{kind}_array_or_1', decision_refs=(decision,),
+                required[i], ('ARRAY_INFERENCE_UNRESOLVED',)) for i in request.intents)
+        combined = tuple(replace(b, method_version=f'queue_{method_kind}_array_or_1', decision_refs=(decision,),
             scope=f'ONE_{kind.upper()}_ROW_COMPLETE_ARRAY_BRANCHES_MODEL_CONDITIONAL') for b in combined)
         candidate['science'] = dict(context_id=context.context_id, source_row_id=row_id,
             model_status='PROVISIONAL', scientific_candidate_completeness='NOT_ESTABLISHED',
@@ -106,7 +111,7 @@ def evaluate_row_candidates(report, contexts, request, proposed, *, kind, decisi
                 b.branch == i and b.truth is Truth.TRUE for b in v['branches'])] for i in request.intents},
             variants=[dict(diameter_m=v['diameter_m'], criteria=[asdict(c) for c in v['criteria']],
                            branches=[asdict(b) for b in v['branches']], line_pairs=v['line_pairs']) for v in variants])
-    report.update(schema_version=f'queue_{kind}_csv_science_1',
+    report.update(schema_version=f'queue_{method_kind}_csv_science_1',
         scientific_status='COMPLETE_BRANCHES_EVALUATED_UNDER_PROVISIONAL_CSV_MODEL',
         duplication_status='PER_CANDIDATE_AND_INTENT_RESULTS_NO_SEARCH_WIDE_ABSENCE_CLAIM',
         array_aggregation='COMPLETE_SAME_CANDIDATE_ARRAY_BRANCHES_OR',

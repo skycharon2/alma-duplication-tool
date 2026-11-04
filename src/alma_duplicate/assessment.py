@@ -70,7 +70,7 @@ def assess_observation(request: dict, search_options: dict, *,
                        sources: AssessmentSources = AssessmentSources(),
                        input_sha256: str | None = None,
                        report_detail: str = 'full', mosaic=None, queue_custom=None,
-                       queue_rectangle=None, queue_mosaic=None) -> AssessmentResult:
+                       queue_rectangle=None, queue_mosaic=None, queue_single_mosaics=False) -> AssessmentResult:
     """Run one assessment, preserving missing-source and independent branch states.
 
     COMPLETED describes execution only, never a search-wide duplication verdict.
@@ -87,6 +87,12 @@ def assess_observation(request: dict, search_options: dict, *,
             report_document(SolarExemptionReport(validation=validated),
                             input_sha256=input_sha256),
         )
+    if queue_single_mosaics and validated.is_valid:
+        if any(workflow is not None for workflow in (mosaic, queue_custom, queue_rectangle, queue_mosaic)):
+            raise ValueError('Select one Queue geometry workflow')
+        from alma_duplicate.queue_single_mosaic_assessment import assess_single_mosaics
+        return assess_single_mosaics(validated, options=options, sources=sources,
+                                    input_sha256=input_sha256, report_detail=report_detail)
     if queue_mosaic is not None and validated.is_valid:
         if any(workflow is not None for workflow in (mosaic, queue_custom, queue_rectangle)):
             raise ValueError('Select one Mosaic workflow')

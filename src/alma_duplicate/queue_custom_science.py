@@ -100,8 +100,9 @@ def _line_branch(request, context, common, proposed, *, submitted_scope=False):
     return branch, pairs, pairing
 
 
-def aggregate_custom_arrays(context_id, expected_diameters, variants):
+def aggregate_custom_arrays(context_id, expected_diameters, variants, *, required=None):
     """Validate complete branch scope before reusing the existing three-valued OR."""
+    required = REQUIRED if required is None else required
     if tuple(expected_diameters) not in ((), (7.,), (12.,), (7., 12.)):
         raise ValueError("Invalid inferred Custom array branches")
     if tuple(v["diameter_m"] for v in variants) != tuple(expected_diameters):
@@ -110,7 +111,7 @@ def aggregate_custom_arrays(context_id, expected_diameters, variants):
         return ()
     first = variants[0]["branches"]
     signature = tuple((b.branch, b.required_criteria) for b in first)
-    if (not first or any(b.required_criteria != REQUIRED.get(b.branch) for b in first)
+    if (not first or any(b.required_criteria != required.get(b.branch) for b in first)
         or len({b.branch for b in first}) != len(first) or any(
         tuple((b.branch, b.required_criteria) for b in v["branches"]) != signature
         or any(b.context_id != context_id for b in v["branches"]) for v in variants

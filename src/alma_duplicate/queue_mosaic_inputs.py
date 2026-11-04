@@ -7,10 +7,10 @@ from alma_duplicate.rules.continuum_setup import PORTAL_SCRIPT_V1
 from alma_duplicate.rules.queue_mosaic_position import _points
 
 
-def validate_inputs(validated, proposed, options, sources, report_detail):
+def validate_inputs(validated, proposed, options, sources, report_detail, *, geometry="MOSAIC"):
     request = validated.request
-    if request.target_kind != 'FIXED' or request.geometry != 'MOSAIC':
-        raise ValueError('Queue Mosaic requires a fixed Mosaic request')
+    if request.target_kind != 'FIXED' or request.geometry != geometry:
+        raise ValueError(f'Queue geometry workflow requires a fixed {geometry} request')
     request.require_implemented_line_scope()
     if validated.search_options.sources != ('QUEUE',):
         raise ValueError('Queue Mosaic assessment requires QUEUE only')

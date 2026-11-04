@@ -137,7 +137,7 @@ class QueueLinePairBuildResult:
 
 
 def build_queue_line_pairs(
-    request: ProposedObservationRequest, context: ComparisonContext, *, mosaic=False
+    request: ProposedObservationRequest, context: ComparisonContext, *, mosaic=False, candidate_mosaic=False
 ) -> QueueLinePairBuildResult:
     """Enumerate every proposed window x occupied SPW; never filter by coverage.
 
@@ -172,6 +172,11 @@ def build_queue_line_pairs(
         scope_reasons.append("FIXED_MOSAIC_REQUEST_REQUIRED" if mosaic else "FIXED_SINGLE_POINT_REQUEST_REQUIRED")
     candidate_supported = (row.spatial.mosaic_kind in (QueueMosaicKind.CUSTOM_POINTING, QueueMosaicKind.RECTANGULAR_MOSAIC, QueueMosaicKind.SINGLE_FIELD) if mosaic
                            else is_queue_single_point(row))
+    if candidate_mosaic:
+        if mosaic:
+            raise ValueError("Select one proposed geometry")
+        candidate_supported = row.spatial.mosaic_kind in (
+            QueueMosaicKind.CUSTOM_POINTING, QueueMosaicKind.RECTANGULAR_MOSAIC)
     if not candidate_supported:
         scope_reasons.append("QUEUE_CUSTOM_REQUIRED" if mosaic else "QUEUE_SINGLE_FIELD_REQUIRED")
     reasons.extend(scope_reasons)
