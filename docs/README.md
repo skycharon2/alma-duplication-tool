@@ -21,7 +21,10 @@ boundaries and the current evaluation boundary.
   [single-pointing explorer](ui_report_browser.md#single-pointing-report-explorer).
 - Earlier delivery notes and test counts: [history](history/delivery_notes.md).
 - LINE input migration, stage contracts and acceptance: [LINE scope development](development/line-scope/README.md).
-- Queue Mosaic backend: [offline candidate reconstruction](queue_mosaic_reconstruction.md) and [per-array position checks](queue_mosaic_position.md), plus [Custom OT validation](queue_mosaic_binding.md) and [direct Custom CSV checks](queue_custom_backend.md) and [complete Custom science branches](queue_custom_science.md).
+- Queue Mosaic: [unified browser assessment](unified_browser_assessment.md),
+  [candidate reconstruction](queue_mosaic_reconstruction.md),
+  [position checks](queue_mosaic_position.md), [Custom science](queue_custom_science.md)
+  and [Rectangle model and scientific scope](queue_rectangle_grid.md).
 
 ## Reading paths
 
@@ -78,13 +81,14 @@ They are not current population counts or Python class definitions.
 
 ## Archive Mosaic
 
-**Current Archive-only backend:** [OT pointing import](ot_pointings_backend.md),
+**Archive Mosaic:** [OT pointing import](ot_pointings_backend.md),
 [candidate discovery](mosaic_candidate_discovery.md),
 [s_region position contract](mosaic_s_region_position.md), and
 [assessment entry](assessment_entry.md). The default method evaluates each
-candidate context's region with the shared non-position rules. Mosaic is not yet
-available through the browser or Queue; see [status](status.md) and
-[roadmap](roadmap.md).
+candidate context's region with the shared non-position rules. Fixed ICRS Mosaic
+requests can run in the browser alongside the separate Queue Mosaic workflow;
+see [unified browser assessment](unified_browser_assessment.md),
+[status](status.md) and [roadmap](roadmap.md).
 
 **Verification:** [captured live/REPLAY acceptance](../tests/fixtures/archive/s_region_acceptance_2026_10_26/README.md)
 contains reproducible engineering evidence, not independently reviewed proposal

@@ -2,8 +2,11 @@
 
 The reviewed implementation baseline and verification conditions are owned by
 [status](status.md). The shared entry supports Archive replay or live TAP, optional
-post-TAP live AQ, and configured Queue CSV assessment. Browser input, progress,
-reports and the single-pointing explorer consume these backend boundaries.
+post-TAP live AQ, and configured Queue CSV assessment. The browser additionally
+orchestrates fixed ICRS Mosaic submissions across configured Archive and Queue
+sources, and extends Single Pointing Queue reports with Custom/Rectangle candidates.
+The scientific evaluators remain source- and geometry-specific; report views do
+not create a cross-source scientific verdict.
 Persistent multi-user lifecycle remains separate work.
 
 This is a navigation map of implemented boundaries, not another field schema.
@@ -46,13 +49,17 @@ the default `S_REGION` coverage model:
 
 This branch returns `archive_mosaic_backend_2`, separate from the single-point
 v4/v6 presentation formats above. It does not call package preparation or require
-execution completeness. The browser has not yet integrated this input/report path.
-The [region contract](mosaic_s_region_position.md) owns the numerical policy.
+execution completeness. The browser supports this path through fixed-target OT
+upload and source-specific report assembly. The [region contract](mosaic_s_region_position.md)
+owns the numerical policy.
 
 The acceptance CLI captures selected discovered Members and replays exact metadata
 queries through the production parser and shared entry. Replay requires saved
 discovery and explicit REPLAY source mode. The old `RECONSTRUCTED` branch remains
-an explicit research path. Neither route enables Queue Mosaic.
+an explicit research path. Queue Mosaic is instead evaluated from a pinned
+CSV snapshot using separate Custom, Rectangle and Single Field scientific adapters;
+it does not use Archive `s_region` or reuse Archive reconstruction. See
+[unified browser assessment](unified_browser_assessment.md).
 
 ## Dependencies and focused follow-up
 

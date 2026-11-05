@@ -3,11 +3,12 @@
 `assess_queue_custom_csv(parsed, proposed)` and `cli.queue_custom_check` now run
 CSV → Custom reconstruction → per-array beam coverage → POS-MOSAIC without an OT
 file, manually written candidate pointing JSON, or per-candidate confirmation.
-OT exports remain development validation fixtures. This is an offline position
-backend; it is not yet wired into the shared assessment entry or browser, and
-does not evaluate complete duplication criteria by itself. The optional
-[`--request` science extension](queue_custom_science.md) now composes complete
-per-array criteria under the same project-accepted CSV model.
+OT exports remain development validation fixtures. The standalone call remains
+position-only; the separate [Custom scientific adapter](queue_custom_science.md)
+evaluates full per-array CONTINUUM/LINE branches under the project-accepted CSV
+model and is integrated into the
+[unified browser Queue workflow](unified_browser_assessment.md). A position-only
+report is not a complete duplication verdict.
 
 ## Run
 
@@ -84,8 +85,10 @@ NOT_SATISFIED. Unresolved centres and numerical boundaries retain uncertainty.
 Missing geometry/frequency produces UNKNOWN with specific reasons. Unresolved
 array inference retains the candidate without invented branches.
 
-There is no position-only OR of the two array results. Full continuum/line,
-resolution, sensitivity and complete branch aggregation remain separate work.
+There is no position-only OR of the two array results. The separate
+`assess_queue_custom_science` adapter now evaluates full CONTINUUM/LINE,
+resolution, sensitivity and same-candidate complete array branches. The
+position-only method itself does not perform that aggregation.
 
 ## Validation
 
