@@ -115,7 +115,10 @@ window.createReportSky = function(state) {
     }
     for(const group of grouped.values()) {
       const row=group.find(r=>r.id===state.selected()) || group[0];
-      const ids=group.map(r=>r.id);
+      // A hidden candidate at the selected position must remain selectable.
+      // Keep unrelated positions hidden; do not alter saved geometry.
+      const ids=drawOrder.filter(r=>!r.spatial.beams?.length &&
+        r.spatial.center.join(',')===row.spatial.center.join(',')).map(r=>r.id);
       if(row.id===state.selected()) {
         selectedCenter.addSources([A.source(...row.spatial.center,{ids,label:row.spatial.sky_outline?'Region reference':'Candidate center'})]);
         if(ids.length>1)renderChoices(ids);
