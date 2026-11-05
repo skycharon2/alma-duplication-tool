@@ -22,7 +22,8 @@ def _common(request, context, position, kind, decision):
     method_kind = f'single_to_{kind}' if single else kind
     supported = isinstance(context.evidence.row.spectral, RegularSpwEvidence)
     details = (('common_scope', f'SUPPORTED_{method_kind.upper()}' if supported else 'UNRESOLVED'),
-               ('array_scope', 'CSV_INFERRED'), ('geometry_model_status', 'PROVISIONAL'))
+               ('array_scope', 'CSV_INFERRED'),
+               ('geometry_model_status', position.get('geometry_model_status', 'PROVISIONAL')))
     angular = replace(evaluate_angular_resolution(request, context),
         method_version=f'queue_{method_kind}_angular_1', approval=MethodApproval.APPROVED,
         details=details, decision_refs=(decision,))
@@ -104,15 +105,33 @@ def evaluate_row_candidates(report, contexts, request, proposed, *, kind, decisi
                 required[i], ('ARRAY_INFERENCE_UNRESOLVED',)) for i in request.intents)
         combined = tuple(replace(b, method_version=f'queue_{method_kind}_array_or_1', decision_refs=(decision,),
             scope=f'ONE_{kind.upper()}_ROW_COMPLETE_ARRAY_BRANCHES_MODEL_CONDITIONAL') for b in combined)
+        # Acceptance belongs to the reconstructed Rectangle model, never to
+        # unrelated Custom/Single Field methods or unresolved array branches.
+        accepted = (kind == 'rectangle' and bool(variants)
+            and all(p.get('geometry_model_status') == 'PROJECT_ACCEPTED'
+                    and p.get('outcome') != 'UNKNOWN'
+                    for p in candidate['position']['beam_variants']))
+        model_status = ('PROJECT_ACCEPTED' if accepted else
+                        'UNRESOLVED' if kind == 'rectangle' else 'PROVISIONAL')
+        intent_completeness = {b.branch: (
+            'COMPLETE_FOR_EVALUATED_INTENT' if accepted and b.truth is Truth.TRUE
+            else 'NOT_ESTABLISHED') for b in combined}
+        candidate_completeness = (
+            'COMPLETE_FOR_EVALUATED_INTENT' if accepted and combined
+            and all(b.truth is Truth.TRUE for b in combined) else 'NOT_ESTABLISHED')
         candidate['science'] = dict(context_id=context.context_id, source_row_id=row_id,
-            model_status='PROVISIONAL', scientific_candidate_completeness='NOT_ESTABLISHED',
+            model_status=model_status, model_version=(candidate['position'].get('model_version')
+                if kind == 'rectangle' else None),
+            scientific_candidate_completeness=candidate_completeness,
+            intent_completeness=intent_completeness,
             branches=[asdict(b) for b in combined],
             matching_arrays_by_intent={i:[v['diameter_m'] for v in variants if any(
                 b.branch == i and b.truth is Truth.TRUE for b in v['branches'])] for i in request.intents},
             variants=[dict(diameter_m=v['diameter_m'], criteria=[asdict(c) for c in v['criteria']],
                            branches=[asdict(b) for b in v['branches']], line_pairs=v['line_pairs']) for v in variants])
     report.update(schema_version=f'queue_{method_kind}_csv_science_1',
-        scientific_status='COMPLETE_BRANCHES_EVALUATED_UNDER_PROVISIONAL_CSV_MODEL',
+        scientific_status=('BRANCHES_EVALUATED_WITH_PER_CANDIDATE_RECTANGLE_MODEL_STATUS'
+            if kind == 'rectangle' else 'COMPLETE_BRANCHES_EVALUATED_UNDER_PROVISIONAL_CSV_MODEL'),
         duplication_status='PER_CANDIDATE_AND_INTENT_RESULTS_NO_SEARCH_WIDE_ABSENCE_CLAIM',
         array_aggregation='COMPLETE_SAME_CANDIDATE_ARRAY_BRANCHES_OR',
         scientific_request=json_value(request.raw_input), request_criteria=[] if setup is None else [asdict(setup)])

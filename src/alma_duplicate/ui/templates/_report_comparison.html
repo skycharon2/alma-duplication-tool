@@ -5,7 +5,38 @@
 <caption>{{ caption }}</caption><thead><tr><th scope="col">Criterion</th><th scope="col">Your requirement</th><th scope="col">Candidate comparison</th><th scope="col">Result and explanation</th></tr></thead>
 <tbody>{% for r in records %}{% set v = criterion_view(r) %}<tr data-criterion="{{ r.criterion_id }}">
 <th scope="row">{{ v.label }}</th>
-{% if r.criterion_id == 'POS-SINGLE' %}<td colspan="2">{% for entry in v.derived if entry.key in ['separation_deg', 'candidate_radius_deg'] %}<p>{{ entry.label }}: <span class="report-number">{{ display_number(entry.value) if entry.value is not none else 'Not available' }}{% if entry.value is not none %} {{ entry.unit }}{% endif %}</span></p>{% else %}Position evidence is not available for comparison.{% endfor %}</td>
+{% if r.criterion_id == 'POS-SINGLE'
+and position and position.coverage and position.points %}
+<td>One proposed pointing must lie within at least one
+candidate half-power beam (POS-SINGLE).</td>
+<td>
+{% set probe = position.points[0] %}
+<p>{{ probe.matched_point_ids|length }} of
+{{ position.coverage.points|length }}
+candidate beams contain the proposed pointing.</p>
+
+{% if position.radius_arcsec is not none %}
+<p>Half-power radius:
+<span class="report-number">
+{{ display_number(position.radius_arcsec) }} arcsec
+</span></p>
+{% endif %}
+
+{% if probe.relations %}
+{% set nearest = probe.relations
+   | min(attribute='separation_arcsec') %}
+<p>Nearest beam-centre separation:
+<span class="report-number">
+{{ display_number(nearest.separation_arcsec) }} arcsec
+</span></p>
+{% endif %}
+
+{% if not position.coverage.complete %}
+<p class="field-note">Candidate coverage is incomplete.</p>
+{% endif %}
+</td>
+
+{% elif r.criterion_id == 'POS-SINGLE' %}<td colspan="2">{% for entry in v.derived if entry.key in ['separation_deg', 'candidate_radius_deg'] %}<p>{{ entry.label }}: <span class="report-number">{{ display_number(entry.value) if entry.value is not none else 'Not available' }}{% if entry.value is not none %} {{ entry.unit }}{% endif %}</span></p>{% else %}Position evidence is not available for comparison.{% endfor %}</td>
 {% elif r.criterion_id == 'POS-MOSAIC' and position %}<td>More than half of the {{ position.points|length }} proposed pointings must be covered.</td><td>{{ position.counts.INSIDE }}/{{ position.points|length }} inside · {{ position.counts.OUTSIDE }} outside · {{ position.counts.BOUNDARY }} boundary · {{ position.counts.UNKNOWN }} unresolved.{% if position.radius_arcsec is not none %}<small>Half-power radius: {{ display_number(position.radius_arcsec) }} arcsec</small>{% endif %}</td>
 {% elif r.criterion_id == 'CONT-SETUP' %}<td>At least two windows, each wider than 1.8 GHz.</td><td>Proposed setup only.{% for entry in v.derived if entry.key == 'qualifying_windows' %}<p>Qualifying windows: {{ display_number(entry.value) }}</p>{% endfor %}</td>
 {% else %}<td>{{ quantity(v.proposed) }}</td><td>{{ quantity(v.candidate) }}{% if r.criterion_id == 'LINE-RMS' %}<small>At the requested spectral resolution and the backend's angular comparison basis.</small>{% endif %}</td>{% endif %}

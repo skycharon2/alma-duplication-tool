@@ -14,14 +14,16 @@
   const filteredRows = () => viewport.filter(rows, project, member);
   const visibleRows = () => viewport.visible(filteredRows(), selected, isolated);
   const number = row => rows.indexOf(row) + data.start;
-  const spatialPoints = list => list.flatMap(row => row.spatial.available ? (row.spatial.outline || [row.spatial.offset]) : []);
+  const spatialPoints = list => list.flatMap(row => !row.spatial.available ? [] :
+    row.spatial.beams?.length ? row.spatial.beams.flatMap(beam => beam.outline || [beam.offset]) :
+    (row.spatial.outline || [row.spatial.offset]));
   const expandedSetups = new Set();
   const frequencyValues = list => list.flatMap(row => {
     const f = row.spectral;
     const support = ((data.spectral_setups || {})[row.spectral_setup_id]?.components || []).flatMap(c => c.interval ? [c.interval.low, c.interval.high] : []);
     return [...support, ...(!f.available ? [] : f.kind === "interval" ? [f.proposed, f.low, f.high] : [f.proposed, f.candidate, ...(f.coverage || []).flatMap(c => [c.low, c.high])])];
   });
-  const extent = Math.max(10, ...spatialPoints(rows).flat().map(Math.abs)) * 1.15;
+  const extent = Math.max(10, spatialPoints(rows).reduce((v,p)=>Math.max(v,Math.abs(p[0]),Math.abs(p[1])),0)) * 1.15;
   const frequencies = frequencyValues(rows);
   const baseCenter = frequencies.length ? (Math.min(...frequencies)+Math.max(...frequencies))/2 : 0;
   const baseSpan = frequencies.length ? Math.max(Math.max(...frequencies)-Math.min(...frequencies), Math.abs(baseCenter)*.0001, 1e-12)*1.16 : 1;
@@ -91,8 +93,27 @@
     visibleRows().map(row => [row, rows.indexOf(row)]).sort(([a], [b]) => Number(a.id === highlighted()) - Number(b.id === highlighted())).forEach(([row, i]) => {
       if (!row.spatial.available) return;
       const spatial = row.spatial, active = row.id === highlighted();
-      const desc = spatial.sky_outline ? `Archive Mosaic region; target ${spatial.point_status}; region reference only` : `Center RA ${fmt(spatial.center[0])}, Dec ${fmt(spatial.center[1])} deg; half-power radius ${fmt(spatial.radius_arcsec)} arcsec`;
+      const desc = spatial.beams?.length ? `${spatial.beams.length} Queue Mosaic beams; array ${fmt(spatial.diameter_m)} m, provisional` :
+        spatial.sky_outline ? `Archive Mosaic region; target ${spatial.point_status}; region reference only` :
+        `Center RA ${fmt(spatial.center[0])}, Dec ${fmt(spatial.center[1])} deg; half-power radius ${fmt(spatial.radius_arcsec)} arcsec`;
       const g = selectable(layer, row, i, desc);
+      if (spatial.beams?.length) {
+        spatial.beams.forEach(beam => {
+          const polygon = (beam.outline || []).map(p => [sx(p[0]), sy(p[1])]);
+          if (!polygon.length) return;
+          spatialShapes.push({id: row.id, polygon,
+            center: [sx(beam.offset[0]), sy(beam.offset[1])]});
+          const d = polygon.map((p,j)=>`${j ? 'L' : 'M'}${p[0]},${p[1]}`).join(' ')+'Z';
+          if (active) draw(g, 'path', {d, fill:'none',stroke:'white','stroke-width':4,'pointer-events':'none'});
+          const colorValue = beam.covers_proposed ? '#16846e' : color(row);
+          draw(g,'path',{d,stroke:active?colorValue:color(row),'stroke-width':active?2:1.1,
+            fill:colorValue,'fill-opacity':active ? 0.09 : 0,'stroke-opacity':active?1:.4,
+            'stroke-dasharray':row.source==='QUEUE'?'5 3':'none'});
+          draw(g,'circle',{cx:sx(beam.offset[0]),cy:sy(beam.offset[1]),r:active?3:2,
+            fill:colorValue,stroke:'white','stroke-width':.6});
+        });
+        return;
+      }
       const polygon = (spatial.outline || []).map(p => [sx(p[0]), sy(p[1])]);
       spatialShapes.push({id: row.id, polygon, center: [sx(spatial.offset[0]), sy(spatial.offset[1])]});
       if (active && polygon.length) draw(g, "path", {
@@ -207,12 +228,16 @@
     body.replaceChildren();
     if (!row) { node("p", {}, "No comparison selected. Clear the filters to show the loaded comparisons.", body); return; }
     node("h3", {}, `#${rows.indexOf(row)+data.start} · ${row.label}`, body);
-    node("p", {class: "selected-evidence"}, `${row.source} · ${row.intent} · Selected SPW ${row.spw}`, body);
+    node("p", {class: "selected-evidence"}, row.geometry_kind ? `${row.source} · ${row.intent} · ${row.geometry_kind} · ${row.array_diameter_m}-m array` : `${row.source} · ${row.intent} · Selected SPW ${row.spw}`, body);
     const dl = node("dl", {}, null, body);
     Object.entries(row.identity).forEach(([key, value]) => { node("dt", {}, key, dl); node("dd", {}, value, dl); });
     if (row.window) { node("dt", {}, "Requested window", dl); node("dd", {}, row.window, dl); }
     const s = row.spatial;
-    if (s.available) {
+    if (s.available && s.beams?.length) {
+      node("p", {}, `Queue ${row.geometry_kind} · ${fmt(row.array_diameter_m)}-m · ${s.beams.length} saved beams · ${s.covered_beam_count} cover the proposed point · half-power radius ${fmt(s.radius_arcsec)} arcsec`, body);
+      node("p", {class:"notice"}, `Model: ${s.model_status || 'PROVISIONAL'}; a plot is not an independently verified ALMA duplicate verdict.`, body);
+      if (row.queue_line_matching_pairs > 1) node('p',{},`${row.queue_line_matching_pairs} matching LINE pairs; only the first spectral comparison is charted. See the full report.`,body);
+    } else if (s.available) {
       node("p", {}, `Separation: ${fmt(s.separation_arcsec)} arcsec · Half-power radius: ${fmt(s.radius_arcsec)} arcsec`, body);
       node("p", {}, `Beam evidence: D = ${fmt(s.diameter_m)} m at ${fmt(s.frequency_ghz)} GHz`, body);
     }
@@ -289,13 +314,14 @@
     if (!row) { node("p", {}, "No comparison selected.", summary); return; }
     const identity=node("div", {class:"visual-current-identity"}, null, summary);
     node("strong", {}, `#${number(row)} ${row.label}`, identity);
-    node("span", {}, `${row.source === "QUEUE" ? "Queue" : "Archive"} · ${row.intent} · SPW ${row.spw}${row.window ? ` · requested ${row.window}` : ""}${row.beam_variant != null ? ` · beam path ${row.beam_variant+1}` : ""}`, identity);
+    node("span", {}, row.geometry_kind ? `Queue · ${row.intent} · ${row.geometry_kind} · ${row.array_diameter_m}-m` : `${row.source === "QUEUE" ? "Queue" : "Archive"} · ${row.intent} · SPW ${row.spw}${row.window ? ` · requested ${row.window}` : ""}${row.beam_variant != null ? ` · beam path ${row.beam_variant+1}` : ""}`, identity);
     node("small", {}, row.identity["Member OUS"] ? `Member ${row.identity["Member OUS"]}` : "Member OUS not recorded", identity);
     if (row.identity.ASDM) node("small", {}, `ASDM ${row.identity.ASDM}`, identity);
     const s=row.spatial, f=row.spectral, relation=viewport.relationships(row);
     const position=node("div", {class:"visual-current-values"}, null, summary);
     node("strong", {}, "Position", position);
-    node("span", {}, s.available ? `Separation ${fmt(s.separation_arcsec)} arcsec` : "Evidence unavailable", position);
+    node("span", {}, s.available && s.beams?.length ? `${s.beams.length} recorded Queue beams` :
+      s.available ? `Separation ${fmt(s.separation_arcsec)} arcsec` : "Evidence unavailable", position);
     if (s.available) node("small", {}, `Half-power radius ${fmt(s.radius_arcsec)} arcsec`, position);
     if (relation.radiusRatio !== null) node("small", {}, `Separation / half-power radius: ${fmt(relation.radiusRatio)} (1 = boundary; not angular resolution)`, position);
     if (!s.available && s.reason) node("small", {}, s.reason, position);
@@ -374,7 +400,7 @@
       if (!ids.includes(row.id)) return;
       const b = node("button", {type: "button", "aria-pressed": String(selected === row.id)}, null, list);
       node("strong", {}, `#${i+data.start} · ${row.label}`, b);
-      node("small", {}, `${row.source} · ${row.intent} · SPW ${row.spw}${row.window ? ` · requested ${row.window}` : ""}${row.beam_variant != null ? ` · beam path ${row.beam_variant+1}` : ""}`, b);
+      node("small", {}, row.geometry_kind ? `Queue · ${row.intent} · ${row.geometry_kind} · ${row.array_diameter_m}-m` : `${row.source} · ${row.intent} · SPW ${row.spw}${row.window ? ` · requested ${row.window}` : ""}${row.beam_variant != null ? ` · beam path ${row.beam_variant+1}` : ""}`, b);
       const identity = [row.identity["Member OUS"], row.identity.ASDM].filter(Boolean).join(" · ");
       if (identity) node("small", {class: "overlap-identity"}, identity, b);
       b.addEventListener("pointerenter", event => { if (event.pointerType !== "touch") preview(row.id); });
@@ -435,7 +461,7 @@
       const p = point(svg, event);
       if (!inPlot(p)) return;
       const tolerance = 7 / Math.hypot(svg.getScreenCTM().a, svg.getScreenCTM().b);
-      const ids = spatialShapes.filter(s => viewport.hits([p.x,p.y], s.polygon, s.center, tolerance)).map(s => s.id);
+      const ids = [...new Set(spatialShapes.filter(s => viewport.hits([p.x,p.y], s.polygon, s.center, tolerance)).map(s => s.id))];
       if (ids.length > 1) chooseOverlap(ids, event, svg);
       else if (ids.length) select(ids[0]);
     });

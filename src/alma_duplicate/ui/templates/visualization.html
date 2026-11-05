@@ -46,7 +46,7 @@
 <p class="sky-survey-status">Active layer: <strong id="sky-active-survey">Not loaded</strong><span id="sky-imagery-status" role="status">Reference image has not loaded yet.</span></p>
 <div class="sky-layer-controls"><label><input type="checkbox" id="sky-show-beams" checked> Show candidate boundaries</label><label><input type="checkbox" id="sky-show-others"> Show other candidates</label><label><input type="checkbox" id="sky-show-imagery" checked> Show reference image</label></div>
 <div id="report-sky-canvas" data-aladin-module="{{ url_for('static', filename='vendor/aladin-lite/3.8.2/aladin.js') }}"></div>
-<div class="sky-stage-legend"><span>✛ Proposed target</span><span class="sky-key-selected">◯ Selected half-power boundary</span><span>○ Candidate center · line: center separation</span><span>Other candidates, when enabled: blue Archive · amber Queue</span></div>
+<div class="sky-stage-legend"><span>✛ Proposed target</span><span class="sky-key-selected">◯ Selected half-power boundary</span><span>○ Candidate/pointing centres · line: single-field separation</span><span>Other candidates, when enabled: blue Archive · amber Queue</span></div>
 <div id="report-sky-choices" class="sky-view-actions" role="group" aria-label="Comparisons at the same position"></div>
 <details class="sky-display-controls"><summary>Image display</summary>
 <label>Brightness <input id="sky-brightness" type="range" min="-0.5" max="0.5" step="0.05" value="0" disabled></label>
@@ -63,7 +63,7 @@
 <details class="sky-evidence-parameters" open><summary>Selected footprint · recorded parameters</summary>
 <dl id="sky-parameters"></dl>
 
-<p class="chart-caption">The red outline shows recorded half-power coverage: a single-field beam or the adopted Archive Mosaic s_region. A Mosaic reference marker is a display center, not an observation center. The background shows optical imagery, not ALMA detections. Nearly coincident centers may visually overlap; use the numerical separation above.</p></details></aside></div>
+<p class="chart-caption">The red outline shows the selected recorded coverage: a single-field beam, Archive Mosaic s_region, or the saved Queue Mosaic beam union. A Mosaic reference marker is a display center, not an observation center. The background shows optical imagery, not ALMA detections. Nearly coincident centers may visually overlap; use the numerical separation above.</p></details></aside></div>
 
 <p id="report-sky-status" class="chart-caption" role="status"></p>
 <p class="chart-caption">Optical reference imagery via CDS, not ALMA data. DSS color: STScI/NASA/CDS; Pan-STARRS: PS1 Science Consortium/MAST/CDS. Finer sampling does not guarantee a resolved target. Spatial coverage alone is not a duplication verdict. SVG export includes the charts, not this image.</p>
@@ -72,19 +72,25 @@
 <details class="visual-help"><summary>Keyboard and touch controls</summary><p>Focus a plot: arrow keys pan, +/− zoom, Home resets. Enter/Space selects a focused comparison. On touch screens use the zoom buttons and comparison list.</p></details>
 <div class="visual-bottom">
 <section class="visual-panel visual-candidates" aria-labelledby="selection-title"><header><h2 id="selection-title">Matching comparisons</h2><span id="visual-list-count">{{ visual.rows|length }} shown</span></header>
-<div class="visual-list">{% for row in visual.rows %}<div class="visual-candidate" data-row="{{ row.id }}"><button type="button" class="visual-select" data-select="{{ row.id }}" aria-pressed="{{ 'true' if loop.first else 'false' }}"><span class="visual-row-number">{{ loop.index + visual.start - 1 }}</span><span><strong>{{ row.label }}</strong><small>{{ row.source|title }} · {{ row.intent }} · SPW {{ row.spw }}{% if row.window %} · requested {{ row.window }}{% endif %}{% if row.beam_variant is not none %} · beam path {{ row.beam_variant + 1 }}{% endif %}</small></span></button><a href="{{ report_url }}#{{ row.anchor }}" aria-label="Text comparison {{ loop.index + visual.start - 1 }}">Details ↗</a></div>{% endfor %}</div>
+<div class="visual-list">{% for row in visual.rows %}<div class="visual-candidate" data-row="{{ row.id }}"><button type="button" class="visual-select" data-select="{{ row.id }}" aria-pressed="{{ 'true' if loop.first else 'false' }}"><span class="visual-row-number">{{ loop.index + visual.start - 1 }}</span><span><strong>{{ row.label }}</strong><small>{{ row.source|title }} · {{ row.intent }} · {% if row.geometry_kind %}{{ row.geometry_kind|title }} · {{ row.array_diameter_m }}-m{% else %}SPW {{ row.spw }}{% endif %}{% if row.window %} · requested {{ row.window }}{% endif %}{% if row.beam_variant is not none %} · beam path {{ row.beam_variant + 1 }}{% endif %}</small></span></button><a href="{{ row.details_url or (report_url ~ '#' ~ row.anchor) }}" aria-label="Text comparison {{ loop.index + visual.start - 1 }}">Details ↗</a></div>{% endfor %}</div>
 </section>
 <section class="visual-panel visual-detail" aria-labelledby="detail-title"><header><h2 id="detail-title">Selected comparison</h2></header><p id="visual-selection-status" class="sr-only" aria-live="polite"></p><div id="visual-detail-body"><p>Select a comparison to inspect its recorded evidence.</p></div><noscript><p>Enable JavaScript for interactive charts. Each Details link opens the full text comparison.</p></noscript></section>
 </div>
 
 {% endif %}
+
 <nav class="visual-pagination" aria-label="Visualization pages">
 {% if page > 1 %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page-1) }}">Previous result groups</a>{% endif %}
 {% if visual.plot_page > 1 %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page, plot_page=visual.plot_page-1) }}">Previous comparisons</a>{% endif %}
 {% if visual.plot_page < visual.plot_pages %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page, plot_page=visual.plot_page+1) }}">Next comparisons</a>{% endif %}
 {% if page < pages %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page+1) }}">Next result groups</a>{% endif %}
+{% if visual.queue_pages and visual.queue_pages > 1 %}
+{% if visual.queue_page > 1 %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page, plot_page=visual.plot_page, queue_page=visual.queue_page-1) }}">Previous Queue match batch</a>{% endif %}
+<span>Queue matches batch {{ visual.queue_page }}/{{ visual.queue_pages }} — within the same plots</span>
+{% if visual.queue_page < visual.queue_pages %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page, plot_page=visual.plot_page, queue_page=visual.queue_page+1) }}">Next Queue match batch</a>{% endif %}
+{% endif %}
 </nav>
-<p class="chart-caption">Plots explain this saved report; they do not perform a new search or change its decisions. Only the listed comparisons meet the conditions, not necessarily the entire Member OUS. Up to 30 comparisons are drawn at once.</p>
+<p class="chart-caption">Plots explain this saved report; they do not perform a new search or change its decisions. Only the listed comparisons meet the conditions, not necessarily the entire Member OUS. Legacy comparison pages and bounded Queue match batches are shown together; other pages require navigation. Queue Mosaic beams are provisional model evidence.</p>
 
 <script id="visual-data" type="application/json">{{ visual|tojson }}</script>
 </div>

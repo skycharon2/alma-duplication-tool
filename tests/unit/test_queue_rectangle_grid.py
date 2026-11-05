@@ -95,7 +95,8 @@ def test_production_d3_against_original_ot_coordinates(diameter):
     assert len(matching) == len(observed) == result['pointing_count'] == (10 if diameter == 12 else 5)
     assert len(set(matching.values())) == len(observed)
     assert max(distances[i, j] for i, j in matching.items()) <= fixture['tolerance_arcsec']
-    assert result['grid_model_status'] == 'PROVISIONAL'
+    assert result['grid_model_status'] == 'PROJECT_ACCEPTED'
+    assert result['ot_reference'] == 'OT_PARITY_A_B_C_D3'
 
 
 @pytest.mark.parametrize('spacing,frequency,status', [

@@ -8,7 +8,8 @@ from tests.integration.test_queue_custom_science import request, pointings, scie
 
 
 def run(parsed=None, proposed=None, **kwargs):
-    req,payload=request();payload['search_options']['sources']=['QUEUE']
+    req,payload=request()
+    payload['search_options']['sources']=['QUEUE']
     return assess_observation(**payload,queue_rectangle=proposed or pointings(req),
         sources=kwargs.pop('sources',AssessmentSources(queue_loader=lambda: parsed or candidate())),**kwargs)
 
@@ -16,7 +17,8 @@ def run(parsed=None, proposed=None, **kwargs):
 @pytest.mark.parametrize('changes,expected',[({},'TRUE'),({'Ref.Frequency':'100'},'FALSE'),
     ({'Mos. Coord.':'galactic'},'UNKNOWN')])
 def test_standard_assessment(changes,expected):
-    r=run(candidate(changes));d=r.document
+    r=run(candidate(changes))
+    d=r.document
     assert r.status=='COMPLETED' and r.validation.can_search
     assert d['schema_version']=='queue_rectangle_assessment_1'
     assert d['report_kind']=='QUEUE_RECTANGLE_MOSAIC'
@@ -24,7 +26,8 @@ def test_standard_assessment(changes,expected):
     assert science(d)['branches'][0]['truth']==expected
     assert d['sources']['QUEUE']['status']=='COMPLETE'
     assert not d['evaluation_configuration']['single_point_radius_applied']
-    assert d['model_status']=='PROVISIONAL'
+    assert d['model_status']=='PROJECT_ACCEPTED'
+    assert d['candidates'][0]['science']['model_status'] in ('PROJECT_ACCEPTED', 'UNRESOLVED')
     json.dumps(d,allow_nan=False)
 
 
@@ -60,7 +63,8 @@ def test_independent_configurations_and_7m_only_match():
     from alma_duplicate.geometry import primary_beam_fwhm_deg
     rows=[dict(zip(r.raw_row.declared_columns,r.raw_row.raw_values)) for r in candidate().row_inputs]
     rows[1]['Ref.Frequency']='100'
-    req,_=request();p=pointings(req)
+    req,_=request()
+    p=pointings(req)
     p['points'][0]['dec_deg']+=(primary_beam_fwhm_deg(230,7)+primary_beam_fwhm_deg(230,12))/4
     d=run(queue_rows(*rows),proposed=p).document
     assert len({c['geometry']['source_row_id'] for c in d['candidates']})==2

@@ -17,8 +17,10 @@
             -(Math.cos(dec0) * Math.sin(dec) - Math.sin(dec0) * Math.cos(dec) * Math.cos(dra)) / cosine * ARCSEC];
   }
   function render(container, state, options = {}) {
-    const rows = state.rows().filter(row => row.spatial?.available && row.spatial.center);
-    const positions = rows.map(row => ({row, xy: offset(state.origin, row.spatial.center)}))
+    const rows = state.rows().filter(row => row.spatial?.available && (row.spatial.center || row.spatial.beams?.length));
+    const positions = rows.flatMap(row => row.spatial.beams?.length ?
+      row.spatial.beams.map(beam=>({row, center:beam.center, xy:offset(state.origin,beam.center), beam})) :
+      [{row,center:row.spatial.center,xy:offset(state.origin,row.spatial.center)}])
       .filter(item => item.xy && item.xy.every(Number.isFinite));
     const selected = state.selected();
     const shown = positions.filter(item => options.others || item.row.id === selected);
@@ -45,7 +47,7 @@
       const highlight = row.id === selected;
       const color = highlight ? '#ff525e' : row.source === 'QUEUE' ? '#d78b36' : '#45a9eb';
       const radius = row.spatial.radius_arcsec;
-      if (options.beams && row.spatial.sky_outline) {
+      if (options.beams && row.spatial.sky_outline && !row.spatial.beams?.length) {
         const outline = row.spatial.sky_outline.map(p=>offset(state.origin,p));
         if (outline.every(Boolean)) shape('polyline', {points:outline.map(p=>`${cx+p[0]*scale},${cy+p[1]*scale}`).join(' '),fill:'none',stroke:color,'stroke-width':highlight?2:1.25});
       }

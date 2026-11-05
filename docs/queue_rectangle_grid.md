@@ -137,3 +137,28 @@ found all 140 Rectangle rows consistent with the 12-m scale (maximum relative
 error 2.4536e-14): D12_ONLY=3, D7_ONLY=35, MIX_7M_12M=102. These classifications
 are inferred, not independently established array membership. This numerical
 agreement is snapshot evidence, not a permanent official CSV export contract.
+
+## Model acceptance and validation scope (2026-11-05)
+
+`QUEUE_RECTANGLE_TRIANGULAR_GRID_1` is adopted as a **PROJECT_ACCEPTED**
+ICRS Rectangle reconstruction algorithm. This is a project engineering decision,
+**not** a formal ALMA endorsement or a claim that each Queue row was directly
+reproduced in the OT. The independent OT tests A–C and D3 cover 7-m and 12-m
+Nyquist reference arrangements, PA rotation, nonzero declination, and two-axis
+centre offsets. One-to-one spherical coordinate parity in D3 used a 0.001 arcsec
+tolerance. The original tests and their SHA-256 provenance remain in the local
+OT audit material; only the minimal numerical fixture is required in Git.
+
+The Queue snapshot's 140 Rectangle rows have `Mos. Spacing` values consistent
+with a 12-m Nyquist reference. This is an accepted versioned CSV **convention**,
+not a permanent official ALMA CSV export guarantee. Each reconstructed grid
+records a separate `ot_validation_scope`: default-spacing ICRS candidates are
+in the validated **reference class**, but this does not assert direct per-row
+OT parity. Galactic, missing geometry and unusable array/beam evidence remain
+unresolved. Nondefault spacing is explicitly outside the controlled OT cases.
+
+`model_status` / `grid_model_status` describe algorithm acceptance only.
+`intent_completeness` describes a fully met evaluated intent (for example
+CONTINUUM with all required conditions true) separately. `search_completeness`
+remains `NOT_ESTABLISHED` where source inventory or unsupported geometry limits
+search-wide claims. Historical stored `PROVISIONAL` reports are never rewritten.

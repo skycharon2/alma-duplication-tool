@@ -1,21 +1,89 @@
 {% from '_report_comparison.html' import comparison with context %}
 {% macro rows(entries) %}
-{% for entry in entries %}<tr><th scope="row"><a href="#queue-{{ entry.candidate.candidate_id }}">{{ entry.target }} · {{ entry.project }}</a></th><td>Queue<small>{{ entry.kind }} · {{ entry.candidate.candidate_id }}</small></td><td>{{ entry.candidate.science.branches|selectattr('truth', 'equalto', 'TRUE')|list|length }} matching branches</td></tr>{% endfor %}
+{% for entry in entries %}<tr><th scope="row"><a href="#queue-{{ entry.candidate.candidate_id }}">{{ entry.target }} · {{ entry.project }}</a></th><td>Queue<small>{{ entry.kind|title }} mosaic</small></td><td><span title='Matching scientific intents; array branches are shown below'>{{ entry.candidate.science.branches|selectattr('truth', 'equalto', 'TRUE')|list|length }}</span></td></tr>{% endfor %}
 {% endmacro %}
 {% macro details(entries) %}
 {% for entry in entries %}
 {% set c = entry.candidate %}
-<details class="report-context" id="queue-{{ c.candidate_id }}"><summary>{{ entry.project }} · {{ entry.target }} · {{ entry.kind }}{% for b in c.science.branches %} · {{ b.branch }}: {{ b.status }}{% endfor %}</summary>
-<p>Queue CSV · Model: {{ c.science.model_status or 'PROVISIONAL' }} · Candidate completeness: {{ c.science.scientific_candidate_completeness or 'NOT_ESTABLISHED' }}</p>
-<p>Candidate ID: {{ c.candidate_id }}. Full configuration and provenance are retained in the report download.</p>
+<section class="member-result" id="queue-{{ c.candidate_id }}">
+<h3>{{ entry.target }} · {{ entry.project }}</h3>
+<p class="member-project">
+Queue CSV · {{ entry.kind|title }} mosaic
+</p>
+
+<section class="member-execution">
+<h4>Target: {{ entry.target }}</h4>
+<details class="candidate-comparison" open>
+<summary>View parameter comparison</summary>
+
+<p class="candidate-caption">
+<span>Target: {{ entry.target }}</span>
+<span>Project: {{ entry.project }}</span>
+<span>Queue geometry: {{ entry.kind }}</span>
+</p>
+
+{% if c.science.variants|length > 1 %}{% for b in c.science.branches %}
+<p class="branch-result">
+<strong>{{ b.branch }}</strong>:
+<span class="report-status" data-status="{{ b.status }}">
+{{ status_labels.get(b.status, 'Needs review') }}
+</span>
+</p>
+{% endfor %}{% endif %}
+
+<details class="queue-provenance-details">
+<summary>Technical details and provenance</summary>
+<p>Geometry reconstruction method status:
+<code>{{ c.science.model_status or 'Not recorded' }}</code>.</p>
+{% if c.science.model_version %}
+<p>Geometry method version: <code>{{ c.science.model_version }}</code>.</p>
+{% endif %}
+<p>Candidate evaluation completeness:
+<code>{{ c.science.scientific_candidate_completeness or 'Not recorded' }}</code>.</p>
+{% if c.science.intent_completeness %}
+{% for intent, evidence in c.science.intent_completeness.items() %}
+<p>{{ intent }} evaluation completeness: <code>{{ evidence }}</code>.</p>
+{% endfor %}
+{% endif %}
+<p>Array branches are evaluated independently. Model acceptance is a
+project method decision, not an ALMA endorsement.</p>
+<p>Candidate ID: <code>{{ c.candidate_id }}</code></p>
+<p>Full source-row and spectral-setup evidence is retained in the
+report download.</p>
+</details>
 {% for v in c.science.variants %}
-<details><summary>{{ v.diameter_m }} m{% for b in v.branches %} · {{ b.branch }}: {{ b.status }}{% endfor %}</summary>
-{% set position = c.position.beam_variants | selectattr('diameter_m', 'equalto', v.diameter_m) | first %}
-{{ comparison(v.criteria, 'Candidate conditions', position) }}
-{% for pair in v.line_pairs %}<details><summary>LINE · {{ pair.reference.proposed_window_id }} · SPW {{ pair.reference.spw_number }}: {{ pair.status or pair.truth }}</summary>{{ comparison(pair.criteria, 'LINE comparison', position) }}</details>{% endfor %}
-</details>
-{% else %}<p>UNKNOWN: array inference is unresolved.</p>{% endfor %}
-</details>
+<section class="beam-variant">
+<h4>Beam variant · D = {{ v.diameter_m }} m</h4>
+{% for b in v.branches %}
+<p class="branch-result">
+<strong>{{ b.branch }}</strong>:
+<span class="report-status" data-status="{{ b.status }}">
+{{ status_labels.get(b.status, 'Needs review') }}
+</span>
+</p>
 {% endfor %}
 
+{% set position = c.position.beam_variants
+   | selectattr('diameter_m', 'equalto', v.diameter_m)
+   | first %}
+
+{{ comparison(v.criteria, 'Candidate conditions', position) }}
+
+{% for pair in v.line_pairs %}
+<details class="line-pair">
+<summary>LINE · {{ pair.reference.proposed_window_id }}
+· SPW {{ pair.reference.spw_number }}:
+{{ pair.status or pair.truth }}</summary>
+{{ comparison(pair.criteria, 'LINE comparison', position) }}
+</details>
+{% endfor %}
+</section>
+{% else %}
+<p class="field-note">Array inference remains unresolved.</p>
+{% endfor %}
+
+</details>
+</section>
+</section>
+{% endfor %}
 {% endmacro %}
