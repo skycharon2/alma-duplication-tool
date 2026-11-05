@@ -1,6 +1,11 @@
 {% from '_report_comparison.html' import comparison with context %}
+{% set geometry_labels = {
+    'SINGLE_FIELD': 'Single field',
+    'CUSTOM_POINTING': 'Custom mosaic', 'CUSTOM': 'Custom mosaic',
+    'RECTANGULAR_MOSAIC': 'Rectangular mosaic', 'RECTANGLE': 'Rectangular mosaic'
+} %}
 {% macro rows(entries) %}
-{% for entry in entries %}<tr><th scope="row"><a href="#queue-{{ entry.candidate.candidate_id }}">{{ entry.target }} · {{ entry.project }}</a></th><td>Queue<small>{{ entry.kind|title }} mosaic</small></td><td><span title='Matching scientific intents; array branches are shown below'>{{ entry.candidate.science.branches|selectattr('truth', 'equalto', 'TRUE')|list|length }}</span></td></tr>{% endfor %}
+{% for entry in entries %}<tr><th scope="row"><a href="#queue-{{ entry.candidate.candidate_id }}">{{ entry.target }} · {{ entry.project }}</a></th><td>Queue<small>{{ geometry_labels.get(entry.kind, entry.kind) }}</small></td><td><span title='Matching scientific intents; array branches are shown below'>{{ entry.candidate.science.branches|selectattr('truth', 'equalto', 'TRUE')|list|length }}</span></td></tr>{% endfor %}
 {% endmacro %}
 {% macro details(entries) %}
 {% for entry in entries %}
@@ -8,7 +13,7 @@
 <section class="member-result" id="queue-{{ c.candidate_id }}">
 <h3>{{ entry.target }} · {{ entry.project }}</h3>
 <p class="member-project">
-Queue CSV · {{ entry.kind|title }} mosaic
+Queue CSV · {{ geometry_labels.get(entry.kind, entry.kind) }}
 </p>
 
 <section class="member-execution">

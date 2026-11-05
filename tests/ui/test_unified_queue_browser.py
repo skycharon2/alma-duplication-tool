@@ -165,3 +165,24 @@ def test_queue_inventory_counts_rows():
             assert 'No source-row limitations recorded' not in inventory_text()
     finally:
         app.extensions['assessment_runs'].close()
+
+
+def test_single_field_label_in_matching_list_and_details():
+    from bs4 import BeautifulSoup
+    from flask import render_template_string
+    from alma_duplicate.ui.queue_browser import presentation
+
+    candidate = dict(candidate_id='single', science=dict(branches=[], variants=[]))
+    entry, = presentation({'geometry_reports': {'SINGLE_FIELD': {'candidates': [candidate]}}})
+    app = create_app(dict(TESTING=True, REPORT_DIRECTORY=None))
+    try:
+        with app.test_request_context():
+            html = render_template_string(
+                "{% from '_queue_matching.html' import rows, details with context %}"
+                "{{ rows(entries) }}{{ details(entries) }}", entries=[entry],
+            )
+            soup = BeautifulSoup(html, 'html.parser')
+            assert soup.small.get_text(strip=True) == 'Single field'
+            assert soup.select_one('.member-project').get_text(strip=True) == 'Queue CSV · Single field'
+    finally:
+        app.extensions['assessment_runs'].close()
