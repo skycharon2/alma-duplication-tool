@@ -76,6 +76,10 @@ def report_header(report):
     header = {k: v for k, v in report.items() if k not in {'geometry_reports', 'inventory'}}
     inventory = report.get('inventory') or {}
     header['inventory'] = {k: v for k, v in inventory.items() if k != 'source_rows'}
+    if 'source_rows' in inventory:
+        header['inventory']['limitation_row_counts'] = dict(sorted(Counter(
+            code for row in inventory['source_rows'] for code in set(row.get('limitations', []))
+        ).items()))
     header['candidate_counts'] = {k: counts[k] for k in ('matching', 'review', 'not_met')}
     # Count the full candidate inventory before report pagination. An intent is
     # counted once per configuration, even if an old record repeats branches.

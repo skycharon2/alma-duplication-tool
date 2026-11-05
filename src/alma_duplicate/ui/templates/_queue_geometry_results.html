@@ -10,7 +10,10 @@
 <p><a href="{{ url_for('run_queue_view', report_id=report_id) }}">Matching candidates</a> · <a href="{{ url_for('run_queue_view', report_id=report_id, view='review') }}">Unresolved comparisons</a> · <a href="{{ url_for('run_queue_view', report_id=report_id, view='not_met') }}">Criteria not met</a></p>
 {% if not entries %}<p>No candidates in this view. Unresolved comparisons are not evidence of absence of duplication.</p>{% endif %}
 {% if geometry_report.inventory %}<details><summary>Candidate inventory and limitations</summary>
-{% for row in geometry_report.inventory.source_rows %}{% if row.limitations %}<p>{{ row.source_row_id }} · {{ row.geometry_kind }}: {{ row.limitations|join('; ') }}</p>{% endif %}{% endfor %}
+{% set limitations = geometry_report.inventory.limitation_row_counts %}
+{% if limitations %}<ul>{% for code, count in limitations.items() %}<li>{{ code }}: {{ count }} source row{{ '' if count == 1 else 's' }}</li>{% endfor %}</ul>
+{% elif limitations is defined %}<p>No source-row limitations recorded.</p>{% endif %}
+<p><a href="{{ url_for('run_download', report_id=report_id, kind='report') }}">Download the full report for the row-level inventory.</a></p>
 </details>{% endif %}
 {% for entry in entries %}
 {% set c = entry.candidate %}

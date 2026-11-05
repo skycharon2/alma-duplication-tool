@@ -134,3 +134,34 @@ def test_legacy_scope_diagnostics_superseded_only_after_geometry_completion():
     document['queue_geometry_assessment']['assessment_status'] = 'SOURCES_UNAVAILABLE'
     assert attention_groups(document, inspection)
     assert report_summary(document)['total'] == 1
+
+
+def test_queue_inventory_counts_rows():
+    from bs4 import BeautifulSoup
+    from flask import render_template
+    from alma_duplicate.ui.queue_browser import report_header
+
+    document = dict(inventory={'source_rows': [
+        {'limitations': ['TP_COVERAGE_NOT_MODELLED', 'SPECTRAL_SCAN_NOT_EXPANDED']},
+        {'limitations': ['TP_COVERAGE_NOT_MODELLED']},
+    ]})
+    header = report_header(document)
+    assert 'source_rows' not in header['inventory']
+    app = create_app(dict(TESTING=True, REPORT_DIRECTORY=None))
+    try:
+        with app.test_request_context():
+            def inventory_text():
+                html = render_template('_queue_geometry_results.html', geometry_report=header, report_id='test')
+                summary = BeautifulSoup(html, 'html.parser').find('summary', string='Candidate inventory and limitations')
+                return summary.parent.get_text(' ', strip=True)
+
+            assert 'TP_COVERAGE_NOT_MODELLED: 2 source rows' in inventory_text()
+            assert 'SPECTRAL_SCAN_NOT_EXPANDED: 1 source row' in inventory_text()
+            header['inventory']['limitation_row_counts'] = {}
+            assert 'No source-row limitations recorded' in inventory_text()
+            del header['inventory']['limitation_row_counts']
+            header['inventory']['unevaluated_rows'] = 1
+            assert 'Download the full report' in inventory_text()
+            assert 'No source-row limitations recorded' not in inventory_text()
+    finally:
+        app.extensions['assessment_runs'].close()
