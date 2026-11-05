@@ -67,6 +67,9 @@ def assess_single_mosaics(validated, *, options, sources, input_sha256, report_d
                         variant['covered_count_lower'] = variant['covered_fraction_lower'] = int(inside)
                         variant['covered_count_upper'] = variant['covered_fraction_upper'] = int(
                             probe['status'] != 'OUTSIDE')
+                    if kind == 'custom':
+                        variant['model_status'] = report['model_status'] if variant['outcome'] != 'UNKNOWN' else 'UNRESOLVED'
+                        variant['geometry_model_status'] = variant['model_status']
                 position['boundary_scope'] = 'INCLUSIVE_NO_EQUALITY_BAND'
 
             document['geometry_reports'][kind.upper()] = evaluate_row_candidates(

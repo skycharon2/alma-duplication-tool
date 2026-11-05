@@ -50,3 +50,26 @@ def test_single_field_line_pairs_share_row_and_array():
     for v in c['science']['variants']:
         assert all(p['reference']['source_row_id'] == c['geometry']['source_row_id']
                    for p in v['line_pairs'])
+
+
+def test_single_field_batch_budget_counts_distinct_candidates_and_arrays(monkeypatch):
+    from unittest.mock import Mock
+    from alma_duplicate import queue_single_field_mosaic as adapter
+    from tests.integration.test_candidate_search import queue_rows
+
+    rows = []
+    for name in ('One', 'Two'):
+        row = candidate({'Mosaic': '', 'Target Name': name}, rows=1).row_inputs[0]
+        rows.append(dict(zip(row.raw_row.declared_columns, row.raw_row.raw_values)))
+    parsed = queue_rows(*rows, rows[0])
+    req = request()[0]
+    proposed = pointings(req)
+    limit = 4 * len(proposed['points'])  # Two distinct candidates, each with two arrays.
+    monkeypatch.setattr(adapter, 'MAX_PAIRS', limit)
+    assert len(assess_single_field_science(parsed, req, proposed)['candidates']) == 2
+    monkeypatch.setattr(adapter, 'MAX_PAIRS', limit - 1)
+    position = Mock()
+    monkeypatch.setattr(adapter, 'assess_queue_mosaic_position', position)
+    with pytest.raises(ValueError, match='Single Field batch pointing comparison budget exceeded'):
+        assess_single_field_science(parsed, req, proposed)
+    position.assert_not_called()

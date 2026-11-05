@@ -26,4 +26,7 @@ existing workflow until unified orchestration is integrated.
 
 The scientific interpretation follows the Single Field position clause in
 [ALMA Users' Policies, Appendix A](https://almascience.eso.org/documents-and-tools/cycle13/alma-user-policies).
-All geometric conclusions retain the provisional CSV model provenance.
+Each candidate report records the CSV geometry model status. Custom and Rectangle
+candidates report `PROJECT_ACCEPTED` when every inferred array has an accepted
+geometry model and a resolved position outcome. Otherwise they report
+`UNRESOLVED`. The scientific branches record whether the candidate matches.

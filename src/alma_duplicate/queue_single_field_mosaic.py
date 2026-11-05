@@ -9,7 +9,7 @@ from alma_duplicate.queue_mosaic import SCHEMA, _center
 from alma_duplicate.queue_mosaic_row_science import evaluate_row_candidates
 from alma_duplicate.queue_position import candidate_frequency
 from alma_duplicate.queue_row_beam import DECISION_REF, resolve_queue_beam_interpretation
-from alma_duplicate.rules.queue_mosaic_position import QueueMosaicCoverage, assess_queue_mosaic_position
+from alma_duplicate.rules.queue_mosaic_position import MAX_PAIRS, QueueMosaicCoverage, assess_queue_mosaic_position
 
 
 def assess_single_field_science(parsed, request, proposed, *, nominal_conversion=None, prepared=None):
@@ -21,13 +21,18 @@ def assess_single_field_science(parsed, request, proposed, *, nominal_conversion
         if row.spatial.mosaic_kind is QueueMosaicKind.SINGLE_FIELD:
             contexts[context.reference.raw_row_id] = context
             groups[context.evidence.association.content_fingerprint].append(context)
+    beams = {key: resolve_queue_beam_interpretation(members[0].evidence.row)
+             for key, members in groups.items()}
+    array_count = sum(len(beam.diameters_m) for beam in beams.values())
+    if len(proposed['points']) * array_count > MAX_PAIRS:
+        raise ValueError('Single Field batch pointing comparison budget exceeded')
     candidates = []
     for fingerprint, members in groups.items():
         context = members[0]
         row = context.evidence.row
         ids = tuple(member.reference.raw_row_id for member in members)
         candidate_id = f'{snapshot}:single:{fingerprint}'
-        beam = resolve_queue_beam_interpretation(row)
+        beam = beams[fingerprint]
         center = _center(row)
         frequency, source, reasons = candidate_frequency(row)
         candidate = dict(candidate_id=candidate_id, source_rows=[dict(source_row_id=i) for i in ids],

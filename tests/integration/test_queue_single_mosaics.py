@@ -28,6 +28,13 @@ def test_science_and_provenance(factory, kind, changes, truth):
     report = run(factory(changes))['geometry_reports'][kind]
     for c in report['candidates']:
         assert c['science']['branches'][0]['truth'] == truth
+        if kind == 'CUSTOM':
+            expected = 'UNRESOLVED' if truth == 'UNKNOWN' else 'PROJECT_ACCEPTED'
+            assert c['science']['model_status'] == expected
+            assert report['scientific_status'] == 'BRANCHES_EVALUATED_WITH_PER_CANDIDATE_CUSTOM_MODEL_STATUS'
+            for variant in c['science']['variants']:
+                position = next(r for r in variant['criteria'] if r['criterion_id'] == 'POS-SINGLE')
+                assert dict(position['details'])['geometry_model_status'] == expected
         assert c['science']['branches'][0]['required_criteria'][0] == 'POS-SINGLE'
         assert c['position']['threshold'] == 'POINT_WITHIN_CANDIDATE_BEAM_UNION'
         for v in c['science']['variants']:
