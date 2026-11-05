@@ -157,7 +157,7 @@ def test_rectangle_is_reported_as_excluded():
     assert result.status == 'COMPLETED'
     assert result.document['candidates'] == []
     assert result.document['excluded_mosaic_candidates']
-    assert all(c['reason'] == 'RECTANGLE_GRID_NOT_IMPLEMENTED'
+    assert all(c['reason'] == 'OUTSIDE_CUSTOM_GEOMETRY_SCOPE'
                for c in result.document['excluded_mosaic_candidates'])
     assert result.document['duplication_status'].endswith('NO_SEARCH_WIDE_ABSENCE_CLAIM')
 

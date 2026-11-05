@@ -258,7 +258,8 @@ def visualization_data(data, plot_page=1):
             comparisons.append({'label': view['label'], 'proposed': view['proposed'],
                                 'candidate': view['candidate'], 'result': criterion_status(record),
                                 'reason': criterion_explanation(record)})
-        row = {'id': key, 'anchor': anchor, 'label': label, 'identity': identity,
+        row = {'id': key, 'display_number': (plot_page - 1) * CHART_ROWS + len(rows) + 1,
+               'anchor': anchor, 'label': label, 'identity': identity,
                'source': context['reference']['source'], 'intent': intent, 'spw': str(spw),
                'window': ref.get('proposed_window_id'), 'beam_variant': variant if context.get('beam_variants') else None,
                'spatial': spatial_view(context, records, origin, data.get('spatial', {}).get(context['context_id'])),

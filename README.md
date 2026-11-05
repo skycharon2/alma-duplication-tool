@@ -15,8 +15,8 @@ Archive Mosaic is also available through the backend and CLI: import OT pointing
 evaluate each candidate context's `s_region`, and combine the result with shared
 non-position rules. See the [Mosaic contract](docs/mosaic_s_region_position.md) and
 [captured acceptance](tests/fixtures/archive/s_region_acceptance_2026_10_26/README.md).
-The browser currently executes single-pointing requests; Mosaic UI and Queue
-Mosaic evaluation remain pending.
+The browser supports Single Pointing and Custom Mosaic requests. Queue Custom
+Mosaic evaluation uses the project-accepted explicit CSV pointing model.
 Queue ingestion/search and conditional mode diagnostics are implemented. Queue
 continuum and Queue LINE evaluation are available in the supported coherent
 single-field Queue scope ([continuum contract](docs/queue_continuum.md),

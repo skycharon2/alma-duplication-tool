@@ -14,6 +14,7 @@ from alma_duplicate.rules.queue_mosaic_position import (
 )
 
 PROFILE = "QUEUE_CUSTOM_EXPLICIT_CSV_3"
+MODEL_STATUS = "PROJECT_ACCEPTED"
 MAX_TOTAL_PAIRS = 1_000_000
 ASSUMPTIONS = (
     "STRICT_EXPORT_GROUP_AS_COHERENT_CANDIDATE",
@@ -27,7 +28,7 @@ ASSUMPTIONS = (
 def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_epsilon_arcsec=0.001):
     """Assess one selected or all Custom candidates in a complete CSV snapshot.
 
-    Candidate associations follow PROFILE provisionally. Coverage is scoped to recorded CSV rows.
+    Candidate associations follow the accepted CSV profile. Coverage is scoped to recorded CSV rows.
     Unresolved centres leave the union incomplete. No manual candidate
     binding, OT export, invented ACA grid, or cross-candidate union is required.
     """
@@ -91,9 +92,9 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
         # Only the selected source context enters the position evaluator.
         position = assess_queue_mosaic_position(proposed, reconstruction, candidate["candidate_id"],
             coverages, boundary_epsilon_arcsec=boundary_epsilon_arcsec)
-        position["coverage_basis"] = "PROVISIONAL_CSV_PROFILE_CONVENTIONS_NOT_VERIFIED_OWNERSHIP"
+        position["coverage_basis"] = "CSV_PROFILE_CONVENTIONS_NOT_VERIFIED_OWNERSHIP"
         for variant in position["beam_variants"]:
-            variant["model_status"] = "PROVISIONAL"
+            variant["model_status"] = MODEL_STATUS if variant["outcome"] != "UNKNOWN" else "UNRESOLVED"
             variant["association_basis"] = "PROFILE_CONVENTION_NOT_CALLER_CONFIRMATION"
             variant["geometry_model"] = "CSV_SHARED_CENTERS_ARRAY_SPECIFIC_BEAM_UNION"
             variant["reasons"].extend(blockers + coordinate_notes)
@@ -109,11 +110,11 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
             position=position))
     selected_ids = {c["candidate_id"] for c in candidates}
     ignored = [dict(candidate_id=c["candidate_id"], geometry_kind=c["geometry_kind"],
-                    reason="RECTANGLE_GRID_NOT_IMPLEMENTED" if c["geometry_kind"] != "CUSTOM"
+                    reason="OUTSIDE_CUSTOM_GEOMETRY_SCOPE" if c["geometry_kind"] != "CUSTOM"
                     else "OUTSIDE_SELECTED_CANDIDATE")
                for c in all_candidates if c["candidate_id"] not in selected_ids]
     return dict(schema_version="queue_custom_csv_position_2", profile=PROFILE,
-        model_status="PROVISIONAL", snapshot_sha256=reconstruction["snapshot_sha256"],
+        model_status=MODEL_STATUS, snapshot_sha256=reconstruction["snapshot_sha256"],
         source_as_of=reconstruction["source_as_of"], source_url=reconstruction["source_url"],
         operational_columns=reconstruction["operational_columns"], source_units=reconstruction["source_units"],
         parser_issues=reconstruction["parser_issues"], proposed=proposed, candidates=results,

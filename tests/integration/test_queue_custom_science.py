@@ -51,6 +51,7 @@ def test_both_inferred_arrays_return_independent_complete_matches():
     req, _ = request()
     result = assess_queue_custom_science(candidate(), req, pointings(req))
     s = science(result)
+    assert result["model_status"] == s["model_status"] == "PROJECT_ACCEPTED"
     assert [v["diameter_m"] for v in s["variants"]] == [7., 12.]
     assert [v["branches"][0]["truth"] for v in s["variants"]] == ["TRUE", "TRUE"]
     assert s["branches"][0]["truth"] == "TRUE"
@@ -86,7 +87,9 @@ def test_combined_or_missing_mosaic_rms_basis_is_not_assumed(basis):
 
 def test_pointing_scope_and_source_identity_do_not_leak():
     req, _ = request()
-    assert science(assess_queue_custom_science(candidate(), req, pointings(req, complete=False)))["branches"][0]["truth"] == "UNKNOWN"
+    incomplete = science(assess_queue_custom_science(candidate(), req, pointings(req, complete=False)))
+    assert incomplete["model_status"] == "UNRESOLVED"
+    assert incomplete["branches"][0]["truth"] == "UNKNOWN"
     assert science(assess_queue_custom_science(candidate(), req, pointings(req, ra=0)))["branches"][0]["truth"] == "FALSE"
     for field in ("source_name", "setup_id"):
         p = pointings(req); p[field] = "other"

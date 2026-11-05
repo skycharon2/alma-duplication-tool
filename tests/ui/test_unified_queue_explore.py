@@ -68,3 +68,16 @@ def test_same_queue_candidate_separate_array_matches():
     visual=merge_queue_matches(base(), queue)
     assert [r['array_diameter_m'] for r in visual['rows'][1:]] == [12.,7.]
     assert len({r['id'] for r in visual['rows']})==3
+
+
+def test_queue_only_batch_counts_each_matching_array_without_a_legacy_range():
+    visual = base()
+    visual.update(rows=[], start=0, stop=0, total=0)
+    report = sample()
+    variant = report['document']['geometry_reports']['RECTANGLE']['candidates'][0]['science']['variants'][0]
+    variant['branches'].append(dict(branch='LINE', truth='TRUE', status='CRITERIA_MET'))
+    queue = queue_geometry_visualization_data(report, [0., 0.])
+    merged = merge_queue_matches(visual, queue)
+    assert (merged['start'], merged['stop'], merged['total']) == (0, 0, 0)
+    assert merged['queue_comparison_count'] == 2
+    assert len({row['display_number'] for row in merged['rows']}) == 2

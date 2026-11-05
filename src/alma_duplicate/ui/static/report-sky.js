@@ -48,7 +48,7 @@ window.createReportSky = function(state) {
     document.querySelector('#sky-separation').textContent=Number.isFinite(separation)&&separation>=0 ? separation.toFixed(2)+'″' : 'Not recorded';
     document.querySelector('#sky-radius-ratio').textContent=Number.isFinite(separation)&&separation>=0&&Number.isFinite(halfPower)&&halfPower>0 ? (100*separation/halfPower).toFixed(1)+'%' : 'Not available';
     if (spatial?.beams?.length) {
-      explanation.textContent=`Queue ${selected.geometry_kind}: ${spatial.beams.length} saved ${selected.array_diameter_m}-m half-power beams; ${spatial.covered_beam_count} contain this proposed point (PROVISIONAL).`;
+      explanation.textContent=`Queue ${selected.geometry_kind}: ${spatial.beams.length} saved ${selected.array_diameter_m}-m half-power beams; ${spatial.covered_beam_count} contain this proposed point (model: ${spatial.model_status || 'PROVISIONAL'}).`;
     } else if (spatial?.coverage_source === 'ARCHIVE_S_REGION') {
       explanation.textContent='Archive Mosaic coverage: '+spatial.point_status.toLowerCase();
     } else if (Number.isFinite(separation) && separation>=0 && Number.isFinite(halfPower) && halfPower>0) {

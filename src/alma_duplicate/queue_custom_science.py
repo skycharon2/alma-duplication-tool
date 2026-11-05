@@ -1,4 +1,4 @@
-"""Complete Custom CSV branches under the explicitly selected provisional model.
+"""Complete Custom CSV branches under the project-accepted CSV model.
 
 Single-point numerical rules are reused. Each array ANDs its own position and
 science criteria before complete branches are ORed. No cross-array/SPW borrowing.
@@ -8,7 +8,7 @@ from dataclasses import asdict, replace
 from alma_duplicate.comparison import build_queue_contexts
 from alma_duplicate.domain.queue import RegularSpwEvidence
 from alma_duplicate.reporting import json_value
-from alma_duplicate.queue_custom_backend import assess_queue_custom_csv, PROFILE
+from alma_duplicate.queue_custom_backend import assess_queue_custom_csv, PROFILE, MODEL_STATUS
 from alma_duplicate.queue_line_pairing import build_queue_line_pairs
 from alma_duplicate.rules.aggregation import (
     BranchAssessment, Truth, aggregate_continuum, criterion_truth, three_and, three_or, CONTINUUM_CRITERIA,
@@ -32,10 +32,9 @@ REQUIRED = {"CONTINUUM": ("POS-MOSAIC", *CONTINUUM_CRITERIA[1:]),
 def _common(request, context, position):
     supported = isinstance(context.evidence.row.spectral, RegularSpwEvidence)
     details = (("common_scope", "SUPPORTED_CUSTOM" if supported else "UNRESOLVED"),
-               ("csv_profile", PROFILE), ("association_basis", "PROVISIONAL_CSV_CONVENTIONS"),
+               ("csv_profile", PROFILE), ("association_basis", "CSV_PROFILE_CONVENTIONS"),
                ("array_scope", "ROW_BEAM_HYPOTHESIS_NOT_MEASURED_ARRAY_METADATA"))
-    # APPROVED here adopts the calculation within this selected model only. The
-    # report remains PROVISIONAL, not independent validation of Queue ownership.
+    # APPROVED here adopts the calculation within this selected model only.
     angular = replace(evaluate_angular_resolution(request, context),
         method_version="queue_custom_angular_1", approval=MethodApproval.APPROVED,
         decision_refs=(DECISION,), details=details)
@@ -209,6 +208,9 @@ def assess_queue_custom_science(parsed, request, proposed, *, candidate_id=None,
                 REQUIRED[intent], ("ARRAY_INFERENCE_UNRESOLVED",), method_version="queue_custom_array_or_1",
                 decision_refs=(DECISION,), scope="SAME_CUSTOM_CANDIDATE_ONLY") for intent in request.intents)
         candidate["science"] = dict(context_id=context.context_id,
+            model_status=(MODEL_STATUS if variants and all(
+                beam["model_status"] == MODEL_STATUS for beam in candidate["position"]["beam_variants"]
+            ) else "UNRESOLVED"),
             representative_source_row_id=first.reference.raw_row_id,
             metadata_binding="ALL_GROUP_ROWS_EQUAL_SPECTRA_AND_PERFORMANCE",
             array_metadata_basis="REUSED_QUEUE_ROW_HYPOTHESES_NOT_INDEPENDENT_ARRAY_MEASUREMENTS",
@@ -224,7 +226,7 @@ def assess_queue_custom_science(parsed, request, proposed, *, candidate_id=None,
                     candidate_enumeration_complete=v["line_pairing"].candidate_enumeration_complete,
                     reasons=list(v["line_pairing"].reasons))) for v in variants])
     report.update(schema_version="queue_custom_csv_science_2",
-        scientific_status="COMPLETE_BRANCHES_EVALUATED_UNDER_PROVISIONAL_CSV_MODEL",
+        scientific_status="COMPLETE_BRANCHES_EVALUATED_UNDER_PROJECT_ACCEPTED_CSV_MODEL",
         duplication_status="PER_CANDIDATE_AND_INTENT_RESULTS_NO_SEARCH_WIDE_ABSENCE_CLAIM",
         scientific_request=json_value(request.raw_input),
         request_criteria=[] if setup is None else [asdict(setup)],

@@ -42,6 +42,7 @@ def merge_queue_matches(visual, queue_visual, *, details_url=None):
     if queue_visual is None:
         return visual
     rows = list(visual['rows'])
+    queue_count = 0
     for candidate in queue_visual['rows']:
         for branch_index, variant in enumerate(candidate.get('variants') or []):
             for intent_info in variant.get('science') or []:
@@ -61,7 +62,7 @@ def merge_queue_matches(visual, queue_visual, *, details_url=None):
                     separation_arcsec=None, model_status=candidate.get('model_status'),
                     point_count=geometry.get('point_count'),
                     covered_beam_count=sum(bool(b.get('covers_proposed')) for b in beams),
-                    reason=(geometry.get('reason') or 'Queue geometry is provisional and model-conditional.'))
+                    reason=(geometry.get('reason') or 'Queue geometry is model-conditional.'))
                 records = variant.get('criterion_records') or []
                 pairs = [pair for pair in (variant.get('line_pairs') or [])
                          if pair.get('truth') == 'TRUE']
@@ -83,12 +84,11 @@ def merge_queue_matches(visual, queue_visual, *, details_url=None):
                     model_status=candidate.get('model_status'),
                     queue_line_matching_pairs=len(pairs),
                     details_url=details_url)
+                queue_count += 1
+                record['display_number'] = f"Q-{queue_visual['view']}-{queue_visual['page']}.{queue_count}"
                 rows.append(record)
     visual['rows'] = rows
-    visual['total'] += len(rows) - (visual['stop'] - visual['start'] + 1 if visual['start'] else 0)
-    visual['stop'] = visual['start'] + len(rows) - 1 if visual['start'] else len(rows)
-    if not visual['start'] and rows:
-        visual['start'] = 1
+    visual['queue_comparison_count'] = queue_count
     visual['spatial_available'] = sum(bool(row['spatial'].get('available')) for row in rows)
     visual['spectral_available'] = sum(bool(row['spectral'].get('available')) for row in rows)
     visual['queue_page'] = queue_visual['page']

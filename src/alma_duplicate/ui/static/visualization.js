@@ -13,7 +13,6 @@
   let project = "", member = "", isolated = false;
   const filteredRows = () => viewport.filter(rows, project, member);
   const visibleRows = () => viewport.visible(filteredRows(), selected, isolated);
-  const number = row => rows.indexOf(row) + data.start;
   const spatialPoints = list => list.flatMap(row => !row.spatial.available ? [] :
     row.spatial.beams?.length ? row.spatial.beams.flatMap(beam => beam.outline || [beam.offset]) :
     (row.spatial.outline || [row.spatial.offset]));
@@ -49,9 +48,9 @@
   function marker(parent, x, y) {
     draw(parent, "path", {d: `M${x},${y-5}l5,5l-5,5l-5,-5Z`, fill: "#983b64", stroke: "white", "stroke-width": 1});
   }
-  function selectable(parent, row, index, description) {
+  function selectable(parent, row, description) {
     const g = draw(parent, "g", {role: "button", tabindex: "0", "data-plot-select": row.id,
-      "aria-pressed": String(row.id === selected), "aria-label": `Comparison ${index + data.start}: ${row.label}. ${description}`});
+      "aria-pressed": String(row.id === selected), "aria-label": `Comparison ${row.display_number}: ${row.label}. ${description}`});
     draw(g, "title", {}, `${row.label}\n${row.source} · ${row.intent} · SPW ${row.spw}\n${description}`);
     g.addEventListener("click", event => {
       if (suppressClick || parent.closest("svg").id === "spatial-chart") return;
@@ -90,13 +89,13 @@
     clip(svg, "position-clip", 55, 35, 370, 370);
     const layer = draw(svg, "g", {"clip-path": "url(#position-clip)"});
     // Paint the selected geometry last so coincident centers remain visible.
-    visibleRows().map(row => [row, rows.indexOf(row)]).sort(([a], [b]) => Number(a.id === highlighted()) - Number(b.id === highlighted())).forEach(([row, i]) => {
+    visibleRows().slice().sort((a, b) => Number(a.id === highlighted()) - Number(b.id === highlighted())).forEach(row => {
       if (!row.spatial.available) return;
       const spatial = row.spatial, active = row.id === highlighted();
-      const desc = spatial.beams?.length ? `${spatial.beams.length} Queue Mosaic beams; array ${fmt(spatial.diameter_m)} m, provisional` :
+      const desc = spatial.beams?.length ? `${spatial.beams.length} Queue Mosaic beams; array ${fmt(spatial.diameter_m)} m, model: ${spatial.model_status || 'PROVISIONAL'}` :
         spatial.sky_outline ? `Archive Mosaic region; target ${spatial.point_status}; region reference only` :
         `Center RA ${fmt(spatial.center[0])}, Dec ${fmt(spatial.center[1])} deg; half-power radius ${fmt(spatial.radius_arcsec)} arcsec`;
-      const g = selectable(layer, row, i, desc);
+      const g = selectable(layer, row, desc);
       if (spatial.beams?.length) {
         spatial.beams.forEach(beam => {
           const polygon = (beam.outline || []).map(p => [sx(p[0]), sy(p[1])]);
@@ -128,7 +127,7 @@
       });
       draw(g, "circle", {cx: sx(spatial.offset[0]), cy: sy(spatial.offset[1]), r: active ? 5 : 3,
         fill: color(row), stroke: "white", "stroke-width": 1});
-      if (active) draw(g, "text", {x: sx(spatial.offset[0])+8, y: sy(spatial.offset[1])-8}, `#${i+data.start}${previewed === row.id ? " preview" : ""}`);
+      if (active) draw(g, "text", {x: sx(spatial.offset[0])+8, y: sy(spatial.offset[1])-8}, `#${row.display_number}${previewed === row.id ? " preview" : ""}`);
     });
     if (data.origin) { marker(layer, sx(0), sy(0)); draw(svg, "text", {x: 60, y: 22}, "◆ Your target at (0, 0)"); }
     if (!points.length) draw(svg, "text", {x: 240, y: 190, "text-anchor": "middle"}, "Candidate position evidence unavailable");
@@ -198,9 +197,9 @@
       const description = !f.available ? f.reason : f.kind === "interval" ?
         `Requested ${fmt(f.proposed)} GHz; candidate interval ${fmt(f.low)} to ${fmt(f.high)} GHz` :
         `Requested ${fmt(f.proposed)} GHz; candidate representative frequency ${fmt(f.candidate)} GHz`;
-      const g = selectable(svg, row, rows.indexOf(row), description);
+      const g = selectable(svg, row, description);
       draw(g, "rect", {x: 5, y: y-15, width: 585, height: 30, fill: active ? "#e9f4fa" : "transparent"});
-      draw(g, "text", {x: 12, y: y+3}, `#${number(row)} ${row.intent === "LINE" ? "LINE" : "CONT"} · SPW ${row.spw}`);
+      draw(g, "text", {x: 12, y: y+3}, `#${row.display_number} ${row.intent === "LINE" ? "LINE" : "CONT"} · SPW ${row.spw}`);
       if (!f.available) { draw(g, "text", {x: 145, y: y+3}, "Frequency evidence unavailable"); return; }
       const layer = draw(g, "g", {"clip-path": "url(#frequency-clip)"});
       if (f.kind === "interval") {
@@ -227,7 +226,7 @@
     const row = rows.find(r => r.id === selected), body = document.getElementById("visual-detail-body");
     body.replaceChildren();
     if (!row) { node("p", {}, "No comparison selected. Clear the filters to show the loaded comparisons.", body); return; }
-    node("h3", {}, `#${rows.indexOf(row)+data.start} · ${row.label}`, body);
+    node("h3", {}, `#${row.display_number} · ${row.label}`, body);
     node("p", {class: "selected-evidence"}, row.geometry_kind ? `${row.source} · ${row.intent} · ${row.geometry_kind} · ${row.array_diameter_m}-m array` : `${row.source} · ${row.intent} · Selected SPW ${row.spw}`, body);
     const dl = node("dl", {}, null, body);
     Object.entries(row.identity).forEach(([key, value]) => { node("dt", {}, key, dl); node("dd", {}, value, dl); });
@@ -272,7 +271,7 @@
     revealWithin(document.querySelector(".visual-list"), document.querySelector("[data-select][aria-pressed='true']"));
     revealWithin(document.querySelector(".frequency-scroll"), document.querySelector("#spectral-chart [aria-pressed='true']"));
     const index = rows.findIndex(r => r.id === selected);
-    document.getElementById("visual-selection-status").textContent = index < 0 ? "No visible comparisons. Clear filters." : `Selected comparison ${index+data.start}: ${rows[index].label}. Showing ${visibleRows().length} of ${rows.length} loaded comparisons.`;
+    document.getElementById("visual-selection-status").textContent = index < 0 ? "No visible comparisons. Clear filters." : `Selected comparison ${rows[index].display_number}: ${rows[index].label}. Showing ${visibleRows().length} of ${rows.length} loaded comparisons.`;
     if (plot) document.getElementById(plot).querySelector(`[data-plot-select="${selected}"]`)?.focus({preventScroll: true});
   }
   document.querySelectorAll("[data-select]").forEach(button => button.addEventListener("click", () => select(button.dataset.select)));
@@ -313,7 +312,7 @@
     document.getElementById("visual-focus").disabled = !row || (!row.spatial.available && !row.spectral.available);
     if (!row) { node("p", {}, "No comparison selected.", summary); return; }
     const identity=node("div", {class:"visual-current-identity"}, null, summary);
-    node("strong", {}, `#${number(row)} ${row.label}`, identity);
+    node("strong", {}, `#${row.display_number} ${row.label}`, identity);
     node("span", {}, row.geometry_kind ? `Queue · ${row.intent} · ${row.geometry_kind} · ${row.array_diameter_m}-m` : `${row.source === "QUEUE" ? "Queue" : "Archive"} · ${row.intent} · SPW ${row.spw}${row.window ? ` · requested ${row.window}` : ""}${row.beam_variant != null ? ` · beam path ${row.beam_variant+1}` : ""}`, identity);
     node("small", {}, row.identity["Member OUS"] ? `Member ${row.identity["Member OUS"]}` : "Member OUS not recorded", identity);
     if (row.identity.ASDM) node("small", {}, `ASDM ${row.identity.ASDM}`, identity);
@@ -341,7 +340,7 @@
     previewed=id;
     spatialChart(); spectralChart();
     const row=rows.find(row=>row.id===id);
-    document.getElementById("visual-preview-status").textContent=row ? `Preview #${number(row)}: ${row.label}. Click to select; current selection is unchanged.` : "";
+    document.getElementById("visual-preview-status").textContent=row ? `Preview #${row.display_number}: ${row.label}. Click to select; current selection is unchanged.` : "";
     revealWithin(scroller, document.querySelector(`#spectral-chart [data-plot-select="${id}"]`));
   }
   function clearPreview() {
@@ -396,10 +395,10 @@
     close.addEventListener("click", () => closeChooser());
     node("p", {}, "Hover or focus to preview both plots. Click to select.", chooser);
     const list = node("div", {class: "overlap-list"}, null, chooser);
-    rows.forEach((row, i) => {
+    rows.forEach(row => {
       if (!ids.includes(row.id)) return;
       const b = node("button", {type: "button", "aria-pressed": String(selected === row.id)}, null, list);
-      node("strong", {}, `#${i+data.start} · ${row.label}`, b);
+      node("strong", {}, `#${row.display_number} · ${row.label}`, b);
       node("small", {}, row.geometry_kind ? `Queue · ${row.intent} · ${row.geometry_kind} · ${row.array_diameter_m}-m` : `${row.source} · ${row.intent} · SPW ${row.spw}${row.window ? ` · requested ${row.window}` : ""}${row.beam_variant != null ? ` · beam path ${row.beam_variant+1}` : ""}`, b);
       const identity = [row.identity["Member OUS"], row.identity.ASDM].filter(Boolean).join(" · ");
       if (identity) node("small", {class: "overlap-identity"}, identity, b);
@@ -514,7 +513,7 @@
     text(`Batch ${data.plot_page}/${data.plot_pages}; showing ${shown.length}/${rows.length} loaded comparisons. Other batches excluded.`);
     text(`Project: ${document.getElementById("visual-project").selectedOptions[0].textContent}; Member: ${document.getElementById("visual-member").selectedOptions[0].textContent}`);
     const current=rows.find(row=>row.id===selected);
-    text(`Only selected: ${isolated ? "yes" : "no"}; Selected: ${current ? "#"+number(current)+" "+current.label : "none"}`);
+    text(`Only selected: ${isolated ? "yes" : "no"}; Selected: ${current ? "#"+current.display_number+" "+current.label : "none"}`);
     text("Legend: purple diamond = proposed; blue = Archive; orange = Queue (dashed position boundary).");
     text("Position circles are half-power boundaries, not angular resolution. Continuum dots are representative frequencies.");
     text("Display relationships do not recompute decisions. Matches do not establish absence of duplication elsewhere.");
@@ -538,7 +537,7 @@
     text(`Evidence available: position ${shown.filter(r=>r.spatial.available).length}/${shown.length}; frequency ${shown.filter(r=>r.spectral.available).length}/${shown.length}.`);
     text("Comparison identities (numbers remain stable across filters)",true);
     for (const row of shown) {
-      text(`#${number(row)} ${row.label} | ${row.source} | ${row.intent} | SPW ${row.spw}`,true);
+      text(`#${row.display_number} ${row.label} | ${row.source} | ${row.intent} | SPW ${row.spw}`,true);
       text(`Requested window: ${row.window ?? "not recorded"}; beam path: ${row.beam_variant == null ? "not applicable" : row.beam_variant+1}`);
       for (const [key,value] of Object.entries(row.identity)) text(`${key}: ${value}`);
       if (!row.spatial.available) text(`Position: ${row.spatial.reason}`);

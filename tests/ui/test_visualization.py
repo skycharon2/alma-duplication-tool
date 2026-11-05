@@ -367,3 +367,45 @@ def test_setup_groups_repeated_spw_rows_only_with_same_execution_and_signature()
     for record in (first, second):
         record['display_identity']['ASDM'] = None
     assert spectral_setup(first)['id'] != spectral_setup(second)['id']
+
+
+def test_explore_pagers_keep_independent_state_and_comparison_numbers(monkeypatch):
+    from html import unescape
+    from tests.ui.test_queue_geometry_visualization import sample
+
+    document = serialized(report())
+    context = document['context_evaluations'][0]
+    context['line_pairs'] = [deepcopy(context['line_pairs'][0]) for _ in range(31)]
+    app = create_app(config(LIVE_AQ=False))
+    store = app.extensions['assessment_runs']
+    monkeypatch.setattr(store, 'page', lambda *_: page(document))
+
+    def queue_page(run_id, number, view):
+        batch = sample()
+        batch.update(page=number, pages=3, result_view=view)
+        return batch
+
+    monkeypatch.setattr(store, 'queue_page', queue_page)
+    client = app.test_client()
+    url = '/runs/example/visualization?queue_page=2&queue_view=all'
+
+    def follow(html, label):
+        href = re.search(r'href="([^"]+)">' + label + r'</a>', html).group(1)
+        return unescape(href)
+
+    try:
+        first = visual_response(client, url)
+        assert (first['start'], first['stop'], first['total']) == (1, 30, 31)
+        assert first['rows'][-2]['display_number'] == 30
+        queue_number = first['rows'][-1]['display_number']
+        second_url = follow(client.get(url).text, 'Next comparisons')
+        second = visual_response(client, second_url)
+        assert (second['start'], second['stop'], second['total']) == (31, 31, 31)
+        assert [r['display_number'] for r in second['rows']] == [31, queue_number]
+        assert (second['queue_page'], second['queue_view']) == (2, 'all')
+        next_queue = follow(client.get(second_url).text, 'Next Queue match batch')
+        third = visual_response(client, next_queue)
+        assert (third['plot_page'], third['queue_page'], third['queue_view']) == (2, 3, 'all')
+        assert third['rows'][-1]['display_number'] != queue_number
+    finally:
+        store.close()

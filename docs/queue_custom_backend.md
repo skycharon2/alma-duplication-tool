@@ -7,7 +7,7 @@ OT exports remain development validation fixtures. This is an offline position
 backend; it is not yet wired into the shared assessment entry or browser, and
 does not evaluate complete duplication criteria by itself. The optional
 [`--request` science extension](queue_custom_science.md) now composes complete
-per-array criteria under the same provisional CSV model.
+per-array criteria under the same project-accepted CSV model.
 
 ## Run
 
@@ -40,7 +40,7 @@ An unconfirmed proposed list cannot establish a positive result. This interface
 compares the same supplied proposed list geometrically to each candidate array;
 it does not generate a separate proposed ACA grid or authorize cross-array policy.
 
-## Provisional model `QUEUE_CUSTOM_EXPLICIT_CSV_2`
+## Project-accepted model `QUEUE_CUSTOM_EXPLICIT_CSV_3`
 
 The report explicitly records these conventions rather than claiming observed
 array ownership or official Science Goal identity:
@@ -67,7 +67,7 @@ and all assumptions accompany the result. Internal `association_confirmed=True`
 in the reused coverage evaluator authorizes computation **under this named model**;
 `association_basis` and `coverage_basis` explicitly identify a profile convention,
 not an external/caller confirmation. Consumers must retain these fields and the
-PROVISIONAL status when displaying or integrating these results.
+saved model status when displaying or integrating these results.
 
 ## Coverage and result meaning
 

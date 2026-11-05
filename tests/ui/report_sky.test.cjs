@@ -116,3 +116,26 @@ test('Mosaic uses saved region polyline without a fabricated circular beam or se
   assert.equal(circles.length,0);
   assert.match(h.get('sky-relationship').textContent,/Mosaic coverage: inside/);
 });
+
+test('Queue beam descriptions preserve the saved model status and historical fallback', async () => {
+  const h = setup();
+  await settle();
+  const row = h.rows[0];
+  row.source = 'QUEUE';
+  row.array_diameter_m = 12;
+  row.spatial.beams = [{center:[10,20]}];
+  row.spatial.covered_beam_count = 1;
+  for (const [kind, saved, expected] of [
+    ['rectangle', 'PROJECT_ACCEPTED', 'PROJECT_ACCEPTED'],
+    ['rectangle', 'UNRESOLVED', 'UNRESOLVED'],
+    ['custom', 'PROJECT_ACCEPTED', 'PROJECT_ACCEPTED'],
+    ['custom', 'UNRESOLVED', 'UNRESOLVED'],
+    ['custom', 'PROVISIONAL', 'PROVISIONAL'],
+    ['rectangle', undefined, 'PROVISIONAL'],
+  ]) {
+    row.geometry_kind = kind;
+    row.spatial.model_status = saved;
+    h.controller.update();
+    assert.ok(h.get('sky-relationship').textContent.endsWith(`(model: ${expected}).`));
+  }
+});

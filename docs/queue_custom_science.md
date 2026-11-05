@@ -61,13 +61,13 @@ cross-intent verdict. Array inference failure emits an indeterminate intent resu
 
 This increment implements the project workflow requested on 2026-11-02: reuse
 Single Pointing scientific calculations for Custom and OR complete array paths.
-It retains `QUEUE_CUSTOM_EXPLICIT_CSV_2` and reports `model_status: PROVISIONAL`.
+New reports identify `QUEUE_CUSTOM_EXPLICIT_CSV_3` as `PROJECT_ACCEPTED`.
+Candidates with missing array variants or unknown position outcomes record `UNRESOLVED`.
 No new supervisor sign-off or independently measured array ownership is claimed.
 
 The shared criterion schema uses APPROVED to enable the selected calculation
 inside this explicitly adopted model, with this document as its scope reference.
-This does not change the provisional status of the CSV geometry/association
-conventions. Consumers must display the model scope alongside CRITERIA_MET; it
+Consumers must display the model scope alongside CRITERIA_MET; it
 means all model criteria passed, not an authoritative duplicate determination.
 Legacy Single Pointing method identities, numerical formulas and gates are kept.
 The new Custom method pair is accepted only by explicit `mosaic=True` calls.
@@ -120,7 +120,7 @@ science formulas and complete-branch OR are unchanged by the v2 point mapping.
 The application entrypoint now accepts `assess_observation(...,
 queue_custom=proposed, sources=AssessmentSources(queue_loader=...))`. Select
 `search_options.sources = ["QUEUE"]` and a fixed MOSAIC request. Passing
-`queue_custom` explicitly selects the provisional shared-CSV-centre model and
+`queue_custom` explicitly selects the project-accepted shared-CSV-centre model and
 complete science for every requested intent. It does not require OT input.
 
 The main CLI uses the same entrypoint:

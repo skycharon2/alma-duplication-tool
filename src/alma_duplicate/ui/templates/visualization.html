@@ -15,7 +15,12 @@
 {% if not visual.supported %}<p class="notice">This view supports fixed targets with single-pointing requests. No geometry is inferred for other observation types.</p>
 {% elif not visual.rows %}<p class="notice">No matching comparison is available to plot on this report page. This does not establish that no duplicates exist. <a href="{{ report_url }}">Review results and missing evidence</a>.</p>
 {% else %}
-<div class="visual-scope"><span>Report page <strong>{{ page }} / {{ pages }}</strong> · Comparisons <strong>{{ visual.start }}–{{ visual.stop }}</strong> of {{ visual.total }} on this page</span><span class="visual-legend"><span class="legend-proposed">◆ Your observation</span><span class="legend-archive">● Archive</span><span class="legend-queue">● Queue</span></span></div>
+<div class="visual-scope">
+<span>Report page <strong>{{ page }} / {{ pages }}</strong>
+{% if visual.total %} · Comparisons <strong>{{ visual.start }}–{{ visual.stop }}</strong> of {{ visual.total }} on this report page{% endif %}
+{% if visual.queue_pages %} · {{ visual.queue_comparison_count }} Queue comparisons in {{ visual.queue_view }} batch {{ visual.queue_page }}/{{ visual.queue_pages }}{% endif %}
+</span>
+<span class="visual-legend"><span class="legend-proposed">◆ Your observation</span><span class="legend-archive">● Archive</span><span class="legend-queue">● Queue</span></span></div>
 {% if visual.continuum_declaration %}<p class="chart-caption">Continuum setup qualification uses a researcher confirmation. <a href="{{ report_url }}#setup-qualification">Review setup evidence</a>.</p>{% endif %}
 <section id="visual-controls" class="visual-controls" aria-label="Filter displayed comparisons" hidden>
 <div class="visual-filter-fields">
@@ -72,25 +77,30 @@
 <details class="visual-help"><summary>Keyboard and touch controls</summary><p>Focus a plot: arrow keys pan, +/− zoom, Home resets. Enter/Space selects a focused comparison. On touch screens use the zoom buttons and comparison list.</p></details>
 <div class="visual-bottom">
 <section class="visual-panel visual-candidates" aria-labelledby="selection-title"><header><h2 id="selection-title">Matching comparisons</h2><span id="visual-list-count">{{ visual.rows|length }} shown</span></header>
-<div class="visual-list">{% for row in visual.rows %}<div class="visual-candidate" data-row="{{ row.id }}"><button type="button" class="visual-select" data-select="{{ row.id }}" aria-pressed="{{ 'true' if loop.first else 'false' }}"><span class="visual-row-number">{{ loop.index + visual.start - 1 }}</span><span><strong>{{ row.label }}</strong><small>{{ row.source|title }} · {{ row.intent }} · {% if row.geometry_kind %}{{ row.geometry_kind|title }} · {{ row.array_diameter_m }}-m{% else %}SPW {{ row.spw }}{% endif %}{% if row.window %} · requested {{ row.window }}{% endif %}{% if row.beam_variant is not none %} · beam path {{ row.beam_variant + 1 }}{% endif %}</small></span></button><a href="{{ row.details_url or (report_url ~ '#' ~ row.anchor) }}" aria-label="Text comparison {{ loop.index + visual.start - 1 }}">Details ↗</a></div>{% endfor %}</div>
+<div class="visual-list">{% for row in visual.rows %}<div class="visual-candidate" data-row="{{ row.id }}"><button type="button" class="visual-select" data-select="{{ row.id }}" aria-pressed="{{ 'true' if loop.first else 'false' }}"><span class="visual-row-number">{{ row.display_number }}</span><span><strong>{{ row.label }}</strong><small>{{ row.source|title }} · {{ row.intent }} · {% if row.geometry_kind %}{{ row.geometry_kind|title }} · {{ row.array_diameter_m }}-m{% else %}SPW {{ row.spw }}{% endif %}{% if row.window %} · requested {{ row.window }}{% endif %}{% if row.beam_variant is not none %} · beam path {{ row.beam_variant + 1 }}{% endif %}</small></span></button><a href="{{ row.details_url or (report_url ~ '#' ~ row.anchor) }}" aria-label="Text comparison {{ row.display_number }}">Details ↗</a></div>{% endfor %}</div>
 </section>
 <section class="visual-panel visual-detail" aria-labelledby="detail-title"><header><h2 id="detail-title">Selected comparison</h2></header><p id="visual-selection-status" class="sr-only" aria-live="polite"></p><div id="visual-detail-body"><p>Select a comparison to inspect its recorded evidence.</p></div><noscript><p>Enable JavaScript for interactive charts. Each Details link opens the full text comparison.</p></noscript></section>
 </div>
 
 {% endif %}
 
+{% macro page_url(result_page, plot_page=1, queue_page=visual.queue_page) -%}
+{{ url_for(visual_endpoint, report_id=report_id, page=result_page, plot_page=plot_page,
+           queue_page=queue_page if visual.queue_pages else none,
+           queue_view=visual.queue_view if visual.queue_pages else none) }}
+{%- endmacro %}
 <nav class="visual-pagination" aria-label="Visualization pages">
-{% if page > 1 %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page-1) }}">Previous result groups</a>{% endif %}
-{% if visual.plot_page > 1 %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page, plot_page=visual.plot_page-1) }}">Previous comparisons</a>{% endif %}
-{% if visual.plot_page < visual.plot_pages %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page, plot_page=visual.plot_page+1) }}">Next comparisons</a>{% endif %}
-{% if page < pages %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page+1) }}">Next result groups</a>{% endif %}
+{% if page > 1 %}<a class="button" href="{{ page_url(page-1) }}">Previous result groups</a>{% endif %}
+{% if visual.plot_page > 1 %}<a class="button" href="{{ page_url(page, plot_page=visual.plot_page-1) }}">Previous comparisons</a>{% endif %}
+{% if visual.plot_page < visual.plot_pages %}<a class="button" href="{{ page_url(page, plot_page=visual.plot_page+1) }}">Next comparisons</a>{% endif %}
+{% if page < pages %}<a class="button" href="{{ page_url(page+1) }}">Next result groups</a>{% endif %}
 {% if visual.queue_pages and visual.queue_pages > 1 %}
-{% if visual.queue_page > 1 %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page, plot_page=visual.plot_page, queue_page=visual.queue_page-1) }}">Previous Queue match batch</a>{% endif %}
+{% if visual.queue_page > 1 %}<a class="button" href="{{ page_url(page, plot_page=visual.plot_page, queue_page=visual.queue_page-1) }}">Previous Queue match batch</a>{% endif %}
 <span>Queue matches batch {{ visual.queue_page }}/{{ visual.queue_pages }} — within the same plots</span>
-{% if visual.queue_page < visual.queue_pages %}<a class="button" href="{{ url_for(visual_endpoint, report_id=report_id, page=page, plot_page=visual.plot_page, queue_page=visual.queue_page+1) }}">Next Queue match batch</a>{% endif %}
+{% if visual.queue_page < visual.queue_pages %}<a class="button" href="{{ page_url(page, plot_page=visual.plot_page, queue_page=visual.queue_page+1) }}">Next Queue match batch</a>{% endif %}
 {% endif %}
 </nav>
-<p class="chart-caption">Plots explain this saved report; they do not perform a new search or change its decisions. Only the listed comparisons meet the conditions, not necessarily the entire Member OUS. Legacy comparison pages and bounded Queue match batches are shown together; other pages require navigation. Queue Mosaic beams are provisional model evidence.</p>
+<p class="chart-caption">Plots explain this saved report; they do not perform a new search or change its decisions. Only the listed comparisons meet the conditions, not necessarily the entire Member OUS. Legacy comparison pages and bounded Queue match batches are shown together; other pages require navigation.</p>
 
 <script id="visual-data" type="application/json">{{ visual|tojson }}</script>
 </div>

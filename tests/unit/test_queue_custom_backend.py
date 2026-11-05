@@ -52,10 +52,10 @@ def test_csv_only_mixed_arrays_share_centers_with_distinct_beams():
     assert report["candidates"][0]["explicit_point_diameters_m"] == [7., 12.]
     assert twelve["outcome"] == "SATISFIED"
     assert twelve["coverage"]["complete"] is True
-    assert twelve["model_status"] == "PROVISIONAL"
+    assert twelve["model_status"] == "PROJECT_ACCEPTED"
     assert report["candidates"][0]["position"]["tp_treatment"] == "IGNORED"
     assert report["duplication_status"] == "NOT_EVALUATED"
-    assert all(c["reason"] == "RECTANGLE_GRID_NOT_IMPLEMENTED" for c in report["excluded_mosaic_candidates"])
+    assert all(c["reason"] == "OUTSIDE_CUSTOM_GEOMETRY_SCOPE" for c in report["excluded_mosaic_candidates"])
     json.dumps(report, allow_nan=False)
 
 
