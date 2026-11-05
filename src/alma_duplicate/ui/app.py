@@ -26,6 +26,8 @@ from alma_duplicate.ui.report_view import (
 from alma_duplicate.ui.runs import ARCHIVE_CONNECTIONS, BrowserAssessment, RunStore
 from alma_duplicate.ui.report_pages import report_page, report_projection
 from alma_duplicate.ui.visualization import visualization_data
+from alma_duplicate.ui.queue_geometry_visualization import queue_geometry_visualization_data
+from alma_duplicate.ui.unified_queue_visualization import merge_queue_matches
 from alma_duplicate.ui.run_store import DEFAULT_DISK_BYTES, DEFAULT_MAX_AGE
 from alma_duplicate.ui.proposed import assessment_supported, contributing_windows, initial_form, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
@@ -307,9 +309,26 @@ def create_app(config=None):
             visual = visualization_data(data, int(plot_page))
         except IndexError:
             abort(404)
+        queue_visual = None
+        if is_run:
+            raw_queue_page = request.args.get('queue_page', '1')
+            queue_view = request.args.get('queue_view', 'matching')
+            if (not raw_queue_page.isdecimal() or len(raw_queue_page) > 8
+                    or int(raw_queue_page) < 1 or queue_view not in
+                    {'matching', 'review', 'not_met', 'all'}):
+                abort(400)
+            try:
+                queue_page = runs.queue_page(report_id, int(raw_queue_page), queue_view)
+            except IndexError:
+                abort(404)
+            if queue_page is not None:
+                queue_visual = queue_geometry_visualization_data(queue_page, visual['origin'])
+                visual = merge_queue_matches(visual, queue_visual,
+                    details_url=url_for('run_queue_view', report_id=report_id,
+                                        page=queue_visual['page'], view=queue_visual['view']))
         endpoint = "run_visualization" if is_run else "report_visualization"
         return render_template(
-            "visualization.html", **data, visual=visual, report_id=report_id,
+            "visualization.html", **data, visual=visual, queue_visual=queue_visual, report_id=report_id,
             visual_endpoint=endpoint,
             visualization_url=url_for(endpoint, report_id=report_id, page=data["page"]),
             report_url=url_for("run_view" if is_run else "report_view", report_id=report_id, page=data["page"]),

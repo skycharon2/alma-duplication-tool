@@ -463,3 +463,43 @@ summary { cursor: pointer; padding: .4rem; }
   padding: .6rem .8rem; border-radius: .5rem; background: #e7f1f8;
 }
 .target-popover dd { font-weight: 600; }
+
+/* Queue candidate provenance is inside the normal comparison flow. */
+.report-page .member-result, .report-page .member-execution,
+.report-page .candidate-comparison, .report-page .beam-variant {
+  min-width: 0;
+}
+.report-page .queue-provenance-details {
+  position: static;
+  display: block;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.report-page .queue-provenance-details > summary {
+  position: static;
+  display: list-item;
+  width: auto;
+  height: auto;
+  cursor: pointer;
+  color: var(--blue-dark);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.report-page .queue-provenance-details code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+.report-page .queue-provenance-details p {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 680px) {
+  .report-page .member-execution { min-width: 0; }
+  .report-page .queue-provenance-details { padding: 8px; }
+}

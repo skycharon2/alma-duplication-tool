@@ -77,5 +77,21 @@ def report_header(report):
     inventory = report.get('inventory') or {}
     header['inventory'] = {k: v for k, v in inventory.items() if k != 'source_rows'}
     header['candidate_counts'] = {k: counts[k] for k in ('matching', 'review', 'not_met')}
+    # Count the full candidate inventory before report pagination. An intent is
+    # counted once per configuration, even if an old record repeats branches.
+    intent_counts = {}
+    for entry in presentation(report):
+        by_intent = {}
+        for branch in entry['candidate'].get('science', {}).get('branches', []):
+            intent = branch.get('branch')
+            if intent not in {'CONTINUUM', 'LINE'}:
+                continue
+            by_intent.setdefault(intent, set()).add(branch.get('truth'))
+        for intent, truths in by_intent.items():
+            bucket = ('matching' if 'TRUE' in truths else 'not_met'
+                      if truths == {'FALSE'} else 'review')
+            intent_counts.setdefault(intent, {'matching': 0, 'review': 0, 'not_met': 0})[bucket] += 1
+    header['candidate_counts_by_intent'] = intent_counts
+    header['intent_counts_scope'] = 'ALL_STORED_CANDIDATE_CONFIGURATIONS'
     header['geometry_reports'] = {}
     return header

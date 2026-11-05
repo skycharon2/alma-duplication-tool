@@ -4,7 +4,7 @@ from collections import Counter
 
 from alma_duplicate.geometry import primary_beam_fwhm_deg
 from alma_duplicate.queue_mosaic import reconstruct_queue_mosaics
-from alma_duplicate.queue_rectangle_grid import reconstruct_queue_rectangles
+from alma_duplicate.queue_rectangle_grid import reconstruct_queue_rectangles, MODEL_APPROVAL, METHOD, OT_REFERENCE
 from alma_duplicate.rules.queue_mosaic_position import (
     QueueMosaicCoverage, _points, assess_queue_mosaic_position,
 )
@@ -67,12 +67,18 @@ def assess_queue_rectangle_csv(parsed, proposed, *, candidate_id=None,
                 association_confirmed=True, complete=array['model_grid_complete']))
         position = assess_queue_mosaic_position(proposed, reconstruction, candidate['candidate_id'],
             bindings, boundary_epsilon_arcsec=boundary_epsilon_arcsec)
-        position.update(coverage_basis='PROVISIONAL_CSV_MODEL_BINDING',
+        position.update(coverage_basis='PROJECT_ACCEPTED_CSV_RECTANGLE_MODEL_BINDING',
+            model_version=METHOD, model_approval=MODEL_APPROVAL,
+            ot_reference=OT_REFERENCE,
             scientific_candidate_completeness='NOT_ESTABLISHED',
-            outcome_scope='CONDITIONAL_ON_RECONSTRUCTED_MODEL')
+            outcome_scope='EVALUATED_WITH_ACCEPTED_RECTANGLE_MODEL')
         for variant in position['beam_variants']:
             bound = variant['coverage'] is not None
-            variant.update(geometry_model_status='PROVISIONAL', array_basis='CSV_INFERRED',
+            array = next(a for a in grid['arrays'] if a['diameter_m'] == variant['diameter_m'])
+            variant.update(geometry_model_status=(array['grid_model_status']
+                if bound else 'UNRESOLVED'), model_version=METHOD,
+                ot_validation_scope=array.get('ot_validation_scope'),
+                array_basis='CSV_INFERRED',
                 association_basis='ACCEPTED_MODEL_ROW_ARRAY_BINDING_NOT_OFFICIAL_VERIFICATION',
                 coverage_scope='COMPLETE_FOR_RECONSTRUCTED_MODEL' if bound else 'NOT_ESTABLISHED',
                 scientific_candidate_completeness='NOT_ESTABLISHED')
@@ -81,7 +87,8 @@ def assess_queue_rectangle_csv(parsed, proposed, *, candidate_id=None,
                             geometry=grid, position=position))
     outcomes = Counter(v['outcome'] for r in results for v in r['position']['beam_variants'])
     return dict(schema_version='queue_rectangle_csv_position_1', profile=PROFILE,
-        model_status='PROVISIONAL', snapshot_sha256=reconstruction['snapshot_sha256'],
+        model_status=MODEL_APPROVAL, model_version=METHOD, ot_reference=OT_REFERENCE,
+        snapshot_sha256=reconstruction['snapshot_sha256'],
         source_url=reconstruction['source_url'], proposed=proposed, candidates=results,
         summary=dict(rectangle_candidates_evaluated=len(results),
                      position_outcomes={k: outcomes[k] for k in ('SATISFIED','NOT_SATISFIED','UNKNOWN')}),

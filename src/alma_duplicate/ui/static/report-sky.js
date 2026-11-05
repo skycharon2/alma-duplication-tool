@@ -13,7 +13,7 @@ window.createReportSky = function(state) {
   const choices = document.querySelector('#report-sky-choices');
   let viewer, catalog, boundary, reference, selectedCenter, target, loading = false, signature = '';
   let fallbackActive = false;
-  const available = () => state.rows().filter(r => r.spatial.available && r.spatial.center);
+  const available = () => state.rows().filter(r => r.spatial.available && (r.spatial.center || r.spatial.beams?.length));
   const color = r => r.source === 'QUEUE' ? '#d78b36' : '#45a9eb';
   const radius = r => Number.isFinite(r.spatial.radius_arcsec) && r.spatial.radius_arcsec > 0 ? r.spatial.radius_arcsec / 3600 : 0;
   function distance(a,b) {
@@ -23,7 +23,10 @@ window.createReportSky = function(state) {
   function fit(selectedOnly=false,padding=2.6) {
     if (!viewer) return;
     const rows = selectedOnly ? available().filter(r=>r.id===state.selected()) : available();
-    const span = Math.max(0.005,...rows.map(r=>r.spatial.sky_outline ? Math.max(...r.spatial.sky_outline.map(p=>distance(state.origin,p))) : distance(state.origin,r.spatial.center)+radius(r)))*padding;
+    const span = Math.max(0.005,...rows.flatMap(r=>r.spatial.beams?.length ?
+      r.spatial.beams.map(b=>distance(state.origin,b.center)+radius(r)) :
+      [r.spatial.sky_outline ? Math.max(...r.spatial.sky_outline.map(p=>distance(state.origin,p))) :
+       distance(state.origin,r.spatial.center)+radius(r)]))*padding;
     // Include vertical extent in a wide panel as well as the horizontal extent.
     const canvas=document.querySelector('#report-sky-canvas');
     viewer.gotoRaDec(...state.origin);
@@ -44,7 +47,9 @@ window.createReportSky = function(state) {
     const separation=spatial?.separation_arcsec, halfPower=spatial?.radius_arcsec;
     document.querySelector('#sky-separation').textContent=Number.isFinite(separation)&&separation>=0 ? separation.toFixed(2)+'″' : 'Not recorded';
     document.querySelector('#sky-radius-ratio').textContent=Number.isFinite(separation)&&separation>=0&&Number.isFinite(halfPower)&&halfPower>0 ? (100*separation/halfPower).toFixed(1)+'%' : 'Not available';
-    if (spatial?.coverage_source === 'ARCHIVE_S_REGION') {
+    if (spatial?.beams?.length) {
+      explanation.textContent=`Queue ${selected.geometry_kind}: ${spatial.beams.length} saved ${selected.array_diameter_m}-m half-power beams; ${spatial.covered_beam_count} contain this proposed point (PROVISIONAL).`;
+    } else if (spatial?.coverage_source === 'ARCHIVE_S_REGION') {
       explanation.textContent='Archive Mosaic coverage: '+spatial.point_status.toLowerCase();
     } else if (Number.isFinite(separation) && separation>=0 && Number.isFinite(halfPower) && halfPower>0) {
       const location=separation<halfPower?'inside':separation===halfPower?'on':'outside';
@@ -52,12 +57,12 @@ window.createReportSky = function(state) {
     } else {
       explanation.textContent='Position relationship unknown';
     }
-    document.querySelector('#sky-comparison-name').textContent=selected ? selected.label+' · '+selected.source+' · SPW '+selected.spw : 'No confirmed candidate position';
+    document.querySelector('#sky-comparison-name').textContent=selected ? selected.label+' · '+selected.source+(selected.geometry_kind?' · '+selected.geometry_kind+' · '+selected.array_diameter_m+'-m':' · SPW '+selected.spw) : 'No confirmed candidate position';
     const format=(value,unit='')=>Number.isFinite(value)?Number(value.toPrecision(7))+' '+unit:'Not recorded';
     for(const [label,value] of [
       ['Selected comparison',selected?selected.label+' · '+selected.source+' · SPW '+selected.spw:'No confirmed position selected'],
-      ['Coverage source', spatial?.coverage_source || 'Recorded single-field beam'],
-      ['Reference point', spatial?.sky_outline ? 'Region display center (not observation center)' : 'Recorded candidate center'],
+      ['Coverage source', spatial?.beams?.length ? 'QUEUE_MOSAIC_SAVED_BEAM_UNION' : (spatial?.coverage_source || 'Recorded single-field beam')],
+      ['Reference point', spatial?.beams?.length ? 'Multiple saved candidate beam centres' : (spatial?.sky_outline ? 'Region display center (not observation center)' : 'Recorded candidate center')],
       ['Candidate frequency',format(spatial?.frequency_ghz,'GHz')],
       ['Recorded dish diameter',format(spatial?.diameter_m,'m')],
       ['Half-power radius',format(spatial?.radius_arcsec,'arcsec')],
@@ -78,34 +83,49 @@ window.createReportSky = function(state) {
     signature=next;
     catalog.removeAll(); selectedCenter.removeAll(); boundary.removeAll(); reference.removeAll(); choices.replaceChildren();
     const grouped=new Map(), outlines=new Set();
-    // Draw the selected boundary last so coincident candidates cannot cover it.
-    const drawOrder = [...rows].sort((a,b)=>Number(a.id===state.selected())-Number(b.id===state.selected()));
-    for (const row of drawOrder) {
+    // One selectable comparison may contain a complete Custom or Rectangle
+    // union. Draw all its saved beam circles, never a fictitious centre circle.
+    const drawOrder=[...rows].sort((a,b)=>Number(a.id===state.selected())-Number(b.id===state.selected()));
+    for(const row of drawOrder) {
+      if (!others.checked && row.id!==state.selected()) continue;
+      const active=row.id===state.selected();
+      if (row.spatial.beams?.length) {
+        for(const beam of row.spatial.beams) {
+          const key=[row.source,...beam.center,radius(row)].join(',');
+          if(beams.checked && (!outlines.has(key) || active))
+            boundary.add(A.circle(...beam.center,radius(row),{color:active?'#ff525e':color(row),
+              lineWidth:active?1.7:1,opacity:active?1:.4}));
+          outlines.add(key);
+          const marker=A.source(...beam.center,{ids:[row.id],label:'Mosaic pointing'});
+          if(active) selectedCenter.addSources([marker]);
+          else if(others.checked) catalog.addSources([marker]);
+        }
+        continue;
+      }
       const key=row.spatial.center.join(',');
       if (!grouped.has(key)) grouped.set(key,[]);
       grouped.get(key).push(row);
-      if (!others.checked && row.id!==state.selected()) continue;
-      const outlineKey = row.spatial.s_region_sha256 || [row.source,...row.spatial.center,radius(row)].join(',');
-      if (beams.checked && row.spatial.sky_outline && (!outlines.has(outlineKey) || row.id===state.selected())) boundary.add(A.polyline(row.spatial.sky_outline,{color:row.id===state.selected()?'#ff525e':color(row),lineWidth:1.5}));
-      if (beams.checked && radius(row) && (!outlines.has(outlineKey) || row.id===state.selected())) boundary.add(A.circle(...row.spatial.center,radius(row),{
-        color:row.id===state.selected()?'#ff525e':color(row),lineWidth:row.id===state.selected()?1.5:1,opacity:row.id===state.selected()?1:0.4
-      }));
+      const outlineKey=row.spatial.s_region_sha256 || [row.source,...row.spatial.center,radius(row)].join(',');
+      if(beams.checked && row.spatial.sky_outline && (!outlines.has(outlineKey)||active))
+        boundary.add(A.polyline(row.spatial.sky_outline,{color:active?'#ff525e':color(row),lineWidth:1.5}));
+      if(beams.checked && radius(row) && (!outlines.has(outlineKey)||active))
+        boundary.add(A.circle(...row.spatial.center,radius(row),{color:active?'#ff525e':color(row),
+          lineWidth:active?1.5:1,opacity:active?1:.4}));
       outlines.add(outlineKey);
     }
-    for (const group of grouped.values()) {
+    for(const group of grouped.values()) {
       const row=group.find(r=>r.id===state.selected()) || group[0];
-      if (others.checked && !group.some(r=>r.id===state.selected())) catalog.addSources([A.source(...row.spatial.center,{ids:group.map(r=>r.id)}, {color:color(row)})]);
+      const ids=group.map(r=>r.id);
+      if(row.id===state.selected()) {
+        selectedCenter.addSources([A.source(...row.spatial.center,{ids,label:row.spatial.sky_outline?'Region reference':'Candidate center'})]);
+        if(ids.length>1)renderChoices(ids);
+        if(!row.spatial.sky_outline)reference.add(A.polyline([state.origin,row.spatial.center],{color:'#f5e4a6',lineWidth:2}));
+      } else if(others.checked)catalog.addSources([A.source(...row.spatial.center,{ids})]);
     }
     const selected=rows.find(r=>r.id===state.selected());
-    if(selected) {
-      selectedCenter.addSources([A.source(...selected.spatial.center,{label:selected.spatial.sky_outline?'Region reference':'Candidate center',ids:grouped.get(selected.spatial.center.join(',')).map(r=>r.id)})]);
-      const coincident=grouped.get(selected.spatial.center.join(',')).map(r=>r.id);
-      if(coincident.length>1)renderChoices(coincident);
-      if (!selected.spatial.sky_outline) reference.add(A.polyline([state.origin,selected.spatial.center],{color:'#f5e4a6',lineWidth:2}));
-    }
     boundary.show(); reference.show();
     const missing=state.rows().length-rows.length;
-    const noRadius=rows.filter(r=>!radius(r) && !r.spatial.sky_outline).length;
+    const noRadius=rows.filter(r=>!radius(r) && !r.spatial.sky_outline && !r.spatial.beams?.length).length;
     const shown=others.checked?rows.length:Number(Boolean(selected));
     status.textContent=`Displayed candidate records: ${shown}; identical boundaries are drawn together. ${rows.length} / ${state.rows().length} visible comparisons have confirmed positions. ${noRadius} have unknown boundaries; ${missing} cannot be plotted. Click a marker to select. If imagery stays blank, use Charts to inspect the recorded geometry.`;
   }
@@ -185,7 +205,7 @@ window.createReportSky = function(state) {
       reference=A.graphicOverlay({name:'Target–candidate separation'});viewer.addOverlay(reference);
       catalog=A.catalog({name:'Candidate positions',sourceSize:10,onClick:choosePosition});viewer.addCatalog(catalog);
       selectedCenter=A.catalog({name:'Selected candidate center',color:'#ff525e',sourceSize:12,shape:'circle',onClick:choosePosition});viewer.addCatalog(selectedCenter);
-      target=A.catalog({name:'Your proposed target',color:'#30eee2',sourceSize:18,shape:'cross',displayLabel:true,labelFont:'12px sans-serif',labelColumn:'label',labelColor:'#7ffff5',onClick:()=>{const row=available().find(r=>r.id===state.selected());if(row && distance(state.origin,row.spatial.center)<1e-10)choosePosition({data:{ids:available().filter(r=>distance(r.spatial.center,row.spatial.center)<1e-10).map(r=>r.id)}});}});
+      target=A.catalog({name:'Your proposed target',color:'#30eee2',sourceSize:18,shape:'cross',displayLabel:true,labelFont:'12px sans-serif',labelColumn:'label',labelColor:'#7ffff5',onClick:()=>{const row=available().find(r=>r.id===state.selected());if(row?.spatial.center && distance(state.origin,row.spatial.center)<1e-10)choosePosition({data:{ids:available().filter(r=>r.spatial.center && distance(r.spatial.center,row.spatial.center)<1e-10).map(r=>r.id)}});}});
       viewer.addCatalog(target);target.addSources([A.source(...state.origin,{label:'Your target'})]);
 
       update();overview();syncSurvey();

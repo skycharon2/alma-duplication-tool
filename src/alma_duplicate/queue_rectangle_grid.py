@@ -16,6 +16,9 @@ from alma_duplicate.queue_position import candidate_frequency
 from alma_duplicate.queue_row_beam import PROFILE, resolve_queue_beam_interpretation
 
 METHOD = "QUEUE_RECTANGLE_TRIANGULAR_GRID_1"
+MODEL_APPROVAL = "PROJECT_ACCEPTED"
+OT_REFERENCE = "OT_PARITY_A_B_C_D3"
+OT_VALIDATED_DOMAIN = "ICRS_NYQUIST_REFERENCE_CASES"
 MAX_POINTS = 10000
 
 
@@ -45,7 +48,7 @@ def generate_rectangle_grid(geometry: RectangleGeometry, diameter_m: float, *,
         raise TypeError("RectangleGeometry required")
     if type(max_points) is not int or not 1 <= max_points <= MAX_POINTS:
         raise ValueError("max_points must be between 1 and 10000")
-    result = dict(grid_method=METHOD, grid_model_status="PROVISIONAL",
+    result = dict(grid_method=METHOD, grid_model_status="UNRESOLVED",
                   geometry_status="UNRESOLVED", model_grid_complete=False,
                   scientific_candidate_complete=False,
                   diameter_m=diameter_m, coordinate_frame="ICRS",
@@ -116,7 +119,11 @@ def generate_rectangle_grid(geometry: RectangleGeometry, diameter_m: float, *,
             points.append(dict(id=f"r{j}:c{i}", ra_deg=float(sky.ra.deg),
                                dec_deg=float(sky.dec.deg), frame="ICRS",
                                east_arcsec=east, north_arcsec=north))
-    result.update(geometry_status="GEOMETRY_RECONSTRUCTED", pointing_count=len(points),
+    result.update(geometry_status="GEOMETRY_RECONSTRUCTED",
+                  grid_model_status=MODEL_APPROVAL,
+                  ot_reference=OT_REFERENCE,
+                  validation_scope="MODEL_VALIDATED_ON_REFERENCE_CASES_NOT_INDIVIDUAL_ROW",
+                  pointing_count=len(points),
                   pointings=points, center_icrs_deg=[float(center.ra.deg), float(center.dec.deg)],
                   model_grid_complete=True)
     return result
@@ -168,6 +175,15 @@ def reconstruct_queue_rectangles(parsed):
         frequency, evidence, reasons = candidate_frequency(row)
         arrays = [generate_rectangle_grid(geometry, d, spacing_reference_diameter_m=12.)
                   for d in beam.diameters_m]
+        diagnostic = spacing_diagnostic(geometry.spacing_arcsec,
+            row.spectral.sensitivity.reference_frequency_ghz.value)
+        # The model is accepted as an algorithm; OT parity was established on
+        # controlled Nyquist ICRS cases, not each arbitrary CSV row.
+        for array in arrays:
+            array['ot_validation_scope'] = (
+                OT_VALIDATED_DOMAIN if array['geometry_status'] == 'GEOMETRY_RECONSTRUCTED'
+                and diagnostic['status'] == 'CONSISTENT_WITH_12M_NYQUIST'
+                else 'OUTSIDE_OT_REFERENCE_DOMAIN')
         candidates.append(dict(geometry_kind="RECTANGLE", source_row_id=row.raw_row.row_id.value,
             source_content_fingerprint=row.raw_row.content_fingerprint,
             group=asdict(row.group_key), input_geometry=asdict(geometry),
@@ -175,13 +191,13 @@ def reconstruct_queue_rectangles(parsed):
             frequency=dict(value_ghz=frequency, evidence=evidence, reasons=reasons,
                            role="EXISTING_CANDIDATE_FREQUENCY_POLICY_NOT_USED_FOR_GRID_SPACING"),
             spacing_convention="ASSUMED_CSV_12M_SAME_BEAM_FRACTION",
-            spacing_diagnostic=spacing_diagnostic(geometry.spacing_arcsec,
-                row.spectral.sensitivity.reference_frequency_ghz.value),
+            spacing_diagnostic=diagnostic,
             scientific_candidate_complete=False, arrays=arrays,
             reasons=[] if arrays else ["ARRAY_INFERENCE_UNRESOLVED"]))
     counts = Counter(a["geometry_status"] for c in candidates for a in c["arrays"])
     return dict(schema_version="queue_rectangle_geometry_1", grid_method=METHOD,
-        grid_model_status="PROVISIONAL", snapshot_sha256=parsed.snapshot.snapshot_sha256,
+        grid_model_status=MODEL_APPROVAL, ot_reference=OT_REFERENCE,
+        validation_domain=OT_VALIDATED_DOMAIN, snapshot_sha256=parsed.snapshot.snapshot_sha256,
         source_url=parsed.snapshot.source_url, parser_version=parsed.snapshot.parser_version,
         candidates=candidates, summary=dict(rectangle_rows=len(candidates),
             reconstructed_rows=sum(bool(c["arrays"]) and all(a["geometry_status"] ==
