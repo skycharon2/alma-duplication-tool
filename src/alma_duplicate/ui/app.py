@@ -1,5 +1,6 @@
 """Flask application factory for the thin browser interface."""
 
+import json
 import os
 import re
 from contextlib import nullcontext
@@ -165,6 +166,7 @@ def create_app(config=None):
         if (data.get('unified_queue') or data.get('mosaic')) and data['result_view'] in {'matches', 'matching'}:
             return render_template('combined_mosaic_report.html',
                 sections=[dict(source='QUEUE' if data.get('unified_queue') else 'ARCHIVE', data=data, report_id=report_id)],
+                observation_settings=data.get('observation_settings', {}),
                 purpose='Mosaic assessment', purpose_tabs={}, purpose_pair=data.get('purpose_pair'), report_id=report_id,
                 failed_branches=data.get('failed_branches', []), criterion_view=criterion_view,
                 criterion_status=criterion_status, criterion_explanation=criterion_explanation,
@@ -249,6 +251,14 @@ def create_app(config=None):
             abort(404)
         if data is None:
             return unavailable_run(report_id)
+        lease = runs.open_download(report_id, 'request')
+        if lease is None:
+            return unavailable_run(report_id)
+        try:
+            submitted = json.load(lease.stream)
+        finally:
+            lease.close()
+        data['observation_settings'] = submitted.get('request', {})
         if data.get('document', {}).get('queue_geometry_assessment'):
             queue_number = request.args.get('queue_page', '1')
             if not queue_number.isdecimal() or len(queue_number) > 8 or int(queue_number) < 1:
@@ -281,6 +291,7 @@ def create_app(config=None):
                     continue
                 sections.append(dict(source=source, data=sibling, report_id=sibling_id))
             return render_template("combined_mosaic_report.html", sections=sections,
+                observation_settings=data['observation_settings'],
                 purpose=purpose, purpose_tabs=tabs, failed_branches=data["failed_branches"],
                 report_id=report_id, criterion_view=criterion_view,
                 criterion_status=criterion_status, criterion_explanation=criterion_explanation,
