@@ -1,8 +1,14 @@
 # Queue Rectangle geometry
 
-Offline geometry only; no UI, source loading, Custom scientific rules, or duplication
-verdicts are changed. Each Rectangle source row remains independent, including
-repeated rows and distinct spectral configurations.
+This document preserves the original staged Rectangle development notes.
+The position-only CLI remains available; the current unified Queue assessment
+also evaluates Rectangle scientific branches and exposes saved evidence in the
+browser. `QUEUE_RECTANGLE_TRIANGULAR_GRID_1` is `PROJECT_ACCEPTED` for the
+recorded ICRS model scope described in "Model acceptance and validation scope"
+below. Earlier `PROVISIONAL` and "not integrated" statements in this document
+describe their original increments, not the current report status. Neither
+project acceptance nor geometry reconstruction establishes an ALMA-endorsed
+verdict, independent array ownership or search-wide completeness.
 
 Run with the project Python environment:
 

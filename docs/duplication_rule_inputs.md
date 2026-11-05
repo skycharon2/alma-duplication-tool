@@ -1,6 +1,7 @@
 # Duplication rule inputs and evidence contract
 
-Implementation coverage reviewed on 2026-10-27 against the baseline in [status](status.md).
+Implementation coverage synchronised on 2026-11-05 against the source baseline
+in [status](status.md); this is not a new scientific approval or test rerun.
 
 The reviewed implementation baseline is maintained in [status](status.md). Archive fixed-target,
 single-point continuum implements five approved conditions and per-context
@@ -24,10 +25,13 @@ labels are results or developer-test references, never required user inputs.
 This document specifies evidence requirements and design acceptance cases.
 The API document is the reference for currently executable request behavior.
 
-Scope: one fixed target, single pointing, one proposed setup, multiple windows.
-The user supplies proposed observations; adapters supply candidate evidence.
-Candidate-side missing evidence cannot be repaired by requiring more user fields.
-See the [form sketch](proposed_observation_form.md).
+Supported fixed-target assessments include Single Pointing and imported,
+complete ICRS Mosaic pointing lists, with separate Archive and Queue evidence
+paths. The scientific criteria remain bound to each candidate, setup, SPW and
+inferred array branch; no cross-source or cross-candidate evidence pooling is
+allowed. Missing candidate evidence cannot be repaired with extra user fields.
+See the [implemented form](ui_proposed_form.md) and
+[unified browser workflow](unified_browser_assessment.md).
 
 ## 1. Sources and authority
 
@@ -133,7 +137,7 @@ coherent evidence from the same candidate context, as defined in section 6.
 | ID / applicability / policy | Proposed input | Archive evidence | Queue evidence | Derivation and readiness | Missing behavior |
 | --- | --- | --- | --- | --- | --- |
 | POS-SINGLE: fixed, single-field interferometry; A/location | ICRS position | `s_ra`, `s_dec`; `s_region`, optional `s_fov`, `antenna_arrays`, frequency as supporting evidence | `RA`, `Dec`, geometry and array evidence | Archive: approved candidate-frequency/unique-diameter position method. Queue: adopted opt-in row-beam method with explicit geometry/frame/array evidence; see [Queue common](queue_common.md). Legacy candidate-beam methods retain their provisional identity | Position required for fixed-target search; missing candidate beam permits bounded search, blocks formal position rule |
-| POS-MOSAIC: mosaics; A/location | Complete fixed ICRS OT pointing collection | Same-context `s_region` under the adopted project policy | Custom/Rectangle coverage is not implemented | [Region position evaluator](mosaic_s_region_position.md) | Archive backend implemented; no center-distance or area-overlap substitution; browser and Queue Mosaic remain unsupported |
+| POS-MOSAIC: mosaics; A/location | Complete fixed ICRS OT pointing collection | Same-context `s_region` under the adopted project policy | Separate Custom explicit CSV-centre, ICRS Rectangle grid and Single Field beam coverage under documented model and array assumptions | [Archive region position](mosaic_s_region_position.md); [Queue position bounds](queue_mosaic_position.md), [Custom science](queue_custom_science.md), [Rectangle model](queue_rectangle_grid.md) | Unsupported frames, TP coverage, incomplete or unavailable candidate geometry remain unresolved; no cross-geometry or search-wide absence inference |
 | TARGET-MOVING: moving; A/location | Explicit moving identity | `target_name` alone does not establish normalized identity | Target label alone does not establish normalized identity | Future identity normalization; no fixed-coordinate fallback | Unsupported search in first model |
 | SOLAR: Sun; A final sentence | Explicit target kind | Candidate matching unnecessary for exemption | Same | `NOT_APPLICABLE` assessment, distinct from unavailable implementation | Never extend exemption to all Solar System objects |
 | ANGULAR: applicable candidate comparison; A/resolution | Positive angular resolution with `REQUESTED_VALUE` meaning | `spatial_resolution` canonical evidence; optional `s_resolution` stays separate | `Req. Ang. Res.` | Convert supported units, preserve requested-versus-estimated semantics; policy comparison after context validation | Missing request or candidate quantity blocks this rule, not spatial retrieval |
@@ -305,7 +309,7 @@ executed search, not proof of non-duplication.
 
 | Mode | First-model behavior | Needed later |
 | --- | --- | --- |
-| Mosaic | Fixed ICRS Archive backend supported with OT input; browser and Queue Mosaic unsupported | Same-context Archive region and metadata under the [adopted policy](mosaic_s_region_position.md) |
+| Mosaic | Fixed ICRS OT import in browser; Archive `s_region` context evaluation and Queue Single Field/Custom/Rectangle geometry-specific evaluation; proposed Single Pointing also checks Queue Custom/Rectangle | Live dual-source acceptance, incomplete-source display, unsupported Queue geometry/TP/SPS and independent reviewed proposals; see [unified workflow](unified_browser_assessment.md) |
 | Moving target | UNSUPPORTED; retain supplied identity | Name normalization and matching strategy |
 | Sun | Assessment NOT_APPLICABLE | Separate UI explanation, no planet exemption |
 | Multiple targets/upload | Unsupported | Dedicated versioned request format with per-target setup links |

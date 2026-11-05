@@ -2,8 +2,10 @@
 
 The default Archive Mosaic workflow uses the 2026-10-26 decision below.
 [Implementation details](../../mosaic_s_region_position.md) define the supported
-region geometry, numerical boundary treatment and scope checks. Single-pointing
-rules remain unchanged; Queue Mosaic is a separate pending workflow.
+region geometry, numerical boundary treatment and scope checks. The dated
+Archive decisions below retain their original meaning. Queue Mosaic now has a
+separate source-bound workflow; see [unified browser assessment](../../unified_browser_assessment.md)
+and [current status](../../status.md).
 
 ## Superseding Archive coverage decision — 2026-10-26
 

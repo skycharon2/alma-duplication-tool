@@ -10,13 +10,20 @@ with ALMA reviewers.
 
 ## Project status
 
-Archive fixed-target, single-point continuum and LINE evaluation are implemented.
-Archive Mosaic is also available through the backend and CLI: import OT pointings,
-evaluate each candidate context's `s_region`, and combine the result with shared
-non-position rules. See the [Mosaic contract](docs/mosaic_s_region_position.md) and
-[captured acceptance](tests/fixtures/archive/s_region_acceptance_2026_10_26/README.md).
-The browser supports Single Pointing and Custom Mosaic requests. Queue Custom
-Mosaic evaluation uses the project-accepted explicit CSV pointing model.
+Fixed-target Single Pointing CONTINUUM and LINE evaluation is implemented for
+supported Archive and Queue sources. The browser also accepts fixed ICRS Mosaic
+requests with imported OT pointings. One submission can independently assess
+configured Archive and Queue sources: Archive uses each candidate context's
+`s_region`, while Queue evaluates Single Field, Custom Pointing and Rectangular
+Mosaic candidates with separate, source-bound geometry reports. See the
+[Archive Mosaic contract](docs/mosaic_s_region_position.md),
+[unified Queue workflow](docs/unified_browser_assessment.md) and
+[captured Archive acceptance](tests/fixtures/archive/s_region_acceptance_2026_10_26/README.md).
+Single Pointing requests can also evaluate Queue Custom and Rectangle candidates
+through a separate cross-geometry extension. Queue Custom CSV-centre and ICRS
+Rectangle geometry use project-accepted, versioned models within documented
+limits; neither model acceptance nor a matching branch establishes search-wide
+completeness or an official ALMA duplicate determination.
 Queue ingestion/search and conditional mode diagnostics are implemented. Queue
 continuum and Queue LINE evaluation are available in the supported coherent
 single-field Queue scope ([continuum contract](docs/queue_continuum.md),
@@ -113,8 +120,9 @@ launch may take a little longer while the file downloads and is parsed.
 
 Open the [observation form](http://127.0.0.1:5051/proposed) and select the
 source for your assessment. Under **Queue**, **Data as of** shows the date of
-the active ALMA dataset. Single Pointing and Custom Mosaic assessments both use
-this snapshot. Keep the terminal open while using the website.
+the active ALMA dataset. Single Pointing and fixed ICRS Mosaic assessments
+use the same pinned snapshot for their supported Queue geometry comparisons.
+Keep the terminal open while using the website.
 
 To check for a newer CSV, press **Ctrl+C** and run the Flask command again.
 Assessments use the local snapshot between restarts. If a refresh fails, the

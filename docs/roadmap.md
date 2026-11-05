@@ -27,17 +27,20 @@ Earlier increment IDs, test counts and extraction records are retained in
 [delivery history](history/delivery_notes.md). They are not an active task list.
 
 Archive Mosaic now has OT import, metadata-only `s_region` position evaluation,
-shared non-position rules and bounded live capture/offline replay. See the
-[region contract](mosaic_s_region_position.md). Browser execution and Member/context
-report navigation are implemented. The next step is live browser acceptance and
-retrieval reliability before a restricted supervisor preview.
+shared non-position rules and bounded live capture/offline replay. The browser
+also dispatches a fixed ICRS Mosaic request to a configured Queue snapshot,
+evaluating Single Field, Custom and Rectangle candidates independently. Single
+Pointing Queue requests additionally assess Custom/Rectangle candidates without
+changing the baseline Single Field results. See the [region contract](mosaic_s_region_position.md)
+and [unified browser Queue workflow](unified_browser_assessment.md). Acceptance of
+live, dual-source failure paths and report navigation is still outstanding.
 
 ## Remaining delivery order
 
 | Step | Work | Exit gate |
 | --- | --- | --- |
-| 1. Verify live Archive Mosaic browser execution | Exercise OT upload, validation/retry, AUTO mirror fallback and explicit-region selection using recorded cases. | Valid uploads reach shared assessment; failed retrieval remains incomplete; a complete empty search does not imply non-duplication. |
-| 2. Accept Mosaic report navigation | Verify existing Member/context navigation, covered counts, point classifications, shared criteria and original exports. | Browser/CLI parity on captured cases, no Member-wide verdict or scientific recomputation in rendering, and clear progress for large candidate sets. |
+| 1. Verify live dual-source Mosaic execution | Exercise fixed ICRS OT upload, configured Archive and pinned Queue, AUTO mirror fallback, unavailable sources and partial failures. | Supported Queue geometry types are assessed separately; available results survive an unavailable branch; empty retrieval never implies search-wide non-duplication. |
+| 2. Accept Mosaic report navigation | Verify Archive Member/context and Queue geometry/array navigation, covered counts, status limitations, purpose tabs, pagination and original exports. | Report/browser parity on captured cases, no cross-source or Member-wide verdict or scientific recomputation, and explicit failure/UNKNOWN states. |
 | 3. Prepare a restricted supervisor preview | Define intended users, hosting, access control, source configuration, Queue snapshot freshness and temporary report retention. Clarify the recorded Queue SPW label; document and test the chosen runtime. | An authorized supervisor can submit a case and review results; access boundaries, concurrent progress polling, expiry/restart behavior, source failures and data removal are tested. No public Flask development-server deployment. |
 | 4. Review supervisor cases | Collect actual proposals and expected judgments, distinguish self-retrieval from independent scientific review, and investigate discrepancies. | Record input provenance, reviewed labels, criterion-level explanations and known gaps; fix each confirmed defect in a bounded change with regression coverage. |
 
@@ -54,9 +57,10 @@ Operational requirements should determine that scope before deployment.
 
 ## Deferred extensions
 
-- Queue Custom/Rectangle Mosaic: source grouping, coverage evidence and spectral
-  association need their own contract and acceptance. Archive `s_region` support
-  does not establish Queue coverage.
+- Broader Queue geometry/array evidence beyond the accepted CSV Custom and ICRS
+  Rectangle models, including unsupported Galactic reconstruction, TP coverage,
+  SPS expansion and array-specific executed-pointing ownership. Nondefault
+  Rectangle spacing has no blanket OT parity claim.
 - Moving-target scientific inputs, methods and acceptance.
 - Component-specific products or broader observing-mode interpretations require
   separate scientific evidence and approval. The current fixed-single-point

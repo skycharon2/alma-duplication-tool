@@ -1,9 +1,9 @@
 # Current implementation status
 
-Implementation reviewed on 2026-10-27: merged PR #178,
-`f194fa50755204d54397b427810c23157b7759f5` (2026-10-26).
-This identifies the code reviewed, not a claim that every historical test or
-live-service check was rerun on this commit. Verification scopes are listed below.
+Current source and CI configuration reviewed on 2026-11-05 against `main` at
+`c207b105df0f800ed5f989238802784c55854dd3`. This documentation sync does
+not rerun the full test suite, query live services or establish new scientific
+acceptance. The dated verification records below retain their original baselines.
 
 This page owns the current capability summary and reviewed implementation
 baseline. The [roadmap](roadmap.md) owns remaining order; contracts own behavior;
@@ -17,6 +17,8 @@ scientific approval scope. The project plan describes long-term design.
 | Source access | Configured live TAP or offline replay; optional post-TAP live AQ or captured source-bound array evidence | Operator-configured CSV snapshot with source provenance; no claim that the snapshot is the current queue |
 | Retrieval | Browser defaults to bounded AUTO scope; explicit-radius requests remain supported; incomplete retrieval stays visible | All supplied rows enter AUTO retrieval before optional filters; unsupported or unresolved evidence is not silently discarded |
 | Single-point position and angular comparison | Implemented within the confirmed fixed-target scope; array evidence is bound to the exact source | Versioned row/array interpretation, supported blank-Mosaic offsets and complete 7-m/12-m beam alternatives |
+| Fixed-target Mosaic | Browser OT pointing upload; per-Archive-context `s_region` position and shared non-position criteria | Same proposed pointings evaluated separately against Single Field, Custom Pointing and Rectangle candidates from a pinned CSV snapshot |
+| Single Pointing to Queue mosaics | Existing fixed-target Single Pointing assessment remains separate from Mosaic | Additional Custom/Rectangle candidate assessments, with independent arrays and model status |
 | CONTINUUM | Proposed setup qualification, candidate position, angular resolution, representative frequency and aggregate RMS | Same branch structure with Queue-specific usable-bandwidth and sensitivity mappings |
 | LINE | Coherent proposed-window/candidate-SPW FDM, coverage, resolution and RMS checks, plus common conditions | Same-row/SPW pairing with scoped mode evidence, unit preparation and comparable RMS |
 | Evidence and results | Independent source states, method versions, missing reasons and exact associations | Independent source states and snapshot identity; no cross-source or cross-SPW borrowing |
@@ -38,7 +40,11 @@ The [region contract](mosaic_s_region_position.md) owns geometry, boundary handl
 TP scope and result semantics. [Discovery](mosaic_candidate_discovery.md) retains
 query completeness and candidate identity. Explicit reconstruction remains available
 for research replay. Fixed-target Archive Mosaic execution is also available in
-the browser; Queue Mosaic remains unsupported.
+the browser. Queue Mosaic uses independent, snapshot-bound Custom, Rectangle and
+Single Field evaluators; it does not borrow Archive `s_region` or combine
+scientific criteria across candidates or sources. See
+[unified browser assessment](unified_browser_assessment.md),
+[Custom science](queue_custom_science.md) and [Rectangle scope](queue_rectangle_grid.md).
 
 ## Browser and report capabilities
 
@@ -61,7 +67,9 @@ the browser; Queue Mosaic remains unsupported.
 - The [single-pointing explorer](ui_report_browser.md#single-pointing-report-explorer)
   links spatial and frequency panels to the same saved comparison. It draws
   recorded position/beam evidence and LINE intervals or CONTINUUM frequency
-  markers. It does not query sources or recompute scientific decisions.
+  markers. Unified Queue geometry matches are displayed with their saved,
+  model-conditional coverage evidence. It does not query sources or recompute
+  scientific decisions.
 - [Execution progress and storage](ui_offline_assessment.md) use process-local
   progress/index state and temporary disk artifacts. Measured counts describe
   individual stages. Reports have expiry, count and disk budgets; reads and
@@ -69,14 +77,16 @@ the browser; Queue Mosaic remains unsupported.
 
 ## Known limits and scientific interpretation
 
-The form executes supported fixed-target single-pointing and live Archive Mosaic
-requests. Mosaic imports OT pointings and retains backend v2 reports with
-per-context coverage, shared criteria and Member navigation. Member grouping does
-not create a Member-wide scientific verdict. Captured Mosaic replay remains a CLI
-workflow; live browser acceptance should cover source failures as well as matching cases.
-Queue Mosaic and moving-target assessment remain unsupported. Sun is
-selectable for validation/export; the shared backend has a no-source Solar
-exemption, rather than a duplication assessment.
+The form executes supported fixed-target Single Pointing and Mosaic
+assessments, including independently configured Archive and Queue sources for
+Mosaic. Archive uses per-context region evidence; Queue uses model-bound Custom,
+Rectangle and Single Field coverage. Model acceptance is project-scoped, not an
+independent verification of array ownership or a search-wide duplicate verdict.
+Galactic Queue geometry, TP coverage and SPS expansion remain limited or
+unresolved where reported. Archive Mosaic replay remains available through a
+separate captured CLI path; live dual-source and failure-path acceptance remains
+necessary. Moving-target assessment is not implemented. Sun is selectable for
+validation/export and has a no-source exemption, not a duplication assessment.
 
 In the supported fixed SINGLE_POINTING workflow, TP is retained as provenance
 but never supplies a position/beam diameter. Genuine 7m and 12m components remain
@@ -93,7 +103,8 @@ scope and completed-empty retrieval are not “no duplication”. AUTO is bounde
 no search-wide absence claim is made. Display and plot limits do not reduce
 retained-context evaluation.
 
-Reviewed genuine proposal cases remain **0** in the recorded acceptance evidence.
+The recorded acceptance register still lists **0 independently reviewed genuine
+proposal cases**. This documentation sync does not establish a newer review count.
 Public-target self-retrieval and engineering examples do not supply independent
 scientific labels. Queue freshness, source availability and runtime depend on
 the configured data and service conditions.

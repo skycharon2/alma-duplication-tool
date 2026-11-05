@@ -1,10 +1,12 @@
 # Queue Mosaic position backend: explicit array coverage
 
-This second increment adds `assess_queue_mosaic_position` and an offline CLI.
-It consumes the [reconstruction report](queue_mosaic_reconstruction.md), a fixed
-ICRS proposed pointing list, and explicit per-array coverage bindings. It is not
-yet connected to the shared evaluator or browser. It does not emit a complete
-duplication verdict.
+The standalone `assess_queue_mosaic_position` interface and offline CLI
+consume a [reconstruction report](queue_mosaic_reconstruction.md), a fixed ICRS
+proposed pointing list and explicit per-array coverage bindings. They remain
+position-only and do not emit a complete duplication verdict. Current Queue
+Custom, Rectangle and Single Field scientific adapters reuse the position kernel
+under distinct coverage models and publish bounded browser reports; see
+[unified browser assessment](unified_browser_assessment.md).
 
 ## Run
 
@@ -82,13 +84,15 @@ criteria before aggregation. Computation is capped at one million point pairs.
 
 ## Remaining integration
 
-Diagnostic CSV centres are not automatically promoted to verified coverage.
-Custom point ownership and OT offset parity require supporting evidence;
-Rectangle grid anchoring, PA sign and sampling, and the independently generated
-ACA grid remain unresolved. Verified absolute OT exports can supply bindings
-for either geometry without guessing those grids. The [Custom OT binding adapter](queue_mosaic_binding.md) now produces these
-bindings from CSV and a source-bound absolute OT export. One controlled seven-point offset case has passed native OT coordinate parity.
-Broader geometry validation and complete scientific branch integration remain pending.
+The original standalone integration notes are superseded by the separate
+Custom/Rectangle/Single Field scientific adapters. Diagnostic CSV centres are
+still not independent evidence of executed array-specific pointings: Custom
+shares centres under a project-accepted CSV model, and supported ICRS Rectangle
+grids use a project-accepted reconstruction model. Unresolved geometry and array
+binding remain UNKNOWN. Broader OT parity, TP, Galactic coordinates and SPS
+expansion remain outside the implemented scientific scope. The
+[Custom OT binding adapter](queue_mosaic_binding.md) retains its independent
+research and validation role.
 
 Tests use synthetic bindings over the reduced Queue fixture. They establish
 engineering behavior, not OT geometry parity or scientific acceptance of an
