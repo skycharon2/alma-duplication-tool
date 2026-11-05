@@ -233,6 +233,16 @@ def create_app(config=None):
         ))
         return render_template('run_unavailable.html', title=title, explanation=explanation), 404
 
+    def saved_observation_settings(report_id):
+        lease = runs.open_download(report_id, 'request')
+        if lease is None:
+            return None
+        try:
+            submitted = json.load(lease.stream)
+        finally:
+            lease.close()
+        return submitted.get('request', {})
+
     @app.get("/runs/<report_id>/queue")
     def run_queue_view(report_id):
         page, view = page_selection(allow_mosaic_views=True)
@@ -242,6 +252,10 @@ def create_app(config=None):
             abort(404)
         if data is None:
             return unavailable_run(report_id)
+        if data['result_view'] == 'matching':
+            data['observation_settings'] = saved_observation_settings(report_id)
+            if data['observation_settings'] is None:
+                return unavailable_run(report_id)
         return render_report(data, report_id)
 
     @app.get("/runs/<report_id>")
@@ -253,14 +267,9 @@ def create_app(config=None):
             abort(404)
         if data is None:
             return unavailable_run(report_id)
-        lease = runs.open_download(report_id, 'request')
-        if lease is None:
+        data['observation_settings'] = saved_observation_settings(report_id)
+        if data['observation_settings'] is None:
             return unavailable_run(report_id)
-        try:
-            submitted = json.load(lease.stream)
-        finally:
-            lease.close()
-        data['observation_settings'] = submitted.get('request', {})
         if data.get('document', {}).get('queue_geometry_assessment'):
             queue_number = request.args.get('queue_page', '1')
             if not queue_number.isdecimal() or len(queue_number) > 8 or int(queue_number) < 1:
@@ -292,6 +301,8 @@ def create_app(config=None):
                     sections.append(dict(source=source, data=None, report_id=sibling_id))
                     continue
                 sections.append(dict(source=source, data=sibling, report_id=sibling_id))
+            if f"{purpose} · ARCHIVE" in data["failed_branches"]:
+                sections.append(dict(source="ARCHIVE", data=None))
             return render_template("combined_mosaic_report.html", sections=sections,
                 observation_settings=data['observation_settings'],
                 purpose=purpose, purpose_tabs=tabs, failed_branches=data["failed_branches"],

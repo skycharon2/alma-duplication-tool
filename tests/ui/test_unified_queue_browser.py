@@ -44,6 +44,9 @@ def test_mixed_queue_and_both_intents(tmp_path, monkeypatch, geometry):
                 report = report['queue_geometry_assessment']
                 expected = {'CUSTOM', 'RECTANGLE'}
             else:
+                from bs4 import BeautifulSoup
+                summary = BeautifulSoup(client.get(url).data, 'html.parser').select_one('.matching-sources')
+                assert 'Archive' not in summary.get_text(strip=True)
                 expected = {'CUSTOM_POINTING', 'RECTANGULAR_MOSAIC', 'SINGLE_FIELD'}
             assert set(report['geometry_reports']) == expected
             assert all(g['candidates'] for g in report['geometry_reports'].values())
@@ -186,3 +189,39 @@ def test_single_field_label_in_matching_list_and_details():
             assert soup.select_one('.member-project').get_text(strip=True) == 'Queue CSV · Single field'
     finally:
         app.extensions['assessment_runs'].close()
+
+
+def test_queue_matches_pager_preserves_queue_route_and_request_settings():
+    from types import SimpleNamespace
+    from bs4 import BeautifulSoup
+    from tests.ui.test_visualization import serialized, report
+    from tests.ui.test_queue_geometry_visualization import sample
+    from tests.ui.test_runs import config
+
+    document = serialized(report())
+    geometry = sample()['document']
+    candidates = geometry['geometry_reports']['RECTANGLE']['candidates']
+    template = candidates.pop()
+    candidates.extend(dict(template, candidate_id=str(i)) for i in range(21))
+    geometry.update(assessment_status='COMPLETED', inventory={})
+    document['queue_geometry_assessment'] = geometry
+    app = create_app(config())
+    store = app.extensions['assessment_runs']
+    try:
+        run = store.add({'request': {'target_name': 'Known target', 'geometry': 'SINGLE_POINTING'}},
+                        SimpleNamespace(document=document, status='COMPLETED'))
+        client = app.test_client()
+        first = client.get(f'/runs/{run}/queue')
+        assert first.status_code == 200
+        page = BeautifulSoup(first.data, 'html.parser')
+        assert page.select_one('#target-observation-name').get_text(strip=True) == 'Known target'
+        next_url = page.select_one('nav[aria-label="QUEUE result pages"] a')['href']
+        second = client.get(next_url)
+        assert second.status_code == 200
+        page = BeautifulSoup(second.data, 'html.parser')
+        assert page.select_one('#queue-20')
+        assert page.select_one('#target-observation-name').get_text(strip=True) == 'Known target'
+        previous_url = page.select_one('nav[aria-label="QUEUE result pages"] a')['href']
+        assert BeautifulSoup(client.get(previous_url).data, 'html.parser').select_one('#queue-0')
+    finally:
+        store.close()

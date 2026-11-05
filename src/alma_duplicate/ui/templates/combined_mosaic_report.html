@@ -20,7 +20,7 @@
 <p class="matching-sources">
 {% if totals.archive_complete %}{{ totals.members }} matching Archive Member{{ '' if totals.members == 1 else 's' }}.
 {% elif totals.members %}Archive assessment incomplete; {{ totals.members }} matching Archive Member{{ '' if totals.members == 1 else 's' }} in retained results.
-{% else %}Archive results unavailable or incomplete.{% endif %}
+{% elif 'ARCHIVE' in sections|map(attribute='source') %}Archive results unavailable or incomplete.{% endif %}
 {% if totals.queue_available %}{{ totals.queue }} matching Queue candidate configurations.{% else %}Queue results unavailable or not selected.{% endif %}
 </p>
 <p>Only the listed comparisons meet the conditions; this is not a verdict on the entire Member OUS.</p>
@@ -38,7 +38,8 @@
 {% for section in sections if section.data %}{% set d = section.data %}
 {% if d.mosaic %}{% with member_groups=d.member_groups, result_view=d.result_view %}{% from '_mosaic_matching.html' import details with context %}{{ details() }}{% endwith %}
 {% elif d.unified_queue %}{{ queue_details(queue_geometry_candidates(d.document)) }}{% endif %}
-<nav aria-label="{{ section.source }} result pages"><span>{{ section.source }} · Page {{ d.page }} of {{ d.pages }}</span>{% if d.page > 1 %}<a href="{{ url_for('run_view', report_id=section.report_id, page=d.page-1) }}">Previous</a>{% endif %}{% if d.page < d.pages %}<a href="{{ url_for('run_view', report_id=section.report_id, page=d.page+1) }}">Next</a>{% endif %}</nav>
+{% set page_endpoint = 'run_queue_view' if request.endpoint == 'run_queue_view' else 'run_view' %}
+<nav aria-label="{{ section.source }} result pages"><span>{{ section.source }} · Page {{ d.page }} of {{ d.pages }}</span>{% if d.page > 1 %}<a href="{{ url_for(page_endpoint, report_id=section.report_id, page=d.page-1) }}">Previous</a>{% endif %}{% if d.page < d.pages %}<a href="{{ url_for(page_endpoint, report_id=section.report_id, page=d.page+1) }}">Next</a>{% endif %}</nav>
 {% endfor %}</section>
 <details id="evidence"><summary>Information to review</summary>{% for section in sections if section.data %}<p>{{ section.source }}: <a href="{{ url_for('run_queue_view' if section.data.unified_queue else 'run_view', report_id=section.report_id, view='review') }}">Unresolved comparisons</a> · <a href="{{ url_for('run_queue_view' if section.data.unified_queue else 'run_view', report_id=section.report_id, view='not_met') }}">Criteria not met</a></p>{% endfor %}</details>
 </div>
