@@ -70,6 +70,8 @@ def test_mosaic_keeps_queue_when_archive_not_configured(tmp_path):
         assert report['geometry_reports']['CUSTOM_POINTING']['candidates']
         page = client.get(response.location).text
         assert 'Incomplete assessment' in page and 'Continuum · ARCHIVE' in page
+        assert 'Archive results unavailable or incomplete.' in page
+        assert '0 matching Archive Members' not in page
     finally:
         app.extensions['assessment_runs'].close()
 

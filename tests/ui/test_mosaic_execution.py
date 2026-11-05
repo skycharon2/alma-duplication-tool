@@ -204,3 +204,22 @@ def test_mosaic_both_sources_share_page_with_purpose_navigation(browser, intents
         assert client.get(url + "/download/request").json["search_options"]["sources"] == [source]
         assert client.get(url + "/download/report").status_code == 200
     assert len(calls) == len(intents)
+
+
+@pytest.mark.parametrize('discovery_status, expected', [
+    ('COMPLETED', '0 matching Archive Members.'),
+    ('INCOMPLETE', 'Archive results unavailable or incomplete.'),
+])
+def test_combined_mosaic_distinguishes_empty_and_incomplete_archive(browser, monkeypatch, discovery_status, expected):
+    from bs4 import BeautifulSoup
+    from alma_duplicate import mosaic_backend
+
+    client, _ = browser
+    discovery = json.loads((ROOT / 'selection/discovery.json').read_text())
+    discovery.update(status=discovery_status, candidates=[])
+    monkeypatch.setattr(mosaic_backend, 'discover_candidates', lambda *args, **kwargs: discovery)
+    data = form() | dict(sources=['ARCHIVE', 'QUEUE'], mosaic_upload_token=upload(client), action='assess')
+    response = client.post('/proposed/mosaic', data=data)
+    assert response.status_code == 303
+    summary = BeautifulSoup(client.get(response.location).text, 'html.parser').select_one('.matching-sources')
+    assert expected in summary.get_text(' ', strip=True)

@@ -3,13 +3,26 @@
 {% block extra_head %}<link rel="stylesheet" href="{{ url_for('static', filename='mosaic-report.css') }}">{% endblock %}
 {% block content %}
 {% from '_queue_matching.html' import rows as queue_rows, details as queue_details with context %}
-{% set totals = namespace(members=0, queue=0, queue_available=false) %}
-{% for section in sections if section.data %}{% if section.data.mosaic %}{% set totals.members = totals.members + section.data.matching_member_count %}{% elif section.data.unified_queue %}{% set totals.queue = totals.queue + section.data.document.candidate_counts.matching %}{% set totals.queue_available = section.data.document.assessment_status == "COMPLETED" %}{% endif %}{% endfor %}
+{% set totals = namespace(members=0, archive_complete=false, queue=0, queue_available=false) %}
+{% for section in sections if section.data %}
+  {% if section.data.mosaic %}
+    {% set totals.archive_complete = section.data.document.assessment_status == "COMPLETED" %}
+    {% set totals.members = totals.members + section.data.matching_member_count %}
+  {% elif section.data.unified_queue %}
+    {% set totals.queue = totals.queue + section.data.document.candidate_counts.matching %}
+    {% set totals.queue_available = section.data.document.assessment_status == "COMPLETED" %}
+  {% endif %}
+{% endfor %}
 <div class="report-page">
 {% if purpose_tabs|length > 1 %}<nav class="report-actions" aria-label="Assessment reports">{% for label in ["Spectral line", "Continuum"] if label in purpose_tabs %}{% set id = purpose_tabs[label] %}<a class="button" href="{{ url_for('run_view', report_id=id) }}"{% if label == purpose %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}</nav>{% endif %}
 <div class="page-heading report-heading"><div><h1>{{ purpose }} · Observation comparison</h1>{% from '_observation_card.html' import card %}{{ card(observation_settings.target_name or 'Unnamed target', observation_settings, url_for('run_download', report_id=report_id, kind='request')) }}</div><nav class="report-actions"><a class="button" href="{{ url_for('proposed') }}">Enter another observation</a><a class="button" href="{{ url_for('report_index') }}">Existing reports</a></nav></div>
 <section class="report-overview"><h2>Results in this search</h2>
-<p class="matching-sources">{{ totals.members }} matching Archive Member{{ '' if totals.members == 1 else 's' }}. {% if totals.queue_available %}{{ totals.queue }} matching Queue candidate configurations.{% else %}Queue results unavailable or not selected.{% endif %}</p>
+<p class="matching-sources">
+{% if totals.archive_complete %}{{ totals.members }} matching Archive Member{{ '' if totals.members == 1 else 's' }}.
+{% elif totals.members %}Archive assessment incomplete; {{ totals.members }} matching Archive Member{{ '' if totals.members == 1 else 's' }} in retained results.
+{% else %}Archive results unavailable or incomplete.{% endif %}
+{% if totals.queue_available %}{{ totals.queue }} matching Queue candidate configurations.{% else %}Queue results unavailable or not selected.{% endif %}
+</p>
 <p>Only the listed comparisons meet the conditions; this is not a verdict on the entire Member OUS.</p>
 <p>Results apply to the retrieved candidates. They do not establish that the entire Archive or Queue is free of duplication.</p>
 </section>
@@ -20,7 +33,7 @@
 {% for section in sections if section.data %}{% set d = section.data %}
 {% if d.mosaic %}{% for group in d.member_groups if group.has_matching_candidate %}<tr><th><a href="#{{ group.anchor }}">{% for entry in group.entries if entry.summary.bucket == 'MATCH' %}{{ entry.candidate.source_name }}{{ ', ' if not loop.last }}{% endfor %} · {{ group.projects|join(', ') }}</a></th><td>Archive<small>{{ group.member_ous_uid }}</small></td><td>{% set n = namespace(count=0) %}{% for entry in group.entries %}{% for context in entry.contexts if context.matching %}{% set n.count = n.count + 1 %}{% endfor %}{% endfor %}{{ n.count }}</td></tr>{% endfor %}
 {% elif d.unified_queue %}{{ queue_rows(queue_geometry_candidates(d.document)) }}{% endif %}{% endfor %}
-</tbody></table></div>{% if not totals.members and not totals.queue %}<p>No matching candidates in the recorded results.</p>{% endif %}</section>
+</tbody></table></div>{% if (totals.archive_complete or totals.queue_available) and not totals.members and not totals.queue %}<p>No matching candidates in the recorded results.</p>{% endif %}</section>
 <section id="comparisons"><h2>Matching comparisons</h2>
 {% for section in sections if section.data %}{% set d = section.data %}
 {% if d.mosaic %}{% with member_groups=d.member_groups, result_view=d.result_view %}{% from '_mosaic_matching.html' import details with context %}{{ details() }}{% endwith %}
