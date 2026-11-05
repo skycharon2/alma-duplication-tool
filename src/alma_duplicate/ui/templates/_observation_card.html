@@ -1,0 +1,52 @@
+{% macro row(label, value, unit='') %}
+{% if value is defined and value is not none and value != '' %}
+<div><dt>{{ label }}</dt><dd>{{ value }}{% if unit %} {{ unit }}{% endif %}</dd></div>
+{% endif %}
+{% endmacro %}
+
+{% macro quantity(label, q) %}
+{% if q is mapping %}{{ row(label, q.value, (q.unit or '') ~ (' (' ~ q.kind ~ ')' if q.kind in ['SKY','REST'] else '')) }}{% endif %}
+{% endmacro %}
+
+{% macro card(target, settings, download=none) %}
+{% if settings %}
+<button class="target-settings-trigger" type="button" popovertarget="target-observation">{{ target or 'Unnamed target' }} · Observation settings</button>
+<section popover="auto" id="target-observation" class="target-popover" aria-labelledby="target-observation-name">
+<header><div><small>Proposed observation</small><h2 id="target-observation-name">{{ target or 'Unnamed target' }}</h2></div>
+<button type="button" popovertarget="target-observation" popovertargetaction="hide" aria-label="Close observation settings">×</button></header>
+<p class="observation-mode">{% if settings.position and settings.position.frame %}{{ settings.position.frame }} · {% endif %}{{ {'SINGLE_POINTING':'Single pointing','MOSAIC':'Mosaic'}.get(settings.geometry,'') }}{% for intent in settings.intents %} · {{ {'CONTINUUM':'Continuum','LINE':'Spectral line'}.get(intent,intent) }}{% endfor %}</p>
+<dl class="observation-coordinates">
+{% set pos = settings.position or {} %}
+{{ row('RA', pos.ra, '°' if pos.ra_format == 'DEG' else pos.ra_format) }}
+{{ row('Dec', pos.dec, '°' if pos.dec_format == 'DEG' else pos.dec_format) }}
+</dl><dl>
+{{ row('Source redshift z', settings.source_redshift) }}
+{{ quantity('Angular resolution', settings.angular_resolution) }}
+</dl>
+{% if 'CONTINUUM' in (settings.intents or []) %}
+<h3>Continuum requirements</h3><dl>
+{{ quantity('Representative frequency', settings.representative_frequency) }}
+{% set cont = settings.continuum_requirement or {} %}
+{{ row('Redshift z', cont.source_redshift) }}
+{{ quantity('Aggregate RMS', cont.rms) }}
+{% for sensitivity in settings.sensitivities if sensitivity.purpose == 'CONTINUUM' and not cont.rms %}
+{{ quantity('Aggregate RMS', sensitivity.rms) }}
+{% endfor %}</dl>
+{% endif %}
+{% if 'LINE' in (settings.intents or []) %}
+{% for line in settings.line_requirements or settings.spectral_windows %}
+<h3>Spectral line{% if loop.length > 1 %} {{ loop.index }}{% endif %}</h3><dl>
+{{ quantity('Window centre', line.window_center or line.center) }}
+{{ row('Redshift z', line.source_redshift) }}
+{{ quantity('Spectral resolution', line.spectral_resolution) }}
+{{ quantity('Planned RMS', line.rms) }}
+{% for sensitivity in settings.sensitivities if sensitivity.purpose == 'LINE' and line.window_id in sensitivity.window_ids %}
+{{ quantity('Spectral resolution', sensitivity.smoothing_resolution) }}
+{{ quantity('Planned RMS', sensitivity.rms) }}
+{% endfor %}</dl>
+{% endfor %}
+{% endif %}
+{% if download %}<a href="{{ download }}">Download Mosaic pointings and input</a>{% endif %}
+</section>
+{% else %}<p>{{ target }}</p>{% endif %}
+{% endmacro %}

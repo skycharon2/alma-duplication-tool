@@ -45,7 +45,7 @@
 {% set queue_entries = queue_geometry_candidates(geometry_report) %}
 {% set geometry_counts = geometry_report.candidate_counts or {} %}
 <div class="report-page">
-<div class="page-heading report-heading"><div><h1>Observation comparison</h1><p>{{ summary.target }}</p></div>
+<div class="page-heading report-heading"><div><h1>Observation comparison</h1>{% from '_observation_card.html' import card %}{{ card(summary.target, observation_settings or (document.request or {}).get('raw') or (document.request or {}).get('normalized') or {}) }}</div>
 <nav class="report-actions" aria-label="Report actions">{% if document.report_kind != 'SOLAR_EXEMPTION' %}<a class="button" href="{{ visualization_url }}">Explore this report</a>{% endif %}<a class="button" href="{{ url_for('proposed') }}">Enter another observation</a><a class="button" href="{{ url_for('report_index') }}">Existing reports</a></nav></div>
 {% set selected_queue = document.get('sources', {}).get('QUEUE', {}).get('managed_snapshot') %}
 <section class="report-overview" aria-label="Result summary"><h2>Results in this search</h2>
