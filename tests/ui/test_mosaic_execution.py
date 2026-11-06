@@ -189,6 +189,14 @@ def test_mosaic_both_sources_share_page_with_purpose_navigation(browser, intents
         from bs4 import BeautifulSoup
         soup = BeautifulSoup(page, "html.parser")
         assert len(soup.find_all("html")) == 1
+        assert soup.h1.get_text(strip=True) == 'Observation comparison'
+        assert [node.get_text(strip=True) for node in soup.select('.report-page h2')
+                if node.get_text(strip=True) in ('Results in this search', 'Matching candidates', 'Matching comparisons')] == [
+                    'Results in this search', 'Matching candidates', 'Matching comparisons']
+        assert soup.find('summary', string='Search scope and limitations')
+        for table in soup.select('table.comparison-table:has(tr[data-criterion])'):
+            assert [th.get_text(strip=True) for th in table.select('thead > tr > th')[:4]] == [
+                'Criterion', 'Your requirement', 'Candidate comparison', 'Result and explanation']
         assert page.count('Results in this search') == 1
         assert page.count('<h2>Matching candidates</h2>') == 1
         assert 'matching Queue candidate configurations' in page

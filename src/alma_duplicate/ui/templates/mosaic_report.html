@@ -4,23 +4,7 @@
 
 {% macro branch_status(value) %}<span class="report-status" data-status="{{ value or 'INDETERMINATE' }}">{{ status_labels.get(value, 'Needs review') }}</span>{% endmacro %}
 {% macro candidate_bucket(value) %}<span class="report-status" data-status="{{ {'MATCH': 'CRITERIA_MET', 'NOT_MET': 'CRITERIA_NOT_MET'}.get(value, 'INDETERMINATE') }}">{{ {'MATCH': 'At least one matching branch', 'NOT_MET': 'Recorded branches do not meet conditions', 'NEEDS_REVIEW': 'Scientific review required', 'UNAVAILABLE': 'Candidate evidence unavailable'}.get(value, 'Needs review') }}</span>{% endmacro %}
-{% macro quantity(value) %}{% if value and value.value is not none %}{{ display_number(value.value) }} {{ value.unit or '' }}{% else %}<span class="field-note">Not recorded</span>{% endif %}{% endmacro %}
-{% macro criteria_table(records, heading, coverage=none) %}
-{% if records %}<div class="report-table-scroll mosaic-criteria" role="region" aria-label="{{ heading }}" tabindex="0"><table class="comparison-table">
-<caption>{{ heading }}</caption><thead><tr><th scope="col">Criterion</th><th scope="col">Proposed</th><th scope="col">Archive comparison</th><th scope="col">Recorded result and explanation</th></tr></thead>
-<tbody>{% for record in records %}{% set item = criterion_view(record) %}<tr data-criterion="{{ record.criterion_id }}">
-<th scope="row">{{ item.label }}<small>{{ record.criterion_id }}</small></th>
-{% if record.criterion_id == 'POS-MOSAIC' %}
-<td>{% if coverage and coverage.pointing_count is not none %}{{ coverage.pointing_count }} proposed pointings{% else %}Pointing count unavailable{% endif %}</td>
-<td>{% if coverage %}{{ coverage.inside_count if coverage.inside_count is not none else 'Unknown' }} / {{ coverage.pointing_count if coverage.pointing_count is not none else 'Unknown' }} inside Archive s_region{% else %}Archive coverage evidence unavailable{% endif %}</td>
-{% else %}<td>{{ quantity(item.proposed) }}</td><td>{{ quantity(item.candidate) }}</td>{% endif %}
-<td><span class="report-status" data-status="{{ 'INDETERMINATE' if record.eligible_for_formal_aggregation is sameas false else (record.outcome or 'INDETERMINATE') }}">{{ criterion_status(record) }}</span>
-<p class="criterion-explanation">{{ criterion_explanation(record) }}</p>
-{% if record.reasons or record.issues %}<details><summary>Recorded reasons and evidence issues</summary>
-{% if record.reasons %}<p>{{ record.reasons|join(', ') }}</p>{% endif %}
-{% if record.issues %}<ul>{% for issue in record.issues %}<li>{{ issue.code or 'Unspecified issue' }}{% if issue.message %}: {{ issue.message }}{% endif %}</li>{% endfor %}</ul>{% endif %}
-</details>{% endif %}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
-{% endmacro %}
+{% from '_mosaic_comparison.html' import comparison as criteria_table with context %}
 {% macro coverage_view(coverage) %}
 {% if coverage %}<section class="mosaic-coverage" aria-label="Mosaic pointing coverage">
 <h5>Mosaic spatial coverage</h5>
@@ -92,13 +76,13 @@
 <p class="execution-identity">Execution (ASDM): {{ child.execution or 'Not unambiguously recorded; context kept separate' }}</p>
 {% for context_item in child.contexts %}{% set context = context_item.record %}
 <details class="candidate-comparison mosaic-context" id="mosaic-context-{{ index }}-{{ context_item.index }}"{% if context_item.matching %} open{% endif %}>
-<summary>Context {{ context_item.index + 1 }}{% if context_item.spws %} · Archive SPW {{ context_item.spws|join(', ') }}{% endif %} · {% for branch in context.branches %}{{ branch.branch }}: {{ status_labels.get(branch.status, 'Needs review') }}{% if not loop.last %}; {% endif %}{% else %}No branch result{% endfor %}</summary>
+<summary>View parameter comparison · Context {{ context_item.index + 1 }}{% if context_item.spws %} · Archive SPW {{ context_item.spws|join(', ') }}{% endif %} · {% for branch in context.branches %}{{ branch.branch }}: {{ status_labels.get(branch.status, 'Needs review') }}{% if not loop.last %}; {% endif %}{% else %}No branch result{% endfor %}</summary>
 <div class="mosaic-context-body"><p class="mosaic-context-id">Recorded context ID: {{ context.context_id }}</p>
 {% if context_item.asdm_uids %}<p class="mosaic-context-id">Recorded context ASDM association: {{ context_item.asdm_uids|join(', ') }}</p>{% endif %}
 <p>{% for branch in context.branches %}{{ branch.branch }}: {{ branch_status(branch.status) }} {% else %}<span class="report-status" data-status="INDETERMINATE">No recorded branch</span>{% endfor %}</p>
-{{ coverage_view(context.coverage) }}
 {{ criteria_table(context.criteria, 'Common comparison conditions', context.coverage) }}
 {{ criteria_table(context.request_criteria, 'Proposed setup qualification recorded in this context') }}
+{{ coverage_view(context.coverage) }}
 {% if context.line_pairs %}<section aria-label="LINE spectral-window comparisons"><h5>Spectral line comparisons · {{ context.line_pairs|length }} recorded pairs</h5>
 <p class="mosaic-status-note">A matching LINE branch means at least one submitted requirement meets these conditions, not necessarily all of them. Each pair below retains its own result.</p>
 <p class="field-note">The first 10 matching and first 10 other pairs are shown, with matches first. All pairs remain in the report download.</p>

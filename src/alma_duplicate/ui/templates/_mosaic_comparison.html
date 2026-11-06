@@ -1,0 +1,42 @@
+{% from '_calculation.html' import calculation with context %}
+{% from '_report_comparison.html' import quantity with context %}
+
+{% macro comparison(records, caption, coverage=none, source='Archive') %}
+{% if records %}
+<div class="report-table-scroll" role="region" aria-label="{{ caption }}" tabindex="0">
+<table class="comparison-table">
+<caption>{{ caption }}</caption>
+<thead><tr><th scope="col">Criterion</th><th scope="col">Your requirement</th><th scope="col">Candidate comparison</th><th scope="col">Result and explanation</th></tr></thead>
+<tbody>
+{% for record in records %}
+{% set item = criterion_view(record) %}
+<tr data-criterion="{{ record.criterion_id }}">
+<th scope="row">{{ item.label }}<small>{{ record.criterion_id }}</small></th>
+{% if record.criterion_id == 'POS-MOSAIC' %}
+{% set counts = coverage.counts if coverage and source == 'Queue' else none %}
+{% set total = coverage.points|length if counts and coverage.points is defined else coverage.pointing_count if coverage else none %}
+<td>More than half of the proposed pointings must be inside.<small>{% if total is number %}{{ total }} proposed pointings{% else %}Pointing count unavailable{% endif %}</small></td>
+<td>{% if counts %}
+{{ counts.INSIDE|default('Unknown') }}/{{ total if total is number else 'Unknown' }} inside the candidate beam union
+<small>Outside: {{ counts.OUTSIDE|default('Unknown') }} · Boundary: {{ counts.BOUNDARY|default('Unknown') }} · Unknown: {{ counts.UNKNOWN|default('Unknown') }}</small>
+{% if coverage.radius_arcsec is number %}<small>Half-power radius: {{ display_number(coverage.radius_arcsec) }} arcsec</small>{% endif %}
+{% elif coverage and source == 'Archive' %}{{ coverage.inside_count if coverage.inside_count is number else 'Unknown' }} / {{ total if total is number else 'Unknown' }} inside Archive s_region
+{% else %}Coverage evidence unavailable{% endif %}</td>
+{% elif record.criterion_id == 'CONT-SETUP' %}
+<td>At least two windows wider than 1.8 GHz each.</td><td>Proposed setup qualification</td>
+{% else %}
+<td>{{ quantity(item.proposed) }}</td><td>{{ quantity(item.candidate) }}</td>
+{% endif %}
+<td><span class="report-status" data-status="{{ 'INDETERMINATE' if record.eligible_for_formal_aggregation is sameas false else (record.outcome or 'INDETERMINATE') }}">{{ criterion_status(record) }}</span>
+<p class="criterion-explanation">{{ {'SATISFIED': 'Coverage exceeds half.', 'NOT_SATISFIED': 'Coverage does not exceed half.'}.get(record.outcome, 'Coverage is unresolved.') if source == 'Queue' and record.criterion_id == 'POS-MOSAIC' else criterion_explanation(record) }}</p>
+{% if record.reasons or record.issues %}
+<details><summary>Recorded reasons and evidence issues</summary>
+{% if record.reasons %}<p>{{ record.reasons|join(', ') }}</p>{% endif %}
+{% for issue in record.issues %}<p>{{ issue.code }}{% if issue.message %} · {{ issue.message }}{% endif %}</p>{% endfor %}
+</details>{% endif %}</td>
+</tr>
+{% if calculation_view is defined %}<tr class="calculation-row"><td colspan="4">{{ calculation(record) }}</td></tr>{% endif %}
+{% endfor %}
+</tbody></table></div>
+{% endif %}
+{% endmacro %}
