@@ -30,7 +30,7 @@
 <p>Results apply to the retrieved candidates. They do not establish that the entire Archive or Queue is free of duplication.</p>
 </section>
 <details id="sources" class="source-coverage"><summary>Source coverage</summary><div class="source-states">
-{% for section in sections %}<div><h3>{{ section.source }}</h3>{% if section.data %}<p>Assessment: {{ section.data.document.assessment_status }}</p>{% if section.data.document.assessment_status != "COMPLETED" %}<p role="alert">Source unavailable or incomplete; matching counts cover only retained results.</p>{% endif %}<details><summary aria-label="{{ section.source }} retrieval details">?</summary><a href="{{ url_for('run_download', report_id=section.report_id, kind='report') }}">Download full report and provenance</a></details>{% else %}<p>Report unavailable; results are incomplete.</p>{% endif %}</div>{% endfor %}
+{% for section in sections %}<div><h3>{{ section.source }}</h3>{% if section.data %}<p>Assessment: {{ section.data.document.assessment_status }}</p>{% if section.data.document.assessment_status != "COMPLETED" %}<p role="alert">Source unavailable or incomplete; matching counts cover only retained results.</p>{% endif %}<details{% if mosaic %} class="source-retrieval-help"{% endif %}><summary aria-label="{{ section.source }} retrieval details" title="{{ section.source }} retrieval details">?</summary><a href="{{ url_for('run_download', report_id=section.report_id, kind='report') }}">Download full report and provenance</a></details>{% else %}<p>Report unavailable; results are incomplete.</p>{% endif %}</div>{% endfor %}
 </div></details>
 {% if mosaic %}<details class="search-scope-details"><summary>Search scope and limitations</summary>
 {% for section in sections if section.data %}

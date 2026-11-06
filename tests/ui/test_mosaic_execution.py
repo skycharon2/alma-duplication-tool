@@ -194,6 +194,12 @@ def test_mosaic_both_sources_share_page_with_purpose_navigation(browser, intents
                 if node.get_text(strip=True) in ('Results in this search', 'Matching candidates', 'Matching comparisons')] == [
                     'Results in this search', 'Matching candidates', 'Matching comparisons']
         assert soup.find('summary', string='Search scope and limitations')
+        assert len(soup.select('#sources .source-retrieval-help > summary[title]')) == 2
+        if label.startswith('Spectral line'):
+            preparation = soup.select_one('.line-pair details.line-preparation')
+            assert preparation and not preparation.has_attr('open')
+            assert preparation.select_one('dl.calculation-facts > div > dt')
+            assert 'Recorded pair status:' not in page
         for table in soup.select('table.comparison-table:has(tr[data-criterion])'):
             assert [th.get_text(strip=True) for th in table.select('thead > tr > th')[:4]] == [
                 'Criterion', 'Your requirement', 'Candidate comparison', 'Result and explanation']
