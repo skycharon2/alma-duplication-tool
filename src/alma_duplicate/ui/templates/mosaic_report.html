@@ -83,14 +83,16 @@
 {{ criteria_table(context.criteria, 'Common comparison conditions', context.coverage) }}
 {{ criteria_table(context.request_criteria, 'Proposed setup qualification recorded in this context') }}
 {{ coverage_view(context.coverage) }}
-{% if context.line_pairs %}<section aria-label="LINE spectral-window comparisons"><h5>Spectral line comparisons · {{ context.line_pairs|length }} recorded pairs</h5>
+{% if context.line_pairs %}<section aria-label="LINE spectral-window comparisons"><h5>Spectral line comparisons · {{ context.line_pairs|length }} recorded pair{{ '' if context.line_pairs|length == 1 else 's' }}</h5>
 <p class="mosaic-status-note">A matching LINE branch means at least one submitted requirement meets these conditions, not necessarily all of them. Each pair below retains its own result.</p>
 <p class="field-note">The first 10 matching and first 10 other pairs are shown, with matches first. All pairs remain in the report download.</p>
 {% for presentation in context_item.line_presentations[:20] %}{% set pair = presentation.pair %}<details class="line-pair"{% if loop.first and pair.status == 'CRITERIA_MET' %} open{% endif %}>
 <summary>{{ presentation.label }} · {{ pair_title(pair) }} · {{ status_labels.get(pair.status, 'Needs review') }}</summary>
-{% if presentation.fields %}<dl>{% for label, value in presentation.fields %}<dt>{{ label }}</dt><dd>{{ value }}</dd>{% endfor %}</dl>{% endif %}
-<p>Recorded pair status: {{ branch_status(pair.status) }}</p>
-{{ criteria_table(pair.criteria, 'Criteria for this spectral-window pair', context.coverage) }}
+{% if presentation.fields %}
+<details class="line-preparation"><summary>Input and frequency preparation for this line</summary>
+<dl class="calculation-facts">{% for label, value in presentation.fields %}<div><dt>{{ label }}</dt><dd>{{ value }}</dd></div>{% endfor %}</dl>
+</details>{% endif %}
+{{ criteria_table(pair.criteria, 'Criteria for this LINE pair', context.coverage) }}
 </details>{% endfor %}
 </section>{% endif %}
 </div></details>{% endfor %}
