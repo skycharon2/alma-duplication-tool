@@ -2,7 +2,9 @@
 {% block title %}{{ purpose }} assessment · ALMA Duplication Assessment{% endblock %}
 {% block extra_head %}<link rel="stylesheet" href="{{ url_for('static', filename='mosaic-report.css') }}">{% endblock %}
 {% block content %}
-{% from '_queue_matching.html' import rows as queue_rows, details as queue_details with context %}
+{% set mosaic = observation_settings.geometry == 'MOSAIC' or sections|selectattr('data')|selectattr('data.mosaic')|list %}
+{% from '_queue_matching.html' import rows as queue_rows with context %}
+{% from ('_mosaic_queue_matching.html' if mosaic else '_queue_matching.html') import details as queue_details with context %}
 {% set totals = namespace(members=0, archive_complete=false, queue=0, queue_available=false) %}
 {% for section in sections if section.data %}
   {% if section.data.mosaic %}
@@ -15,7 +17,8 @@
 {% endfor %}
 <div class="report-page">
 {% if purpose_tabs|length > 1 %}<nav class="report-actions" aria-label="Assessment reports">{% for label in ["Spectral line", "Continuum"] if label in purpose_tabs %}{% set id = purpose_tabs[label] %}<a class="button" href="{{ url_for('run_view', report_id=id) }}"{% if label == purpose %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}</nav>{% endif %}
-<div class="page-heading report-heading"><div><h1>{{ purpose }} · Observation comparison</h1>{% from '_observation_card.html' import card %}{{ card(observation_settings.target_name or 'Unnamed target', observation_settings, url_for('run_download', report_id=report_id, kind='request')) }}</div><nav class="report-actions"><a class="button" href="{{ url_for('proposed') }}">Enter another observation</a><a class="button" href="{{ url_for('report_index') }}">Existing reports</a></nav></div>
+<div class="page-heading report-heading"><div><h1>{% if mosaic %}Observation comparison{% else %}{{ purpose }} · Observation comparison{% endif %}</h1>
+{% if mosaic %}<p class="candidate-caption">Proposed observation · Mosaic{% if purpose in ['Continuum', 'Spectral line'] %} · {{ purpose }}{% elif observation_settings.intents %} · {{ observation_settings.intents|join(' / ') }}{% endif %}</p>{% endif %}{% from '_observation_card.html' import card %}{{ card(observation_settings.target_name or 'Unnamed target', observation_settings, url_for('run_download', report_id=report_id, kind='request')) }}</div><nav class="report-actions"><a class="button" href="{{ url_for('proposed') }}">Enter another observation</a><a class="button" href="{{ url_for('report_index') }}">Existing reports</a></nav></div>
 <section class="report-overview"><h2>Results in this search</h2>
 <p class="matching-sources">
 {% if totals.archive_complete %}{{ totals.members }} matching Archive Member{{ '' if totals.members == 1 else 's' }}.
@@ -29,6 +32,12 @@
 <details id="sources" class="source-coverage"><summary>Source coverage</summary><div class="source-states">
 {% for section in sections %}<div><h3>{{ section.source }}</h3>{% if section.data %}<p>Assessment: {{ section.data.document.assessment_status }}</p>{% if section.data.document.assessment_status != "COMPLETED" %}<p role="alert">Source unavailable or incomplete; matching counts cover only retained results.</p>{% endif %}<details><summary aria-label="{{ section.source }} retrieval details">?</summary><a href="{{ url_for('run_download', report_id=section.report_id, kind='report') }}">Download full report and provenance</a></details>{% else %}<p>Report unavailable; results are incomplete.</p>{% endif %}</div>{% endfor %}
 </div></details>
+{% if mosaic %}<details class="search-scope-details"><summary>Search scope and limitations</summary>
+{% for section in sections if section.data %}
+{% if section.data.mosaic %}<p>Archive coverage uses the saved s_region for each candidate context.</p>
+{% elif section.data.unified_queue %}<p>Queue coverage uses each configuration’s recorded pointing geometry and inferred array. Each array has its own comparison.</p>{% endif %}
+{% endfor %}
+<p>Boundary and unknown pointings are shown with their recorded outcomes.</p></details>{% endif %}
 <section id="candidates"><h2>Matching candidates</h2><div class="report-table-scroll"><table class="member-table"><thead><tr><th>Target and project</th><th>Source / Member OUS / Configuration</th><th>Matching comparisons</th></tr></thead><tbody>
 {% for section in sections if section.data %}{% set d = section.data %}
 {% if d.mosaic %}{% for group in d.member_groups if group.has_matching_candidate %}<tr><th><a href="#{{ group.anchor }}">{% for entry in group.entries if entry.summary.bucket == 'MATCH' %}{{ entry.candidate.source_name }}{{ ', ' if not loop.last }}{% endfor %} · {{ group.projects|join(', ') }}</a></th><td>Archive<small>{{ group.member_ous_uid }}</small></td><td>{% set n = namespace(count=0) %}{% for entry in group.entries %}{% for context in entry.contexts if context.matching %}{% set n.count = n.count + 1 %}{% endfor %}{% endfor %}{{ n.count }}</td></tr>{% endfor %}
