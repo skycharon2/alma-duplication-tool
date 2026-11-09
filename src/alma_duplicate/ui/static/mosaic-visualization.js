@@ -38,5 +38,101 @@
       page.setAttribute("aria-pressed", String(active));
     }
   });
+  for (const toggle of root.querySelectorAll("[data-layer]")) {
+    toggle.addEventListener("change", () => {
+      toggle.closest("[data-evidence]").classList.toggle(`hide-${toggle.dataset.layer}`, !toggle.checked);
+    });
+  }
+  for (const label of root.querySelectorAll('[data-select-pair]')) {
+    function selectPair() {
+      const panel=label.closest('[data-evidence]');
+      for(const detail of panel.querySelectorAll('[data-pair]')) detail.open=detail.dataset.pair===label.dataset.selectPair;
+      for(const item of panel.querySelectorAll('[data-select-pair]')) item.setAttribute('aria-pressed',String(item===label));
+    }
+    label.addEventListener('click',selectPair);
+    label.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPair();}});
+  }
+  // Fixed plot bounds: transform data only and recompute tick labels.
+  for (const [index, svg] of [...root.querySelectorAll('#charts svg')].entries()) {
+    const spatial = svg.viewBox.baseVal.width === 490;
+    if (![490, 600].includes(svg.viewBox.baseVal.width)) continue;
+    const NS = 'http://www.w3.org/2000/svg';
+    const box = spatial ? {x:80,y:45,w:330,h:330,cx:245,cy:210} :
+      {x:135,y:35,w:430,h:svg.viewBox.baseVal.height-80,cx:350,cy:0};
+    const toolbar = document.createElement('div');
+    toolbar.className = 'chart-tools mosaic-plot-tools';
+    toolbar.setAttribute('role', 'group');
+    toolbar.setAttribute('aria-label', spatial ? 'Position zoom' : 'Frequency zoom');
+    svg.before(toolbar);
+    const defs = document.createElementNS(NS, 'defs');
+    const clip = document.createElementNS(NS, 'clipPath');
+    clip.id = `mosaic-plot-clip-${index}`;
+    const rect = document.createElementNS(NS, 'rect');
+    for (const key of ['x','y']) rect.setAttribute(key, box[key]);
+    rect.setAttribute('width', box.w); rect.setAttribute('height',box.h);
+    clip.append(rect); defs.append(clip); svg.prepend(defs);
+    const clipped = document.createElementNS(NS, 'g');
+    clipped.setAttribute('clip-path', `url(#${clip.id})`);
+    const layer = document.createElementNS(NS, 'g'); clipped.append(layer);
+    const selector = spatial ? ':scope > g' : ':scope > g, :scope > path, :scope > circle, :scope > .requested-guide, :scope > .axis';
+    for (const element of [...svg.querySelectorAll(selector)]) layer.append(element);
+    svg.append(clipped);
+    const ticks = [...svg.querySelectorAll(':scope > text')].filter(t =>
+      t.textContent.trim() !== '' && Number.isFinite(Number(t.textContent))).map(t => ({
+        node:t, value:Number(t.dataset.value ?? t.textContent), vertical:spatial && Number(t.getAttribute('x'))===72,
+        pixel:Number(t.getAttribute(spatial && Number(t.getAttribute('x'))===72 ? 'y':'x'))-(spatial && Number(t.getAttribute('x'))===72 ? 4:0)
+      }));
+    const slopes = {};
+    for (const vertical of [false,true]) {
+      const group = ticks.filter(t=>t.vertical===vertical);
+      const a=group[0], b=group.find(t=>t.pixel!==a?.pixel);
+      if (a && b) slopes[vertical]=(b.value-a.value)/(b.pixel-a.pixel);
+    }
+    const markers = [...layer.querySelectorAll('path.pointing')].map(node=>({node,d:node.getAttribute('d')}));
+    let k=1, tx=0, ty=0;
+    function draw() {
+      layer.setAttribute('transform', `translate(${box.cx+tx} ${spatial?box.cy+ty:0}) scale(${k} ${spatial?k:1}) translate(${-box.cx} ${spatial?-box.cy:0})`);
+      for (const tick of ticks) {
+        const center=tick.vertical?box.cy:box.cx, shift=tick.vertical?ty:tx;
+        const original=center+(tick.pixel-center-shift)/k;
+        tick.node.textContent=Number((tick.value+(original-tick.pixel)*slopes[tick.vertical]).toPrecision(5)).toString();
+      }
+      for (const marker of markers) {
+        let axis=0;
+        marker.node.setAttribute('d',marker.d.replace(/-?\d+(?:\.\d+)?/g,v=>String(Number(v)/((axis++%2===0||spatial)?k:1))));
+      }
+      for (const label of layer.querySelectorAll('text')) label.style.fontSize=`${12/k}px`;
+      controls.in.disabled=k>=16; controls.out.disabled=k<=.5;
+    }
+    function zoom(factor, point={x:box.cx,y:box.cy}) {
+      const next=Math.max(.5,Math.min(16,k*factor)), ratio=next/k;
+      tx=point.x-box.cx-(point.x-box.cx-tx)*ratio;
+      if(spatial) ty=point.y-box.cy-(point.y-box.cy-ty)*ratio;
+      k=next;draw();
+    }
+    const controls={};
+    for (const [action,label] of [['in','+'],['out','−'],['reset','Reset']]) {
+      const button=document.createElement('button');button.type='button';button.textContent=label;
+      button.setAttribute('aria-label',action==='reset'?'Reset chart zoom':`Zoom ${action}`);
+      button.addEventListener('click',()=>{if(action==='reset'){k=1;tx=ty=0;draw();}else zoom(action==='in'?1.6:1/1.6);});
+      controls[action]=button;toolbar.append(button);
+    }
+    const hint=document.createElement('span');hint.textContent='Drag to pan · Ctrl/⌘ + scroll to zoom';toolbar.append(hint);
+    svg.setAttribute('tabindex','0');svg.classList.add('mosaic-interactive-chart');
+    function point(event) { const p=new DOMPoint(event.clientX,event.clientY);return p.matrixTransform(svg.getScreenCTM().inverse()); }
+    function inside(p){return p.x>=box.x&&p.x<=box.x+box.w&&p.y>=box.y&&p.y<=box.y+box.h;}
+    let drag=null;
+    svg.addEventListener('pointerdown',event=>{const p=point(event);if(event.button!==0||!inside(p))return;drag={p,tx,ty};svg.setPointerCapture(event.pointerId);svg.classList.add('is-panning');});
+    svg.addEventListener('pointermove',event=>{if(!drag)return;const p=point(event);tx=drag.tx+p.x-drag.p.x;if(spatial)ty=drag.ty+p.y-drag.p.y;draw();});
+    function end(event){if(event.type==='pointercancel'&&drag){tx=drag.tx;ty=drag.ty;draw();}drag=null;svg.classList.remove('is-panning');if(svg.hasPointerCapture(event.pointerId))svg.releasePointerCapture(event.pointerId);}
+    svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);
+    svg.addEventListener('wheel',event=>{const p=point(event);if(!(event.ctrlKey||event.metaKey)||!inside(p))return;event.preventDefault();zoom(event.deltaY<0?1.15:1/1.15,p);},{passive:false});
+    svg.addEventListener('keydown',event=>{
+      if(['+','=','-','Home'].includes(event.key)){event.preventDefault();if(event.key==='Home'){k=1;tx=ty=0;draw();}else zoom(event.key==='-'?1/1.6:1.6);}
+      const pan={ArrowLeft:[24,0],ArrowRight:[-24,0],ArrowUp:[0,24],ArrowDown:[0,-24]}[event.key];
+      if(pan&&(spatial||!pan[1])){event.preventDefault();tx+=pan[0];ty+=pan[1];draw();}
+    });
+    draw();
+  }
   render();
 })();

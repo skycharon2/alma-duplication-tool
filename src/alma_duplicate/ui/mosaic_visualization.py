@@ -1,6 +1,9 @@
 """Read-only Mosaic comparisons from one stored result page."""
+from alma_duplicate.geometry import primary_beam_fwhm_deg
 from alma_duplicate.ui.queue_browser import presentation
-from alma_duplicate.ui.visualization import spectral_view
+from alma_duplicate.ui.visualization import beam_outline, number, position, sky_offset, spectral_view
+from alma_duplicate.ui.region_display import saved_region_outline
+from alma_duplicate.ui.queue_geometry_visualization import _footprint
 
 
 def _evidence(branch, criteria, pairs):
@@ -9,7 +12,13 @@ def _evidence(branch, criteria, pairs):
     if intent == 'LINE':
         for pair in pairs:
             if pair.get('status') == 'CRITERIA_MET' or pair.get('truth') == 'TRUE':
-                spectra.append(spectral_view(pair.get('criteria', []), intent))
+                spectrum = spectral_view(pair.get('criteria', []), intent)
+                attempt = pair.get('attempt') or {}
+                reference = attempt.get('reference') or {}
+                association = reference.get('candidate_association') or {}
+                spectrum['window'] = attempt.get('proposed_window_id')
+                spectrum['spw'] = association.get('spw_token', reference.get('spw_number'))
+                spectra.append(spectrum)
     else:
         spectra.append(spectral_view(criteria, intent))
     return dict(intent=intent, status=branch.get('status'), spectra=spectra)
@@ -38,7 +47,7 @@ def archive_rows(page):
                            context_id=ctx.get('context_id'), array=f'{diameter:g} m' if diameter else '',
                            inside=coverage.get('inside_count'), total=coverage.get('pointing_count'),
                            outcome=coverage.get('outcome'), region=coverage.get('raw_s_region'),
-                           beams=coverage.get('circles') or [],
+                           beams=coverage.get('circles') or [], footprint_evidence=coverage,
                            probes=coverage.get('points') or (coverage.get('probes') or {}).get('points', []),
                            anchor=f"mosaic-context-{entry['candidate_index']}-{child['index']}",
                            **_evidence(branch, ctx.get('criteria', []), ctx.get('line_pairs', [])))
@@ -71,5 +80,118 @@ def queue_rows(page):
                            total=len(probes) if probes is not None else None,
                            probes=probes or [], outcome=saved.get('outcome') if bound else None,
                            beams=binding.get('points', []) if bound else [], region=None,
+                           footprint_evidence=dict(variant=saved, snapshot=position.get('snapshot_sha256'),
+                                                   source_ids=position.get('source_row_ids')) if bound else {},
                            anchor=f"queue-{candidate['candidate_id']}",
                            **_evidence(branch, variant.get('criteria', []), variant.get('line_pairs', [])))
+
+
+def position_chart(row, proposed):
+    """Project saved geometry for display only, preserving an equal angular scale."""
+    missing = dict(available=False, reason='Confirmed footprint or proposed ICRS coordinates unavailable.')
+    points = proposed.get('points') or []
+    if not points or len(points) > 2000:
+        return dict(missing, reason='No proposed pointings, or display limit of 2000 pointings exceeded.')
+    if any(p.get('frame') != 'ICRS' or position(p) is None for p in points):
+        return missing
+    origin = position(points[0])
+    offsets = [sky_offset(origin, position(p)) for p in points]
+    evidence = row.get('footprint_evidence') or {}
+    outlines = []
+    if row['source'] == 'Queue':
+        geometry, _ = _footprint(evidence.get('variant', {}), origin, 240, row['candidate'],
+                                 evidence.get('snapshot'), evidence.get('source_ids'))
+        if not geometry['available']:
+            return dict(missing, reason=geometry['reason'])
+        outlines = [p['outline'] for p in geometry['points']]
+    elif evidence.get('raw_s_region'):
+        try:
+            _, vertices = saved_region_outline(evidence)
+        except (ValueError, TypeError):
+            return dict(missing, reason='Saved Archive region cannot be verified or displayed.')
+        outlines = [[sky_offset(origin, p) for p in vertices]]
+    elif row.get('beams'):
+        if len(row['beams']) > 240:
+            return dict(missing, reason='Footprint exceeds display limit of 240 beams.')
+        for beam in row['beams']:
+            radius = beam.get('radius_arcsec')
+            if beam.get('frame') != 'ICRS' or position(beam) is None or not number(radius) or not 0 < radius < 324000:
+                return missing
+            outlines.append(beam_outline(origin, position(beam), radius / 3600))
+    if not outlines:
+        return missing
+    if any(p is None for p in offsets) or any(o is None or any(p is None for p in o) for o in outlines):
+        return dict(missing, reason='Geometry extends outside the display projection hemisphere.')
+    # Proposed beam models use the proposal's array, never the candidate's array.
+    diameter = {'7m': 7., '12m': 12.}.get(proposed.get('array'))
+    frequencies = sorted({sp['proposed'] for sp in row.get('spectra', []) if sp.get('available')})
+    proposal_beams = []
+    beam_note = ''
+    if diameter is None or not frequencies:
+        beam_note = 'Proposed beam circles unavailable: proposal array or requested sky frequency is missing.'
+    elif len(frequencies) * len(points) > 2000:
+        beam_note = 'Proposed beam circles exceed the display limit of 2000; all pointing centres remain shown.'
+    else:
+        for frequency in frequencies:
+            radius = primary_beam_fwhm_deg(frequency, diameter) * 1800
+            projected = [beam_outline(origin, position(p), radius / 3600) for p in points]
+            if any(o is None for o in projected):
+                beam_note = 'Proposed beams extend outside the display projection hemisphere.'
+                proposal_beams = []
+                break
+            proposal_beams.append(dict(frequency=frequency, radius=radius, outlines=projected))
+    all_points = offsets + [p for outline in outlines for p in outline]
+    all_points += [p for beam in proposal_beams for outline in beam['outlines'] for p in outline]
+    left, right = min(p[0] for p in all_points), max(p[0] for p in all_points)
+    bottom, top = min(p[1] for p in all_points), max(p[1] for p in all_points)
+    span = max(right-left, top-bottom, 1)
+    scale = 300 / span
+
+    def pixel(p):
+        return [245 + (p[0]-(left+right)/2)*scale, 210 - (p[1]-(bottom+top)/2)*scale]
+
+    ticks = [dict(pixel=95+i*75, east=-((left+right)/2 + (i-2)*span/4),
+                  north=(bottom+top)/2 - (i-2)*span/4, y=60+i*75) for i in range(5)]
+    for beam in proposal_beams:
+        beam['outlines'] = [' '.join(f'{x:.3f},{y:.3f}' for x,y in map(pixel,o)) for o in beam['outlines']]
+    return dict(available=True, ticks=ticks, proposal_beams=proposal_beams, beam_note=beam_note, diameter=diameter, outlines=[' '.join(f'{x:.3f},{y:.3f}' for x,y in map(pixel,o)) for o in outlines],
+                points=[dict(id=p['id'], xy=pixel(offset), ra=p['ra_deg'], dec=p['dec_deg']) for p,offset in zip(points,offsets)],
+                scale_arcsec=span/2, origin=origin)
+
+
+def frequency_chart(spectrum):
+    if not spectrum.get('available'):
+        return None
+    values = [spectrum['proposed']]
+    values += ([spectrum['low'], spectrum['high']] if spectrum['kind'] == 'interval' else [spectrum['candidate']])
+    low, high = min(values), max(values)
+    padding = max((high-low)*.15, high*1e-6)
+    low, high = low-padding, high+padding
+    return dict(low=low, high=high, x=[135+(value-low)/(high-low)*430 for value in values],
+                ticks=[dict(x=135+i*107.5, value=low+(high-low)*i/4) for i in range(5)])
+
+
+def spectral_overview(spectra):
+    """One shared scale for recorded comparisons, not an inferred full setup."""
+    available = [sp for sp in spectra if sp.get('available')]
+    if not available:
+        return None
+    values = []
+    for sp in available:
+        values.append(sp['proposed'])
+        values.extend([sp['low'], sp['high']] if sp['kind'] == 'interval' else [sp['candidate']])
+    low, high = min(values), max(values)
+    padding = max((high-low)*.15, high*1e-6)
+    low, high = low-padding, high+padding
+    def x(value):
+        return 135 + (value-low)/(high-low)*430
+    rows = []
+    for i, sp in enumerate(spectra):
+        if not sp.get('available'):
+            continue
+        rows.append(dict(number=i+1, spw=sp.get('spw'), proposed=x(sp['proposed']),
+                         low=x(sp['low']) if sp['kind'] == 'interval' else x(sp['candidate']),
+                         high=x(sp['high']) if sp['kind'] == 'interval' else x(sp['candidate']),
+                         kind=sp['kind'], y=55+len(rows)*38))
+    return dict(rows=rows, height=110+len(rows)*38,
+                ticks=[dict(x=135+i*107.5, value=low+(high-low)*i/4) for i in range(5)])

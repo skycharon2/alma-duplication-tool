@@ -267,5 +267,10 @@ def test_saved_mosaic_explore_keeps_source_pages_and_intents_separate(browser):
         if label.startswith('Spectral line'):
             assert rows and all('LINE' in row.get_text() for row in rows)
         assert not page.select('svg[aria-label*="illustrative"]')
+        assert not page.select('.frequency-comparison svg')
+        assert not page.select('.spw-group')
+        for panel in page.select('#charts > section:nth-of-type(2) > .selection'):
+            assert len(panel.select('svg')) <= 1
+            assert len(panel.select('[data-select-pair]')) <= len(panel.select('[data-pair]'))
         assert client.get(url + '/mosaic-visualization?page=999').status_code == 404
     assert len(calls) == searches
