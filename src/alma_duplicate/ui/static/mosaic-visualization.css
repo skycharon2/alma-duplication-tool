@@ -1,0 +1,12 @@
+.mosaic-explorer [hidden] { display: none; }
+.mosaic-explorer .visual-panel svg { display: block; width: 100%; height: auto; }
+.mosaic-explorer svg[hidden] { display: none; }
+.mosaic-explorer .visual-bottom { margin-top: 1rem; }
+.mosaic-explorer .selection { padding: 0 1rem; }
+.mosaic-explorer .footprint { stroke-width: 2; }
+.mosaic-explorer .footprint.archive { fill: #297caa19; stroke: #297caa; }
+.mosaic-explorer .footprint.queue { fill: #cb753519; stroke: #b96529; }
+.mosaic-explorer .frequency.archive { fill: #297caa; }
+.mosaic-explorer .frequency.queue { fill: #b96529; }
+.mosaic-explorer .pointing { fill: #983b64; }
+.mosaic-explorer .axis { stroke: #718598; }

@@ -356,6 +356,59 @@ def create_app(config=None):
             abort(404)
         return render_visualization(data, report_id, False)
 
+    @app.get("/runs/<report_id>/mosaic-visualization")
+    def mosaic_visualization(report_id):
+        from alma_duplicate.ui.mosaic_visualization import archive_rows, queue_rows
+
+        page, view = page_selection()
+        if view != 'matches':
+            abort(400)
+        try:
+            current = runs.page(report_id, page, 'matches')
+        except IndexError:
+            abort(404)
+        if current is None:
+            return unavailable_run(report_id)
+        if not (current.get('mosaic') or current['document'].get('report_kind') == 'QUEUE_MOSAIC'):
+            abort(404)
+        lease = runs.open_download(report_id, 'request')
+        if lease is None:
+            return unavailable_run(report_id)
+        try:
+            submitted = json.load(lease.stream)
+        finally:
+            lease.close()
+        group = next((g for g in session.get('mosaic_report_groups', []) if report_id in g), {})
+        purpose = group.get(report_id, '').partition(' · ')[0]
+        pages = [(report_id, current)]
+        notices = []
+        for sibling, label in group.items():
+            if sibling != report_id and label.partition(' · ')[0] == purpose:
+                data = runs.page(sibling, 1, 'matches')
+                if data:
+                    pages.append((sibling, data))
+                else:
+                    notices.append(f'{label}: saved report unavailable.')
+        for partial in session.get('partial_assessments', []):
+            if report_id in partial['report_ids']:
+                notices.extend(f'{label}: assessment unavailable.' for label in partial['branches']
+                               if label.partition(' · ')[0] == purpose)
+        rows, navigation = [], []
+        for key, data in pages:
+            archive = data.get('mosaic')
+            source = 'Archive' if archive else 'Queue'
+            if data['document'].get('assessment_status') != 'COMPLETED':
+                notices.append(f'{source}: assessment incomplete. Showing retained comparisons.')
+            report_url = url_for('run_view', report_id=key, page=data['page'])
+            for row in (archive_rows(data) if archive else queue_rows(data)):
+                row['details_url'] = report_url + '#' + row['anchor']
+                rows.append(row)
+            navigation.append(dict(source=source, report_id=key, page=data['page'], pages=data['pages']))
+        return render_template('mosaic_visualization.html', rows=rows, saved=True, navigation=navigation,
+                               notices=notices, proposed=submitted.get('mosaic_pointings') or {},
+                               target=submitted.get('request', {}).get('target_name'),
+                               report_url=url_for('run_view', report_id=report_id, page=page))
+
     @app.get("/runs/<report_id>/visualization")
     def run_visualization(report_id):
         page, _ = page_selection()
