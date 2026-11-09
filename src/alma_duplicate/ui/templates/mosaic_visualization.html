@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}Mosaic Explore · {{ target or 'Layout preview' }}{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='visualization.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='mosaic-visualization.css') }}">
+<script defer src="{{ url_for('static', filename='mosaic-visualization.js') }}"></script>
+{% endblock %}
+{% block content %}
+<div class="visual-page mosaic-explorer">
+<header class="visual-heading"><div><p class="visual-eyebrow">Mosaic · Report explorer</p>
+<h1>{{ target or 'Explore observation evidence' }}</h1>
+{% if saved %}<p>Recorded comparisons from this Mosaic assessment.</p></div><a class="button" href="{{ report_url }}">Back to text report</a>
+{% else %}<p>Layout preview with simulated comparisons and pointings.</p></div>{% endif %}</header>
+{% for notice in notices %}<p class="notice">{{ notice }}</p>{% endfor %}
+{% if saved %}<details><summary>Submitted Mosaic pointings{% if proposed.points %} ({{ proposed.points|length }}){% endif %}</summary>
+{% if proposed.points %}<div class="visual-list"><table><thead><tr><th>Pointing</th><th>RA (deg)</th><th>Dec (deg)</th></tr></thead><tbody>
+{% for point in proposed.points %}<tr><td>{{ point.id }}</td><td>{{ point.ra_deg }}</td><td>{{ point.dec_deg }}</td></tr>{% endfor %}
+</tbody></table></div>{% else %}<p>Pointing coordinates unavailable in this saved request.</p>{% endif %}</details>{% endif %}
+<section class="visual-controls" aria-label="Filter comparisons">
+<div class="visual-filter-fields">
+{% for key, label in [('source','Source'), ('candidate','Member / Configuration'), ('array','Array')] %}
+<label>{{ label }}<select data-filter="{{ key }}"><option value="">All</option>
+{% for value in rows|map(attribute=key)|unique if value %}<option>{{ value }}</option>{% endfor %}
+</select></label>{% endfor %}
+<button type="button" class="button" id="clear-filters">Clear filters</button></div>
+<p id="comparison-count" role="status"></p></section>
+<div class="evidence-gallery-heading"><h2>Explore the evidence</h2>
+<div class="evidence-pager" role="group" aria-label="Evidence view">
+<button aria-controls="charts" aria-pressed="true">Charts</button>
+<button aria-controls="sky" aria-pressed="false">Sky preview</button></div></div>
+<div id="charts" class="visual-panels">
+<section class="visual-panel"><header><div><h2>Position</h2><p>Proposed Mosaic and candidate coverage</p></div></header>
+{% if not saved %}{% for row in rows %}<svg data-evidence="{{ loop.index0 }}" viewBox="0 0 360 184" role="img" aria-label="{{ row.candidate }} illustrative pointing layout"{% if not loop.first %} hidden{% endif %}>
+<g class="footprint {{ row.source|lower }}">
+{% if row.shape == 'region' %}<polygon points="65,80 154,29 236,78 205,121 90,139"/>{% else %}
+{% for x,y in [(135,88),(175,82),(210,96)] %}<circle cx="{{ x }}" cy="{{ y }}" r="{{ 44 if row.array == '7 m' else 25 }}"/>{% endfor %}{% endif %}
+</g>{% for x,y in [(130,91),(177,83),(241,92)] %}<path class="pointing" transform="translate({{ x }} {{ y }})" d="M0 -5 L5 0 0 5 -5 0Z"/>{% endfor %}
+</svg>{% endfor %}
+<p class="chart-caption">Diamonds mark proposed pointings. Outlines show the selected example footprint.</p>
+{% else %}{% for row in rows %}<div data-evidence="{{ loop.index0 }}"{% if not loop.first %} hidden{% endif %}>
+{% set chart = row.position_chart %}{% if chart.available %}
+<p class="chart-caption"><strong>Your Mosaic: {{ proposed.source_name or target }}</strong><br>{{ chart.points|length }} submitted pointings{% if chart.diameter %} · {{ chart.diameter|int }}-m array{% endif %}</p>
+<div class="area-controls" aria-label="Position layers"><label><input type="checkbox" data-layer="proposal" checked> Your Mosaic</label><label><input type="checkbox" data-layer="candidate" checked> {{ row.source }} candidate</label></div>
+<svg viewBox="0 0 490 425" role="img" aria-label="Your Mosaic pointings and proposed half-power beam circles compared with the saved candidate footprint">
+{% for tick in chart.ticks %}<line class="plot-grid" x1="{{ tick.pixel }}" x2="{{ tick.pixel }}" y1="45" y2="375"/><line class="plot-grid" x1="80" x2="410" y1="{{ tick.y }}" y2="{{ tick.y }}"/>
+<text data-value="{{ tick.east }}" x="{{ tick.pixel }}" y="393" text-anchor="middle">{{ '%.3g'|format(tick.east) }}</text><text data-value="{{ tick.north }}" x="72" y="{{ tick.y+4 }}" text-anchor="end">{{ '%.3g'|format(tick.north) }}</text>{% endfor %}
+<text x="245" y="418" text-anchor="middle">East offset (arcsec) ←</text><text transform="translate(19 210) rotate(-90)" text-anchor="middle">North offset (arcsec)</text>
+<g class="candidate-area">{% for outline in chart.outlines %}<polygon class="{{ row.source|lower }}" points="{{ outline }}"/>{% endfor %}</g>
+<g class="footprint {{ row.source|lower }}">{% for outline in chart.outlines %}<polygon points="{{ outline }}"><title>{{ row.source }} · {{ row.candidate }} · saved footprint</title></polygon>{% endfor %}</g>
+<g class="proposal-area">{% for beam in chart.proposal_beams %}{% for outline in beam.outlines %}<polygon points="{{ outline }}"/>{% endfor %}{% endfor %}</g>
+{% for beam in chart.proposal_beams %}<g class="proposed-beams">{% for outline in beam.outlines %}<polygon points="{{ outline }}"><title>Proposed {{ chart.diameter|int }}-m half-power beam · {{ '%.7g'|format(beam.frequency) }} GHz · radius {{ '%.4g'|format(beam.radius) }} arcsec</title></polygon>{% endfor %}</g>{% endfor %}
+{% for point in chart.points %}<g class="proposal-point" tabindex="0" aria-label="{{ point.id }}: RA {{ point.ra }} degrees, Dec {{ point.dec }} degrees"><title>{{ point.id }} · RA {{ '%.7f'|format(point.ra) }}°, Dec {{ '%.7f'|format(point.dec) }}°</title><path class="pointing proposed-marker" transform="translate({{ point.xy[0] }} {{ point.xy[1] }})" d="M0 -6 L6 0 0 6 -6 0Z"/>{% if chart.points|length <= 30 %}<text class="point-label" x="{{ point.xy[0]+9 }}" y="{{ point.xy[1]-9 }}">P{{ loop.index }}</text>{% endif %}</g>{% endfor %}
+</svg>
+<div class="chart-caption plot-legend"><span class="proposal-key">◆ Your Mosaic · purple dashed half-power beams</span><br><span class="candidate-key {{ row.source|lower }}">{{ row.source }} candidate · {{ row.target or row.candidate }} · saved footprint</span></div>
+<details class="mosaic-model-details"><summary>Beam model and pointing coordinates</summary>{% for beam in chart.proposal_beams %}<p class="chart-caption">Proposed beam model: {{ chart.diameter|int }} m · {{ '%.7g'|format(beam.frequency) }} GHz · half-power radius {{ '%.4g'|format(beam.radius) }} arcsec (FWHM = 1.13 λ/D). Display only; coverage results remain those recorded in the report.</p>{% endfor %}
+{% if chart.beam_note %}<p class="chart-caption">{{ chart.beam_note }}</p>{% endif %}
+<p class="chart-caption">Offsets relative to first uploaded pointing: RA {{ '%.6f'|format(chart.origin[0]) }}°, Dec {{ '%.6f'|format(chart.origin[1]) }}° (ICRS). This reference is not an inferred target centre.</p>
+<details class="chart-caption"><summary>Your pointing coordinates</summary><div class="visual-list"><table><thead><tr><th>Label / ID</th><th>RA (deg)</th><th>Dec (deg)</th></tr></thead><tbody>{% for point in chart.points %}<tr><td>P{{ loop.index }} · {{ point.id }}</td><td>{{ '%.7f'|format(point.ra) }}</td><td>{{ '%.7f'|format(point.dec) }}</td></tr>{% endfor %}</tbody></table></div></details>
+</details>{% else %}<p class="chart-caption">{{ chart.reason }}</p>{% endif %}</div>
+<p class="chart-caption" data-evidence="{{ loop.index0 }}"{% if not loop.first %} hidden{% endif %}>
+{{ row.inside if row.inside is number else 'Unknown' }} of {{ row.total if row.total is number else 'unknown' }} pointings inside · {{ row.geometry }} · {{ row.outcome or 'Position outcome unrecorded' }}</p>{% endfor %}{% endif %}</section>
+<section class="visual-panel"><header><div><h2>Frequency</h2><p>Recorded coverage · expand SPW comparisons</p></div></header>{% if not saved %}
+{% for row in rows %}<svg data-evidence="{{ loop.index0 }}" viewBox="0 0 360 184" role="img" aria-label="{{ row.frequency }} GHz illustrative frequency"{% if not loop.first %} hidden{% endif %}>
+<line class="axis" x1="40" x2="320" y1="112" y2="112"/>
+{% for ghz in [100,101,102] %}<text x="{{ 40+140*loop.index0 }}" y="133" text-anchor="middle">{{ ghz }} GHz</text>{% endfor %}
+<circle class="frequency {{ row.source|lower }}" cx="{{ 40+(row.frequency-100)*140 }}" cy="112" r="5"/>
+<text x="{{ 40+(row.frequency-100)*140 }}" y="92" text-anchor="middle">{{ row.frequency }} GHz</text></svg>{% endfor %}
+<p class="chart-caption">Example frequency for the selected comparison.</p>{% else %}
+{% for row in rows %}<div class="selection" data-evidence="{{ loop.index0 }}"{% if not loop.first %} hidden{% endif %}>
+<p><strong>{{ row.target or row.candidate }}</strong><br>{{ row.source }} · {{ row.intent }}{% if row.array %} · {{ row.array }}{% endif %}</p>
+{% set overview = row.spectral_overview %}
+{% if overview %}<div class="frequency-overview"><h3>Recorded frequency coverage</h3><p class="muted">Matched comparisons on one frequency axis. Full candidate setup coverage is not shown.</p>
+<svg viewBox="0 0 600 {{ overview.height }}" role="img" aria-label="Overview of recorded matching SPW comparisons">
+{% for tick in overview.ticks %}<line class="plot-grid" x1="{{ tick.x }}" x2="{{ tick.x }}" y1="35" y2="{{ overview.height-45 }}"/><text data-value="{{ tick.value }}" x="{{ tick.x }}" y="22" text-anchor="middle">{{ '%.6g'|format(tick.value) }}</text>{% endfor %}
+{% for item in overview.rows %}<text role="button" tabindex="0" data-select-pair="{{ item.number }}" aria-label="View comparison {{ item.number }} parameters" x="12" y="{{ item.y+4 }}">#{{ item.number }} · {% if item.spw is not none %}SPW {{ item.spw }}{% else %}{{ row.intent }}{% endif %}</text>
+{% if item.kind == 'interval' %}<g class="candidate-spectrum {{ row.source|lower }}"><line x1="{{ item.low }}" x2="{{ item.high }}" y1="{{ item.y }}" y2="{{ item.y }}"/></g>{% else %}<circle class="frequency {{ row.source|lower }}" cx="{{ item.low }}" cy="{{ item.y }}" r="5"/>{% endif %}
+<path class="pointing proposed-marker" transform="translate({{ item.proposed }} {{ item.y }})" d="M0 -7 L7 0 0 7 -7 0Z"/>{% endfor %}<text x="350" y="{{ overview.height-12 }}" text-anchor="middle">Frequency (GHz)</text></svg>
+<p class="plot-legend"><span class="proposal-key">◆ Your requirement</span> · <span class="candidate-key {{ row.source|lower }}">{{ row.source }} candidate</span></p></div>{% endif %}
+<div class="spw-parameters"><p class="muted">Select a row label above to view its parameters.</p>
+{% for sp in row.spectra %}<details class="frequency-comparison" data-pair="{{ loop.index }}"><summary>Comparison {{ loop.index }}{% if sp.spw is defined and sp.spw is not none %} · SPW {{ sp.spw }}{% endif %}{% if sp.window %} · {{ sp.window }}{% endif %} · {{ sp.result or 'Evidence unavailable' }}</summary>
+{% if sp.available %}
+<dl class="frequency-values"><dt>Your requirement</dt><dd>{{ '%.9g'|format(sp.proposed) }} GHz</dd><dt>Candidate comparison</dt><dd>{% if sp.kind == 'interval' %}{{ '%.9g'|format(sp.low) }}–{{ '%.9g'|format(sp.high) }} GHz{% else %}{{ '%.9g'|format(sp.candidate) }} GHz{% endif %}</dd><dt>Recorded result</dt><dd>{{ sp.result }}</dd></dl>
+{% else %}<p>Frequency evidence unavailable.</p>{% endif %}</details>{% else %}<p>No recorded comparison frequencies.</p>{% endfor %}</div></div>{% endfor %}{% endif %}</section></div>
+<section id="sky" class="visual-panel" hidden><header><h2>Sky preview</h2></header>
+<p class="chart-caption">Sky imagery and celestial coordinates will be connected in a later step.</p></section>
+<div class="visual-bottom"><section class="visual-panel"><header><h2>Matching comparisons</h2></header>
+<div class="visual-list">{% for row in rows %}<button class="visual-select" type="button" data-row="{{ loop.index0 }}" data-source="{{ row.source }}" data-candidate="{{ row.candidate }}" data-array="{{ row.array }}" aria-pressed="{{ 'true' if loop.first else 'false' }}"><span><strong>{{ row.candidate }}</strong><small>{{ row.source }} · {{ row.geometry }} · {{ row.intent }}{% if row.array %} · {{ row.array }}{% endif %}</small></span></button>{% endfor %}</div></section>
+<section class="visual-panel"><header><h2>Selected comparison</h2></header>
+{% for row in rows %}<div class="selection" data-evidence="{{ loop.index0 }}"{% if not loop.first %} hidden{% endif %}><h3>{{ row.candidate }}</h3><p>{{ row.source }} · {{ row.geometry }}{% if row.array %} · {{ row.array }}{% endif %} · {{ row.intent }}</p>
+{% if saved %}<p>Target: {{ row.target or 'Unrecorded' }} · {{ row.status }}</p><p>Context: {{ row.context_id or 'Unrecorded' }}</p>{% if row.probes %}<details><summary>Pointing classifications ({{ row.probes|length }})</summary><div class="visual-list"><ul>{% for point in row.probes %}<li>{{ point.proposed_point_id or point.id }} · {{ point.status or 'UNKNOWN' }}</li>{% endfor %}</ul></div></details>{% endif %}
+{% if row.region %}<details><summary>Archive s_region</summary><code>{{ row.region }}</code></details>{% endif %}
+{% if row.beams %}<p>{{ row.beams|length }} saved candidate beam centres.</p>{% endif %}
+<a href="{{ row.details_url }}">View recorded criteria</a>
+{% else %}<p>Example coverage: {{ row.covered }} of 3 pointings · {{ row.frequency }} GHz</p>{% endif %}</div>{% endfor %}</section></div>
+{% for nav in navigation %}<nav aria-label="{{ nav.source }} comparisons"><p>{{ nav.source }} · Page {{ nav.page }} / {{ nav.pages }}
+{% for number, label in [(nav.page - 1,'Previous'), (nav.page + 1,'Next')] if 1 <= number <= nav.pages %}<a href="{{ url_for('mosaic_visualization', report_id=nav.report_id, page=number) }}">{{ label }}</a>{% endfor %}</p></nav>{% endfor %}
+</div>
+{% endblock %}

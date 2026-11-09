@@ -225,3 +225,28 @@ def test_queue_matches_pager_preserves_queue_route_and_request_settings():
         assert BeautifulSoup(client.get(previous_url).data, 'html.parser').select_one('#queue-0')
     finally:
         store.close()
+
+
+def test_mosaic_explore_uses_only_bound_queue_beams():
+    from copy import deepcopy
+    from alma_duplicate.ui.mosaic_visualization import queue_rows
+    from tests.ui.test_queue_geometry_visualization import sample
+
+    page = sample()
+    original = page['document']['geometry_reports'].pop('RECTANGLE')
+    for kind in ('SINGLE_FIELD', 'CUSTOM_POINTING', 'RECTANGULAR_MOSAIC'):
+        report = deepcopy(original)
+        candidate = report['candidates'][0]
+        beam = candidate['position']['beam_variants'][0]
+        candidate['candidate_id'] = beam['coverage']['candidate_id'] = kind
+        beam['counts'] = {'INSIDE': 1}
+        page['document']['geometry_reports'][kind] = report
+    rows = list(queue_rows(page))
+    assert len(rows) == 3
+    for row in rows:
+        assert row['geometry'] == row['candidate']
+        assert row['array'] == '12 m'
+        assert row['inside'] == 1 and len(row['beams']) == 2
+    beam['coverage']['candidate_id'] = 'another candidate'
+    last = list(queue_rows(page))[-1]
+    assert last['inside'] is None and not last['beams']

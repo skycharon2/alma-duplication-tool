@@ -237,3 +237,40 @@ def test_combined_mosaic_distinguishes_empty_and_incomplete_archive(browser, mon
     assert response.status_code == 303
     summary = BeautifulSoup(client.get(response.location).text, 'html.parser').select_one('.matching-sources')
     assert expected in summary.get_text(' ', strip=True)
+
+
+def test_saved_mosaic_explore_keeps_source_pages_and_intents_separate(browser):
+    from bs4 import BeautifulSoup
+
+    client, calls = browser
+    data = form() | dict(sources=['ARCHIVE', 'QUEUE'], mosaic_upload_token=upload(client),
+                         normal_form_version='2', action='assess', intents=['LINE', 'CONTINUUM'],
+                         aggregate='1', representative='690', continuum_setup_declaration='on', setup_complete='')
+    response = client.post('/proposed/mosaic', data=data)
+    assert response.status_code == 303
+    with client.session_transaction() as state:
+        group, = state['mosaic_report_groups']
+    searches = len(calls)
+    for run_id, label in group.items():
+        url = f'/runs/{run_id}'
+        report = BeautifulSoup(client.get(url).data, 'html.parser')
+        link = report.find('a', string='Explore this report')['href']
+        result = client.get(link)
+        assert result.status_code == 200
+        page = BeautifulSoup(result.data, 'html.parser')
+        back = page.find('a', string='Back to text report')
+        assert client.get(back['href']).status_code == 200
+        assert page.find('summary', string='Submitted Mosaic pointings (3)')
+        assert {nav.get('aria-label') for nav in page.select('nav[aria-label$=" comparisons"]')} == {
+            'Archive comparisons', 'Queue comparisons'}
+        rows = page.select('[data-row]')
+        if label.startswith('Spectral line'):
+            assert rows and all('LINE' in row.get_text() for row in rows)
+        assert not page.select('svg[aria-label*="illustrative"]')
+        assert not page.select('.frequency-comparison svg')
+        assert not page.select('.spw-group')
+        for panel in page.select('#charts > section:nth-of-type(2) > .selection'):
+            assert len(panel.select('svg')) <= 1
+            assert len(panel.select('[data-select-pair]')) <= len(panel.select('[data-pair]'))
+        assert client.get(url + '/mosaic-visualization?page=999').status_code == 404
+    assert len(calls) == searches

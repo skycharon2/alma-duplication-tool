@@ -1,0 +1,83 @@
+.mosaic-explorer [hidden] { display: none; }
+.mosaic-explorer .visual-panel svg { display: block; width: 100%; height: auto; }
+.mosaic-explorer svg[hidden] { display: none; }
+.mosaic-explorer .visual-bottom { margin-top: 1rem; }
+.mosaic-explorer .selection { padding: 0 1rem; }
+.mosaic-explorer .footprint { stroke-width: 2; }
+.mosaic-explorer .footprint.archive { fill: #297caa19; stroke: #297caa; }
+.mosaic-explorer .footprint.queue { fill: #cb753519; stroke: #b96529; }
+.mosaic-explorer .frequency.archive { fill: #297caa; }
+.mosaic-explorer .frequency.queue { fill: #b96529; }
+.mosaic-explorer .pointing { fill: #983b64; }
+.mosaic-explorer .axis { stroke: #718598; }
+
+.mosaic-explorer .spectral-window { stroke: #297caa; stroke-width: 8; }
+.mosaic-explorer .selection, .mosaic-explorer .chart-caption { overflow-wrap: anywhere; }
+.mosaic-explorer svg text { fill: currentColor; font-size: 12px; }
+
+.mosaic-explorer .plot-grid { stroke: #b9cfdd; stroke-width: .6; }
+.mosaic-explorer .proposed-beams { fill: #983b6408; stroke: #983b64; stroke-width: 1.5; stroke-dasharray: 5 3; }
+.mosaic-explorer .proposed-marker { stroke: white; stroke-width: 1.3; }
+.mosaic-explorer .point-label { fill: #983b64; paint-order: stroke; stroke: white; stroke-width: 3; font-weight: 600; }
+.mosaic-explorer .proposal-key { color: #983b64; }
+.mosaic-explorer .candidate-key.archive { color: #297caa; }
+.mosaic-explorer .candidate-key.queue { color: #b96529; }
+.mosaic-explorer .footprint.queue { stroke-dasharray: 5 3; }
+.mosaic-explorer svg g:focus { outline: 2px solid #983b64; }
+
+/* Strong separate encodings remain visible where the boundaries coincide. */
+.mosaic-explorer .footprint.archive { fill: #1479bc12; stroke: #126caf; stroke-width: 3.5; }
+.mosaic-explorer .footprint.queue { fill: #b9652912; stroke: #b96529; stroke-width: 3.5; }
+.mosaic-explorer .proposed-beams { fill: none; stroke: #a62c83; stroke-width: 2; stroke-dasharray: 7 5; }
+.mosaic-explorer .pointing { fill: #a62c83; }
+.mosaic-explorer .proposal-key, .mosaic-explorer .proposal-text { color: #a62c83; fill: #a62c83; }
+.mosaic-explorer .candidate-text.archive { fill: #126caf; }
+.mosaic-explorer .candidate-text.queue { fill: #b96529; }
+.mosaic-explorer .candidate-spectrum { stroke-width: 9; }
+.mosaic-explorer .candidate-spectrum.archive { stroke: #126caf; }
+.mosaic-explorer .candidate-spectrum.queue { stroke: #b96529; }
+.mosaic-explorer .requested-guide { stroke: #a62c83; stroke-dasharray: 4 4; }
+.mosaic-explorer .frequency-values { display: grid; grid-template-columns: 1fr 1.5fr; gap: .5rem 1rem; }
+.mosaic-explorer .frequency-values dd { margin: 0; }
+.mosaic-explorer .frequency-comparison { border-top: 1px solid #c7dce8; padding-block: .75rem; }
+
+.mosaic-explorer .candidate-area { opacity: .18; }
+.mosaic-explorer .candidate-area .archive { fill: #126caf; }
+.mosaic-explorer .candidate-area .queue { fill: #b96529; }
+.mosaic-explorer .proposal-area { fill: #a62c83; opacity: .16; }
+.mosaic-explorer .footprint.archive, .mosaic-explorer .footprint.queue { fill: none; }
+.mosaic-explorer .area-controls { display: flex; flex-wrap: wrap; gap: 1rem; padding: .5rem 1rem; }
+.mosaic-explorer .area-controls label { display: flex; align-items: center; gap: .4rem; }
+.mosaic-explorer .hide-proposal .proposal-area, .mosaic-explorer .hide-proposal .proposed-beams { display: none; }
+.mosaic-explorer .hide-candidate .candidate-area, .mosaic-explorer .hide-candidate .footprint { display: none; }
+.mosaic-explorer .frequency-overview { padding: .75rem 0; }
+.mosaic-explorer .frequency-overview h3 { margin: 0; }
+.mosaic-explorer .spw-group { border-top: 1px solid #c7dce8; margin-block: 1rem; padding-block: .75rem; }
+.mosaic-explorer .spw-group > .frequency-comparison { margin-left: .75rem; padding-left: .75rem; border-left: 2px solid #c7dce8; }
+
+.mosaic-explorer .hide-proposal .proposal-point { display: none; }
+
+.mosaic-explorer .mosaic-chart-toolbar { display: flex; align-items: center; gap: .5rem; padding: .5rem 1rem; }
+.mosaic-explorer .mosaic-chart-toolbar output { margin-left: auto; font-variant-numeric: tabular-nums; }
+.mosaic-explorer .mosaic-chart-viewport { overflow: auto; width: 100%; overscroll-behavior: contain; }
+.mosaic-explorer .mosaic-chart-viewport:focus-visible { outline: 2px solid #126caf; outline-offset: -2px; }
+
+.mosaic-explorer .visual-panels { align-items: start; }
+.mosaic-explorer .mosaic-plot-tools { align-items: center; padding: .45rem 1rem; gap: .3rem; }
+.mosaic-explorer .mosaic-plot-tools span { margin-left: auto; font-size: .68rem; color: #546b7e; }
+.mosaic-explorer .mosaic-interactive-chart { cursor: grab; touch-action: none; user-select: none; }
+.mosaic-explorer .mosaic-interactive-chart.is-panning { cursor: grabbing; }
+.mosaic-explorer .mosaic-interactive-chart :is(path,polygon,line,circle) { vector-effect: non-scaling-stroke; }
+.mosaic-explorer .mosaic-model-details { margin: .7rem 1rem; font-size: .78rem; color: #546b7e; }
+.mosaic-explorer .mosaic-model-details > .chart-caption { margin-inline: 0; }
+.mosaic-explorer .frequency-overview { padding-top: .5rem; }
+.mosaic-explorer .frequency-overview h3 { font-size: .9rem; }
+.mosaic-explorer .frequency-overview .muted { font-size: .75rem; margin: .3rem 0; }
+.mosaic-explorer .plot-legend { font-size: .75rem; line-height: 1.6; }
+.mosaic-explorer .spw-group { font-size: .8rem; }
+.mosaic-explorer .frequency-values { font-size: .78rem; }
+@media (max-width: 600px) { .mosaic-explorer .mosaic-plot-tools span { max-width: 150px; } }
+
+.mosaic-explorer .spw-parameters { border-top: 1px solid #c7dce8; padding-block: .75rem; font-size: .8rem; }
+.mosaic-explorer [data-select-pair] { cursor: pointer; }
+.mosaic-explorer [data-select-pair][aria-pressed="true"] { fill: #126caf; font-weight: 700; }
