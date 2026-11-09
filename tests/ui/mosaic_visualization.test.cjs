@@ -41,6 +41,9 @@ class Element {
   }
   setAttribute(name, value) {this.attrs[name] = String(value);}
   getAttribute(name) {return this.attrs[name] ?? null;}
+  hasAttribute(name) {
+    return Object.prototype.hasOwnProperty.call(this.attrs, name);
+  }
   toggleAttribute(name, force) {if (name === "hidden") this.hidden = force;}
   append(...children) {this.children.push(...children);}
   prepend(...children) {this.children.unshift(...children);}

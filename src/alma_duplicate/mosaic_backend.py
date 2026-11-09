@@ -218,8 +218,12 @@ def _run_region_backend(mosaic, evaluate_contexts, *, archive_client=None,
                 item.update(status='INCOMPLETE', reasons=list(built.reasons))
             else:
                 evaluated = evaluate_contexts(built.contexts, metadata)
+                from alma_duplicate.mosaic_spectral_evidence import attach_archive_spectral_setups
+                spectral_displays = attach_archive_spectral_setups(evaluated, built.contexts)
                 item.update(status='EVALUATED' if built.contexts else 'NO_METADATA_CONTEXTS',
                             evaluation=evaluated, position_summary=position_summary(evaluated))
+                if spectral_displays:
+                    item['spectral_setup_displays'] = spectral_displays
         except (OSError, ValueError, KeyError, TypeError) as exc:
             item.update(status='INCOMPLETE', error=str(exc))
         results.append(item)

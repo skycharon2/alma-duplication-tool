@@ -4,6 +4,11 @@ from alma_duplicate.ui.queue_browser import presentation
 from alma_duplicate.ui.visualization import beam_outline, number, position, sky_offset, spectral_view
 from alma_duplicate.ui.region_display import saved_region_outline
 from alma_duplicate.ui.queue_geometry_visualization import _footprint
+from alma_duplicate.ui.mosaic_frequency_view import (
+    archive_spectral_setup as _archive_spectral_setup,
+    queue_spectral_setup as _queue_spectral_setup,
+    spectral_overview as _setup_overview,
+)
 
 
 def _evidence(branch, criteria, pairs):
@@ -22,6 +27,26 @@ def _evidence(branch, criteria, pairs):
     else:
         spectra.append(spectral_view(criteria, intent))
     return dict(intent=intent, status=branch.get('status'), spectra=spectra)
+
+
+def _archive_project(entry, ctx):
+    """Only expose a project bound to this Archive Member and target.
+
+    An unassociated Member with several projects cannot safely select one.
+    This is presentation data, not an input to scientific aggregation.
+    """
+    candidate = entry['candidate']
+    projects = [p for p in (entry.get('identity') or {}).get('projects', [])
+                if isinstance(p, str) and p.strip()]
+    identity = ctx.get('display_identity') or {}
+    project = identity.get('Project')
+    if isinstance(project, str) and project.strip():
+        if (identity.get('Member OUS') != candidate.get('member_ous_uid')
+                or identity.get('Target') != candidate.get('source_name')):
+            return None
+        project = project.strip()
+        return project if not projects or project in projects else None
+    return projects[0] if len(projects) == 1 else None
 
 
 def archive_rows(page):
@@ -43,12 +68,15 @@ def archive_rows(page):
                 if branch.get('status') != 'CRITERIA_MET':
                     continue
                 yield dict(source='Archive', candidate=candidate.get('member_ous_uid') or 'Member unrecorded',
+                           project=_archive_project(entry, ctx),
                            target=candidate.get('source_name'), geometry=geometry,
                            context_id=ctx.get('context_id'), array=f'{diameter:g} m' if diameter else '',
                            inside=coverage.get('inside_count'), total=coverage.get('pointing_count'),
                            outcome=coverage.get('outcome'), region=coverage.get('raw_s_region'),
                            beams=coverage.get('circles') or [], footprint_evidence=coverage,
                            probes=coverage.get('points') or (coverage.get('probes') or {}).get('points', []),
+                           spectral_setup=_archive_spectral_setup(
+                               (candidate.get('spectral_setup_displays') or {}).get(ctx.get('context_id')) or ctx),
                            anchor=f"mosaic-context-{entry['candidate_index']}-{child['index']}",
                            **_evidence(branch, ctx.get('criteria', []), ctx.get('line_pairs', [])))
 
@@ -75,6 +103,7 @@ def queue_rows(page):
                 if branch.get('truth') != 'TRUE':
                     continue
                 yield dict(source='Queue', candidate=candidate['candidate_id'], target=entry['target'],
+                           project=(entry.get('project') if entry.get('project') not in (None, 'Not recorded') else None),
                            geometry=entry['kind'], context_id=science.get('context_id'),
                            array=f'{diameter:g} m' if diameter else '', inside=saved.get('counts', {}).get('INSIDE') if bound else None,
                            total=len(probes) if probes is not None else None,
@@ -82,6 +111,7 @@ def queue_rows(page):
                            beams=binding.get('points', []) if bound else [], region=None,
                            footprint_evidence=dict(variant=saved, snapshot=position.get('snapshot_sha256'),
                                                    source_ids=position.get('source_row_ids')) if bound else {},
+                           spectral_setup=_queue_spectral_setup(candidate),
                            anchor=f"queue-{candidate['candidate_id']}",
                            **_evidence(branch, variant.get('criteria', []), variant.get('line_pairs', [])))
 
@@ -171,27 +201,6 @@ def frequency_chart(spectrum):
                 ticks=[dict(x=135+i*107.5, value=low+(high-low)*i/4) for i in range(5)])
 
 
-def spectral_overview(spectra):
-    """One shared scale for recorded comparisons, not an inferred full setup."""
-    available = [sp for sp in spectra if sp.get('available')]
-    if not available:
-        return None
-    values = []
-    for sp in available:
-        values.append(sp['proposed'])
-        values.extend([sp['low'], sp['high']] if sp['kind'] == 'interval' else [sp['candidate']])
-    low, high = min(values), max(values)
-    padding = max((high-low)*.15, high*1e-6)
-    low, high = low-padding, high+padding
-    def x(value):
-        return 135 + (value-low)/(high-low)*430
-    rows = []
-    for i, sp in enumerate(spectra):
-        if not sp.get('available'):
-            continue
-        rows.append(dict(number=i+1, spw=sp.get('spw'), proposed=x(sp['proposed']),
-                         low=x(sp['low']) if sp['kind'] == 'interval' else x(sp['candidate']),
-                         high=x(sp['high']) if sp['kind'] == 'interval' else x(sp['candidate']),
-                         kind=sp['kind'], y=55+len(rows)*38))
-    return dict(rows=rows, height=110+len(rows)*38,
-                ticks=[dict(x=135+i*107.5, value=low+(high-low)*i/4) for i in range(5)])
+def spectral_overview(spectra, setup=None):
+    """Full recorded setup plus saved matching comparisons; never infer SPWs."""
+    return _setup_overview(spectra, setup)

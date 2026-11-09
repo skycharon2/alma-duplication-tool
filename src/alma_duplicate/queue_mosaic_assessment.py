@@ -31,6 +31,8 @@ def assess_queue_mosaic(validated, proposed, *, options, sources, input_sha256, 
                                (QueueMosaicKind.RECTANGULAR_MOSAIC, assess_queue_rectangle_science),
                                (QueueMosaicKind.SINGLE_FIELD, assess_single_field_science)):
             result = evaluate(parsed, request, proposed, nominal_conversion=options.nominal_conversion, prepared=prepared)
+            from alma_duplicate.mosaic_spectral_evidence import attach_queue_spectral_setups
+            attach_queue_spectral_setups(result, parsed)
             reports[kind.value] = result
             candidates = result['candidates']
             for candidate in candidates:

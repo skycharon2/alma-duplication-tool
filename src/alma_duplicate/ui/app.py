@@ -401,7 +401,7 @@ def create_app(config=None):
                 notices.append(f'{source}: assessment incomplete. Showing retained comparisons.')
             report_url = url_for('run_view', report_id=key, page=data['page'])
             for row in (archive_rows(data) if archive else queue_rows(data)):
-                row['spectral_overview'] = spectral_overview(row['spectra'])
+                row['spectral_overview'] = spectral_overview(row['spectra'], row.get('spectral_setup'))
                 row['position_chart'] = position_chart(row, submitted.get('mosaic_pointings') or {})
                 for spectrum in row['spectra']:
                     spectrum['chart'] = frequency_chart(spectrum)
