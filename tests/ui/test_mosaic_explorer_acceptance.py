@@ -75,10 +75,20 @@ def test_case2_archive_saved_report_equals_explorer_and_is_not_mutated(case2_bro
             f'#charts > section:nth-of-type(2) [data-evidence="{i}"]')
         assert frequencies is not None
         assert len(frequencies.select('svg text[data-select-pair]')) == len(recorded)
-        overview = spectral_overview(row['spectra'])
+        # P0.5 uses one frequency axis for full saved setup + matched pairs.
+        overview = spectral_overview(row['spectra'], row.get('spectral_setup'))
         assert overview is not None
         assert [int(n['data-select-pair']) for n in frequencies.select('svg [data-select-pair]')] == [
             item['number'] for item in overview['rows']]
+        # Validate the optional full-setup bars independently of LINE pair bars.
+        setup_lines = frequencies.select('g.mosaic-setup-interval > line')
+        expected_setup = [component for component in overview['setup_rows']
+                          if component['low'] is not None]
+        assert len(setup_lines) == len(expected_setup)
+        for segment, component in zip(setup_lines, expected_setup):
+            assert float(segment['x1']) == pytest.approx(component['low'], abs=1e-7)
+            assert float(segment['x2']) == pytest.approx(component['high'], abs=1e-7)
+        assert bool(frequencies.select_one('[data-toggle-setup]')) == bool(overview['setup_rows'])
         for segment, item in zip(frequencies.select('g.candidate-spectrum > line'),
                                  (r for r in overview['rows'] if r['kind'] == 'interval')):
             assert float(segment['x1']) == pytest.approx(item['low'], abs=1e-7)

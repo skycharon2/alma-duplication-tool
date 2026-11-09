@@ -15,6 +15,11 @@
     for (const panel of root.querySelectorAll("[data-evidence]")) {
       panel.toggleAttribute("hidden", panel.dataset.evidence !== selected);
     }
+    // Each saved comparison owns independent zoom state. Show the matching
+    // toolbar in the shared card header, not every candidate's toolbar.
+    for (const controls of root.querySelectorAll('[data-plot-controls]')) {
+      controls.hidden = controls.dataset.evidence !== selected;
+    }
     root.querySelector("#comparison-count").textContent = visible.length
       ? `${visible.length} of ${rows.length} comparisons`
       : !rows.length ? "No matching comparisons on this report page."
@@ -37,6 +42,8 @@
       root.querySelector("#" + page.getAttribute("aria-controls")).hidden = !active;
       page.setAttribute("aria-pressed", String(active));
     }
+    const counter = root.querySelector('#evidence-page-number');
+    if (counter) counter.textContent = `${pages.indexOf(button) + 1} / ${pages.length}`;
   });
   for (const toggle of root.querySelectorAll("[data-layer]")) {
     toggle.addEventListener("change", () => {
@@ -51,6 +58,41 @@
     }
     label.addEventListener('click',selectPair);
     label.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPair();}});
+    // A clickable SPW label must not start the SVG's drag-to-pan gesture.
+    label.addEventListener('pointerdown',event=>event.stopPropagation());
+  }
+  // Single Pointing-style Setup disclosure. SVG <g hidden> is unreliable in
+  // Safari; use display:none and resize the viewBox/clip on every transition.
+  // Labels stay outside the pan/zoom geometry layer.
+  for (const toggle of root.querySelectorAll('[data-toggle-setup]')) {
+    const svg = toggle.closest('svg');
+    const detailLabels = svg?.querySelector('[data-setup-details]');
+    if (!svg || !detailLabels) continue;
+    const geometry = [...svg.querySelectorAll('[data-frequency-detail]')];
+    const title = toggle.querySelector('[data-setup-title]');
+    const fullHeight = Number(svg.dataset.expandedHeight);
+    const compactHeight = Number(svg.dataset.collapsedHeight);
+    if (!(fullHeight > compactHeight && compactHeight >= 100)) continue;
+    function showSetup(expanded) {
+      toggle.setAttribute('aria-expanded', String(expanded));
+      toggle.setAttribute('aria-label', `${expanded ? 'Collapse' : 'Expand'} Setup and its SPW comparisons`);
+      if (title) title.textContent = `${expanded ? '▾' : '▸'} Setup · ${toggle.dataset.componentCount} components`;
+      detailLabels.style.display = expanded ? '' : 'none';
+      for (const node of geometry) node.style.display = expanded ? '' : 'none';
+      const height = expanded ? fullHeight : compactHeight;
+      svg.setAttribute('viewBox', `0 0 600 ${height}`);
+      for (const grid of svg.querySelectorAll('.plot-grid')) grid.setAttribute('y2', String(height - 45));
+      svg.querySelector('[data-frequency-axis-label]')?.setAttribute('y', String(height - 12));
+      svg.querySelector('clipPath rect')?.setAttribute('height', String(height - 80));
+    }
+    const flip = () => showSetup(toggle.getAttribute('aria-expanded') !== 'true');
+    toggle.addEventListener('pointerdown', event => event.stopPropagation());
+    toggle.addEventListener('click', event => {event.stopPropagation(); flip();});
+    toggle.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {event.preventDefault(); flip();}
+    });
+    // SSR includes all science evidence; JS starts collapsed as Single Pointing does.
+    showSetup(false);
   }
   // Fixed plot bounds: transform data only and recompute tick labels.
   for (const [index, svg] of [...root.querySelectorAll('#charts svg')].entries()) {
@@ -63,7 +105,17 @@
     toolbar.className = 'chart-tools mosaic-plot-tools';
     toolbar.setAttribute('role', 'group');
     toolbar.setAttribute('aria-label', spatial ? 'Position zoom' : 'Frequency zoom');
-    svg.before(toolbar);
+    const owner = svg.closest('[data-evidence]');
+    const header = root.querySelector(spatial ? '#mosaic-position-tools' : '#mosaic-frequency-tools');
+    if (header && owner) {
+      toolbar.dataset.evidence = owner.dataset.evidence;
+      toolbar.setAttribute('data-plot-controls', '');
+      header.append(toolbar);
+      toolbar.hidden = toolbar.dataset.evidence !== selected;
+    } else {
+      // Keep preview pages and lightweight DOM fixtures backward compatible.
+      svg.before(toolbar);
+    }
     const defs = document.createElementNS(NS, 'defs');
     const clip = document.createElementNS(NS, 'clipPath');
     clip.id = `mosaic-plot-clip-${index}`;
@@ -74,7 +126,9 @@
     const clipped = document.createElementNS(NS, 'g');
     clipped.setAttribute('clip-path', `url(#${clip.id})`);
     const layer = document.createElementNS(NS, 'g'); clipped.append(layer);
-    const selector = spatial ? ':scope > g' : ':scope > g, :scope > path, :scope > circle, :scope > .requested-guide, :scope > .axis';
+    const selector = spatial ? ':scope > g' : svg.hasAttribute('data-mosaic-frequency')
+      ? 'g.mosaic-setup-summary-interval, g.mosaic-setup-interval, g.candidate-spectrum, circle.frequency, path.proposed-marker'
+      : ':scope > g, :scope > path, :scope > circle, :scope > .requested-guide, :scope > .axis';
     for (const element of [...svg.querySelectorAll(selector)]) layer.append(element);
     svg.append(clipped);
     const ticks = [...svg.querySelectorAll(':scope > text')].filter(t =>
@@ -101,7 +155,7 @@
         let axis=0;
         marker.node.setAttribute('d',marker.d.replace(/-?\d+(?:\.\d+)?/g,v=>String(Number(v)/((axis++%2===0||spatial)?k:1))));
       }
-      for (const label of layer.querySelectorAll('text')) label.style.fontSize=`${12/k}px`;
+      for (const label of layer.querySelectorAll('text')) label.style.fontSize=`${10/k}px`;
       controls.in.disabled=k>=16; controls.out.disabled=k<=.5;
     }
     function zoom(factor, point={x:box.cx,y:box.cy}) {
@@ -120,7 +174,10 @@
     const hint=document.createElement('span');hint.textContent='Drag to pan · Ctrl/⌘ + scroll to zoom';toolbar.append(hint);
     svg.setAttribute('tabindex','0');svg.classList.add('mosaic-interactive-chart');
     function point(event) { const p=new DOMPoint(event.clientX,event.clientY);return p.matrixTransform(svg.getScreenCTM().inverse()); }
-    function inside(p){return p.x>=box.x&&p.x<=box.x+box.w&&p.y>=box.y&&p.y<=box.y+box.h;}
+    function inside(p){
+      const h = !spatial && svg.hasAttribute('data-mosaic-frequency') ? svg.viewBox.baseVal.height-80 : box.h;
+      return p.x>=box.x&&p.x<=box.x+box.w&&p.y>=box.y&&p.y<=box.y+h;
+    }
     let drag=null;
     svg.addEventListener('pointerdown',event=>{const p=point(event);if(event.button!==0||!inside(p))return;drag={p,tx,ty};svg.setPointerCapture(event.pointerId);svg.classList.add('is-panning');});
     svg.addEventListener('pointermove',event=>{if(!drag)return;const p=point(event);tx=drag.tx+p.x-drag.p.x;if(spatial)ty=drag.ty+p.y-drag.p.y;draw();});
