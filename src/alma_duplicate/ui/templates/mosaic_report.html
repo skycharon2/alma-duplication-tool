@@ -5,21 +5,7 @@
 {% macro branch_status(value) %}<span class="report-status" data-status="{{ value or 'INDETERMINATE' }}">{{ status_labels.get(value, 'Needs review') }}</span>{% endmacro %}
 {% macro candidate_bucket(value) %}<span class="report-status" data-status="{{ {'MATCH': 'CRITERIA_MET', 'NOT_MET': 'CRITERIA_NOT_MET'}.get(value, 'INDETERMINATE') }}">{{ {'MATCH': 'At least one matching branch', 'NOT_MET': 'Recorded branches do not meet conditions', 'NEEDS_REVIEW': 'Scientific review required', 'UNAVAILABLE': 'Candidate evidence unavailable'}.get(value, 'Needs review') }}</span>{% endmacro %}
 {% from '_mosaic_comparison.html' import comparison as criteria_table with context %}
-{% macro coverage_view(coverage) %}
-{% if coverage %}<section class="mosaic-coverage" aria-label="Mosaic pointing coverage">
-<h5>Mosaic spatial coverage</h5>
-<p class="mosaic-coverage-counts"><span><strong>Inside:</strong> {{ coverage.inside_count if coverage.inside_count is not none else 'Unknown' }} / {{ coverage.pointing_count if coverage.pointing_count is not none else 'Unknown' }}</span>
-<span>Outside: {{ coverage.outside_count if coverage.outside_count is not none else 'Unknown' }}</span>
-<span>Boundary: {{ coverage.boundary_count if coverage.boundary_count is not none else 'Unknown' }}</span>
-<span>Unknown: {{ coverage.unknown_count if coverage.unknown_count is not none else 'Unknown' }}</span></p>
-<p class="mosaic-status-note">The recorded position rule requires strictly more than 50% inside the candidate Archive s_region. Boundary and unknown classifications may prevent a definitive result. This is not a reconstructed primary-beam comparison.</p>
-{% if coverage.points %}<details><summary>Point-by-point evidence (first {{ [coverage.points|length, 20]|min }} of {{ coverage.points|length }})</summary>
-<div class="report-table-scroll mosaic-pointing-table" role="region" aria-label="Pointing classifications" tabindex="0"><table class="comparison-table"><thead><tr><th>Pointing</th><th>RA (deg)</th><th>Dec (deg)</th><th>Recorded classification</th></tr></thead><tbody>
-{% for pointing in coverage.points[:20] %}<tr><th scope="row">{{ pointing.id or loop.index }}</th><td>{{ display_number(pointing.ra_deg) }}</td><td>{{ display_number(pointing.dec_deg) }}</td><td>{{ pointing.status or 'UNKNOWN' }}</td></tr>{% endfor %}
-</tbody></table></div>
-{% if coverage.points|length > 20 %}<p>Additional rows are available in the complete report download.</p>{% endif %}</details>{% endif %}
-</section>{% endif %}
-{% endmacro %}
+{% from '_mosaic_matching.html' import coverage_view with context %}
 
 {% block content %}
 <div class="report-page mosaic-report">
@@ -40,7 +26,7 @@
 </div></details>
 {% if document.assessment_status != 'COMPLETED' or document.discovery.status != 'COMPLETED' %}<p role="alert" class="notice"><strong>Incomplete acquisition or assessment:</strong> interpret only the recorded comparisons. Results may be missing.</p>{% endif %}
 <p class="mosaic-status-note">Categories describe candidate identities, not whole Archive Members. A matching candidate may also contain unresolved branches. Even an apparently complete search does not establish search-wide absence of duplication.</p>
-<details class="report-retention"><summary>Method and report retention</summary><p>Each context uses its recorded Archive s_region for the strict-majority pointing rule. Angular resolution and spectral comparisons use stored Archive metadata. No scientific rule is recalculated by this page.</p><p>Temporary reports are retained for up to {{ retention_hours }} hours; server restart can clear them earlier.</p></details>
+<details class="report-retention"><summary>Method and report retention</summary><p>Each context uses its recorded Archive region or verified half-power beam evidence for the strict-majority pointing rule. Angular resolution and spectral comparisons use stored Archive metadata. No scientific rule is recalculated by this page.</p><p>Temporary reports are retained for up to {{ retention_hours }} hours; server restart can clear them earlier.</p></details>
 </section>
 
 <nav class="report-nav mosaic-filters" aria-label="Mosaic candidate filters">

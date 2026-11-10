@@ -221,6 +221,37 @@
       button.addEventListener('click',()=>{if(action==='reset'){k=1;tx=ty=0;draw();}else zoom(action==='in'?1.6:1/1.6);});
       controls[action]=button;toolbar.append(button);
     }
+    const exportButton=document.createElement('button');
+    exportButton.type='button';exportButton.textContent='SVG';
+    exportButton.setAttribute('aria-label',spatial?'Export position chart SVG':'Export frequency chart SVG');
+    exportButton.addEventListener('click',()=>{
+      const copy=svg.cloneNode(true);
+      const originals=[svg,...svg.querySelectorAll('*')], clones=[copy,...copy.querySelectorAll('*')];
+      for(let i=0;i<originals.length;i++) {
+        const style=getComputedStyle(originals[i]);
+        for(const property of ['fill','fill-opacity','stroke','stroke-width','stroke-opacity','stroke-dasharray','opacity',
+          'display','visibility','font-family','font-size','font-weight','paint-order','vector-effect'])
+          clones[i].style.setProperty(property,style.getPropertyValue(property));
+      }
+      copy.setAttribute('xmlns',NS);
+      const vb=svg.viewBox.baseVal;
+      copy.setAttribute('width',vb.width);copy.setAttribute('height',vb.height+76);
+      copy.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.width} ${vb.height+76}`);
+      const scope=svg.closest('[data-evidence]');
+      const row=rows.find(r=>r.dataset.row===scope?.dataset.evidence);
+      const notes=[row?.textContent.trim().replace(/\s+/g,' ')||'Mosaic comparison',
+        'Proposed: purple · Archive: blue · Queue: orange. Current zoom and layers.',
+        'Saved evidence display only; spatial overlap is not a duplication verdict.'];
+      const desc=document.createElementNS(NS,'desc');desc.textContent=notes.join(' · ');copy.prepend(desc);
+      notes.forEach((note,i)=>{const text=document.createElementNS(NS,'text');
+        text.setAttribute('x',12);text.setAttribute('y',vb.height+18+i*20);
+        text.setAttribute('fill','#27475d');text.setAttribute('font-size','10');
+        text.textContent=note;text.setAttribute('textLength',Math.min(vb.width-24,note.length*5));
+        text.setAttribute('lengthAdjust','spacingAndGlyphs');copy.append(text);});
+      const url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(copy)],{type:'image/svg+xml'}));
+      const link=document.createElement('a');link.href=url;link.download=`mosaic-${spatial?'position':'frequency'}.svg`;
+      link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    });toolbar.append(exportButton);
     const hint=document.createElement('span');hint.textContent='Drag to pan · Ctrl/⌘ + scroll to zoom';toolbar.append(hint);
     svg.setAttribute('tabindex','0');svg.classList.add('mosaic-interactive-chart');
     function point(event) { const p=new DOMPoint(event.clientX,event.clientY);return p.matrixTransform(svg.getScreenCTM().inverse()); }

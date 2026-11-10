@@ -50,7 +50,7 @@ project method decision, not an ALMA endorsement.</p>
 report download.</p>
 </details>
 {% for v in c.science.variants %}
-<section class="beam-variant">
+{% set variant_index = loop.index0 %}<section class="beam-variant" id="queue-{{ c.candidate_id }}-beam-{{ variant_index }}">
 <h4>Beam variant · D = {{ v.diameter_m }} m</h4>
 {% for b in v.branches %}
 <p class="branch-result">
@@ -68,10 +68,11 @@ report download.</p>
 {{ comparison(v.criteria, 'Candidate conditions', position, 'Queue') }}
 
 {% for pair in v.line_pairs %}
-<details class="line-pair">
+<details class="line-pair" id="queue-{{ c.candidate_id }}-beam-{{ variant_index }}-pair-{{ loop.index0 }}">
 <summary>LINE · {{ pair.reference.proposed_window_id }}
 · SPW {{ pair.reference.spw_number }}:
-{{ pair.status or pair.truth }}</summary>
+{{ status_labels.get(pair.status, "Needs review") }}</summary>
+{% if pair.preparation_reasons %}<details><summary>Recorded line preparation</summary><p>{{ pair.preparation_reasons|join(', ') }}</p></details>{% endif %}
 {{ comparison(pair.criteria, 'LINE comparison', position, 'Queue') }}
 </details>
 {% endfor %}

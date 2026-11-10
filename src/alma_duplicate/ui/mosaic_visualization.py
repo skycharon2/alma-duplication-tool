@@ -15,18 +15,20 @@ def _evidence(branch, criteria, pairs):
     intent = branch['branch']
     spectra = []
     if intent == 'LINE':
-        for pair in pairs:
+        for pair_index, pair in enumerate(pairs):
             if pair.get('status') == 'CRITERIA_MET' or pair.get('truth') == 'TRUE':
                 spectrum = spectral_view(pair.get('criteria', []), intent)
                 attempt = pair.get('attempt') or {}
-                reference = attempt.get('reference') or {}
+                reference = attempt.get('reference') or pair.get('reference') or {}
                 association = reference.get('candidate_association') or {}
-                spectrum['window'] = attempt.get('proposed_window_id')
+                spectrum['window'] = attempt.get('proposed_window_id') or reference.get('proposed_window_id')
+                spectrum['pair_index'] = pair_index
+                spectrum['criteria'] = pair.get('criteria', [])
                 spectrum['spw'] = association.get('spw_token', reference.get('spw_number'))
                 spectra.append(spectrum)
     else:
         spectra.append(spectral_view(criteria, intent))
-    return dict(intent=intent, status=branch.get('status'), spectra=spectra)
+    return dict(intent=intent, status=branch.get('status'), spectra=spectra, criteria=criteria)
 
 
 def _archive_project(entry, ctx):
@@ -47,6 +49,25 @@ def _archive_project(entry, ctx):
         project = project.strip()
         return project if not projects or project in projects else None
     return projects[0] if len(projects) == 1 else None
+
+
+def _archive_beams(ctx, coverage):
+    """Compatibility for saved method versions that validated ICRS before serialization."""
+    circles = coverage.get('circles') or []
+    methods = {r.get('method_version') for r in ctx.get('criteria', [])
+               if r.get('criterion_id') == 'POS-MOSAIC'}
+    result = []
+    for circle in circles:
+        bound_single = (methods == {'archive_pos_mosaic_single_candidate_1'}
+                        and coverage.get('candidate_geometry') == 'SINGLE_POINTING'
+                        and circle.get('field_id') == ctx.get('context_id')
+                        and circle.get('metadata_context_ids') == [ctx.get('context_id')])
+        bound_union = (methods == {'archive_pos_mosaic_metadata_union_1'}
+                       and ctx.get('context_id') in circle.get('metadata_context_ids', [])
+                       and circle.get('asdm_uid') in coverage.get('included_asdm_uids', []))
+        result.append(dict(circle, frame='ICRS') if 'frame' not in circle and (bound_single or bound_union)
+                      else dict(circle))
+    return result
 
 
 def archive_rows(page):
@@ -73,7 +94,7 @@ def archive_rows(page):
                            context_id=ctx.get('context_id'), array=f'{diameter:g} m' if diameter else '',
                            inside=coverage.get('inside_count'), total=coverage.get('pointing_count'),
                            outcome=coverage.get('outcome'), region=coverage.get('raw_s_region'),
-                           beams=coverage.get('circles') or [], footprint_evidence=coverage,
+                           beams=_archive_beams(ctx, coverage), footprint_evidence=coverage,
                            probes=coverage.get('points') or (coverage.get('probes') or {}).get('points', []),
                            spectral_setup=_archive_spectral_setup(
                                (candidate.get('spectral_setup_displays') or {}).get(ctx.get('context_id')) or ctx),
@@ -86,7 +107,7 @@ def queue_rows(page):
         candidate = entry['candidate']
         position = candidate.get('position') or {}
         science = candidate.get('science') or {}
-        for variant in science.get('variants', []):
+        for variant_index, variant in enumerate(science.get('variants', [])):
             diameter = variant.get('diameter_m')
             positions = [p for p in position.get('beam_variants', []) if p.get('diameter_m') == diameter]
             saved = positions[0] if len(positions) == 1 else {}
@@ -112,7 +133,7 @@ def queue_rows(page):
                            footprint_evidence=dict(variant=saved, snapshot=position.get('snapshot_sha256'),
                                                    source_ids=position.get('source_row_ids')) if bound else {},
                            spectral_setup=_queue_spectral_setup(candidate),
-                           anchor=f"queue-{candidate['candidate_id']}",
+                           anchor=f"queue-{candidate['candidate_id']}-beam-{variant_index}",
                            **_evidence(branch, variant.get('criteria', []), variant.get('line_pairs', [])))
 
 

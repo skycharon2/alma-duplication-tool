@@ -58,6 +58,7 @@ def evaluate_single_candidate(
                     ra_deg=spatial.center.ra_deg,
                     dec_deg=spatial.center.dec_deg,
                     radius_arcsec=radius,
+                    frame="ICRS",
                     metadata_context_ids=[context.context_id],
                 )
             ]

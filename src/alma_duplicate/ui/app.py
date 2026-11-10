@@ -405,12 +405,17 @@ def create_app(config=None):
                 row['spectral_overview'] = spectral_overview(row['spectra'], row.get('spectral_setup'))
                 row['position_chart'] = position_chart(row, submitted.get('mosaic_pointings') or {})
                 row['sky_preview'] = sky_preview(row, submitted.get('mosaic_pointings') or {}, row['position_chart'])
-                for spectrum in row['spectra']:
+                for spectrum_index, spectrum in enumerate(row['spectra']):
                     spectrum['chart'] = frequency_chart(spectrum)
+                    if 'pair_index' in spectrum and (not archive or spectrum_index < 10):
+                        spectrum['details_url'] = report_url + '#' + row['anchor'] + '-pair-' + str(spectrum['pair_index'])
                 row['details_url'] = report_url + '#' + row['anchor']
                 rows.append(row)
             navigation.append(dict(source=source, report_id=key, page=data['page'], pages=data['pages']))
         return render_template('mosaic_visualization.html', rows=rows, saved=True, navigation=navigation,
+                               criterion_view=criterion_view, criterion_status=criterion_status,
+                               criterion_explanation=criterion_explanation, display_number=display_number,
+                               calculation_view=calculation_view, status_labels=STATUS_LABELS,
                                notices=notices, proposed=submitted.get('mosaic_pointings') or {},
                                target=submitted.get('request', {}).get('target_name'),
                                report_url=url_for('run_view', report_id=report_id, page=page))
