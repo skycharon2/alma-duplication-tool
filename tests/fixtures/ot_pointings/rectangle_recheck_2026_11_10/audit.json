@@ -1,0 +1,32 @@
+{
+  "fresh_rectangle_7m": {
+    "diameter_m": 7,
+    "predicted_count": 5,
+    "reference_count": 5,
+    "matched_count": 5,
+    "status": "MATCHED",
+    "max_matched_residual_arcsec": 2.4305706294855243e-07,
+    "spacing_arcsec": 47.66541636927047
+  },
+  "source_sha256": "90abdd76e829967b5b6f9da8f74ccc00ecd0d19d6fad96ff2d9f1c06f24cd6af",
+  "historical_d3": [
+    {
+      "diameter_m": 12,
+      "predicted_count": 10,
+      "reference_count": 10,
+      "matched_count": 10,
+      "status": "MATCHED",
+      "max_matched_residual_arcsec": 1.850735867725548e-07,
+      "spacing_arcsec": 27.804826215407775
+    },
+    {
+      "diameter_m": 7,
+      "predicted_count": 5,
+      "reference_count": 5,
+      "matched_count": 5,
+      "status": "MATCHED",
+      "max_matched_residual_arcsec": 4.2987299693571337e-07,
+      "spacing_arcsec": 47.66541636927047
+    }
+  ]
+}
