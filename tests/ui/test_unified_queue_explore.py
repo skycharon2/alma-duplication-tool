@@ -81,3 +81,20 @@ def test_queue_only_batch_counts_each_matching_array_without_a_legacy_range():
     assert (merged['start'], merged['stop'], merged['total']) == (0, 0, 0)
     assert merged['queue_comparison_count'] == 2
     assert len({row['display_number'] for row in merged['rows']}) == 2
+
+
+def test_saved_queue_continuum_intervals_preserve_gaps_and_ignore_invalid_values():
+    import json
+    from alma_duplicate.ui.unified_queue_visualization import _spectral
+    records = [dict(criterion_id='CONT-FREQ', proposed={'value':230., 'unit':'GHz'},
+                    candidate={'value':231., 'unit':'GHz'}),
+               dict(criterion_id='CONT-RMS', details=[['spw_evidence_json', json.dumps([
+                   {'spw_number':1, 'usable_interval_ghz_exact':['229/1','230/1']},
+                   {'spw_number':2, 'usable_interval_ghz_exact':['232/1','233/1']},
+                   {'spw_number':3, 'usable_interval_ghz_exact':['bad','234']},
+               ])]])]
+    before = deepcopy(records)
+    result = _spectral(records, 'CONTINUUM')
+    assert [(c['low'],c['high']) for c in result['coverage']] == [(229.,230.),(232.,233.)]
+    assert records == before
+    assert _spectral(records[:1], 'CONTINUUM')['coverage'] == []

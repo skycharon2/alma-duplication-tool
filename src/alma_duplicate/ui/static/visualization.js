@@ -11,8 +11,8 @@
   const viewport = window.ReportViewport;
   viewport.assignColors(rows);
   const views = {spatial: viewport.fresh(), spectral: viewport.fresh()};
-  let project = "", member = "", isolated = false;
-  const filteredRows = () => viewport.filter(rows, project, member);
+  let project = "", member = "", array = "", isolated = false;
+  const filteredRows = () => viewport.filter(rows, project, member, array);
   const visibleRows = () => viewport.visible(filteredRows(), selected, isolated);
   const spatialPoints = list => list.flatMap(row => !row.spatial.available ? [] :
     row.spatial.beams?.length ? [...row.spatial.beams.flatMap(beam => beam.outline || [beam.offset]), ...(row.spatial.rectangle_reference?.outline || [])] :
@@ -21,7 +21,7 @@
   const frequencyValues = list => list.flatMap(row => {
     const f = row.spectral;
     const support = ((data.spectral_setups || {})[row.spectral_setup_id]?.components || []).flatMap(c => c.interval ? [c.interval.low, c.interval.high] : []);
-    return [...support, ...(!f.available ? [] : f.kind === "interval" ? [f.proposed, f.low, f.high] : [f.proposed, f.candidate, ...(f.coverage || []).flatMap(c => [c.low, c.high])])];
+    return [...support, ...(f.coverage || []).flatMap(c => [c.low,c.high]), ...(!f.available ? [] : f.kind === "interval" ? [f.proposed, f.low, f.high] : [f.proposed, f.candidate, ...(f.coverage || []).flatMap(c => [c.low, c.high])])];
   });
   const extent = Math.max(10, spatialPoints(rows).reduce((v,p)=>Math.max(v,Math.abs(p[0]),Math.abs(p[1])),0)) * 1.15;
   const frequencies = frequencyValues(rows);
@@ -142,21 +142,27 @@
   }
   function coverageLabel(row, c) {
     const resolution = c.resolution ? `${fmt(c.resolution.value)} ${c.resolution.unit}` : "not recorded";
-    return `SPW ${row.spw} · Representative ${fmt(row.spectral.candidate)} GHz · Coverage ${fmt(c.low)}–${fmt(c.high)} GHz · Interval width ${fmt(c.bandwidth_ghz)} GHz · Spectral resolution ${resolution}`;
+    return `SPW ${c.spw ?? row.spw} · Coverage ${fmt(c.low)}–${fmt(c.high)} GHz · Interval width ${fmt(c.bandwidth_ghz)} GHz · Spectral resolution ${resolution}`;
   }
   function spectralChart() {
     const svg = document.getElementById("spectral-chart");
     const shown = visibleRows();
     const entries = [], groups = new Map();
     shown.forEach(row => {
-      const setup = (data.spectral_setups || {})[row.spectral_setup_id];
+      const setup = (data.spectral_setups || {})[row.spectral_setup_id] || viewport.queueSetup(row);
       if (!setup || !setup.components.some(c => c.interval)) { entries.push({row}); return; }
       if (!groups.has(setup.id)) groups.set(setup.id, {setup, rows:[]});
       groups.get(setup.id).rows.push(row);
     });
     groups.forEach(group => {
       entries.push({group});
-      if (expandedSetups.has(group.setup.id)) group.rows.forEach(row => entries.push({row}));
+      if (expandedSetups.has(group.setup.id)) {
+        if (group.setup.queue) {
+          group.setup.components.forEach(component => entries.push({component, row:group.rows[0]}));
+          if (group.setup.line) group.rows.forEach(row => entries.push({row}));
+        }
+        else group.rows.forEach(row => entries.push({row}));
+      }
     });
     const height = Math.max(330, 90 + entries.length * 40);
     svg.setAttribute("viewBox", `0 0 600 ${height}`);
@@ -186,19 +192,31 @@
         const g = draw(svg, "g", {role:"button", tabindex:"0", "aria-expanded":String(opened),
           "aria-label":`${opened ? "Collapse" : "Expand"} SPW comparisons for ${members[0].label}`});
         draw(g, "rect", {x:5,y:y-17,width:585,height:34,fill:members.some(r => r.id === highlighted()) ? "#e9f4fa" : "transparent"});
-        draw(g, "text", {x:12,y:y+3}, `${opened ? "▾" : "▸"} Setup · ${members.length} rows`);
-        draw(g, "title", {}, members[0].label+" · ASDM "+(setup.execution?.ASDM || "not recorded")+" · "+members.length+" comparisons · Full frequency_support; expand for SPWs");
+        draw(g, "text", {x:12,y:y+3}, `${opened ? "▾" : "▸"} ${setup.line ? "Evaluated" : "Setup"} · ${setup.queue ? setup.components.length + " SPWs · " + viewport.arrayKey(members[0]) : members.length + " rows"}`);
+        draw(g, "title", {}, setup.queue ? members[0].label + " · Recorded Queue SPW coverage; expand for individual windows" : members[0].label+" · ASDM "+(setup.execution?.ASDM || "not recorded")+" · "+members.length+" comparisons · Full frequency_support; expand for SPWs");
         const toggle = () => { if (opened) expandedSetups.delete(setup.id); else expandedSetups.add(setup.id); spectralChart(); };
         g.addEventListener("click", event => { if (suppressClick) return; event.stopPropagation(); toggle(); });
         g.addEventListener("keydown", event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle(); } });
         const layer = draw(g, "g", {"clip-path":"url(#frequency-clip)"});
         setup.components.filter(c => c.interval).forEach((c, j) => {
           const bar = draw(layer, "rect", {x:x(c.interval.low),y:y-7+(j%2)*7,
-            width:Math.max(.5,x(c.interval.high)-x(c.interval.low)),height:6,fill:"#17689e",opacity:.65});
-          draw(bar, "title", {}, componentText(c));
+            width:Math.max(.5,x(c.interval.high)-x(c.interval.low)),height:6,fill:color(members[0]),opacity:.65});
+          draw(bar, "title", {}, setup.queue ? coverageLabel(members[0], c.interval) : componentText(c));
         });
         const requested = [...new Set(members.filter(r => r.spectral.available).map(r => r.spectral.proposed))];
         requested.forEach(v => marker(layer,x(v),y));
+        return;
+      }
+      if (entry.component) {
+        const row = entry.row, c = entry.component.interval;
+        const g = draw(svg, "g", {role:"group", "aria-label":`SPW ${c.spw ?? "?"} coverage reference; not a matching comparison`});
+        draw(g, "title", {}, coverageLabel(row,c));
+        draw(g, "text", {x:12,y:y+3}, `SPW ${c.spw ?? "?"} · coverage`);
+        const layer = draw(g, "g", {"clip-path":"url(#frequency-clip)"});
+        const bar = draw(layer, "rect", {x:x(c.low), y:y-5,
+          width:Math.max(.5,x(c.high)-x(c.low)), height:10, fill:color(row), opacity:.7});
+        draw(bar, "title", {}, coverageLabel(row,c));
+        marker(layer,x(row.spectral.proposed),y);
         return;
       }
       const row = entry.row, f = row.spectral, active = row.id === highlighted();
@@ -307,6 +325,11 @@
       row => `${row.source === "QUEUE" ? "Queue" : "Archive"}: ${row.identity["Member OUS"] || "No Member OUS recorded"}`, "All Members / contexts");
     document.getElementById("visual-member").value = member;
   }
+  function arrays() {
+    options(document.getElementById("visual-array"), viewport.filter(rows,project,member),
+      viewport.arrayKey, viewport.arrayKey, "All arrays");
+    document.getElementById("visual-array").value = array;
+  }
   function updateControls() {
     const shown = visibleRows(), ids = new Set(shown.map(row=>row.id));
     document.querySelectorAll(".visual-candidate").forEach(element => { element.hidden = !ids.has(element.dataset.row); });
@@ -339,7 +362,7 @@
     if (f.available) node("small", {}, f.kind === "interval" ? `Candidate ${fmt(f.low)}–${fmt(f.high)} GHz` : `Candidate ${fmt(f.candidate)} GHz (representative)`, frequency);
     if (relation.lowerMarginGHz !== null) {
       node("small", {}, `From lower edge: ${fmt(relation.lowerMarginGHz)} GHz; to upper edge: ${fmt(relation.upperMarginGHz)} GHz. Negative = outside interval.`, frequency);
-    } else if (f.available) node("small", {}, "Representative markers do not describe frequency coverage.", frequency);
+    } else if (f.available) node("small", {}, (f.coverage?.length ? `${f.coverage.length} recorded SPW intervals shown as shaded bars; dots are representative frequencies.` : "Representative markers do not describe frequency coverage."), frequency);
     if (!f.available && f.reason) node("small", {}, f.reason, frequency);
   }
   function preview(id) {
@@ -366,15 +389,16 @@
   }
   options(document.getElementById("visual-project"), rows, viewport.projectKey,
     row => row.identity.Project || "Project not recorded", "All projects");
-  members();
+  members(); arrays();
   document.getElementById("visual-project").addEventListener("change", event => {
-    project=event.target.value; member=""; members(); applyFilters();
+    project=event.target.value; member=""; array=""; members(); arrays(); applyFilters();
   });
-  document.getElementById("visual-member").addEventListener("change", event => { member=event.target.value; applyFilters(); });
+  document.getElementById("visual-member").addEventListener("change", event => { member=event.target.value; array=""; arrays(); applyFilters(); });
+  document.getElementById("visual-array").addEventListener("change", event => { array=event.target.value; applyFilters(); });
   document.getElementById("visual-isolate").addEventListener("click", () => { isolated=!isolated; select(selected); });
   document.getElementById("visual-clear").addEventListener("click", () => {
-    project=""; member=""; isolated=false;
-    document.getElementById("visual-project").value=""; members(); applyFilters();
+    project=""; member=""; array=""; isolated=false;
+    document.getElementById("visual-project").value=""; members(); arrays(); applyFilters();
   });
   document.getElementById("visual-focus").addEventListener("click", () => {
     sky?.focus();

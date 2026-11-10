@@ -128,3 +128,29 @@ test('object colors remain shared across arrays/SPWs and stable through filterin
   view.assignColors([...rows].reverse());
   assert.deepEqual(rows.map(r=>r.plot_color),colors);
 });
+
+
+test('array filter separates matching branches without changing their object colors', () => {
+  const rows = [7,12].map(d=>({id:String(d),source:'QUEUE',array_diameter_m:d,
+    identity:{Project:'P','Queue candidate':'same'}}));
+  view.assignColors(rows);
+  assert.deepEqual(view.filter(rows,'','','7-m').map(r=>r.id), ['7']);
+  assert.deepEqual(view.filter(rows,'','','12-m').map(r=>r.id), ['12']);
+  assert.equal(view.filter(rows).length,2);
+  assert.equal(rows[0].plot_color, rows[1].plot_color);
+});
+
+
+test('Queue setup exposes saved SPWs separately without creating matching comparisons', () => {
+  const row={id:'q12',source:'QUEUE',spectral:{coverage:[
+    {spw:1,low:210,high:211},{spw:3,low:230,high:231}]}};
+  const before=JSON.stringify(row);
+  const setup=view.queueSetup(row);
+  assert.equal(setup.queue,true);
+  assert.deepEqual(setup.components.map(c=>c.index),[1,3]);
+  assert.deepEqual(setup.components.map(c=>c.interval),row.spectral.coverage);
+  assert.equal(JSON.stringify(row),before);
+  assert.notEqual(view.queueSetup({...row,id:'q7'}).id,setup.id);
+  assert.equal(view.queueSetup({source:'QUEUE',spectral:{}}),null);
+  assert.equal(view.queueSetup({...row,source:'ARCHIVE'}),null);
+});

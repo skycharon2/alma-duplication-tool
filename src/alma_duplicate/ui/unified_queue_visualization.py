@@ -5,6 +5,8 @@ Every plotted beam comes from the already saved, bound Queue coverage evidence.
 """
 from __future__ import annotations
 
+from alma_duplicate.ui.queue_spectral_display import continuum_windows
+
 from alma_duplicate.ui.report_view import (
     criterion_explanation,
     criterion_status,
@@ -28,6 +30,10 @@ def _criteria(records):
 def _spectral(records, intent):
     """Use recorded Queue numerical comparisons; never infer a frequency interval."""
     result = spectral_view(records, intent)
+    # These intervals are bound to this array branch's saved CONT-RMS evidence.
+    # Do not reconstruct coverage from its representative frequency or total bandwidth.
+    if intent == 'CONTINUUM' and result.get('available'):
+        result['coverage'] = continuum_windows(records)
     return result if result.get('available') else dict(available=False,
         reason='This Queue branch has no independently displayable spectral operands.')
 

@@ -24,8 +24,9 @@
   }
   const projectKey = row => JSON.stringify(row.identity.Project ?? null);
   const memberKey = row => JSON.stringify([row.source, row.identity["Member OUS"] ?? null]);
-  function filter(rows, project = "", member = "") {
-    return rows.filter(row => (!project || projectKey(row) === project) && (!member || memberKey(row) === member));
+  const arrayKey = row => row.identity?.Array || (row.array_diameter_m ? `${row.array_diameter_m}-m` : "Not recorded");
+  function filter(rows, project = "", member = "", array = "") {
+    return rows.filter(row => (!project || projectKey(row) === project) && (!member || memberKey(row) === member) && (!array || arrayKey(row) === array));
   }
   function visible(rows, selected, isolated) {
     return isolated ? rows.filter(row => row.id === selected) : rows;
@@ -64,7 +65,12 @@
     const colors = new Map(keys.map((key, i) => [key, palette[i] || `hsl(${(i * 137.508) % 360}, 58%, 43%)`]));
     rows.forEach(row => { row.plot_color = colors.get(objectKey(row)); });
   }
-  const api={objectKey, assignColors, relationships, fresh, zoom, pan, hits, projectKey, memberKey, filter, visible, selection, fit};
+  function queueSetup(row) {
+    if (row.source !== 'QUEUE' || !row.spectral?.coverage?.length) return null;
+    return {id: `queue-setup:${row.queue_setup_key || row.id}`, queue: true, line:row.intent === "LINE",
+      components: row.spectral.coverage.map(c => ({index:c.spw, interval:c}))};
+  }
+  const api={queueSetup, arrayKey, objectKey, assignColors, relationships, fresh, zoom, pan, hits, projectKey, memberKey, filter, visible, selection, fit};
   if (typeof module === "object" && module.exports) module.exports=api;
   else root.ReportViewport=api;
 })(globalThis);
