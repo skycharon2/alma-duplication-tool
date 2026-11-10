@@ -36,15 +36,65 @@
     render();
   });
   const pages = [...root.querySelectorAll(".evidence-pager button")];
-  for (const button of pages) button.addEventListener("click", () => {
-    for (const page of pages) {
-      const active = button === page;
-      root.querySelector("#" + page.getAttribute("aria-controls")).hidden = !active;
-      page.setAttribute("aria-pressed", String(active));
-    }
+  const gallery = root.querySelector('#mosaic-evidence-gallery');
+  if (gallery && pages.length === 2) {
+    // Match Single Pointing: two full-width snap slides, not hidden tabs.
+    // Native horizontal trackpad/touch scrolling also changes the active page.
+    const slides = pages.map(button => root.querySelector('#' + button.getAttribute('aria-controls')));
     const counter = root.querySelector('#evidence-page-number');
-    if (counter) counter.textContent = `${pages.indexOf(button) + 1} / ${pages.length}`;
-  });
+    let current = 0;
+    function syncHeight() {
+      const measured = slides[current]?.getBoundingClientRect?.().height;
+      if (Number.isFinite(measured) && measured > 0)
+        gallery.style.height = `${Math.ceil(measured)}px`;
+    }
+    function activate(index) {
+      current = index;
+      pages.forEach((button, i) => button.setAttribute('aria-pressed', String(i === index)));
+      slides.forEach((slide, i) => {
+        slide.hidden = false; // Both slides must remain laid out for a swipe.
+        slide.inert = i !== index;
+      });
+      if (counter) counter.textContent = `${index + 1} / 2`;
+      syncHeight();
+    }
+    function go(index) {
+      activate(index);
+      const reduced = typeof matchMedia === 'function' &&
+        matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const left = index * gallery.clientWidth;
+      if (gallery.scrollTo) gallery.scrollTo({left, behavior:reduced?'instant':'smooth'});
+      else gallery.scrollLeft = left;
+    }
+    pages.forEach((button, i) => button.addEventListener('click', () => go(i)));
+    gallery.addEventListener('scroll', () => {
+      if (gallery.clientWidth > 0)
+        activate(gallery.scrollLeft >= gallery.clientWidth / 2 ? 1 : 0);
+    }, {passive:true});
+    gallery.addEventListener('keydown', event => {
+      if (event.target !== gallery || !['ArrowLeft','ArrowRight'].includes(event.key)) return;
+      event.preventDefault();
+      go(event.key === 'ArrowRight' ? 1 : 0);
+    });
+    if (typeof ResizeObserver === 'function') {
+      const observer = new ResizeObserver(syncHeight);
+      for (const slide of slides) observer.observe(slide);
+    }
+    if (typeof window !== 'undefined' && window.addEventListener)
+      window.addEventListener('resize', () => {gallery.scrollLeft = current * gallery.clientWidth;syncHeight();});
+    activate(0);
+  } else {
+    // Lightweight pre-P1 DOM fixtures retain the original tab behavior.
+    for (const button of pages) button.addEventListener("click", () => {
+      for (const page of pages) {
+        const active = button === page;
+        root.querySelector("#" + page.getAttribute("aria-controls")).hidden = !active;
+        page.setAttribute("aria-pressed", String(active));
+      }
+      const counter = root.querySelector('#evidence-page-number');
+      if (counter) counter.textContent = `${pages.indexOf(button) + 1} / ${pages.length}`;
+    });
+  }
   for (const toggle of root.querySelectorAll("[data-layer]")) {
     toggle.addEventListener("change", () => {
       toggle.closest("[data-evidence]").classList.toggle(`hide-${toggle.dataset.layer}`, !toggle.checked);

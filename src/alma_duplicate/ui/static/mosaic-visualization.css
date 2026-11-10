@@ -132,3 +132,47 @@
   .mosaic-explorer .mosaic-header-tools { margin-left: auto; }
   .mosaic-explorer .mosaic-frequency-scroll { overflow-x: auto; }
 }
+
+/* P1 Mosaic Sky Preview: same visual shell as the Single Pointing sky stage. */
+.mosaic-explorer #sky { margin-top: 0; }
+.mosaic-explorer #sky .sky-workspace { min-height: 400px; }
+.mosaic-explorer #mosaic-sky-canvas { width: 100%; height: 390px; background: #071016; }
+.mosaic-explorer #mosaic-sky-canvas > svg { height: 100%; }
+.mosaic-explorer .mosaic-sky-controls { display: flex; flex-wrap: wrap; gap: .55rem 1rem;
+  padding: .7rem 1rem; font-size: .78rem; color: #546b7e; border-top: 1px solid #d9e4ec; }
+.mosaic-explorer .mosaic-sky-controls label { display: flex; align-items: center; gap: .35rem; }
+.mosaic-explorer .mosaic-sky-controls input { accent-color: #17689e; }
+.mosaic-explorer .mosaic-sky-status { margin: .5rem 1rem; font-size: .78rem; line-height: 1.5; color: #546b7e; }
+.mosaic-explorer .mosaic-sky-status[role="status"] { min-height: 1.4em; }
+.mosaic-explorer .mosaic-sky-identity { padding: .8rem 1rem; font-size: .82rem; color: #27475d; }
+.mosaic-explorer .mosaic-sky-identity p { margin: .4rem 0; overflow-wrap: anywhere; }
+.mosaic-explorer .mosaic-sky-legend { padding: .65rem 1rem; display: flex; gap: .4rem 1.2rem;
+  flex-wrap: wrap; font-size: .75rem; color: #546b7e; border-top: 1px solid #d9e4ec; }
+.mosaic-explorer .mosaic-sky-legend .proposed { color: #a62c83; }
+.mosaic-explorer .mosaic-sky-legend .archive { color: #17689e; }
+.mosaic-explorer .mosaic-sky-legend .queue { color: #a45b15; }
+.mosaic-explorer #mosaic-sky-retry[hidden] { display: none; }
+@media (max-width: 900px) {
+  .mosaic-explorer #sky .sky-workspace { grid-template-columns: 1fr; }
+  .mosaic-explorer #mosaic-sky-canvas { height: 360px; }
+}
+
+/* P1.1: Single Pointing-compatible, native horizontal evidence slides. */
+.mosaic-explorer #mosaic-evidence-gallery { width: 100%; min-width: 0; }
+.mosaic-explorer #mosaic-evidence-gallery > #charts,
+.mosaic-explorer #mosaic-evidence-gallery > #sky {
+  box-sizing: border-box; flex: 0 0 100%; width: 100%; min-width: 0;
+  scroll-snap-align: start; scroll-snap-stop: always;
+}
+.mosaic-explorer #mosaic-evidence-gallery > #sky { margin: 0; }
+.mosaic-explorer .mosaic-sky-legend { align-items: center; gap: .55rem 1.25rem; }
+.mosaic-explorer .mosaic-sky-legend > span { display: inline-flex; align-items: center; gap: .4rem; }
+.mosaic-explorer .mosaic-sky-legend > span::before { content: ''; width: 1.3rem; border-top: 3px solid currentColor; }
+.mosaic-explorer .mosaic-sky-legend .proposed-point { color: #008f8b; }
+.mosaic-explorer .mosaic-sky-legend .proposed-point::before { content: '✛'; width: 1rem; border: 0; }
+.mosaic-explorer .mosaic-sky-legend .proposed { color: #a12b9b; }
+.mosaic-explorer .mosaic-sky-legend .proposed::before,
+.mosaic-explorer .mosaic-sky-legend .queue::before { border-top-style: dashed; }
+.mosaic-explorer .mosaic-sky-legend .archive { color: #176fba; }
+.mosaic-explorer .mosaic-sky-legend .queue { color: #ad7000; }
+.mosaic-explorer #mosaic-evidence-gallery:focus-visible { outline: 2px solid #007cb0; outline-offset: -2px; }

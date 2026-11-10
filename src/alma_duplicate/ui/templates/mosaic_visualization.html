@@ -4,6 +4,9 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='visualization.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='mosaic-visualization.css') }}">
 <script defer src="{{ url_for('static', filename='mosaic-visualization.js') }}"></script>
+<script defer src="{{ url_for('static', filename='alma-sky-runtime.js') }}"></script>
+<script defer src="{{ url_for('static', filename='mosaic-sky-geometry.js') }}"></script>
+<script defer src="{{ url_for('static', filename='mosaic-report-sky.js') }}"></script>
 {% endblock %}
 {% block content %}
 <div class="visual-page mosaic-explorer">
@@ -24,12 +27,14 @@
 </select></label>{% endfor %}
 <div class="visual-filter-actions"><button type="button" id="clear-filters">Clear filters</button></div></div>
 <p id="comparison-count" role="status"></p></section>
-<div class="evidence-gallery-heading"><div><h2>Explore the evidence</h2><p>Chart gestures stay inside each view · Sky preview follows in P1</p></div>
+<div class="evidence-gallery-heading"><div><h2>Explore the evidence</h2><p>Swipe horizontally between Charts and Sky preview · Sky imagery loads only when opened</p></div>
 <div class="evidence-pager" role="group" aria-label="Evidence view">
 <button aria-controls="charts" aria-pressed="true">Charts</button>
 <span id="evidence-page-number" aria-live="polite">1 / 2</span>
 <button aria-controls="sky" aria-pressed="false">Sky preview →</button></div></div>
-<div id="charts" class="visual-panels">
+<div id="mosaic-evidence-gallery" class="evidence-gallery mosaic-evidence-gallery" tabindex="0"
+ role="region" aria-label="Charts and Sky Preview; swipe horizontally or use left and right arrow keys">
+<div id="charts" class="visual-panels evidence-slide" role="group" aria-label="1 of 2: Mosaic position and frequency charts">
 <section class="visual-panel" aria-labelledby="mosaic-position-title"><header><div><h2 id="mosaic-position-title">Position</h2><p>Proposed Mosaic and candidate coverage</p></div><div id="mosaic-position-tools" class="mosaic-header-tools" aria-label="Position zoom controls"></div></header>
 {% if not saved %}{% for row in rows %}<svg data-evidence="{{ loop.index0 }}" viewBox="0 0 360 184" role="img" aria-label="{{ row.candidate }} illustrative pointing layout"{% if not loop.first %} hidden{% endif %}>
 <g class="footprint {{ row.source|lower }}">
@@ -94,8 +99,37 @@
 {% if sp.available %}
 <dl class="frequency-values"><dt>Your requirement</dt><dd>{{ '%.9g'|format(sp.proposed) }} GHz</dd><dt>Candidate comparison</dt><dd>{% if sp.kind == 'interval' %}{{ '%.9g'|format(sp.low) }}–{{ '%.9g'|format(sp.high) }} GHz{% else %}{{ '%.9g'|format(sp.candidate) }} GHz{% endif %}</dd><dt>Recorded result</dt><dd>{{ sp.result }}</dd></dl>
 {% else %}<p>Frequency evidence unavailable.</p>{% endif %}</details>{% else %}<p>No recorded comparison frequencies.</p>{% endfor %}</div></div>{% endfor %}{% endif %}</section></div>
-<section id="sky" class="visual-panel" hidden><header><h2>Sky preview</h2></header>
-<p class="chart-caption">Sky imagery and celestial coordinates will be connected in a later step.</p></section>
+<section id="sky" class="visual-panel sky-stage evidence-slide" role="group" aria-label="2 of 2: Sky Preview" aria-labelledby="mosaic-sky-title">
+<header><div><h2 id="mosaic-sky-title">Target &amp; observation coverage</h2><p>Saved Mosaic pointings and verified candidate footprints on optical reference imagery</p></div>
+<div class="sky-view-actions"><button type="button" id="mosaic-sky-overview">Fit visible footprints</button>
+<button type="button" id="mosaic-sky-selected">Focus selected</button>
+<button type="button" id="mosaic-sky-retry" hidden>Retry image</button></div></header>
+<div class="sky-workspace"><div class="sky-map-column">
+<p class="field-note" style="padding: .65rem 1rem 0">DSS optical reference imagery via the local Aladin Lite 3.8.2 viewer. This is not ALMA data.</p>
+<div class="mosaic-sky-controls" aria-label="Sky layers">
+<label><input type="checkbox" id="mosaic-sky-proposed" checked> Proposed pointings / beams</label>
+<label><input type="checkbox" id="mosaic-sky-candidates" checked> Candidate footprints</label>
+<label><input type="checkbox" id="mosaic-sky-others"> Other visible comparisons</label>
+<label><input type="checkbox" id="mosaic-sky-imagery" checked> Optical image</label>
+</div>
+<div id="mosaic-sky-canvas" data-aladin-module="{{ url_for('static', filename='vendor/aladin-lite/3.8.2/aladin.js') }}"
+ role="group" aria-label="Mosaic sky preview; saved ICRS geometry and optional optical reference image"></div>
+<div class="mosaic-sky-legend"><span class="proposed-point">✛ OT pointing centres · teal</span>
+<span class="proposed">Proposed half-power beams · magenta dashed</span>
+<span class="archive">Archive · blue solid saved s_region</span><span class="queue">Queue · amber dashed bound beams</span></div>
+<p id="mosaic-imagery-status" role="status" aria-live="polite" class="mosaic-sky-status">Reference imagery is not loaded until Sky preview is opened.</p>
+</div><aside class="sky-explanation-column" aria-label="Selected Mosaic sky evidence">
+<div class="sky-relationship-card"><strong>Selected comparison · saved evidence</strong>
+<div id="mosaic-sky-identities" class="mosaic-sky-identity" aria-live="polite"></div>
+<p id="mosaic-sky-status" role="status" class="mosaic-sky-status">Sky preview has not been opened.</p>
+<small>Proposed positions come from your OT upload. Archive boundaries are verified saved s_region outlines; Queue circles use saved, candidate/array/snapshot-bound geometry. Neither background imagery nor spatial overlap alone establishes duplication.</small></div>
+<details class="sky-evidence-parameters" open><summary>How to interpret this view</summary>
+<p class="chart-caption">Teal crosses identify submitted pointings; dashed magenta circles are *display-only* proposed half-power beams. Solid blue outlines are verified Archive s_region boundaries; dashed amber circles are bound Queue beams. White halos mark a selected footprint, never a scientific verdict. A region polygon does not imply a single observed centre.</p>
+<p class="chart-caption">Optical DSS/Pan-STARRS imagery (via CDS/ESA) is contextual, not radio detections. Use Charts or the linked text report for exact scientific criteria. A missing sky image is not evidence of a non-detection.</p>
+</details></aside></div>
+</section>
+</div>
+{% if saved %}<script id="mosaic-sky-data" type="application/json">{{ rows|map(attribute='sky_preview')|list|tojson }}</script>{% endif %}
 <div class="visual-bottom"><section class="visual-panel visual-candidates" aria-labelledby="mosaic-selection-title"><header><h2 id="mosaic-selection-title">Matching comparisons</h2></header>
 <div class="visual-list">{% for row in rows %}<div class="visual-candidate"><button class="visual-select" type="button" data-row="{{ loop.index0 }}" data-source="{{ row.source }}" data-project="{{ row.project or '' }}" data-candidate="{{ row.candidate }}" data-array="{{ row.array }}" aria-pressed="{{ 'true' if loop.first else 'false' }}"><span><strong>{{ row.candidate }}</strong><small>{{ row.source }}{% if row.project %} · Project {{ row.project }}{% endif %} · {{ row.geometry }} · {{ row.intent }}{% if row.array %} · {{ row.array }}{% endif %}</small></span></button></div>{% endfor %}</div></section>
 <section class="visual-panel visual-detail" aria-labelledby="mosaic-detail-title"><header><h2 id="mosaic-detail-title">Selected comparison</h2></header>

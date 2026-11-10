@@ -359,6 +359,7 @@ def create_app(config=None):
     @app.get("/runs/<report_id>/mosaic-visualization")
     def mosaic_visualization(report_id):
         from alma_duplicate.ui.mosaic_visualization import archive_rows, queue_rows, position_chart, frequency_chart, spectral_overview
+        from alma_duplicate.ui.mosaic_sky_preview import sky_preview
 
         page, view = page_selection()
         if view != 'matches':
@@ -403,6 +404,7 @@ def create_app(config=None):
             for row in (archive_rows(data) if archive else queue_rows(data)):
                 row['spectral_overview'] = spectral_overview(row['spectra'], row.get('spectral_setup'))
                 row['position_chart'] = position_chart(row, submitted.get('mosaic_pointings') or {})
+                row['sky_preview'] = sky_preview(row, submitted.get('mosaic_pointings') or {}, row['position_chart'])
                 for spectrum in row['spectra']:
                     spectrum['chart'] = frequency_chart(spectrum)
                 row['details_url'] = report_url + '#' + row['anchor']

@@ -31,6 +31,8 @@ jobs:
           node-version: "22"
       - run: node --test tests/ui/*.test.cjs
       - run: node --check src/alma_duplicate/ui/static/mosaic-visualization.js
+      - run: node --check src/alma_duplicate/ui/static/mosaic-report-sky.js
+      - run: node --check src/alma_duplicate/ui/static/mosaic-sky-geometry.js
       - run: node --check src/alma_duplicate/ui/static/visualization.js
       - run: node --check src/alma_duplicate/ui/static/coordinate-format-sync.js
       - run: node --check src/alma_duplicate/ui/static/proposed.js
