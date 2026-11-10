@@ -64,7 +64,7 @@ def test_case2_archive_saved_report_equals_explorer_and_is_not_mutated(case2_bro
             assert float(numbers[2]) == pytest.approx(point['xy'][1], abs=1e-7)
         assert len(panel.select('g.footprint > polygon')) == len(chart['outlines'])
 
-        detail = soup.select_one(f'[data-evidence="{i}"] a[href*="#"]')
+        detail = soup.select_one(f'[data-evidence="{i}"] a[href$="#{row["anchor"]}"]')
         assert detail is not None
         assert detail['href'].endswith('#' + row['anchor'])
         assert BeautifulSoup(client.get(detail['href'].split('#')[0]).data,

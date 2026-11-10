@@ -72,7 +72,7 @@ def _line_presentations(candidate, context):
     requirements = raw.get('line_requirements') or []
     by_id = {r.get('requirement_id'): (i + 1, r) for i, r in enumerate(requirements)}
     result = []
-    for pair in context.get('line_pairs') or []:
+    for pair_index, pair in enumerate(context.get('line_pairs') or []):
         attempt = pair.get('attempt') or {}
         identifier = attempt.get('proposed_window_id') or (attempt.get('reference') or {}).get('proposed_window_id')
         number, requirement = by_id.get(identifier, (None, {}))
@@ -88,7 +88,7 @@ def _line_presentations(candidate, context):
             fields.append(('Redshift z', str(z)))
         if requirement.get('correlator_mode'):
             fields.append(('Mode', requirement['correlator_mode']))
-        result.append({'pair': pair, 'label': f'LINE requirement {number}' if number else
+        result.append({'pair': pair, 'pair_index': pair_index, 'label': f'LINE requirement {number}' if number else
                        f'LINE requirement {identifier}' if identifier else 'LINE pair',
                        'fields': fields})
     matches = [item for item in result if item['pair'].get('status') == 'CRITERIA_MET']

@@ -35,6 +35,8 @@ def archive_spectral_setup(context):
             label=f"Component {comp.get('index', 'unrecorded')}",
             low=interval.get('low'), high=interval.get('high'),
             status=comp.get('status') or 'NOT_RECORDED',
+            resolution=comp.get('resolution'), sensitivities=comp.get('sensitivities', []),
+            polarization=comp.get('polarization', []),
         ))
     return dict(id=saved['id'], source='Archive',
                 label='Archive recorded frequency_support components',
@@ -113,6 +115,8 @@ def spectral_overview(spectra, setup=None):
                               low=x(comp['low']) if valid else None,
                               high=x(comp['high']) if valid else None,
                               raw_low=comp.get('low'), raw_high=comp.get('high'),
+                              resolution=comp.get('resolution'), sensitivities=comp.get('sensitivities', []),
+                              polarization=comp.get('polarization', []),
                               y=116+i*34))
     # A compact setup summary occupies the first row. The individual recorded
     # components and saved matching comparisons are disclosed below it, like

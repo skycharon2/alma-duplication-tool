@@ -359,6 +359,7 @@ def create_app(config=None):
     @app.get("/runs/<report_id>/mosaic-visualization")
     def mosaic_visualization(report_id):
         from alma_duplicate.ui.mosaic_visualization import archive_rows, queue_rows, position_chart, frequency_chart, spectral_overview
+        from alma_duplicate.ui.mosaic_sky_preview import sky_preview
 
         page, view = page_selection()
         if view != 'matches':
@@ -403,12 +404,18 @@ def create_app(config=None):
             for row in (archive_rows(data) if archive else queue_rows(data)):
                 row['spectral_overview'] = spectral_overview(row['spectra'], row.get('spectral_setup'))
                 row['position_chart'] = position_chart(row, submitted.get('mosaic_pointings') or {})
-                for spectrum in row['spectra']:
+                row['sky_preview'] = sky_preview(row, submitted.get('mosaic_pointings') or {}, row['position_chart'])
+                for spectrum_index, spectrum in enumerate(row['spectra']):
                     spectrum['chart'] = frequency_chart(spectrum)
+                    if 'pair_index' in spectrum and (not archive or spectrum_index < 10):
+                        spectrum['details_url'] = report_url + '#' + row['anchor'] + '-pair-' + str(spectrum['pair_index'])
                 row['details_url'] = report_url + '#' + row['anchor']
                 rows.append(row)
             navigation.append(dict(source=source, report_id=key, page=data['page'], pages=data['pages']))
         return render_template('mosaic_visualization.html', rows=rows, saved=True, navigation=navigation,
+                               criterion_view=criterion_view, criterion_status=criterion_status,
+                               criterion_explanation=criterion_explanation, display_number=display_number,
+                               calculation_view=calculation_view, status_labels=STATUS_LABELS,
                                notices=notices, proposed=submitted.get('mosaic_pointings') or {},
                                target=submitted.get('request', {}).get('target_name'),
                                report_url=url_for('run_view', report_id=report_id, page=page))

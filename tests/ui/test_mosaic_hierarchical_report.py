@@ -184,6 +184,7 @@ def test_hierarchical_template_renders_recorded_context_evidence():
         assert text in rendered
     assert 'uid://shared' in rendered
     assert '3 proposed pointings' in rendered
-    assert '2 / 3 inside Archive s_region' in rendered
+    assert '2 / 3 inside recorded Archive coverage' in rendered
+    assert 'inside Archive s_region' not in rendered
     assert 'data-status="SATISFIED"' in rendered
     assert 'SENSITIVE' not in rendered

@@ -2,18 +2,18 @@
 {% macro candidate_bucket(value) %}<span class="report-status" data-status="{{ {'MATCH': 'CRITERIA_MET', 'NOT_MET': 'CRITERIA_NOT_MET'}.get(value, 'INDETERMINATE') }}">{{ {'MATCH': 'At least one matching branch', 'NOT_MET': 'Recorded branches do not meet conditions', 'NEEDS_REVIEW': 'Scientific review required', 'UNAVAILABLE': 'Candidate evidence unavailable'}.get(value, 'Needs review') }}</span>{% endmacro %}
 {% from '_mosaic_comparison.html' import comparison as criteria_table with context %}
 {% macro coverage_view(coverage) %}
-{% if coverage %}<section class="mosaic-coverage" aria-label="Mosaic pointing coverage">
+{% if coverage %}{% set points = coverage.points or (coverage.probes or {}).points or [] %}<section class="mosaic-coverage" aria-label="Mosaic pointing coverage">
 <h5>Mosaic spatial coverage</h5>
-<p class="mosaic-coverage-counts"><span><strong>Inside:</strong> {{ coverage.inside_count if coverage.inside_count is not none else 'Unknown' }} / {{ coverage.pointing_count if coverage.pointing_count is not none else 'Unknown' }}</span>
-<span>Outside: {{ coverage.outside_count if coverage.outside_count is not none else 'Unknown' }}</span>
-<span>Boundary: {{ coverage.boundary_count if coverage.boundary_count is not none else 'Unknown' }}</span>
-<span>Unknown: {{ coverage.unknown_count if coverage.unknown_count is not none else 'Unknown' }}</span></p>
-<p class="mosaic-status-note">The recorded position rule requires strictly more than 50% inside the candidate Archive s_region. Boundary and unknown classifications may prevent a definitive result. This is not a reconstructed primary-beam comparison.</p>
-{% if coverage.points %}<details><summary>Point-by-point evidence (first {{ [coverage.points|length, 20]|min }} of {{ coverage.points|length }})</summary>
+<p class="mosaic-coverage-counts"><span><strong>Inside:</strong> {{ coverage.inside_count if coverage.inside_count is number else 'Unknown' }} / {{ coverage.pointing_count if coverage.pointing_count is number else 'Unknown' }}</span>
+<span>Outside: {{ coverage.outside_count if coverage.outside_count is number else 'Unknown' }}</span>
+<span>Boundary: {{ coverage.boundary_count if coverage.boundary_count is number else 'Unknown' }}</span>
+<span>Unknown: {{ coverage.unknown_count if coverage.unknown_count is number else 'Unknown' }}</span></p>
+<p class="mosaic-status-note">The recorded position rule requires strictly more than 50% inside {{ "the candidate Archive s_region" if coverage.raw_s_region else "the recorded candidate half-power beam union" if coverage.circles else "the recorded candidate coverage" }}. Boundary and unknown classifications may prevent a definitive result. {% if coverage.raw_s_region %}This is not a reconstructed primary-beam comparison.{% endif %}</p>
+{% if points %}<details><summary>Point-by-point evidence (first {{ [points|length, 20]|min }} of {{ points|length }})</summary>
 <div class="report-table-scroll mosaic-pointing-table" role="region" aria-label="Pointing classifications" tabindex="0"><table class="comparison-table"><thead><tr><th>Pointing</th><th>RA (deg)</th><th>Dec (deg)</th><th>Recorded classification</th></tr></thead><tbody>
-{% for pointing in coverage.points[:20] %}<tr><th scope="row">{{ pointing.id or loop.index }}</th><td>{{ display_number(pointing.ra_deg) }}</td><td>{{ display_number(pointing.dec_deg) }}</td><td>{{ pointing.status or 'UNKNOWN' }}</td></tr>{% endfor %}
+{% for pointing in points[:20] %}<tr><th scope="row">{{ pointing.id or loop.index }}</th><td>{{ display_number(pointing.ra_deg) }}</td><td>{{ display_number(pointing.dec_deg) }}</td><td>{{ pointing.status or 'UNKNOWN' }}</td></tr>{% endfor %}
 </tbody></table></div>
-{% if coverage.points|length > 20 %}<p>Additional rows are available in the complete report download.</p>{% endif %}</details>{% endif %}
+{% if points|length > 20 %}<p>Additional rows are available in the complete report download.</p>{% endif %}</details>{% endif %}
 </section>{% endif %}
 {% endmacro %}
 
@@ -46,7 +46,7 @@
 {% if context.line_pairs %}<section aria-label="LINE spectral-window comparisons"><h5>Spectral line comparisons · {{ context.line_pairs|length }} recorded pair{{ '' if context.line_pairs|length == 1 else 's' }}</h5>
 <p class="mosaic-status-note">A matching LINE branch means at least one submitted requirement meets these conditions, not necessarily all of them. Each pair below retains its own result.</p>
 <p class="field-note">The first 10 matching and first 10 other pairs are shown, with matches first. All pairs remain in the report download.</p>
-{% for presentation in context_item.line_presentations[:20] %}{% set pair = presentation.pair %}<details class="line-pair"{% if loop.first and pair.status == 'CRITERIA_MET' %} open{% endif %}>
+{% for presentation in context_item.line_presentations[:20] %}{% set pair = presentation.pair %}<details class="line-pair" id="mosaic-context-{{ index }}-{{ context_item.index }}-pair-{{ presentation.pair_index }}"{% if loop.first and pair.status == 'CRITERIA_MET' %} open{% endif %}>
 <summary>{{ presentation.label }} · {{ pair_title(pair) }} · {{ status_labels.get(pair.status, 'Needs review') }}</summary>
 {% if presentation.fields %}
 <details class="line-preparation"><summary>Input and frequency preparation for this line</summary>

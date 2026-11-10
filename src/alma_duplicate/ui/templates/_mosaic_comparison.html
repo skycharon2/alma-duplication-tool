@@ -20,7 +20,7 @@
 {{ counts.INSIDE|default('Unknown') }}/{{ total if total is number else 'Unknown' }} inside the candidate beam union
 <small>Outside: {{ counts.OUTSIDE|default('Unknown') }} · Boundary: {{ counts.BOUNDARY|default('Unknown') }} · Unknown: {{ counts.UNKNOWN|default('Unknown') }}</small>
 {% if coverage.radius_arcsec is number %}<small>Half-power radius: {{ display_number(coverage.radius_arcsec) }} arcsec</small>{% endif %}
-{% elif coverage and source == 'Archive' %}{{ coverage.inside_count if coverage.inside_count is number else 'Unknown' }} / {{ total if total is number else 'Unknown' }} inside Archive s_region
+{% elif coverage and source == 'Archive' %}{{ coverage.inside_count if coverage.inside_count is number else 'Unknown' }} / {{ total if total is number else 'Unknown' }} inside {{ "Archive s_region" if coverage.raw_s_region else "the candidate half-power beam union" if coverage.circles else "recorded Archive coverage" }}
 {% else %}Coverage evidence unavailable{% endif %}</td>
 {% elif record.criterion_id == 'CONT-SETUP' %}
 <td>At least two windows wider than 1.8 GHz each.</td><td>Proposed setup qualification</td>

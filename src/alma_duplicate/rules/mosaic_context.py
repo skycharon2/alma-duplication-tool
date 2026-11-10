@@ -282,6 +282,7 @@ def _mosaic_position(
                             ra_deg=field["ra_deg"],
                             dec_deg=field["dec_deg"],
                             radius_arcsec=radius,
+                            frame="ICRS",
                         )
                     )
             probes = probe_footprint(

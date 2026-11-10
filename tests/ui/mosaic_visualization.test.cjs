@@ -171,8 +171,8 @@ test("SPW label selection opens the matching saved-parameter disclosure", () => 
 test("spatial and frequency chart controls keep their independent pan and zoom state", () => {
   const h = setup();
   const spatialButtons = h.tools(h.spatial), frequencyButtons = h.tools(h.frequency);
-  assert.deepEqual(spatialButtons.map(b => b.textContent), ["+", "−", "Reset"]);
-  assert.deepEqual(frequencyButtons.map(b => b.textContent), ["+", "−", "Reset"]);
+  assert.deepEqual(spatialButtons.map(b => b.textContent), ["+", "−", "Reset", "SVG"]);
+  assert.deepEqual(frequencyButtons.map(b => b.textContent), ["+", "−", "Reset", "SVG"]);
   const initial = h.transform(h.spatial);
   spatialButtons[0].emit("click");
   assert.notEqual(h.transform(h.spatial), initial);

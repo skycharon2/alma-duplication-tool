@@ -34,7 +34,7 @@
 </div></details>
 {% if mosaic %}<details class="search-scope-details"><summary>Search scope and limitations</summary>
 {% for section in sections if section.data %}
-{% if section.data.mosaic %}<p>Archive coverage uses the saved s_region for each candidate context.</p>
+{% if section.data.mosaic %}<p>Archive coverage uses each context’s saved s_region or verified half-power beam evidence.</p>
 {% elif section.data.unified_queue %}<p>Queue coverage uses each configuration’s recorded pointing geometry and inferred array. Each array has its own comparison.</p>{% endif %}
 {% endfor %}
 <p>Boundary and unknown pointings are shown with their recorded outcomes.</p></details>{% endif %}
