@@ -29,11 +29,7 @@
 {% endif %}
 <td><span class="report-status" data-status="{{ 'INDETERMINATE' if record.eligible_for_formal_aggregation is sameas false else (record.outcome or 'INDETERMINATE') }}">{{ criterion_status(record) }}</span>
 <p class="criterion-explanation">{{ {'SATISFIED': 'Coverage exceeds half.', 'NOT_SATISFIED': 'Coverage does not exceed half.'}.get(record.outcome, 'Coverage is unresolved.') if source == 'Queue' and record.criterion_id == 'POS-MOSAIC' else criterion_explanation(record) }}</p>
-{% if record.reasons or record.issues %}
-<details><summary>Recorded reasons and evidence issues</summary>
-{% if record.reasons %}<p>{{ record.reasons|join(', ') }}</p>{% endif %}
-{% for issue in record.issues %}<p>{{ issue.code }}{% if issue.message %} · {{ issue.message }}{% endif %}</p>{% endfor %}
-</details>{% endif %}</td>
+</td>
 </tr>
 {% if calculation_view is defined %}<tr class="calculation-row"><td colspan="4">{{ calculation(record) }}</td></tr>{% endif %}
 {% endfor %}

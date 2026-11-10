@@ -85,7 +85,7 @@
       `Project ${selected.project || 'not recorded'}`;
     identities.append(summary);
     const explanation=document.createElement('p');
-    explanation.textContent=selected.candidate ? selected.candidate.provenance :
+    explanation.textContent=selected.candidate ? (selected.source === 'Queue' ? 'Candidate beam coverage reconstructed from the observation settings.' : 'Candidate coverage from the Archive.') :
       `Candidate outline unavailable: ${selected.reason || 'no validated footprint'}`;
     identities.append(explanation);
     status.textContent=`${selected.proposed.length} submitted pointings · `+

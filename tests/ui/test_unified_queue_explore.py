@@ -142,6 +142,9 @@ def test_queue_text_report_separates_matching_and_other_pairs():
             rendered = render_template_string(
                 "{% from template import details with context %}{{ details(entries) }}",
                 template=template, entries=presentation(report), status_labels={})
+            assert 'Technical details and provenance' not in rendered
+            assert 'Geometry method version' not in rendered
+            assert 'Candidate ID:' not in rendered
             assert 'Matching LINE comparisons (1)' in rendered
             assert 'Other evaluated window pairs (2)' in rendered
             assert rendered.index('SPW 1') < rendered.index('Other evaluated window pairs') < rendered.index('SPW 2')

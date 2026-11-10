@@ -68,7 +68,7 @@ def merge_queue_matches(visual, queue_visual, *, details_url=None):
                     separation_arcsec=None, model_status=candidate.get('model_status'),
                     point_count=geometry.get('point_count'),
                     covered_beam_count=sum(bool(b.get('covers_proposed')) for b in beams),
-                    reason=(geometry.get('reason') or 'Queue geometry is model-conditional.'))
+                    reason=(geometry.get('reason') or 'Beam coverage is reconstructed from the observation settings.'))
                 records = variant.get('criterion_records') or []
                 pairs = [pair for pair in (variant.get('line_pairs') or [])
                          if pair.get('truth') == 'TRUE']

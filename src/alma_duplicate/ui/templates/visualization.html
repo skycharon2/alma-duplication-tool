@@ -101,7 +101,7 @@
 {% if visual.queue_page < visual.queue_pages %}<a class="button" href="{{ page_url(page, plot_page=visual.plot_page, queue_page=visual.queue_page+1) }}">Next Queue match batch</a>{% endif %}
 {% endif %}
 </nav>
-<p class="chart-caption">Plots explain this saved report; they do not perform a new search or change its decisions. Only the listed comparisons meet the conditions, not necessarily the entire Member OUS. Legacy comparison pages and bounded Queue match batches are shown together; other pages require navigation.</p>
+<p class="chart-caption">Plots explain this saved report; they do not perform a new search or change its decisions. Only the listed comparisons meet the conditions, not necessarily the entire Member OUS. Results on other pages can be viewed using the page controls.</p>
 
 <script id="visual-data" type="application/json">{{ visual|tojson }}</script>
 </div>

@@ -37,26 +37,7 @@ Queue CSV · {{ geometry_labels.get(entry.kind, entry.kind) }}
 </p>
 {% endfor %}{% endif %}
 
-<details class="queue-provenance-details">
-<summary>Technical details and provenance</summary>
-<p>Geometry reconstruction method status:
-<code>{{ c.science.model_status or 'Not recorded' }}</code>.</p>
-{% if c.science.model_version %}
-<p>Geometry method version: <code>{{ c.science.model_version }}</code>.</p>
-{% endif %}
-<p>Candidate evaluation completeness:
-<code>{{ c.science.scientific_candidate_completeness or 'Not recorded' }}</code>.</p>
-{% if c.science.intent_completeness %}
-{% for intent, evidence in c.science.intent_completeness.items() %}
-<p>{{ intent }} evaluation completeness: <code>{{ evidence }}</code>.</p>
-{% endfor %}
-{% endif %}
-<p>Array branches are evaluated independently. Model acceptance is a
-project method decision, not an ALMA endorsement.</p>
-<p>Candidate ID: <code>{{ c.candidate_id }}</code></p>
-<p>Full source-row and spectral-setup evidence is retained in the
-report download.</p>
-</details>
+
 {% for v in c.science.variants %}
 <section class="beam-variant">
 <h4>Beam variant · D = {{ v.diameter_m }} m</h4>

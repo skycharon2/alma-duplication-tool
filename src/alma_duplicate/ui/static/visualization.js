@@ -93,7 +93,7 @@
     visibleRows().slice().sort((a, b) => Number(a.id === highlighted()) - Number(b.id === highlighted())).forEach(row => {
       if (!row.spatial.available) return;
       const spatial = row.spatial, active = row.id === highlighted();
-      const desc = spatial.beams?.length ? `${spatial.beams.length} Queue Mosaic beams; array ${fmt(spatial.diameter_m)} m, model: ${spatial.model_status || 'PROVISIONAL'}` :
+      const desc = spatial.beams?.length ? `${spatial.beams.length} Queue Mosaic beams; array ${fmt(spatial.diameter_m)} m` :
         spatial.sky_outline ? `Archive Mosaic region; target ${spatial.point_status}; region reference only` :
         `Center RA ${fmt(spatial.center[0])}, Dec ${fmt(spatial.center[1])} deg; half-power radius ${fmt(spatial.radius_arcsec)} arcsec`;
       const g = selectable(layer, row, desc);
@@ -255,19 +255,19 @@
     node("h3", {}, `#${row.display_number} · ${row.label}`, body);
     node("p", {class: "selected-evidence"}, row.geometry_kind ? `${row.source} · ${row.intent} · ${row.geometry_kind} · ${row.array_diameter_m}-m array` : `${row.source} · ${row.intent} · Selected SPW ${row.spw}`, body);
     const dl = node("dl", {}, null, body);
-    Object.entries(row.identity).forEach(([key, value]) => { node("dt", {}, key, dl); node("dd", {}, value, dl); });
+    Object.entries(row.identity).filter(([key]) => !["Queue candidate", "Context ID", "Source row ID"].includes(key)).forEach(([key, value]) => { node("dt", {}, key, dl); node("dd", {}, value, dl); });
     if (row.window) { node("dt", {}, "Requested window", dl); node("dd", {}, row.window, dl); }
     const s = row.spatial;
     if (s.available && s.beams?.length) {
       if (s.rectangle_reference) node('p', {}, s.rectangle_reference.label + ' (same-color dash-dot boundary).', body);
       node("p", {}, `Queue ${row.geometry_kind} · ${fmt(row.array_diameter_m)}-m · ${s.beams.length} saved beams · ${s.covered_beam_count} cover the proposed point · half-power radius ${fmt(s.radius_arcsec)} arcsec`, body);
-      node("p", {class:"notice"}, `Model: ${s.model_status || 'PROVISIONAL'}; a plot is not an independently verified ALMA duplicate verdict.`, body);
-      if (row.queue_line_matching_pairs > 1) node('p',{},`${row.queue_line_matching_pairs} matching LINE pairs; each is separately selectable. Other evaluated pairs retain their results in the text report.`,body);
+      node("p", {class:"notice"}, "The beam outlines are reconstructed from the available observation settings.", body);
+      if (row.queue_line_matching_pairs > 1) node('p',{},`${row.queue_line_matching_pairs} matching LINE pairs in this array branch; each is separately selectable. Other evaluated pairs retain their results in the text report.`,body);
     } else if (s.available) {
       node("p", {}, `Separation: ${fmt(s.separation_arcsec)} arcsec · Half-power radius: ${fmt(s.radius_arcsec)} arcsec`, body);
       node("p", {}, `Beam evidence: D = ${fmt(s.diameter_m)} m at ${fmt(s.frequency_ghz)} GHz`, body);
     }
-    if (s.reason) node("p", {class: "notice"}, s.reason, body);
+    if (!s.available && s.reason) node("p", {class: "notice"}, s.reason, body);
     const f = row.spectral;
     node("p", {}, !f.available ? f.reason : f.kind === "interval" ?
       `Requested: ${fmt(f.proposed)} GHz · Candidate: ${fmt(f.low)}–${fmt(f.high)} GHz` :
