@@ -68,7 +68,9 @@ def test_managed_queue_report_pins_ids_and_raw_evidence(tmp_path):
     assert meta["revision"] == active["revision"]
     assert meta["snapshot_sha256"] == first["snapshot_sha256"]
     assert meta["source_as_of"] == "2026-03-03"
-    assert first["source_id"] in client.get(response.location).get_data(as_text=True)
+    html = client.get(response.location).get_data(as_text=True)
+    assert first["source_id"] not in html
+    assert "2026-03-03" in html
 
 
 def test_changed_active_pointer_during_assessment_is_pinned(tmp_path, monkeypatch):

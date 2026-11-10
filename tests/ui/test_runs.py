@@ -97,15 +97,15 @@ def test_real_dual_source_run_retains_exact_report_and_input(monkeypatch, purpos
     assert 'Optional data exports' not in text
     assert 'Temporary report' in text
     assert 'Criteria for this LINE pair' in text if 'LINE' in purposes else 'Candidate conditions' in text
-    assert "Assessment run" in html and "SYNTHETIC" in html
-    assert "Execution status: COMPLETED" in html
-    assert "Effective evaluation configuration" in html
+    assert "Reference example using synthetic data" in html
+    assert "Execution status:" not in html
+    assert "Effective evaluation configuration" not in html
     report = client.get(location + "/download/report")
     recorded = report.get_json()
     extension = recorded.pop('queue_geometry_assessment')
     assert extension['search_completeness'] == 'NOT_ESTABLISHED'
     assert recorded == json.loads(captured[0][1])
-    assert hashlib.sha256(report.data).hexdigest() in html
+    assert hashlib.sha256(report.data).hexdigest() not in html
     doc = report.get_json()
     assert doc["report_version"] == "6" and doc["input_sha256"] is None
     for index, context in enumerate(doc['context_evaluations']):
@@ -177,7 +177,7 @@ def test_source_failure_preserves_other_source_report(mode, failed_source):
     assert document["sources"][failed_source]["status"] in {"FAILED", "INCOMPLETE", "NOT_PROVIDED"}
     other = "QUEUE" if failed_source == "ARCHIVE" else "ARCHIVE"
     assert document["sources"][other]["status"] == "COMPLETED"
-    assert b"SOURCES_UNAVAILABLE" in client.get(response.location).data
+    assert b"Some source evidence is unavailable or incomplete" in client.get(response.location).data
 
 
 def test_provider_construction_error_preserves_form_without_report(tmp_path):

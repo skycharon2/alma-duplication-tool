@@ -77,6 +77,7 @@ No matching standard comparisons; Queue geometry matches also exist, but their s
 </section>
 {% if source_overview %}<section id="sources" aria-label="Source coverage"><details class="source-coverage"><summary>Source coverage</summary><div class="source-states">{% for source in source_overview %}<div><h3>{{ source.name }} — {{ source.label }}</h3>
 {% if source.name|lower == 'queue' and selected_queue %}<p>Queue data as of {{ selected_queue.source_as_of }}.</p>{% endif %}
+{% if source.name|lower == 'archive' %}{% include '_report_source_status.html' %}{% endif %}
 {% for note in source.notes %}<p>{{ note }}</p>{% endfor %}
 </div>{% endfor %}</div></details></section>{% endif %}
 {% set retrieval = (document.get('plan') or {}).get('retrieval_policy') %}

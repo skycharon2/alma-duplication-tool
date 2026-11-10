@@ -65,7 +65,7 @@ def test_report_visible_without_technical_mode_and_read_only(wired):
     events = list(wired['events'])
     html = client.get(response.location).text
     assert 'id="archive-source-status"' in html
-    assert 'Candidate search (TAP)</strong>: Completed · East Asia' in html
-    assert 'Array evidence (AQ)</strong>: Completed · Europe' in html
-    assert 'Recorded for this assessment only' in html
+    assert 'Observation search</strong>: Completed · East Asia' in html
+    assert 'Array information</strong>: Completed · Europe' in html
+    assert 'This status describes this search only' in html
     assert wired['events'] == events

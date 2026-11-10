@@ -103,7 +103,7 @@ def test_failed_discovery_remains_incomplete_and_progress_finishes(browser, monk
     report = client.get(url+'/download/report').json
     assert report['assessment_status'] == 'INCOMPLETE'
     assert report['absence_interpretation'] == 'NO_SEARCH_WIDE_NON_DUPLICATION_CONCLUSION'
-    assert 'INCOMPLETE' in client.get(url).text
+    assert 'Search incomplete' in client.get(url).text
     state = client.get('/assessment-progress/'+progress).json
     assert state['status'] == 'COMPLETED'  # The report exists; science is still incomplete.
     assert state['stages']['archive_ready']['completed'] == 0
@@ -194,7 +194,8 @@ def test_mosaic_both_sources_share_page_with_purpose_navigation(browser, intents
                 if node.get_text(strip=True) in ('Results in this search', 'Matching candidates', 'Matching comparisons')] == [
                     'Results in this search', 'Matching candidates', 'Matching comparisons']
         assert soup.find('summary', string='Search scope and limitations')
-        assert len(soup.select('#sources .source-retrieval-help > summary[title]')) == 2
+        assert not soup.select('#sources .source-retrieval-help')
+        assert 'Search completed' in soup.select_one('#sources').get_text()
         if label.startswith('Spectral line'):
             preparation = soup.select_one('.line-pair details.line-preparation')
             assert preparation and not preparation.has_attr('open')
