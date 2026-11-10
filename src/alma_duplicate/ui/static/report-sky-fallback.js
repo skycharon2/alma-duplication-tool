@@ -24,7 +24,7 @@
       .filter(item => item.xy && item.xy.every(Number.isFinite));
     const selected = state.selected();
     const shown = positions.filter(item => options.others || item.row.id === selected);
-    const maxExtent = Math.max(10, ...shown.map(({row, xy}) =>
+    const maxExtent = Math.max(10, ...rows.filter(r=>options.others || r.id===selected).flatMap(r=>(r.spatial.rectangle_reference?.sky_outline || []).map(p=>offset(state.origin,p)).filter(Boolean).map(p=>Math.hypot(...p))), ...shown.map(({row, xy}) =>
       row.spatial.sky_outline ? Math.max(...row.spatial.sky_outline.map(p=>offset(state.origin,p)).filter(Boolean).map(p=>Math.hypot(...p))) : Math.hypot(...xy) + (Number.isFinite(row.spatial.radius_arcsec) ? Math.max(0, row.spatial.radius_arcsec) : 0)));
     const width = 600, height = 390, scale = 0.39 * Math.min(width, height) / maxExtent;
     const svg = document.createElementNS(NS, 'svg');
@@ -56,6 +56,12 @@
                          'stroke-width':highlight ? 2 : 1.25});
       }
       shape('circle', {cx:x, cy:y, r:highlight ? 4 : 3, fill:color});
+    }
+    if (options.beams) for (const row of rows.filter(r=>options.others || r.id===selected)) {
+      const outline = row.spatial.rectangle_reference?.sky_outline?.map(p=>offset(state.origin,p));
+      if (outline?.length && outline.every(Boolean)) shape('polyline', {
+        points:outline.map(p=>`${cx+p[0]*scale},${cy+p[1]*scale}`).join(' '),
+        fill:'none',stroke:row.plot_color || '#45a9eb','stroke-width':2,'stroke-dasharray':'9 4 2 4'});
     }
     // Central cross is the proposed target, never a candidate detection.
     shape('path', {d:`M ${cx-8} ${cy} H ${cx+8} M ${cx} ${cy-8} V ${cy+8}`,

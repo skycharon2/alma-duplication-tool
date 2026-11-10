@@ -55,7 +55,7 @@ def merge_queue_matches(visual, queue_visual, *, details_url=None):
                 geometry = variant['geometry']
                 beams = geometry.get('points', []) if geometry.get('available') else []
                 footprint = dict(available=bool(geometry.get('available')),
-                    beams=beams, geometry_type=f"QUEUE_{candidate['kind']}",
+                    beams=beams, rectangle_reference=geometry.get('rectangle_reference'), geometry_type=f"QUEUE_{candidate['kind']}",
                     center=None, offset=None, outline=None,
                     radius_arcsec=geometry.get('radius_arcsec'),
                     diameter_m=diameter, frequency_ghz=geometry.get('frequency_ghz'),

@@ -14,7 +14,7 @@
   const filteredRows = () => viewport.filter(rows, project, member);
   const visibleRows = () => viewport.visible(filteredRows(), selected, isolated);
   const spatialPoints = list => list.flatMap(row => !row.spatial.available ? [] :
-    row.spatial.beams?.length ? row.spatial.beams.flatMap(beam => beam.outline || [beam.offset]) :
+    row.spatial.beams?.length ? [...row.spatial.beams.flatMap(beam => beam.outline || [beam.offset]), ...(row.spatial.rectangle_reference?.outline || [])] :
     (row.spatial.outline || [row.spatial.offset]));
   const expandedSetups = new Set();
   const frequencyValues = list => list.flatMap(row => {
@@ -97,6 +97,13 @@
         `Center RA ${fmt(spatial.center[0])}, Dec ${fmt(spatial.center[1])} deg; half-power radius ${fmt(spatial.radius_arcsec)} arcsec`;
       const g = selectable(layer, row, desc);
       if (spatial.beams?.length) {
+        const rectangle = spatial.rectangle_reference;
+        if (rectangle?.outline?.length) {
+          const path = draw(g, 'path', {d: rectangle.outline.map((p,i)=>`${i?'L':'M'}${sx(p[0])},${sy(p[1])}`).join(' ')+'Z',
+            fill:'none', stroke:color(row), 'stroke-width':active?2:1,
+            'stroke-dasharray':'9 4 2 4', 'stroke-opacity':active?1:.45});
+          draw(path, 'title', {}, rectangle.label);
+        }
         spatial.beams.forEach(beam => {
           const polygon = (beam.outline || []).map(p => [sx(p[0]), sy(p[1])]);
           if (!polygon.length) return;
@@ -233,6 +240,7 @@
     if (row.window) { node("dt", {}, "Requested window", dl); node("dd", {}, row.window, dl); }
     const s = row.spatial;
     if (s.available && s.beams?.length) {
+      if (s.rectangle_reference) node('p', {}, s.rectangle_reference.label + ' (same-color dash-dot boundary).', body);
       node("p", {}, `Queue ${row.geometry_kind} · ${fmt(row.array_diameter_m)}-m · ${s.beams.length} saved beams · ${s.covered_beam_count} cover the proposed point · half-power radius ${fmt(s.radius_arcsec)} arcsec`, body);
       node("p", {class:"notice"}, `Model: ${s.model_status || 'PROVISIONAL'}; a plot is not an independently verified ALMA duplicate verdict.`, body);
       if (row.queue_line_matching_pairs > 1) node('p',{},`${row.queue_line_matching_pairs} matching LINE pairs; only the first spectral comparison is charted. See the full report.`,body);

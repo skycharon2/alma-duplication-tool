@@ -24,7 +24,7 @@ window.createReportSky = function(state) {
     if (!viewer) return;
     const rows = selectedOnly ? available().filter(r=>r.id===state.selected()) : available();
     const span = Math.max(0.005,...rows.flatMap(r=>r.spatial.beams?.length ?
-      r.spatial.beams.map(b=>distance(state.origin,b.center)+radius(r)) :
+      [...r.spatial.beams.map(b=>distance(state.origin,b.center)+radius(r)), ...(r.spatial.rectangle_reference?.sky_outline || []).map(p=>distance(state.origin,p))] :
       [r.spatial.sky_outline ? Math.max(...r.spatial.sky_outline.map(p=>distance(state.origin,p))) :
        distance(state.origin,r.spatial.center)+radius(r)]))*padding;
     // Include vertical extent in a wide panel as well as the horizontal extent.
@@ -90,6 +90,9 @@ window.createReportSky = function(state) {
       if (!others.checked && row.id!==state.selected()) continue;
       const active=row.id===state.selected();
       if (row.spatial.beams?.length) {
+        if (beams.checked && row.spatial.rectangle_reference?.sky_outline)
+          boundary.add(A.polyline(row.spatial.rectangle_reference.sky_outline,
+            {color:color(row), lineWidth:active?2:1, opacity:active?1:.5}));
         for(const beam of row.spatial.beams) {
           const key=[row.source,...beam.center,radius(row)].join(',');
           if(beams.checked && (!outlines.has(key) || active))
@@ -245,7 +248,8 @@ window.createReportSky = function(state) {
   panel.inert=true;
   // Match the active page height so a tall hidden chart does not leave empty space.
   const resizeGallery = () => {
-    gallery.scrollTop = 0;
+    // Writing scrollTop during a horizontal smooth scroll cancels it in Chromium.
+    if (gallery.scrollTop !== 0) gallery.scrollTop = 0;
     gallery.style.height = Math.ceil((page === 1 ? panel : charts).getBoundingClientRect().height) + 'px';
   };
   const sizeObserver = new ResizeObserver(resizeGallery);
