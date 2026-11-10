@@ -262,7 +262,7 @@
       if (s.rectangle_reference) node('p', {}, s.rectangle_reference.label + ' (same-color dash-dot boundary).', body);
       node("p", {}, `Queue ${row.geometry_kind} · ${fmt(row.array_diameter_m)}-m · ${s.beams.length} saved beams · ${s.covered_beam_count} cover the proposed point · half-power radius ${fmt(s.radius_arcsec)} arcsec`, body);
       node("p", {class:"notice"}, `Model: ${s.model_status || 'PROVISIONAL'}; a plot is not an independently verified ALMA duplicate verdict.`, body);
-      if (row.queue_line_matching_pairs > 1) node('p',{},`${row.queue_line_matching_pairs} matching LINE pairs; only the first spectral comparison is charted. See the full report.`,body);
+      if (row.queue_line_matching_pairs > 1) node('p',{},`${row.queue_line_matching_pairs} matching LINE pairs; each is separately selectable. Other evaluated pairs retain their results in the text report.`,body);
     } else if (s.available) {
       node("p", {}, `Separation: ${fmt(s.separation_arcsec)} arcsec · Half-power radius: ${fmt(s.radius_arcsec)} arcsec`, body);
       node("p", {}, `Beam evidence: D = ${fmt(s.diameter_m)} m at ${fmt(s.frequency_ghz)} GHz`, body);

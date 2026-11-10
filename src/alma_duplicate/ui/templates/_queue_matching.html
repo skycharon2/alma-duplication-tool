@@ -1,3 +1,4 @@
+{% from '_queue_spectral_setup.html' import setup with context %}
 {% from '_report_comparison.html' import comparison with context %}
 {% set geometry_labels = {
     'SINGLE_FIELD': 'Single field',
@@ -74,14 +75,27 @@ report download.</p>
 
 {{ comparison(v.criteria, 'Candidate conditions', position) }}
 
-{% for pair in v.line_pairs %}
+{{ setup(v.criteria) }}
+{% set matching_pairs = v.line_pairs | selectattr('truth', 'equalto', 'TRUE') | list %}
+{% set other_pairs = v.line_pairs | rejectattr('truth', 'equalto', 'TRUE') | list %}
+{% if matching_pairs %}<h4>Matching LINE comparisons ({{ matching_pairs|length }})</h4><p>Each pair retains its own result; this does not establish that every SPW meets the conditions.</p>{% endif %}
+{% for pair in v.line_pairs %}{% set pair_index = loop.index0 %}{% if pair.truth == 'TRUE' %}
 <details class="line-pair">
 <summary>LINE · {{ pair.reference.proposed_window_id }}
 · SPW {{ pair.reference.spw_number }}:
 {{ pair.status or pair.truth }}</summary>
 {{ comparison(pair.criteria, 'LINE comparison', position) }}
 </details>
-{% endfor %}
+{% endif %}{% endfor %}
+{% if other_pairs %}<details class="other-pairs"><summary>Other evaluated window pairs ({{ other_pairs|length }})</summary><p>These retain their own results and are not counted as matching comparisons. Unresolved results remain unresolved.</p>
+{% for pair in v.line_pairs %}{% set pair_index = loop.index0 %}{% if pair.truth != 'TRUE' %}
+<details class="line-pair">
+<summary>LINE · {{ pair.reference.proposed_window_id }}
+· SPW {{ pair.reference.spw_number }}:
+{{ pair.status or pair.truth }}</summary>
+{{ comparison(pair.criteria, 'LINE comparison', position) }}
+</details>
+{% endif %}{% endfor %}</details>{% endif %}
 </section>
 {% else %}
 <p class="field-note">Array inference remains unresolved.</p>

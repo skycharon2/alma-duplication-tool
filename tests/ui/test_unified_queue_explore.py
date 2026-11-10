@@ -98,3 +98,50 @@ def test_saved_queue_continuum_intervals_preserve_gaps_and_ignore_invalid_values
     assert [(c['low'],c['high']) for c in result['coverage']] == [(229.,230.),(232.,233.)]
     assert records == before
     assert _spectral(records[:1], 'CONTINUUM')['coverage'] == []
+
+
+def test_all_matching_line_pairs_are_selectable_other_windows_are_reference_only():
+    report = sample()
+    variant = report['document']['geometry_reports']['RECTANGLE']['candidates'][0]['science']['variants'][0]
+    variant['branches'] = [dict(branch='LINE', truth='TRUE', status='CRITERIA_MET')]
+    variant['line_pairs'] = [dict(truth=truth, status=status,
+        reference={'spw_number':i, 'proposed_window_id':'line-1'},
+        criteria=[dict(criterion_id='LINE-COVERAGE', derived=[
+            ['sky_frequency_ghz',230.], ['interval_low_ghz',low], ['interval_high_ghz',low+1]])])
+        for i,truth,status,low in [(1,'TRUE','CRITERIA_MET',229.),
+                                  (2,'TRUE','CRITERIA_MET',229.5),
+                                  (3,'FALSE','CRITERIA_NOT_MET',240.)]]
+    before = deepcopy(report)
+    queue = queue_geometry_visualization_data(report,[0.,0.])
+    rows = merge_queue_matches(base(),queue)['rows'][1:]
+    assert [r['spw'] for r in rows] == [1,2]
+    assert len({r['id'] for r in rows}) == 2
+    assert rows[0]['queue_setup_key'] == rows[1]['queue_setup_key']
+    assert [w['spw'] for w in rows[0]['spectral']['coverage']] == [1,2,3]
+    assert report == before
+
+
+def test_queue_text_report_separates_matching_and_other_pairs():
+    from alma_duplicate.ui import create_app
+    from flask import render_template, render_template_string
+    report = sample()['document']
+    variant = report['geometry_reports']['RECTANGLE']['candidates'][0]['science']['variants'][0]
+    variant['line_pairs'] = [dict(truth=t,status=s,criteria=[],reference={
+        'spw_number':i,'proposed_window_id':'line-1'}) for i,t,s in
+        [(1,'TRUE','CRITERIA_MET'),(2,'FALSE','CRITERIA_NOT_MET'),(3,'UNKNOWN','UNRESOLVED')]]
+    app = create_app({'TESTING':True, 'AUTO_QUEUE':False})
+    with app.test_request_context():
+        html = render_template('_queue_geometry_results.html',geometry_report=report,report_id='test')
+    assert 'Matching LINE comparisons (1)' in html
+    assert 'Other evaluated window pairs (2)' in html
+    assert html.index('SPW 1') < html.index('Other evaluated window pairs') < html.index('SPW 2')
+    assert 'UNRESOLVED' in html
+    from alma_duplicate.ui.queue_browser import presentation
+    with app.test_request_context():
+        for template in ('_queue_matching.html', '_mosaic_queue_matching.html'):
+            rendered = render_template_string(
+                "{% from template import details with context %}{{ details(entries) }}",
+                template=template, entries=presentation(report), status_labels={})
+            assert 'Matching LINE comparisons (1)' in rendered
+            assert 'Other evaluated window pairs (2)' in rendered
+            assert rendered.index('SPW 1') < rendered.index('Other evaluated window pairs') < rendered.index('SPW 2')

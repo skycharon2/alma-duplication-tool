@@ -72,27 +72,42 @@ def merge_queue_matches(visual, queue_visual, *, details_url=None):
                 records = variant.get('criterion_records') or []
                 pairs = [pair for pair in (variant.get('line_pairs') or [])
                          if pair.get('truth') == 'TRUE']
-                # A LINE branch can contain several matching SPW pairs. Retain
-                # its count and link to the full report; never pretend the one
-                # displayed pair represents the complete setup.
-                displayed = pairs[0].get('criteria', []) if intent == 'LINE' and pairs else records
-                identity = {'Project': candidate['project'], 'Target': candidate['target'],
-                    'Member OUS': f"Queue {candidate['kind']} · {diameter:g}-m",
-                    'Array': f'{diameter:g}-m',
-                    'Queue candidate': candidate['id']}
-                label = f"{candidate['target']} · {candidate['project']} · Queue {candidate['kind']} · {diameter:g}-m"
-                record = dict(id=f"queue-{candidate['id']}-{branch_index}-{intent.lower()}",
-                    anchor='queue-geometry-results', label=label, identity=identity,
-                    source='QUEUE', intent=intent, spw='Mosaic', window=None,
-                    beam_variant=None, array_diameter_m=diameter,
-                    spatial=footprint, spectral=_spectral(displayed, intent),
-                    criteria=_criteria(displayed), geometry_kind=candidate['kind'],
-                    model_status=candidate.get('model_status'),
-                    queue_line_matching_pairs=len(pairs),
-                    details_url=details_url)
-                queue_count += 1
-                record['display_number'] = f"Q-{queue_visual['view']}-{queue_visual['page']}.{queue_count}"
-                rows.append(record)
+                # Keep each complete matching LINE pair separately selectable.
+                comparisons = (pairs or [{}]) if intent == 'LINE' else [{}]
+                for pair_index, pair in enumerate(comparisons):
+                    displayed = pair.get('criteria', []) if intent == 'LINE' else records
+                    identity = {'Project': candidate['project'], 'Target': candidate['target'],
+                        'Member OUS': f"Queue {candidate['kind']} · {diameter:g}-m",
+                        'Array': f'{diameter:g}-m',
+                        'Queue candidate': candidate['id']}
+                    label = f"{candidate['target']} · {candidate['project']} · Queue {candidate['kind']} · {diameter:g}-m"
+                    record = dict(id=f"queue-{candidate['id']}-{branch_index}-{intent.lower()}-{pair_index}",
+                        anchor='queue-geometry-results', label=label, identity=identity,
+                        source='QUEUE', intent=intent, spw=(pair.get('reference') or {}).get('spw_number', 'Mosaic'), window=(pair.get('reference') or {}).get('proposed_window_id'),
+                        beam_variant=None, array_diameter_m=diameter,
+                        spatial=footprint, spectral=_spectral(displayed, intent),
+                        criteria=_criteria(displayed), geometry_kind=candidate['kind'],
+                        model_status=candidate.get('model_status'),
+                        queue_line_matching_pairs=len(pairs),
+                        details_url=details_url)
+                    if intent == 'LINE':
+                        coverage = []
+                        seen = set()
+                        for saved_pair in variant.get('line_pairs') or []:
+                            spectral = _spectral(saved_pair.get('criteria') or [], 'LINE')
+                            spw = (saved_pair.get('reference') or {}).get('spw_number')
+                            if not spectral.get('available'):
+                                continue
+                            key = (spw, spectral['low'], spectral['high'])
+                            if key not in seen:
+                                coverage.append(dict(spw=spw, low=key[1], high=key[2],
+                                                     bandwidth_ghz=key[2]-key[1]))
+                                seen.add(key)
+                        record['spectral']['coverage'] = coverage
+                        record['queue_setup_key'] = f"{candidate['id']}:{branch_index}:line"
+                    queue_count += 1
+                    record['display_number'] = f"Q-{queue_visual['view']}-{queue_visual['page']}.{queue_count}"
+                    rows.append(record)
     visual['rows'] = rows
     visual['queue_comparison_count'] = queue_count
     visual['spatial_available'] = sum(bool(row['spatial'].get('available')) for row in rows)

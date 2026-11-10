@@ -162,6 +162,8 @@ def create_app(config=None):
 
     from alma_duplicate.ui.queue_browser import presentation as queue_geometry_candidates
     app.jinja_env.globals['queue_geometry_candidates'] = queue_geometry_candidates
+    from alma_duplicate.ui.queue_spectral_display import continuum_windows
+    app.jinja_env.globals['queue_continuum_windows'] = continuum_windows
 
     def render_report(data, report_id):
         is_run = data.get('run') is not None
