@@ -9,6 +9,7 @@
   let selected = rows[0].id, previewed = null, previewScroll = null;
   const highlighted = () => previewed ?? selected;
   const viewport = window.ReportViewport;
+  viewport.assignColors(rows);
   const views = {spatial: viewport.fresh(), spectral: viewport.fresh()};
   let project = "", member = "", isolated = false;
   const filteredRows = () => viewport.filter(rows, project, member);
@@ -32,7 +33,7 @@
   const origins = {spatial: [240, 220], spectral: [350, 0]};
   const render = chart => chart === "spatial" ? spatialChart() : spectralChart();
   const ns = "http://www.w3.org/2000/svg";
-  const color = row => row.source === "QUEUE" ? "#a45b15" : "#17689e";
+  const color = row => row.plot_color;
   const fmt = x => typeof x === "number" ? Number(x.toPrecision(7)).toString() : String(x ?? "Not recorded");
   function node(tag, attrs = {}, text = null, parent = null, svg = false) {
     const element = svg ? document.createElementNS(ns, tag) : document.createElement(tag);
@@ -111,7 +112,7 @@
             center: [sx(beam.offset[0]), sy(beam.offset[1])]});
           const d = polygon.map((p,j)=>`${j ? 'L' : 'M'}${p[0]},${p[1]}`).join(' ')+'Z';
           if (active) draw(g, 'path', {d, fill:'none',stroke:'white','stroke-width':4,'pointer-events':'none'});
-          const colorValue = beam.covers_proposed ? '#16846e' : color(row);
+          const colorValue = color(row);
           draw(g,'path',{d,stroke:active?colorValue:color(row),'stroke-width':active?2:1.1,
             fill:colorValue,'fill-opacity':active ? 0.09 : 0,'stroke-opacity':active?1:.4,
             'stroke-dasharray':row.source==='QUEUE'?'5 3':'none'});
@@ -320,7 +321,7 @@
     document.getElementById("visual-focus").disabled = !row || (!row.spatial.available && !row.spectral.available);
     if (!row) { node("p", {}, "No comparison selected.", summary); return; }
     const identity=node("div", {class:"visual-current-identity"}, null, summary);
-    node("strong", {}, `#${row.display_number} ${row.label}`, identity);
+    node("strong", {style: `border-left: 5px solid ${color(row)}; padding-left: 8px`}, `#${row.display_number} ${row.label}`, identity);
     node("span", {}, row.geometry_kind ? `Queue · ${row.intent} · ${row.geometry_kind} · ${row.array_diameter_m}-m` : `${row.source === "QUEUE" ? "Queue" : "Archive"} · ${row.intent} · SPW ${row.spw}${row.window ? ` · requested ${row.window}` : ""}${row.beam_variant != null ? ` · beam path ${row.beam_variant+1}` : ""}`, identity);
     node("small", {}, row.identity["Member OUS"] ? `Member ${row.identity["Member OUS"]}` : "Member OUS not recorded", identity);
     if (row.identity.ASDM) node("small", {}, `ASDM ${row.identity.ASDM}`, identity);
@@ -406,7 +407,7 @@
     rows.forEach(row => {
       if (!ids.includes(row.id)) return;
       const b = node("button", {type: "button", "aria-pressed": String(selected === row.id)}, null, list);
-      node("strong", {}, `#${row.display_number} · ${row.label}`, b);
+      node("strong", {style: `border-left: 5px solid ${color(row)}; padding-left: 8px`}, `#${row.display_number} · ${row.label}`, b);
       node("small", {}, row.geometry_kind ? `Queue · ${row.intent} · ${row.geometry_kind} · ${row.array_diameter_m}-m` : `${row.source} · ${row.intent} · SPW ${row.spw}${row.window ? ` · requested ${row.window}` : ""}${row.beam_variant != null ? ` · beam path ${row.beam_variant+1}` : ""}`, b);
       const identity = [row.identity["Member OUS"], row.identity.ASDM].filter(Boolean).join(" · ");
       if (identity) node("small", {class: "overlap-identity"}, identity, b);
@@ -522,7 +523,7 @@
     text(`Project: ${document.getElementById("visual-project").selectedOptions[0].textContent}; Member: ${document.getElementById("visual-member").selectedOptions[0].textContent}`);
     const current=rows.find(row=>row.id===selected);
     text(`Only selected: ${isolated ? "yes" : "no"}; Selected: ${current ? "#"+current.display_number+" "+current.label : "none"}`);
-    text("Legend: purple diamond = proposed; blue = Archive; orange = Queue (dashed position boundary).");
+    text("Legend: purple diamond = proposed; each candidate object has its own color; Queue position boundaries are dashed.");
     text("Position circles are half-power boundaries, not angular resolution. Continuum dots are representative frequencies.");
     text("Display relationships do not recompute decisions. Matches do not establish absence of duplication elsewhere.");
     if (data.continuum_declaration) text("Continuum setup qualification uses a researcher declaration; review the text report for evidence.");

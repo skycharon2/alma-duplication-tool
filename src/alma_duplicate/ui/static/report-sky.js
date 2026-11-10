@@ -14,7 +14,16 @@ window.createReportSky = function(state) {
   let viewer, catalog, boundary, reference, selectedCenter, target, loading = false, signature = '';
   let fallbackActive = false;
   const available = () => state.rows().filter(r => r.spatial.available && (r.spatial.center || r.spatial.beams?.length));
-  const color = r => r.source === 'QUEUE' ? '#d78b36' : '#45a9eb';
+  const objectCatalogs = new Map();
+  function candidateCatalog(row) {
+    const key = color(row);
+    if (!objectCatalogs.has(key)) {
+      const c = A.catalog({name:`Candidate ${key}`, color:key, sourceSize:10, onClick:choosePosition});
+      viewer.addCatalog(c); objectCatalogs.set(key,c);
+    }
+    return objectCatalogs.get(key);
+  }
+  const color = r => r.plot_color || (r.source === 'QUEUE' ? '#d78b36' : '#45a9eb');
   const radius = r => Number.isFinite(r.spatial.radius_arcsec) && r.spatial.radius_arcsec > 0 ? r.spatial.radius_arcsec / 3600 : 0;
   function distance(a,b) {
     const rad = Math.PI/180, d=(b[1]-a[1])*rad, r=(b[0]-a[0])*rad;
@@ -82,6 +91,9 @@ window.createReportSky = function(state) {
     if (signature===next) return;
     signature=next;
     catalog.removeAll(); selectedCenter.removeAll(); boundary.removeAll(); reference.removeAll(); choices.replaceChildren();
+    objectCatalogs.forEach(c => c.removeAll());
+    const current = available().find(r => r.id === state.selected());
+    if (current) selectedCenter.updateShape?.({color:color(current)});
     const grouped=new Map(), outlines=new Set();
     // One selectable comparison may contain a complete Custom or Rectangle
     // union. Draw all its saved beam circles, never a fictitious centre circle.
@@ -94,25 +106,25 @@ window.createReportSky = function(state) {
           boundary.add(A.polyline(row.spatial.rectangle_reference.sky_outline,
             {color:color(row), lineWidth:active?2:1, opacity:active?1:.5}));
         for(const beam of row.spatial.beams) {
-          const key=[row.source,...beam.center,radius(row)].join(',');
+          const key=[color(row),...beam.center,radius(row)].join(',');
           if(beams.checked && (!outlines.has(key) || active))
-            boundary.add(A.circle(...beam.center,radius(row),{color:active?'#ff525e':color(row),
+            boundary.add(A.circle(...beam.center,radius(row),{color:color(row),
               lineWidth:active?1.7:1,opacity:active?1:.4}));
           outlines.add(key);
           const marker=A.source(...beam.center,{ids:[row.id],label:'Mosaic pointing'});
           if(active) selectedCenter.addSources([marker]);
-          else if(others.checked) catalog.addSources([marker]);
+          else if(others.checked) candidateCatalog(row).addSources([marker]);
         }
         continue;
       }
       const key=row.spatial.center.join(',');
       if (!grouped.has(key)) grouped.set(key,[]);
       grouped.get(key).push(row);
-      const outlineKey=row.spatial.s_region_sha256 || [row.source,...row.spatial.center,radius(row)].join(',');
+      const outlineKey=color(row) + ':' + (row.spatial.s_region_sha256 || [row.source,...row.spatial.center,radius(row)].join(','));
       if(beams.checked && row.spatial.sky_outline && (!outlines.has(outlineKey)||active))
-        boundary.add(A.polyline(row.spatial.sky_outline,{color:active?'#ff525e':color(row),lineWidth:1.5}));
+        boundary.add(A.polyline(row.spatial.sky_outline,{color:color(row),lineWidth:1.5}));
       if(beams.checked && radius(row) && (!outlines.has(outlineKey)||active))
-        boundary.add(A.circle(...row.spatial.center,radius(row),{color:active?'#ff525e':color(row),
+        boundary.add(A.circle(...row.spatial.center,radius(row),{color:color(row),
           lineWidth:active?1.5:1,opacity:active?1:.4}));
       outlines.add(outlineKey);
     }
@@ -126,7 +138,7 @@ window.createReportSky = function(state) {
         selectedCenter.addSources([A.source(...row.spatial.center,{ids,label:row.spatial.sky_outline?'Region reference':'Candidate center'})]);
         if(ids.length>1)renderChoices(ids);
         if(!row.spatial.sky_outline)reference.add(A.polyline([state.origin,row.spatial.center],{color:'#f5e4a6',lineWidth:2}));
-      } else if(others.checked)catalog.addSources([A.source(...row.spatial.center,{ids})]);
+      } else if(others.checked)candidateCatalog(row).addSources([A.source(...row.spatial.center,{ids})]);
     }
     const selected=rows.find(r=>r.id===state.selected());
     boundary.show(); reference.show();
@@ -211,7 +223,7 @@ window.createReportSky = function(state) {
       reference=A.graphicOverlay({name:'Target–candidate separation'});viewer.addOverlay(reference);
       catalog=A.catalog({name:'Candidate positions',sourceSize:10,onClick:choosePosition});viewer.addCatalog(catalog);
       selectedCenter=A.catalog({name:'Selected candidate center',color:'#ff525e',sourceSize:12,shape:'circle',onClick:choosePosition});viewer.addCatalog(selectedCenter);
-      target=A.catalog({name:'Your proposed target',color:'#30eee2',sourceSize:18,shape:'cross',displayLabel:true,labelFont:'12px sans-serif',labelColumn:'label',labelColor:'#7ffff5',onClick:()=>{const row=available().find(r=>r.id===state.selected());if(row?.spatial.center && distance(state.origin,row.spatial.center)<1e-10)choosePosition({data:{ids:available().filter(r=>r.spatial.center && distance(r.spatial.center,row.spatial.center)<1e-10).map(r=>r.id)}});}});
+      target=A.catalog({name:'Your proposed target',color:'#983b64',sourceSize:18,shape:'cross',displayLabel:true,labelFont:'12px sans-serif',labelColumn:'label',labelColor:'#e7a1c3',onClick:()=>{const row=available().find(r=>r.id===state.selected());if(row?.spatial.center && distance(state.origin,row.spatial.center)<1e-10)choosePosition({data:{ids:available().filter(r=>r.spatial.center && distance(r.spatial.center,row.spatial.center)<1e-10).map(r=>r.id)}});}});
       viewer.addCatalog(target);target.addSources([A.source(...state.origin,{label:'Your target'})]);
 
       update();overview();syncSurvey();

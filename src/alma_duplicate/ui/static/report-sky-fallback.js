@@ -45,7 +45,7 @@
     for (const {row, xy} of sorted) {
       const x = cx + xy[0] * scale, y = cy + xy[1] * scale;
       const highlight = row.id === selected;
-      const color = highlight ? '#ff525e' : row.source === 'QUEUE' ? '#d78b36' : '#45a9eb';
+      const color = row.plot_color || (row.source === 'QUEUE' ? '#d78b36' : '#45a9eb');
       const radius = row.spatial.radius_arcsec;
       if (options.beams && row.spatial.sky_outline && !row.spatial.beams?.length) {
         const outline = row.spatial.sky_outline.map(p=>offset(state.origin,p));
@@ -65,7 +65,7 @@
     }
     // Central cross is the proposed target, never a candidate detection.
     shape('path', {d:`M ${cx-8} ${cy} H ${cx+8} M ${cx} ${cy-8} V ${cy+8}`,
-                   stroke:'#30eee2', 'stroke-width':2, fill:'none'});
+                   stroke:'#983b64', 'stroke-width':2, fill:'none'});
     const legend = shape('text', {x:14, y:24, fill:'#e4eff7', 'font-size':14});
     legend.textContent = 'Recorded geometry only · optical image unavailable';
     const note = shape('text', {x:14, y:height-15, fill:'#afc2ce', 'font-size':12});

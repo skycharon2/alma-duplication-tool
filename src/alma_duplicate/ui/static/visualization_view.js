@@ -52,7 +52,19 @@
       lowerMarginGHz: interval ? f.proposed-f.low : null,
       upperMarginGHz: interval ? f.high-f.proposed : null};
   }
-  const api={relationships, fresh, zoom, pan, hits, projectKey, memberKey, filter, visible, selection, fit};
+  // Assign once over the complete report: filtering and array/SPW selection keep identity colors.
+  function objectKey(row) {
+    const identity = row.identity || {};
+    return JSON.stringify([row.source, identity.Project || null,
+      identity['Queue candidate'] || identity['Member OUS'] || row.id]);
+  }
+  function assignColors(rows) {
+    const palette = ['#2474b5', '#c07816', '#27834b', '#7954b3', '#cb512b', '#557580', '#8c7130'];
+    const keys = [...new Set(rows.map(objectKey))].sort();
+    const colors = new Map(keys.map((key, i) => [key, palette[i] || `hsl(${(i * 137.508) % 360}, 58%, 43%)`]));
+    rows.forEach(row => { row.plot_color = colors.get(objectKey(row)); });
+  }
+  const api={objectKey, assignColors, relationships, fresh, zoom, pan, hits, projectKey, memberKey, filter, visible, selection, fit};
   if (typeof module === "object" && module.exports) module.exports=api;
   else root.ReportViewport=api;
 })(globalThis);

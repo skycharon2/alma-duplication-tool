@@ -20,7 +20,7 @@
 {% if visual.total %} · Comparisons <strong>{{ visual.start }}–{{ visual.stop }}</strong> of {{ visual.total }} on this report page{% endif %}
 {% if visual.queue_pages %} · {{ visual.queue_comparison_count }} Queue comparisons in {{ visual.queue_view }} batch {{ visual.queue_page }}/{{ visual.queue_pages }}{% endif %}
 </span>
-<span class="visual-legend"><span class="legend-proposed">◆ Your observation</span><span class="legend-archive">● Archive</span><span class="legend-queue">● Queue</span></span></div>
+<span class="visual-legend"><span class="legend-proposed">◆ Your observation</span><span>● One color per candidate object · shared across arrays and SPWs</span></span></div>
 {% if visual.continuum_declaration %}<p class="chart-caption">Continuum setup qualification uses a researcher confirmation. <a href="{{ report_url }}#setup-qualification">Review setup evidence</a>.</p>{% endif %}
 <section id="visual-controls" class="visual-controls" aria-label="Filter displayed comparisons" hidden>
 <div class="visual-filter-fields">
@@ -51,7 +51,7 @@
 <p class="sky-survey-status">Active layer: <strong id="sky-active-survey">Not loaded</strong><span id="sky-imagery-status" role="status">Reference image has not loaded yet.</span></p>
 <div class="sky-layer-controls"><label><input type="checkbox" id="sky-show-beams" checked> Show candidate boundaries</label><label><input type="checkbox" id="sky-show-others"> Show other candidates</label><label><input type="checkbox" id="sky-show-imagery" checked> Show reference image</label></div>
 <div id="report-sky-canvas" data-aladin-module="{{ url_for('static', filename='vendor/aladin-lite/3.8.2/aladin.js') }}"></div>
-<div class="sky-stage-legend"><span>✛ Proposed target</span><span class="sky-key-selected">◯ Selected half-power boundary</span><span>○ Candidate/pointing centres · line: single-field separation</span><span>Other candidates, when enabled: blue Archive · amber Queue</span></div>
+<div class="sky-stage-legend"><span>✛ Proposed target</span><span>◯ Selected boundary is thicker; its color stays unchanged</span><span>○ Candidate/pointing centres · line: single-field separation</span><span>Candidate colors match Charts; purple is your target</span></div>
 <div id="report-sky-choices" class="sky-view-actions" role="group" aria-label="Comparisons at the same position"></div>
 <details class="sky-display-controls"><summary>Image display</summary>
 <label>Brightness <input id="sky-brightness" type="range" min="-0.5" max="0.5" step="0.05" value="0" disabled></label>
