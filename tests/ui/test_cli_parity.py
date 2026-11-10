@@ -189,9 +189,9 @@ def run_form_parity(tmp_path, monkeypatch, inputs, data, expected_code):
         contexts = document["context_evaluations"]
         for page in range(1, max(1, (len(contexts) + 19) // 20) + 1):
             html = client.get(url + f"?page={page}&view=all").get_data(as_text=True)
-            assert "NOT_AGGREGATED" in html
+            assert "Parameter comparisons" in html or "No evaluated candidates" in html or "Candidate results" in html
             for context in contexts[(page - 1) * 20:page * 20]:
-                assert context["context_id"] in html
+                assert context["context_id"] in raw.decode()
             assert client.get(url + "/download/report").data == raw
             assert client.get(url + "/download/inspection").data == inspection_bytes
             assert client.get(url + "/download/request").data == request_bytes

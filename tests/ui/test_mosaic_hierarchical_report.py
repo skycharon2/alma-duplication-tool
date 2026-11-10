@@ -180,8 +180,9 @@ def test_hierarchical_template_renders_recorded_context_evidence():
     for text in ('Mosaic assessment', 'Results in this search',
                  'Archive Member OUS:', 'Target: target-0', 'Context 1',
                  'Mosaic spatial coverage', 'Spectral line comparisons',
-                 'row-1', 'candidate SPW 1', 'Download complete report JSON'):
+                 'row-1', 'candidate SPW 1'):
         assert text in rendered
+    assert 'Complete technical records' not in rendered
     assert 'uid://shared' in rendered
     assert '3 proposed pointings' in rendered
     assert '2 / 3 inside recorded Archive coverage' in rendered

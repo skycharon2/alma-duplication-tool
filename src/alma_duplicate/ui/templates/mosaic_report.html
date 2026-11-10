@@ -91,9 +91,6 @@
 {% if page < pages %}<a href="{{ url_for('run_view', report_id=report_id, page=page+1, view=result_view) }}#{{ report_id }}-candidates">Next page</a>{% endif %}
 </nav></section>
 
-<section class="mosaic-technical" id="technical-records" aria-label="Technical records"><details><summary>Complete technical records and downloads</summary>
-<p>The original reports retain every candidate, comparison context, pointing classification, spectral-window pair, input identity and method record. The page only renders a bounded subset of detailed rows.</p>
-<p><a href="{{ url_for('run_download', report_id=report_id, kind='report') }}">Download complete report JSON</a> · <a href="{{ url_for('run_download', report_id=report_id, kind='request') }}">Download request and all proposed pointings</a> · <a href="{{ url_for('run_download', report_id=report_id, kind='inspection') }}">Download inspection</a></p>
-</details></section>
+
 </div>
 {% endblock %}

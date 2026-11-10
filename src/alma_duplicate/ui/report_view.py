@@ -421,8 +421,14 @@ def source_overview(document):
             notes.append('Array evidence retrieval was incomplete. No partial catalogue was used.')
         elif aq_status == 'COMPLETED' and aq.get('record_count') == 0:
             notes.append('The array lookup returned no records. This does not mean there is no duplication.')
+        elif aq_status == 'COMPLETED':
+            notes.append('Array information was retrieved for this search.')
         elif aq_status == 'SKIPPED':
-            notes.append('No array lookup was performed for this run; see the recorded reason in technical records.')
+            notes.append('No array lookup was performed for this search.')
+        elif aq.get('scope') == 'CAPTURED_OFFICIAL_AQ_SOURCE_LABELS':
+            notes.append('Array information comes from previously saved data; no live lookup is recorded.')
+        elif name == 'ARCHIVE' and not aq:
+            notes.append('Additional array information is not recorded for this search.')
         if source.get('requested_filters_fully_evaluated') is False and source.get('status') == 'COMPLETED':
             notes.append('Some requested retrieval filters could not be evaluated. Review the search limitations.')
         result.append({'name': 'Archive' if name == 'ARCHIVE' else 'Queue', 'label': label,

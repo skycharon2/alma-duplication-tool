@@ -131,7 +131,12 @@ def test_aq_client_is_not_created_when_backend_skips(wired, kind, reason):
     assert posted.status_code == 303
     assert wired["events"] == ["TAP_INIT", "TAP_SEARCH"] * (3 if kind == "incomplete" else 1)
     html = client.get(posted.location).get_data(as_text=True)
-    assert "AQ acquisition: SKIPPED" in html and reason in html
+    assert "No array lookup was performed for this search." in html
+    exported = client.get(posted.location + "/download/report").get_json()
+    acquisition = exported['sources']['ARCHIVE']['array_evidence']['acquisition']
+    assert acquisition['status'] == 'SKIPPED'
+    assert reason in json.dumps(acquisition)
+    assert reason not in html
 
 
 def test_live_tap_without_aq_preserves_existing_behavior(wired):
@@ -145,10 +150,10 @@ def test_live_tap_without_aq_preserves_existing_behavior(wired):
 
 
 @pytest.mark.parametrize("mode,status,text", [
-    ("success", "COMPLETED", "AQ retrieval completed"),
-    ("empty", "COMPLETED", "No source records were returned"),
-    ("FAILED", "FAILED", "Live AQ acquisition failed"),
-    ("INCOMPLETE", "INCOMPLETE", "No partial catalog was used"),
+    ("success", "COMPLETED", "Array information was retrieved for this search."),
+    ("empty", "COMPLETED", "The array lookup returned no records"),
+    ("FAILED", "FAILED", "Array evidence retrieval failed"),
+    ("INCOMPLETE", "INCOMPLETE", "No partial catalogue was used"),
 ])
 def test_results_keep_candidates_report_and_original_exports(wired, mode, status, text):
     wired["mode"] = mode
@@ -161,20 +166,22 @@ def test_results_keep_candidates_report_and_original_exports(wired, mode, status
     raw = client.get(location + "/download/report").data
     document = json.loads(raw)
     html = client.get(location).get_data(as_text=True)
-    assert text in html and f"AQ acquisition: {status}" in html
-    assert "Archive TAP status: COMPLETED" in html
+    assert text in html
+    assert "AQ acquisition:" not in html
+    assert "Observation search</strong>: Completed" in html
     assert "No report was created" not in html
     assert len(document["context_evaluations"]) == 3
     metadata = document["sources"]["ARCHIVE"]["array_evidence"]["acquisition"]
     assert metadata["status"] == status
     if mode in {"FAILED", "INCOMPLETE"}:
         assert document["assessment_status"] == "SOURCES_UNAVAILABLE"
-        assert "Planned Members: 2" in html
-        assert "No completed query records are available" in html
+        assert len(metadata["requested_members"]) == 2
+        assert not metadata["queries"]
     else:
-        assert "Completed AQ query records, including zero-hit results" in html
+        assert metadata["queries"]
         for query in metadata["queries"]:
-            assert query["response_sha256"] in html
+            assert query["response_sha256"] not in html
+            assert query["response_sha256"] in raw.decode()
     inspection = client.get(location + "/download/inspection").data
     request = client.get(location + "/download/request").data
     assert json.loads(inspection) == inspect_report(document)
@@ -247,13 +254,13 @@ def test_report_display_uses_saved_provenance_not_operator_config(wired, tmp_pat
     events = list(wired["events"])
     for live in (False, True):
         viewer = create_app(config(REPORT_DIRECTORY=tmp_path, LIVE_ARCHIVE=live, LIVE_AQ=live)).test_client()
-        assert "Evidence provenance: LIVE" in viewer.get("/reports/1").get_data(as_text=True)
+        assert "Array information was retrieved for this search." in viewer.get("/reports/1").get_data(as_text=True)
         old = viewer.get("/reports/2").get_data(as_text=True)
-        assert "Additional AQ evidence: not recorded in this report" in old
+        assert "Additional array information is not recorded for this search." in old
         assert "AQ acquisition:" not in old
         captured = viewer.get("/reports/3").get_data(as_text=True)
-        assert "Evidence provenance: CAPTURED" in captured
-        assert "AQ acquisition status is not recorded" in captured
+        assert "Array information comes from previously saved data" in captured
+        assert "no live lookup is recorded" in captured
         assert viewer.get("/reports/1/download/report").data == report_json_text(live_doc).encode()
     assert wired["events"] == events
 
@@ -271,6 +278,8 @@ def test_pagination_and_external_text_are_safe_without_acquisition(wired, tmp_pa
     doc = client.get(location + "/download/report").get_json()
     assert len(doc["context_evaluations"]) == 21
     aq = doc["sources"]["ARCHIVE"]["array_evidence"]["acquisition"]
+    # User-facing identity still must be escaped even though diagnostics are omitted.
+    doc['context_evaluations'][0].setdefault('display_identity', {})['Target'] = '<script>unsafe-target</script>'
     aq["queries"][0]["member_ous_uid"] = '<script>alert("source")</script>'
     aq["requested_members"][0] = '<script>alert("source")</script>'
     aq["status"] = "FAILED"
@@ -285,7 +294,9 @@ def test_pagination_and_external_text_are_safe_without_acquisition(wired, tmp_pa
         response_ = viewer.get(f"/reports/1?page={page}&view=all")
         assert response_.status_code == 200
         html = response_.get_data(as_text=True)
-        assert "<script>" not in html and "&lt;script&gt;" in html
+        assert "<script>" not in html and "alert(" not in html  # Diagnostics are not rendered.
+        if page == 1:
+            assert '&lt;script&gt;unsafe-target&lt;/script&gt;' in html
     assert viewer.get("/reports/1/download/report").data == raw
     assert wired["events"] == events
 
@@ -323,7 +334,7 @@ def test_auto_browser_acquisition_exports_and_saved_report(wired, tmp_path):
     html = client.get(location).get_data(as_text=True)
     assert 'Automatic retrieval:' in html and 'Archive centre radius' in html
     assert 'Queue includes all supplied rows' not in html
-    assert 'auto_fixed_single_2' in html
+    assert 'auto_fixed_single_2' not in html
     exports = {kind: client.get(location + '/download/' + kind).data
                for kind in ('report', 'inspection', 'request')}
     doc = json.loads(exports['report'])
@@ -343,6 +354,6 @@ def test_auto_browser_acquisition_exports_and_saved_report(wired, tmp_path):
     (case / 'report.json').write_bytes(exports['report'])
     saved = create_app(config(LIVE_ARCHIVE=False, LIVE_AQ=False, REPORT_DIRECTORY=tmp_path)).test_client()
     html = saved.get('/reports/1').get_data(as_text=True)
-    assert 'Automatic retrieval:' in html and 'auto_fixed_single_2' in html
-    assert 'AQ retrieval completed' in html
+    assert 'Automatic retrieval:' in html and 'auto_fixed_single_2' not in html
+    assert 'Array information was retrieved for this search.' in html
     assert wired['events'] == events

@@ -108,3 +108,49 @@ test('missing evidence and continuum representatives never invent interval cover
   assert.deepEqual(view.relationships({spatial:{available:false},spectral:{available:false}}),{radiusRatio:null,lowerMarginGHz:null,upperMarginGHz:null});
   assert.equal(view.relationships({spatial:{available:true,separation_arcsec:null,radius_arcsec:10},spectral:{available:true,kind:'interval',proposed:100,low:110,high:90}}).lowerMarginGHz,null);
 });
+
+
+test('object colors remain shared across arrays/SPWs and stable through filtering', () => {
+  const rows = [
+    {id:'q-12-spw1',source:'QUEUE',identity:{Project:'P','Queue candidate':'q'}},
+    {id:'q-7-spw2',source:'QUEUE',identity:{Project:'P','Queue candidate':'q'}},
+    {id:'other',source:'QUEUE',identity:{Project:'P','Queue candidate':'other'}},
+    {id:'a1',source:'ARCHIVE',identity:{Project:'P','Member OUS':'member'}},
+    {id:'a2',source:'ARCHIVE',identity:{Project:'P','Member OUS':'member'}},
+  ];
+  view.assignColors(rows);
+  assert.equal(rows[0].plot_color,rows[1].plot_color);
+  assert.equal(rows[3].plot_color,rows[4].plot_color);
+  assert.equal(new Set(rows.map(r=>r.plot_color)).size,3);
+  assert.ok(rows.every(r=>r.plot_color !== '#983b64'));
+  const colors=rows.map(r=>r.plot_color);
+  assert.equal(view.filter(rows,view.projectKey(rows[0]))[0].plot_color,colors[0]);
+  view.assignColors([...rows].reverse());
+  assert.deepEqual(rows.map(r=>r.plot_color),colors);
+});
+
+
+test('array filter separates matching branches without changing their object colors', () => {
+  const rows = [7,12].map(d=>({id:String(d),source:'QUEUE',array_diameter_m:d,
+    identity:{Project:'P','Queue candidate':'same'}}));
+  view.assignColors(rows);
+  assert.deepEqual(view.filter(rows,'','','7-m').map(r=>r.id), ['7']);
+  assert.deepEqual(view.filter(rows,'','','12-m').map(r=>r.id), ['12']);
+  assert.equal(view.filter(rows).length,2);
+  assert.equal(rows[0].plot_color, rows[1].plot_color);
+});
+
+
+test('Queue setup exposes saved SPWs separately without creating matching comparisons', () => {
+  const row={id:'q12',source:'QUEUE',spectral:{coverage:[
+    {spw:1,low:210,high:211},{spw:3,low:230,high:231}]}};
+  const before=JSON.stringify(row);
+  const setup=view.queueSetup(row);
+  assert.equal(setup.queue,true);
+  assert.deepEqual(setup.components.map(c=>c.index),[1,3]);
+  assert.deepEqual(setup.components.map(c=>c.interval),row.spectral.coverage);
+  assert.equal(JSON.stringify(row),before);
+  assert.notEqual(view.queueSetup({...row,id:'q7'}).id,setup.id);
+  assert.equal(view.queueSetup({source:'QUEUE',spectral:{}}),null);
+  assert.equal(view.queueSetup({...row,source:'ARCHIVE'}),null);
+});

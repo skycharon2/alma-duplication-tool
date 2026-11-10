@@ -1,7 +1,7 @@
 {% from '_report_comparison.html' import comparison with context %}
 <section class="report-overview">
 <h2>Queue candidate results</h2>
-<p>Assessment: {{ geometry_report.assessment_status }}. Search completeness: {{ geometry_report.search_completeness or 'NOT_ESTABLISHED' }}.</p>
+<p>{{ 'Search completed.' if geometry_report.assessment_status == 'COMPLETED' else 'Search incomplete.' }} Results apply to the observations retrieved in this search.</p>
 {% if geometry_report.error %}<p role="alert">Queue geometry assessment failed: {{ geometry_report.error }}. Other recorded results remain available.</p>{% endif %}
 <p>Each configuration and array is evaluated independently. Unresolved or unsupported comparisons do not establish absence of duplication.</p>
 {% set entries = queue_geometry_candidates(geometry_report) %}
@@ -18,13 +18,24 @@
 {% for entry in entries %}
 {% set c = entry.candidate %}
 <details class="report-context"><summary>{{ entry.project }} · {{ entry.target }} · {{ entry.kind }}{% for b in c.science.branches %} · {{ b.branch }}: {{ b.status }}{% endfor %}</summary>
-<p>Queue CSV · Model: {{ c.science.model_status or 'PROVISIONAL' }} · Candidate completeness: {{ c.science.scientific_candidate_completeness or 'NOT_ESTABLISHED' }}</p>
-<p>Candidate ID: {{ c.candidate_id }}. Full configuration and provenance are retained in the report download.</p>
+<p>Queue observation · Each array is compared independently.</p>
+
 {% for v in c.science.variants %}
 <details><summary>{{ v.diameter_m }} m{% for b in v.branches %} · {{ b.branch }}: {{ b.status }}{% endfor %}</summary>
 {% set position = c.position.beam_variants | selectattr('diameter_m', 'equalto', v.diameter_m) | first %}
 {{ comparison(v.criteria, 'Candidate conditions', position) }}
-{% for pair in v.line_pairs %}<details><summary>LINE · {{ pair.reference.proposed_window_id }} · SPW {{ pair.reference.spw_number }}: {{ pair.status or pair.truth }}</summary>{{ comparison(pair.criteria, 'LINE comparison', position) }}</details>{% endfor %}
+{% set windows = queue_continuum_windows(v.criteria) %}
+{% if windows %}<details class="spectral-setup"><summary>Recorded spectral setup · {{ windows|length }} SPWs</summary>
+<p>These saved usable frequency intervals support the continuum calculation. They are not separate matching LINE comparisons.</p>
+<div class="table-wrap"><table><caption>SPW coverage for this array branch</caption><thead><tr><th>SPW</th><th>Lower frequency (GHz)</th><th>Upper frequency (GHz)</th><th>Usable width (GHz)</th></tr></thead><tbody>
+{% for w in windows %}<tr><td>{{ w.spw }}</td><td>{{ display_number(w.low) }}</td><td>{{ display_number(w.high) }}</td><td>{{ display_number(w.bandwidth_ghz) }}</td></tr>{% endfor %}
+</tbody></table></div></details>{% endif %}
+{% set matching_pairs = v.line_pairs | selectattr('truth', 'equalto', 'TRUE') | list %}
+{% set other_pairs = v.line_pairs | rejectattr('truth', 'equalto', 'TRUE') | list %}
+{% if matching_pairs %}<h4>Matching LINE comparisons ({{ matching_pairs|length }})</h4><p>Each pair retains its own result. A matching pair does not establish that every SPW meets the conditions.</p>
+{% for pair in matching_pairs %}<details class="line-pair"><summary>LINE · {{ pair.reference.proposed_window_id }} · SPW {{ pair.reference.spw_number }}: {{ pair.status or pair.truth }}</summary>{{ comparison(pair.criteria, 'Criteria for this LINE pair', position) }}</details>{% endfor %}{% endif %}
+{% if other_pairs %}<details class="other-pairs"><summary>Other evaluated window pairs ({{ other_pairs|length }})</summary><p>These retain their own results and are not counted as matching comparisons. Unresolved results remain unresolved.</p>
+{% for pair in other_pairs %}<details class="line-pair"><summary>LINE · {{ pair.reference.proposed_window_id }} · SPW {{ pair.reference.spw_number }}: {{ pair.status or pair.truth }}</summary>{{ comparison(pair.criteria, 'Criteria for this LINE pair', position) }}</details>{% endfor %}</details>{% endif %}
 </details>
 {% else %}<p>UNKNOWN: array inference is unresolved.</p>{% endfor %}
 </details>

@@ -1,0 +1,9 @@
+{% if archive_status %}
+<div id="archive-source-status" class="queue-status-compact archive-status">
+<p><strong>{{ archive_status.label }}</strong></p>
+{% for stage in archive_status.stages %}
+<p><strong>{{ 'Observation search' if stage.name == 'Candidate search (TAP)' else 'Array information' }}</strong>: {{ stage.label }}{% if stage.region != 'Not recorded' %} · {{ stage.region }}{% endif %}</p>
+{% endfor %}
+<p class="field-note">This status describes this search only. It does not establish that there is no duplication.</p>
+</div>
+{% endif %}

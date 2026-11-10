@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% from '_calculation.html' import facts, calculation with context %}
-{% macro evidence(value) %}<pre class="report-json">{{ value | tojson(indent=2) }}</pre>{% endmacro %}
 {% macro status(value) %}<span class="report-status" data-status="{{ value }}">{{ status_labels.get(value, 'Needs review') }}</span>{% endmacro %}
 {% from '_report_comparison.html' import comparison, quantity with context %}
-{% macro record_fields(records) %}{% for r in records %}<p>{{ criterion_view(r).label }} · <code>{{ r.criterion_id }}</code> · Method <code>{{ r.method_version }}</code> · {{ r.evaluation }} · {{ r.approval }}. Stored candidate field: {{ (r.candidate or {}).get('source_field', 'Not recorded') }}.</p>{% endfor %}{% endmacro %}
 {% macro decision_summary(records) %}
 <ul class="decision-summary">{% for r in records %}<li><strong>{{ criterion_view(r).label }}:</strong> {{ criterion_status(r) }}. {{ criterion_explanation(r) }}</li>{% endfor %}</ul>
 {% endmacro %}
@@ -13,7 +11,7 @@
 {% macro candidate_comparison(c, context_index, first=false, nested=false) %}
 <article class="report-context" id="context-{{ context_index }}">
 {% if not nested %}<h3>Candidate {{ context_index + 1 }} · {{ c.reference.source|title }}</h3>{% endif %}
-<details class="candidate-comparison"{% if first %} open{% endif %}><summary>{% if nested %}{% if c.reference.source == 'ARCHIVE' %}{% for label, value in context_identity(c) if label == 'SPW' %}SPW {{ value }} · {% endfor %}{% endif %}{% endif %}View parameter comparison</summary><p class="candidate-caption">{% for label, value in context_identity(c) if label in ['Target', 'Project', 'SPW'] %}<span>{{ label }}: {{ value }}</span>{% else %}Identity details are available in the technical record.{% endfor %}</p>
+<details class="candidate-comparison"{% if first %} open{% endif %}><summary>{% if nested %}{% if c.reference.source == 'ARCHIVE' %}{% for label, value in context_identity(c) if label == 'SPW' %}SPW {{ value }} · {% endfor %}{% endif %}{% endif %}View parameter comparison</summary><p class="candidate-caption">{% for label, value in context_identity(c) if label in ['Target', 'Project', 'SPW'] %}<span>{{ label }}: {{ value }}</span>{% else %}Candidate identity is unavailable.{% endfor %}</p>
 {% for b in c.branches %}<p class="branch-result"><strong>{{ purpose_labels.get(b.branch, 'Recorded purpose') }}</strong>: {{ status(b.status) }}</p>{% endfor %}
 
 {% if c.detail_level == 'SUMMARY' %}
@@ -21,7 +19,7 @@
 {% for scope in c.beam_variants or [c] %}
 {% if c.beam_variants %}<h4>Beam variant · D = {{ scope.diameter_m }} m</h4>{% for b in scope.branches %}<p>{{ purpose_labels.get(b.branch, 'Recorded purpose') }}: {{ status(b.status) }}</p>{% endfor %}{% endif %}
 {{ decision_summary(scope.criteria) }}
-{% if scope.line_pairs %}<p>{{ scope.line_pairs|length }} spectral-window comparisons evaluated. Repeated condition summaries are grouped below; pair identities remain in the technical record.</p>
+{% if scope.line_pairs %}<p>{{ scope.line_pairs|length }} spectral-window comparisons evaluated. Repeated conditions are grouped below.</p>
 {% for item in summary_line_conditions(scope) %}{{ decision_summary([item.record]) }}<p class="field-note">Recorded for {{ item.count }} spectral-window comparison{{ '' if item.count == 1 else 's' }}.</p>{% endfor %}{% endif %}
 {% endfor %}
 {% else %}
@@ -77,32 +75,15 @@ No matching standard comparisons; Queue geometry matches also exist, but their s
 {% endif %}
 {% if document.assessment_status == 'SOURCES_UNAVAILABLE' or (run and run.status == 'SOURCES_UNAVAILABLE') %}<p class="notice">Some source evidence is unavailable or incomplete. Review source coverage below before interpreting results.</p>{% endif %}
 </section>
-{% if source_overview %}<section id="sources" aria-label="Source coverage"><details class="source-coverage"{% if source_overview | selectattr('attention') | list %} open{% endif %}><summary>Source coverage</summary><div class="source-states">{% for source in source_overview %}<div{% if source.attention %} class="source-attention"{% endif %}><h3>{{ source.name }} — {{ source.label }}</h3>
-{% if source.name|lower == 'queue' and selected_queue %}<p>Official data as of {{ selected_queue.source_as_of }}</p>{% endif %}
+{% if source_overview %}<section id="sources" aria-label="Source coverage"><details class="source-coverage"><summary>Source coverage</summary><div class="source-states">{% for source in source_overview %}<div><h3>{{ source.name }} — {{ source.label }}</h3>
+{% if source.name|lower == 'queue' and selected_queue %}<p>Queue data as of {{ selected_queue.source_as_of }}.</p>{% endif %}
+{% if source.name|lower == 'archive' %}{% include '_report_source_status.html' %}{% endif %}
 {% for note in source.notes %}<p>{{ note }}</p>{% endfor %}
-{% if source.name|lower == 'archive' and archive_status %}
-<details class="source-retrieval-help"><summary aria-label="Archive retrieval details" title="Archive retrieval details">?</summary>
-{% include '_archive_source_status.html' %}
-<p>{{ archive_status.note }}</p>
-{% for stage in archive_status.stages %}
-<h4>{{ stage.name }} — {{ stage.label }}</h4>
-{% if stage.attempts %}<ul>{% for attempt in stage.attempts %}<li>{{ attempt.region }} — {{ attempt.status }}{% if attempt.error %}: {{ attempt.error }}{% endif %}{% if attempt.finished_at %} · {{ attempt.finished_at }}{% endif %}</li>{% endfor %}</ul>{% endif %}
-{% endfor %}
-</details>
-{% elif source.name|lower == 'queue' and selected_queue %}
-<details class="source-retrieval-help"><summary aria-label="Queue retrieval details" title="Queue retrieval details">?</summary>
-{% if selected_queue %}<section id="queue-run-provenance" aria-label="Queue snapshot used by this run">
-<h2>Queue source used in this run</h2>
-<p>Official data as of {{ selected_queue.source_as_of }} · Source ID <code>{{ selected_queue.source_id }}</code> · Parse run ID <code>{{ selected_queue.run_id }}</code>.</p>
-<p>Revision <code>{{ selected_queue.revision }}</code> · SHA-256 <code>{{ selected_queue.snapshot_sha256 }}</code> · Retrieved {{ selected_queue.retrieved_at }}.</p>
-<p>These are the pinned Queue source bytes for this assessment, even if the active version changes later.</p>
-</section>{% endif %}
-
-</details>{% endif %}</div>{% endfor %}</div></details></section>{% endif %}
+</div>{% endfor %}</div></details></section>{% endif %}
 {% set retrieval = (document.get('plan') or {}).get('retrieval_policy') %}
 {% if retrieval %}<details class="search-scope-details"><summary>Search scope and limitations</summary><p class="search-scope-summary"><strong>Automatic retrieval:</strong> {% if 'ARCHIVE' in document.request.search_options.sources %}Archive centre radius {{ display_number(retrieval.archive_radius_deg * 3600) }} arcsec, bounded by 7 m dishes at 35 GHz. {% endif %}{% if 'QUEUE' in document.request.search_options.sources %}Queue includes all supplied rows before optional filters. {% endif %}{% if retrieval.archive_strategy == 'CENTER_CONE_OR_MOSAIC_REGION' %}Identified Mosaic regions intersecting the target are additionally retrieved. Missing or invalid regions outside the cone remain uncovered. {% endif %}This scope does not guarantee coverage of unknown positions or frequencies below the bound.{% if retrieval.archive_strategy != 'CENTER_CONE_OR_MOSAIC_REGION' %} Extended mosaics are not covered by this bound.{% endif %}</p></details>{% endif %}
 {% if run %}<details class="report-retention"><summary>Temporary report · retained for up to {{ display_number(retention_hours) }} hours</summary><p>{% if remaining_minutes is defined %}Approximately {{ remaining_minutes }} minute{% if remaining_minutes != 1 %}s{% endif %} remaining. {% endif %}Opening this page does not extend that period. A server restart or storage limit may remove it earlier.</p></details>{% endif %}
-<nav class="report-nav" aria-label="Report sections"><a href="#candidates">Candidate results</a>{% if contexts %}<a href="#comparisons">Parameter comparisons</a>{% endif %}{% if attention %}<a href="#evidence">Information to review</a>{% endif %}{% if show_technical %}<a href="#technical-records">Technical records</a>{% endif %}</nav>
+<nav class="report-nav" aria-label="Report sections"><a href="#candidates">Candidate results</a>{% if contexts %}<a href="#comparisons">Parameter comparisons</a>{% endif %}{% if attention %}<a href="#evidence">Information to review</a>{% endif %}</nav>
 {% if document.report_kind != 'SOLAR_EXEMPTION' %}
 
 <section id="candidates"><h2>{{ 'All candidate comparisons' if result_view == 'all' else 'Matching candidates' }}</h2><p>Page {{ page }} of {{ pages }} · {% if result_view == 'all' %}{{ visible_count }} recorded comparisons.{% else %}{% if queue_entries %}{{ group_count + (queue_entries|length) }} result groups · {{ visible_count }} standard matching comparisons; {{ queue_entries|length }} Queue geometry candidate configurations on this page. Standard results and Queue geometry have separate pagination.{% else %}{{ group_count }} result groups · {{ visible_count }} matching comparisons. Each page holds up to 20 complete Member groups or independent source contexts.{% endif %}{% endif %}</p>
@@ -136,14 +117,6 @@ No matching standard comparisons; Queue geometry matches also exist, but their s
 {% if attention %}<section id="evidence"><h2>Information to review</h2><p>Counts refer to affected comparisons across all pages, not duplicate observations.</p>
 {% for group in attention %}<details class="review-group"{% if not match_count or group.title == 'Proposed observation' %} open{% endif %}><summary>{{ group.title }}{% if group.candidates %} · {{ group.candidates|length }} affected comparison{{ '' if group.candidates|length == 1 else 's' }}{% endif %}</summary><p>{% if group.candidates %}{{ group.candidates|length }} affected candidate comparison{{ '' if group.candidates|length == 1 else 's' }}.{% else %}Report-level issue; no individual candidate is identified.{% endif %}</p><ul>{% for message in group.messages %}<li>{{ message }}</li>{% endfor %}</ul>{% if group.candidates %}<details><summary>Affected comparisons</summary><p>{% for index in group.candidates[:8] %}<a href="{{ url_for(view_endpoint, report_id=report_id, page=index // 20 + 1, view='all') }}#context-{{ index }}">Candidate {{ index + 1 }}</a>{{ ', ' if not loop.last }}{% endfor %}{% if group.candidates|length > 8 %}. Another {{ group.candidates|length - 8 }} are listed in the complete inspection record.{% endif %}</p></details>{% endif %}</details>{% endfor %}
 </section>{% endif %}
-<details id="technical-records" class="report-technical"{% if not show_technical %} hidden{% endif %}><summary>Technical records — methods and source queries</summary><p>Values above use six significant digits. {% if document.report_detail %}Full calculation records are retained for matching candidates only. Other records contain decision summaries.{% else %}Full precision, methods and original records are available here.{% endif %}</p><p><a href="{{ url_for(view_endpoint, report_id=report_id, view='all') }}#candidates">Inspect all {{ summary.total }} evaluated comparisons</a></p><div class="report-actions" aria-label="Technical downloads"><a href="{{ url_for(download_endpoint, report_id=report_id, kind='report') }}">{{ 'Download saved report JSON' if document.report_detail else 'Download complete original JSON' }}</a><a href="{{ url_for(download_endpoint, report_id=report_id, kind='inspection') }}">Download inspection v3</a>{% if run %}<a href="{{ url_for(download_endpoint, report_id=report_id, kind='request') }}">Download this run's input request</a>{% endif %}</div><p>{{ document.report_kind }} · Report {{ document.report_version }} · Generated {{ document.generated_at }} · Whole-search assessment: {{ document.assessment }}.</p>
-{% if run %}<h3>Assessment run</h3><p>Run ID: {{ report_id }} · Execution status: {{ run.status }}.</p>{% endif %}
-{% if attention %}<details><summary>Diagnostic occurrence counts</summary><p>One candidate can produce the same reason in several criteria or beam variants. These counts overlap and are not candidate totals.</p><ul>{% for group in attention %}<li>{{ group.title }}: {{ group.count }} recorded issue occurrences; {{ group.candidates|length }} affected comparisons.</li>{% endfor %}</ul></details>{% endif %}
-{% if document.evaluation_configuration is defined %}<details><summary>Effective evaluation configuration</summary>{{ evidence(document.evaluation_configuration) }}</details>{% endif %}
-{% if retrieval %}<h3>Recorded automatic retrieval policy</h3>{{ evidence(retrieval) }}{% endif %}
-{% for name, source in document.sources.items() %}<h3>{{ name }} — {{ source.status }}</h3>{% if name == 'ARCHIVE' %}<p>Archive TAP status: {{ source.status }}</p>{% include '_archive_aq.html' %}{% endif %}<details><summary>Source metadata and search scope</summary>{{ evidence(source) }}</details>{% endfor %}
-<details><summary>Criterion methods for this page</summary>{{ record_fields(document.request_criteria) }}{% for c in contexts %}<h3>Candidate {{ context_indices[loop.index0] + 1 }}</h3><p>{{ c.context_id }}</p>{% for scope in c.beam_variants or [c] %}{{ record_fields(scope.criteria) }}{% for pair in scope.line_pairs %}{{ record_fields(pair.criteria) }}{% endfor %}{% endfor %}{% endfor %}</details>
-{% if disk_backed %}<p>Inspection and per-row retrieval records are retained in the saved downloads. Only the current page of comparisons is loaded here.</p>{% else %}<details><summary>Complete inspection record</summary>{{ evidence(item.inspection) }}</details>{% endif %}<details><summary>Request and run metadata</summary>{% for key, value in document.items() if key not in ['context_evaluations', 'sources'] %}<h3>{{ key }}</h3>{{ evidence(value) }}{% endfor %}</details>
-<details><summary>Saved candidate records on this page</summary><p>This preview contains only the current page. The saved report contains every evaluated candidate, with detail levels as recorded.</p>{{ evidence({'context_evaluations': contexts}) }}</details><p class="report-hash">Original SHA-256: {{ item.sha256 }}</p></details>
+
 </div>
 {% endblock %}

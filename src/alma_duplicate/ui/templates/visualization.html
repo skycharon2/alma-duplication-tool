@@ -20,12 +20,13 @@
 {% if visual.total %} · Comparisons <strong>{{ visual.start }}–{{ visual.stop }}</strong> of {{ visual.total }} on this report page{% endif %}
 {% if visual.queue_pages %} · {{ visual.queue_comparison_count }} Queue comparisons in {{ visual.queue_view }} batch {{ visual.queue_page }}/{{ visual.queue_pages }}{% endif %}
 </span>
-<span class="visual-legend"><span class="legend-proposed">◆ Your observation</span><span class="legend-archive">● Archive</span><span class="legend-queue">● Queue</span></span></div>
+<span class="visual-legend"><span class="legend-proposed">◆ Your observation</span><span>● One color per candidate object · shared across arrays and SPWs</span></span></div>
 {% if visual.continuum_declaration %}<p class="chart-caption">Continuum setup qualification uses a researcher confirmation. <a href="{{ report_url }}#setup-qualification">Review setup evidence</a>.</p>{% endif %}
 <section id="visual-controls" class="visual-controls" aria-label="Filter displayed comparisons" hidden>
 <div class="visual-filter-fields">
 <label for="visual-project">Project<select id="visual-project"></select></label>
 <label for="visual-member">Member OUS<select id="visual-member"></select></label>
+<label for="visual-array">Array<select id="visual-array"></select></label>
 <div class="visual-filter-actions"><button type="button" id="visual-isolate" aria-pressed="false">Only selected</button><button type="button" id="visual-focus">Focus selected</button><button type="button" id="visual-clear">Clear filters</button></div>
 </div>
 <p><strong id="visual-visible-count" role="status"></strong><span>Current loaded batch only ({{ visual.plot_page }} / {{ visual.plot_pages }} on report page {{ page }}). Other pages are unchanged.</span></p>
@@ -39,10 +40,10 @@
 <div class="evidence-slide" id="evidence-charts" role="group" aria-label="1 of 2: Position and frequency charts"><div class="visual-panels">
 <section class="visual-panel" aria-labelledby="spatial-title"><header><div><h2 id="spatial-title">Position</h2><p>Candidate half-power boundaries</p></div><div class="chart-tools" aria-label="Position zoom"><button type="button" data-zoom="spatial:in" aria-label="Zoom in position">+</button><button type="button" data-zoom="spatial:out" aria-label="Zoom out position">−</button><button type="button" data-zoom="spatial:reset">Reset</button></div></header>
 <svg id="spatial-chart" viewBox="0 0 460 460" role="group" aria-label="Position comparison, east to the left and north up"></svg>
-<p class="chart-caption"><span id="visual-spatial-count">{{ visual.spatial_available }} / {{ visual.rows|length }}</span> visible comparisons have position evidence. Offsets from your target in arcsec · East ← · North ↑. Boundaries use the candidate radius recorded by the backend.</p></section>
-<section class="visual-panel" aria-labelledby="spectral-title"><header><div><h2 id="spectral-title">Frequency</h2><p>Full spectral setup · expand to inspect SPW comparisons</p></div><div class="chart-tools" aria-label="Frequency zoom"><button type="button" data-zoom="spectral:in" aria-label="Zoom in frequency">+</button><button type="button" data-zoom="spectral:out" aria-label="Zoom out frequency">−</button><button type="button" data-zoom="spectral:reset">Reset</button></div></header>
+<p class="chart-caption"><span id="visual-spatial-count">{{ visual.spatial_available }} / {{ visual.rows|length }}</span> visible comparisons have position evidence. Offsets from your target in arcsec · East ← · North ↑. Boundaries show the candidate half-power beams.</p></section>
+<section class="visual-panel" aria-labelledby="spectral-title"><header><div><h2 id="spectral-title">Frequency</h2><p>Spectral coverage · expand to inspect SPWs</p></div><div class="chart-tools" aria-label="Frequency zoom"><button type="button" data-zoom="spectral:in" aria-label="Zoom in frequency">+</button><button type="button" data-zoom="spectral:out" aria-label="Zoom out frequency">−</button><button type="button" data-zoom="spectral:reset">Reset</button></div></header>
 <div class="frequency-scroll" tabindex="0" role="region" aria-label="Frequency comparisons"><svg id="spectral-chart" role="group" aria-label="Recorded frequency comparisons in GHz"></svg></div>
-<p class="chart-caption"><span id="visual-spectral-count">{{ visual.spectral_available }} / {{ visual.rows|length }}</span> visible comparisons have frequency evidence. ◆ Requested SKY frequency. Setup rows show all recorded frequency_support intervals; click ▸ to expand SPW comparisons in this chart. Gaps are preserved. Expanded CONTINUUM dots show representative frequencies used by the criteria. Coverage is supplementary evidence.</p></section>
+<p class="chart-caption"><span id="visual-spectral-count">{{ visual.spectral_available }} / {{ visual.rows|length }}</span> visible comparisons have frequency evidence. ◆ Requested SKY frequency. Click ▸ to inspect recorded SPW coverage and matching comparisons. Archive setups show available frequency coverage; Queue CONTINUUM shows saved usable intervals, and Queue LINE shows evaluated window intervals. Coverage rows are reference information, not additional matches. Gaps are preserved.</p></section>
 </div></div>
 <section id="report-sky-panel" class="evidence-slide visual-panel sky-stage" role="group" aria-label="2 of 2: Sky preview">
 <header><div><h2>Target &amp; observation coverage</h2><p>Where does your target fall within a candidate observation?</p></div><div class="sky-view-actions"><button type="button" id="sky-overview">Sky context</button><button type="button" id="sky-fit">Fit footprints</button><button type="button" id="sky-selected">Focus selected</button><button type="button" id="sky-retry" hidden>Retry loading</button></div></header>
@@ -51,7 +52,7 @@
 <p class="sky-survey-status">Active layer: <strong id="sky-active-survey">Not loaded</strong><span id="sky-imagery-status" role="status">Reference image has not loaded yet.</span></p>
 <div class="sky-layer-controls"><label><input type="checkbox" id="sky-show-beams" checked> Show candidate boundaries</label><label><input type="checkbox" id="sky-show-others"> Show other candidates</label><label><input type="checkbox" id="sky-show-imagery" checked> Show reference image</label></div>
 <div id="report-sky-canvas" data-aladin-module="{{ url_for('static', filename='vendor/aladin-lite/3.8.2/aladin.js') }}"></div>
-<div class="sky-stage-legend"><span>✛ Proposed target</span><span class="sky-key-selected">◯ Selected half-power boundary</span><span>○ Candidate/pointing centres · line: single-field separation</span><span>Other candidates, when enabled: blue Archive · amber Queue</span></div>
+<div class="sky-stage-legend"><span>✛ Proposed target</span><span>◯ Selected boundary is thicker; its color stays unchanged</span><span>○ Candidate/pointing centres · line: single-field separation</span><span>Candidate colors match Charts; purple is your target</span></div>
 <div id="report-sky-choices" class="sky-view-actions" role="group" aria-label="Comparisons at the same position"></div>
 <details class="sky-display-controls"><summary>Image display</summary>
 <label>Brightness <input id="sky-brightness" type="range" min="-0.5" max="0.5" step="0.05" value="0" disabled></label>
@@ -100,7 +101,7 @@
 {% if visual.queue_page < visual.queue_pages %}<a class="button" href="{{ page_url(page, plot_page=visual.plot_page, queue_page=visual.queue_page+1) }}">Next Queue match batch</a>{% endif %}
 {% endif %}
 </nav>
-<p class="chart-caption">Plots explain this saved report; they do not perform a new search or change its decisions. Only the listed comparisons meet the conditions, not necessarily the entire Member OUS. Legacy comparison pages and bounded Queue match batches are shown together; other pages require navigation.</p>
+<p class="chart-caption">Plots explain this saved report; they do not perform a new search or change its decisions. Only the listed comparisons meet the conditions, not necessarily the entire Member OUS. Results on other pages can be viewed using the page controls.</p>
 
 <script id="visual-data" type="application/json">{{ visual|tojson }}</script>
 </div>

@@ -1,0 +1,8 @@
+{% macro setup(records) %}
+{% set windows = queue_continuum_windows(records) %}
+{% if windows %}<details class="spectral-setup"><summary>Recorded spectral setup · {{ windows|length }} SPWs</summary>
+<p>These saved usable frequency intervals support the continuum calculation. They are not separate matching LINE comparisons.</p>
+<div class="table-wrap"><table><caption>SPW coverage for this array branch</caption><thead><tr><th>SPW</th><th>Lower frequency (GHz)</th><th>Upper frequency (GHz)</th><th>Usable width (GHz)</th></tr></thead><tbody>
+{% for w in windows %}<tr><td>{{ w.spw }}</td><td>{{ display_number(w.low) }}</td><td>{{ display_number(w.high) }}</td><td>{{ display_number(w.bandwidth_ghz) }}</td></tr>{% endfor %}
+</tbody></table></div></details>{% endif %}
+{% endmacro %}

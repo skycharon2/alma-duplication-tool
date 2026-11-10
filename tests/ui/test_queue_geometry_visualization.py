@@ -89,3 +89,26 @@ def test_outside_display_hemisphere_never_gets_fake_footprint():
     assert footprint['available'] is False
     assert footprint['points'] == []
     assert 'hemisphere' in footprint['reason']
+
+
+def test_saved_rectangle_reference_preserves_rotation_and_is_not_coverage():
+    from astropy.coordinates import SkyCoord
+    raw = sample()
+    candidate = raw['document']['geometry_reports']['RECTANGLE']['candidates'][0]
+    candidate['geometry'] = dict(input_geometry=dict(ra_deg=0., dec_deg=0.,
+        longitude_offset_arcsec=20., latitude_offset_arcsec=-10.,
+        length_arcsec=100., width_arcsec=70., pa_deg=30., frame='ICRS'))
+    before = deepcopy(raw)
+    geometry = queue_geometry_visualization_data(raw, [0.,0.])['rows'][0]['variants'][0]['geometry']
+    ref = geometry['rectangle_reference']
+    assert raw == before
+    assert ref['sky_outline'][0] == ref['sky_outline'][-1]
+    assert len(ref['outline']) == 49
+    vertices = SkyCoord(ref['sky_outline'][::12], unit='deg')
+    assert abs(vertices[0].separation(vertices[1]).arcsec-100) < .001
+    assert abs(vertices[1].separation(vertices[2]).arcsec-70) < .001
+    assert 'reference only' in ref['label']
+    assert geometry['point_count'] == 2  # reference does not invent coverage beams
+    candidate['geometry']['input_geometry']['frame'] = 'galactic'
+    result = queue_geometry_visualization_data(raw, [0.,0.])['rows'][0]['variants'][0]['geometry']
+    assert result['rectangle_reference'] is None

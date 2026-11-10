@@ -253,8 +253,8 @@ def test_live_archive_uses_shared_entry_without_replay_or_live_aq(
         response.location
     ).get_data(as_text=True)
 
-    assert "Assessment run" in html
-    assert "Execution status: COMPLETED" in html
+    assert "Observation comparison" in html
+    assert "Retrieval completed" in html
 
 
 @pytest.mark.parametrize(

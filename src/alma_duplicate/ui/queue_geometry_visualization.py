@@ -6,6 +6,10 @@ This module neither reconstructs pointings nor evaluates scientific conditions.
 
 from __future__ import annotations
 
+import math
+from astropy import units as u
+from astropy.coordinates import SkyCoord
+
 from alma_duplicate.ui.queue_browser import presentation
 from alma_duplicate.ui.visualization import beam_outline, number, position, sky_offset
 
@@ -79,6 +83,44 @@ def _footprint(variant, origin, remaining, candidate_id, snapshot_sha256, source
                 reason='', model_complete=True), len(plotted)
 
 
+def _rectangle_reference(candidate, origin):
+    """Display the saved input rectangle; never treat it as evaluated coverage."""
+    grid = candidate.get('geometry') or {}
+    g = grid.get('input_geometry') or {}
+    keys = ('ra_deg', 'dec_deg', 'longitude_offset_arcsec', 'latitude_offset_arcsec',
+            'length_arcsec', 'width_arcsec', 'pa_deg')
+    if g.get('frame', '').lower() != 'icrs' or not all(number(g.get(k)) for k in keys):
+        return None
+    if (not 0 <= g['ra_deg'] < 360 or not -90 < g['dec_deg'] < 90
+            or min(g['length_arcsec'], g['width_arcsec']) <= 0
+            or math.hypot(g['length_arcsec'], g['width_arcsec'])/2
+            + math.hypot(g['longitude_offset_arcsec'], g['latitude_offset_arcsec']) >= 90*3600):
+        return None
+    def move(point, east, north):
+        return point.directional_offset_by(math.atan2(east, north)*u.rad,
+                                           math.hypot(east, north)*u.arcsec)
+    centre = move(SkyCoord(g['ra_deg']*u.deg, g['dec_deg']*u.deg),
+                  g['longitude_offset_arcsec'], g['latitude_offset_arcsec'])
+    angle = math.radians(g['pa_deg'])
+    corners = [(-1,-1), (1,-1), (1,1), (-1,1), (-1,-1)]
+    sky = []
+    # Sample sides to preserve the same spherical offset convention as the grid.
+    for start, end in zip(corners, corners[1:]):
+        for i in range(12):
+            t = i/12
+            p = (start[0]*(1-t)+end[0]*t)*g['length_arcsec']/2
+            q = (start[1]*(1-t)+end[1]*t)*g['width_arcsec']/2
+            point = move(centre, p*math.cos(angle)+q*math.sin(angle),
+                         -p*math.sin(angle)+q*math.cos(angle))
+            sky.append([float(point.ra.deg), float(point.dec.deg)])
+    sky.append(sky[0])
+    outline = [sky_offset(origin, point) for point in sky]
+    if any(point is None for point in outline):
+        return None
+    return dict(sky_outline=sky, outline=outline,
+                label='Input rectangle · reference only, not beam coverage')
+
+
 def queue_geometry_visualization_data(queue_page, origin):
     """Project ONLY candidates read through RunStore.queue_page()'s JSONL index.
 
@@ -112,6 +154,8 @@ def queue_geometry_visualization_data(queue_page, origin):
                                         candidate.get('candidate_id'),
                                         position_report.get('snapshot_sha256'),
                                         position_report.get('source_row_ids'))
+            if kind == 'RECTANGLE' and geometry.get('available'):
+                geometry['rectangle_reference'] = _rectangle_reference(candidate, origin)
             total_beams += used
             records = [v for v in science.get('variants', []) if v.get('diameter_m') == diameter]
             selected_science = records[0] if len(records) == 1 else {}

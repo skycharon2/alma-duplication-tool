@@ -1,3 +1,4 @@
+{% from '_queue_spectral_setup.html' import setup with context %}
 {% from '_mosaic_comparison.html' import comparison with context %}
 {% from '_queue_matching.html' import geometry_labels with context %}
 {% macro details(entries) %}
@@ -29,26 +30,7 @@ Queue CSV · {{ geometry_labels.get(entry.kind, entry.kind) }}
 </p>
 {% endfor %}{% endif %}
 
-<details class="queue-provenance-details">
-<summary>Technical details and provenance</summary>
-<p>Geometry reconstruction method status:
-<code>{{ c.science.model_status or 'Not recorded' }}</code>.</p>
-{% if c.science.model_version %}
-<p>Geometry method version: <code>{{ c.science.model_version }}</code>.</p>
-{% endif %}
-<p>Candidate evaluation completeness:
-<code>{{ c.science.scientific_candidate_completeness or 'Not recorded' }}</code>.</p>
-{% if c.science.intent_completeness %}
-{% for intent, evidence in c.science.intent_completeness.items() %}
-<p>{{ intent }} evaluation completeness: <code>{{ evidence }}</code>.</p>
-{% endfor %}
-{% endif %}
-<p>Array branches are evaluated independently. Model acceptance is a
-project method decision, not an ALMA endorsement.</p>
-<p>Candidate ID: <code>{{ c.candidate_id }}</code></p>
-<p>Full source-row and spectral-setup evidence is retained in the
-report download.</p>
-</details>
+
 {% for v in c.science.variants %}
 {% set variant_index = loop.index0 %}<section class="beam-variant" id="queue-{{ c.candidate_id }}-beam-{{ variant_index }}">
 <h4>Beam variant · D = {{ v.diameter_m }} m</h4>
@@ -67,15 +49,29 @@ report download.</p>
 
 {{ comparison(v.criteria, 'Candidate conditions', position, 'Queue') }}
 
-{% for pair in v.line_pairs %}
-<details class="line-pair" id="queue-{{ c.candidate_id }}-beam-{{ variant_index }}-pair-{{ loop.index0 }}">
+{{ setup(v.criteria) }}
+{% set matching_pairs = v.line_pairs | selectattr('truth', 'equalto', 'TRUE') | list %}
+{% set other_pairs = v.line_pairs | rejectattr('truth', 'equalto', 'TRUE') | list %}
+{% if matching_pairs %}<h4>Matching LINE comparisons ({{ matching_pairs|length }})</h4><p>Each pair retains its own result; this does not establish that every SPW meets the conditions.</p>{% endif %}
+{% for pair in v.line_pairs %}{% set pair_index = loop.index0 %}{% if pair.truth == 'TRUE' %}
+<details class="line-pair" id="queue-{{ c.candidate_id }}-beam-{{ variant_index }}-pair-{{ pair_index }}">
 <summary>LINE · {{ pair.reference.proposed_window_id }}
 · SPW {{ pair.reference.spw_number }}:
 {{ status_labels.get(pair.status, "Needs review") }}</summary>
 {% if pair.preparation_reasons %}<details><summary>Recorded line preparation</summary><p>{{ pair.preparation_reasons|join(', ') }}</p></details>{% endif %}
 {{ comparison(pair.criteria, 'LINE comparison', position, 'Queue') }}
 </details>
-{% endfor %}
+{% endif %}{% endfor %}
+{% if other_pairs %}<details class="other-pairs"><summary>Other evaluated window pairs ({{ other_pairs|length }})</summary><p>These retain their own results and are not counted as matching comparisons. Unresolved results remain unresolved.</p>
+{% for pair in v.line_pairs %}{% set pair_index = loop.index0 %}{% if pair.truth != 'TRUE' %}
+<details class="line-pair" id="queue-{{ c.candidate_id }}-beam-{{ variant_index }}-pair-{{ pair_index }}">
+<summary>LINE · {{ pair.reference.proposed_window_id }}
+· SPW {{ pair.reference.spw_number }}:
+{{ status_labels.get(pair.status, "Needs review") }}</summary>
+{% if pair.preparation_reasons %}<details><summary>Recorded line preparation</summary><p>{{ pair.preparation_reasons|join(', ') }}</p></details>{% endif %}
+{{ comparison(pair.criteria, 'LINE comparison', position, 'Queue') }}
+</details>
+{% endif %}{% endfor %}</details>{% endif %}
 </section>
 {% else %}
 <p class="field-note">Array inference remains unresolved.</p>

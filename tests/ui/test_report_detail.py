@@ -195,7 +195,7 @@ def test_current_and_legacy_summary_pages_and_downloads(summary_document, tmp_pa
     for index, name in enumerate(['current', 'legacy'], 1):
         response = client.get(f'/reports/{index}?view=all')
         assert response.status_code == 200
-        assert b'Repeated condition summaries are grouped' in response.data
+        assert b'Repeated conditions are grouped' in response.data
         assert b'<strong>Position:</strong>' in response.data
         assert b'<strong>Angular resolution:</strong>' in response.data
         assert client.get(f'/reports/{index}/download/report').data == (tmp_path / name / 'report.json').read_bytes()
