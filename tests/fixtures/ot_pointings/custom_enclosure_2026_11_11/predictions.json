@@ -1,0 +1,473 @@
+{
+  "input_offsets_arcsec": [
+    [
+      0.0,
+      0.0
+    ],
+    [
+      -30.0,
+      -10.0
+    ],
+    [
+      -15.0,
+      0.0
+    ],
+    [
+      0.0,
+      15.0
+    ],
+    [
+      0.0,
+      -15.0
+    ],
+    [
+      10.0,
+      10.0
+    ],
+    [
+      -10.0,
+      -10.0
+    ]
+  ],
+  "frequency_ghz": 93,
+  "total_dimension_padding_arcsec": 62.61236163798671,
+  "hull_vertices": [
+    [
+      -30.0,
+      -10.0
+    ],
+    [
+      0.0,
+      -15.0
+    ],
+    [
+      10.0,
+      10.0
+    ],
+    [
+      0.0,
+      15.0
+    ]
+  ],
+  "candidate_boxes": [
+    {
+      "angle_deg": 9.462322208025617,
+      "dimensions_arcsec": [
+        36.1677772071786,
+        29.591817714964314
+      ],
+      "centre_offset_arcsec": [
+        -9.72972972972973,
+        1.6216216216216217
+      ],
+      "centre_area": 1070.2702702702702,
+      "padded_area": 9107.941638589027
+    },
+    {
+      "angle_deg": 21.801409486351815,
+      "dimensions_arcsec": [
+        29.711254108328298,
+        34.35363756275459
+      ],
+      "centre_offset_arcsec": [
+        -9.827586206896552,
+        0.4310344827586205
+      ],
+      "centre_area": 1020.6896551724137,
+      "padded_area": 8952.251650666727
+    },
+    {
+      "angle_deg": 26.565051177078004,
+      "dimensions_arcsec": [
+        29.06888370749726,
+        35.77708763999664
+      ],
+      "centre_offset_arcsec": [
+        -8.999999999999995,
+        -0.5000000000000026
+      ],
+      "centre_area": 1039.9999999999998,
+      "padded_area": 9020.467238661842
+    },
+    {
+      "angle_deg": 50.19442890773482,
+      "dimensions_arcsec": [
+        23.046638387921277,
+        43.53253917718463
+      ],
+      "centre_offset_arcsec": [
+        -5.901639344262296,
+        -4.918032786885245
+      ],
+      "centre_area": 1003.2786885245903,
+      "padded_area": 9092.266061676763
+    }
+  ],
+  "models": [
+    {
+      "objective": "centre_area",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": -5.901639344262296,
+        "latitude_offset_arcsec": -4.918032786885245,
+        "length_arcsec": 85.65900002590799,
+        "width_arcsec": 106.14490081517134,
+        "pa_deg": 50.19442890773482,
+        "spacing_arcsec": 54.8408553926015,
+        "frame": "ICRS"
+      },
+      "pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 149.98640311161532,
+          "dec_deg": -30.009811323799862,
+          "frame": "ICRS",
+          "east_arcsec": -36.48557414119934,
+          "north_arcsec": -30.404645117666107
+        },
+        {
+          "id": "r1:c-1",
+          "ra_deg": 149.99247678686666,
+          "dec_deg": -29.995514610208915,
+          "frame": "ICRS",
+          "east_arcsec": -17.554130043299566,
+          "north_arcsec": 21.064956051959488
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 150.0037379216308,
+          "dec_deg": -30.00721736354286,
+          "frame": "ICRS",
+          "east_arcsec": 17.554130043299566,
+          "north_arcsec": -21.064956051959488
+        },
+        {
+          "id": "r2:c0",
+          "ra_deg": 150.00980894080394,
+          "dec_deg": -29.992919854466226,
+          "frame": "ICRS",
+          "east_arcsec": 36.48557414119934,
+          "north_arcsec": 30.404645117666107
+        }
+      ],
+      "reasons": []
+    },
+    {
+      "objective": "centre_area",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": -5.901639344262297,
+        "latitude_offset_arcsec": -4.918032786885246,
+        "length_arcsec": 106.14490081517134,
+        "width_arcsec": 85.65900002590799,
+        "pa_deg": 140.19442890773482,
+        "spacing_arcsec": 54.8408553926015,
+        "frame": "ICRS"
+      },
+      "pointings": [
+        {
+          "id": "r0:c-1",
+          "ra_deg": 149.99998730030316,
+          "dec_deg": -29.991422505230823,
+          "frame": "ICRS",
+          "east_arcsec": 5.862633493126433,
+          "north_arcsec": 35.79691711389924
+        },
+        {
+          "id": "r0:c0",
+          "ra_deg": 149.98647414952612,
+          "dec_deg": -30.001174301690817,
+          "frame": "ICRS",
+          "east_arcsec": -36.267278610792545,
+          "north_arcsec": 0.6886570273001027
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 150.0029834856294,
+          "dec_deg": -30.006433457670166,
+          "frame": "ICRS",
+          "east_arcsec": 15.202322558833055,
+          "north_arcsec": -18.24278707059967
+        }
+      ],
+      "reasons": []
+    },
+    {
+      "objective": "centre_area",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": -5.901639344262296,
+        "latitude_offset_arcsec": -4.918032786885246,
+        "length_arcsec": 85.65900002590799,
+        "width_arcsec": 106.14490081517134,
+        "pa_deg": 230.19442890773482,
+        "spacing_arcsec": 54.8408553926015,
+        "frame": "ICRS"
+      },
+      "pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.00980894080394,
+          "dec_deg": -29.992919854466226,
+          "frame": "ICRS",
+          "east_arcsec": 36.485574141199336,
+          "north_arcsec": 30.40464511766611
+        },
+        {
+          "id": "r1:c-1",
+          "ra_deg": 150.0037379216308,
+          "dec_deg": -30.00721736354286,
+          "frame": "ICRS",
+          "east_arcsec": 17.55413004329957,
+          "north_arcsec": -21.064956051959484
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 149.99247678686666,
+          "dec_deg": -29.995514610208915,
+          "frame": "ICRS",
+          "east_arcsec": -17.55413004329957,
+          "north_arcsec": 21.064956051959484
+        },
+        {
+          "id": "r2:c0",
+          "ra_deg": 149.98640311161532,
+          "dec_deg": -30.009811323799862,
+          "frame": "ICRS",
+          "east_arcsec": -36.485574141199336,
+          "north_arcsec": -30.40464511766611
+        }
+      ],
+      "reasons": []
+    },
+    {
+      "objective": "centre_area",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": -5.901639344262303,
+        "latitude_offset_arcsec": -4.918032786885244,
+        "length_arcsec": 106.14490081517135,
+        "width_arcsec": 85.659000025908,
+        "pa_deg": 320.19442890773485,
+        "spacing_arcsec": 54.8408553926015,
+        "frame": "ICRS"
+      },
+      "pointings": [
+        {
+          "id": "r0:c-1",
+          "ra_deg": 149.9962263673153,
+          "dec_deg": -30.01130968139986,
+          "frame": "ICRS",
+          "east_arcsec": -5.862633493126461,
+          "north_arcsec": -35.796917113899234
+        },
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.00973993980145,
+          "dec_deg": -30.00155688892426,
+          "frame": "ICRS",
+          "east_arcsec": 36.267278610792545,
+          "north_arcsec": -0.6886570273001311
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 149.99323105686318,
+          "dec_deg": -29.996298575982628,
+          "frame": "ICRS",
+          "east_arcsec": -15.20232255883304,
+          "north_arcsec": 18.242787070599682
+        }
+      ],
+      "reasons": []
+    },
+    {
+      "objective": "padded_area",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": -9.827586206896552,
+        "latitude_offset_arcsec": 0.4310344827586205,
+        "length_arcsec": 92.323615746315,
+        "width_arcsec": 96.9659992007413,
+        "pa_deg": 21.801409486351815,
+        "spacing_arcsec": 54.8408553926015,
+        "frame": "ICRS"
+      },
+      "pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 149.99118950618984,
+          "dec_deg": -30.01212918643917,
+          "frame": "ICRS",
+          "east_arcsec": -17.638670546290484,
+          "north_arcsec": -44.0966763657262
+        },
+        {
+          "id": "r1:c-1",
+          "ra_deg": 149.98868199550645,
+          "dec_deg": -29.997051175576534,
+          "frame": "ICRS",
+          "east_arcsec": -25.459227970119834,
+          "north_arcsec": 10.183691188047934
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 150.00501407815227,
+          "dec_deg": -30.00270878176338,
+          "frame": "ICRS",
+          "east_arcsec": 25.459227970119834,
+          "north_arcsec": -10.183691188047934
+        },
+        {
+          "id": "r2:c0",
+          "ra_deg": 150.00250470530057,
+          "dec_deg": -29.987631032962373,
+          "frame": "ICRS",
+          "east_arcsec": 17.638670546290484,
+          "north_arcsec": 44.0966763657262
+        }
+      ],
+      "reasons": []
+    },
+    {
+      "objective": "padded_area",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": -9.827586206896552,
+        "latitude_offset_arcsec": 0.43103448275861955,
+        "length_arcsec": 96.9659992007413,
+        "width_arcsec": 92.323615746315,
+        "pa_deg": 111.80140948635182,
+        "spacing_arcsec": 54.8408553926015,
+        "frame": "ICRS"
+      },
+      "pointings": [
+        {
+          "id": "r0:c-1",
+          "ra_deg": 149.99304258642164,
+          "dec_deg": -29.990358352814233,
+          "frame": "ICRS",
+          "east_arcsec": -11.86464699481517,
+          "north_arcsec": 34.278563243265076
+        },
+        {
+          "id": "r0:c0",
+          "ra_deg": 149.9865089067551,
+          "dec_deg": -30.00450201914809,
+          "frame": "ICRS",
+          "east_arcsec": -32.232029370911036,
+          "north_arcsec": -16.63989269697459
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 150.0039199778707,
+          "dec_deg": -30.00232985700987,
+          "frame": "ICRS",
+          "east_arcsec": 22.0483381828631,
+          "north_arcsec": -8.81933527314524
+        }
+      ],
+      "reasons": []
+    },
+    {
+      "objective": "padded_area",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": -9.82758620689655,
+        "latitude_offset_arcsec": 0.4310344827586208,
+        "length_arcsec": 92.323615746315,
+        "width_arcsec": 96.9659992007413,
+        "pa_deg": 201.80140948635182,
+        "spacing_arcsec": 54.8408553926015,
+        "frame": "ICRS"
+      },
+      "pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.00250470530057,
+          "dec_deg": -29.987631032962373,
+          "frame": "ICRS",
+          "east_arcsec": 17.638670546290477,
+          "north_arcsec": 44.0966763657262
+        },
+        {
+          "id": "r1:c-1",
+          "ra_deg": 150.00501407815227,
+          "dec_deg": -30.00270878176338,
+          "frame": "ICRS",
+          "east_arcsec": 25.459227970119834,
+          "north_arcsec": -10.18369118804793
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 149.98868199550645,
+          "dec_deg": -29.997051175576534,
+          "frame": "ICRS",
+          "east_arcsec": -25.459227970119834,
+          "north_arcsec": 10.18369118804793
+        },
+        {
+          "id": "r2:c0",
+          "ra_deg": 149.99118950618984,
+          "dec_deg": -30.01212918643917,
+          "frame": "ICRS",
+          "east_arcsec": -17.638670546290477,
+          "north_arcsec": -44.0966763657262
+        }
+      ],
+      "reasons": []
+    },
+    {
+      "objective": "padded_area",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": -9.827586206896552,
+        "latitude_offset_arcsec": 0.4310344827586207,
+        "length_arcsec": 96.9659992007413,
+        "width_arcsec": 92.32361574631501,
+        "pa_deg": 291.8014094863518,
+        "spacing_arcsec": 54.8408553926015,
+        "frame": "ICRS"
+      },
+      "pointings": [
+        {
+          "id": "r0:c-1",
+          "ra_deg": 150.00065375196914,
+          "dec_deg": -30.009401999039483,
+          "frame": "ICRS",
+          "east_arcsec": 11.864646994815176,
+          "north_arcsec": -34.278563243265076
+        },
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.0071857383164,
+          "dec_deg": -29.995257634391685,
+          "frame": "ICRS",
+          "east_arcsec": 32.232029370911036,
+          "north_arcsec": 16.6398926969746
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 149.98977597940248,
+          "dec_deg": -29.997430226321224,
+          "frame": "ICRS",
+          "east_arcsec": -22.048338182863105,
+          "north_arcsec": 8.819335273145237
+        }
+      ],
+      "reasons": []
+    }
+  ],
+  "limitations": [
+    "No pruning",
+    "Four directed orientations retained",
+    "Padding fixed to the existing FWHM hypothesis"
+  ]
+}
