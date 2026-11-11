@@ -1,0 +1,870 @@
+{
+  "files": {
+    "baseline-7m.txt": {
+      "sha256": "7f9a848aca77137c29359e8424824c3a1f52ea469017f13bfd1e84677c68bc0f",
+      "count": 3,
+      "pair_separations_arcsec": [
+        54.84085532586048,
+        54.84085537841369,
+        54.84085526132307
+      ]
+    },
+    "continuum-101-7m.txt": {
+      "sha256": "943248faa789ce75a5842a1d3d3a8ca5b30ab4dca6779112dd4fc81193db497f",
+      "count": 3,
+      "pair_separations_arcsec": [
+        54.25744197290908,
+        54.257442023672596,
+        54.25744191031432
+      ]
+    },
+    "historical-12m-reference.txt": {
+      "sha256": "dd3e4c2441af338c6871cbdd89ad9880d06f350e9b67afbdea36c85f81dcc944",
+      "count": 7,
+      "pair_separations_arcsec": [
+        14.999999999986295,
+        14.999999999986295,
+        14.999999999991747,
+        14.999999999991747,
+        14.142135621018472,
+        14.142135620986934,
+        29.99999999997259,
+        21.21320342623409,
+        21.21320342622509,
+        11.180339886585294,
+        26.925824026582884,
+        21.21320342623409,
+        21.21320342622509,
+        26.925824026639187,
+        11.180339886638153,
+        29.999999999985366,
+        11.180339870915777,
+        26.92582403314399,
+        26.925824033147805,
+        11.180339870850284,
+        28.284271241999992
+      ]
+    },
+    "representative-106p5-7m.txt": {
+      "sha256": "7f9a848aca77137c29359e8424824c3a1f52ea469017f13bfd1e84677c68bc0f",
+      "count": 3,
+      "pair_separations_arcsec": [
+        54.84085532586048,
+        54.84085537841369,
+        54.84085526132307
+      ]
+    }
+  },
+  "scientific_status": "NOT_EVALUATED",
+  "representative_only_byte_identical": true,
+  "baseline_to_shifted_coordinate_displacements_arcsec": [
+    0.2526253927460189,
+    0.38589166229948396,
+    0.38589166235730243
+  ],
+  "baseline_spacing_over_shifted_spacing": 1.0107526881426276,
+  "hypotheses_at_93_ghz": [
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 30.0,
+        "width_arcsec": 30.0,
+        "pa_deg": 0.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 92.61236163798671,
+        "width_arcsec": 92.61236163798671,
+        "pa_deg": 0.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 62.612361637986716,
+      "comparison": {
+        "status": "MISMATCH",
+        "reference_indices": [
+          1,
+          0,
+          2
+        ],
+        "residuals_arcsec": [
+          22.891653989799863,
+          12.702347245159546,
+          12.702347219722913
+        ],
+        "max_residual_arcsec": 22.891653989799863,
+        "median_residual_arcsec": 12.702347245159546
+      }
+    },
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 30.0,
+        "width_arcsec": 30.0,
+        "pa_deg": 90.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 92.61236163798671,
+        "width_arcsec": 92.61236163798671,
+        "pa_deg": 90.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 62.612361637986716,
+      "comparison": {
+        "status": "MISMATCH",
+        "reference_indices": [
+          2,
+          1,
+          0
+        ],
+        "residuals_arcsec": [
+          27.76277687851492,
+          27.762776890624572,
+          18.175003885897347
+        ],
+        "max_residual_arcsec": 27.762776890624572,
+        "median_residual_arcsec": 27.76277687851492
+      }
+    },
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 30.0,
+        "width_arcsec": 30.0,
+        "pa_deg": 180.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 92.61236163798671,
+        "width_arcsec": 92.61236163798671,
+        "pa_deg": 180.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 62.612361637986716,
+      "comparison": {
+        "status": "MISMATCH",
+        "reference_indices": [
+          2,
+          1,
+          0
+        ],
+        "residuals_arcsec": [
+          27.762776927667176,
+          27.76277691539737,
+          18.175003813171056
+        ],
+        "max_residual_arcsec": 27.762776927667176,
+        "median_residual_arcsec": 27.76277691539737
+      }
+    },
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 30.0,
+        "width_arcsec": 30.0,
+        "pa_deg": 270.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 92.61236163798671,
+        "width_arcsec": 92.61236163798671,
+        "pa_deg": 270.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 62.612361637986716,
+      "comparison": {
+        "status": "MISMATCH",
+        "reference_indices": [
+          0,
+          2,
+          1
+        ],
+        "residuals_arcsec": [
+          12.702347229087406,
+          22.891654027837536,
+          12.702347225030149
+        ],
+        "max_residual_arcsec": 22.891654027837536,
+        "median_residual_arcsec": 12.702347229087406
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 21.213203435596427,
+        "width_arcsec": 28.284271247461902,
+        "pa_deg": 45.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 83.82556507358314,
+        "width_arcsec": 90.89663288544861,
+        "pa_deg": 45.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 62.612361637986716,
+      "comparison": {
+        "status": "MISMATCH",
+        "reference_indices": [
+          1,
+          0,
+          2
+        ],
+        "residuals_arcsec": [
+          5.195312528418918,
+          24.029263892753875,
+          24.029263946076036
+        ],
+        "max_residual_arcsec": 24.029263946076036,
+        "median_residual_arcsec": 24.029263892753875
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 28.284271247461902,
+        "width_arcsec": 21.213203435596427,
+        "pa_deg": 135.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 90.89663288544861,
+        "width_arcsec": 83.82556507358314,
+        "pa_deg": 135.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 62.612361637986716,
+      "comparison": {
+        "status": "MATCHED",
+        "reference_indices": [
+          2,
+          1,
+          0
+        ],
+        "residuals_arcsec": [
+          2.6692516195126732e-08,
+          1.3446949846198994e-08,
+          4.148643377027722e-08
+        ],
+        "max_residual_arcsec": 4.148643377027722e-08,
+        "median_residual_arcsec": 2.6692516195126732e-08
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 21.21320343559643,
+        "width_arcsec": 28.284271247461902,
+        "pa_deg": 225.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 83.82556507358315,
+        "width_arcsec": 90.89663288544861,
+        "pa_deg": 225.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 62.612361637986716,
+      "comparison": {
+        "status": "MISMATCH",
+        "reference_indices": [
+          0,
+          2,
+          1
+        ],
+        "residuals_arcsec": [
+          24.029263970529957,
+          5.195312488534811,
+          24.0292639201201
+        ],
+        "max_residual_arcsec": 24.029263970529957,
+        "median_residual_arcsec": 24.0292639201201
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 28.284271247461902,
+        "width_arcsec": 21.21320343559643,
+        "pa_deg": 315.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 90.89663288544861,
+        "width_arcsec": 83.82556507358315,
+        "pa_deg": 315.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "padding": 62.612361637986716,
+      "comparison": {
+        "status": "MISMATCH",
+        "reference_indices": [
+          1,
+          0,
+          2
+        ],
+        "residuals_arcsec": [
+          47.49357378459166,
+          27.42042767511457,
+          27.42042761761056
+        ],
+        "max_residual_arcsec": 47.49357378459166,
+        "median_residual_arcsec": 27.42042767511457
+      }
+    }
+  ],
+  "hypotheses_at_94_ghz": [
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 30.0,
+        "width_arcsec": 30.0,
+        "pa_deg": 0.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 91.94627268439109,
+        "width_arcsec": 91.94627268439109,
+        "pa_deg": 0.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 61.9462726843911,
+      "comparison": {
+        "status": "MISMATCH",
+        "reference_indices": [
+          1,
+          0,
+          2
+        ],
+        "residuals_arcsec": [
+          22.64812575841001,
+          12.56721589095661,
+          12.567215866459719
+        ],
+        "max_residual_arcsec": 22.64812575841001,
+        "median_residual_arcsec": 12.56721589095661
+      }
+    },
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 30.0,
+        "width_arcsec": 30.0,
+        "pa_deg": 90.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 91.94627268439109,
+        "width_arcsec": 91.94627268439109,
+        "pa_deg": 90.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 61.9462726843911,
+      "comparison": {
+        "status": "MISMATCH",
+        "reference_indices": [
+          2,
+          1,
+          0
+        ],
+        "residuals_arcsec": [
+          27.46742819146058,
+          27.46742820316742,
+          17.98165278075093
+        ],
+        "max_residual_arcsec": 27.46742820316742,
+        "median_residual_arcsec": 27.46742819146058
+      }
+    },
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 30.0,
+        "width_arcsec": 30.0,
+        "pa_deg": 180.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 91.94627268439109,
+        "width_arcsec": 91.94627268439109,
+        "pa_deg": 180.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 61.9462726843911,
+      "comparison": {
+        "status": "MISMATCH",
+        "reference_indices": [
+          2,
+          1,
+          0
+        ],
+        "residuals_arcsec": [
+          27.467428238913715,
+          27.467428227159736,
+          17.981652710483974
+        ],
+        "max_residual_arcsec": 27.467428238913715,
+        "median_residual_arcsec": 27.467428227159736
+      }
+    },
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 30.0,
+        "width_arcsec": 30.0,
+        "pa_deg": 270.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "AXIS_ALIGNED",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 91.94627268439109,
+        "width_arcsec": 91.94627268439109,
+        "pa_deg": 270.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 61.9462726843911,
+      "comparison": {
+        "status": "MISMATCH",
+        "reference_indices": [
+          0,
+          2,
+          1
+        ],
+        "residuals_arcsec": [
+          12.567215875408134,
+          22.648125795156975,
+          12.567215871656977
+        ],
+        "max_residual_arcsec": 22.648125795156975,
+        "median_residual_arcsec": 12.567215875408134
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 21.213203435596427,
+        "width_arcsec": 28.284271247461902,
+        "pa_deg": 45.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 83.15947611998752,
+        "width_arcsec": 90.23054393185299,
+        "pa_deg": 45.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 61.9462726843911,
+      "comparison": {
+        "status": "MISMATCH",
+        "reference_indices": [
+          1,
+          0,
+          2
+        ],
+        "residuals_arcsec": [
+          5.140043246521707,
+          23.773633427686807,
+          23.77363347930399
+        ],
+        "max_residual_arcsec": 23.77363347930399,
+        "median_residual_arcsec": 23.773633427686807
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 28.284271247461902,
+        "width_arcsec": 21.213203435596427,
+        "pa_deg": 135.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 90.23054393185299,
+        "width_arcsec": 83.15947611998752,
+        "pa_deg": 135.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 61.9462726843911,
+      "comparison": {
+        "status": "MATCHED",
+        "reference_indices": [
+          2,
+          1,
+          0
+        ],
+        "residuals_arcsec": [
+          2.571750058684909e-08,
+          1.300362389866553e-08,
+          4.0046774942915014e-08
+        ],
+        "max_residual_arcsec": 4.0046774942915014e-08,
+        "median_residual_arcsec": 2.571750058684909e-08
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 21.21320343559643,
+        "width_arcsec": 28.284271247461902,
+        "pa_deg": 225.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 83.15947611998753,
+        "width_arcsec": 90.23054393185299,
+        "pa_deg": 225.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 61.9462726843911,
+      "comparison": {
+        "status": "MISMATCH",
+        "reference_indices": [
+          0,
+          2,
+          1
+        ],
+        "residuals_arcsec": [
+          23.773633502880152,
+          5.140043207922332,
+          23.773633454207356
+        ],
+        "max_residual_arcsec": 23.773633502880152,
+        "median_residual_arcsec": 23.773633454207356
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 28.284271247461902,
+        "width_arcsec": 21.21320343559643,
+        "pa_deg": 315.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 0.0,
+      "comparison": {
+        "status": "COUNT_MISMATCH",
+        "predicted_count": 1,
+        "reference_count": 3
+      }
+    },
+    {
+      "hypothesis": "MINIMUM_AREA_CENTRES",
+      "geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 0.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 90.23054393185299,
+        "width_arcsec": 83.15947611998753,
+        "pa_deg": 315.0,
+        "spacing_arcsec": 54.257442037361066,
+        "frame": "ICRS"
+      },
+      "padding": 61.9462726843911,
+      "comparison": {
+        "status": "MISMATCH",
+        "reference_indices": [
+          1,
+          0,
+          2
+        ],
+        "residuals_arcsec": [
+          46.98832300284193,
+          27.12872099807149,
+          27.128720942487437
+        ],
+        "max_residual_arcsec": 46.98832300284193,
+        "median_residual_arcsec": 27.12872099807149
+      }
+    }
+  ]
+}
