@@ -1,0 +1,611 @@
+{
+  "input_offsets_arcsec": [
+    [
+      0.0,
+      0.0
+    ],
+    [
+      25.0,
+      5.0
+    ],
+    [
+      -15.0,
+      0.0
+    ],
+    [
+      0.0,
+      15.0
+    ],
+    [
+      0.0,
+      -15.0
+    ],
+    [
+      10.0,
+      10.0
+    ],
+    [
+      -10.0,
+      -10.0
+    ]
+  ],
+  "frequency_ghz": 93,
+  "hypotheses": [
+    {
+      "rectangle_hypothesis": "AXIS_ALIGNED",
+      "total_dimension_padding_arcsec": 0.0,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 5.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 40.0,
+        "width_arcsec": 30.0,
+        "pa_deg": 0.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.00160375074765,
+          "dec_deg": -29.999999990280994,
+          "frame": "ICRS",
+          "east_arcsec": 0.0,
+          "north_arcsec": 0.0
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "AXIS_ALIGNED",
+      "total_dimension_padding_arcsec": 62.612361637986716,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 5.0,
+        "latitude_offset_arcsec": 0.0,
+        "length_arcsec": 102.61236163798671,
+        "width_arcsec": 92.61236163798671,
+        "pa_deg": 0.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c-1",
+          "ra_deg": 149.9928080598019,
+          "dec_deg": -30.00659602765444,
+          "frame": "ICRS",
+          "east_arcsec": -27.420427696300752,
+          "north_arcsec": -23.74678696763086
+        },
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.0103994416934,
+          "dec_deg": -30.00659602765444,
+          "frame": "ICRS",
+          "east_arcsec": 27.420427696300752,
+          "north_arcsec": -23.74678696763086
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 150.00160375074765,
+          "dec_deg": -29.99340366056776,
+          "frame": "ICRS",
+          "east_arcsec": 0.0,
+          "north_arcsec": 23.74678696763086
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "AXIS_ALIGNED",
+      "total_dimension_padding_arcsec": 0.0,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 5.0,
+        "latitude_offset_arcsec": 3.061616997868383e-16,
+        "length_arcsec": 30.0,
+        "width_arcsec": 40.0,
+        "pa_deg": 90.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.00160375074765,
+          "dec_deg": -29.999999990280994,
+          "frame": "ICRS",
+          "east_arcsec": 0.0,
+          "north_arcsec": 0.0
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "AXIS_ALIGNED",
+      "total_dimension_padding_arcsec": 62.612361637986716,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 5.0,
+        "latitude_offset_arcsec": 3.061616997868383e-16,
+        "length_arcsec": 92.61236163798671,
+        "width_arcsec": 102.61236163798671,
+        "pa_deg": 90.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 149.9863701798965,
+          "dec_deg": -29.99999911337822,
+          "frame": "ICRS",
+          "east_arcsec": -47.49357393526172,
+          "north_arcsec": -2.9081426649943217e-15
+        },
+        {
+          "id": "r1:c-1",
+          "ra_deg": 150.00160375074765,
+          "dec_deg": -29.992383204809794,
+          "frame": "ICRS",
+          "east_arcsec": -1.6790169504763075e-15,
+          "north_arcsec": 27.420427696300752
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 150.00160375074765,
+          "dec_deg": -30.00761677575219,
+          "frame": "ICRS",
+          "east_arcsec": 1.6790169504763075e-15,
+          "north_arcsec": -27.420427696300752
+        },
+        {
+          "id": "r2:c0",
+          "ra_deg": 150.0168373215988,
+          "dec_deg": -29.99999911337822,
+          "frame": "ICRS",
+          "east_arcsec": 47.49357393526172,
+          "north_arcsec": 2.9081426649943217e-15
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "AXIS_ALIGNED",
+      "total_dimension_padding_arcsec": 0.0,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 5.0,
+        "latitude_offset_arcsec": 6.123233995736766e-16,
+        "length_arcsec": 40.0,
+        "width_arcsec": 30.0,
+        "pa_deg": 180.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.00160375074765,
+          "dec_deg": -29.999999990280994,
+          "frame": "ICRS",
+          "east_arcsec": 0.0,
+          "north_arcsec": -0.0
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "AXIS_ALIGNED",
+      "total_dimension_padding_arcsec": 62.612361637986716,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 5.0,
+        "latitude_offset_arcsec": 6.123233995736766e-16,
+        "length_arcsec": 102.61236163798671,
+        "width_arcsec": 92.61236163798671,
+        "pa_deg": 180.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c-1",
+          "ra_deg": 150.0103982724897,
+          "dec_deg": -29.99340336830569,
+          "frame": "ICRS",
+          "east_arcsec": 27.42042769630075,
+          "north_arcsec": 23.746786967630864
+        },
+        {
+          "id": "r0:c0",
+          "ra_deg": 149.99280922900562,
+          "dec_deg": -29.99340336830569,
+          "frame": "ICRS",
+          "east_arcsec": -27.420427696300756,
+          "north_arcsec": 23.746786967630857
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 150.00160375074765,
+          "dec_deg": -30.006596319994223,
+          "frame": "ICRS",
+          "east_arcsec": 2.9081426649943217e-15,
+          "north_arcsec": -23.74678696763086
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "AXIS_ALIGNED",
+      "total_dimension_padding_arcsec": 0.0,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 5.0,
+        "latitude_offset_arcsec": 9.184850993605148e-16,
+        "length_arcsec": 30.0,
+        "width_arcsec": 40.0,
+        "pa_deg": 270.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.00160375074765,
+          "dec_deg": -29.999999990280994,
+          "frame": "ICRS",
+          "east_arcsec": -0.0,
+          "north_arcsec": 0.0
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "AXIS_ALIGNED",
+      "total_dimension_padding_arcsec": 62.612361637986716,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 5.0,
+        "latitude_offset_arcsec": 9.184850993605148e-16,
+        "length_arcsec": 92.61236163798671,
+        "width_arcsec": 102.61236163798671,
+        "pa_deg": 270.0,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.0168373215988,
+          "dec_deg": -29.99999911337822,
+          "frame": "ICRS",
+          "east_arcsec": 47.49357393526172,
+          "north_arcsec": 8.724427994982964e-15
+        },
+        {
+          "id": "r1:c-1",
+          "ra_deg": 150.00160375074765,
+          "dec_deg": -30.00761677575219,
+          "frame": "ICRS",
+          "east_arcsec": 5.037050851428922e-15,
+          "north_arcsec": -27.420427696300752
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 150.00160375074765,
+          "dec_deg": -29.992383204809794,
+          "frame": "ICRS",
+          "east_arcsec": -5.037050851428922e-15,
+          "north_arcsec": 27.420427696300752
+        },
+        {
+          "id": "r2:c0",
+          "ra_deg": 149.9863701798965,
+          "dec_deg": -29.99999911337822,
+          "frame": "ICRS",
+          "east_arcsec": -47.49357393526172,
+          "north_arcsec": -8.724427994982964e-15
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "MINIMUM_AREA_CENTRES",
+      "total_dimension_padding_arcsec": 0.0,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 3.3536585365857348,
+        "latitude_offset_arcsec": 2.682926829265992,
+        "length_arcsec": 23.426064283293208,
+        "width_arcsec": 36.70083404382067,
+        "pa_deg": 51.3401917459,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.00107567839913,
+          "dec_deg": -29.999254738175093,
+          "frame": "ICRS",
+          "east_arcsec": 0.0,
+          "north_arcsec": 0.0
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "MINIMUM_AREA_CENTRES",
+      "total_dimension_padding_arcsec": 62.612361637986716,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 3.3536585365857348,
+        "latitude_offset_arcsec": 2.682926829265992,
+        "length_arcsec": 86.03842592127992,
+        "width_arcsec": 99.31319568180739,
+        "pa_deg": 51.3401917459,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 149.989179359376,
+          "dec_deg": -30.00749559241331,
+          "frame": "ICRS",
+          "east_arcsec": -37.08625053501722,
+          "north_arcsec": -29.669000428024304
+        },
+        {
+          "id": "r1:c-1",
+          "ra_deg": 149.99558178956062,
+          "dec_deg": -29.99330691392086,
+          "frame": "ICRS",
+          "east_arcsec": -17.129405383706956,
+          "north_arcsec": 21.4117567296261
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 150.00657022578866,
+          "dec_deg": -30.00520233429886,
+          "frame": "ICRS",
+          "east_arcsec": 17.129405383706956,
+          "north_arcsec": -21.4117567296261
+        },
+        {
+          "id": "r2:c0",
+          "ra_deg": 150.0129700217694,
+          "dec_deg": -29.99101281457535,
+          "frame": "ICRS",
+          "east_arcsec": 37.08625053501722,
+          "north_arcsec": 29.669000428024304
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "MINIMUM_AREA_CENTRES",
+      "total_dimension_padding_arcsec": 0.0,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 3.3536585365857356,
+        "latitude_offset_arcsec": 2.6829268292659916,
+        "length_arcsec": 36.70083404382067,
+        "width_arcsec": 23.426064283293208,
+        "pa_deg": 141.3401917459,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.00107567839913,
+          "dec_deg": -29.999254738175093,
+          "frame": "ICRS",
+          "east_arcsec": 0.0,
+          "north_arcsec": -0.0
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "MINIMUM_AREA_CENTRES",
+      "total_dimension_padding_arcsec": 62.612361637986716,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 3.3536585365857356,
+        "latitude_offset_arcsec": 2.6829268292659916,
+        "length_arcsec": 99.31319568180739,
+        "width_arcsec": 86.03842592127992,
+        "pa_deg": 141.3401917459,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c-1",
+          "ra_deg": 150.003185107968,
+          "dec_deg": -29.989345685069072,
+          "frame": "ICRS",
+          "east_arcsec": 6.577256515613943,
+          "north_arcsec": 35.67253065121557
+        },
+        {
+          "id": "r0:c0",
+          "ra_deg": 149.9894498194136,
+          "dec_deg": -29.99886152747711,
+          "frame": "ICRS",
+          "east_arcsec": -36.246256943638244,
+          "north_arcsec": 1.4137198838016545
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 150.00583405780878,
+          "dec_deg": -30.004405520747152,
+          "frame": "ICRS",
+          "east_arcsec": 14.834500214012152,
+          "north_arcsec": -18.54312526750861
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "MINIMUM_AREA_CENTRES",
+      "total_dimension_padding_arcsec": 0.0,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 3.3536585365857356,
+        "latitude_offset_arcsec": 2.6829268292659916,
+        "length_arcsec": 23.426064283293208,
+        "width_arcsec": 36.70083404382067,
+        "pa_deg": 231.3401917459,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.00107567839913,
+          "dec_deg": -29.999254738175093,
+          "frame": "ICRS",
+          "east_arcsec": -0.0,
+          "north_arcsec": 0.0
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "MINIMUM_AREA_CENTRES",
+      "total_dimension_padding_arcsec": 62.612361637986716,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 3.3536585365857356,
+        "latitude_offset_arcsec": 2.6829268292659916,
+        "length_arcsec": 86.03842592127992,
+        "width_arcsec": 99.31319568180739,
+        "pa_deg": 231.3401917459,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.0129700217694,
+          "dec_deg": -29.99101281457535,
+          "frame": "ICRS",
+          "east_arcsec": 37.08625053501722,
+          "north_arcsec": 29.669000428024304
+        },
+        {
+          "id": "r1:c-1",
+          "ra_deg": 150.00657022578866,
+          "dec_deg": -30.00520233429886,
+          "frame": "ICRS",
+          "east_arcsec": 17.129405383706956,
+          "north_arcsec": -21.411756729626095
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 149.99558178956062,
+          "dec_deg": -29.99330691392086,
+          "frame": "ICRS",
+          "east_arcsec": -17.129405383706956,
+          "north_arcsec": 21.411756729626095
+        },
+        {
+          "id": "r2:c0",
+          "ra_deg": 149.989179359376,
+          "dec_deg": -30.00749559241331,
+          "frame": "ICRS",
+          "east_arcsec": -37.08625053501722,
+          "north_arcsec": -29.669000428024304
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "MINIMUM_AREA_CENTRES",
+      "total_dimension_padding_arcsec": 0.0,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 3.3536585365857348,
+        "latitude_offset_arcsec": 2.682926829266002,
+        "length_arcsec": 36.70083404382068,
+        "width_arcsec": 23.4260642832932,
+        "pa_deg": 321.34019174590003,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.00107567839913,
+          "dec_deg": -29.999254738175093,
+          "frame": "ICRS",
+          "east_arcsec": 0.0,
+          "north_arcsec": 0.0
+        }
+      ],
+      "generation_reasons": []
+    },
+    {
+      "rectangle_hypothesis": "MINIMUM_AREA_CENTRES",
+      "total_dimension_padding_arcsec": 62.612361637986716,
+      "input_geometry": {
+        "ra_deg": 150,
+        "dec_deg": -30,
+        "longitude_offset_arcsec": 3.3536585365857348,
+        "latitude_offset_arcsec": 2.682926829266002,
+        "length_arcsec": 99.3131956818074,
+        "width_arcsec": 86.03842592127992,
+        "pa_deg": 321.34019174590003,
+        "spacing_arcsec": 54.840855392601505,
+        "frame": "ICRS"
+      },
+      "predicted_pointings": [
+        {
+          "id": "r0:c-1",
+          "ra_deg": 149.99896582754772,
+          "dec_deg": -30.009163757646355,
+          "frame": "ICRS",
+          "east_arcsec": -6.577256515613973,
+          "north_arcsec": -35.67253065121557
+        },
+        {
+          "id": "r0:c0",
+          "ra_deg": 150.01270162939178,
+          "dec_deg": -29.999646927404477,
+          "frame": "ICRS",
+          "east_arcsec": 36.24625694363825,
+          "north_arcsec": -1.4137198838016793
+        },
+        {
+          "id": "r1:c0",
+          "ra_deg": 149.99631779290272,
+          "dec_deg": -29.994103784505185,
+          "frame": "ICRS",
+          "east_arcsec": -14.83450021401214,
+          "north_arcsec": 18.54312526750862
+        }
+      ],
+      "generation_reasons": []
+    }
+  ]
+}
