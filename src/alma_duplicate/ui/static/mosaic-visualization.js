@@ -3,13 +3,20 @@
   const filters = [...root.querySelectorAll("[data-filter]")];
   const rows = [...root.querySelectorAll("[data-row]")];
   let selected = rows[0]?.dataset.row;
+  let isolated = false;
+  const isolate = root.querySelector("#mosaic-isolate");
+  const focus = root.querySelector("#mosaic-focus");
 
   function render() {
-    const visible = rows.filter(row => filters.every(filter =>
+    const filtered = rows.filter(row => filters.every(filter =>
       !filter.value || row.dataset[filter.dataset.filter] === filter.value));
-    if (!visible.some(row => row.dataset.row === selected)) selected = visible[0]?.dataset.row;
+    if (!filtered.some(row => row.dataset.row === selected)) selected = filtered[0]?.dataset.row;
+    const visible = filtered.filter(row => !isolated || row.dataset.row === selected);
+    if (isolate) {isolate.disabled = !visible.length; isolate.setAttribute("aria-pressed", String(isolated));}
+    if (focus) focus.disabled = !visible.length;
     for (const row of rows) {
       row.hidden = !visible.includes(row);
+      if (row.parentElement?.classList.contains("visual-candidate")) row.parentElement.hidden = row.hidden;
       row.setAttribute("aria-pressed", String(row.dataset.row === selected));
     }
     for (const panel of root.querySelectorAll("[data-evidence]")) {
@@ -26,12 +33,24 @@
       : "No comparisons match these filters. Clear filters to see all comparisons.";
   }
 
+  isolate?.addEventListener("click", () => {isolated = !isolated; render();});
+  focus?.addEventListener("click", () => {
+    const sky = root.querySelector('.evidence-pager [aria-controls="sky"]');
+    if (sky?.getAttribute("aria-pressed") === "true") root.querySelector('#mosaic-sky-selected')?.click();
+    else {
+      for (const tools of root.querySelectorAll('[data-plot-controls]')) {
+        if (tools.dataset.evidence === selected) tools.querySelector('[aria-label="Reset chart zoom"]')?.click();
+      }
+    }
+    root.querySelector('#mosaic-evidence-gallery')?.scrollIntoView({block:"start", behavior:"auto"});
+  });
   for (const filter of filters) filter.addEventListener("change", render);
   for (const row of rows) row.addEventListener("click", () => {
     selected = row.dataset.row;
     render();
   });
   root.querySelector("#clear-filters").addEventListener("click", () => {
+    isolated = false;
     for (const filter of filters) filter.value = "";
     render();
   });

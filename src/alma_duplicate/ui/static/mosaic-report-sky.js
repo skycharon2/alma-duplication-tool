@@ -207,6 +207,9 @@
   for(const filter of root.querySelectorAll('[data-filter]'))filter.addEventListener('change',()=>{
     if(skyActive()){if(!viewerReady)load();else {draw();fit(false);}}
   });
+  root.querySelector('#mosaic-isolate')?.addEventListener('click',()=>{
+    if(skyActive()){if(!viewerReady)load();else {draw();fit(false);}}
+  });
   root.querySelector('#clear-filters').addEventListener('click',()=>{
     if(skyActive()){if(!viewerReady)load();else {draw();fit(false);}}
   });
