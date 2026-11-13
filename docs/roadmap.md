@@ -77,6 +77,15 @@ Directory migration and module extraction are optional maintenance decisions,
 not prerequisites for supervisor testing. A long Python file alone is not a
 reason to split a scientifically tested path.
 
+## Multi-source Single Pointing
+
+The [reviewed multi-source plan](multi_source_assessment.md) adds independent
+fixed ICRS targets with shared scientific input. Steps 1–2 (offline parser,
+five-target fixtures, independent request generation and shared-validator
+preflight) are implemented. Batch lifecycle, serial execution and browser
+navigation remain planned; no batch browser entry
+is available yet. This work preserves existing scientific rules.
+
 ## Change and verification gates
 
 For documentation-only changes, check current claims against their contracts,
