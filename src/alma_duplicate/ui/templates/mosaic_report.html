@@ -17,6 +17,8 @@
 <div class="mosaic-overview-grid">
 <div class="mosaic-metric"><strong>{{ mosaic_overview.candidate_buckets.MATCH }}</strong><span>Candidate identities with a matching branch</span></div>
 </div>
+{% from '_mosaic_review_notice.html' import archive_notice with context %}
+{{ archive_notice(mosaic_overview, report_id) }}
 <details class="report-retention"><summary>Other candidate outcomes (diagnostics)</summary>
 <p>Nonmatching and unresolved candidates are not shown in the default result list. These counts remain available for scientific review.</p>
 <div class="mosaic-overview-grid">

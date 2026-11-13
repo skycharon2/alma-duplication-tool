@@ -276,3 +276,41 @@ def test_saved_mosaic_explore_keeps_source_pages_and_intents_separate(browser):
             assert len(panel.select('[data-select-pair]')) <= len(detail.select('[data-pair]'))
         assert client.get(url + '/mosaic-visualization?page=999').status_code == 404
     assert len(calls) == searches
+
+
+@pytest.mark.parametrize('archive_review, unavailable, ignored_tp, queue_review', [
+    (1, 2, 4, 1), (0, 0, 3, 0), (0, 1, 0, 0), (0, 0, 0, 2),
+])
+def test_mosaic_summary_review_notices_use_report_totals(
+        browser, archive_review, unavailable, ignored_tp, queue_review):
+    """Review notices retain totals even on an empty page; TP is not unresolved."""
+    from bs4 import BeautifulSoup
+    from flask import render_template
+
+    client, _ = browser
+    archive = dict(mosaic=True, document=dict(assessment_status='COMPLETED'),
+                   matching_member_count=0, member_groups=[], result_view='matching',
+                   page=1, pages=1, mosaic_overview=dict(candidate_buckets=dict(
+                       NEEDS_REVIEW=archive_review, UNAVAILABLE=unavailable,
+                       IGNORED=ignored_tp, MATCH=0, NOT_MET=5)))
+    queue = dict(unified_queue=True, document=dict(assessment_status='COMPLETED',
+                 candidates=[], candidate_counts=dict(matching=0, review=queue_review)),
+                 page=1, pages=1)
+    with client.application.test_request_context('/runs/archive'):
+        html = render_template('combined_mosaic_report.html', sections=[
+            dict(source='ARCHIVE', report_id='archive', data=archive),
+            dict(source='QUEUE', report_id='queue', data=queue)],
+            observation_settings=dict(geometry='MOSAIC', target_name='test'),
+            report_id='archive', purpose='Continuum', purpose_tabs={})
+    soup = BeautifulSoup(html, 'html.parser')
+    notices = soup.select('.report-overview .unresolved-notice')
+    assert len(notices) == bool(archive_review + unavailable) + bool(queue_review)
+    for notice in notices:
+        text = notice.get_text(' ', strip=True)
+        link = notice.find('a')['href']
+        if 'Archive' in text:
+            assert text.startswith(f'{archive_review + unavailable} Archive candidate')
+            assert link == '/runs/archive?view=review#archive-candidates'
+        else:
+            assert text.startswith(f'{queue_review} Queue candidate')
+            assert 'queue' in link and 'view=review' in link

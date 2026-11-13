@@ -1,0 +1,8 @@
+{# Counts cover the complete retained report, before pagination or filtering. #}
+{% macro archive_notice(overview, report_id) -%}
+{% set count = overview.candidate_buckets.NEEDS_REVIEW + overview.candidate_buckets.UNAVAILABLE %}
+{% if count %}<p class="unresolved-notice">{{ count }} Archive candidate {{ 'identity remains' if count == 1 else 'identities remain' }} unresolved. <a href="{{ url_for('run_view', report_id=report_id, view='review') }}#{{ report_id }}-candidates">Review reasons</a>.</p>{% endif %}
+{%- endmacro %}
+{% macro queue_notice(count, report_id) -%}
+{% if count %}<p class="unresolved-notice">{{ count }} Queue candidate {{ 'configuration remains' if count == 1 else 'configurations remain' }} unresolved. <a href="{{ url_for('run_queue_view', report_id=report_id, view='review') }}">Review reasons</a>.</p>{% endif %}
+{%- endmacro %}
