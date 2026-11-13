@@ -40,17 +40,20 @@ def test_real_dual_source_cli_no_network(tmp_path,monkeypatch):
     assert provenance['started_at'] == json.loads(CAPTURE.read_text())['started_at']
     assert a['replay']['manifest_sha256'] == hashlib.sha256(CAPTURE.read_bytes()).hexdigest()
     assert q['source_metadata']['snapshot']['snapshot_sha256'] == hashlib.sha256(QUEUE.read_bytes()).hexdigest()
-    assert p['evaluation_scope']['evaluated_contexts'] == p['evaluation_scope']['total_retained'] == 157
+    assert p['evaluation_scope']['total_retained'] == 157
+    assert p['evaluation_scope']['evaluated_contexts'] == 145
+    assert p['evaluation_scope']['ignored_tp_contexts'] == 12
     assert p['evaluation_scope']['shown_candidates'] == 1
     contexts=p['context_evaluations']
     archive=[c for c in contexts if c['reference']['source']=='ARCHIVE']
     queue=[c for c in contexts if c['reference']['source']=='QUEUE']
     assert len(archive) == 144 and len(queue) == 13
-    assert any(c['criteria'][1]['outcome'] is not None for c in archive)
-    assert sum(c['criteria'][1]['method_version'] == 'archive_pos_single_mosaic_s_region_1' for c in archive) == 8
-    assert all(c['criteria'][1]['method_version'] in {'archive_pos_single_1', 'archive_pos_single_mosaic_s_region_1'} for c in archive)
-    assert all(c['criteria'][3]['outcome'] is None for c in archive)  # no proposed RMS
-    assert all(c['branches'][0]['status'] != 'CRITERIA_MET' for c in archive)
+    assert sum(c.get('exclusion_reason') == 'TP_IGNORED_FOR_DUPLICATION' for c in archive) == 12
+    assert any(c['criteria'][1]['outcome'] is not None for c in archive if c['criteria'])
+    assert sum(c['criteria'][1]['method_version'] == 'archive_pos_single_mosaic_s_region_1' for c in archive if c['criteria']) == 4
+    assert all(c['criteria'][1]['method_version'] in {'archive_pos_single_1', 'archive_pos_single_mosaic_s_region_1'} for c in archive if c['criteria'])
+    assert all(c['criteria'][3]['outcome'] is None for c in archive if c['criteria'])  # no proposed RMS
+    assert all(c['branches'][0]['status'] != 'CRITERIA_MET' for c in archive if c['criteria'])
     assert queue[0]['criteria'][1]['outcome'] == 'SATISFIED'
     assert a['filter_summary']['predicates'][0]['outcomes']=={'MATCH':96,'NOT_EVALUATED':48}
     assert q['filter_summary']['predicates'][0]['outcomes']=={'MATCH':1,'NOT_EVALUATED':12}

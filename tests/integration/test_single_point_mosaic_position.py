@@ -20,10 +20,14 @@ from tests.integration.test_line_preparation import report
 
 
 @pytest.mark.parametrize('array', ['TP', 'A001:DA01 T701:PM01'])
-def test_tp_scope_stays_unknown(array):
+def test_tp_scope_is_ignored_without_blocking_mixed_regions(array):
     r, c, e = case(mosaic='T', array=array)
     result = evaluate_position_single(r, c, e)
-    assert result.outcome is None
+    if array == 'TP':
+        assert result.evaluation == 'NOT_APPLICABLE'
+        assert result.reasons == ('TP_IGNORED_FOR_DUPLICATION',)
+    else:
+        assert result.outcome == 'SATISFIED'
 
 
 def test_region_does_not_need_center_or_frequency_for_position():

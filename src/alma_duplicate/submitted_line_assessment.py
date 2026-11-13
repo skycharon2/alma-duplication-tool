@@ -116,6 +116,10 @@ def assess_submitted_line_single_v2(
 
     def evaluate_row(row, array_evidence=None, diameter=None):
         context = row.context
+        from alma_duplicate.duplication_array_scope import archive_tp_only
+        if archive_tp_only(context, array_evidence):
+            return ContextEvaluation(candidate=row, criteria=(), array_evidence=array_evidence,
+                                     exclusion_reason='TP_IGNORED_FOR_DUPLICATION')
         if array_evidence is None:
             position = evaluate_position_single(prepared.line_request, context, row.spatial_evidence)
         else:
@@ -265,6 +269,10 @@ def assess_submitted_line_mosaic_v2(
             array_evidence=array_evidence, archive_result=archive_result,
             metadata_contexts=original_contexts,
         )
+        if evaluated['coverage'].get('scope_status') == 'IGNORED_TP':
+            results.append(dict(evaluated, source_reference=json_value(context.reference),
+                                exclusion_reason='TP_IGNORED_FOR_DUPLICATION'))
+            continue
         v2 = (evaluate_submitted_line_context_v2(
             prepared, context, tuple(evaluated["criteria"][:2]),
         ) if "LINE" in prepared.line_request.intents else None)

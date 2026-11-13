@@ -91,7 +91,7 @@ class QueueLinePairReference:
         return proposed, QueueLineCandidateEvidence(
             spws[0], row.spectral.sensitivity,
             row.request.requested_angular_resolution_arcsec,
-            classify_spw(row, self.spw_number),
+            classify_spw(row, self.spw_number, duplication=True),
         )
 
 

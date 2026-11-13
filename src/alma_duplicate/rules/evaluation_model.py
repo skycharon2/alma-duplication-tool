@@ -43,8 +43,15 @@ class ContextEvaluation:
 
     beam_variants: tuple[BeamVariant, ...] = ()
     array_evidence: ArchiveArrayEvidence | None = None
+    exclusion_reason: str | None = None
 
     def __post_init__(self):
+        if self.exclusion_reason is not None and (
+                self.exclusion_reason != 'TP_IGNORED_FOR_DUPLICATION'
+                or self.criteria or self.branches or self.line_pairing is not None
+                or self.line_pairs or self.beam_variants):
+            raise ValueError('Ignored TP contexts must not contain scientific evaluations')
+
         if self.array_evidence is not None and (
                 self.array_evidence.context_id != self.candidate.context.context_id
                 or self.array_evidence.source_record_id != self.candidate.context.reference.source_record_id):

@@ -70,7 +70,6 @@ def test_zero_reference_frequency_uses_candidate_sky_windows():
 
 @pytest.mark.parametrize('changes,reason', [
     ({'Use 7-m?':'True'}, 'QUEUE_ARRAY_COMBINATION_UNRESOLVED'),
-    ({'Use TP?':'True'}, 'TP_GEOMETRY_UNSUPPORTED'),
     ({'RA':'0', 'Dec':'0'}, 'POSSIBLE_EPHEMERIS_PLACEHOLDER_NAME_CHECK_REQUIRED'),
     ({'Mos. Coord.':'B1950'}, 'QUEUE_OFFSET_FRAME_UNSUPPORTED'),
     ({'Mosaic':'Custom'}, 'QUEUE_GEOMETRY_UNSUPPORTED'),

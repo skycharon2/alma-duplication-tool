@@ -149,3 +149,20 @@ independently of production rule functions. State tolerances, uncertainty and
 expected unknowns. Only after a person supplies reviewer/date/record should the
 case metadata become REVIEWED. Preserve disagreements as comparison differences;
 never overwrite expected values automatically from a generated report.
+
+
+## TP scope revision, 2026-11-13
+
+The owner now excludes TP from duplication assessment (see
+`docs/evidence/tp_duplication_exclusion_2026-11-13.md`). The pinned NGC6240 source
+bytes and all numerical thresholds are unchanged. Of 144 Archive contexts,
+12 TP-only contexts now have no scientific branches; 132 remain eligible for
+interferometric assessment. Including the 13 Queue contexts, 157 source contexts
+are retained and 145 are evaluated. The 12 ignored contexts remain auditable.
+Mixed TP/interferometric contexts no longer inherit TP scope blockers.
+
+The continuum regression has 119 Archive CRITERIA_NOT_MET and 13 Archive
+INDETERMINATE; LINE has 132 Archive CRITERIA_NOT_MET. Both retain 13 Queue
+INDETERMINATE with this catalog's legacy Queue evaluation settings. These are
+engineering regression expectations under the new project scope, not independently
+reviewed scientific labels. Earlier counts above document the superseded scope.

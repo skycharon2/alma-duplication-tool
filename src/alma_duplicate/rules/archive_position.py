@@ -12,6 +12,15 @@ from alma_duplicate.rules.model import (
 
 
 def evaluate_archive_position(request, context, spatial_evidence, *, array_evidence=None, beam_diameter_m=None):
+    from alma_duplicate.duplication_array_scope import archive_tp_only
+    if archive_tp_only(context, array_evidence):
+        return CriterionResult(criterion_id='POS-SINGLE', policy_ref=f'{POLICY_DOCUMENT}, Position',
+            method_version='archive_tp_exclusion_1', approval=MethodApproval.APPROVED,
+            applicability=A.NOT_APPLICABLE, evaluation=E.NOT_APPLICABLE, outcome=None,
+            context_id=context.context_id, proposed=None, candidate=None,
+            reasons=('TP_IGNORED_FOR_DUPLICATION',),
+            decision_refs=('docs/evidence/tp_duplication_exclusion_2026-11-13.md',),
+            derived=(('antenna_diameter_m', None), ('candidate_radius_deg', None)))
     issues = []
     derived = ()
     details = ()
@@ -48,7 +57,10 @@ def evaluate_archive_position(request, context, spatial_evidence, *, array_evide
         if evidence.center_status is not SpatialStatus.AVAILABLE or evidence.center is None:
             issue("CENTER_UNAVAILABLE", "context.s_ra/s_dec")
         array = classify_array_type(context.evidence.prepared.raw_row.get("antenna_arrays"))
-        diameter = array.interferometric_diameter_m
+        families = set(dict(array.family_counts)) or {array.family}
+        interferometric = families - {'TOTAL_POWER'}
+        diameter = ({'ACA_7M': 7., 'MAIN_ARRAY_12M': 12.}.get(next(iter(interferometric)))
+                    if len(interferometric) == 1 else None)
         # A majority label is suitable for retrieval, not a unique policy diameter.
         if array_evidence is not None:
             if (array_evidence.context_id != context.context_id
@@ -64,7 +76,7 @@ def evaluate_archive_position(request, context, spatial_evidence, *, array_evide
                     issue(reason, "context.official_array")
         elif beam_diameter_m is not None:
             raise ValueError("Archive beam variants require bound official array evidence")
-        elif (array.unrecognized_tokens or len(array.family_counts) > 1
+        elif (array.unrecognized_tokens or len(interferometric) > 1
                 or diameter is None):
             diameter = None
             issue("UNIQUE_INTERFEROMETRIC_DIAMETER_REQUIRED", "context.antenna_arrays")

@@ -119,7 +119,7 @@ class ArchiveArrayCatalog:
         if "tp" in tokens:
             reasons += ("TP_IGNORED_FOR_POSITION",)
         if not diameters:
-            reasons += ("ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED",)
+            reasons += ("TP_ONLY_IGNORED_FOR_DUPLICATION",)
         return result(records, components, diameters, reasons)
 
 

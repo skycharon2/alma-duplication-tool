@@ -150,16 +150,15 @@ def test_archive_mixed_diameters_evaluate_whole_branches_and_report_once():
 def test_tp_only_has_no_position_and_never_false_branch(offset, resolution):
     search, catalog = synthetic("TP", offset=offset, intents=("CONTINUUM", "LINE"), resolution=resolution)
     c = evaluate_candidate_search(search, archive_arrays=catalog).context_evaluations[0]
-    if resolution == 10.:
-        assert c.criteria[0].outcome == "NOT_SATISFIED"
     assert c.array_evidence.components == ("TOTAL_POWER",)
     assert c.array_evidence.diameters_m == ()
-    pos = c.criteria[1]
-    assert dict(pos.derived)["antenna_diameter_m"] is None
-    assert dict(pos.derived)["candidate_radius_deg"] is None
-    assert pos.outcome is None
-    assert "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED" in pos.reasons
-    assert all(b.status == "INDETERMINATE" for b in c.branches)
+    assert c.criteria == c.branches == c.line_pairs == ()
+    assert c.line_pairing is None
+    assert c.exclusion_reason == 'TP_IGNORED_FOR_DUPLICATION'
+    for detail in ('full', 'matches'):
+        doc = report_document(evaluate_candidate_search(search, archive_arrays=catalog), detail=detail)
+        assert doc['context_evaluations'][0]['exclusion_reason'] == 'TP_IGNORED_FOR_DUPLICATION'
+
 
 
 @pytest.mark.parametrize("mode", ["missing", "other_source", "duplicate", "conflict", "unknown_label", "missing_label"])
@@ -224,7 +223,8 @@ def test_all_array_combinations_preserve_provenance_and_complete_branches(label,
     assert c.array_evidence.records == catalog.records
     assert ("TOTAL_POWER" in c.array_evidence.components) == ("TP" in label)
     if not diameters:
-        assert all(b.status == "INDETERMINATE" for b in c.branches)
+        assert not c.branches
+        assert c.exclusion_reason == "TP_IGNORED_FOR_DUPLICATION"
         return
     # Adding TP cannot change either complete interferometric branch.
     clean_catalog = replace(catalog, records=(replace(catalog.records[0], raw_label=label.replace("TP", "").strip()),))

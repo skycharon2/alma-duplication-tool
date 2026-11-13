@@ -179,6 +179,9 @@ def _reported_context(item, detail, summaries):
         data.update(_summary_results(item, summaries))
         if item.array_evidence is not None:
             data['array_evidence'] = item.array_evidence
+    if item.exclusion_reason:
+        data['exclusion_reason'] = item.exclusion_reason
+        data['evaluation_scope'] = 'IGNORED'
     if detail == 'matches':
         data['detail_level'] = 'FULL' if full else 'SUMMARY'
     return data
@@ -360,10 +363,11 @@ def report_document(report, *, input_sha256=None, archive_replay_metadata=None, 
             for source in (search.archive, search.queue)
         },
         "evaluation_scope": {
-            "context_scope": "ALL_RETAINED_CONTEXTS; excluded rows remain in sources audit",
+            "context_scope": "INTERFEROMETRIC_CONTEXTS; TP-only contexts retained as ignored audit records",
             "total_retained": search.total_retained,
             "shown_candidates": len(search.candidates),
-            "evaluated_contexts": len(report.context_evaluations),
+            "evaluated_contexts": sum(item.exclusion_reason is None for item in report.context_evaluations),
+            "ignored_tp_contexts": sum(item.exclusion_reason is not None for item in report.context_evaluations),
             "display_truncated": search.truncated,
             "excluded_by_predicate": {
                 source.source: _exclusions_by_predicate(source)

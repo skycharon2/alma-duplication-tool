@@ -43,7 +43,6 @@ def test_direct_rule_inside_outside_boundary(offset, outcome):
 
 @pytest.mark.parametrize('changes,reason', [
     ({'Use 7-m?':'True'}, 'QUEUE_ARRAY_COMBINATION_UNRESOLVED'),
-    ({'Use TP?':'True'}, 'TP_GEOMETRY_UNSUPPORTED'),
     ({'RA':'0','Dec':'0'}, 'POSSIBLE_EPHEMERIS_PLACEHOLDER_NAME_CHECK_REQUIRED'),
     ({'Mosaic':'Custom'}, 'QUEUE_GEOMETRY_UNSUPPORTED'),
     ({'Mos. Coord.':'B1950'}, 'QUEUE_OFFSET_FRAME_UNSUPPORTED'),

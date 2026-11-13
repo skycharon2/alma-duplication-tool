@@ -181,9 +181,8 @@ def adapt_spatial(
         reasons.append("NONZERO_OFFSETS_NOT_APPLIED")
     elif any(v != 0 for v in offsets):
         reasons.append("OFFSETS_WITHIN_SOURCE_ZERO_TOLERANCE")
-    if row.request.use_tp and not queue_row_beam:
-        status = S.UNSUPPORTED
-        reasons.append("TP_GEOMETRY_UNSUPPORTED")
+    if row.request.use_tp:
+        reasons.append("TP_IGNORED_FOR_DUPLICATION")
     if isinstance(row.spectral, SpectralScanEvidence):
         status = S.UNSUPPORTED
         reasons.append("SPS_SELECTION_UNSUPPORTED")

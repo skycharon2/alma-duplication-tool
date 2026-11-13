@@ -183,7 +183,11 @@ def test_false_and_unknown_is_false_but_does_not_claim_search_absence():
 def test_unsupported_scope_does_not_get_negative_branch_from_other_criteria(change):
     v=validated();source,_=archive(build_search_plan(v),frequency=100,**change)
     report=evaluate_candidate_search(search_candidates(v,archive_result=source))
-    assert report.context_evaluations[0].branches[0].status=='INDETERMINATE'
+    if change['array'] == 'TP':
+        assert report.context_evaluations[0].branches == ()
+        assert report.context_evaluations[0].exclusion_reason == 'TP_IGNORED_FOR_DUPLICATION'
+    else:
+        assert report.context_evaluations[0].branches[0].status=='INDETERMINATE'
 
 
 def test_sun_exemption_is_not_a_position_failure():

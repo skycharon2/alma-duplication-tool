@@ -131,11 +131,15 @@ def test_default_region_main_entry(tmp_path, monkeypatch, mode, variant):
     contexts = first["evaluation"]["contexts"]
     assert contexts
     for c in contexts:
+        if variant == 'tp':
+            assert c['coverage']['scope_status'] == 'IGNORED_TP'
+            assert c['criteria'] == c['branches'] == []
+            continue
         pos = next(x for x in c["criteria"] if x["criterion_id"] == "POS-MOSAIC")
         assert pos["method_version"] == "archive_pos_mosaic_s_region_1"
         expected = (
             None
-            if variant in ("missing", "unsupported", "tp", "mixed_tp")
+            if variant in ("missing", "unsupported")
             else "NOT_SATISFIED"
             if variant in ("half", "split_regions")
             else "SATISFIED"
@@ -143,12 +147,13 @@ def test_default_region_main_entry(tmp_path, monkeypatch, mode, variant):
         assert pos["outcome"] == expected
         assert c["coverage"]["coverage_source"] == "ARCHIVE_S_REGION"
     truths = [b["truth"] for c in contexts for b in c["branches"]]
-    assert ("TRUE" in truths) == (variant in ("positive", "single"))
+    assert ("TRUE" in truths) == (variant in ("positive", "single", "mixed_tp"))
 
 
 @pytest.mark.parametrize("mode", ["continuum", "line"])
 def test_tp_scope_never_yields_negative_joint_verdict(tmp_path, monkeypatch, mode):
     r = run_case(tmp_path, monkeypatch, mode, "tp_angular")
     for context in r["candidates"][0]["evaluation"]["contexts"]:
-        assert context["coverage"]["scope_status"] == "UNSUPPORTED_TP"
-        assert all(b["truth"] == "UNKNOWN" for b in context["branches"])
+        assert context["coverage"]["scope_status"] == "IGNORED_TP"
+        assert not context["branches"]
+        assert not context["criteria"]

@@ -3555,7 +3555,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "NO_TP_SCOPE_EXCLUSION"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       },
       {
@@ -4268,7 +4268,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "NO_TP_SCOPE_EXCLUSION"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       },
       {
@@ -4981,7 +4981,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "NO_TP_SCOPE_EXCLUSION"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       },
       {
@@ -5694,7 +5694,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "NO_TP_SCOPE_EXCLUSION"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       }
     ]

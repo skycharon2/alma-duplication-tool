@@ -3,7 +3,7 @@
 {% block extra_head %}<link rel="stylesheet" href="{{ url_for('static', filename='mosaic-report.css') }}">{% endblock %}
 
 {% macro branch_status(value) %}<span class="report-status" data-status="{{ value or 'INDETERMINATE' }}">{{ status_labels.get(value, 'Needs review') }}</span>{% endmacro %}
-{% macro candidate_bucket(value) %}<span class="report-status" data-status="{{ {'MATCH': 'CRITERIA_MET', 'NOT_MET': 'CRITERIA_NOT_MET'}.get(value, 'INDETERMINATE') }}">{{ {'MATCH': 'At least one matching branch', 'NOT_MET': 'Recorded branches do not meet conditions', 'NEEDS_REVIEW': 'Scientific review required', 'UNAVAILABLE': 'Candidate evidence unavailable'}.get(value, 'Needs review') }}</span>{% endmacro %}
+{% macro candidate_bucket(value) %}<span class="report-status" data-status="{{ {'MATCH': 'CRITERIA_MET', 'NOT_MET': 'CRITERIA_NOT_MET', 'IGNORED': 'IGNORED'}.get(value, 'INDETERMINATE') }}">{{ {'MATCH': 'At least one matching branch', 'NOT_MET': 'Recorded branches do not meet conditions', 'NEEDS_REVIEW': 'Scientific review required', 'UNAVAILABLE': 'Candidate evidence unavailable', 'IGNORED': 'TP ignored · no duplication assessment'}.get(value, 'Needs review') }}</span>{% endmacro %}
 {% from '_mosaic_comparison.html' import comparison as criteria_table with context %}
 {% from '_mosaic_matching.html' import coverage_view with context %}
 
@@ -62,10 +62,10 @@
 <p class="execution-identity">Execution (ASDM): {{ child.execution or 'Not unambiguously recorded; context kept separate' }}</p>
 {% for context_item in child.contexts %}{% set context = context_item.record %}
 <details class="candidate-comparison mosaic-context" id="mosaic-context-{{ index }}-{{ context_item.index }}"{% if context_item.matching %} open{% endif %}>
-<summary>View parameter comparison · Context {{ context_item.index + 1 }}{% if context_item.spws %} · Archive SPW {{ context_item.spws|join(', ') }}{% endif %} · {% for branch in context.branches %}{{ branch.branch }}: {{ status_labels.get(branch.status, 'Needs review') }}{% if not loop.last %}; {% endif %}{% else %}No branch result{% endfor %}</summary>
+<summary>View parameter comparison · Context {{ context_item.index + 1 }}{% if context_item.spws %} · Archive SPW {{ context_item.spws|join(', ') }}{% endif %} · {% for branch in context.branches %}{{ branch.branch }}: {{ status_labels.get(branch.status, 'Needs review') }}{% if not loop.last %}; {% endif %}{% else %}{{ 'TP ignored' if context.coverage.scope_status == 'IGNORED_TP' else 'No branch result' }}{% endfor %}</summary>
 <div class="mosaic-context-body"><p class="mosaic-context-id">Recorded context ID: {{ context.context_id }}</p>
 {% if context_item.asdm_uids %}<p class="mosaic-context-id">Recorded context ASDM association: {{ context_item.asdm_uids|join(', ') }}</p>{% endif %}
-<p>{% for branch in context.branches %}{{ branch.branch }}: {{ branch_status(branch.status) }} {% else %}<span class="report-status" data-status="INDETERMINATE">No recorded branch</span>{% endfor %}</p>
+<p>{% for branch in context.branches %}{{ branch.branch }}: {{ branch_status(branch.status) }} {% else %}<span class="report-status" data-status="{{ 'IGNORED' if context.coverage.scope_status == 'IGNORED_TP' else 'INDETERMINATE' }}">{{ 'TP ignored · no duplication assessment' if context.coverage.scope_status == 'IGNORED_TP' else 'No recorded branch' }}</span>{% endfor %}</p>
 {{ criteria_table(context.criteria, 'Common comparison conditions', context.coverage) }}
 {{ criteria_table(context.request_criteria, 'Proposed setup qualification recorded in this context') }}
 {{ coverage_view(context.coverage) }}

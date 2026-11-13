@@ -402,7 +402,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "NO_TP_SCOPE_EXCLUSION"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       },
       {
@@ -804,7 +804,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "NO_TP_SCOPE_EXCLUSION"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       },
       {
@@ -1206,7 +1206,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "NO_TP_SCOPE_EXCLUSION"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       },
       {
@@ -1608,7 +1608,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "NO_TP_SCOPE_EXCLUSION"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       }
     ]
@@ -1672,9 +1672,9 @@
             "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Position",
             "method_version": "archive_pos_mosaic_s_region_1",
             "approval": "APPROVED",
-            "applicability": "UNRESOLVED",
-            "evaluation": "INSUFFICIENT_INFORMATION",
-            "outcome": null,
+            "applicability": "APPLICABLE",
+            "evaluation": "EVALUATED",
+            "outcome": "SATISFIED",
             "context_id": "ARCHIVE:8934a448-fac1-49fd-9567-9fe17262fcc6:00000000",
             "proposed": null,
             "candidate": null,
@@ -1709,16 +1709,9 @@
               ]
             ],
             "reasons": [
-              "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED"
+              "STRICT_MAJORITY_WITHIN_ARCHIVE_S_REGION"
             ],
-            "issues": [
-              {
-                "side": "CANDIDATE",
-                "code": "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED",
-                "path": "mosaic.position",
-                "message": "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED"
-              }
-            ],
+            "issues": [],
             "decision_refs": [
               "docs/mosaic_s_region_position.md"
             ],
@@ -1928,8 +1921,8 @@
           {
             "branch": "CONTINUUM",
             "context_id": "ARCHIVE:8934a448-fac1-49fd-9567-9fe17262fcc6:00000000",
-            "status": "INDETERMINATE",
-            "truth": "UNKNOWN",
+            "status": "CRITERIA_NOT_MET",
+            "truth": "FALSE",
             "required_criteria": [
               "POS-MOSAIC",
               "ANGULAR",
@@ -1937,10 +1930,7 @@
               "CONT-FREQ",
               "CONT-RMS"
             ],
-            "reasons": [
-              "POS-MOSAIC_UNRESOLVED_OR_UNAPPROVED",
-              "BRANCH_SCOPE_UNSUPPORTED"
-            ],
+            "reasons": [],
             "method_version": "branch_three_value_1",
             "decision_refs": [
               "docs/evidence/supervisor_confirmation_2026-09-17.md#confirmed-2026-09-21"
@@ -2001,10 +1991,8 @@
               "status": "INSIDE"
             }
           ],
-          "outcome": "UNKNOWN",
-          "reasons": [
-            "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED"
-          ],
+          "outcome": "SATISFIED",
+          "reasons": [],
           "threshold": "STRICTLY_MORE_THAN_HALF",
           "other_criteria": "NOT_EVALUATED",
           "array_scope_evidence": {
@@ -2030,8 +2018,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "UNSUPPORTED_TP",
-          "geometric_outcome": "SATISFIED"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       },
       {
@@ -2089,9 +2076,9 @@
             "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Position",
             "method_version": "archive_pos_mosaic_s_region_1",
             "approval": "APPROVED",
-            "applicability": "UNRESOLVED",
-            "evaluation": "INSUFFICIENT_INFORMATION",
-            "outcome": null,
+            "applicability": "APPLICABLE",
+            "evaluation": "EVALUATED",
+            "outcome": "SATISFIED",
             "context_id": "ARCHIVE:8934a448-fac1-49fd-9567-9fe17262fcc6:00000001",
             "proposed": null,
             "candidate": null,
@@ -2126,16 +2113,9 @@
               ]
             ],
             "reasons": [
-              "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED"
+              "STRICT_MAJORITY_WITHIN_ARCHIVE_S_REGION"
             ],
-            "issues": [
-              {
-                "side": "CANDIDATE",
-                "code": "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED",
-                "path": "mosaic.position",
-                "message": "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED"
-              }
-            ],
+            "issues": [],
             "decision_refs": [
               "docs/mosaic_s_region_position.md"
             ],
@@ -2345,8 +2325,8 @@
           {
             "branch": "CONTINUUM",
             "context_id": "ARCHIVE:8934a448-fac1-49fd-9567-9fe17262fcc6:00000001",
-            "status": "INDETERMINATE",
-            "truth": "UNKNOWN",
+            "status": "CRITERIA_NOT_MET",
+            "truth": "FALSE",
             "required_criteria": [
               "POS-MOSAIC",
               "ANGULAR",
@@ -2354,10 +2334,7 @@
               "CONT-FREQ",
               "CONT-RMS"
             ],
-            "reasons": [
-              "POS-MOSAIC_UNRESOLVED_OR_UNAPPROVED",
-              "BRANCH_SCOPE_UNSUPPORTED"
-            ],
+            "reasons": [],
             "method_version": "branch_three_value_1",
             "decision_refs": [
               "docs/evidence/supervisor_confirmation_2026-09-17.md#confirmed-2026-09-21"
@@ -2418,10 +2395,8 @@
               "status": "INSIDE"
             }
           ],
-          "outcome": "UNKNOWN",
-          "reasons": [
-            "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED"
-          ],
+          "outcome": "SATISFIED",
+          "reasons": [],
           "threshold": "STRICTLY_MORE_THAN_HALF",
           "other_criteria": "NOT_EVALUATED",
           "array_scope_evidence": {
@@ -2447,8 +2422,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "UNSUPPORTED_TP",
-          "geometric_outcome": "SATISFIED"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       },
       {
@@ -2506,9 +2480,9 @@
             "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Position",
             "method_version": "archive_pos_mosaic_s_region_1",
             "approval": "APPROVED",
-            "applicability": "UNRESOLVED",
-            "evaluation": "INSUFFICIENT_INFORMATION",
-            "outcome": null,
+            "applicability": "APPLICABLE",
+            "evaluation": "EVALUATED",
+            "outcome": "SATISFIED",
             "context_id": "ARCHIVE:8934a448-fac1-49fd-9567-9fe17262fcc6:00000002",
             "proposed": null,
             "candidate": null,
@@ -2543,16 +2517,9 @@
               ]
             ],
             "reasons": [
-              "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED"
+              "STRICT_MAJORITY_WITHIN_ARCHIVE_S_REGION"
             ],
-            "issues": [
-              {
-                "side": "CANDIDATE",
-                "code": "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED",
-                "path": "mosaic.position",
-                "message": "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED"
-              }
-            ],
+            "issues": [],
             "decision_refs": [
               "docs/mosaic_s_region_position.md"
             ],
@@ -2762,8 +2729,8 @@
           {
             "branch": "CONTINUUM",
             "context_id": "ARCHIVE:8934a448-fac1-49fd-9567-9fe17262fcc6:00000002",
-            "status": "INDETERMINATE",
-            "truth": "UNKNOWN",
+            "status": "CRITERIA_NOT_MET",
+            "truth": "FALSE",
             "required_criteria": [
               "POS-MOSAIC",
               "ANGULAR",
@@ -2771,10 +2738,7 @@
               "CONT-FREQ",
               "CONT-RMS"
             ],
-            "reasons": [
-              "POS-MOSAIC_UNRESOLVED_OR_UNAPPROVED",
-              "BRANCH_SCOPE_UNSUPPORTED"
-            ],
+            "reasons": [],
             "method_version": "branch_three_value_1",
             "decision_refs": [
               "docs/evidence/supervisor_confirmation_2026-09-17.md#confirmed-2026-09-21"
@@ -2835,10 +2799,8 @@
               "status": "INSIDE"
             }
           ],
-          "outcome": "UNKNOWN",
-          "reasons": [
-            "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED"
-          ],
+          "outcome": "SATISFIED",
+          "reasons": [],
           "threshold": "STRICTLY_MORE_THAN_HALF",
           "other_criteria": "NOT_EVALUATED",
           "array_scope_evidence": {
@@ -2864,8 +2826,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "UNSUPPORTED_TP",
-          "geometric_outcome": "SATISFIED"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       },
       {
@@ -2923,9 +2884,9 @@
             "policy_ref": "ALMA Cycle 13 Users' Policies, Doc. 13.16 v1.0 (March 2026), Appendix A, Position",
             "method_version": "archive_pos_mosaic_s_region_1",
             "approval": "APPROVED",
-            "applicability": "UNRESOLVED",
-            "evaluation": "INSUFFICIENT_INFORMATION",
-            "outcome": null,
+            "applicability": "APPLICABLE",
+            "evaluation": "EVALUATED",
+            "outcome": "SATISFIED",
             "context_id": "ARCHIVE:8934a448-fac1-49fd-9567-9fe17262fcc6:00000003",
             "proposed": null,
             "candidate": null,
@@ -2960,16 +2921,9 @@
               ]
             ],
             "reasons": [
-              "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED"
+              "STRICT_MAJORITY_WITHIN_ARCHIVE_S_REGION"
             ],
-            "issues": [
-              {
-                "side": "CANDIDATE",
-                "code": "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED",
-                "path": "mosaic.position",
-                "message": "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED"
-              }
-            ],
+            "issues": [],
             "decision_refs": [
               "docs/mosaic_s_region_position.md"
             ],
@@ -3179,8 +3133,8 @@
           {
             "branch": "CONTINUUM",
             "context_id": "ARCHIVE:8934a448-fac1-49fd-9567-9fe17262fcc6:00000003",
-            "status": "INDETERMINATE",
-            "truth": "UNKNOWN",
+            "status": "CRITERIA_NOT_MET",
+            "truth": "FALSE",
             "required_criteria": [
               "POS-MOSAIC",
               "ANGULAR",
@@ -3188,10 +3142,7 @@
               "CONT-FREQ",
               "CONT-RMS"
             ],
-            "reasons": [
-              "POS-MOSAIC_UNRESOLVED_OR_UNAPPROVED",
-              "BRANCH_SCOPE_UNSUPPORTED"
-            ],
+            "reasons": [],
             "method_version": "branch_three_value_1",
             "decision_refs": [
               "docs/evidence/supervisor_confirmation_2026-09-17.md#confirmed-2026-09-21"
@@ -3252,10 +3203,8 @@
               "status": "INSIDE"
             }
           ],
-          "outcome": "UNKNOWN",
-          "reasons": [
-            "ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED"
-          ],
+          "outcome": "SATISFIED",
+          "reasons": [],
           "threshold": "STRICTLY_MORE_THAN_HALF",
           "other_criteria": "NOT_EVALUATED",
           "array_scope_evidence": {
@@ -3281,8 +3230,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "UNSUPPORTED_TP",
-          "geometric_outcome": "SATISFIED"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       }
     ]
@@ -5288,7 +5236,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "NO_TP_SCOPE_EXCLUSION"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       },
       {
@@ -5690,7 +5638,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "NO_TP_SCOPE_EXCLUSION"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       },
       {
@@ -6092,7 +6040,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "NO_TP_SCOPE_EXCLUSION"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       },
       {
@@ -6494,7 +6442,7 @@
             "method_version": "array_family_1",
             "evidence_level": "application-derived"
           },
-          "scope_status": "NO_TP_SCOPE_EXCLUSION"
+          "scope_status": "INTERFEROMETRIC_ONLY_TP_IGNORED"
         }
       }
     ]

@@ -86,14 +86,13 @@ def assess_single_mosaics(validated, *, options, sources, input_sha256, report_d
             reasons = []
             if row_id not in represented:
                 reasons.append('OUTSIDE_SINGLE_TO_MOSAIC_SCOPE')
-            if row.request.use_tp:
-                reasons.append('TP_COVERAGE_NOT_MODELLED')
             if isinstance(row.spectral, SpectralScanEvidence):
                 reasons.append('SPECTRAL_SCAN_NOT_EXPANDED')
             if row.spatial.coordinate_system_raw.strip().lower() == 'galactic':
                 reasons.append('GALACTIC_RECONSTRUCTION_UNSUPPORTED')
             rows.append(dict(source_row_id=row_id, geometry_kind=row.spatial.mosaic_kind.value,
-                             evaluated=row_id in represented, limitations=reasons))
+                             evaluated=row_id in represented, limitations=reasons,
+                             tp_treatment='IGNORED' if row.request.use_tp else 'NOT_REQUESTED'))
         document['inventory'] = dict(source_rows=rows, evaluated_source_rows=len(represented),
                                     unevaluated_source_rows=len(rows)-len(represented))
         status = AssessmentStatus.COMPLETED
