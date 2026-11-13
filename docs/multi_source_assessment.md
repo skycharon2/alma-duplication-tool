@@ -1,6 +1,6 @@
 # Multi-source Single Pointing development
 
-Reviewed 2026-11-13. **Steps 1–2 implemented; steps 3–6 are planned.**
+Reviewed 2026-11-13. **Steps 1–3 implemented; steps 4–6 are planned.**
 This is a batch of independent fixed ICRS targets using shared scientific input.
 It is not a Mosaic, an ALMA scheduling validator, or a new duplication rule.
 
@@ -138,13 +138,66 @@ also contains typed request-validation objects and is not the future manifest
 serialization format. Purpose splitting, per-target execution, run IDs and
 batch persistence belong to subsequent steps.
 
+## Step 3: batch manifests and child-report lifecycle
+
+Every `RunStore` owns `batches`, a `BatchStore` with small process-local JSON
+manifests. Large report artifacts remain exclusively in the existing temporary
+run directories. No second copy of scientific reports is made. The manifest is
+not persistent across process restart and does not add a database.
+
+The interface provides:
+
+- `create(owner, shared_setup, sources, input_sha256, purposes)` reserves a batch
+  with ordered source records and explicit LINE/CONTINUUM slots. It copies all
+  input data, requires unique source IDs (names may repeat), and preserves the
+  uploaded file hash and shared setup.
+- `update(...)` records RUNNING, COMPLETED with a saved run ID, or FAILED with an
+  optional bounded error message. PENDING can transition directly to a terminal
+  state. Terminal records cannot be replaced; an identical repeated completion
+  is idempotent. Retry requires a later explicit design.
+- `get(batch_id, owner)` returns a detached JSON-compatible `batch_manifest_1`
+  snapshot. Each child records execution state separately from current report
+  availability: AVAILABLE, EVICTED, EXPIRED, CLOSED, OTHER_SESSION, UNKNOWN, or
+  NO_REPORT as supplied by the existing run lifecycle. `execution_complete`
+  only means all branches reached a terminal execution state, including failure.
+- `lookup_run(run_id, owner)` resolves the batch/source/purpose navigation context.
+  A report can belong to only one batch branch. Only available saved reports can
+  initially be attached. The orchestrator remains responsible for passing the
+  report produced by the corresponding source/purpose request.
+- `summaries(explicit_batch_ids, owner)` filters and deduplicates the caller's
+  history; it never enumerates another browser's batches. Owner tokens provide
+  browser scope separation, not a new authentication service. Route wiring and
+  cookie handling remain in step 5.
+
+Defaults are 20 batch records and a 1,000,000-byte serialized-manifest budget,
+separate from the report-file byte/count budget. `RunStore` accepts
+`max_batches` and `max_batch_bytes` overrides. Both sizes and counts are bounded;
+failed serialization or updates publish no partial state. New batch insertion
+can evict the oldest finished batches; active batches are protected from capacity
+eviction. If protected records consume the budget, insertion fails explicitly.
+An oversized update fails without evicting siblings or altering the old record.
+
+Batch age uses the same maximum age and monotonic clock as its RunStore, anchored
+at batch creation. Reports keep their own publication-based expiry. Thus the
+parent can expire before a later child; removing a manifest removes its reverse
+links but does not delete otherwise valid report artifacts or interrupt download
+leases. Reports evicted while a parent survives remain listed as unavailable.
+Old run removal reasons may eventually become UNKNOWN under the existing bounded
+notice policy. No unavailable report is converted into a scientific no-match.
+
+`RunStore.prune()` also prunes batch manifests; `RunStore.close()` closes both
+stores. A batch lock serializes mutations and reverse-index publication. Run
+locks are released before acquiring the batch lock to avoid lock-order cycles.
+The existing browser finalizer and per-request pruning therefore cover batch
+state without enabling any new routes or executing assessments.
+
 ## Remaining increments and acceptance
 
 | Step | Deliverable | Exit gate |
 | --- | --- | --- |
 | 1 (implemented) | Parser, fixtures, diagnostics | Numerical coordinates, z, identity, malformed inputs and limits tested offline |
 | 2 (implemented) | Shared input → independent validated requests | Batch/standalone equivalence for Legacy and V2, LINE/CONTINUUM/both, REST/SKY, absent z, window overrides; shared input never mutated |
-| 3 | Batch manifest and child report lifecycle | Ordered source/purpose/run mapping, reverse lookup, expiry/eviction, byte/count limits and scoped history; no false persistence promise |
+| 3 (implemented) | Batch manifest and child report lifecycle | Ordered source/purpose/run mapping, reverse lookup, expiry/eviction, byte/count limits and scoped history; no false persistence promise |
 | 4 | Serial orchestration using existing assessment | One pinned Queue snapshot across all children; source/purpose failures isolated; fixed replay parity with standalone; progress per target; duplicate submission guarded |
 | 5 | `/proposed/batch`, preview and `/batches/<batch_id>` | Reuse shared form fields, preflight all rows, preserve inputs on errors; validation performs no queries; manifest JSON download |
 | 6 | Existing text/explorer batch navigation | Back/previous/next and purpose switch retain identity; failed/expired children navigable as status; standalone URLs, filtering, pagination and downloads unchanged |
@@ -197,3 +250,20 @@ forms, verify exact prepared REST/SKY operands, enforce missing-redshift and V1
 execution gates, and check input/sibling isolation. Preflight tests forbid
 network calls, assessment and Queue pinning. This is offline input equivalence;
 assessment-result parity is reserved for the orchestration increment.
+
+## Step 3 verification (2026-11-13)
+
+```sh
+python -m pytest -q tests/ui tests/unit/test_source_list.py tests/unit/test_batch_request.py
+python -m ruff check --select F src tests examples
+python -m compileall -q src tests
+git diff --check
+```
+
+761 tests passed, including all existing UI tests. Static checks, compilation
+and diff whitespace checks passed. Lifecycle coverage uses actual offline saved
+reports and an injected clock: ordered same-name sources, multiple purposes,
+owner isolation, detached snapshots, failure isolation, terminal idempotency,
+report eviction during an open download, report/parent expiry, store closure,
+count/byte pressure, atomic budget failures and concurrent reference assignment.
+No new network assessment, batch route or restart-persistence claim is included.

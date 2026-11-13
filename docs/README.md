@@ -15,7 +15,7 @@ boundaries and the current evaluation boundary.
 
 - What works and what remains limited: [current status](status.md).
 - What to do next: [active roadmap](roadmap.md).
-- Multi-source proposal review, parser and request generation: [batch development](multi_source_assessment.md).
+- Multi-source proposal review, request generation and batch lifecycle: [batch development](multi_source_assessment.md).
 - Run the browser and configure sources: [browser assessment](ui_offline_assessment.md).
 - Enter a proposal: [current form](ui_proposed_form.md).
 - Read results and explore them: [report browser](ui_report_browser.md) and
