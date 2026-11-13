@@ -15,13 +15,15 @@
 {% elif limitations is defined %}<p>No source-row limitations recorded.</p>{% endif %}
 <p><a href="{{ url_for('run_download', report_id=report_id, kind='report') }}">Download the full report for the row-level inventory.</a></p>
 </details>{% endif %}
+{% from '_queue_matching.html' import geometry_labels with context %}
 {% for entry in entries %}
 {% set c = entry.candidate %}
-<details class="report-context"><summary>{{ entry.project }} · {{ entry.target }} · {{ entry.kind }}{% for b in c.science.branches %} · {{ b.branch }}: {{ b.status }}{% endfor %}</summary>
+{% if entry.scope_help %}<p class="unresolved-notice"><strong>{{ entry.target }} · {{ entry.scope_help[1] }}</strong><br>{{ entry.scope_help[2] }}</p>{% endif %}
+<details class="report-context"><summary>{{ entry.project }} · {{ entry.target }} · {{ geometry_labels.get(entry.kind, entry.kind) }}{% for b in c.science.branches %} · {{ b.branch }}: {{ status_labels.get(b.status, b.status) }}{% endfor %}</summary>
 <p>Queue observation · Each array is compared independently.</p>
 
 {% for v in c.science.variants %}
-<details><summary>{{ v.diameter_m }} m{% for b in v.branches %} · {{ b.branch }}: {{ b.status }}{% endfor %}</summary>
+<details><summary>{{ v.diameter_m }} m{% for b in v.branches %} · {{ b.branch }}: {{ status_labels.get(b.status, b.status) }}{% endfor %}</summary>
 {% set position = c.position.beam_variants | selectattr('diameter_m', 'equalto', v.diameter_m) | first %}
 {{ comparison(v.criteria, 'Candidate conditions', position) }}
 {% set windows = queue_continuum_windows(v.criteria) %}

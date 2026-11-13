@@ -17,6 +17,8 @@
 <div class="mosaic-overview-grid">
 <div class="mosaic-metric"><strong>{{ mosaic_overview.candidate_buckets.MATCH }}</strong><span>Candidate identities with a matching branch</span></div>
 </div>
+{% from '_mosaic_review_notice.html' import archive_notice with context %}
+{{ archive_notice(mosaic_overview, report_id) }}
 <details class="report-retention"><summary>Other candidate outcomes (diagnostics)</summary>
 <p>Nonmatching and unresolved candidates are not shown in the default result list. These counts remain available for scientific review.</p>
 <div class="mosaic-overview-grid">
@@ -61,7 +63,7 @@
 {% for child in entry.children %}<section class="member-execution">
 <p class="execution-identity">Execution (ASDM): {{ child.execution or 'Not unambiguously recorded; context kept separate' }}</p>
 {% for context_item in child.contexts %}{% set context = context_item.record %}
-<details class="candidate-comparison mosaic-context" id="mosaic-context-{{ index }}-{{ context_item.index }}"{% if context_item.matching %} open{% endif %}>
+<details class="candidate-comparison mosaic-context" id="mosaic-context-{{ index }}-{{ context_item.index }}">
 <summary>View parameter comparison · Context {{ context_item.index + 1 }}{% if context_item.spws %} · Archive SPW {{ context_item.spws|join(', ') }}{% endif %} · {% for branch in context.branches %}{{ branch.branch }}: {{ status_labels.get(branch.status, 'Needs review') }}{% if not loop.last %}; {% endif %}{% else %}{{ 'TP ignored' if context.coverage.scope_status == 'IGNORED_TP' else 'No branch result' }}{% endfor %}</summary>
 <div class="mosaic-context-body"><p class="mosaic-context-id">Recorded context ID: {{ context.context_id }}</p>
 {% if context_item.asdm_uids %}<p class="mosaic-context-id">Recorded context ASDM association: {{ context_item.asdm_uids|join(', ') }}</p>{% endif %}
@@ -72,7 +74,7 @@
 {% if context.line_pairs %}<section aria-label="LINE spectral-window comparisons"><h5>Spectral line comparisons · {{ context.line_pairs|length }} recorded pair{{ '' if context.line_pairs|length == 1 else 's' }}</h5>
 <p class="mosaic-status-note">A matching LINE branch means at least one submitted requirement meets these conditions, not necessarily all of them. Each pair below retains its own result.</p>
 <p class="field-note">The first 10 matching and first 10 other pairs are shown, with matches first. All pairs remain in the report download.</p>
-{% for presentation in context_item.line_presentations[:20] %}{% set pair = presentation.pair %}<details class="line-pair"{% if loop.first and pair.status == 'CRITERIA_MET' %} open{% endif %}>
+{% for presentation in context_item.line_presentations[:20] %}{% set pair = presentation.pair %}<details class="line-pair">
 <summary>{{ presentation.label }} · {{ pair_title(pair) }} · {{ status_labels.get(pair.status, 'Needs review') }}</summary>
 {% if presentation.fields %}
 <details class="line-preparation"><summary>Input and frequency preparation for this line</summary>

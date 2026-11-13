@@ -9,6 +9,8 @@
 <a href="{{ url_for('run_download', report_id=report_id, kind='request') }}">Download request</a>
 
 </details>
+{% from '_mosaic_review_notice.html' import queue_notice with context %}
+{{ queue_notice(document.candidate_counts.review, report_id) }}
 {% set geometry_report = document %}{% include '_queue_geometry_results.html' %}
 <nav aria-label="Queue result pages"><p>Page {{ page }} / {{ pages }} · {{ visible_count }} candidates in this view</p>
 {% if page > 1 %}<a href="{{ url_for('run_queue_view', report_id=report_id, page=page-1, view=result_view) }}">Previous</a>{% endif %}

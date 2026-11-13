@@ -51,6 +51,17 @@ def assess_geometry(document, loader, proposed=None):
     return result
 
 
+def candidate_scope_help(candidate):
+    """Explain retained spectral limitations without inferring a new verdict."""
+    from alma_duplicate.ui.report_view import queue_spectral_scope_help
+    science = candidate.get('science') or {}
+    reasons = []
+    for scope in [science, *science.get('variants', [])]:
+        for record in [*scope.get('criteria', []), *scope.get('branches', [])]:
+            reasons.extend(record.get('reasons') or [])
+    return queue_spectral_scope_help(reasons)
+
+
 def presentation(report):
     """Flatten only presentation; keep candidates and array evidence independent."""
     result = []
@@ -58,6 +69,7 @@ def presentation(report):
         for candidate in geometry.get('candidates', []):
             group = candidate.get('group') or {}
             result.append(dict(kind=kind, candidate=candidate,
+                scope_help=candidate_scope_help(candidate),
                 target=group.get('target_name', 'Queue candidate'),
                 project=group.get('project_code', 'Not recorded')))
     return result
