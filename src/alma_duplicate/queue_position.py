@@ -45,12 +45,10 @@ def candidate_diameter(row):
         # Newly accepted operational evidence must not be filtered with the old
         # auxiliary-flag profile before the row-level evaluator can inspect it.
         return None, "standAlone_ACA", ("OPERATIONAL_STANDALONE_REQUIRES_ROW_BEAM_PROFILE",)
-    if row.request.use_tp:
-        return None, "Use TP?", ("TP_GEOMETRY_UNSUPPORTED",)
     # Legacy interpretation for the pinned 79-column snapshot.
     # Unlike the portal script we do not fill missing values with False.
     if not row.request.use_7m:
-        return 12.0, "Use 7-m?=False;Use TP?=False", ("MAIN_ARRAY_FROM_NEGATIVE_AUXILIARY_FLAGS",)
+        return 12.0, "Use 7-m?=False;TP ignored", ("MAIN_ARRAY_FROM_NEGATIVE_AUXILIARY_FLAGS",)
     return None, "Use 7-m?=True;standAlone_ACA=ABSENT", ("QUEUE_ARRAY_COMBINATION_UNRESOLVED",)
 
 
@@ -112,7 +110,7 @@ def adapt_queue_position(context, source_record, *, row_beam=False, beam_diamete
         reasons = [r for r in reasons if r != "NONZERO_OFFSETS_NOT_APPLIED"]
         reasons.append("TANGENT_OFFSETS_SPHERICAL_1")
         # Lift offsets for this selected profile; scans and other scope gates remain.
-        if (row_beam or not row.request.use_tp) and isinstance(row.spectral, RegularSpwEvidence):
+        if isinstance(row.spectral, RegularSpwEvidence):
             evidence = replace(evidence, selection_status=S.AVAILABLE)
     return replace(evidence, reasons=tuple(reasons), adapter_version=profile)
 

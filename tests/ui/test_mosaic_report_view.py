@@ -68,7 +68,7 @@ def test_projection_separates_scientific_and_source_states_without_recomputation
     assert view['mosaic_overview']['candidate_count'] == 6
     assert view['mosaic_overview']['context_count'] == 3
     assert view['mosaic_overview']['candidate_buckets'] == {
-        'MATCH': 1, 'NOT_MET': 1, 'NEEDS_REVIEW': 2, 'UNAVAILABLE': 2,
+        'MATCH': 1, 'NOT_MET': 1, 'NEEDS_REVIEW': 2, 'UNAVAILABLE': 2, 'IGNORED': 0,
     }
     assert view['mosaic_overview']['branch_status_counts'] == {
         'CRITERIA_MET': 1, 'CRITERIA_NOT_MET': 1,

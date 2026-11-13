@@ -5,7 +5,6 @@ from alma_duplicate.rules.model import (
     EvaluationStatus as E, MethodApplicability as A, MethodApproval,
     CriterionIssue, EvidenceSide,
 )
-from alma_duplicate.parsers.array_classification import classify_array_type
 
 METHOD = 'archive_pos_single_mosaic_s_region_1'
 DECISION = 'docs/development/single-point-mosaic/step03_position.md'
@@ -17,11 +16,6 @@ def evaluate_single_mosaic_region(request, context, spatial_evidence):
     if old is not None and (old.frame != 'ICRS' or old.target_kind != 'FIXED'):
         reasons.append('CONFLICTING_POSITION_INTERPRETATION')
     raw = context.evidence.prepared.raw_row
-    array = classify_array_type(raw.get('antenna_arrays'))
-    if array.family == 'TOTAL_POWER' or (
-        array.family == 'MIXED' and dict(array.family_counts).get('TOTAL_POWER', 0) > 0
-    ):
-        reasons.append('ARCHIVE_TOTAL_POWER_SCIENTIFIC_SCOPE_UNSUPPORTED')
     coverage = assess_region_position(
         {'points': [{'id': 'target', 'ra_deg': request.position.ra_deg,
                      'dec_deg': request.position.dec_deg}],

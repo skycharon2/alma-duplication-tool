@@ -21,7 +21,7 @@
         },
         "reference": {
           "path": "../../docs/acceptance_reference_values.md",
-          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+          "sha256": "e173c2f0744ef0d570caf4b80be3acf37fa273ec4fb01572498566294d80d7ab"
         }
       },
       "queue_candidate_beam": false,
@@ -176,7 +176,7 @@
         },
         "reference": {
           "path": "../../docs/acceptance_reference_values.md",
-          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+          "sha256": "e173c2f0744ef0d570caf4b80be3acf37fa273ec4fb01572498566294d80d7ab"
         }
       },
       "queue_candidate_beam": false,
@@ -451,7 +451,7 @@
         },
         "reference": {
           "path": "../../docs/acceptance_reference_values.md",
-          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+          "sha256": "e173c2f0744ef0d570caf4b80be3acf37fa273ec4fb01572498566294d80d7ab"
         }
       },
       "queue_candidate_beam": false,
@@ -636,7 +636,7 @@
         },
         "reference": {
           "path": "../../docs/acceptance_reference_values.md",
-          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+          "sha256": "e173c2f0744ef0d570caf4b80be3acf37fa273ec4fb01572498566294d80d7ab"
         }
       },
       "queue_candidate_beam": false,
@@ -853,7 +853,7 @@
         },
         "reference": {
           "path": "../../docs/acceptance_reference_values.md",
-          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+          "sha256": "e173c2f0744ef0d570caf4b80be3acf37fa273ec4fb01572498566294d80d7ab"
         }
       },
       "queue_candidate_beam": false,
@@ -1170,7 +1170,7 @@
         },
         "reference": {
           "path": "../../docs/acceptance_reference_values.md",
-          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+          "sha256": "e173c2f0744ef0d570caf4b80be3acf37fa273ec4fb01572498566294d80d7ab"
         }
       },
       "queue_candidate_beam": false,
@@ -1511,7 +1511,7 @@
         },
         "reference": {
           "path": "../../docs/acceptance_reference_values.md",
-          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+          "sha256": "e173c2f0744ef0d570caf4b80be3acf37fa273ec4fb01572498566294d80d7ab"
         },
         "queue_csv": {
           "path": "../../tests/fixtures/queue/queue_pipeline_v1.csv",
@@ -1548,7 +1548,7 @@
             "evaluation_scope",
             "evaluated_contexts"
           ],
-          "equals": 157,
+          "equals": 145,
           "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
         },
         {
@@ -1588,13 +1588,7 @@
               "source": "ARCHIVE",
               "branch": "LINE",
               "status": "CRITERIA_NOT_MET",
-              "count": 100
-            },
-            {
-              "source": "ARCHIVE",
-              "branch": "LINE",
-              "status": "INDETERMINATE",
-              "count": 44
+              "count": 132
             },
             {
               "source": "QUEUE",
@@ -1603,7 +1597,7 @@
               "count": 13
             }
           ],
-          "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope"
+          "reference": "Reference ledger: 2026-11-13 owner-directed TP exclusion; engineering regression"
         },
         {
           "path": [
@@ -1783,6 +1777,15 @@
           "equals": 1.0310278394309027,
           "reference": "Independent reference ledger: real captured component / PR #73 diagnostic scope",
           "absolute_tolerance": 1e-12
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "ignored_tp_contexts"
+          ],
+          "equals": 12,
+          "reference": "12 TP-only Archive contexts excluded before scientific evaluation"
         }
       ]
     },
@@ -1806,7 +1809,7 @@
         },
         "reference": {
           "path": "../../docs/acceptance_reference_values.md",
-          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+          "sha256": "e173c2f0744ef0d570caf4b80be3acf37fa273ec4fb01572498566294d80d7ab"
         }
       },
       "queue_candidate_beam": false,
@@ -2091,7 +2094,7 @@
         },
         "reference": {
           "path": "../../docs/acceptance_reference_values.md",
-          "sha256": "b0ca0ea5b2e0cf48af41ab747a1f2e8aabec37b54fc5ac316621dae35a13b627"
+          "sha256": "e173c2f0744ef0d570caf4b80be3acf37fa273ec4fb01572498566294d80d7ab"
         },
         "queue_csv": {
           "path": "../../tests/fixtures/queue/queue_pipeline_v1.csv",
@@ -2128,7 +2131,7 @@
             "evaluation_scope",
             "evaluated_contexts"
           ],
-          "equals": 157,
+          "equals": 145,
           "reference": "Independent reference ledger: Guide B arithmetic"
         },
         {
@@ -2168,13 +2171,13 @@
               "source": "ARCHIVE",
               "branch": "CONTINUUM",
               "status": "CRITERIA_NOT_MET",
-              "count": 95
+              "count": 119
             },
             {
               "source": "ARCHIVE",
               "branch": "CONTINUUM",
               "status": "INDETERMINATE",
-              "count": 49
+              "count": 13
             },
             {
               "source": "QUEUE",
@@ -2183,7 +2186,7 @@
               "count": 13
             }
           ],
-          "reference": "PR #73 engineering regression, not a scientific label"
+          "reference": "Reference ledger: 2026-11-13 owner-directed TP exclusion; engineering regression"
         },
         {
           "path": [
@@ -2195,6 +2198,15 @@
           ],
           "equals": 0.5,
           "reference": "Independent reference ledger: Guide B arithmetic"
+        },
+        {
+          "path": [
+            "report",
+            "evaluation_scope",
+            "ignored_tp_contexts"
+          ],
+          "equals": 12,
+          "reference": "12 TP-only Archive contexts excluded before scientific evaluation"
         }
       ]
     },

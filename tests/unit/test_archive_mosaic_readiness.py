@@ -67,7 +67,7 @@ def test_spw_bad_layout_rejected(change):
     with pytest.raises(ValueError): parse_spectral_windows(raw)
 
 
-@pytest.mark.parametrize('label,status', [('12m','CONFLICT'), ('7m 12m','MIXED'), ('tp','UNSUPPORTED'), ('unknown','UNKNOWN')])
+@pytest.mark.parametrize('label,status', [('12m','CONFLICT'), ('7m 12m','MIXED'), ('tp','IGNORED'), ('unknown','UNKNOWN')])
 def test_array_labels_do_not_override_execution_dishes(label, status):
     result = bind_array(catalog(label), member=MEMBER, source='IC1954', antennas=parse_antennas(RAW))
     assert result['status'] == status

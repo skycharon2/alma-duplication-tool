@@ -87,6 +87,12 @@ Programming/contract errors propagate; they are not scientific missing evidence.
                     diameters = array_evidence.diameters_m
             if request.intents and queue_common and row.context.reference.source == "QUEUE":
                 diameters = resolve_queue_beam_interpretation(row.context.evidence.row).diameters_m
+            from alma_duplicate.duplication_array_scope import archive_tp_only
+            if archive_tp_only(row.context, array_evidence):
+                contexts.append(ContextEvaluation(candidate=row, criteria=(),
+                    array_evidence=array_evidence, exclusion_reason='TP_IGNORED_FOR_DUPLICATION'))
+                emit_progress("evaluation", len(contexts), search_result.total_retained, "candidates")
+                continue
             if len(diameters) == 2:
                 variants = tuple(BeamVariant(d, _evaluate_context(
                     row, request, setup, configuration, beam_diameter_m=d,

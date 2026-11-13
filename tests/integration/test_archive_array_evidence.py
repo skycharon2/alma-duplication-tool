@@ -57,7 +57,7 @@ def request_at(sample):
 
 @pytest.mark.parametrize("sample_id,diameter", [
     ("pure_12m", 12.0), ("pure_7m", 7.0),
-    ("cm_with_tp", None), ("non_solar_mixed_names", None),
+    ("cm_with_tp", 7.), ("non_solar_mixed_names", None),
 ])
 def test_real_candidate_position_diameter_remains_evidence_bound(sample_id, diameter):
     source, context = replay(sample_id)

@@ -124,7 +124,7 @@ def test_queue_explicit_diameter_and_formula_exclusion():
     assert all(r.disposition == 'RETAINED_UNEVALUATED' for r in unknown.queue.rows)
 
 
-@pytest.mark.parametrize('change',[{'Long Offset':'5'}, {'Use TP?':'True'}])
+@pytest.mark.parametrize('change',[{'Long Offset':'5'}])
 def test_queue_unsupported_stays_retained(change):
     q=queue_rows(change)
     assert q.can_reconstruct

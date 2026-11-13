@@ -54,14 +54,13 @@ def assess_queue_mosaic(validated, proposed, *, options, sources, input_sha256, 
                 expected[row_id] += 1
             else:
                 limitations.append('CANDIDATE_GEOMETRY_NOT_EVALUATED')
-            if row.request.use_tp:
-                limitations.append('TP_COVERAGE_NOT_MODELLED')
             if isinstance(row.spectral, SpectralScanEvidence):
                 limitations.append('SPECTRAL_SCAN_NOT_EXPANDED')
             if (row.spatial.coordinate_system_raw or '').strip().lower() == 'galactic':
                 limitations.append('GALACTIC_RECONSTRUCTION_UNSUPPORTED')
             rows.append(dict(source_row_id=row_id, geometry_kind=kind.value,
-                             evaluated=kind.value in reports, limitations=limitations))
+                             evaluated=kind.value in reports, limitations=limitations,
+                             tp_treatment='IGNORED' if row.request.use_tp else 'NOT_REQUESTED'))
         if represented != expected:
             raise ValueError('Queue Mosaic candidate reports disagree with snapshot row inventory')
         report['inventory'] = dict(source_rows=rows, candidate_counts=counts,

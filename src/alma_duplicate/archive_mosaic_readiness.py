@@ -30,10 +30,12 @@ def bind_array(catalog, *, member, source, antennas):
         result['reasons'] = ['AQ_LABEL_UNSUPPORTED']
         return result
     result['components'] = sorted(COMPONENTS[t] for t in tokens)
+    result['tp_treatment'] = 'IGNORED' if 'tp' in tokens else 'NOT_PRESENT'
+    tokens = [token for token in tokens if token != 'tp']
     if len(tokens) > 1:
         result.update(status='MIXED', reasons=['SOURCE_ARRAY_MIX_NOT_EXECUTION_RESOLVED'])
-    elif tokens == ['tp']:
-        result.update(status='UNSUPPORTED', reasons=['TOTAL_POWER_NOT_SUPPORTED'])
+    elif not tokens:
+        result.update(status='IGNORED', reasons=['TP_IGNORED_FOR_DUPLICATION'])
     elif antennas is None:
         result['reasons'] = ['ANTENNA_DIAMETERS_MISSING']
     elif antennas['diameters_m'] != [7.0 if tokens == ['7m'] else 12.0]:

@@ -215,8 +215,8 @@ def single_point_applicability(geometry, use_tp):
     }
 
 
-def classify_spw(row: QueueRowInput, spw_number: int):
-    """Resolve a slot inside its owning typed row; never accept a detached SPW."""
+def classify_spw(row: QueueRowInput, spw_number: int, *, duplication=False):
+    """Resolve a bound SPW. Duplication ignores TP; diagnostics retain TP modes."""
     if not isinstance(row.spectral, RegularSpwEvidence):
         raise ValueError("SPECTRAL_SCAN_NOT_EXPANDED")
     matches = [spw for spw in row.spectral.spws if spw.number == spw_number]
@@ -245,9 +245,10 @@ def classify_spw(row: QueueRowInput, spw_number: int):
             row.request.polarization_raw,
             spw.bandwidth_mhz.value,
             spw.spectral_resolution_mhz.value,
-            processor_scope=requested_processor_scope(row.request.use_tp),
+            processor_scope=(ProcessorScope.INTERFEROMETRIC if duplication
+                             else requested_processor_scope(row.request.use_tp)),
         ),
         "single_point_applicability": single_point_applicability(
-            row.spatial.mosaic_kind, row.request.use_tp
+            row.spatial.mosaic_kind, False if duplication else row.request.use_tp
         ),
     }

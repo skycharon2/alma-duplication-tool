@@ -42,5 +42,6 @@ def test_unresolved_galactic_candidate_retains_science_and_coverage_limitations(
     for row in inventory['source_rows']:
         assert row['evaluated']
         assert 'GALACTIC_RECONSTRUCTION_UNSUPPORTED' in row['limitations']
-        assert 'TP_COVERAGE_NOT_MODELLED' in row['limitations']
+        assert 'TP_COVERAGE_NOT_MODELLED' not in row['limitations']
+        assert row['tp_treatment'] == 'IGNORED'
     assert report['search_completeness'] == 'NOT_ESTABLISHED'

@@ -272,7 +272,7 @@ def test_missing_angular_value_is_not_filter_failure():
     assert evaluate_angular_filter(plan, c, 1).status == "NOT_EVALUATED"
 
 
-def test_queue_tp_and_sps_contexts_remain_unsupported():
+def test_queue_tp_is_informational_while_sps_remains_unsupported():
     source = parse_queue_csv_bytes(
         (ROOT / "tests/fixtures/queue/queue_pipeline_v1.csv").read_bytes())
     contexts = build_queue_contexts(source).contexts
@@ -281,8 +281,8 @@ def test_queue_tp_and_sps_contexts_remain_unsupported():
         evidence = adapt_spatial(c, source, interpretation=interpretation(c))
         if c.evidence.row.request.use_tp:
             tp_seen = True
-            assert "TP_GEOMETRY_UNSUPPORTED" in evidence.reasons
-            assert evidence.selection_status is S.UNSUPPORTED
+            assert "TP_IGNORED_FOR_DUPLICATION" in evidence.reasons
+            assert "TP_GEOMETRY_UNSUPPORTED" not in evidence.reasons
         if c.evidence.row.spectral.__class__.__name__ == "SpectralScanEvidence":
             sps_seen = True
             assert "SPS_SELECTION_UNSUPPORTED" in evidence.reasons

@@ -10,7 +10,7 @@ from collections import Counter
 MOSAIC_REPORT_SCHEMAS = {'archive_mosaic_backend_2', 'submitted_line_mosaic_search_report_1', 'submitted_observation_mosaic_search_report_2'}
 
 PROJECTION_VERSION = 'mosaic_browser_view_1'
-BUCKETS = ('MATCH', 'NOT_MET', 'NEEDS_REVIEW', 'UNAVAILABLE')
+BUCKETS = ('MATCH', 'NOT_MET', 'NEEDS_REVIEW', 'UNAVAILABLE', 'IGNORED')
 BRANCH_STATUSES = ('CRITERIA_MET', 'CRITERIA_NOT_MET', 'INDETERMINATE')
 
 
@@ -33,6 +33,7 @@ def _context(record, index):
     return {
         'context_index': index,
         'context_id': record.get('context_id'),
+        'ignored_tp': (record.get('coverage') or {}).get('scope_status') == 'IGNORED_TP',
         'branches': branches,
         'criteria': [_criterion(item) for item in record.get('criteria', ())],
         'request_criteria': [
@@ -84,7 +85,8 @@ def mosaic_report_projection(document):
         ]
         if candidate_status == 'EVALUATED':
             branch_counts.update(status or 'UNRECORDED' for status in statuses)
-        bucket = _bucket(candidate_status, statuses)
+        bucket = ('IGNORED' if contexts and all(c['ignored_tp'] for c in contexts)
+                  else _bucket(candidate_status, statuses))
         bucket_counts[bucket] += 1
         candidates.append({
             'candidate_index': candidate_index,

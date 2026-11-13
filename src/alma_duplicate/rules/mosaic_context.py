@@ -90,6 +90,9 @@ def evaluate_mosaic_context(
         )
     if proposed["source_name"] != request.target_name:
         raise ValueError("Imported pointings belong to another proposed target")
+    from alma_duplicate.duplication_array_scope import archive_tp_only, ignored_mosaic
+    if archive_tp_only(context, array_evidence):
+        return ignored_mosaic(context)
     geometry = context.evidence.prepared.normalized_metadata.is_mosaic.value
     if use_s_region:
         from alma_duplicate.rules.position_region import evaluate_region_position
