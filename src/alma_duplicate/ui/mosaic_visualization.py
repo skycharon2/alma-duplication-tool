@@ -11,7 +11,11 @@ from alma_duplicate.ui.mosaic_frequency_view import (
 )
 
 
-def _evidence(branch, criteria, pairs):
+def _evidence(branch, criteria, pairs, *, continuum_spw=None, context=None):
+    """Project only a saved Archive context SPW for CONTINUUM display.
+
+    This does not attach a per-SPW continuum verdict or infer Queue SPW IDs.
+    """
     intent = branch['branch']
     spectra = []
     if intent == 'LINE':
@@ -27,7 +31,11 @@ def _evidence(branch, criteria, pairs):
                 spectrum['spw'] = association.get('spw_token', reference.get('spw_number'))
                 spectra.append(spectrum)
     else:
-        spectra.append(spectral_view(criteria, intent))
+        spectrum = spectral_view(criteria, intent, context)
+        if (continuum_spw is not None and
+                str(continuum_spw).strip().lower() not in ('', 'not recorded', 'unknown', 'none')):
+            spectrum['spw'] = continuum_spw
+        spectra.append(spectrum)
     return dict(intent=intent, status=branch.get('status'), spectra=spectra, criteria=criteria)
 
 
@@ -70,11 +78,40 @@ def _archive_beams(ctx, coverage):
     return result
 
 
+def _archive_spectral_context(ctx, candidate):
+    """Adapt saved Mosaic references to the shared Single Pointing contract.
+
+    Older Mosaic reports retain the assigned component index in the reference
+    and its exact raw-row setup in a sidecar. Use only that explicit binding,
+    never the nearest interval or all intervals belonging to the Member.
+    """
+    reference = ctx.get('source_reference') or ctx.get('reference')
+    result = dict(ctx, reference=reference)
+    if ctx.get('spectral_display'):
+        return result
+    saved = (candidate.get('spectral_setup_displays') or {}).get(ctx.get('context_id')) or ctx
+    saved_reference = saved.get('source_reference') or saved.get('reference')
+    setup = saved.get('spectral_setup_display') or {}
+    evidence = setup.get('evidence') or {}
+    if (not reference or saved_reference != reference or setup.get('reference') != reference
+            or evidence.get('raw_row_id') != reference.get('raw_row_id')
+            or reference.get('component_index') is None):
+        return result
+    components = [c for c in (evidence.get('parse_result') or {}).get('components', [])
+                  if c.get('component_index') == reference['component_index']]
+    if (len(components) == 1 and components[0].get('parse_status') == 'PARSED'
+            and not components[0].get('validation_issues')):
+        result['spectral_display'] = dict(source='frequency_support.assigned_component',
+                                          reference=reference, component=components[0])
+    return result
+
+
 def archive_rows(page):
     for entry in page['candidate_entries']:
         candidate = entry['candidate']
         for child in entry['contexts']:
             ctx = child['record']
+            spectral_context = _archive_spectral_context(ctx, candidate)
             coverage = ctx.get('coverage') or {}
             if coverage.get('candidate_id') and coverage['candidate_id'] != ctx.get('context_id'):
                 coverage = {}
@@ -90,6 +127,7 @@ def archive_rows(page):
                     continue
                 yield dict(source='Archive', candidate=candidate.get('member_ous_uid') or 'Member unrecorded',
                            project=_archive_project(entry, ctx),
+                           identity=ctx.get('display_identity') or {},
                            target=candidate.get('source_name'), geometry=geometry,
                            context_id=ctx.get('context_id'), array=f'{diameter:g} m' if diameter else '',
                            inside=coverage.get('inside_count'), total=coverage.get('pointing_count'),
@@ -99,7 +137,9 @@ def archive_rows(page):
                            spectral_setup=_archive_spectral_setup(
                                (candidate.get('spectral_setup_displays') or {}).get(ctx.get('context_id')) or ctx),
                            anchor=f"mosaic-context-{entry['candidate_index']}-{child['index']}",
-                           **_evidence(branch, ctx.get('criteria', []), ctx.get('line_pairs', [])))
+                           **_evidence(branch, ctx.get('criteria', []), ctx.get('line_pairs', []),
+                                       continuum_spw=(ctx.get('display_identity') or {}).get('SPW'),
+                                       context=spectral_context))
 
 
 def queue_rows(page):

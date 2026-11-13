@@ -21,7 +21,7 @@
   const frequencyValues = list => list.flatMap(row => {
     const f = row.spectral;
     const support = ((data.spectral_setups || {})[row.spectral_setup_id]?.components || []).flatMap(c => c.interval ? [c.interval.low, c.interval.high] : []);
-    return [...support, ...(f.coverage || []).flatMap(c => [c.low,c.high]), ...(!f.available ? [] : f.kind === "interval" ? [f.proposed, f.low, f.high] : [f.proposed, f.candidate, ...(f.coverage || []).flatMap(c => [c.low, c.high])])];
+    return [...support, ...(f.coverage || []).flatMap(c => [c.low,c.high,c.nominal_low,c.nominal_high].filter(Number.isFinite)), ...(!f.available ? [] : f.kind === "interval" ? [f.proposed, f.low, f.high] : [f.proposed, f.candidate, ...(f.coverage || []).flatMap(c => [c.low, c.high])])];
   });
   const extent = Math.max(10, spatialPoints(rows).reduce((v,p)=>Math.max(v,Math.abs(p[0]),Math.abs(p[1])),0)) * 1.15;
   const frequencies = frequencyValues(rows);
@@ -159,7 +159,7 @@
       if (expandedSetups.has(group.setup.id)) {
         if (group.setup.queue) {
           group.setup.components.forEach(component => entries.push({component, row:group.rows[0]}));
-          if (group.setup.line) group.rows.forEach(row => entries.push({row}));
+          group.rows.forEach(row => entries.push({row}));
         }
         else group.rows.forEach(row => entries.push({row}));
       }
@@ -213,10 +213,18 @@
         draw(g, "title", {}, coverageLabel(row,c));
         draw(g, "text", {x:12,y:y+3}, `SPW ${c.spw ?? "?"} · coverage`);
         const layer = draw(g, "g", {"clip-path":"url(#frequency-clip)"});
-        const bar = draw(layer, "rect", {x:x(c.low), y:y-5,
-          width:Math.max(.5,x(c.high)-x(c.low)), height:10, fill:color(row), opacity:.7});
+        const nominal = Number.isFinite(c.nominal_low) && Number.isFinite(c.nominal_high) && c.nominal_low > 0 && c.nominal_high > c.nominal_low;
+        if(nominal){
+          const outer=draw(layer,"rect",{x:x(c.nominal_low),y:y-5,width:Math.max(.5,x(c.nominal_high)-x(c.nominal_low)),height:10,fill:color(row),opacity:.25});
+          draw(outer,"title",{},`Nominal interval ${fmt(c.nominal_low)}–${fmt(c.nominal_high)} GHz`);
+        }
+        const bar = draw(layer, "rect", {x:x(c.low), y:y-3,
+          width:Math.max(.5,x(c.high)-x(c.low)), height:6, fill:color(row), opacity:.7});
         draw(bar, "title", {}, coverageLabel(row,c));
-        marker(layer,x(row.spectral.proposed),y);
+        const midpoint=((nominal?c.nominal_low:c.low)+(nominal?c.nominal_high:c.high))/2;
+        const dot=draw(layer,"circle",{cx:x(midpoint),cy:y,r:4,fill:"white",stroke:color(row),"stroke-width":1.5});
+        draw(dot,"title",{},`${nominal?'Nominal':'Saved coverage'} window midpoint ${fmt(midpoint)} GHz; not a representative frequency`);
+        if(Number.isFinite(row.spectral.proposed))marker(layer,x(row.spectral.proposed),y);
         return;
       }
       const row = entry.row, f = row.spectral, active = row.id === highlighted();
@@ -225,7 +233,7 @@
         `Requested ${fmt(f.proposed)} GHz; candidate representative frequency ${fmt(f.candidate)} GHz`;
       const g = selectable(svg, row, description);
       draw(g, "rect", {x: 5, y: y-15, width: 585, height: 30, fill: active ? "#e9f4fa" : "transparent"});
-      draw(g, "text", {x: 12, y: y+3}, `#${row.display_number} ${row.intent === "LINE" ? "LINE" : "CONT"} · SPW ${row.spw}`);
+      draw(g, "text", {x: 12, y: y+3}, `#${row.display_number} ${row.intent === "LINE" ? "LINE" : "CONT"} · ${row.source === "QUEUE" && row.intent === "CONTINUUM" ? "aggregate comparison" : "SPW " + row.spw}`);
       if (!f.available) { draw(g, "text", {x: 145, y: y+3}, "Frequency evidence unavailable"); return; }
       const layer = draw(g, "g", {"clip-path": "url(#frequency-clip)"});
       if (f.kind === "interval") {

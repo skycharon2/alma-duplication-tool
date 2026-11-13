@@ -415,6 +415,7 @@ def create_app(config=None):
                 rows.append(row)
             navigation.append(dict(source=source, report_id=key, page=data['page'], pages=data['pages']))
         return render_template('mosaic_visualization.html', rows=rows, saved=True, navigation=navigation,
+                               visualization_url=url_for('mosaic_visualization', report_id=report_id, page=page),
                                criterion_view=criterion_view, criterion_status=criterion_status,
                                criterion_explanation=criterion_explanation, display_number=display_number,
                                calculation_view=calculation_view, status_labels=STATUS_LABELS,

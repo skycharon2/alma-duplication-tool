@@ -3,6 +3,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='visualization.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='mosaic-visualization.css') }}">
+<script defer src="{{ url_for('static', filename='mosaic-comparison-overview.js') }}"></script>
 <script defer src="{{ url_for('static', filename='mosaic-visualization.js') }}"></script>
 <script defer src="{{ url_for('static', filename='alma-sky-runtime.js') }}"></script>
 <script defer src="{{ url_for('static', filename='mosaic-sky-geometry.js') }}"></script>
@@ -11,11 +12,18 @@
 {% block content %}
 {% from '_mosaic_comparison.html' import comparison as recorded_comparison with context %}
 <div class="visual-page mosaic-explorer">
-<header class="visual-heading"><div><p class="visual-eyebrow">Mosaic · Report explorer</p>
+<header class="visual-heading"><div><p class="visual-eyebrow">MOSAIC · REPORT EXPLORER</p>
 <h1>{{ target or 'Explore observation evidence' }}</h1>
-{% if saved %}<p>Recorded comparisons from this Mosaic assessment.</p></div><a class="button" href="{{ report_url }}">Back to text report</a>
+{% if saved %}<p>{{ proposed.points|length }} submitted pointings{% if proposed.array %} · {{ proposed.array }} array{% endif %} · {{ rows|map(attribute='intent')|unique|join(' / ') }}</p></div><a class="button" href="{{ report_url }}">Back to text report</a>
 {% else %}<p>Layout preview with simulated comparisons and pointings.</p></div>{% endif %}</header>
 {% for notice in notices %}<p class="notice">{{ notice }}</p>{% endfor %}
+{% if saved and not rows %}<p class="notice">No matching comparisons are available on this report page. This does not establish that no duplicates exist. <a href="{{ report_url }}">Review results and missing evidence</a>.</p>{% endif %}
+{% if saved %}
+<div class="visual-scope">
+  <span><strong>{{ rows|length }}</strong> loaded comparisons in this report view</span>
+  <span class="visual-legend"><span class="legend-proposed">◆ Your Mosaic</span><span>● One color per candidate object · shared across arrays and SPWs</span></span>
+</div>
+{% endif %}
 {% if saved %}<details><summary>Submitted Mosaic pointings{% if proposed.points %} ({{ proposed.points|length }}){% endif %}</summary>
 {% if proposed.points %}<div class="visual-list"><table><thead><tr><th>Pointing</th><th>RA (deg)</th><th>Dec (deg)</th></tr></thead><tbody>
 {% for point in proposed.points %}<tr><td>{{ point.id }}</td><td>{{ point.ra_deg }}</td><td>{{ point.dec_deg }}</td></tr>{% endfor %}
@@ -23,25 +31,35 @@
 <section class="visual-controls" aria-label="Filter comparisons">
 <div class="visual-filter-fields">
 {% for key, label in [('project','Project'), ('candidate','Member OUS / Configuration'), ('array','Array')] %}
-<label>{{ label }}<select data-filter="{{ key }}"><option value="">{{ "All projects" if key == "project" else "All" }}</option>
+<label>{{ label }}<select data-filter="{{ key }}"><option value="">{{ 'All projects' if key == 'project' else 'All members / configurations' if key == 'candidate' else 'All arrays' }}</option>
+{% if key == 'candidate' %}
+{% set seen = namespace(ids=[]) %}
+{% for row in rows if row.candidate and row.candidate not in seen.ids %}
+{% set seen.ids = seen.ids + [row.candidate] %}
+<option value="{{ row.candidate }}" title="{{ row.candidate }}">{{ row.target or row.project or 'Candidate' }} · {{ 'Queue ' ~ row.geometry if row.source == 'Queue' else 'Member ' ~ row.candidate }}{% if row.project %} · {{ row.project }}{% endif %}</option>
+{% endfor %}
+{% else %}
 {% for value in rows|map(attribute=key)|unique if value %}<option>{{ value }}</option>{% endfor %}
+{% endif %}
 </select></label>{% endfor %}
 <div class="visual-filter-actions"><button type="button" id="mosaic-isolate" aria-pressed="false">Only selected</button><button type="button" id="mosaic-focus">Focus selected</button><button type="button" id="clear-filters">Clear filters</button></div></div>
-<p id="comparison-count" role="status"></p></section>
+<p><strong id="comparison-count" role="status"></strong><span>Loaded report pages: {% for nav in navigation %}{{ nav.source }} {{ nav.page }} / {{ nav.pages }}{% if not loop.last %} · {% endif %}{% endfor %}. Filters apply to these loaded comparisons.</span></p></section>
 <div id="mosaic-current" aria-live="polite" aria-label="Current comparison summary">
 {% for row in rows %}<section class="visual-current" data-evidence="{{ loop.index0 }}"{% if not loop.first %} hidden{% endif %}>
 <div><strong>#{{ loop.index }} {{ row.target or row.project or 'Candidate observation' }}{% if row.project %} · {{ row.project }}{% endif %}</strong>
-<span>{{ row.source }} · {{ row.geometry }} · {{ row.intent }}{% if row.array %} · {{ row.array }}{% endif %}</span>
-{% if row.source == 'Archive' %}<small>Member {{ row.candidate }}</small>{% endif %}
-<small>Comparison {{ loop.index }}{% for sp in row.spectra|default([]) if sp.spw is defined and sp.spw is not none %} · SPW {{ sp.spw }}{% endfor %}</small></div>
+<span>{{ row.source }} · {{ row.geometry }} · {{ row.intent }}{% for sp in row.spectra|default([]) if sp.spw is defined and sp.spw is not none %} · SPW {{ sp.spw }}{% endfor %}{% if row.array %} · {{ row.array }}{% endif %}</span>
+{% if row.source == 'Archive' %}<small>Member {{ row.candidate }}</small>{% if row.identity and row.identity.ASDM %}<small>ASDM {{ row.identity.ASDM }}</small>{% endif %}{% endif %}
+</div>
 <div class="visual-current-values"><strong>Position</strong>
 {% if row.inside is number and row.total is number %}<span>{{ row.inside }} of {{ row.total }} submitted pointings inside</span>{% else %}<span>Coverage count unavailable</span>{% endif %}
 <small>Coverage of your proposed Mosaic</small></div>
 <div class="visual-current-values"><strong>Frequency</strong>
-{% for sp in row.spectra|default([]) if sp.available %}<span>Requested {{ '%.9g'|format(sp.proposed) }} GHz{% if sp.spw is defined and sp.spw is not none %} · SPW {{ sp.spw }}{% endif %}</span>
+{% for sp in row.spectra|default([]) if sp.available %}<span>Requested {{ '%.9g'|format(sp.proposed) }} GHz</span>
 <small>Candidate {% if sp.kind == 'interval' %}{{ '%.9g'|format(sp.low) }}–{{ '%.9g'|format(sp.high) }} GHz{% else %}{{ '%.9g'|format(sp.candidate) }} GHz (representative){% endif %}</small>
+{% if sp.kind != 'interval' %}<small>{% if sp.coverage %}{{ sp.coverage|length }} recorded SPW intervals shown as shaded bars; dots are representative frequencies.{% else %}Representative markers do not describe frequency coverage.{% endif %}</small>{% endif %}
 {% else %}<span>Frequency evidence unavailable</span>{% endfor %}</div>
 </section>{% endfor %}</div>
+<p id="mosaic-preview-status" class="sr-only" role="status" aria-live="polite"></p>
 <p class="visual-selection-hint">Select a comparison below to update Position, Frequency and Sky preview. Comparisons from the same observation may share a footprint.</p>
 <div class="evidence-gallery-heading"><div><h2>Explore the evidence</h2><p>Swipe horizontally between Charts and Sky preview · Sky imagery loads only when opened</p></div>
 <div class="evidence-pager" role="group" aria-label="Evidence view">
@@ -52,6 +70,7 @@
  role="region" aria-label="Charts and Sky Preview; swipe horizontally or use left and right arrow keys">
 <div id="charts" class="visual-panels evidence-slide" role="group" aria-label="1 of 2: Mosaic position and frequency charts">
 <section class="visual-panel" aria-labelledby="mosaic-position-title"><header><div><h2 id="mosaic-position-title">Position</h2><p>Proposed Mosaic and candidate coverage</p></div><div id="mosaic-position-tools" class="mosaic-header-tools" aria-label="Position zoom controls"></div></header>
+{% if saved %}<div id="mosaic-overview-position" class="mosaic-overview-panel" hidden><div class="mosaic-overview-scroll"><svg viewBox="0 0 460 460" aria-label="All filtered saved candidate footprints versus your submitted Mosaic"></svg></div><p class="chart-caption">All filtered comparisons · Click to highlight · Only selected keeps the same axes · ◆ Your Mosaic</p></div>{% endif %}
 {% if not saved %}{% for row in rows %}<svg data-evidence="{{ loop.index0 }}" viewBox="0 0 360 184" role="img" aria-label="{{ row.candidate }} illustrative pointing layout"{% if not loop.first %} hidden{% endif %}>
 <g class="footprint {{ row.source|lower }}">
 {% if row.shape == 'region' %}<polygon points="65,80 154,29 236,78 205,121 90,139"/>{% else %}
@@ -81,7 +100,10 @@
 </details>{% else %}<p class="chart-caption">{{ chart.reason }}</p>{% endif %}</div>
 <p class="chart-caption" data-evidence="{{ loop.index0 }}"{% if not loop.first %} hidden{% endif %}>
 {{ row.inside if row.inside is number else 'Unknown' }} of {{ row.total if row.total is number else 'unknown' }} pointings inside · {{ row.geometry }} · {{ row.outcome or 'Position outcome unrecorded' }}</p>{% endfor %}{% endif %}</section>
-<section class="visual-panel" aria-labelledby="mosaic-frequency-title"><header><div><h2 id="mosaic-frequency-title">Frequency</h2><p>Full spectral setup · expand to inspect SPW comparisons</p></div><div id="mosaic-frequency-tools" class="mosaic-header-tools" aria-label="Frequency zoom controls"></div></header>{% if not saved %}
+<section class="visual-panel" aria-labelledby="mosaic-frequency-title"><header><div><h2 id="mosaic-frequency-title">Frequency</h2><p>Spectral coverage · expand to inspect SPWs</p></div><div id="mosaic-frequency-tools" class="mosaic-header-tools" aria-label="Frequency zoom controls"></div></header>
+<p class="chart-caption">Queue windows: light bars = nominal range when recorded; dark bars = saved usable/evaluated range; ○ = window midpoint; ● = candidate representative frequency; ◆ = requested SKY frequency. Window rows are coverage references; aggregate/LINE rows are matching comparisons.</p>
+{% if saved %}<div id="mosaic-overview-frequency" class="mosaic-overview-panel" hidden><div class="mosaic-overview-scroll mosaic-frequency-all"><svg viewBox="0 0 600 330" aria-label="All filtered recorded frequency comparisons on one GHz axis"></svg></div><p class="chart-caption">Expand Setup for recorded SPWs · Select any comparison · ◆ Requested frequency · Saved evidence only</p></div>{% endif %}
+{% if not saved %}
 {% for row in rows %}<svg data-evidence="{{ loop.index0 }}" viewBox="0 0 360 184" role="img" aria-label="{{ row.frequency }} GHz illustrative frequency"{% if not loop.first %} hidden{% endif %}>
 <line class="axis" x1="40" x2="320" y1="112" y2="112"/>
 {% for ghz in [100,101,102] %}<text x="{{ 40+140*loop.index0 }}" y="133" text-anchor="middle">{{ ghz }} GHz</text>{% endfor %}
@@ -102,6 +124,7 @@
 <text class="mosaic-matching-heading" x="12" y="{{ overview.matching_label_y }}">Matching SPW comparisons</text>
 {% endif %}
 {% for item in overview.rows %}<text role="button" tabindex="0" data-select-pair="{{ item.number }}" aria-label="View comparison {{ item.number }} parameters" x="12" y="{{ item.y+4 }}">#{{ item.number }} · {% if item.spw is not none %}SPW {{ item.spw }}{% else %}{{ row.intent }}{% endif %}</text>
+{% for interval in item.coverage %}<line class="comparison-coverage-bar {{ row.source|lower }}" x1="{{ interval.low }}" x2="{{ interval.high }}" y1="{{ item.y }}" y2="{{ item.y }}"/>{% endfor %}
 {% if item.kind == 'interval' %}<g {% if overview.setup_rows %}data-frequency-detail {% endif %}class="candidate-spectrum {{ row.source|lower }}"><line x1="{{ item.low }}" x2="{{ item.high }}" y1="{{ item.y }}" y2="{{ item.y }}"/></g>{% else %}<circle {% if overview.setup_rows %}data-frequency-detail {% endif %}class="frequency {{ row.source|lower }}" cx="{{ item.low }}" cy="{{ item.y }}" r="5"/>{% endif %}
 <path {% if overview.setup_rows %}data-frequency-detail {% endif %}class="pointing proposed-marker" transform="translate({{ item.proposed }} {{ item.y }})" d="M0 -7 L7 0 0 7 -7 0Z"/>{% endfor %}{% if overview.setup_rows %}</g>{% endif %}<text data-frequency-axis-label x="350" y="{{ overview.height-12 }}" text-anchor="middle">Frequency (GHz)</text></svg></div>
 <p class="chart-caption plot-legend"><span class="proposal-key">◆ Your requirement</span> · <span class="candidate-key {{ row.source|lower }}">{{ row.source }} candidate</span></p>
@@ -113,11 +136,7 @@
 {% if component.polarization %}<br>Polarization: {{ component.polarization|join(', ') }}{% endif %}</dd>{% endfor %}</dl><p>Click the Setup row to expand recorded components and matching SPW frequency intervals.{% if row.source == 'Archive' %} Archive component numbers are not necessarily SPW identifiers.{% endif %}</p>{% endif %}
 </details></div>{% endif %}
 <p class="chart-caption mosaic-frequency-identity"><strong>{{ row.target or row.candidate }}</strong> · {{ row.source }} · {{ row.intent }}{% if row.array %} · {{ row.array }}{% endif %}</p>
-<div class="spw-parameters"><p class="muted">Select a row label above to view its parameters.</p>
-{% for sp in row.spectra %}<details class="frequency-comparison" data-pair="{{ loop.index }}"><summary>Comparison {{ loop.index }}{% if sp.spw is defined and sp.spw is not none %} · SPW {{ sp.spw }}{% endif %} · {{ sp.result or 'Evidence unavailable' }}</summary>
-{% if sp.available %}
-{% if sp.details_url %}<p><a href="{{ sp.details_url }}">View this LINE pair in the text report</a></p>{% endif %}<dl class="frequency-values"><dt>Your requirement</dt><dd>{{ '%.9g'|format(sp.proposed) }} GHz</dd><dt>Candidate comparison</dt><dd>{% if sp.kind == 'interval' %}{{ '%.9g'|format(sp.low) }}–{{ '%.9g'|format(sp.high) }} GHz{% else %}{{ '%.9g'|format(sp.candidate) }} GHz{% endif %}</dd><dt>Recorded result</dt><dd>{{ sp.result }}</dd></dl>
-{% else %}<p>Frequency evidence unavailable.</p>{% endif %}</details>{% else %}<p>No recorded comparison frequencies.</p>{% endfor %}</div></div>{% endfor %}{% endif %}</section></div>
+</div>{% endfor %}{% endif %}</section></div>
 <section id="sky" class="visual-panel sky-stage evidence-slide" role="group" aria-label="2 of 2: Sky Preview" aria-labelledby="mosaic-sky-title">
 <header><div><h2 id="mosaic-sky-title">Target &amp; observation coverage</h2><p>Saved Mosaic pointings and verified candidate footprints on optical reference imagery</p></div>
 <div class="sky-view-actions"><button type="button" id="mosaic-sky-overview">Fit visible footprints</button>
@@ -148,12 +167,31 @@
 </details></aside></div>
 </section>
 </div>
+{% if saved %}<script id="mosaic-overview-data" type="application/json">[
+{% for row in rows %}
+{% set chart = row.position_chart %}
+{% set f = row.spectral_overview %}
+{"source": {{ row.source|tojson }}, "candidate": {{ row.candidate|tojson }},
+ "identity": {{ (row.identity|default({}))|tojson }}, "target": {{ row.target|tojson }}, "array": {{ row.array|tojson }}, "project": {{ row.project|tojson }}, "intent": {{ row.intent|tojson }},
+ "position": {% if chart.available %}{"outlines": {{ chart.outlines|tojson }}, "points": {{ chart.points|tojson }}, "proposal_beams": {{ chart.proposal_beams|tojson }}, "ticks": {{ chart.ticks|tojson }}, "scale": {{ chart.scale_arcsec|tojson }}}{% else %}null{% endif %},
+ "frequency": {% if f %}{"setup_id": {{ (row.spectral_setup.id if row.spectral_setup else none)|tojson }}, "setup_label": {{ f.setup_label|tojson }}, "setup": {{ f.setup_rows|tojson }}, "matching": {{ f.rows|tojson }}, "ticks": {{ f.ticks|tojson }}}{% else %}null{% endif %}}
+{% if not loop.last %},{% endif %}{% endfor %}
+]</script>{% endif %}
 {% if saved %}<script id="mosaic-sky-data" type="application/json">{{ rows|map(attribute='sky_preview')|list|tojson }}</script>{% endif %}
-<div class="visual-bottom"><section class="visual-panel visual-candidates" aria-labelledby="mosaic-selection-title"><header><h2 id="mosaic-selection-title">Matching comparisons</h2></header>
-<div class="visual-list">{% for row in rows %}<div class="visual-candidate"><button class="visual-select" type="button" data-row="{{ loop.index0 }}" data-source="{{ row.source }}" data-project="{{ row.project or '' }}" data-candidate="{{ row.candidate }}" data-array="{{ row.array }}" aria-pressed="{{ 'true' if loop.first else 'false' }}"><span><strong>#{{ loop.index }} {{ row.target or row.project or "Candidate observation" }}</strong><small>{{ row.source }}{% if row.project %} · Project {{ row.project }}{% endif %} · {{ row.geometry }} · {{ row.intent }}{% if row.array %} · {{ row.array }}{% endif %}</small>{% if row.source == "Archive" %}<small>Member {{ row.candidate }}</small>{% endif %}<small>Comparison {{ loop.index }}{% for sp in row.spectra|default([]) if sp.spw is defined and sp.spw is not none %} · SPW {{ sp.spw }}{% endfor %}</small></span></button></div>{% endfor %}</div></section>
+<details class="visual-help"><summary>Keyboard and touch controls</summary><p>Focus a chart: left/right arrows pan frequency or position; up/down arrows pan position. +/− zoom, Home resets. Enter/Space activates a comparison or Setup row. Escape closes the overlapping-comparison list. On touch screens, use the zoom buttons and comparison list.</p></details>
+<div class="visual-bottom"><section class="visual-panel visual-candidates" aria-labelledby="mosaic-selection-title"><header><h2 id="mosaic-selection-title">Matching comparisons</h2><span id="mosaic-list-count"></span></header>
+<div class="visual-list">{% for row in rows %}<div class="visual-candidate"><button class="visual-select" type="button" data-row="{{ loop.index0 }}" data-source="{{ row.source }}" data-project="{{ row.project or '' }}" data-candidate="{{ row.candidate }}" data-array="{{ row.array }}" aria-pressed="{{ 'true' if loop.first else 'false' }}"><span><strong>#{{ loop.index }} {{ row.target or row.project or "Candidate observation" }}</strong><small>{{ row.source }}{% if row.project %} · Project {{ row.project }}{% endif %} · {{ row.geometry }} · {{ row.intent }}{% if row.array %} · {{ row.array }}{% endif %}</small>{% if row.source == "Archive" %}<small>Member {{ row.candidate }}</small>{% endif %}<small>{% for sp in row.spectra|default([]) if sp.spw is defined and sp.spw is not none %}{% if not loop.first %} · {% endif %}SPW {{ sp.spw }}{% endfor %}</small></span></button>{% if saved %}<a href="{{ row.details_url }}" aria-label="Text comparison {{ loop.index }}">Details ↗</a>{% endif %}</div>{% endfor %}</div></section>
 <section class="visual-panel visual-detail" aria-labelledby="mosaic-detail-title"><header><h2 id="mosaic-detail-title">Selected comparison</h2></header>
-{% for row in rows %}<div class="selection" data-evidence="{{ loop.index0 }}"{% if not loop.first %} hidden{% endif %}><h3>{{ row.target or row.project or "Candidate observation" }}</h3><p>{{ row.source }} · {{ row.geometry }}{% if row.array %} · {{ row.array }}{% endif %} · {{ row.intent }}</p>
-{% if saved %}<p>Target: {{ row.target or 'Unrecorded' }} · {{ 'Meets these conditions' if row.status == 'CRITERIA_MET' else 'Recorded comparison' }}</p>{% if row.probes %}<details><summary>Pointing classifications ({{ row.probes|length }})</summary><div class="visual-list"><ul>{% for point in row.probes %}<li>{{ point.proposed_point_id or point.id }} · {{ point.status or 'UNKNOWN' }}</li>{% endfor %}</ul></div></details>{% endif %}
+{% for row in rows %}<div class="selection" data-evidence="{{ loop.index0 }}"{% if not loop.first %} hidden{% endif %}><h3>#{{ loop.index }} · {{ row.target or row.project or "Candidate observation" }}{% if row.project %} · {{ row.project }}{% endif %}</h3><p>{{ row.source }} · {{ row.geometry }}{% if row.array %} · {{ row.array }}{% endif %} · {{ row.intent }}</p>
+{% if saved %}<p class="mosaic-match-status">{{ 'Meets the recorded conditions' if row.status == 'CRITERIA_MET' else 'Recorded comparison' }}</p>{% if row.probes %}<details><summary>Pointing classifications ({{ row.probes|length }})</summary><div class="visual-list"><ul>{% for point in row.probes %}<li>{{ point.proposed_point_id or point.id }} · {{ point.status or 'UNKNOWN' }}</li>{% endfor %}</ul></div></details>{% endif %}
+
+{% if row.identity %}<dl class="frequency-values">{% for key in ['Member OUS', 'ASDM', 'Observation ID', 'SPW', 'Target'] if row.identity.get(key) is not none %}<dt>{{ key }}</dt><dd>{{ row.identity[key] }}</dd>{% endfor %}</dl>{% endif %}
+<div class="spw-parameters">
+{% for sp in row.spectra %}<details open class="frequency-comparison" data-pair="{{ loop.index }}"><summary>{{ "Frequency comparison" if row.spectra|length == 1 else "LINE pair " ~ loop.index }}{% if sp.spw is defined and sp.spw is not none %} · SPW {{ sp.spw }}{% endif %} · {{ sp.result or 'Evidence unavailable' }}</summary>
+{% if sp.available %}
+{% if sp.details_url %}<p><a href="{{ sp.details_url }}">View this LINE pair in the text report</a></p>{% endif %}<dl class="frequency-values"><dt>Your requirement</dt><dd>{{ '%.9g'|format(sp.proposed) }} GHz</dd><dt>Candidate comparison</dt><dd>{% if sp.kind == 'interval' %}{{ '%.9g'|format(sp.low) }}–{{ '%.9g'|format(sp.high) }} GHz{% else %}{{ '%.9g'|format(sp.candidate) }} GHz{% endif %}</dd><dt>Recorded result</dt><dd>{{ sp.result }}</dd></dl>
+{% for interval in sp.coverage|default([]) %}<p class="comparison-coverage">SPW {{ sp.spw if sp.spw is defined and sp.spw is not none else 'not recorded' }} · Coverage {{ '%.9g'|format(interval.low) }}–{{ '%.9g'|format(interval.high) }} GHz · Interval width {{ '%.9g'|format(interval.bandwidth_ghz) }} GHz · Spectral resolution {% if interval.resolution %}{{ interval.resolution.value }} {{ interval.resolution.unit }}{% else %}not recorded{% endif %}</p>{% endfor %}
+{% else %}<p>Frequency evidence unavailable.</p>{% endif %}</details>{% else %}<p>No recorded comparison frequencies.</p>{% endfor %}</div>
 
 {% if row.beams %}<p>{{ row.beams|length }} saved candidate beam centres.</p>{% endif %}
 <details><summary>Recorded comparison conditions</summary>{{ recorded_comparison(row.criteria, 'Common conditions', row.footprint_evidence if row.source == 'Archive' else row.footprint_evidence.variant, row.source) }}

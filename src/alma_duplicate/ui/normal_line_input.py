@@ -40,7 +40,16 @@ def convert(document, values, rows, bindings):
         bindings['request.continuum_requirement.physical_spw_ids'] = 'aggregate_windows'
     complete = request.pop('setup_complete')
     requirements, evidence = [], []
-    for i, (row, window) in enumerate(zip(rows, windows)):
+    # Purpose changes retain editor drafts, including the blank row created on
+    # first selecting LINE. Hidden drafts are not submitted science inputs.
+    # Keep values/rows intact so reselecting LINE restores and validates them.
+    # A retained physical SPW may explicitly depend on a LINE record for its
+    # frequency. Preserve that dependency (including validation) for continuum.
+    linked = {values.get(row + '_link') for row in values.get('spw_rows', [])}
+    active_windows = ((row, window) for row, window in zip(rows, windows)
+                      if 'LINE' in request['intents'] or window['window_id'] in linked
+                      or window.get('bandwidth') is not None)
+    for i, (row, window) in enumerate(active_windows):
         path = f'request.line_requirements[{i}]'
         item = dict(requirement_id=window['window_id'], window_center=window['center'],
                     correlator_mode=window['correlator_mode'])

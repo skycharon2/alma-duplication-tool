@@ -95,6 +95,8 @@ def contributing_windows(values):
 
 def build_document(values, rows):
     """Construct existing request schema without unit conversion or defaults for science."""
+    from alma_duplicate.ui.normal_line_input import uses_separated_input, convert
+
     bindings = {}
 
     def raw(name, path):
@@ -167,7 +169,15 @@ def build_document(values, rows):
             "rms": aggregate,
             "window_ids": contributing_windows(values),
         })
-    for i, row in enumerate(rows):
+    active_rows = rows
+    if not uses_separated_input(values) and 'LINE' not in request['intents']:
+        # Legacy windows also carry physical continuum evidence. Retain those
+        # explicitly declared by width, inventory completeness or contribution;
+        # an unrelated hidden LINE draft must not block a continuum request.
+        active_rows = [row for row in rows if request['setup_complete']
+                       or values.get(row + '_bandwidth', '').strip()
+                       or values.get(row + '_id') in contributing_windows(values)]
+    for i, row in enumerate(active_rows):
         path = f"request.spectral_windows[{i}]"
         bindings[path] = row
         window_id = raw(row + "_id", path + ".window_id")
@@ -181,7 +191,7 @@ def build_document(values, rows):
         request["spectral_windows"].append(window)
         rms = values.get(row + "_rms", "")
         resolution = values.get(row + "_resolution", "")
-        if rms.strip() or resolution.strip():
+        if 'LINE' in request['intents'] and (rms.strip() or resolution.strip()):
             sp = f"request.sensitivities[{len(request['sensitivities'])}]"
             bindings[sp] = row
             request["sensitivities"].append({
@@ -207,7 +217,6 @@ def build_document(values, rows):
         search = {"sources": values.get("sources", []),
                   "predicates": [], "radius_mode": "AUTO"}
     document = {"request": request, "search_options": search}
-    from alma_duplicate.ui.normal_line_input import uses_separated_input, convert
     if uses_separated_input(values):
         # Even for an unsupported source combination, retain the real V2 wire
         # structure. Execution eligibility is enforced by validation below.

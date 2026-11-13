@@ -12,7 +12,11 @@
       !filter.value || row.dataset[filter.dataset.filter] === filter.value));
     if (!filtered.some(row => row.dataset.row === selected)) selected = filtered[0]?.dataset.row;
     const visible = filtered.filter(row => !isolated || row.dataset.row === selected);
-    if (isolate) {isolate.disabled = !visible.length; isolate.setAttribute("aria-pressed", String(isolated));}
+    if (isolate) {
+      isolate.disabled = !visible.length;
+      isolate.setAttribute("aria-pressed", String(isolated));
+      isolate.textContent = isolated ? "Show all comparisons" : "Only selected";
+    }
     if (focus) focus.disabled = !visible.length;
     for (const row of rows) {
       row.hidden = !visible.includes(row);
@@ -28,17 +32,22 @@
       controls.hidden = controls.dataset.evidence !== selected;
     }
     root.querySelector("#comparison-count").textContent = visible.length
-      ? `${visible.length} of ${rows.length} comparisons`
+      ? `Showing ${visible.length} of ${rows.length} loaded comparisons`
       : !rows.length ? "No matching comparisons on this report page."
       : "No comparisons match these filters. Clear filters to see all comparisons.";
+    const listCount=root.querySelector("#mosaic-list-count");
+    if(listCount)listCount.textContent=`${visible.length} shown`;
+    root.mosaicOverviewRender?.({visible:visible.map(row => row.dataset.row), selected, isolated});
   }
 
   isolate?.addEventListener("click", () => {isolated = !isolated; render();});
   focus?.addEventListener("click", () => {
+    // As in Single Pointing, focusing must not change isolation mode.
     const sky = root.querySelector('.evidence-pager [aria-controls="sky"]');
     if (sky?.getAttribute("aria-pressed") === "true") root.querySelector('#mosaic-sky-selected')?.click();
     else {
-      for (const tools of root.querySelectorAll('[data-plot-controls]')) {
+      if (root.mosaicOverviewFocus) root.mosaicOverviewFocus();
+      else for (const tools of root.querySelectorAll('[data-plot-controls]')) {
         if (tools.dataset.evidence === selected) tools.querySelector('[aria-label="Reset chart zoom"]')?.click();
       }
     }
@@ -122,7 +131,8 @@
   for (const label of root.querySelectorAll('[data-select-pair]')) {
     function selectPair() {
       const panel=label.closest('[data-evidence]');
-      for(const detail of panel.querySelectorAll('[data-pair]')) detail.open=detail.dataset.pair===label.dataset.selectPair;
+      const details=root.querySelector(`.visual-detail [data-evidence="${panel.dataset.evidence}"]`) || panel;
+      for(const detail of details.querySelectorAll('[data-pair]')) detail.open=detail.dataset.pair===label.dataset.selectPair;
       for(const item of panel.querySelectorAll('[data-select-pair]')) item.setAttribute('aria-pressed',String(item===label));
     }
     label.addEventListener('click',selectPair);
@@ -165,6 +175,8 @@
   }
   // Fixed plot bounds: transform data only and recompute tick labels.
   for (const [index, svg] of [...root.querySelectorAll('#charts svg')].entries()) {
+    // V4: unified saved Mosaic charts own their single pan/zoom toolbar.
+    if (root.querySelector('#mosaic-overview-data')) continue;
     const spatial = svg.viewBox.baseVal.width === 490;
     if (![490, 600].includes(svg.viewBox.baseVal.width)) continue;
     const NS = 'http://www.w3.org/2000/svg';
