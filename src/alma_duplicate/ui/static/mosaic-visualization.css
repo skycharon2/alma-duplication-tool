@@ -176,3 +176,127 @@
 .mosaic-explorer .mosaic-sky-legend .archive { color: #176fba; }
 .mosaic-explorer .mosaic-sky-legend .queue { color: #ad7000; }
 .mosaic-explorer #mosaic-evidence-gallery:focus-visible { outline: 2px solid #007cb0; outline-offset: -2px; }
+
+/* Multiple saved comparisons share one sky-offset / GHz axis, as in Single Pointing. */
+.mosaic-explorer .mosaic-overview-panel {padding: .35rem .7rem .25rem;}
+.mosaic-explorer .mosaic-overview-scroll {border:1px solid #dbe6ee; background:#fff;
+  border-radius: 9px; overflow: auto; max-height: 540px; overscroll-behavior: contain;}
+.mosaic-explorer .mosaic-overview-scroll svg {display:block; width:100%; height:auto; min-width:660px;}
+.mosaic-explorer .mosaic-frequency-all svg {min-width:760px;}
+.mosaic-explorer .mosaic-overview-panel .chart-caption {margin: .5rem .25rem; font-size:.76rem;}
+.mosaic-explorer .mosaic-overview-panel svg [role="button"]:focus-visible {outline:2px solid #a62c83;}
+
+/* V2: shared overview has the same native footprint as the saved-detail charts.
+   The scroll container expands only for many frequency rows. */
+.mosaic-explorer .mosaic-overview-panel {padding:.2rem .9rem .45rem;}
+.mosaic-explorer .mosaic-overview-scroll {
+  background:transparent; border:0; border-radius:0;
+  overflow-x:auto; overflow-y:hidden; max-height:none;
+}
+.mosaic-explorer .mosaic-overview-scroll svg {
+  width:100%; min-width:0; height:auto; display:block;
+}
+.mosaic-explorer .mosaic-frequency-all {
+  max-height:415px; overflow-x:auto; overflow-y:auto;
+  overscroll-behavior:contain;
+}
+.mosaic-explorer .mosaic-frequency-all svg {min-width:530px;}
+.mosaic-explorer .mosaic-overview-hit {cursor:pointer;}
+.mosaic-explorer .mosaic-overview-hit:focus-visible {outline:2px solid #a62c83;}
+.mosaic-explorer .mosaic-overview-chooser {
+  display:flex; gap:.45rem; flex-wrap:wrap; align-items:center;
+  border:1px solid #b8d5e8; padding:.7rem; margin:.3rem .15rem;
+  background:#eef7fc; border-radius:8px; font-size:.8rem;
+}
+.mosaic-explorer .mosaic-overview-chooser[hidden],
+.mosaic-explorer .mosaic-overview-tools[hidden] {display:none !important;}
+.mosaic-explorer .mosaic-overview-chooser strong {flex-basis:100%;}
+.mosaic-explorer .mosaic-overview-chooser button {
+  border:1px solid #9cc3dd; border-radius:7px; background:white;
+  color:#21435e; padding:.38rem .55rem; font-size:.78rem; cursor:pointer;
+}
+.mosaic-explorer .mosaic-overview-chooser button[aria-pressed="true"] {
+  border-color:#126caf; background:#e1f1ff; font-weight:600;
+}
+.mosaic-explorer .mosaic-header-tools .mosaic-overview-tools {padding:0;gap:3px;}
+@media (max-width:650px) {
+  .mosaic-explorer .mosaic-overview-panel {padding:.2rem .4rem;}
+  .mosaic-explorer .mosaic-overview-scroll svg {min-width:420px;}
+  .mosaic-explorer .mosaic-frequency-all svg {min-width:530px;}
+}
+
+/* V3: Single Pointing chart grammar is the visual authority.
+   One plot engine in both All and Only selected modes. */
+.mosaic-explorer .visual-panels {align-items:stretch;}
+.mosaic-explorer .mosaic-overview-panel {padding:0;}
+.mosaic-explorer .mosaic-overview-scroll {background:transparent;border:0;border-radius:0;overflow-x:auto;overscroll-behavior:contain;}
+.mosaic-explorer #mosaic-overview-position .mosaic-overview-scroll svg {
+  display:block;width:100%;max-width:460px;height:auto;min-width:0;margin:0 auto;
+}
+.mosaic-explorer .mosaic-frequency-all {max-height:520px;overflow-x:auto;overflow-y:auto;min-height:330px;}
+.mosaic-explorer #mosaic-overview-frequency .mosaic-overview-scroll svg {
+  display:block;width:100%;min-width:520px;height:auto;max-width:none;
+}
+.mosaic-explorer .mosaic-overview-panel .chart-caption {margin:.6rem 1rem .75rem;line-height:1.45;}
+/* The original selected comparison still owns its full saved SPW parameters.
+   Hide ONLY its redundant chart, never its scientific evidence. */
+.mosaic-explorer [data-overview-detail] .mosaic-frequency-scroll,
+.mosaic-explorer [data-overview-detail] .plot-legend {display:none!important;}
+.mosaic-explorer [data-overview-detail] > .mosaic-frequency-identity {margin:.65rem 1rem .4rem;}
+.mosaic-explorer .mosaic-overview-hit:focus-visible {outline:2px solid #2474b5;}
+@media (max-width: 650px) {
+  .mosaic-explorer #mosaic-overview-position .mosaic-overview-scroll svg {min-width:0;}
+  .mosaic-explorer #mosaic-overview-frequency .mosaic-overview-scroll svg {min-width:520px;}
+}
+
+/* V4: One set of overview chart tools; legacy per-comparison controls are
+   suppressed in the unified saved-report explorer. */
+.mosaic-explorer [data-plot-controls],
+.mosaic-explorer .mosaic-plot-tools:not(.mosaic-overview-tools) { display:none !important; }
+.mosaic-explorer #mosaic-overview-frequency [data-setup-toggle] {cursor:pointer;}
+.mosaic-explorer #mosaic-overview-frequency [data-setup-toggle]:hover > rect {fill:#dceef9;}
+.mosaic-explorer #mosaic-overview-frequency [data-setup-toggle]:focus-visible {outline:2px solid #2774b5;}
+
+/* The selected identity retains its chart color in the summary and list. */
+.mosaic-explorer .visual-current > div:first-child > strong,
+.mosaic-explorer .visual-select strong,
+.mosaic-explorer .visual-detail .selection > h3 {
+  border-left: 4px solid var(--comparison-color, transparent);
+  padding-left: .6rem;
+}
+.mosaic-explorer .comparison-coverage-bar {
+  stroke: var(--comparison-color, #2474b5); stroke-width: 10; stroke-opacity: .25;
+}
+.mosaic-explorer .comparison-coverage {overflow-wrap: anywhere;}
+.mosaic-explorer .visual-bottom {align-items: start;}
+
+/* Overlap inspection follows the Single Pointing preview/select interaction. */
+.mosaic-overview-chooser {
+  position:fixed; z-index:1000; box-sizing:border-box;
+  display:flex; flex-direction:column; width:min(420px,calc(100vw - 16px));
+  max-height:min(480px,calc(100dvh - 16px)); overflow:hidden;
+  background:#f5faff; color:#27475d; border:1px solid #b8d5e8;
+  border-radius:16px; box-shadow:0 8px 30px #173b552b;
+}
+.mosaic-overview-chooser[hidden] {display:none!important;}
+.mosaic-overview-chooser > strong {padding:1rem 1rem .4rem;}
+.mosaic-overview-chooser > p {margin:.2rem 1rem .8rem;font-size:.82rem;}
+.mosaic-overlap-list {overflow:auto;min-height:0;}
+.mosaic-overlap-list button {display:block;width:100%;border:0;border-top:1px solid #d4e3ed;
+  text-align:left;padding:.8rem 1rem;background:transparent;color:inherit;cursor:pointer;}
+.mosaic-overlap-list strong,.mosaic-overlap-list small {display:block;overflow-wrap:anywhere;}
+.mosaic-overlap-list small {margin-top:.35rem;font-size:.75rem;color:#526b7e;}
+.mosaic-overlap-list button:hover,.mosaic-overlap-list button[aria-pressed="true"] {background:#dceef9;}
+.mosaic-overlap-list button:focus-visible {outline:2px solid #007cb0;outline-offset:-3px;}
+.mosaic-overlap-close {align-self:flex-end;margin:.5rem 1rem .7rem;}
+.mosaic-explorer .visual-heading {margin-bottom:1rem;}
+
+.mosaic-explorer .mosaic-page-scope {font-size:.78rem;color:#526b7e;margin-top:.25rem;}
+.mosaic-explorer .visual-detail .frequency-values {margin:.75rem 0;gap:.35rem .8rem;}
+.mosaic-explorer .visual-detail .spw-parameters {margin:1rem 0;padding:0;border-top:0;font-size:inherit;}
+.mosaic-explorer .visual-detail .frequency-comparison {padding:.75rem 0;margin:0;}
+.mosaic-explorer .visual-detail details {margin:.65rem 0;}
+.mosaic-explorer .visual-detail .mosaic-match-status {color:#526b7e;font-size:.8rem;}
+.mosaic-explorer #mosaic-list-count {font-size:.85rem;color:#526b7e;}
+.mosaic-overlap-close {border:1px solid #a9c5d8;border-radius:20px;padding:.35rem .8rem;
+  background:white;color:#235778;font:inherit;font-size:.8rem;cursor:pointer;}

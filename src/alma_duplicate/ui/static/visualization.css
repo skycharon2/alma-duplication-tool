@@ -3,7 +3,7 @@
 .visual-heading h1 { margin:0 0 .35rem; font-size:1.7rem; overflow-wrap:anywhere; }
 .visual-heading p { margin:.25rem 0; }
 .visual-eyebrow { font-size:.72rem; letter-spacing:.08em; color:#527088; font-weight:600; }
-.visual-scope { display:flex; flex-wrap:wrap; justify-content:space-between; gap:.75rem; padding:.8rem 0; font-size:.85rem; }
+.visual-scope { display:flex; flex-wrap:wrap; flex-direction:column; align-items:flex-start; gap:.75rem; padding:.8rem 0; font-size:.85rem; }
 .visual-legend { display:flex; gap:1rem; flex-wrap:wrap; }
 .legend-proposed { color:#983b64; }.legend-archive { color:#17689e; }.legend-queue { color:#a45b15; }
 .visual-panels { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:1rem; }

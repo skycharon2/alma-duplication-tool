@@ -272,6 +272,7 @@ def test_saved_mosaic_explore_keeps_source_pages_and_intents_separate(browser):
         assert not page.select('.spw-group')
         for panel in page.select('#charts > section:nth-of-type(2) > .selection'):
             assert len(panel.select('svg')) <= 1
-            assert len(panel.select('[data-select-pair]')) <= len(panel.select('[data-pair]'))
+            detail = page.select_one(f'.visual-detail [data-evidence="{panel["data-evidence"]}"]')
+            assert len(panel.select('[data-select-pair]')) <= len(detail.select('[data-pair]'))
         assert client.get(url + '/mosaic-visualization?page=999').status_code == 404
     assert len(calls) == searches

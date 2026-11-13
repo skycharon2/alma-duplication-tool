@@ -31,7 +31,7 @@ test('Mosaic list selection switches summary, charts and details together',()=>{
   assert.equal(h.rows[0].attrs['aria-pressed'],'false');
   h.panels.forEach(p=>assert.equal(p.hidden,p.dataset.evidence!=='1'));
   h.isolate.click();assert.equal(h.rows[0].hidden,true);
-  assert.equal(h.count.textContent,'1 of 2 comparisons');
+  assert.equal(h.count.textContent,'Showing 1 of 2 loaded comparisons');
   h.clear.click();assert.equal(h.rows[0].hidden,false);
   assert.equal(h.isolate.attrs['aria-pressed'],'false');
 });

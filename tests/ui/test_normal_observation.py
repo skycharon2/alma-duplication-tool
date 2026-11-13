@@ -178,3 +178,88 @@ def test_target_redshift_survives_purpose_changes(make_client, geometry):
     values.update(continuum_redshift="", intents=["CONTINUUM"])
     page = BeautifulSoup(client.post(url, data=values).text, "html.parser")
     assert page.select_one('[name="continuum_redshift"]')["value"] == ""
+
+
+@pytest.mark.parametrize('draft', ['', 'not-a-frequency', '450.2'])
+def test_mosaic_continuum_ignores_deselected_line_draft(browser, draft):
+    from bs4 import BeautifulSoup
+    client, calls = browser
+    values = data(('CONTINUUM',)) | dict(normal_form_version='2',
+        mosaic_upload_token=upload(client))
+    # Reproduce the purpose toggle that creates the otherwise empty LINE row.
+    page = BeautifulSoup(client.post('/proposed/mosaic', data=values | dict(
+        action='purpose', intents=['LINE'])).text, 'html.parser')
+    row = page.select_one('input[name="rows"]')['value']
+    values.update(rows=[row], **{row+'_id': row, row+'_center': draft,
+                                 row+'_resolution': '', row+'_rms': ''})
+    retained = BeautifulSoup(client.post('/proposed/mosaic', data=values | dict(
+        action='purpose')).text, 'html.parser')
+    assert retained.select_one('#line-requirements').has_attr('hidden')
+    assert retained.select_one(f'[name="{row}_center"]')['value'] == draft
+    assert not calls
+    exported = client.post('/proposed/mosaic', data=values | dict(action='download'))
+    assert exported.is_json, exported.text
+    assert exported.json['request']['line_requirements'] == []
+    result = client.post('/proposed/mosaic', data=values | dict(action='assess'))
+    assert result.status_code == 303, result.text
+    assert len(calls) == 1
+    saved = client.get(result.headers['Location'] + '/download/request').json
+    assert saved['request']['intents'] == ['CONTINUUM']
+    assert saved['request']['line_requirements'] == []
+    # Switching LINE back on must validate the retained incomplete draft.
+    invalid = client.post('/proposed/mosaic', data=values | dict(
+        action='assess', intents=['LINE', 'CONTINUUM']))
+    assert invalid.status_code == 200
+    assert len(calls) == 1
+    assert 'Expected a decimal number' in invalid.text
+
+
+@pytest.mark.parametrize('geometry', ['MOSAIC', 'SINGLE_POINTING'])
+def test_v2_inactive_line_draft_does_not_mutate_editor_or_drop_physical_evidence(geometry):
+    from copy import deepcopy
+    from alma_duplicate.ui.proposed import build_document
+    values = data(('LINE', 'CONTINUUM')) | dict(geometry=geometry,
+        intents=['CONTINUUM'], spw_rows=['w111111111111'],
+        w111111111111_id='physical-1', w111111111111_bandwidth='2000',
+        w111111111111_bandwidth_kind='USABLE', w111111111111_link='')
+    rows = [ROW]
+    before = deepcopy(values)
+    document, _ = build_document(values, rows)
+    assert document['request']['line_requirements'] == []
+    assert document['request']['physical_spw_evidence'] == [dict(
+        spw_id='physical-1', bandwidth=dict(value='2000', unit='MHz'), bandwidth_kind='USABLE')]
+    assert values == before and rows == [ROW]
+    values['intents'] = ['LINE', 'CONTINUUM']
+    restored, _ = build_document(values, rows)
+    assert restored['request']['line_requirements'][0]['window_center']['value'] == '450.2'
+
+
+def test_continuum_preserves_explicit_physical_spw_dependency_on_line():
+    from alma_duplicate.ui.proposed import build_document
+    values = data(('LINE', 'CONTINUUM')) | dict(intents=['CONTINUUM'])
+    document, _ = build_document(values, [ROW])
+    assert document['request']['line_requirements'][0]['requirement_id'] == 'line-0'
+    assert document['request']['physical_spw_evidence'][0]['linked_line_requirement_id'] == 'line-0'
+
+
+@pytest.mark.parametrize('version', ['legacy', '2'])
+def test_single_pointing_executes_continuum_with_inactive_line_draft(make_client, version):
+    client = make_client(OFFLINE_ARCHIVE_REPLAY=str(EXAMPLE/'archive/manifest.json'))
+    position = payload()['request']['position']
+    values = data(('CONTINUUM',)) | dict(geometry='SINGLE_POINTING',
+        ra=str(position['ra']), dec=str(position['dec']),
+        ra_format=position['ra_format'], dec_format=position['dec_format'],
+        radius_mode='EXPLICIT', radius='30', result_limit='1', angular='0.5',
+        rows=[ROW], spw_rows=[])
+    values.update({ROW+'_center': 'unfinished', ROW+'_resolution': '', ROW+'_rms': ''})
+    values.pop('normal_line_records', None)
+    if version == '2':
+        values['normal_form_version'] = '2'
+    response = client.post('/proposed', data=values | dict(action='assess'))
+    assert response.status_code == 303, response.text
+    url = response.headers['Location']
+    request = client.get(url+'/download/request').json['request']
+    assert request['intents'] == ['CONTINUUM']
+    assert request.get('line_requirements', request.get('spectral_windows')) == []
+    report = client.get(url+'/download/report').json
+    assert {b['branch'] for c in report['context_evaluations'] for b in c['branches']} == {'CONTINUUM'}

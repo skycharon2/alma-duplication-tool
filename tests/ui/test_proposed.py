@@ -477,3 +477,45 @@ def test_purpose_rules_are_separate_non_submitting_popovers(client):
     assert 'continuum-choice.js' in html
     assert 'data-continuum-confirmation' in html  # Accessible without JavaScript.
     assert 'name="continuum_setup_declaration"' in html
+
+
+@pytest.mark.parametrize('draft', ['', 'invalid', '230.538'])
+def test_single_pointing_continuum_after_cancelling_line(client, draft):
+    from bs4 import BeautifulSoup
+    values = dict(setup_id='setup-1', geometry='SINGLE_POINTING',
+                  ra='201.365', dec='-43.019', radius='30', sources='ARCHIVE',
+                  angular='0.3', representative='230', aggregate='0.1',
+                  continuum_setup_declaration='on', setup_complete='')
+    page = BeautifulSoup(client.post('/proposed', data=values | dict(
+        action='purpose', intents='LINE')).text, 'html.parser')
+    row = page.select_one('[name="rows"]')['value']
+    values.update(rows=row, **{row+'_id': 'line-draft', row+'_center': draft,
+                               row+'_rms': 'unfinished', row+'_resolution': ''})
+    retained = BeautifulSoup(client.post('/proposed', data=values | dict(
+        action='purpose', intents='CONTINUUM')).text, 'html.parser')
+    assert retained.select_one('#line-requirements').has_attr('hidden')
+    assert retained.select_one(f'[name="{row}_center"]')['value'] == draft
+    exported = client.post('/proposed', data=values | dict(action='download', intents='CONTINUUM'))
+    assert exported.is_json, exported.text
+    document = exported.json
+    assert document['request']['spectral_windows'] == []
+    assert [s['purpose'] for s in document['request']['sensitivities']] == ['CONTINUUM']
+    result = validate_proposed_observation(document['request'], document['search_options'])
+    assert result.is_valid and result.can_search
+    # Re-enabling LINE restores validation of its unfinished inputs.
+    invalid = client.post('/proposed', data=values | dict(action='download', intents='LINE'))
+    assert not invalid.is_json
+    assert 'Input valid: <strong>No</strong>' in invalid.text
+
+
+@pytest.mark.parametrize('evidence', [
+    {'setup_complete': 'on'},
+    {ROW+'_bandwidth': '1875', ROW+'_bandwidth_kind': 'USABLE'},
+    {'aggregate_windows': ['line-0']},
+])
+def test_legacy_continuum_keeps_explicit_physical_windows_but_not_line_rms(evidence):
+    values = fields() | dict(intents=['CONTINUUM'], sources=['ARCHIVE'],
+        setup_complete='', aggregate='0.1', representative='230') | evidence
+    document, _ = build_document(values, [ROW])
+    assert document['request']['spectral_windows'][0]['window_id'] == 'line-0'
+    assert all(s['purpose'] == 'CONTINUUM' for s in document['request']['sensitivities'])

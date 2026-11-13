@@ -63,6 +63,8 @@ def queue_spectral_setup(candidate):
     components = [dict(label=f"SPW {spw.get('number', 'unknown')}",
                        low=spw.get('nominal_low_ghz'),
                        high=spw.get('nominal_high_ghz'),
+                       usable_low=spw.get('usable_low_ghz'),
+                       usable_high=spw.get('usable_high_ghz'),
                        status='NOMINAL_SKY_INTERVAL')
                   for spw in saved.get('spws', []) if isinstance(spw, dict)]
     if not components:
@@ -70,7 +72,7 @@ def queue_spectral_setup(candidate):
     return dict(id=str(candidate['candidate_id'])+':'+saved['snapshot_sha256'],
                 source='Queue', label='Queue CSV nominal SKY SPW intervals',
                 components=components,
-                note='Nominal CSV regular-SPW intervals; not usable-width proof or OT parity.')
+                note='Saved CSV regular-SPW nominal and usable intervals; reference windows, not separate matching comparisons.')
 
 
 def spectral_overview(spectra, setup=None):
@@ -95,6 +97,9 @@ def spectral_overview(spectra, setup=None):
     for sp in available:
         values.append(sp['proposed'])
         values.extend([sp['low'], sp['high']] if sp['kind'] == 'interval' else [sp['candidate']])
+        for interval in sp.get('coverage', []):
+            if _positive_interval(interval.get('low'), interval.get('high')):
+                values.extend((interval['low'], interval['high']))
     for comp in setup_rows:
         if _positive_interval(comp.get('low'), comp.get('high')):
             values.extend((comp['low'], comp['high']))
@@ -115,6 +120,7 @@ def spectral_overview(spectra, setup=None):
                               low=x(comp['low']) if valid else None,
                               high=x(comp['high']) if valid else None,
                               raw_low=comp.get('low'), raw_high=comp.get('high'),
+                              usable_low=comp.get('usable_low'), usable_high=comp.get('usable_high'),
                               resolution=comp.get('resolution'), sensitivities=comp.get('sensitivities', []),
                               polarization=comp.get('polarization', []),
                               y=116+i*34))
@@ -129,6 +135,10 @@ def spectral_overview(spectra, setup=None):
         rows.append(dict(number=i+1, spw=sp.get('spw'), proposed=x(sp['proposed']),
                          low=x(sp['low']) if sp['kind'] == 'interval' else x(sp['candidate']),
                          high=x(sp['high']) if sp['kind'] == 'interval' else x(sp['candidate']),
+                         coverage=[dict(interval, low=x(interval['low']), high=x(interval['high']),
+                                        raw_low=interval['low'], raw_high=interval['high'])
+                                   for interval in sp.get('coverage', [])
+                                   if _positive_interval(interval.get('low'), interval.get('high'))],
                          kind=sp['kind'], y=first_matching_y+len(rows)*38))
     height = max(155, first_matching_y+len(rows)*38+52)
     # SVG is fully rendered server-side for accessible no-JS evidence. On load,

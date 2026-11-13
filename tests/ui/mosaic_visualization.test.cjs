@@ -117,12 +117,12 @@ function setup({empty = false} = {}) {
 
 test("source and candidate filters select only eligible comparisons and restore the list", () => {
   const h = setup();
-  assert.equal(h.count.textContent, "2 of 2 comparisons");
+  assert.equal(h.count.textContent, "Showing 2 of 2 loaded comparisons");
   h.filters[0].value = "Queue";
   h.filters[0].emit("change");
   assert.deepEqual(h.rows.map(row => row.hidden), [true, false]);
   assert.equal(h.rows[1].attrs["aria-pressed"], "true");
-  assert.equal(h.count.textContent, "1 of 2 comparisons");
+  assert.equal(h.count.textContent, "Showing 1 of 2 loaded comparisons");
   assert.ok(h.evidences.filter(node => node.dataset.evidence === "0").every(node => node.hidden));
   h.filters[1].value = "Member-A";
   h.filters[1].emit("change");
@@ -130,7 +130,7 @@ test("source and candidate filters select only eligible comparisons and restore 
   assert.ok(h.evidences.every(node => node.hidden));
   h.clear.emit("click");
   assert.deepEqual(h.rows.map(row => row.hidden), [false, false]);
-  assert.equal(h.count.textContent, "2 of 2 comparisons");
+  assert.equal(h.count.textContent, "Showing 2 of 2 loaded comparisons");
   h.rows[0].emit("click");
   assert.equal(h.rows[0].attrs["aria-pressed"], "true");
   assert.equal(h.rows[1].attrs["aria-pressed"], "false");

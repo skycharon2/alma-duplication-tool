@@ -21,5 +21,14 @@ def continuum_windows(records):
             except (KeyError, TypeError, ValueError, ZeroDivisionError, OverflowError):
                 continue
             if math.isfinite(low) and math.isfinite(high) and 0 < low < high:
-                coverage.append(dict(low=low, high=high, bandwidth_ghz=high-low, spw=window.get('spw_number')))
+                item = dict(low=low, high=high, bandwidth_ghz=high-low, spw=window.get('spw_number'))
+                # Nominal boundaries come only from saved SKY centre and width.
+                try:
+                    centre = float(Fraction(str(window['sky_frequency_ghz'])))
+                    width = float(Fraction(str(window['nominal_bandwidth_mhz']))) / 1000
+                    if all(math.isfinite(v) for v in (centre, width)) and width > 0 and centre-width/2 > 0:
+                        item.update(nominal_low=centre-width/2, nominal_high=centre+width/2)
+                except (KeyError, ValueError, TypeError, ZeroDivisionError, OverflowError):
+                    pass
+                coverage.append(item)
     return coverage
