@@ -314,3 +314,41 @@ def test_mosaic_summary_review_notices_use_report_totals(
         else:
             assert text.startswith(f'{queue_review} Queue candidate')
             assert 'queue' in link and 'view=review' in link
+
+
+@pytest.mark.parametrize('reason', ['REGULAR_SPW_UNION_REQUIRED', 'SPECTRAL_SCAN_NOT_EXPANDED'])
+def test_queue_review_explains_spectral_scan_before_collapsed_details(browser, reason):
+    from bs4 import BeautifulSoup
+    from flask import render_template
+    from alma_duplicate.ui.report_view import queue_scope_help
+
+    client, _ = browser
+    candidate = dict(group=dict(target_name='HBC_687', project_code='2025.1.00299.S'),
+        science=dict(branches=[dict(branch='CONTINUUM', status='INDETERMINATE')],
+                     variants=[dict(diameter_m=7, branches=[], line_pairs=[],
+                                    criteria=[dict(reasons=[reason])])]),
+        position=dict(beam_variants=[]))
+    report = dict(assessment_status='COMPLETED', candidate_counts=dict(matching=0, review=1, not_met=0),
+                  geometry_reports=dict(SINGLE_FIELD=dict(candidates=[candidate])))
+    # Use the same saved reason explanation as Single Pointing.
+    expected = queue_scope_help(dict(reference=dict(source='QUEUE'),
+                                    criteria=[dict(reasons=[reason])]))
+    with client.application.test_request_context('/runs/demo/queue?view=review'):
+        html = render_template('_queue_geometry_results.html', geometry_report=report,
+            report_id='demo', status_labels={'INDETERMINATE': 'Needs review'},
+            criterion_view=lambda r: dict(label='Frequency', proposed=None, candidate=None),
+            criterion_status=lambda r: 'Needs review', criterion_explanation=lambda r: '',
+            calculation_view=lambda r: None)
+    soup = BeautifulSoup(html, 'html.parser')
+    notice = soup.select_one('.unresolved-notice')
+    assert expected[1] in notice.get_text() and expected[2] in notice.get_text()
+    assert notice.find_parent('details') is None
+    assert 'Needs review' in soup.select_one('.report-context > summary').get_text()
+    assert not soup.select('details[open]')
+
+
+def test_queue_review_does_not_call_other_missing_evidence_a_spectral_scan():
+    from alma_duplicate.ui.queue_browser import candidate_scope_help
+
+    assert candidate_scope_help(dict(science=dict(branches=[
+        dict(reasons=['ARRAY_INFERENCE_UNRESOLVED'])]))) is None

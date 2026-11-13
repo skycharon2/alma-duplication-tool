@@ -445,6 +445,16 @@ QUEUE_SCOPE_CODES = {
 }
 
 
+def queue_spectral_scope_help(reasons):
+    if set(reasons) & {'REGULAR_QUEUE_SETUP_REQUIRED', 'REGULAR_SPW_UNION_REQUIRED',
+                       'SPECTRAL_SCAN_NOT_EXPANDED'}:
+        return ('QUEUE_SCAN', 'Spectral scan configuration',
+                'The current Queue duplication workflow requires regular spectral windows. '
+                'Spectral scans are not supported; this comparison remains unresolved, '
+                'rather than establishing an absence of duplication.')
+    return None
+
+
 def queue_scope_help(context, document=None):
     """Explain recorded scope, without changing or recomputing any verdict."""
     if context.get('reference', {}).get('source') != 'QUEUE':
@@ -462,9 +472,9 @@ def queue_scope_help(context, document=None):
     if 'RECTANGULAR_MOSAIC' in geometry:
         return ('QUEUE_RECTANGLE', 'Rectangular mosaics',
                 'The current method does not evaluate rectangular mosaic coverage. These candidates remain unresolved.')
-    if 'REGULAR_QUEUE_SETUP_REQUIRED' in reasons:
-        return ('QUEUE_SCAN', 'Spectral scan configuration',
-                'The current Queue workflow requires regular spectral windows. Spectral scans remain outside that workflow, including its shared position and angular-resolution scope.')
+    scan_help = queue_spectral_scope_help(reasons)
+    if scan_help:
+        return scan_help
     if 'UNSPECIFIED_WITH_OFFSET' in geometry:
         return ('QUEUE_OFFSET', 'Blank Mosaic with coordinate offsets',
                 'This report records unresolved geometry for a blank Mosaic value with offsets. A new assessment can use the documented blank-Mosaic interpretation; existing results are unchanged.')

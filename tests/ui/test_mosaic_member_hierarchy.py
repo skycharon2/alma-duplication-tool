@@ -169,7 +169,7 @@ def test_render_contains_hierarchy_siblings_contexts_and_exact_spws():
     assert 'Target: other-target' in text
     assert 'Context 4' in text
     assert text.count('class="candidate-comparison mosaic-context"') == 5
-    assert 'id="mosaic-context-0-0" open' in text
+    assert 'id="mosaic-context-0-0" open' not in text
     for context_index in (1, 2, 3):
         assert f'id="mosaic-context-0-{context_index}"' in text
         assert f'id="mosaic-context-0-{context_index}" open' not in text
