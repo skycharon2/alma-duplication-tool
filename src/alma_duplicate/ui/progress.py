@@ -37,6 +37,12 @@ class ProgressStore:
             if item is None or item[1]['status'] != 'RUNNING':
                 return
             state = item[1]
+            if event.get('source_id') is not None:
+                branch = event['source_id'] + ':' + event['purpose']
+                branches = state.setdefault('branches', {})
+                state['stages'] = branches.setdefault(branch, {})
+            elif 'batch_total' in event:
+                state['stages'] = {}
             state['stage'] = event['stage']
             state['stages'][event['stage']] = dict(event)
             self._items[token] = self._clock(), state

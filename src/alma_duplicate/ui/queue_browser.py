@@ -1,5 +1,6 @@
 """Browser adapters over the existing Queue scientific evaluators."""
 from dataclasses import replace
+from threading import Lock
 from alma_duplicate.assessment import AssessmentOptions, AssessmentSources
 from alma_duplicate.reporting import json_value
 from alma_duplicate.request_validation import validate_proposed_observation
@@ -10,15 +11,17 @@ def memoized_loader(loader):
     if loader is None:
         return None
     loaded, result, error = False, None, None
+    lock = Lock()
 
     def load():
         nonlocal loaded, result, error
-        if not loaded:
-            try:
-                result = loader()
-            except (OSError, ValueError) as exc:
-                error = exc
-            loaded = True
+        with lock:
+            if not loaded:
+                try:
+                    result = loader()
+                except (OSError, ValueError) as exc:
+                    error = exc
+                loaded = True
         if error is not None:
             raise error
         return result

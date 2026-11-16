@@ -1,0 +1,47 @@
+{% extends "_proposed_shared.html" %}
+{% block title %}Multi-source assessment · ALMA{% endblock %}
+{% block extra_head %}{{ super() }}<link rel="stylesheet" href="{{ url_for('static', filename='batch.css') }}">{% endblock %}
+{% block form_heading %}<div class="page-heading proposal-heading"><div><h1>Multi-source assessment</h1><p>Independent Single Pointing targets with shared scientific requirements.</p></div></div>{% endblock %}
+{% block form_metadata %}
+<input type="hidden" name="batch_csrf" value="{{ batch_csrf }}">
+<input type="hidden" name="submission_token" value="{{ submission_token }}">
+{% if values.get('source_upload_token') %}<input type="hidden" name="source_upload_token" value="{{ values.source_upload_token }}">{% endif %}
+{% endblock %}
+{% block target_input %}
+<section id="observation-type" tabindex="-1"><h2>Source list</h2>
+<input type="hidden" name="target_kind" value="FIXED"><input type="hidden" name="geometry" value="SINGLE_POINTING">
+<p>Upload up to five fixed ICRS targets. Each target is checked independently using its own coordinates and redshift.</p>
+<div class="form-pair batch-upload"><div><label for="source_list">CSV or TXT source list</label><input type="file" id="source_list" name="source_list" accept=".csv,.txt,text/csv,text/plain" aria-describedby="source-format-help"></div>
+<div><label for="source_format">File format</label><select id="source_format" name="source_format"><option value="csv" {% if values.get('source_format', 'csv') == 'csv' %}selected{% endif %}>CSV (comma separated)</option><option value="txt" {% if values.get('source_format') == 'txt' %}selected{% endif %}>TXT (whitespace separated)</option></select></div></div>
+<p id="source-format-help" class="field-note">Required header: name, ra, dec; optional redshift. Decimal coordinates are degrees; colon-separated RA is hours. UTF-8, up to 100 KB. The selected format applies to the next file uploaded.</p>
+<details class="field-help"><summary>Source-list example and coordinate conventions</summary><pre>name,ra,dec,redshift
+B0218+357,02:21:05.47,+35:56:13.7,0.685
+PKS1830-211,18:33:39.937,-21:03:39.80,0.886</pre><p>TXT uses the same header and fields separated by spaces or tabs. Quote names containing spaces. With a redshift column, use "" for a missing TXT value. Blank lines and full-line # comments are allowed. Missing redshift stays unknown; it is never assumed to be zero.</p></details>
+<div class="batch-upload-actions"><button class="button" type="submit" name="action" value="preview-sources">Preview source list</button>{% if preview %}<button class="button" type="submit" name="action" value="remove-sources">Remove source list</button>{% endif %}</div>
+<button type="submit" name="action" value="scope" data-update-scope hidden>Update source selection</button>
+{% if preview %}
+<div class="batch-table-scroll" role="region" aria-label="Source-list preview" tabindex="0"><table class="batch-table"><caption>{{ preview.row_count }} targets · {{ preview.format|upper }} · ICRS</caption><thead><tr><th scope="col">Line / target</th><th scope="col">RA / Dec</th><th scope="col">Redshift</th><th scope="col">Validation</th></tr></thead><tbody>
+{% for source in preview.sources %}<tr><th scope="row">{{ source.line_number }} · {{ source.name or 'Missing name' }}</th><td>{{ source.original.get('ra', '—') }}<br>{{ source.original.get('dec', '—') }}</td><td>{{ source.redshift if source.redshift is not none else 'Not supplied' }}</td><td>{{ 'Valid row' if source.is_valid else 'Correct this row' }}{% for issue in source.issues %}<p class="field-note" data-category="{{ issue.severity }}">{{ issue.field }}: {{ issue.message }}</p>{% endfor %}{% if not source.original %}<code>{{ source.raw_line }}</code>{% endif %}</td></tr>{% endfor %}
+</tbody></table></div>
+<p class="field-note">Duplicate names and coordinates remain separate targets. Correct invalid rows before running.</p>
+{% endif %}
+<p class="field-note">Redshift comes only from this list and applies to each target’s REST inputs. SKY inputs are unchanged. This batch does not validate whether the targets form an executable ALMA Science Goal.</p>
+</section>
+{% endblock %}
+{% block coordinate_input %}{% endblock %}
+{% block source_choices %}{% include "_source_choices.html" %}{% endblock %}
+{% block input_export %}{% endblock %}
+{% block form_sidebar %}
+<section class="observation-summary"><h2>This batch</h2><p>{{ preview.row_count if preview else 0 }} independent targets</p><p>One shared scientific setup</p><p>{{ values.get('sources', [])|join(' + ') or 'No data source selected' }}</p></section>
+<section id="validation" tabindex="-1" aria-live="polite" {% if preflights %}data-validated="true"{% endif %}><h2>Input status</h2>
+<div id="validation-current">
+{% if preflights %}{% for purpose, batch in preflights.items() %}
+{% if purpose != 'combined' %}<h3>{{ 'Spectral line' if purpose == 'LINE' else 'Continuum' }}</h3>{% endif %}
+<p>All targets ready: <strong>{{ 'Yes' if batch.is_valid and batch.can_search else 'No' }}</strong></p>
+{% for child in batch.sources %}<details class="batch-diagnostics" {% if not child.validation.is_valid or not child.validation.can_search %}open{% endif %}><summary>{{ child.source.name }} · {{ 'Ready' if child.validation.is_valid and child.validation.can_search else 'Needs input' }}</summary><ul class="diagnostic-list">{% for issue in child.validation.issues %}<li>{{ issue.message }}<br><small>{{ issue.category }} · {{ issue.path }}</small></li>{% else %}<li>No input diagnostics.</li>{% endfor %}</ul></details>{% endfor %}
+{% endfor %}<p class="field-note">Readiness describes input, not a duplication verdict.</p>
+{% else %}<p>Preview your source list, enter the shared requirements, then validate all targets.</p>{% endif %}
+</div><p id="validation-stale" hidden>Inputs changed. Validate again to refresh these diagnostics.</p>
+{% if edit_notice %}<p role="status">{{ edit_notice }}</p>{% endif %}</section>
+<nav class="proposal-sections" aria-label="Form sections"><h2>On this page</h2><a href="#observation-type">Source list</a><a href="#requirements">Scientific requirements</a><a href="#search">Data sources</a></nav>
+{% endblock %}

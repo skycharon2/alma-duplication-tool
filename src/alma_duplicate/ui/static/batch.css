@@ -1,0 +1,43 @@
+/* Batch views reuse the scientific workbench's type, colors and controls. */
+.batch-upload { margin-block: 18px 10px; }
+.batch-upload input[type="file"] { width: 100%; max-width: 100%; padding: 8px; border: 1px solid var(--control-border); }
+.batch-table-scroll { max-width: 100%; overflow-x: auto; margin-block: 20px; }
+.batch-table { width: 100%; min-width: 660px; border-collapse: collapse; font-size: 14px; text-align: left; }
+.batch-table caption { text-align: left; font-weight: 600; padding-block: 8px; }
+.batch-table th, .batch-table td { padding: 14px 12px; vertical-align: top; border-bottom: 1px solid var(--border); }
+.batch-table thead { background: var(--info); }
+.batch-table tbody { background: var(--paper); }
+.batch-table tbody + tbody { border-top: 2px solid var(--control-border); }
+.batch-table th { font-weight: 600; }
+.batch-table p + p { margin-top: 6px; }
+.batch-table code { overflow-wrap: anywhere; white-space: normal; }
+.batch-coordinate { display: block; font-size: 12px; font-weight: 400; margin-top: 6px; }
+.batch-explanation { max-width: 78ch; margin-block: 18px; }
+.batch-source { margin-top: 8px; font-size: 12px; }
+.batch-source p { max-width: 50ch; padding-top: 6px; }
+.batch-diagnostics { margin-block: 12px; }
+.batch-diagnostics small { overflow-wrap: anywhere; }
+.proposal-fields, .proposal-summary { min-width: 0; }
+@media (max-width: 640px) {
+  .batch-upload { grid-template-columns: 1fr; }
+  .batch-table th, .batch-table td { padding: 10px 8px; }
+}
+
+.batch-upload-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-block: 14px; }
+
+.batch-scroll-hint { display: none; }
+body:has(.batch-table) .target-settings-trigger {
+  padding: 10px 16px; border: 1px solid var(--control-border); border-radius: 6px;
+  background: var(--paper); color: var(--blue-dark); text-align: left; cursor: pointer;
+}
+@media (max-width: 640px) { .batch-scroll-hint { display: block; margin-top: 16px; } }
+.batch-navigation { margin-top: 20px; padding: 16px 18px; background: var(--paper); border: 1px solid var(--control-border); border-radius: 8px; }
+.batch-navigation-heading, .batch-navigation-targets, .batch-navigation-views { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
+.batch-navigation-heading { justify-content: space-between; }
+.batch-navigation-heading span { overflow-wrap: anywhere; }
+.batch-navigation-targets { justify-content: space-between; margin-block: 12px; }
+.batch-navigation-views { font-size: 13px; }
+.batch-navigation [aria-current] { font-weight: 600; color: var(--ink); }
+.batch-nav-boundary, .batch-purpose-label { color: var(--muted); font-size: 13px; }
+.batch-table tbody:target { outline: 2px solid var(--blue); outline-offset: -2px; scroll-margin-top: 20px; }
+@media (max-width: 640px) { .batch-navigation { padding: 12px; } .batch-navigation-targets .button { white-space: normal; } }

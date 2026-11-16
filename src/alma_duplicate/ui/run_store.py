@@ -132,7 +132,8 @@ class RunStore:
     """
 
     def __init__(self, max_runs=20, max_bytes=DEFAULT_DISK_BYTES, *,
-                 max_age=DEFAULT_MAX_AGE, directory=None, clock=time.monotonic):
+                 max_age=DEFAULT_MAX_AGE, directory=None, clock=time.monotonic,
+                 max_batches=20, max_batch_bytes=1_000_000):
         if any(type(v) is not int or v < 1 for v in (max_runs, max_bytes, max_age)):
             raise ValueError('Run retention limits must be positive integers')
         self._max_runs, self._max_bytes, self.max_age = max_runs, max_bytes, max_age
@@ -145,6 +146,8 @@ class RunStore:
         self._size, self._closed = 0, False
         self._lock = Lock()
         self._write_lock = Lock()
+        from alma_duplicate.ui.batch_store import BatchStore
+        self.batches = BatchStore(self, max_batches=max_batches, max_bytes=max_batch_bytes, clock=clock)
 
     def _remove(self, item):
         shutil.rmtree(item.directory)
@@ -183,8 +186,12 @@ class RunStore:
         with self._lock:
             if not self._closed:
                 self._prune_locked()
+        self.batches.prune()
 
     def close(self):
+        # Never acquire the batch lock while holding a run lock: batch reads
+        # consult run availability in the opposite direction.
+        self.batches.close()
         with self._write_lock, self._lock:
             if self._closed:
                 return
@@ -390,6 +397,20 @@ class RunStore:
             if 'queue_index' not in projection:
                 return None
             return self._queue_page(item, projection, page, view)
+
+    def overview(self, run_id):
+        """Read saved summary/index facts without loading contexts or rerunning rules."""
+        with self._lock:
+            self._prune_locked()
+            item = self._runs.get(run_id)
+            if item is None:
+                return None
+            projection = json.loads((item.directory / 'view.json').read_bytes())
+            queue = projection.get('queue_index', {}).get('entries', [])
+            return dict(summary=projection.get('summary', {}),
+                        sources=projection.get('source_overview', []),
+                        queue_geometry_counts={bucket: sum(e['bucket'] == bucket for e in queue)
+                                               for bucket in ('matching', 'review', 'not_met')})
 
     def summaries(self, run_ids):
         """List only explicitly supplied browser links, without loading contexts."""

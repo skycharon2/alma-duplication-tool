@@ -311,6 +311,20 @@ def _line_run_requirements(request, rows):
 
 def validate_form(values, rows, *, require_line_complete=False):
     document, bindings = build_document(values, rows)
+    result, line_errors = validate_document_for_browser(
+        document, values, rows, require_line_complete=require_line_complete)
+    exact_fields = {issue.path: field for field, issue in line_errors}
+    issues = []
+    for issue in result.issues:
+        candidates = [path for path in bindings if issue.path == path or
+                      issue.path.startswith(path + ".") or issue.path.startswith(path + "[")]
+        field = exact_fields.get(issue.path) or (bindings[max(candidates, key=len)] if candidates else "validation")
+        issues.append({"issue": issue, "field": field})
+    return document, result, issues
+
+
+def validate_document_for_browser(document, values, rows, *, require_line_complete=False):
+    """Apply standalone scientific and browser readiness checks to a built document."""
     separated = "line_input_contract" in document["request"]
     if separated:
         from alma_duplicate.ui.normal_line_input import validate_for_browser
@@ -329,14 +343,7 @@ def validate_form(values, rows, *, require_line_complete=False):
                    tuple(issue for _, issue in line_errors),
             search_readiness=(SearchReadiness.BLOCKED if line_errors else result.search_readiness),
         )
-    exact_fields = {issue.path: field for field, issue in line_errors}
-    issues = []
-    for issue in result.issues:
-        candidates = [path for path in bindings if issue.path == path or
-                      issue.path.startswith(path + ".") or issue.path.startswith(path + "[")]
-        field = exact_fields.get(issue.path) or (bindings[max(candidates, key=len)] if candidates else "validation")
-        issues.append({"issue": issue, "field": field})
-    return document, result, issues
+    return result, line_errors
 
 
 def bind_mosaic_input(values, preview):

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Batch overview · ALMA{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{{ url_for('static', filename='batch.css') }}">{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>Batch overview</h1><p>{{ batch.sources|length }} independent targets · Shared scientific requirements</p></div>
+<nav class="report-actions" aria-label="Batch actions"><a class="button" href="{{ url_for('batch.proposed') }}">New batch</a><a class="button" href="{{ url_for('batch.download_manifest', batch_id=batch.batch_id) }}">Download batch manifest</a>{% if not batch.execution_complete %}<a class="button" href="{{ url_for('batch.overview', batch_id=batch.batch_id) }}">Refresh progress</a>{% endif %}</nav>
+<p class="batch-explanation">{{ 'Execution finished. Review each target’s reports and source coverage below.' if batch.execution_complete else 'This batch is still running. Refresh to see newly saved reports.' }} Results are independent; there is no overall duplication verdict for the batch.</p>
+{% if unavailable_reports %}<p class="notice" role="status">{{ unavailable_reports }} previously saved reports are no longer available. Execution completion does not mean all reports are still retained. Check the reason beside each target; the batch manifest does not contain the missing report contents.</p>{% endif %}
+{% from '_observation_card.html' import card %}{{ card('Shared scientific requirements', shared) }}
+<p class="field-note">Each target uses the coordinates and redshift shown below. Shared REST inputs may correspond to different SKY frequencies.</p>
+<p class="field-note batch-scroll-hint">On a narrow screen, scroll the results table sideways to reach report links.</p>
+<div class="batch-table-scroll" role="region" aria-label="Batch results" tabindex="0"><table class="batch-table"><caption>Results by target and scientific purpose</caption><thead><tr><th scope="col">Target / ICRS position</th><th scope="col">Check</th><th scope="col">Execution</th><th scope="col">Saved findings and source coverage</th><th scope="col">Reports</th></tr></thead>
+{% for item in batch.sources %}<tbody id="source-{{ item.source_id }}">{% for report in item.reports %}<tr>
+{% if loop.first %}<th scope="rowgroup" rowspan="{{ item.reports|length }}">{{ item.source.name }}<span class="batch-coordinate">{{ item.source.original.ra }}<br>{{ item.source.original.dec }}</span><span class="batch-coordinate">z = {{ item.source.redshift if item.source.redshift is not none else 'Not supplied' }}</span></th>{% endif %}
+<td>{{ 'Spectral line' if report.purpose == 'LINE' else 'Continuum' }}</td><td>{{ 'Completed · report unavailable' if report.state == 'COMPLETED' and report.availability != 'AVAILABLE' else {'PENDING':'Waiting','RUNNING':'Running','COMPLETED':'Report saved','FAILED':'Failed'}.get(report.state, report.state) }}{% if report.error %}<p class="field-note">{{ report.error }}</p>{% endif %}</td>
+<td>{% if report.overview %}{% for finding in report.overview.summary.get('counts', []) %}<p>{{ finding.met }} matched comparison contexts; {{ finding.review + finding.unreported }} unresolved.</p>{% if report.overview.summary.total == 0 %}<p class="field-note">No evaluated comparison contexts. Review source coverage below.</p>{% endif %}{% endfor %}
+{% set geometry = report.overview.queue_geometry_counts %}{% if geometry.matching or geometry.review or geometry.not_met %}<p>Additional Queue geometry comparisons: {{ geometry.matching }} matched; {{ geometry.review }} unresolved.</p>{% endif %}
+{% for source in report.overview.sources %}<details class="batch-source"><summary>{{ source.name }}: {{ source.label }}</summary>{% for note in source.notes %}<p>{{ note }}</p>{% endfor %}</details>{% endfor %}
+{% else %}<span class="field-note">{{ 'No report was created.' if report.state == 'FAILED' else 'Report not yet available.' if report.state in ['PENDING','RUNNING'] else 'Saved report is no longer available.' }}</span>{% endif %}</td>
+<td>{% if report.availability == 'AVAILABLE' %}<a href="{{ url_for('run_view', report_id=report.run_id) }}">Text report</a><br><a href="{{ url_for('run_visualization', report_id=report.run_id) }}">Explore visualization</a>
+{% elif report.state == 'COMPLETED' %}<span>{{ {'EXPIRED':'Report expired','EVICTED':'Removed to free storage','CLOSED':'Storage closed','UNREADABLE':'Report could not be read'}.get(report.availability, 'Report unavailable') }}</span>{% else %}—{% endif %}</td>
+</tr>{% endfor %}</tbody>{% endfor %}</table></div>
+<p class="report-retention-note">Batch records and reports are temporary, up to {{ '%g'|format(retention_hours) }} hours, and may disappear sooner when storage is full or the service restarts. The manifest contains settings and report references, not the full reports. Download important reports from their report pages.</p>
+{% endblock %}
