@@ -35,13 +35,18 @@ def test_missing_snapshot_has_unknown_inventory():
     assert report['assessment_status'] == 'SOURCES_UNAVAILABLE'
 
 
-def test_unresolved_galactic_candidate_retains_science_and_coverage_limitations():
+def test_galactic_candidate_can_match_but_retains_ot_validation_limitation():
     report = run(lambda: rectangle({'Mos. Coord.': 'galactic', 'Use TP?': 'True'}))
     inventory = report['inventory']
-    assert inventory['candidate_counts']['RECTANGULAR_MOSAIC']['unresolved_by_intent'] == {'CONTINUUM': 2}
+    assert inventory['candidate_counts']['RECTANGULAR_MOSAIC']['unresolved_by_intent'] == {'CONTINUUM': 0}
+    for candidate in report['geometry_reports']['RECTANGULAR_MOSAIC']['candidates']:
+        assert candidate['science']['branches'][0]['truth'] == 'TRUE'
+        assert all(a['ot_validation_scope'] == 'OUTSIDE_OT_REFERENCE_DOMAIN'
+                   for a in candidate['geometry']['arrays'])
+        assert candidate['limitations'][0]['code'] == 'GALACTIC_GRID_MODEL_NOT_OT_VALIDATED'
     for row in inventory['source_rows']:
         assert row['evaluated']
-        assert 'GALACTIC_RECONSTRUCTION_UNSUPPORTED' in row['limitations']
+        assert 'GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED' in row['limitations']
         assert 'TP_COVERAGE_NOT_MODELLED' not in row['limitations']
         assert row['tp_treatment'] == 'IGNORED'
     assert report['search_completeness'] == 'NOT_ESTABLISHED'

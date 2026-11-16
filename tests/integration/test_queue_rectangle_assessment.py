@@ -15,7 +15,7 @@ def run(parsed=None, proposed=None, **kwargs):
 
 
 @pytest.mark.parametrize('changes,expected',[({},'TRUE'),({'Ref.Frequency':'100'},'FALSE'),
-    ({'Mos. Coord.':'galactic'},'UNKNOWN')])
+    ({'Mos. Coord.':'galactic'},'TRUE')])
 def test_standard_assessment(changes,expected):
     r=run(candidate(changes))
     d=r.document

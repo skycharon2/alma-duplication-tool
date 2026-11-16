@@ -1,5 +1,11 @@
 # Queue Mosaic reconstruction: first backend increment
 
+Update 2026-11-16: Galactic offset/grid support now uses an ICRS source reference
+and native Galactic axes, with explicit project-model provenance. See
+[Galactic coordinate model](queue_galactic_coordinates.md). Statements below that
+Galactic reconstruction is unsupported describe the previous implementation;
+independent Galactic OT parity remains unverified.
+
 This offline increment consumes a complete parsed CSV snapshot and produces
 `queue_mosaic_reconstruction_1` evidence. It does not run duplication criteria,
 change the active snapshot, or enable Queue Mosaic in the browser/shared evaluator.

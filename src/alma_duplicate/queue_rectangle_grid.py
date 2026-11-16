@@ -15,7 +15,7 @@ from alma_duplicate.domain.queue import QueueMosaicKind
 from alma_duplicate.queue_position import candidate_frequency
 from alma_duplicate.queue_row_beam import PROFILE, resolve_queue_beam_interpretation
 
-METHOD = "QUEUE_RECTANGLE_TRIANGULAR_GRID_1"
+METHOD = "QUEUE_RECTANGLE_TRIANGULAR_GRID_2"
 MODEL_APPROVAL = "PROJECT_ACCEPTED"
 OT_REFERENCE = "OT_PARITY_A_B_C_D3"
 OT_VALIDATED_DOMAIN = "ICRS_NYQUIST_REFERENCE_CASES"
@@ -42,7 +42,8 @@ def generate_rectangle_grid(geometry: RectangleGeometry, diameter_m: float, *,
 
     Spacing scaling is an explicit caller convention. Coordinates use successive
     spherical directional offsets: source to field centre, then rotated grid
-    offsets about that centre. Nonzero-declination OT parity is unverified.
+    offsets about that centre. OT parity is limited to the recorded ICRS cases;
+    Galactic axes have independent numerical checks but no native OT reference.
     """
     if not isinstance(geometry, RectangleGeometry):
         raise TypeError("RectangleGeometry required")
@@ -65,7 +66,8 @@ def generate_rectangle_grid(geometry: RectangleGeometry, diameter_m: float, *,
     if any(isinstance(v, bool) or not isinstance(v, (float, int)) or not math.isfinite(v)
            for v in values):
         return fail("INVALID_OR_MISSING_GEOMETRY")
-    if geometry.frame.strip().lower() != "icrs":
+    frame = geometry.frame.strip().lower()
+    if frame not in ("icrs", "galactic"):
         return fail("COORDINATE_FRAME_UNRESOLVED")
     if (isinstance(diameter_m, bool) or diameter_m not in (7., 12.) or
             isinstance(spacing_reference_diameter_m, bool) or
@@ -103,6 +105,13 @@ def generate_rectangle_grid(geometry: RectangleGeometry, diameter_m: float, *,
     if not total:
         return fail("EMPTY_MODEL_GRID")
     center = SkyCoord(g.ra_deg*u.deg, g.dec_deg*u.deg, frame="icrs")
+    if frame == 'galactic':
+        center = center.galactic
+    result.update(reference_frame='ICRS', offset_frame=frame.upper(),
+                  source_reference_icrs_deg=[g.ra_deg, g.dec_deg],
+                  native_reference_lonlat_deg=[float(center.spherical.lon.deg), float(center.spherical.lat.deg)],
+                  pa_basis='NATIVE_LONGITUDE_LATITUDE_AXES_EXISTING_GRID_ROTATION',
+                  validation_notes=['GALACTIC_GRID_MODEL_NOT_OT_VALIDATED'] if frame == 'galactic' else [])
     def offset(origin, east, north):
         return origin.directional_offset_by(math.atan2(east, north)*u.rad,
                                             math.hypot(east, north)*u.arcsec)
@@ -115,16 +124,17 @@ def generate_rectangle_grid(geometry: RectangleGeometry, diameter_m: float, *,
             p = (i+phase)*s
             east = p*math.cos(angle)+q*math.sin(angle)
             north = -p*math.sin(angle)+q*math.cos(angle)
-            sky = offset(center, east, north)
+            sky = offset(center, east, north).icrs
             points.append(dict(id=f"r{j}:c{i}", ra_deg=float(sky.ra.deg),
                                dec_deg=float(sky.dec.deg), frame="ICRS",
                                east_arcsec=east, north_arcsec=north))
     result.update(geometry_status="GEOMETRY_RECONSTRUCTED",
                   grid_model_status=MODEL_APPROVAL,
-                  ot_reference=OT_REFERENCE,
-                  validation_scope="MODEL_VALIDATED_ON_REFERENCE_CASES_NOT_INDIVIDUAL_ROW",
+                  ot_reference=OT_REFERENCE if frame == 'icrs' else None,
+                  validation_scope=('MODEL_VALIDATED_ON_REFERENCE_CASES_NOT_INDIVIDUAL_ROW' if frame == 'icrs'
+                                    else 'SPHERICAL_REFERENCE_TESTS_NOT_OT_PARITY'),
                   pointing_count=len(points),
-                  pointings=points, center_icrs_deg=[float(center.ra.deg), float(center.dec.deg)],
+                  pointings=points, center_icrs_deg=[float(center.icrs.ra.deg), float(center.icrs.dec.deg)],
                   model_grid_complete=True)
     return result
 
@@ -182,6 +192,7 @@ def reconstruct_queue_rectangles(parsed):
         for array in arrays:
             array['ot_validation_scope'] = (
                 OT_VALIDATED_DOMAIN if array['geometry_status'] == 'GEOMETRY_RECONSTRUCTED'
+                and geometry.frame.strip().lower() == 'icrs'
                 and diagnostic['status'] == 'CONSISTENT_WITH_12M_NYQUIST'
                 else 'OUTSIDE_OT_REFERENCE_DOMAIN')
         candidates.append(dict(geometry_kind="RECTANGLE", source_row_id=row.raw_row.row_id.value,

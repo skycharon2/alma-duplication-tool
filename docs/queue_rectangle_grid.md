@@ -1,5 +1,11 @@
 # Queue Rectangle geometry
 
+Update 2026-11-16: Galactic offset/grid support now uses an ICRS source reference
+and native Galactic axes, with explicit project-model provenance. See
+[Galactic coordinate model](queue_galactic_coordinates.md). Statements below that
+Galactic reconstruction is unsupported describe the previous implementation;
+independent Galactic OT parity remains unverified.
+
 This document preserves the original staged Rectangle development notes.
 The position-only CLI remains available; the current unified Queue assessment
 also evaluates Rectangle scientific branches and exposes saved evidence in the

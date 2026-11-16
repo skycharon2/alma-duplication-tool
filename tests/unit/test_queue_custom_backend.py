@@ -78,7 +78,7 @@ def test_outside_complete_csv_group_fails_but_incomplete_proposal_stays_unknown(
     assert variants(incomplete)[1]["outcome"] == "UNKNOWN"
 
 
-@pytest.mark.parametrize("frame", ["galactic"])
+@pytest.mark.parametrize("frame", ["unsupported"])
 def test_unresolved_coordinates_not_promoted(frame):
     result = assess_queue_custom_csv(parsed(lambda r: r.update({"Mos. Coord.": frame})), proposed())
     assert all(v["coverage"] is None for v in variants(result))

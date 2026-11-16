@@ -33,13 +33,20 @@ def test_independent_arrays_and_duplicate_row_binding():
 
 
 def test_unknown_position_and_unrelated_negative_frequency():
-    c = evaluate({'Mos. Coord.': 'galactic'})
+    c = evaluate({'Mos. Coord.': 'unsupported'})
     assert c['science']['branches'][0]['truth'] == 'UNKNOWN'
     c = evaluate({'Ref.Frequency': '1e-8'})
     assert all(v['outcome'] == 'UNKNOWN' for v in c['position']['beam_variants'])
     c = evaluate({'Ref.Frequency': '100'})
     assert all(v['outcome'] == 'SATISFIED' for v in c['position']['beam_variants'])
     assert c['science']['branches'][0]['truth'] == 'FALSE'
+
+
+def test_galactic_single_field_shared_center_adapter_keeps_provenance():
+    candidate = evaluate({'Mos. Coord.': 'galactic'})
+    assert candidate['science']['branches'][0]['truth'] == 'TRUE'
+    assert candidate['geometry']['center']['offset_frame'] == 'GALACTIC'
+    assert candidate['limitations'][0]['code'] == 'GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED'
 
 
 def test_single_field_line_pairs_share_row_and_array():

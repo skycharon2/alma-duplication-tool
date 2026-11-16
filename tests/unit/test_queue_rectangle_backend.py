@@ -67,7 +67,7 @@ def test_boundary_and_separate_array_results():
 
 
 def test_unresolved_geometry_frequency_and_invalid_selection(monkeypatch):
-    r=assess_queue_rectangle_csv(source('galactic'),proposal(1,1))
+    r=assess_queue_rectangle_csv(source('unsupported'),proposal(1,1))
     assert all(v['outcome']=='UNKNOWN' and v['coverage'] is None for c in r['candidates'] for v in c['position']['beam_variants'])
     monkeypatch.setattr('alma_duplicate.queue_rectangle_grid.candidate_frequency',lambda row:(None,'Ref.Frequency',('INVALID',)))
     r=assess_queue_rectangle_csv(source(),proposal(1,1))

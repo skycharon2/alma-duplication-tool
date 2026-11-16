@@ -36,6 +36,11 @@ def assess_single_field_science(parsed, request, proposed, *, nominal_conversion
         center = _center(row)
         frequency, source, reasons = candidate_frequency(row)
         candidate = dict(candidate_id=candidate_id, source_rows=[dict(source_row_id=i) for i in ids],
+            limitations=([dict(code='GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED',
+                title='Galactic offsets use a project coordinate model',
+                message='The ICRS source reference is transformed to Galactic for the offsets, '
+                        'then back to ICRS. Numerical checks do not establish native OT parity.')]
+                if center['offset_frame'] == 'GALACTIC' else []),
             array_inference=asdict(beam), tp_treatment='IGNORED' if row.request.use_tp else 'NOT_REQUESTED',
             geometry=dict(source_row_id=ids[0], center=center, frequency_source=source,
                           frequency_ghz=frequency, frequency_reasons=reasons),
@@ -55,7 +60,7 @@ def assess_single_field_science(parsed, request, proposed, *, nominal_conversion
             ra, dec = center['icrs_deg']
             bindings.append(QueueMosaicCoverage(candidate_id, snapshot, ids, diameter, frequency,
                 source, (dict(id=ids[0], ra_deg=ra, dec_deg=dec, frame='ICRS'),),
-                ids[0], association_confirmed=True, complete=True))
+                f"{center['method']}:{ids[0]}", association_confirmed=True, complete=True))
         position = assess_queue_mosaic_position(proposed, dict(schema_version=SCHEMA,
             snapshot_sha256=snapshot, candidates=[candidate]), candidate_id, bindings)
         position['coverage_basis'] = 'QUEUE_SINGLE_FIELD_CENTER_AND_INFERRED_ARRAY'

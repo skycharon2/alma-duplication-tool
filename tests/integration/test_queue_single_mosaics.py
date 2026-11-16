@@ -23,7 +23,7 @@ def run(parsed, changes=None):
 
 @pytest.mark.parametrize('factory,kind', [(custom, 'CUSTOM'), (rectangle, 'RECTANGLE')])
 @pytest.mark.parametrize('changes,truth', [({}, 'TRUE'), ({'Ref.Frequency': '100'}, 'FALSE'),
-    ({'Mos. Coord.': 'galactic'}, 'UNKNOWN')])
+    ({'Mos. Coord.': 'galactic'}, 'TRUE')])
 def test_science_and_provenance(factory, kind, changes, truth):
     report = run(factory(changes))['geometry_reports'][kind]
     for c in report['candidates']:

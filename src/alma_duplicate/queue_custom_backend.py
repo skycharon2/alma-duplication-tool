@@ -92,7 +92,8 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
                 coverages.append(QueueMosaicCoverage(
                     candidate["candidate_id"], reconstruction["snapshot_sha256"],
                     tuple(r["source_row_id"] for r in rows), diameter, frequency,
-                    f"{PROFILE}:{frequency_source}", points, f"{PROFILE}:{OFFSET_METHOD}",
+                    f"{PROFILE}:{frequency_source}", points,
+                    f"{PROFILE}:" + ','.join(sorted({r['center'].get('method', OFFSET_METHOD) for r in known_rows})),
                     association_confirmed=True, complete=len(known_rows) == len(rows)))
         # Only the selected source context enters the position evaluator.
         position = assess_queue_mosaic_position(proposed, reconstruction, candidate["candidate_id"],
@@ -117,6 +118,11 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
                                 'Corresponding ACA 7-m pointings are unavailable; the 12-m coverage '
                                 'also could not be assessed. Both limitations remain unresolved.'))]
                       if ownership['pointing_array'] == '12M' and '7M' in ownership['requested_arrays'] else [])
+        if any(r['center']['offset_frame'] == 'GALACTIC' for r in rows):
+            limitations.append(dict(code='GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED',
+                title='Galactic offsets use a project coordinate model',
+                message='CSV RA/Dec are interpreted as ICRS references. Offsets are applied along Galactic axes '
+                        'and transformed back to ICRS. Numerical coordinate checks do not establish OT parity.'))
         results.append(dict(pointing_ownership=ownership, limitations=limitations,candidate_id=candidate["candidate_id"], group=candidate["group"],
             grouping_method=candidate["grouping_method"], association_status=candidate["association_status"],
             source_rows=rows, explicit_point_diameters_m=owned_diameters,

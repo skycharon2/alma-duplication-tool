@@ -57,6 +57,23 @@ def submit(client, data):
     return client.post('/proposed/mosaic', data=data)
 
 
+def test_galactic_custom_report_and_explorer_keep_frame_and_array_scope(browser):
+    app, client = browser
+    Path(app.config['OFFLINE_QUEUE_CSV']).write_bytes(csv_bytes({'Mos. Coord.': 'galactic'}))
+    response = submit(client, form())
+    assert response.status_code == 303
+    document = client.get(response.location + '/download/report').json
+    candidate = document['geometry_reports']['CUSTOM_POINTING']['candidates'][0]
+    assert candidate['science']['matching_arrays_by_intent']['CONTINUUM'] == [12.]
+    assert candidate['position']['beam_variants'][0]['coverage'] is None
+    assert candidate['source_rows'][0]['center']['offset_frame'] == 'GALACTIC'
+    for suffix in ('', '/mosaic-visualization'):
+        page = client.get(response.location + suffix)
+        assert page.status_code == 200
+        assert 'ACA 7-m assessment not available' in page.text
+        assert 'Galactic offsets use a project coordinate model' in page.text
+
+
 @pytest.mark.parametrize('version,intents', [('', ('CONTINUUM',)), ('2', ('CONTINUUM',)),
     ('2', ('LINE',)), ('2', ('LINE','CONTINUUM'))])
 def test_existing_form_runs_queue_without_archive(browser, version, intents):

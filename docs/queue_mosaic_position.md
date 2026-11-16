@@ -1,5 +1,11 @@
 # Queue Mosaic position backend: explicit array coverage
 
+Update 2026-11-16: Galactic offset/grid support now uses an ICRS source reference
+and native Galactic axes, with explicit project-model provenance. See
+[Galactic coordinate model](queue_galactic_coordinates.md). Statements below that
+Galactic reconstruction is unsupported describe the previous implementation;
+independent Galactic OT parity remains unverified.
+
 The standalone `assess_queue_mosaic_position` interface and offline CLI
 consume a [reconstruction report](queue_mosaic_reconstruction.md), a fixed ICRS
 proposed pointing list and explicit per-array coverage bindings. They remain
