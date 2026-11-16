@@ -65,7 +65,9 @@ def test_saved_reports_equal_independently_submitted_targets(store, v2, max_work
     data = values(v2, intents, kind)
     before = deepcopy(data)
     fixed_runner = runner().pin_queue_for_submission(True)
-    batch_id = run(store, data, runner=fixed_runner, max_workers=max_workers)
+    timings = []
+    batch_id = run(store, data, runner=fixed_runner, max_workers=max_workers, performance=timings.append)
+    assert len(timings) == 2 * len(intents)
     manifest = store.batches.get(batch_id, 'browser-a')
     assert manifest['execution_complete'] and data == before
     for source in manifest['sources']:

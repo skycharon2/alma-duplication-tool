@@ -138,3 +138,57 @@ The [CASE1 comparison](evidence/tap_retrieval_first_2026-10-12.md) measures
 `COUNT_FIRST` against the browser's `STATUS_THEN_COUNT` policy with the same
 request. Inspect both source status and candidate parity; report creation by
 itself does not establish successful acquisition.
+
+## Five-target batch baseline
+
+`python -m alma_duplicate.cli.profile_batch` uses `execute_batch`, including
+preflight, pinned Queue acquisition, target concurrency and the existing retention
+policy. It accepts a JSON object with browser form `values` and `rows`, and a
+CSV/TXT source list. The supplied setup is a reproducible diagnostic configuration,
+not a reconstruction of a user's complete observing proposal.
+
+```bash
+python -m alma_duplicate.cli.profile_batch \
+  examples/acceptance/batch/performance-setup.json \
+  tests/fixtures/source_list/five_targets.csv \
+  --sources both --workers 2 \
+  --queue-csv examples/acceptance/queue/dual-source-line.csv \
+  --archive-replay examples/confirmed_line/archive/manifest.json \
+  --output /tmp/batch-both-2.json
+```
+
+Run each combination of `--sources queue|archive|both` and `--workers 1|2` in a
+fresh process. Replace replay with `--live-archive --live-aq` only for explicitly
+intended network measurements. Queue measurements require an explicit snapshot.
+Outputs never overwrite an existing record. Input file SHA-256 hashes identify
+setup, targets and supplied source manifests/snapshot; replay manifest hashes do
+not recursively hash their referenced files. Preserve the referenced evidence
+files alongside the manifest for reproducibility.
+
+`branches` remains in source/purpose order, irrespective of completion order.
+Each record includes source acquisition statuses, assessment status, nested stage
+timings, execution state, final availability and retained file sizes. Storage
+failure does not erase successful acquisition status. `COMPLETED` means all
+reports remain available at the end, **not** that all sources succeeded or all
+scientific comparisons were determinate. Evicted files have no measured final
+size; zero retained bytes is not an estimate of their original report size.
+
+`queue_geometry_evaluation` measures the additional browser Queue geometry path.
+Existing scientific evaluation, TAP/AQ acquisition, assembly, inspection and
+write stages remain separate. Writes include serialization and hashing; they
+are not pure filesystem latency. Branch timing includes evaluation and storage;
+batch wall time also includes preflight, setup, scheduling and final inventory.
+Never sum overlapping branches or inclusive nested stages to obtain batch time.
+The performance observer is optional and cannot change scientific output.
+
+`process_lifetime_peak_rss_bytes` is the OS process high-water mark (macOS/Linux),
+including imports and all threads, not per-target memory or an interval delta.
+Use a fresh CLI process per measurement. `process_cpu_seconds` includes worker
+threads. Cleanup and final diagnostic JSON publication are outside batch timing.
+No browser rendering or HTTP latency is measured.
+
+The small fixture/replay matrix verifies instrumentation and failure visibility;
+it is not a full Queue snapshot or live Archive speed benchmark. In particular,
+the replay cone does not cover all five supplied targets. Do not interpret quick
+failed acquisition as a speedup. Record live source completeness, repeated trials,
+source versions and the reviewed Git revision before comparing performance.
