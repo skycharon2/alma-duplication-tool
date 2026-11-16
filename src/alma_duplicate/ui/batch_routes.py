@@ -177,6 +177,7 @@ def register_batch_routes(app, configured, runs, progress):
         try:
             batch_id = execute_batch(state.values, state.rows, upload['raw'], runner=configured,
                 runs=runs, owner=state.owner, submission_token=submission, format=upload['format'],
+                max_workers=app.config['BATCH_MAX_WORKERS'],
                 progress=(lambda event: progress.update(key, event)) if key else None)
             session['batch_history'] = list(dict.fromkeys([batch_id] + session.get('batch_history', [])))[:20]
             report_url = url_for('batch.overview', batch_id=batch_id)
@@ -214,6 +215,8 @@ def register_batch_routes(app, configured, runs, progress):
         if isinstance(shared.get('continuum_requirement'), dict):
             shared['continuum_requirement'].pop('source_redshift', None)
         return render_template('batch_overview.html', batch=manifest, shared=shared,
+                               unavailable_reports=sum(r['state'] == 'COMPLETED' and r['availability'] != 'AVAILABLE'
+                                                       for s in manifest['sources'] for r in s['reports']),
                                retention_hours=runs.max_age / 3600)
 
     @routes.get('/batches/<batch_id>/download/manifest')

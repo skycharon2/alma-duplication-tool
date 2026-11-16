@@ -58,13 +58,14 @@ def downloaded(store, run_id, kind):
 
 
 @pytest.mark.parametrize('v2', [False, True])
+@pytest.mark.parametrize('max_workers', [1, 2])
 @pytest.mark.parametrize('intents', [['LINE'], ['CONTINUUM'], ['LINE', 'CONTINUUM']])
 @pytest.mark.parametrize('kind', ['SKY', 'REST'])
-def test_saved_reports_equal_independently_submitted_targets(store, v2, intents, kind):
+def test_saved_reports_equal_independently_submitted_targets(store, v2, max_workers, intents, kind):
     data = values(v2, intents, kind)
     before = deepcopy(data)
     fixed_runner = runner().pin_queue_for_submission(True)
-    batch_id = run(store, data, runner=fixed_runner)
+    batch_id = run(store, data, runner=fixed_runner, max_workers=max_workers)
     manifest = store.batches.get(batch_id, 'browser-a')
     assert manifest['execution_complete'] and data == before
     for source in manifest['sources']:

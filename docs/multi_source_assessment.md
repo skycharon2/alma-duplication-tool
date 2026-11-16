@@ -513,3 +513,70 @@ synthetic targets, so Archive and Queue retrieval both complete.
 
 Steps 4–6 were committed together as `5fff580`. The subsequent offline preview
 script, fixture and acceptance record are a separate working-tree increment.
+
+## Catalog-backed workflow acceptance (2026-11-16)
+
+The offline preview increment was committed as `fd69b0c`. A subsequent
+[catalog-backed acceptance record](evidence/batch_catalog_acceptance_2026-11-16.md)
+covers eight CSV/TXT upload-to-export workflows using NGC 6240 captured evidence
+and synthetic dual-source cases. Independently submitted Single Pointing forms
+match the batch requests, reports and inspection exports under fixed source
+inputs. The catalog's independent-review status is unchanged. Actual proposal
+review and live acquisition acceptance remain outstanding.
+
+## Bounded target concurrency (2026-11-16)
+
+The browser now runs up to two targets concurrently. Set `ALMA_UI_BATCH_WORKERS`
+before starting the server to choose 1–4; 1 restores serial execution. Direct
+`execute_batch` callers retain the serial default unless they pass `max_workers`.
+Purposes within a target remain sequential. Stored source order is upload order;
+completion and storage-eviction order can differ. The limit is per batch, not a
+global admission limit across browser sessions or serving processes.
+
+All workers use the same pinned Queue loader. Its cached result or acquisition
+failure is initialized under a lock. Scientific evaluation and report formats
+are unchanged. Progress callbacks serialize completed counts and retain stage
+counts by source/purpose; the page identifies the target whose stage is shown.
+Stage percentages remain local to that stage, not overall batch completion.
+
+Each branch records wall time and per-stage wall/thread CPU times using the
+existing performance recorder. These are emitted at INFO level by
+`alma_duplicate.ui.batch_assessment`, outside scientific reports; enable that
+logger when profiling. Threaded execution overlaps network waits but does not
+promise proportional acceleration of CPU-bound Python evaluation. No live
+speedup measurement has been completed. Running requests keep the old code until
+the serving process is restarted.
+
+Queue initialization, two-target overlap, five-target concurrency limits,
+failure isolation and monotonic progress have dedicated tests. Existing full
+report parity tests now run both serially and with two workers, for legacy/V2,
+LINE/CONTINUUM/both and REST/SKY inputs. Parent removal stops queued work when
+detected; already-running network operations cannot be forcibly cancelled.
+
+### Retention observed during live browser acceptance
+
+The supplied screenshots show two earlier reports evicted before the five-target
+batch was reviewed. The default report budget is 1 GiB across retained report
+artifacts, with a separate 20-report count limit. It is not a guarantee that five
+large reports fit. Parallelism does not solve this storage constraint.
+
+`ALMA_UI_MAX_RETAINED_BYTES` now exposes the existing disk budget at startup.
+For example, `4294967296` allows up to 4 GiB of retained artifacts when local disk
+capacity permits; it does not reserve disk space or guarantee a batch will fit.
+The overview explicitly warns when completed reports are unavailable and no
+longer labels such entries simply "Report saved". Existing evicted files cannot
+be recovered through a manifest or a configuration change. Batch-wide atomic
+retention and durable storage are not implemented in this increment.
+
+The same screenshots show incomplete AQ array acquisition and a proposed-window
+completeness diagnostic. Neither is a non-duplication verdict. Completeness must
+only be declared when the entire proposed window list is supplied; no input
+confirmation or scientific evidence is automatically inferred by this change.
+
+Verification: the full UI/source-list/batch-request suite passed 840 tests after
+the initial concurrency change. After adding the five-target bound test,
+environment configuration test and retention warning, the affected route,
+catalog, navigation, progress and concurrency suite passed 45 tests. All 118
+existing JavaScript tests, static analysis, JavaScript syntax and whitespace
+checks passed. The prior catalog acceptance increment remains staged; these
+concurrency and retention-visibility changes are not staged or committed.

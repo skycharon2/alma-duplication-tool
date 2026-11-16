@@ -45,6 +45,7 @@ function initializeForm(form) {
     const {completed, total, unit} = current;
     if (form.dataset.workflow === 'batch' && Number.isInteger(current.batch_total)) {
       stageLabel.textContent += ` · ${current.batch_completed} / ${current.batch_total} checks finished`;
+      if (current.source_position) stageLabel.textContent += ` · Target ${current.source_position}/${current.source_total}: ${current.source_name} · ${current.purpose}`;
     }
     const determined = Number.isInteger(total) && total > 0 && Number.isInteger(completed);
     track?.classList.toggle('is-determinate', determined);

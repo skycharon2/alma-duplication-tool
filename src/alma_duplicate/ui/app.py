@@ -74,11 +74,15 @@ def create_app(config=None):
     app.config["MANAGED_QUEUE_ROOT"] = os.environ.get("ALMA_UI_QUEUE_SNAPSHOT_ROOT")
     app.config["ARCHIVE_ARRAY_EVIDENCE"] = os.environ.get("ALMA_UI_ARCHIVE_ARRAY_EVIDENCE")
     app.config["MAX_RETAINED_RUNS"] = 20
-    app.config["MAX_RETAINED_BYTES"] = DEFAULT_DISK_BYTES
+    app.config["BATCH_MAX_WORKERS"] = int(os.environ.get('ALMA_UI_BATCH_WORKERS', '2'))
+    app.config["MAX_RETAINED_BYTES"] = int(os.environ.get('ALMA_UI_MAX_RETAINED_BYTES', str(DEFAULT_DISK_BYTES)))
     app.config["MAX_RUN_AGE_SECONDS"] = DEFAULT_MAX_AGE
     app.config["RUN_STORAGE_PARENT"] = None
     if config is not None:
         app.config.from_mapping(config)
+    workers = app.config['BATCH_MAX_WORKERS']
+    if type(workers) is not int or not 1 <= workers <= 4:
+        raise ValueError('BATCH_MAX_WORKERS must be an integer between 1 and 4')
 
     auto_queue = app.config.get("AUTO_QUEUE")
     if auto_queue is None:

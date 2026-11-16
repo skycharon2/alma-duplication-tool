@@ -85,12 +85,19 @@ five-target fixtures, independent request generation, shared-validator
 preflight, bounded batch/report lifecycle, serial execution with one pinned
 Queue snapshot, upload form, batch overview and child-report navigation) are
 implemented. The browser entry is `/proposed/batch`. Batch execution remains
-serial and process-local with bounded temporary report retention. This work preserves existing scientific rules.
+bounded to two concurrent targets by default and process-local with bounded
+temporary report retention. This work preserves existing scientific rules.
 
 The next delivery increment supplies a [repeatable offline browser acceptance
 entry](../examples/acceptance/batch/README.md) with matching Archive/Queue data.
 Target, purpose, view and overview-return navigation passed browser checks on
 2026-11-16. Live scientific acceptance and deployment remain separate gates.
+
+[Catalog-backed HTTP workflow acceptance](evidence/batch_catalog_acceptance_2026-11-16.md)
+also passes for NGC 6240 captured evidence and synthetic dual-source cases:
+CSV/TXT upload, validation, execution and exports agree with independently
+filled Single Pointing forms. Real-proposal judgments still require independent
+review; the catalog evidence classifications have not changed.
 
 ## Change and verification gates
 

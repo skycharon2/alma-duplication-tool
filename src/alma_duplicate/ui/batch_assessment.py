@@ -1,8 +1,13 @@
-"""Serial multi-source execution using existing browser scientific assessment."""
+"""Bounded multi-source execution using existing browser scientific assessment."""
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from copy import deepcopy
 from dataclasses import replace
 import logging
+from threading import Event, RLock
+from time import perf_counter
+
+from alma_duplicate.performance import PerformanceRecorder
 
 from alma_duplicate.progress import observe_progress
 from alma_duplicate.ui.batch_requests import prepare_batch_form
@@ -20,13 +25,15 @@ class BatchValidationError(ValueError):
 
 
 def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission_token,
-                  format='csv', progress=None):
-    """Validate all branches, reserve a manifest, then assess serially.
+                  format='csv', progress=None, max_workers=1):
+    """Validate all branches, reserve a manifest, then assess with bounded target concurrency.
 
     Return the batch ID, including when its branches failed or a concurrent call
     already claimed it. No scientific outcome is inferred from this return value.
     Duplicate protection lasts only as long as the retained manifest.
     """
+    if type(max_workers) is not int or not 1 <= max_workers <= 4:
+        raise ValueError('Batch workers must be an integer between 1 and 4')
     if submission_token is None:
         raise ValueError('A submission token is required')
     values, rows = deepcopy(values), list(rows)
@@ -48,13 +55,26 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
     if not runs.batches.claim_execution(batch_id, owner):
         return batch_id
     total = len(preflight['sources']) * len(purposes)
+    source_positions = {child['source']['source_id']: (i + 1, child['source']['name'])
+                        for i, child in enumerate(preflight['sources'])}
 
-    def notify(stage, completed, *, source_id=None, purpose=None, event=None):
+    progress_lock = RLock()
+    completed = 0
+    stopped = Event()
+
+    def notify(stage, count=None, *, source_id=None, purpose=None, event=None):
+        with progress_lock:
+            publish(stage, completed if count is None else count, source_id=source_id, purpose=purpose, event=event)
+
+    def publish(stage, count, *, source_id=None, purpose=None, event=None):
         if progress is not None:
             try:
                 progress(dict(event or {}, stage=stage, batch_id=batch_id,
                               source_id=source_id, purpose=purpose,
-                              batch_completed=completed, batch_total=total))
+                              source_position=source_positions.get(source_id, (None, None))[0],
+                              source_name=source_positions.get(source_id, (None, None))[1],
+                              source_total=len(preflight['sources']),
+                              batch_completed=count, batch_total=total, batch_workers=max_workers))
             except Exception:
                 # Progress reporting must not affect execution or saved science.
                 logger.warning('Batch progress observer failed', exc_info=True)
@@ -71,17 +91,28 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
         notify('batch_finished', total)
         return batch_id
 
-    completed = 0
-    for index, child in enumerate(preflight['sources']):
+    def assess_target(index, child):
+        try:
+            assess_branches(index, child)
+        except Exception:
+            stopped.set()
+            raise
+
+    def assess_branches(index, child):
+        nonlocal completed
         source_id = child['source']['source_id']
         for purpose in purposes:
+            if stopped.is_set():
+                return
             document = preflights[purpose]['sources'][index]['document']
             runs.batches.update(batch_id, owner, source_id, purpose, 'RUNNING')
-            notify('batch_branch_started', completed, source_id=source_id, purpose=purpose)
-            observer = (observe_progress(lambda event: notify(event['stage'], completed,
+            notify('batch_branch_started', source_id=source_id, purpose=purpose)
+            observer = (observe_progress(lambda event: notify(event['stage'],
                         source_id=source_id, purpose=purpose, event=event)) if progress else nullcontext())
+            timing = PerformanceRecorder()
+            started = perf_counter()
             try:
-                with observer:
+                with observer, timing.record():
                     result = pinned.assess(document)
                     if result.document is None:
                         raise ValueError('Assessment returned no report')
@@ -93,7 +124,28 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
                 # never continue source queries without an accountable manifest.
                 runs.batches.update(batch_id, owner, source_id, purpose, 'FAILED',
                                     error='Assessment or report storage failed. Inspect server logs.')
-            completed += 1
-            notify('batch_branch_finished', completed, source_id=source_id, purpose=purpose)
+            finally:
+                logger.info('Batch %s target %s %s wall_seconds=%.3f stages=%s',
+                            batch_id, source_id, purpose, perf_counter() - started,
+                            [(s.name, round(s.wall_seconds, 3), round(s.thread_cpu_seconds, 3))
+                             for s in timing.stages])
+            with progress_lock:
+                completed += 1
+                notify('batch_branch_finished', source_id=source_id, purpose=purpose)
+
+    if max_workers == 1:
+        for index, child in enumerate(preflight['sources']):
+            assess_target(index, child)
+    else:
+        with ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix='batch-target') as executor:
+            futures = [executor.submit(assess_target, index, child)
+                       for index, child in enumerate(preflight['sources'])]
+            try:
+                for future in futures:
+                    future.result()
+            finally:
+                if stopped.is_set():
+                    for future in futures:
+                        future.cancel()
     notify('batch_finished', completed)
     return batch_id

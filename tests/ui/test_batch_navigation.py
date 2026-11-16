@@ -69,14 +69,20 @@ def test_evicted_current_and_sibling_reports_keep_return_path(client):
     runs = client.application.extensions['assessment_runs']
     runs._max_runs = 1
     location, manifest = batch(client)
+    overview = client.get(location)
+    assert b'3 previously saved reports are no longer available' in overview.data
+    assert b'Completed \xc2\xb7 report unavailable' in overview.data
     old = manifest['sources'][0]['reports'][0]['run_id']
     response, navigation = nav(client, '/runs/' + old)
     assert response.status_code == 404 and navigation
     assert navigation.find('a', string='Back to batch overview')['href'] == location + '#source-line-2'
     assert 'Current report unavailable' in navigation.text
-    latest = manifest['sources'][1]['reports'][1]['run_id']
+    index, latest = next((i, r['run_id']) for i, source in enumerate(manifest['sources'])
+                         for r in source['reports'] if r['availability'] == 'AVAILABLE')
     _, navigation = nav(client, '/runs/' + latest + '/visualization')
-    assert navigation.find('a', string='Previous target: first · View status')['href'] == location + '#source-line-2'
+    label = 'Previous target: first' if index else 'Next target: second'
+    anchor = '#source-line-2' if index else '#source-line-3'
+    assert navigation.find('a', string=label + ' · View status')['href'] == location + anchor
 
 
 def test_owner_parent_lifetime_and_standalone_reports(client):
