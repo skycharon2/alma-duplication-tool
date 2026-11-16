@@ -26,6 +26,8 @@ function initializeForm(form) {
   const track = form.querySelector('[role="progressbar"]');
   const fill = track?.querySelector('span');
   const stages = {
+    batch_started: 'Starting batch', batch_branch_started: 'Checking next target',
+    batch_branch_finished: 'Target check finished', batch_finished: 'Batch finished',
     validation: 'Checking input', archive_search: 'Searching Archive TAP',
     archive_ready: 'Archive candidates retrieved', queue_load: 'Loading and preparing Queue CSV',
     queue_ready: 'Queue candidates prepared', aq: 'Querying AQ array evidence',
@@ -41,6 +43,9 @@ function initializeForm(form) {
     if (stageLabel) stageLabel.textContent = stages[state.stage] || 'Assessment is running';
     const current = state.stages[state.stage] || {};
     const {completed, total, unit} = current;
+    if (form.dataset.workflow === 'batch' && Number.isInteger(current.batch_total)) {
+      stageLabel.textContent += ` · ${current.batch_completed} / ${current.batch_total} checks finished`;
+    }
     const determined = Number.isInteger(total) && total > 0 && Number.isInteger(completed);
     track?.classList.toggle('is-determinate', determined);
     if (track) track.hidden = !determined;

@@ -2,6 +2,7 @@
 from collections import OrderedDict
 from copy import deepcopy
 from datetime import datetime, timezone
+import hashlib
 import json
 import re
 from threading import RLock
@@ -23,11 +24,13 @@ class BatchStore:
             raise ValueError('Batch retention limits must be positive integers')
         self._runs, self._clock = runs, clock
         self._max_batches, self._max_bytes = max_batches, max_bytes
-        self._records, self._reverse = OrderedDict(), {}
+        self._records, self._reverse, self._submissions = OrderedDict(), {}, {}
         self._lock, self._closed = RLock(), False
 
     def _remove(self, batch_id):
         item = self._records.pop(batch_id)
+        if item.get('submission_token') is not None:
+            self._submissions.pop((item['owner'], item['submission_token']), None)
         for source in item['manifest']['sources']:
             for report in source['reports']:
                 if report['run_id']:
@@ -44,6 +47,7 @@ class BatchStore:
             self._closed = True
             self._records.clear()
             self._reverse.clear()
+            self._submissions.clear()
 
     @staticmethod
     def _size(manifest):
@@ -53,10 +57,14 @@ class BatchStore:
     def _finished(manifest):
         return all(r['state'] in TERMINAL for s in manifest['sources'] for r in s['reports'])
 
-    def create(self, owner, shared_setup, sources, input_sha256, purposes):
+    def create(self, owner, shared_setup, sources, input_sha256, purposes, *,
+               submission_token=None, reserve_execution=False):
         """Reserve an ordered batch; sources are parsed source-list records."""
         if not isinstance(owner, str) or not owner or len(owner) > 256:
             raise ValueError('A bounded browser owner token is required')
+        if submission_token is not None and (not isinstance(submission_token, str) or
+                re.fullmatch('[a-f0-9]{32}', submission_token) is None):
+            raise ValueError('Expected a 32-character hexadecimal submission token')
         if not isinstance(shared_setup, dict):
             raise ValueError('Expected shared setup mapping')
         if not isinstance(input_sha256, str) or not re.fullmatch('[a-f0-9]{64}', input_sha256):
@@ -78,13 +86,29 @@ class BatchStore:
         for source in sources:
             manifest['sources'].append(dict(source=source, source_id=source['source_id'],
                 reports=[dict(purpose=p, state='PENDING', run_id=None, error=None) for p in purposes]))
-        size = self._size(manifest)
+        signature = hashlib.sha256(json.dumps(
+            {k: v for k, v in manifest.items() if k not in {'batch_id', 'created_at'}},
+            sort_keys=True, ensure_ascii=False, allow_nan=False).encode('utf-8')).hexdigest()
+        reserved_size = 0
+        if reserve_execution:
+            reserved = deepcopy(manifest)
+            for source in reserved['sources']:
+                for report in source['reports']:
+                    # Execution stores short generic ASCII errors, never raw exceptions.
+                    report.update(state='COMPLETED', run_id='0' * 65, error='x' * 128)
+            reserved_size = self._size(reserved)
+        size = max(self._size(manifest), reserved_size)
         if size > self._max_bytes:
             raise ValueError('Batch manifest exceeds retention byte budget')
         with self._lock:
             self.prune()
             if self._closed:
                 raise ValueError('Batch store is closed')
+            previous = self._submissions.get((owner, submission_token)) if submission_token else None
+            if previous is not None:
+                if self._records[previous]['signature'] != signature:
+                    raise ValueError('Submission token already used with different inputs')
+                return previous
             victims = []
             count, total = len(self._records) + 1, sum(i['size'] for i in self._records.values()) + size
             for key, item in self._records.items():
@@ -99,13 +123,29 @@ class BatchStore:
             for key in victims:
                 self._remove(key)
             self._records[batch_id] = dict(owner=owner, manifest=manifest, size=size,
+                                          reserved_size=reserved_size, claimed=False,
+                                          submission_token=submission_token, signature=signature,
                                           expires_at=self._clock() + self._runs.max_age)
+            if submission_token is not None:
+                self._submissions[(owner, submission_token)] = batch_id
         return batch_id
 
     def _owned(self, batch_id, owner):
         self.prune()
         item = self._records.get(batch_id)
         return item if item is not None and item['owner'] == owner else None
+
+    def claim_execution(self, batch_id, owner):
+        """Atomically grant one execution attempt for a retained batch."""
+        with self._lock:
+            item = self._owned(batch_id, owner)
+            if item is None:
+                raise KeyError('Batch unavailable')
+            if item['claimed'] or any(r['state'] != 'PENDING'
+                                      for s in item['manifest']['sources'] for r in s['reports']):
+                return False
+            item['claimed'] = True
+            return True
 
     def update(self, batch_id, owner, source_id, purpose, state, *, run_id=None, error=None):
         """Record one branch transition; terminal results cannot be overwritten."""
@@ -138,6 +178,8 @@ class BatchStore:
                     raise ValueError('Cannot attach an unavailable report')
             report.update(updated)
             size = self._size(manifest)
+            if not self._finished(manifest):
+                size = max(size, item['reserved_size'])
             if sum(i['size'] for i in self._records.values()) - item['size'] + size > self._max_bytes:
                 raise ValueError('Batch manifest exceeds retention byte budget')
             item.update(manifest=manifest, size=size)

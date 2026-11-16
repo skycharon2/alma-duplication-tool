@@ -17,7 +17,6 @@ from alma_duplicate.progress import observe_progress
 from alma_duplicate.ui.progress import ProgressStore
 from alma_duplicate.ui.reports import load_reports
 from alma_duplicate.ui.calculation_view import calculation_view, line_preparation
-from alma_duplicate.auto_retrieval import automatic_scope
 from alma_duplicate.ui.report_view import (
     criterion_view, context_identity, display_number, STATUS_LABELS,
     criterion_explanation, criterion_status, pair_title, standalone_criteria, PURPOSE_LABELS,
@@ -29,10 +28,9 @@ from alma_duplicate.ui.visualization import visualization_data
 from alma_duplicate.ui.queue_geometry_visualization import queue_geometry_visualization_data
 from alma_duplicate.ui.unified_queue_visualization import merge_queue_matches
 from alma_duplicate.ui.run_store import DEFAULT_DISK_BYTES, DEFAULT_MAX_AGE
-from alma_duplicate.ui.proposed import assessment_supported, contributing_windows, initial_form, read_form, validate_form
+from alma_duplicate.ui.proposed import assessment_supported, initial_form, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
-from alma_duplicate.ui.managed_queue import managed_queue_status
-from alma_duplicate.ui.archive_status import archive_configuration_status, archive_run_status
+from alma_duplicate.ui.archive_status import archive_run_status
 from alma_duplicate.ui.mosaic_form import (
     prepare_mosaic_validation, remove_mosaic_upload, replace_mosaic_upload, restore_mosaic_upload,
 )
@@ -119,6 +117,8 @@ def create_app(config=None):
     weakref.finalize(app, runs.close)
     progress = ProgressStore()
     app.extensions["assessment_progress"] = progress
+    from alma_duplicate.ui.batch_routes import register_batch_routes
+    register_batch_routes(app, configured, runs, progress)
 
     @app.before_request
     def expire_runs():
@@ -142,6 +142,8 @@ def create_app(config=None):
                 hidden.update(retained[1:])
         return render_template("reports.html", reports=reports,
                                recent_runs=[row for row in recent if row['id'] not in hidden],
+                               recent_batches=runs.batches.summaries(
+                                   session.get('batch_history', []), session.get('batch_owner')),
                                retention_hours=runs.max_age / 3600)
 
     def artifact(report_id):
@@ -683,39 +685,9 @@ def create_app(config=None):
         return _render_form(state, mosaic_entry=not legacy_post)
 
     def _render_form(state, *, mosaic_entry):
-        values, rows = state.values, state.rows
-        if state.mosaic_preview:
-            state.mosaic_preview["array"] = values.get("mosaic_array", "12m")
-            state.mosaic_preview["fixed_icrs_confirmed"] = values.get("mosaic_fixed_icrs") == "on"
-            state.mosaic_preview["complete_confirmed"] = values.get("mosaic_complete") == "on"
-        for row in rows + values.get("spw_rows", []):
-            values.setdefault(row + "_id", row)
-        # Carry the shared target value into new local controls without replacing
-        # explicit per-frequency values, including deliberately cleared inputs.
-        if values.get("redshift", "").strip():
-            values.setdefault("continuum_redshift", values["redshift"])
-            for row in rows:
-                values.setdefault(row + "_redshift", values["redshift"])
-        selected = contributing_windows(values)
-        from alma_duplicate.ui.normal_line_input import uses_separated_input
-        physical_rows = values.get('spw_rows', []) if uses_separated_input(values) else rows
-        known_ids = {values[row + "_id"] for row in physical_rows}
-        stale_ids = list(dict.fromkeys(value for value in selected if value not in known_ids))
+        from alma_duplicate.ui.form_context import form_context
         return render_template("proposed_mosaic.html" if mosaic_entry else "proposed_single.html",
-                               values=values, rows=rows,
-                               mosaic_entry=mosaic_entry,
-                               result=state.result, issues=state.issues, document=state.document,
-                               selected_windows=selected, stale_ids=stale_ids,
-                               pending_removal=state.pending_removal, edit_notice=state.edit_notice,
-                               added_row=state.added_row,
-                               purpose_updated=state.purpose_updated,
-                               scope_updated=state.scope_updated, assessment_supported=assessment_supported(values),
-                               mosaic_preview=state.mosaic_preview, mosaic_preview_error=state.mosaic_preview_error,
-                               mosaic_ready=state.mosaic_ready,
-                               configured=configured, execution_error=state.execution_error, auto_scope=automatic_scope(),
-                               archive_status=archive_configuration_status(configured.archive_kind),
-                               queue_status=(managed_queue_status(configured.managed_queue_root)
-                                             if configured.managed_queue_root else None))
+                               mosaic_entry=mosaic_entry, **form_context(state, configured))
 
     @app.post("/sky-preview")
     def sky_preview():

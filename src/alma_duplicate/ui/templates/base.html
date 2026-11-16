@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}ALMA Duplication Assessment{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='workbench.css') }}">
+  {% if batch_navigation %}<link rel="stylesheet" href="{{ url_for('static', filename='batch.css') }}">{% endif %}
   {% block extra_head %}{% endblock %}
   <link rel="stylesheet" href="{{ url_for('static', filename='glass.css') }}">
 </head>
@@ -30,6 +31,7 @@
     <nav class="navigation" aria-label="Main navigation">
       <div class="page-width nav-inner">
         <a href="{{ url_for('proposed') }}" {% if request.endpoint in ['proposed', 'run_view'] %}class="current" aria-current="page"{% endif %}>Proposed observation</a>
+        <a href="{{ url_for('batch.proposed') }}" {% if request.endpoint in ['batch.proposed', 'batch.overview'] %}class="current" aria-current="page"{% endif %}>Multi-source</a>
         <a href="{{ url_for('report_index') }}" {% if request.endpoint in ['report_index', 'report_view'] %}class="current" aria-current="page"{% endif %}>Existing reports</a>
         {% if visualization_url %}<a href="{{ visualization_url }}" {% if request.endpoint in ['run_visualization', 'report_visualization', 'mosaic_visualization'] %}class="current" aria-current="page"{% endif %}>Explore report</a>{% endif %}
         <a class="portal-link" href="https://almascience.eso.org/">ALMA Science Portal <span aria-hidden="true">↗</span></a>
@@ -37,6 +39,7 @@
     </nav>
   </header>
   <main id="main" class="page-width" tabindex="-1">
+    {% if batch_navigation %}{% include "_batch_navigation.html" %}{% endif %}
     {% if failed_branches %}<section class="notice" role="status" aria-label="Incomplete assessment">
       <h2>Some checks could not be completed</h2>
       <p>Completed reports are available below. Failed checks have no duplication verdict.</p>

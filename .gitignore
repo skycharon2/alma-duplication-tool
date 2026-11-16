@@ -36,3 +36,6 @@ data/cache/
 
 # Temporary CLI reports; curated evidence is in docs/evidence.
 /reports/
+
+# Local browser verification artifacts
+.playwright-cli/

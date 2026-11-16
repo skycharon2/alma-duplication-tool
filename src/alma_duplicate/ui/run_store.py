@@ -398,6 +398,20 @@ class RunStore:
                 return None
             return self._queue_page(item, projection, page, view)
 
+    def overview(self, run_id):
+        """Read saved summary/index facts without loading contexts or rerunning rules."""
+        with self._lock:
+            self._prune_locked()
+            item = self._runs.get(run_id)
+            if item is None:
+                return None
+            projection = json.loads((item.directory / 'view.json').read_bytes())
+            queue = projection.get('queue_index', {}).get('entries', [])
+            return dict(summary=projection.get('summary', {}),
+                        sources=projection.get('source_overview', []),
+                        queue_geometry_counts={bucket: sum(e['bucket'] == bucket for e in queue)
+                                               for bucket in ('matching', 'review', 'not_met')})
+
     def summaries(self, run_ids):
         """List only explicitly supplied browser links, without loading contexts."""
         with self._lock:

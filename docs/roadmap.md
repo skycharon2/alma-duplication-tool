@@ -80,11 +80,12 @@ reason to split a scientifically tested path.
 ## Multi-source Single Pointing
 
 The [reviewed multi-source plan](multi_source_assessment.md) adds independent
-fixed ICRS targets with shared scientific input. Steps 1–3 (offline parser,
+fixed ICRS targets with shared scientific input. Steps 1–6 (offline parser,
 five-target fixtures, independent request generation, shared-validator
-preflight and bounded batch/report lifecycle) are implemented. Serial execution
-and browser navigation remain planned; no batch browser entry
-is available yet. This work preserves existing scientific rules.
+preflight, bounded batch/report lifecycle, serial execution with one pinned
+Queue snapshot, upload form, batch overview and child-report navigation) are
+implemented. The browser entry is `/proposed/batch`. Batch execution remains
+serial and process-local with bounded temporary report retention. This work preserves existing scientific rules.
 
 ## Change and verification gates
 

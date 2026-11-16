@@ -19,9 +19,10 @@
 {% set queue_mosaic = geometry == 'MOSAIC' and values.get('sources') == ['QUEUE'] %}
 {% set normal_records = (values.get('normal_form_version') == '2' and target_kind == 'FIXED' and values.get('intents')) or values.get('normal_line_records') == '1' %}
 {% if normal_records and rows %}{% set line_layout = true %}{% endif %}
-<div class="page-heading proposal-heading"><div><h1>Proposed observation</h1><p>Define your target and the sensitivity you plan to achieve.</p></div></div>
+{% block form_heading scoped %}<div class="page-heading proposal-heading"><div><h1>Proposed observation</h1><p>Define your target and the sensitivity you plan to achieve.</p></div></div>{% endblock %}
 {% if not configured.enabled and target_kind != 'SUN' %}<p class="proposal-intro">Input validation only. No assessment source is configured.</p>{% endif %}
-<form method="post" enctype="multipart/form-data" action="{{ url_for('proposed_mosaic') if mosaic_entry else url_for('proposed') }}" class="proposed-form" data-workflow="{{ 'mosaic' if mosaic_entry else 'single' }}" data-mosaic-url="{{ url_for('proposed_mosaic') }}" data-single-url="{{ url_for('proposed') }}" data-progress-url="{{ url_for('assessment_progress', token='TOKEN') }}" novalidate>
+<form method="post" enctype="multipart/form-data" action="{{ form_action or (url_for('proposed_mosaic') if mosaic_entry else url_for('proposed')) }}" class="proposed-form" data-workflow="{{ 'batch' if batch_entry else 'mosaic' if mosaic_entry else 'single' }}" data-mosaic-url="{{ url_for('proposed_mosaic') }}" data-single-url="{{ url_for('proposed') }}" data-progress-url="{{ batch_progress_url or url_for('assessment_progress', token='TOKEN') }}" novalidate>
+{% block form_metadata %}{% endblock %}
 {% if values.get('normal_form_version') == '2' %}<input type="hidden" name="normal_form_version" value="2">{% endif %}
 {% if normal_records %}<input type="hidden" name="normal_line_records" value="1">{% endif %}
 <button type="submit" name="action" value="validate" hidden>Validate input</button>
@@ -29,6 +30,7 @@
 <div class="proposal-layout">
 
 <div class="proposal-fields">
+{% block target_input scoped %}
 <section id="observation-type" tabindex="-1" {% if scope_updated %}data-scope-updated{% endif %}><h2>Target</h2>
 
 <div class="form-pair target-identity-grid">
@@ -54,6 +56,7 @@
 </div>
 <button class="button" type="submit" name="action" value="scope" data-update-scope>Update observation type</button>
 </section>
+{% endblock %}
 {% if execution_error %}<section id="execution-error" class="removal-notice" role="alert" tabindex="-1"><h2>{{ 'Solar exemption' if target_kind == 'SUN' else 'Assessment not completed' }}</h2><p>{{ execution_error }}</p></section>{% endif %}
 {% if target_kind == 'SUN' %}<details class="solar-retained" id="solar-retained"><summary>Retained observation inputs (not used for a Solar duplication check)</summary><p>These values are kept when switching target type. You do not need to fill them for a Solar duplication check; supplied values are still validated on export.</p>{% endif %}
 {% if pending_removal %}<section class="removal-notice" id="remove-confirmation" tabindex="-1" role="alert"><h2>Remove Window {{ rows.index(pending_removal) + 1 }}?</h2><p>This removes its frequency, bandwidth and LINE sensitivity. Any selected continuum reference will remain flagged for review; the aggregate RMS will not be recalculated.</p><button class="button" name="action" value="confirm-remove:{{ pending_removal }}">Confirm removal</button> <button class="button" name="action" value="cancel-remove">Keep window</button></section>{% endif %}
@@ -63,6 +66,7 @@
 {{ messages('position') }}
 
 {% if target_kind == 'MOVING' %}<p class="field-note">Use the object name for future moving-object matching. This version retains the name but does not resolve names, aliases or ephemerides.</p>{% endif %}
+{% block coordinate_input scoped %}
 {% if target_kind != 'FIXED' %}<details><summary>Retained coordinates</summary>{% endif %}
 {% if geometry != 'MOSAIC' %}
 <div class="form-pair"><div class="coordinate-control"><div>{{ input('ra', 'Right ascension') }}</div><div>{{ select('ra_format', 'RA format', ['DEG','HMS'], 'DEG') }}</div></div><div class="coordinate-control"><div>{{ input('dec', 'Declination') }}</div><div>{{ select('dec_format', 'Dec format', ['DEG','DMS'], 'DEG') }}</div></div></div>
@@ -71,6 +75,7 @@
 
 
 
+{% endblock %}
 <details><summary>Setup identity and frequency frame</summary>{{ input('setup_id', 'Setup ID (automatic)', true) }}<p>Frequency frame is recorded as UNKNOWN. No observing reference frame is inferred.</p></details>
 </section>
 {% block mosaic_pointings scoped %}{% endblock %}
@@ -196,11 +201,14 @@
 <p id="assessment-waiting-note" role="status" hidden>This can take several minutes. Keep this page open. The timer shows waiting time, not completion progress.</p>
 </div>
 <div class="input-actions" id="form-actions">{% if configured.enabled and target_kind != 'SUN' %}<button class="button primary" type="submit" name="action" value="assess" {% if not assessment_supported or (geometry == 'MOSAIC' and (not values.get('sources') or ('ARCHIVE' in values.sources and not configured.live_archive) or ('QUEUE' in values.sources and not (configured.queue_csv or configured.managed_queue_root)))) %}disabled aria-describedby="scope-support"{% endif %}>Run assessment</button>{% endif %}<button class="button{% if not configured.enabled or not assessment_supported %} primary{% endif %}" type="submit" name="action" value="validate">Validate input</button></div>
+{% block input_export scoped %}
 <details class="input-export"><summary>Export input</summary>{% if geometry == 'MOSAIC' %}<p>The request JSON contains observing requirements only. Keep the original OT file separately; the temporary upload is not included in this export.</p>{% endif %}<button class="button" type="submit" name="action" value="download">Validate and download request JSON</button>
 <p class="field-note">{% if target_kind == 'SUN' %}Export validates the retained input only. Solar observations do not require a duplication check.{% else %}Download checks the current input. Valid inputs may still lack scientific evidence. Validation and request download do not run an assessment.{% endif %}</p>
 <p class="field-note">Reports are retained temporarily. Use the report’s technical downloads to keep a copy.</p></details>
 {% if document %}<details><summary>Request JSON from the last validation</summary><pre class="report-json">{{ document | tojson(indent=2) }}</pre></details>{% endif %}
+{% endblock %}
 </div><aside class="proposal-summary" aria-label="Input status and sections">
+{% block form_sidebar scoped %}
 <section class="observation-summary" aria-label="Your observation"><h2>Your observation</h2>
 <p class="summary-name" data-summary="target">{{ values.get('target_name') or 'Unnamed target' }}</p>
 <dl class="summary-values">
@@ -229,6 +237,7 @@
 {% if edit_notice %}<p role="status">{{ edit_notice }}</p>{% endif %}
 </section>
 <nav class="proposal-sections" aria-label="Form sections"><h2>On this page</h2><a href="#observation-type">Target</a><a href="#requirements">Scientific requirements</a><a href="#search">Data sources</a></nav>
+{% endblock %}
 
 </aside></div></form>
 <aside id="field-guide" class="help-popover" role="dialog" aria-modal="false" aria-labelledby="guide-title" hidden><header class="popover-header"><h2 id="guide-title"></h2><button type="button" id="close-guide" aria-label="Close help">×</button></header><div id="guide-content"></div></aside>
