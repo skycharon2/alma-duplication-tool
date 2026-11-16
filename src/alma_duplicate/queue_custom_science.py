@@ -133,6 +133,8 @@ def custom_object_results(candidates):
         key = (group["project_code"], group["target_name"])
         obj = objects.setdefault(key, dict(project_code=key[0], target_name=key[1],
             candidate_ids=[], truth_by_intent={}, matching_arrays_by_intent={}))
+        obj['unassessed_arrays'] = sorted(set(obj.get('unassessed_arrays', [])).union(
+            c.get('pointing_ownership', {}).get('unassessed_arrays', [])))
         obj["candidate_ids"].append(c["candidate_id"])
         for branch in c["science"]["branches"]:
             intent = branch["branch"]
@@ -186,9 +188,18 @@ def assess_queue_custom_science(parsed, request, proposed, *, candidate_id=None,
             raise ValueError("Custom group has conflicting spectral/performance operands")
         context = replace(first, context_id=f"QUEUE-CUSTOM:{candidate['candidate_id']}")
         variants = []
+        ownership = candidate['pointing_ownership']
         for position in candidate["position"]["beam_variants"]:
             common = _common(request, context, position)
             criteria, branches, pairs, pairing = list(common), [], [], None
+            if f"{int(position['diameter_m'])}M" in ownership['unassessed_arrays']:
+                branches = [BranchAssessment(intent, context.context_id, 'INDETERMINATE', Truth.UNKNOWN,
+                    REQUIRED[intent], ('CUSTOM_ARRAY_POINTINGS_UNAVAILABLE',),
+                    method_version='queue_custom_unassessed_array_1', decision_refs=(DECISION,),
+                    scope='UNASSESSED_CUSTOM_ARRAY') for intent in request.intents]
+                variants.append(dict(diameter_m=position['diameter_m'], criteria=criteria,
+                                     branches=branches, line_pairs=[], line_pairing=None))
+                continue
             if setup is not None:
                 continuum = tuple(_rms_basis(r, proposed) if r.criterion_id == "CONT-RMS" else r
                     for r in evaluate_queue_continuum(continuum_request, context, common, mosaic=True))
@@ -207,8 +218,12 @@ def assess_queue_custom_science(parsed, request, proposed, *, candidate_id=None,
             branches = tuple(BranchAssessment(intent, context.context_id, "INDETERMINATE", Truth.UNKNOWN,
                 REQUIRED[intent], ("ARRAY_INFERENCE_UNRESOLVED",), method_version="queue_custom_array_or_1",
                 decision_refs=(DECISION,), scope="SAME_CUSTOM_CANDIDATE_ONLY") for intent in request.intents)
-        candidate["science"] = dict(context_id=context.context_id,
-            model_status=(MODEL_STATUS if variants and all(
+        if ownership['unassessed_arrays']:
+            branches = tuple(replace(b, reasons=b.reasons + ('CUSTOM_REQUESTED_ARRAYS_UNASSESSED',))
+                             for b in branches)
+        candidate["science"] = dict(pointing_ownership=ownership, limitations=candidate['limitations'], context_id=context.context_id,
+            assessment_completeness='PARTIAL' if ownership['unassessed_arrays'] else 'ALL_REQUESTED_ARRAYS_ASSESSED',
+            model_status=(MODEL_STATUS if variants and any(
                 beam["model_status"] == MODEL_STATUS for beam in candidate["position"]["beam_variants"]
             ) else "UNRESOLVED"),
             representative_source_row_id=first.reference.raw_row_id,
@@ -217,7 +232,8 @@ def assess_queue_custom_science(parsed, request, proposed, *, candidate_id=None,
             branches=[asdict(b) for b in branches],
             matching_arrays_by_intent={intent: [v["diameter_m"] for v in variants
                 if any(b.branch == intent and b.truth is Truth.TRUE for b in v["branches"])] for intent in request.intents},
-            reasons=[] if variants else ["ARRAY_INFERENCE_UNRESOLVED"],
+            reasons=(['CUSTOM_REQUESTED_ARRAYS_UNASSESSED'] if ownership['unassessed_arrays'] else [])
+                    + ([] if variants else ['ARRAY_INFERENCE_UNRESOLVED']),
             variants=[dict(diameter_m=v["diameter_m"], criteria=[asdict(c) for c in v["criteria"]],
                 branches=[asdict(b) for b in v["branches"]], line_pairs=v["line_pairs"],
                 line_pairing=None if v["line_pairing"] is None else dict(
@@ -225,7 +241,7 @@ def assess_queue_custom_science(parsed, request, proposed, *, candidate_id=None,
                     proposed_enumeration_complete=v["line_pairing"].proposed_enumeration_complete,
                     candidate_enumeration_complete=v["line_pairing"].candidate_enumeration_complete,
                     reasons=list(v["line_pairing"].reasons))) for v in variants])
-    report.update(schema_version="queue_custom_csv_science_2",
+    report.update(schema_version="queue_custom_csv_science_3",
         scientific_status="COMPLETE_BRANCHES_EVALUATED_UNDER_PROJECT_ACCEPTED_CSV_MODEL",
         duplication_status="PER_CANDIDATE_AND_INTENT_RESULTS_NO_SEARCH_WIDE_ABSENCE_CLAIM",
         scientific_request=json_value(request.raw_input),

@@ -57,6 +57,23 @@ def submit(client, data):
     return client.post('/proposed/mosaic', data=data)
 
 
+def test_galactic_custom_report_and_explorer_keep_frame_and_array_scope(browser):
+    app, client = browser
+    Path(app.config['OFFLINE_QUEUE_CSV']).write_bytes(csv_bytes({'Mos. Coord.': 'galactic'}))
+    response = submit(client, form())
+    assert response.status_code == 303
+    document = client.get(response.location + '/download/report').json
+    candidate = document['geometry_reports']['CUSTOM_POINTING']['candidates'][0]
+    assert candidate['science']['matching_arrays_by_intent']['CONTINUUM'] == [12.]
+    assert candidate['position']['beam_variants'][0]['coverage'] is None
+    assert candidate['source_rows'][0]['center']['offset_frame'] == 'GALACTIC'
+    for suffix in ('', '/mosaic-visualization'):
+        page = client.get(response.location + suffix)
+        assert page.status_code == 200
+        assert 'ACA 7-m assessment not available' in page.text
+        assert 'Galactic offsets use a project coordinate model' in page.text
+
+
 @pytest.mark.parametrize('version,intents', [('', ('CONTINUUM',)), ('2', ('CONTINUUM',)),
     ('2', ('LINE',)), ('2', ('LINE','CONTINUUM'))])
 def test_existing_form_runs_queue_without_archive(browser, version, intents):
@@ -67,22 +84,26 @@ def test_existing_form_runs_queue_without_archive(browser, version, intents):
     assert report['schema_version'] == 'queue_mosaic_assessment_1'
     assert report['assessment_status'] == 'COMPLETED'
     assert set(report['sources']) == {'QUEUE'}
-    assert report['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['matching_arrays_by_intent'] == {intents[0]: [7., 12.]}
+    assert report['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['matching_arrays_by_intent'] == {intents[0]: [12.]}
     if len(intents) == 2:
         first_page = client.get(response.location).text
         sibling = re.search(r'href="([^"]+)">Continuum</a>', first_page).group(1)
         assert sibling != response.location
         assert response.location in client.get(sibling).text
         continuum = client.get(sibling + '/download/report').json
-        assert continuum['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['matching_arrays_by_intent'] == {'CONTINUUM': [7., 12.]}
+        assert continuum['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['matching_arrays_by_intent'] == {'CONTINUUM': [12.]}
     assert report['proposed']['sensitivity_basis'] == 'PER_POINTING'
     assert report['proposed']['setup_id'] == 'setup-1'
     if version == '2':
         assert report['scientific_request']['line_input_contract'] == 'SEPARATE_OBSERVATION_REQUIREMENTS_V2'
         if 'LINE' in intents:
-            assert report['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['variants'][0]['line_pairing']['proposed_enumeration_complete']
+            assert report['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['variants'][1]['line_pairing']['proposed_enumeration_complete']
     page = client.get(response.location)
     assert page.status_code == 200
+    assert 'ACA 7-m assessment not available' in page.text
+    visualization = client.get(response.location + '/mosaic-visualization')
+    assert visualization.status_code == 200
+    assert 'ACA 7-m assessment not available' in visualization.text
     assert 'Matching candidates' in page.text
     assert page.text.count('Results in this search') == 1
     assert 'matching Queue candidate configurations' in page.text

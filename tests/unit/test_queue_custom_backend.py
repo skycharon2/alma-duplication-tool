@@ -43,13 +43,13 @@ def variants(result):
     return result["candidates"][0]["position"]["beam_variants"]
 
 
-def test_csv_only_mixed_arrays_share_centers_with_distinct_beams():
+def test_mixed_arrays_only_bind_csv_centers_to_12m():
     report = assess_queue_custom_csv(parsed(), proposed())
     seven, twelve = variants(report)
-    assert seven["outcome"] == "SATISFIED"
-    assert seven["coverage"]["points"] == twelve["coverage"]["points"]
-    assert seven["radius_arcsec"] / twelve["radius_arcsec"] == pytest.approx(12/7)
-    assert report["candidates"][0]["explicit_point_diameters_m"] == [7., 12.]
+    assert seven["outcome"] == "UNKNOWN"
+    assert seven["coverage"] is None and seven["radius_arcsec"] is None
+    assert all(not p["relations"] for p in seven["points"])
+    assert report["candidates"][0]["explicit_point_diameters_m"] == [12.]
     assert twelve["outcome"] == "SATISFIED"
     assert twelve["coverage"]["complete"] is True
     assert twelve["model_status"] == "PROJECT_ACCEPTED"
@@ -67,7 +67,7 @@ def test_12m_only_and_7m_only_reuse_array_inference():
     assert variants(seven)[0]["outcome"] == "SATISFIED"
     inferred = assess_queue_custom_csv(parsed(lambda r: r.update({"Req. Ang. Res.": "30"})), proposed())
     assert [v["diameter_m"] for v in variants(inferred)] == [7.]
-    assert "CSV_EXPLICIT_CENTERS_SHARED_BY_INFERRED_ARRAYS" in inferred["candidates"][0]["profile_assumptions"]
+    assert "CSV_EXPLICIT_CENTERS_RESTRICTED_TO_POINTING_OWNER" in inferred["candidates"][0]["profile_assumptions"]
 
 
 def test_outside_complete_csv_group_fails_but_incomplete_proposal_stays_unknown():
@@ -78,7 +78,7 @@ def test_outside_complete_csv_group_fails_but_incomplete_proposal_stays_unknown(
     assert variants(incomplete)[1]["outcome"] == "UNKNOWN"
 
 
-@pytest.mark.parametrize("frame", ["galactic"])
+@pytest.mark.parametrize("frame", ["unsupported"])
 def test_unresolved_coordinates_not_promoted(frame):
     result = assess_queue_custom_csv(parsed(lambda r: r.update({"Mos. Coord.": frame})), proposed())
     assert all(v["coverage"] is None for v in variants(result))

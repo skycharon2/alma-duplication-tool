@@ -1,10 +1,10 @@
-"""Offline Custom CSV position pipeline; OT is validation evidence, not an input.
-
-The user-selected CSV model shares explicit centres across every inferred array,
-with a separate beam radius and assessment per diameter. This is a coverage
-approximation, not a reconstruction of array-specific executed pointing grids.
-"""
+"""Custom CSV coverage restricted to the project-interpreted pointing owner."""
 import math
+from dataclasses import asdict
+
+from alma_duplicate.queue_pointing_ownership import (
+    resolve_custom_pointing_array, LIMITATION_TITLE, LIMITATION_MESSAGE,
+)
 
 from alma_duplicate.geometry import primary_beam_fwhm_deg
 from alma_duplicate.queue_mosaic import OFFSET_METHOD, reconstruct_queue_mosaics
@@ -13,12 +13,12 @@ from alma_duplicate.rules.queue_mosaic_position import (
     QueueMosaicCoverage, _points, assess_queue_mosaic_position,
 )
 
-PROFILE = "QUEUE_CUSTOM_EXPLICIT_CSV_3"
+PROFILE = "QUEUE_CUSTOM_EXPLICIT_CSV_4"
 MODEL_STATUS = "PROJECT_ACCEPTED"
 MAX_TOTAL_PAIRS = 1_000_000
 ASSUMPTIONS = (
     "STRICT_EXPORT_GROUP_AS_COHERENT_CANDIDATE",
-    "CSV_EXPLICIT_CENTERS_SHARED_BY_INFERRED_ARRAYS",
+    "CSV_EXPLICIT_CENTERS_RESTRICTED_TO_POINTING_OWNER",
     "COVERAGE_SCOPE_ALL_RECORDED_ROWS_IN_THIS_CUSTOM_GROUP",
     "BLANK_COORDINATE_FRAME_USES_ICRS_CONVENTION",
     "FIXED_COORDINATES_WITHOUT_EPHEMERIS_PLACEHOLDER",
@@ -56,6 +56,11 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
     for candidate in candidates:
         rows = candidate["source_rows"]
         diameters = candidate["array_inference"]["diameters_m"]
+        ownerships = [resolve_custom_pointing_array(typed[r["source_row_id"]]) for r in rows]
+        ownership = asdict(ownerships[0])
+        if any(o != ownerships[0] for o in ownerships):
+            raise ValueError("Custom group has conflicting pointing ownership evidence")
+        owned_diameters = {"12M": [12.], "7M": [7.]}.get(ownership['pointing_array'], [])
         frequencies = [candidate_frequency(typed[r["source_row_id"]]) for r in rows]
         frequency, frequency_source, frequency_notes = frequencies[0]
         blockers = []
@@ -74,7 +79,7 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
             points = tuple(dict(id=r["source_row_id"], frame="ICRS",
                                 ra_deg=r["center"]["icrs_deg"][0], dec_deg=r["center"]["icrs_deg"][1])
                            for r in known_rows)
-            for diameter in diameters:
+            for diameter in owned_diameters:
                 # Validate only candidate beam data here. Binding, proposal and
                 # resource errors must still propagate rather than being hidden.
                 try:
@@ -87,22 +92,40 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
                 coverages.append(QueueMosaicCoverage(
                     candidate["candidate_id"], reconstruction["snapshot_sha256"],
                     tuple(r["source_row_id"] for r in rows), diameter, frequency,
-                    f"{PROFILE}:{frequency_source}", points, f"{PROFILE}:{OFFSET_METHOD}",
+                    f"{PROFILE}:{frequency_source}", points,
+                    f"{PROFILE}:" + ','.join(sorted({r['center'].get('method', OFFSET_METHOD) for r in known_rows})),
                     association_confirmed=True, complete=len(known_rows) == len(rows)))
         # Only the selected source context enters the position evaluator.
         position = assess_queue_mosaic_position(proposed, reconstruction, candidate["candidate_id"],
             coverages, boundary_epsilon_arcsec=boundary_epsilon_arcsec)
-        position["coverage_basis"] = "CSV_PROFILE_CONVENTIONS_NOT_VERIFIED_OWNERSHIP"
+        position["coverage_basis"] = "PROJECT_ADOPTED_CUSTOM_POINTING_OWNERSHIP"
         for variant in position["beam_variants"]:
             variant["model_status"] = MODEL_STATUS if variant["outcome"] != "UNKNOWN" else "UNRESOLVED"
             variant["association_basis"] = "PROFILE_CONVENTION_NOT_CALLER_CONFIRMATION"
-            variant["geometry_model"] = "CSV_SHARED_CENTERS_ARRAY_SPECIFIC_BEAM_UNION"
+            variant["geometry_model"] = "CSV_OWNER_CENTERS_ARRAY_SPECIFIC_BEAM_UNION"
             variant["reasons"].extend(blockers + coordinate_notes)
             if variant["diameter_m"] in beam_errors:
                 variant["reasons"].append(beam_errors[variant["diameter_m"]])
-        results.append(dict(candidate_id=candidate["candidate_id"], group=candidate["group"],
+        ownership['evaluated_arrays'] = [f'{int(c.diameter_m)}M' for c in coverages]
+        ownership['unassessed_arrays'] = [a for a in ownership['requested_arrays']
+                                          if a not in ownership['evaluated_arrays']]
+        for variant in position['beam_variants']:
+            if f"{int(variant['diameter_m'])}M" in ownership['unassessed_arrays']:
+                variant['reasons'].append('CUSTOM_ARRAY_POINTINGS_UNAVAILABLE')
+        limitations = ([dict(code='ACA_7M_POINTINGS_UNAVAILABLE', title=LIMITATION_TITLE,
+                            message=(LIMITATION_MESSAGE if '12M' in ownership['evaluated_arrays'] else
+                                'The CSV pointings are interpreted as the 12-m Array configuration. '
+                                'Corresponding ACA 7-m pointings are unavailable; the 12-m coverage '
+                                'also could not be assessed. Both limitations remain unresolved.'))]
+                      if ownership['pointing_array'] == '12M' and '7M' in ownership['requested_arrays'] else [])
+        if any(r['center']['offset_frame'] == 'GALACTIC' for r in rows):
+            limitations.append(dict(code='GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED',
+                title='Galactic offsets use a project coordinate model',
+                message='CSV RA/Dec are interpreted as ICRS references. Offsets are applied along Galactic axes '
+                        'and transformed back to ICRS. Numerical coordinate checks do not establish OT parity.'))
+        results.append(dict(pointing_ownership=ownership, limitations=limitations,candidate_id=candidate["candidate_id"], group=candidate["group"],
             grouping_method=candidate["grouping_method"], association_status=candidate["association_status"],
-            source_rows=rows, explicit_point_diameters_m=list(diameters),
+            source_rows=rows, explicit_point_diameters_m=owned_diameters,
             coverage_completeness=("COMPLETE_FOR_CSV_GROUP" if coverages and
                 len(coverages) == len(diameters) and all(c.complete for c in coverages)
                 else "NOT_ESTABLISHED"), profile_assumptions=list(ASSUMPTIONS),
@@ -113,7 +136,7 @@ def assess_queue_custom_csv(parsed, proposed, *, candidate_id=None, boundary_eps
                     reason="OUTSIDE_CUSTOM_GEOMETRY_SCOPE" if c["geometry_kind"] != "CUSTOM"
                     else "OUTSIDE_SELECTED_CANDIDATE")
                for c in all_candidates if c["candidate_id"] not in selected_ids]
-    return dict(schema_version="queue_custom_csv_position_2", profile=PROFILE,
+    return dict(schema_version="queue_custom_csv_position_3", profile=PROFILE,
         model_status=MODEL_STATUS, snapshot_sha256=reconstruction["snapshot_sha256"],
         source_as_of=reconstruction["source_as_of"], source_url=reconstruction["source_url"],
         operational_columns=reconstruction["operational_columns"], source_units=reconstruction["source_units"],

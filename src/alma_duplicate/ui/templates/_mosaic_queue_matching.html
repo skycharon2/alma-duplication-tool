@@ -4,6 +4,7 @@
 {% macro details(entries) %}
 {% for entry in entries %}
 {% set c = entry.candidate %}
+{% include "_queue_ownership_notice.html" %}
 <section class="member-result" id="queue-{{ c.candidate_id }}">
 <h3>{{ entry.target }} · {{ entry.project }}</h3>
 <p class="member-project">

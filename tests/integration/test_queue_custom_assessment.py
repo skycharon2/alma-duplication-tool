@@ -33,14 +33,14 @@ def test_array_branches_survive_unified_entry(changes, diameters):
     json.dumps(d, allow_nan=False)
 
 
-def test_only_7m_match_is_preserved():
+def test_missing_7m_coverage_is_not_a_match():
     from alma_duplicate.geometry import primary_beam_fwhm_deg
     req, _ = request()
     p = pointings(req)
     p['points'][0]['dec_deg'] += sum(primary_beam_fwhm_deg(230, d)/2 for d in (7, 12))/2
     s = science(run(proposed=p).document)
-    assert [v['branches'][0]['truth'] for v in s['variants']] == ['TRUE', 'FALSE']
-    assert s['matching_arrays_by_intent']['CONTINUUM'] == [7.]
+    assert [v['branches'][0]['truth'] for v in s['variants']] == ['UNKNOWN', 'FALSE']
+    assert s['matching_arrays_by_intent']['CONTINUUM'] == []
 
 
 def forbidden():
@@ -116,7 +116,7 @@ def test_complementary_array_criteria_do_not_become_match(monkeypatch):
                 replace(rms, outcome=O.NOT_SATISFIED if diameter == 7 else O.SATISFIED))
     monkeypatch.setattr(backend, 'evaluate_queue_continuum', complementary)
     s = science(run().document)
-    assert [v['branches'][0]['truth'] for v in s['variants']] == ['FALSE', 'FALSE']
+    assert [v['branches'][0]['truth'] for v in s['variants']] == ['UNKNOWN', 'FALSE']
     assert s['matching_arrays_by_intent']['CONTINUUM'] == []
 
 
@@ -149,7 +149,7 @@ def test_line_request_reaches_same_pair_science():
     result = assess_observation(raw, payload['search_options'], queue_custom=pointings(req),
         sources=AssessmentSources(queue_loader=lambda: parsed))
     assert result.status == 'COMPLETED'
-    assert science(result.document)['matching_arrays_by_intent']['LINE'] == [7., 12.]
+    assert science(result.document)['matching_arrays_by_intent']['LINE'] == [12.]
 
 
 def test_rectangle_is_reported_as_excluded():
@@ -168,8 +168,10 @@ def test_partial_centers_keep_known_coverage_and_complete_science():
     rows[1]['Long Offset'] = '324001'
     result = run(queue_rows(*rows))
     c = result.document['candidates'][0]
-    assert c['science']['matching_arrays_by_intent']['CONTINUUM'] == [7., 12.]
-    for v in c['position']['beam_variants']:
+    assert c['science']['matching_arrays_by_intent']['CONTINUUM'] == [12.]
+    assert c['position']['beam_variants'][0]['coverage'] is None
+    assert c['position']['beam_variants'][0]['outcome'] == 'UNKNOWN'
+    for v in c['position']['beam_variants'][1:]:
         assert v['outcome'] == 'SATISFIED'
         assert len(v['coverage']['points']) == 1
         assert len(v['coverage']['source_row_ids']) == 2
@@ -190,5 +192,7 @@ def test_invalid_candidate_beam_does_not_abort_healthy_candidate():
     assert result.status == 'COMPLETED'
     assert result.document['summary']['matching_candidates_by_intent']['CONTINUUM'] == 1
     broken = next(c for c in result.document['candidates'] if c['frequency']['value_ghz'] < 1)
-    assert all(v['outcome'] == 'UNKNOWN' and 'CANDIDATE_BEAM_UNREPRESENTABLE' in v['reasons']
-               for v in broken['position']['beam_variants'])
+    seven, twelve = broken['position']['beam_variants']
+    assert seven['outcome'] == twelve['outcome'] == 'UNKNOWN'
+    assert 'CUSTOM_ARRAY_POINTINGS_UNAVAILABLE' in seven['reasons']
+    assert 'CANDIDATE_BEAM_UNREPRESENTABLE' in twelve['reasons']

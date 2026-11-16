@@ -32,7 +32,7 @@ def test_continuum_requested_rms_and_duplicate_rows():
 
 @pytest.mark.parametrize('changes,truth',[
     ({'Ref.Frequency':'100'},'FALSE'),
-    ({'Mos. Coord.':'galactic'},'UNKNOWN'),
+    ({'Mos. Coord.':'galactic'},'TRUE'),
     ({'Req.Sensitivity':'100'},'FALSE'),
 ])
 def test_rejection_and_unresolved(changes,truth):

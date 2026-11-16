@@ -165,6 +165,8 @@ def queue_rows(page):
                     continue
                 yield dict(source='Queue', candidate=candidate['candidate_id'], target=entry['target'],
                            project=(entry.get('project') if entry.get('project') not in (None, 'Not recorded') else None),
+                           limitations=candidate.get('limitations', []),
+                           pointing_ownership=candidate.get('pointing_ownership'),
                            geometry=entry['kind'], context_id=science.get('context_id'),
                            array=f'{diameter:g} m' if diameter else '', inside=saved.get('counts', {}).get('INSIDE') if bound else None,
                            total=len(probes) if probes is not None else None,

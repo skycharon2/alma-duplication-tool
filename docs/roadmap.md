@@ -58,7 +58,7 @@ Operational requirements should determine that scope before deployment.
 ## Deferred extensions
 
 - Broader Queue geometry/array evidence beyond the accepted CSV Custom and ICRS
-  Rectangle models, including unsupported Galactic reconstruction, TP coverage,
+  Rectangle models, including independent Galactic OT validation, TP coverage,
   SPS expansion and array-specific executed-pointing ownership. Nondefault
   Rectangle spacing has no blanket OT parity claim.
 - Moving-target scientific inputs, methods and acceptance.

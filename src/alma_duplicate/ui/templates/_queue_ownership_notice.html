@@ -1,0 +1,6 @@
+{% for limitation in c.get('limitations', []) %}
+<aside class="unresolved-notice" role="note"><strong>{{ limitation.title }}</strong><p>{{ limitation.message }}</p></aside>
+{% endfor %}
+{% if c.get('pointing_ownership') and c.pointing_ownership.unassessed_arrays %}
+<p class="field-note">Unassessed arrays: {{ c.pointing_ownership.unassessed_arrays|join(', ') }}. Their duplication status remains UNKNOWN.</p>
+{% endif %}

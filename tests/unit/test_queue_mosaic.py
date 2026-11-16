@@ -87,14 +87,14 @@ def test_offset_is_east_north_and_raw_evidence_is_unchanged():
     assert len(group["source_rows"]) == 2 and group["unique_offset_count"] == 1
 
 
-def test_galactic_rectangle_is_preserved_without_guessing_reference_frame():
+def test_galactic_offsets_retain_icrs_reference_and_native_frame():
     def edit(rows):
         r = next(r for r in rows if r["Mosaic"] == "Rectangle")
         r.update(RA="34.7185", Dec="-0.465", **{"Mos. Coord.": "galactic", "Long Offset": "30"})
     report = reconstruct_queue_mosaics(parsed(edit))
     c = next(c for c in report["candidates"] if c["rectangle"] and c["rectangle"]["frame_raw"] == "galactic")
-    assert c["source_rows"][0]["center"]["icrs_deg"] is None
-    assert c["source_rows"][0]["center"]["reasons"] == ["GALACTIC_REFERENCE_FRAME_UNVERIFIED"]
+    assert c["source_rows"][0]["center"]["icrs_deg"] is not None
+    assert c["source_rows"][0]["center"]["reasons"] == ["GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED"]
     assert c["rectangle"]["pa_convention"] == "OT_P_SIDE_FROM_HORIZONTAL_SIGN_NOT_VERIFIED"
 
 

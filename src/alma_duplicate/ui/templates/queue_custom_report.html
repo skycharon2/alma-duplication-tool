@@ -17,6 +17,7 @@
 {% for intent, truth in obj.truth_by_intent.items() %}<p><strong>{{ intent }}: {{ labels[truth] }}</strong> · Matching arrays: {% for d in obj.matching_arrays_by_intent[intent] %}{{ d|int }} m{% if not loop.last %}, {% endif %}{% else %}none{% endfor %}</p>{% endfor %}
 {% for c in obj.setups %}<details class="queue-setup" {% if obj.setups|length == 1 %}open{% endif %}><summary>CSV configuration {{ loop.index }}{% if c.frequency.value_ghz is not none %} · {{ display_number(c.frequency.value_ghz) }} GHz{% endif %} · {{ c.display_spws }} listed SPWs{% if c.display_resolution %} · {{ c.display_resolution }}″{% endif %}{% for b in c.science.branches %} · {{ b.branch }}: {{ labels[b.truth] }}{% for d in c.science.matching_arrays_by_intent[b.branch] %} {{ d|int }} m{% endfor %}{% endfor %}</summary>
 {% for b in c.science.branches %}<p><strong>{{ b.branch }}: {{ labels.get(b.truth, b.truth) }}</strong> · Matching arrays: {% for d in c.science.matching_arrays_by_intent[b.branch] %}{{ d|int }} m{% if not loop.last %}, {% endif %}{% else %}none{% endfor %}</p>{% endfor %}
+{% include '_queue_ownership_notice.html' %}
 {% include '_queue_custom_configuration.html' %}
 <h5>Array comparisons</h5>
 {% if not c.science.variants %}<p>Array inference is unresolved.</p>{% endif %}

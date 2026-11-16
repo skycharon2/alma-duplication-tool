@@ -32,7 +32,7 @@ def _identity(payload):
 def _center(row):
     """Diagnostic projection using the existing local spherical-offset convention.
 
-    Galactic export reference-frame ambiguity is deliberately not guessed.
+    CSV RA/Dec remain ICRS; Mos. Coord. selects the native offset axes.
     No result here grants scientific coverage or array ownership.
     """
     s = row.spatial
@@ -40,9 +40,8 @@ def _center(row):
     result = dict(status="UNRESOLVED", icrs_deg=None, method=OFFSET_METHOD,
                   reference_frame="UNRESOLVED", offset_frame="UNRESOLVED",
                   source_frame_raw=s.coordinate_system_raw, reasons=[])
-    if frame not in ("", "icrs"):
-        result["reasons"] = ["GALACTIC_REFERENCE_FRAME_UNVERIFIED" if frame == "galactic"
-                             else "OFFSET_FRAME_UNSUPPORTED"]
+    if frame not in ("", "icrs", "galactic"):
+        result["reasons"] = ["OFFSET_FRAME_UNSUPPORTED"]
         return result
     ra, dec = s.ra_deg.value, s.dec_deg.value
     x, y = s.long_offset_arcsec.value, s.lat_offset_arcsec.value
@@ -55,14 +54,22 @@ def _center(row):
         result["reasons"] = ["POSSIBLE_EPHEMERIS_PLACEHOLDER"]
         return result
     origin = SkyCoord(ra=ra*u.deg, dec=dec*u.deg, frame="icrs")
+    if frame == 'galactic':
+        origin = origin.galactic
+        result.update(method='ICRS_REFERENCE_GALACTIC_SPHERICAL_OFFSETS_1',
+                      source_reference_icrs_deg=[ra, dec],
+                      native_reference_lonlat_deg=[float(origin.l.deg), float(origin.b.deg)],
+                      offset_definition='NATIVE_TANGENT_EAST_NORTH_ARCLENGTH',
+                      validation_scope='SPHERICAL_REFERENCE_TESTS_NOT_OT_PARITY')
     # Match the existing adapter's zero tolerance without altering source values.
     if abs(x) > s.zero_tolerance_arcsec or abs(y) > s.zero_tolerance_arcsec:
         origin = origin.directional_offset_by(math.atan2(x, y)*u.rad,
                                              math.hypot(x, y)*u.arcsec)
+    origin = origin.icrs
     result.update(status="DIAGNOSTIC_ONLY", icrs_deg=[origin.ra.deg, origin.dec.deg],
-                  reference_frame="ICRS", offset_frame="ICRS",
+                  reference_frame="ICRS", offset_frame="GALACTIC" if frame == 'galactic' else "ICRS",
                   zero_tolerance_arcsec=s.zero_tolerance_arcsec,
-                  reasons=["OT_OFFSET_PARITY_NOT_VERIFIED"] +
+                  reasons=(["GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED"] if frame == "galactic" else ["OT_OFFSET_PARITY_NOT_VERIFIED"]) +
                   (["BLANK_FRAME_EQUATORIAL_CONVENTION"] if not frame else []))
     return result
 

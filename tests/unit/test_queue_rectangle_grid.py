@@ -37,7 +37,7 @@ def test_ot_reference(case):
     ({'spacing_arcsec': 0}, 'NONPOSITIVE_SIZE_OR_SPACING'),
     ({'spacing_arcsec': float('nan')}, 'INVALID_OR_MISSING_GEOMETRY'),
     ({'spacing_arcsec': 1e-300}, 'POINTING_LIMIT_EXCEEDED'),
-    ({'frame': 'galactic'}, 'COORDINATE_FRAME_UNRESOLVED'),
+    ({'frame': 'unsupported'}, 'COORDINATE_FRAME_UNRESOLVED'),
     ({'frame': ''}, 'COORDINATE_FRAME_UNRESOLVED'),
     ({'length_arcsec': None}, 'INVALID_OR_MISSING_GEOMETRY'),
 ])
