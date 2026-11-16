@@ -47,24 +47,30 @@ def rule(variant, name):
     return next(c for c in variant["criteria"] if c["criterion_id"] == name)
 
 
-def test_both_inferred_arrays_return_independent_complete_matches():
+def test_mixed_arrays_only_12m_can_match():
     req, _ = request()
     result = assess_queue_custom_science(candidate(), req, pointings(req))
     s = science(result)
     assert result["model_status"] == s["model_status"] == "PROJECT_ACCEPTED"
     assert [v["diameter_m"] for v in s["variants"]] == [7., 12.]
-    assert [v["branches"][0]["truth"] for v in s["variants"]] == ["TRUE", "TRUE"]
+    assert [v["branches"][0]["truth"] for v in s["variants"]] == ["UNKNOWN", "TRUE"]
     assert s["branches"][0]["truth"] == "TRUE"
-    assert s["matching_arrays_by_intent"]["CONTINUUM"] == [7., 12.]
+    assert s["matching_arrays_by_intent"]["CONTINUUM"] == [12.]
+    assert s['pointing_ownership']['pointing_array'] == '12M'
+    assert s['pointing_ownership']['evaluated_arrays'] == ['12M']
+    assert s['pointing_ownership']['unassessed_arrays'] == ['7M']
+    assert s['assessment_completeness'] == 'PARTIAL'
+    assert result['object_results'][0]['unassessed_arrays'] == ['7M']
+    assert result['candidates'][0]['limitations'][0]['title'] == 'ACA 7-m assessment not available'
     assert rule(s["variants"][1], "CONT-RMS")["candidate"]["value"] == .15
     assert dict(rule(s["variants"][1], "CONT-RMS")["details"])["mosaic_overlap_gain"] == "NONE"
     json.dumps(result, allow_nan=False)
 
 
-def test_frequency_failure_can_resolve_both_branches_without_known_position():
+def test_frequency_failure_does_not_resolve_unassessed_7m():
     req, _ = request()
     result = assess_queue_custom_science(candidate({"Ref.Frequency": "100"}), req, pointings(req))
-    assert science(result)["branches"][0]["truth"] == "FALSE"
+    assert science(result)["branches"][0]["truth"] == "UNKNOWN"
     assert science(result)["matching_arrays_by_intent"]["CONTINUUM"] == []
 
 
@@ -73,7 +79,7 @@ def test_omitted_rms_basis_defaults_to_per_pointing():
     p = pointings(req)
     del p['sensitivity_basis']
     s = science(assess_queue_custom_science(candidate(), req, p))
-    assert s['matching_arrays_by_intent']['CONTINUUM'] == [7., 12.]
+    assert s['matching_arrays_by_intent']['CONTINUUM'] == [12.]
 
 
 @pytest.mark.parametrize("basis", [None, "COMBINED_IMAGE"])
@@ -90,7 +96,7 @@ def test_pointing_scope_and_source_identity_do_not_leak():
     incomplete = science(assess_queue_custom_science(candidate(), req, pointings(req, complete=False)))
     assert incomplete["model_status"] == "UNRESOLVED"
     assert incomplete["branches"][0]["truth"] == "UNKNOWN"
-    assert science(assess_queue_custom_science(candidate(), req, pointings(req, ra=0)))["branches"][0]["truth"] == "FALSE"
+    assert science(assess_queue_custom_science(candidate(), req, pointings(req, ra=0)))["branches"][0]["truth"] == "UNKNOWN"
     for field in ("source_name", "setup_id"):
         p = pointings(req); p[field] = "other"
         with pytest.raises(ValueError, match="target and setup"):
@@ -124,12 +130,12 @@ def test_line_reuses_same_spw_rules_and_returns_complete_12m_match():
     p = pointings(req)
     result = assess_queue_custom_science(candidate({"Project Code": "2024.1.00001.S", "Polarization": "DOUBLE", "Req.Sensitivity": "0.001", "Spec.Res. SPW 1": "0.9765625"}), req, p)
     s = science(result)
-    assert s["matching_arrays_by_intent"]["LINE"] == [7., 12.]
+    assert s["matching_arrays_by_intent"]["LINE"] == [12.]
     pairs = s["variants"][1]["line_pairs"]
     passing = [pair for pair in pairs if pair["truth"] == "TRUE"]
     assert passing and all(pair["reference"]["spw_number"] == 1 for pair in passing)
     assert all(pair["criteria"][0]["criterion_id"] == "POS-MOSAIC" for pair in pairs)
-    assert s["variants"][0]["branches"][0]["truth"] == "TRUE"
+    assert s["variants"][0]["branches"][0]["truth"] == "UNKNOWN"
 
 
 def test_line_cannot_borrow_coverage_and_mode_from_different_spws():
@@ -137,7 +143,7 @@ def test_line_cannot_borrow_coverage_and_mode_from_different_spws():
     result = assess_queue_custom_science(candidate({"Project Code": "2024.1.00001.S", "Polarization": "DOUBLE", "Req.Sensitivity": "0.001", "Spec.Res. SPW 1": "31.25"}), req, pointings(req))
     s = science(result)
     assert s["matching_arrays_by_intent"]["LINE"] == []
-    assert s["branches"][0]["truth"] == "FALSE"
+    assert s["branches"][0]["truth"] == "UNKNOWN"
 
 
 def test_cli_science_mode_roundtrip_and_invalid_request(tmp_path):
@@ -155,7 +161,7 @@ def test_cli_science_mode_roundtrip_and_invalid_request(tmp_path):
     args = ["--queue-csv", str(source), "--request", str(rp), "--proposed", str(pp), "--output", str(out)]
     assert main(args) == 0
     before = out.read_bytes()
-    assert science(json.loads(before))["matching_arrays_by_intent"]["CONTINUUM"] == [7., 12.]
+    assert science(json.loads(before))["matching_arrays_by_intent"]["CONTINUUM"] == [12.]
     assert main(args) == 2 and out.read_bytes() == before
     rp.write_text("[]")
     assert main(args) == 2
@@ -232,12 +238,12 @@ def test_complementary_array_successes_cannot_be_borrowed(monkeypatch):
     monkeypatch.setattr(backend, '_common', common)
     monkeypatch.setattr(backend, 'evaluate_queue_continuum', continuum)
     s = science(backend.assess_queue_custom_science(candidate(), req, pointings(req)))
-    assert [v['branches'][0]['truth'] for v in s['variants']] == ['FALSE','FALSE']
-    assert s['branches'][0]['truth'] == 'FALSE'
+    assert [v['branches'][0]['truth'] for v in s['variants']] == ['UNKNOWN','FALSE']
+    assert s['branches'][0]['truth'] == 'UNKNOWN'
     assert s['matching_arrays_by_intent']['CONTINUUM'] == []
 
 
-def test_7m_only_spatial_hit_returns_match_when_12m_fails():
+def test_missing_7m_pointings_cannot_supply_a_spatial_match():
     from alma_duplicate.geometry import primary_beam_fwhm_deg
     req, _ = request()
     p = pointings(req)
@@ -246,7 +252,7 @@ def test_7m_only_spatial_hit_returns_match_when_12m_fails():
     p['points'][0]['dec_deg'] += (r7+r12)/2
     result = assess_queue_custom_science(candidate(), req, p)
     s = science(result)
-    assert [v['outcome'] for v in result['candidates'][0]['position']['beam_variants']] == ['SATISFIED','NOT_SATISFIED']
-    assert [v['branches'][0]['truth'] for v in s['variants']] == ['TRUE','FALSE']
-    assert s['branches'][0]['truth'] == 'TRUE'
-    assert s['matching_arrays_by_intent']['CONTINUUM'] == [7.]
+    assert [v['outcome'] for v in result['candidates'][0]['position']['beam_variants']] == ['UNKNOWN','NOT_SATISFIED']
+    assert [v['branches'][0]['truth'] for v in s['variants']] == ['UNKNOWN','FALSE']
+    assert s['branches'][0]['truth'] == 'UNKNOWN'
+    assert s['matching_arrays_by_intent']['CONTINUUM'] == []

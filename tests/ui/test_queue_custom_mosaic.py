@@ -67,22 +67,26 @@ def test_existing_form_runs_queue_without_archive(browser, version, intents):
     assert report['schema_version'] == 'queue_mosaic_assessment_1'
     assert report['assessment_status'] == 'COMPLETED'
     assert set(report['sources']) == {'QUEUE'}
-    assert report['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['matching_arrays_by_intent'] == {intents[0]: [7., 12.]}
+    assert report['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['matching_arrays_by_intent'] == {intents[0]: [12.]}
     if len(intents) == 2:
         first_page = client.get(response.location).text
         sibling = re.search(r'href="([^"]+)">Continuum</a>', first_page).group(1)
         assert sibling != response.location
         assert response.location in client.get(sibling).text
         continuum = client.get(sibling + '/download/report').json
-        assert continuum['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['matching_arrays_by_intent'] == {'CONTINUUM': [7., 12.]}
+        assert continuum['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['matching_arrays_by_intent'] == {'CONTINUUM': [12.]}
     assert report['proposed']['sensitivity_basis'] == 'PER_POINTING'
     assert report['proposed']['setup_id'] == 'setup-1'
     if version == '2':
         assert report['scientific_request']['line_input_contract'] == 'SEPARATE_OBSERVATION_REQUIREMENTS_V2'
         if 'LINE' in intents:
-            assert report['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['variants'][0]['line_pairing']['proposed_enumeration_complete']
+            assert report['geometry_reports']['CUSTOM_POINTING']['candidates'][0]['science']['variants'][1]['line_pairing']['proposed_enumeration_complete']
     page = client.get(response.location)
     assert page.status_code == 200
+    assert 'ACA 7-m assessment not available' in page.text
+    visualization = client.get(response.location + '/mosaic-visualization')
+    assert visualization.status_code == 200
+    assert 'ACA 7-m assessment not available' in visualization.text
     assert 'Matching candidates' in page.text
     assert page.text.count('Results in this search') == 1
     assert 'matching Queue candidate configurations' in page.text

@@ -1,5 +1,10 @@
 # Direct Custom CSV position backend
 
+Current correction (2026-11-16): `QUEUE_CUSTOM_EXPLICIT_CSV_4` restricts Custom
+coverage to the interpreted pointing owner. Mixed rows have 12-m coverage only;
+7-m remains unassessed/UNKNOWN. See [ownership decision](queue_pointing_ownership.md).
+Descriptions of the shared-centre v3 model below are historical and superseded.
+
 `assess_queue_custom_csv(parsed, proposed)` and `cli.queue_custom_check` now run
 CSV → Custom reconstruction → per-array beam coverage → POS-MOSAIC without an OT
 file, manually written candidate pointing JSON, or per-candidate confirmation.

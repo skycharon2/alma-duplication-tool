@@ -46,6 +46,7 @@
 <p><strong id="comparison-count" role="status"></strong><span>Loaded report pages: {% for nav in navigation %}{{ nav.source }} {{ nav.page }} / {{ nav.pages }}{% if not loop.last %} · {% endif %}{% endfor %}. Filters apply to these loaded comparisons.</span></p></section>
 <div id="mosaic-current" aria-live="polite" aria-label="Current comparison summary">
 {% for row in rows %}<section class="visual-current" data-evidence="{{ loop.index0 }}"{% if not loop.first %} hidden{% endif %}>
+{% for limitation in row.limitations|default([]) %}<aside class="unresolved-notice"><strong>{{ limitation.title }}</strong><p>{{ limitation.message }}</p></aside>{% endfor %}
 <div><strong>#{{ loop.index }} {{ row.target or row.project or 'Candidate observation' }}{% if row.project %} · {{ row.project }}{% endif %}</strong>
 <span>{{ row.source }} · {{ row.geometry }} · {{ row.intent }}{% for sp in row.spectra|default([]) if sp.spw is defined and sp.spw is not none %} · SPW {{ sp.spw }}{% endfor %}{% if row.array %} · {{ row.array }}{% endif %}</span>
 {% if row.source == 'Archive' %}<small>Member {{ row.candidate }}</small>{% if row.identity and row.identity.ASDM %}<small>ASDM {{ row.identity.ASDM }}</small>{% endif %}{% endif %}

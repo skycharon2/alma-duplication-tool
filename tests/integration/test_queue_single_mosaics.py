@@ -27,14 +27,14 @@ def run(parsed, changes=None):
 def test_science_and_provenance(factory, kind, changes, truth):
     report = run(factory(changes))['geometry_reports'][kind]
     for c in report['candidates']:
-        assert c['science']['branches'][0]['truth'] == truth
+        assert c['science']['branches'][0]['truth'] == ('UNKNOWN' if kind == 'CUSTOM' and truth == 'FALSE' else truth)
         if kind == 'CUSTOM':
             expected = 'UNRESOLVED' if truth == 'UNKNOWN' else 'PROJECT_ACCEPTED'
             assert c['science']['model_status'] == expected
             assert report['scientific_status'] == 'BRANCHES_EVALUATED_WITH_PER_CANDIDATE_CUSTOM_MODEL_STATUS'
             for variant in c['science']['variants']:
                 position = next(r for r in variant['criteria'] if r['criterion_id'] == 'POS-SINGLE')
-                assert dict(position['details'])['geometry_model_status'] == expected
+                assert dict(position['details'])['geometry_model_status'] == ('UNRESOLVED' if variant['diameter_m'] == 7 else expected)
         assert c['science']['branches'][0]['required_criteria'][0] == 'POS-SINGLE'
         assert c['position']['threshold'] == 'POINT_WITHIN_CANDIDATE_BEAM_UNION'
         for v in c['science']['variants']:
@@ -57,8 +57,8 @@ def test_array_branches_remain_independent_at_single_point():
     offset = (primary_beam_fwhm_deg(230, 7) + primary_beam_fwhm_deg(230, 12))*900
     report = run(custom({'Lat Offset': str(offset), 'Long Offset': '0'}))
     c = report['geometry_reports']['CUSTOM']['candidates'][0]
-    assert c['science']['matching_arrays_by_intent']['CONTINUUM'] == [7.]
-    assert [v['outcome'] for v in c['position']['beam_variants']] == ['SATISFIED', 'NOT_SATISFIED']
+    assert c['science']['matching_arrays_by_intent']['CONTINUUM'] == []
+    assert [v['outcome'] for v in c['position']['beam_variants']] == ['UNKNOWN', 'NOT_SATISFIED']
 
 
 @pytest.mark.parametrize('factor,outcome', [(1.001, 'NOT_SATISFIED'),
@@ -89,7 +89,7 @@ def test_full_line_branch_keeps_proposed_geometry():
             'Polarization':'DOUBLE','Req.Sensitivity':'0.001','Spec.Res. SPW 1':'0.9765625'})),
         input_sha256=None,report_detail='full')
     c=result.document['geometry_reports']['CUSTOM']['candidates'][0]
-    assert c['science']['matching_arrays_by_intent']['LINE']==[7.,12.]
+    assert c['science']['matching_arrays_by_intent']['LINE']==[12.]
     assert result.validation.request.geometry=='SINGLE_POINTING'
     for v in c['science']['variants']:
         assert v['branches'][0]['required_criteria'][0]=='POS-SINGLE'
@@ -110,5 +110,6 @@ def test_exact_radius_is_inclusive(monkeypatch):
 
     monkeypatch.setattr(adapter, 'assess_queue_custom_csv', exact_boundary)
     c = run(custom())['geometry_reports']['CUSTOM']['candidates'][0]
-    assert all(v['outcome'] == 'SATISFIED' for v in c['position']['beam_variants'])
-    assert all(v['counts']['INSIDE'] == 1 for v in c['position']['beam_variants'])
+    seven, twelve = c['position']['beam_variants']
+    assert seven['outcome'] == 'UNKNOWN' and seven['coverage'] is None
+    assert twelve['outcome'] == 'SATISFIED' and twelve['counts']['INSIDE'] == 1

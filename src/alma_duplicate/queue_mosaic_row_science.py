@@ -66,9 +66,18 @@ def evaluate_row_candidates(report, contexts, request, proposed, *, kind, decisi
         row_id = candidate['geometry']['source_row_id']
         context = replace(contexts[row_id], context_id=f"QUEUE-{kind.upper()}:{candidate['candidate_id']}")
         variants = []
+        ownership = candidate.get('pointing_ownership', {})
         for position in candidate['position']['beam_variants']:
             common = _common(request, context, position, kind, decision)
             criteria, branches, pairs = list(common), [], []
+            if f"{int(position['diameter_m'])}M" in ownership.get('unassessed_arrays', []):
+                branches = [BranchAssessment(i, context.context_id, 'INDETERMINATE', Truth.UNKNOWN,
+                    required[i], ('CUSTOM_ARRAY_POINTINGS_UNAVAILABLE',),
+                    method_version='queue_custom_unassessed_array_1', decision_refs=(decision,),
+                    scope='UNASSESSED_CUSTOM_ARRAY') for i in request.intents]
+                variants.append(dict(diameter_m=position['diameter_m'], criteria=criteria,
+                                     branches=branches, line_pairs=[]))
+                continue
             if setup is not None:
                 numerical = tuple(_rms_metadata(c, proposed, kind) for c in
                     evaluate_queue_continuum(cont_request, context, common, mosaic=not single, candidate_mosaic=single))
@@ -104,10 +113,11 @@ def evaluate_row_candidates(report, contexts, request, proposed, *, kind, decisi
             combined = tuple(BranchAssessment(i, context.context_id, 'INDETERMINATE', Truth.UNKNOWN,
                 required[i], ('ARRAY_INFERENCE_UNRESOLVED',)) for i in request.intents)
         combined = tuple(replace(b, method_version=f'queue_{method_kind}_array_or_1', decision_refs=(decision,),
+            reasons=b.reasons + (('CUSTOM_REQUESTED_ARRAYS_UNASSESSED',) if ownership.get('unassessed_arrays') else ()),
             scope=f'ONE_{kind.upper()}_ROW_COMPLETE_ARRAY_BRANCHES_MODEL_CONDITIONAL') for b in combined)
         known_model = kind in ('custom', 'rectangle')
         accepted = (known_model and bool(variants)
-            and all(p.get('geometry_model_status') == 'PROJECT_ACCEPTED'
+            and (any if kind == 'custom' else all)(p.get('geometry_model_status') == 'PROJECT_ACCEPTED'
                     and p.get('outcome') != 'UNKNOWN'
                     for p in candidate['position']['beam_variants']))
         model_status = ('PROJECT_ACCEPTED' if accepted else
@@ -121,6 +131,7 @@ def evaluate_row_candidates(report, contexts, request, proposed, *, kind, decisi
             'COMPLETE_FOR_EVALUATED_INTENT' if rectangle_complete and combined
             and all(b.truth is Truth.TRUE for b in combined) else 'NOT_ESTABLISHED')
         candidate['science'] = dict(context_id=context.context_id, source_row_id=row_id,
+            pointing_ownership=ownership, limitations=candidate.get('limitations', []),
             model_status=model_status, model_version=(candidate['position'].get('model_version')
                 if kind == 'rectangle' else None),
             scientific_candidate_completeness=candidate_completeness,
