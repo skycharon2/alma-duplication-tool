@@ -505,5 +505,11 @@ follow next/previous links in both modes, but do not replace that outstanding
 interactive browser check. All assessment fixtures are offline; live Archive
 scientific acceptance remains separate.
 
-Steps 4 and 5 remain staged. Step 6 remains in the working tree for review;
-no additional commit or push has been made.
+The outstanding click was subsequently completed on 2026-11-16 using the
+[reproducible offline preview](../examples/acceptance/batch/README.md). The browser
+also verified purpose switching, text/visual mode, previous-target navigation
+and the return anchor. The preview uses a matching recorded cone for both
+synthetic targets, so Archive and Queue retrieval both complete.
+
+Steps 4–6 were committed together as `5fff580`. The subsequent offline preview
+script, fixture and acceptance record are a separate working-tree increment.
