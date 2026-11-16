@@ -67,8 +67,13 @@ def test_unavailable_sibling_links_to_status_without_switching_purpose(client, m
 
 def test_evicted_current_and_sibling_reports_keep_return_path(client):
     runs = client.application.extensions['assessment_runs']
-    runs._max_runs = 1
     location, manifest = batch(client)
+    # Legacy/lost-file navigation remains supported even though new batches are protected.
+    with runs._lock:
+        for source in manifest['sources']:
+            for report in source['reports']:
+                if report['run_id'] != manifest['sources'][-1]['reports'][-1]['run_id']:
+                    runs._retire(report['run_id'], 'EVICTED')
     overview = client.get(location)
     assert b'3 previously saved reports are no longer available' in overview.data
     assert b'Completed \xc2\xb7 report unavailable' in overview.data
@@ -78,7 +83,7 @@ def test_evicted_current_and_sibling_reports_keep_return_path(client):
     assert navigation.find('a', string='Back to batch overview')['href'] == location + '#source-line-2'
     assert 'Current report unavailable' in navigation.text
     index, latest = next((i, r['run_id']) for i, source in enumerate(manifest['sources'])
-                         for r in source['reports'] if r['availability'] == 'AVAILABLE')
+                         for r in source['reports'] if runs.unavailable_reason(r['run_id']) is None)
     _, navigation = nav(client, '/runs/' + latest + '/visualization')
     label = 'Previous target: first' if index else 'Next target: second'
     anchor = '#source-line-2' if index else '#source-line-3'

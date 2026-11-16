@@ -12,6 +12,7 @@ from alma_duplicate.performance import PerformanceRecorder
 from alma_duplicate.progress import observe_progress
 from alma_duplicate.ui.batch_requests import prepare_batch_form
 from alma_duplicate.ui.proposed import build_document
+from alma_duplicate.ui.run_store import RetentionCapacityError
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +120,7 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
                     result = pinned.assess(document)
                     if result.document is None:
                         raise ValueError('Assessment returned no report')
-                    run_id = runs.add(document, result)
+                    run_id = runs.add(document, result, protect=True)
                     runs.batches.update(batch_id, owner, source_id, purpose, 'COMPLETED', run_id=run_id)
             except Exception as exc:
                 failure = type(exc).__name__
@@ -127,7 +128,9 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
                 # Expired/closed parent or inability to record failure propagates:
                 # never continue source queries without an accountable manifest.
                 runs.batches.update(batch_id, owner, source_id, purpose, 'FAILED',
-                                    error='Assessment or report storage failed. Inspect server logs.')
+                                    error=('Report not saved: storage capacity limit reached. Earlier batch reports remain protected.'
+                                           if isinstance(exc, RetentionCapacityError) else
+                                           'Assessment or report storage failed. Inspect server logs.'))
             finally:
                 logger.info('Batch %s target %s %s wall_seconds=%.3f stages=%s',
                             batch_id, source_id, purpose, perf_counter() - started,

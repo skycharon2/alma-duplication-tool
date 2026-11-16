@@ -198,6 +198,8 @@ class BatchStore:
                     report['availability'] = (self._runs.unavailable_reason(report['run_id']) or 'AVAILABLE'
                                               if report['run_id'] else 'NO_REPORT')
             manifest['execution_complete'] = self._finished(manifest)
+            manifest['retention_policy'] = 'BATCH_REPORTS_PROTECTED_UNTIL_EXPIRY'
+            manifest['storage_budget'] = self._runs.retention_budget()
             return manifest
 
     def lookup_run(self, run_id, owner):
