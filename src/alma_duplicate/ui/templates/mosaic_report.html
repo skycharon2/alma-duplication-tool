@@ -28,7 +28,7 @@
 </div></details>
 {% if document.assessment_status != 'COMPLETED' or document.discovery.status != 'COMPLETED' %}<p role="alert" class="notice"><strong>Incomplete acquisition or assessment:</strong> interpret only the recorded comparisons. Results may be missing.</p>{% endif %}
 <p class="mosaic-status-note">Categories describe candidate identities, not whole Archive Members. A matching candidate may also contain unresolved branches. Even an apparently complete search does not establish search-wide absence of duplication.</p>
-<details class="report-retention"><summary>Method and report retention</summary><p>Each context uses its recorded Archive region or verified half-power beam evidence for the strict-majority pointing rule. Angular resolution and spectral comparisons use stored Archive metadata. No scientific rule is recalculated by this page.</p><p>Temporary reports are retained for up to {{ retention_hours }} hours; server restart can clear them earlier.</p></details>
+<details class="report-retention"><summary>Method and report retention</summary><p>Each context uses its recorded Archive region or verified half-power beam evidence for the strict-majority pointing rule. Angular resolution and spectral comparisons use stored Archive metadata. No scientific rule is recalculated by this page.</p>{% if persistent %}<p>Saved report · read from persistent storage.</p>{% else %}<p>Temporary reports are retained for up to {{ retention_hours }} hours; server restart can clear them earlier.</p>{% endif %}</details>
 </section>
 
 <nav class="report-nav mosaic-filters" aria-label="Mosaic candidate filters">

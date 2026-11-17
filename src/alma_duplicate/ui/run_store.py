@@ -393,23 +393,14 @@ class RunStore:
             return data
 
     def _queue_page(self, item, projection, page, view):
-        from copy import deepcopy
-        view = 'matching' if view == 'matches' else view
-        index = projection['queue_index']
-        if view not in {'matching', 'all', 'review', 'not_met'}:
-            raise IndexError('Invalid Queue view')
-        visible = [e for e in index['entries'] if view == 'all' or e['bucket'] == view]
-        pages = max(1, math.ceil(len(visible) / 20))
-        if page < 1 or page > pages:
-            raise IndexError('Queue report page unavailable')
-        document = deepcopy(index['header'])
+        from alma_duplicate.ui.queue_saved_pages import queue_saved_page
         with (item.directory / 'queue-candidates.jsonl').open('rb') as stream:
-            for entry in visible[(page - 1) * 20:page * 20]:
+            def candidate(entry):
                 stream.seek(entry['offset'])
-                candidate = json.loads(stream.read(entry['length']))
-                document['geometry_reports'].setdefault(entry['kind'], {'candidates': []})['candidates'].append(candidate)
-        return dict(unified_queue=True, document=document, run=item, page=page, pages=pages,
-                    result_view=view, visible_count=len(visible), retention_hours=self.max_age / 3600)
+                return json.loads(stream.read(entry['length']))
+            data = queue_saved_page(projection, page, view, candidate)
+        data.update(run=item, retention_hours=self.max_age / 3600)
+        return data
 
     def queue_page(self, run_id, page=1, view='matches'):
         with self._lock:
