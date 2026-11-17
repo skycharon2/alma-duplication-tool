@@ -16,6 +16,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+auth = [
+    "Authlib>=1.9.8,<2",
+]
 persistence = [
     "SQLAlchemy>=2.0,<2.1",
     "alembic>=1.13,<2",

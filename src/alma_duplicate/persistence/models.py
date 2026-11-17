@@ -96,3 +96,11 @@ artifacts = Table('artifacts', metadata, identity(), created(), scope(),
     UniqueConstraint('run_id', 'kind'), CheckConstraint('byte_size >= 0', name='byte_size'),
     CheckConstraint('length(sha256) = 64', name='hash_length'))
 
+# Opaque browser secrets are hashed before storage; deleting a row revokes it.
+auth_sessions = Table('auth_sessions', metadata,
+    Column('id', String(64), primary_key=True), created(),
+    Column('user_id', String(65), ForeignKey('users.id'), nullable=False),
+    Column('workspace_id', String(65), ForeignKey('workspaces.id'), nullable=False),
+    Column('expires_at', DateTime(timezone=True), nullable=False),
+    CheckConstraint('length(id) = 64', name='digest_length'))
+Index('ix_auth_sessions_expiry', auth_sessions.c.expires_at)

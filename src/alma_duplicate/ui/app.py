@@ -78,11 +78,23 @@ def create_app(config=None):
     app.config["MAX_RETAINED_BYTES"] = int(os.environ.get('ALMA_UI_MAX_RETAINED_BYTES', str(DEFAULT_DISK_BYTES)))
     app.config["MAX_RUN_AGE_SECONDS"] = DEFAULT_MAX_AGE
     app.config["RUN_STORAGE_PARENT"] = None
+    app.config['AUTH_MODE'] = os.environ.get('ALMA_AUTH_MODE', 'local')
+    for setting in ('OIDC_ISSUER', 'OIDC_METADATA_URL', 'OIDC_CLIENT_ID', 'OIDC_CLIENT_SECRET',
+                    'OIDC_REDIRECT_URI', 'AUTH_SESSION_SECRET', 'ARTIFACT_ROOT', 'DATABASE_URL'):
+        app.config[setting] = os.environ.get('ALMA_' + setting)
     if config is not None:
         app.config.from_mapping(config)
     workers = app.config['BATCH_MAX_WORKERS']
     if type(workers) is not int or not 1 <= workers <= 4:
         raise ValueError('BATCH_MAX_WORKERS must be an integer between 1 and 4')
+
+    if app.config['AUTH_MODE'] not in {'local', 'oidc'}:
+        raise ValueError('AUTH_MODE must be local or oidc')
+    if app.config['AUTH_MODE'] == 'oidc':
+        from alma_duplicate.ui.auth import register_auth
+        register_auth(app)
+        app.config.setdefault('AUTO_QUEUE', False)
+        app.config['REPORT_DIRECTORY'] = None
 
     auto_queue = app.config.get("AUTO_QUEUE")
     if auto_queue is None:

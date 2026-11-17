@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Workspace · ALMA{% endblock %}
+{% block content %}
+<h1>{{ workspace.name }}</h1>
+<p>You are signed in. Saved report links are available within your workspace.</p>
+<p>New assessments and batch history are not available in this workspace yet.</p>
+<form method="post" action="{{ url_for('auth_logout') }}"><input type="hidden" name="csrf" value="{{ csrf }}"><button type="submit">Sign out</button></form>
+{% endblock %}
