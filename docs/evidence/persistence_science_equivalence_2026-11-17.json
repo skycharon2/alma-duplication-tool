@@ -1,0 +1,67 @@
+{
+  "baseline": "e54100b",
+  "current": "abc4e38",
+  "normalization": "Only generated_at, search_started_at, search_finished_at, sources.QUEUE.source_metadata.snapshot.parsed_at; existing normalized_times helper",
+  "cases": [
+    {
+      "case": "adversarial-source-spw-isolation",
+      "normalized_report_sha256": "9a7492e09bf11f647576947cde3723dd4d0fec223bc0df76c86fcb7c3f57c98a"
+    },
+    {
+      "case": "archive-failed-queue-preserved",
+      "normalized_report_sha256": "5fe8c52b6a6cb31ed9560f1037619e0ad87a589129c742e18cc32ecc64b90ead"
+    },
+    {
+      "case": "coarse-line-resolution",
+      "normalized_report_sha256": "1f719f4ddc7870516f8a8d39d7f15a81562c3f4557a1a22b49c9511b25745157"
+    },
+    {
+      "case": "completed-empty-queue",
+      "normalized_report_sha256": "a50f9f18ffb93d2b5fae018d427b07ad26e23fc953779722640765697031102c"
+    },
+    {
+      "case": "dual-source-continuum",
+      "normalized_report_sha256": "0d570c6b362d0b4f6e03d7158269c977ab30ff2b2a6f04a2551fa7e23782c87b"
+    },
+    {
+      "case": "dual-source-line",
+      "normalized_report_sha256": "d358785d28ece46eea3318ab880da6d3d381141f36c08ba99c8ac5c178c22db0"
+    },
+    {
+      "case": "guide-a",
+      "normalized_report_sha256": "4a4ebd780b156480c528668205a9edbe703771ff02462efa1a07a84d8afc2828"
+    },
+    {
+      "case": "guide-b",
+      "normalized_report_sha256": "887ab9e4140bea924deb1dbdb7c90bbe0642253b9b66ee7cf72fed891f3bdc4d"
+    },
+    {
+      "case": "missing-line-rms",
+      "normalized_report_sha256": "a9c8cbe4a09f09a234c4c41abbdab6c2420b66639b3a4e61d1e273acadb4c335"
+    },
+    {
+      "case": "mixed-intents",
+      "normalized_report_sha256": "daf32521c36d4b23dd188c5e6e50a2545b37603fde727d04ad4902011338ec7c"
+    },
+    {
+      "case": "multiple-line-windows",
+      "normalized_report_sha256": "7937545595000daedb617933f96cc9f95ec445f85ace66ab29380832e1c63630"
+    },
+    {
+      "case": "ngc6240-continuum",
+      "normalized_report_sha256": "3a409bd8ff794e68f7ab4c32f36f7f135ae920653558921a78c7a74b59f0b9ef"
+    },
+    {
+      "case": "ngc6240-line-diagnostic",
+      "normalized_report_sha256": "6af5760fd3cd015d142ded9c116f01e1d93617231ba95684f47ca0f7ac7a030f"
+    },
+    {
+      "case": "queue-failed-archive-preserved",
+      "normalized_report_sha256": "f39d8a2c6c59b92946e2be09ad3234743ff653f1bf761aa481e91bb48e7a393b"
+    },
+    {
+      "case": "source-not-provided",
+      "normalized_report_sha256": "afa1268580ea588733051e7383fb55e3fcaa873ecdde020be5160d4bb0f9f2e6"
+    }
+  ]
+}

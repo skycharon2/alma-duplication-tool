@@ -94,3 +94,8 @@ operational access controls still require deployment acceptance before public us
 
 References: [Authlib Flask OIDC integration](https://docs.authlib.org/en/latest/oauth2/client/web/flask.html)
 and [Authlib web client validation](https://docs.authlib.org/en/latest/oauth2/client/web/).
+
+The local real-provider and multi-process acceptance is now recorded in
+[Persistence integration gate](persistence_integration_gate.md). It uses actual
+Dex discovery/code/JWKS endpoints and PostgreSQL, while institutional SSO and
+production proxy configuration still require deployment-specific acceptance.
