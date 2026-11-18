@@ -122,6 +122,10 @@ class DownloadLease:
                 self._release()
 
 
+class RetentionCapacityError(ValueError):
+    """A report cannot be published within configured retention limits."""
+
+
 class RunStore:
     """Publish complete immutable runs; retain only small descriptors in memory.
 
@@ -141,6 +145,7 @@ class RunStore:
         self._temporary = TemporaryDirectory(prefix='alma-ui-runs-', dir=directory)
         self.directory = Path(self._temporary.name)
         self._runs, self._retired, self._leases = OrderedDict(), {}, {}
+        self._protected = set()
         self._session_id = uuid4().hex
         self._removal_notices = OrderedDict()
         self._size, self._closed = 0, False
@@ -155,6 +160,7 @@ class RunStore:
 
     def _retire(self, run_id, reason):
         item = self._runs.pop(run_id)
+        self._protected.discard(run_id)
         self._removal_notices[run_id] = reason
         while len(self._removal_notices) > MAX_REMOVAL_NOTICES:
             self._removal_notices.popitem(last=False)
@@ -182,6 +188,16 @@ class RunStore:
                 return 'OTHER_SESSION'
             return 'UNKNOWN'
 
+    def retention_budget(self):
+        """Detached process-wide capacity diagnostics, without report identities."""
+        with self._lock:
+            self._prune_locked()
+            return dict(max_runs=self._max_runs, retained_runs=len(self._runs),
+                        max_bytes=self._max_bytes, used_bytes=self._size,
+                        protected_runs=len(self._protected),
+                        protected_bytes=sum(self._runs[k].byte_size for k in self._protected),
+                        retired_download_bytes=sum(r.byte_size for r in self._retired.values()))
+
     def prune(self):
         with self._lock:
             if not self._closed:
@@ -201,14 +217,18 @@ class RunStore:
             if not self._leases:
                 self._temporary.cleanup()
 
-    def add(self, request_document, result):
-        return self.add_group([(request_document, result)])[0]
+    def add(self, request_document, result, *, protect=False):
+        return self.add_group([(request_document, result)], protect=protect)[0]
 
-    def add_group(self, assessments):
-        """Stage all reports, then publish them under one retention decision."""
+    def add_group(self, assessments, *, protect=False):
+        """Stage all reports, then publish them under one retention decision.
+
+        Protected publications cannot be capacity victims before their fixed
+        expiry. Protection is installed atomically, and never prolongs expiry.
+        """
         assessments = list(assessments)
         if not assessments or len(assessments) > self._max_runs:
-            raise ValueError("Report group exceeds the run retention limit")
+            raise RetentionCapacityError("Report group exceeds the run retention limit")
         emit_progress("storage_wait")
         with self._write_lock:
             with self._lock:
@@ -229,12 +249,14 @@ class RunStore:
                     for old_id, old in self._runs.items():
                         if remaining <= self._max_runs and projected_size <= self._max_bytes:
                             break
+                        if old_id in self._protected:
+                            continue
                         victims.append(old_id)
                         remaining -= 1
                         if not self._leases.get(old_id):
                             projected_size -= old.byte_size
-                    if projected_size > self._max_bytes:
-                        raise ValueError("Disk retention budget is occupied by active downloads")
+                    if projected_size > self._max_bytes or remaining > self._max_runs:
+                        raise RetentionCapacityError("Report retention capacity is occupied by protected reports or active downloads")
                     # Rename every staged directory before publishing any entry.
                     for index, (run_id, item) in enumerate(staged):
                         target = self.directory / run_id
@@ -246,6 +268,8 @@ class RunStore:
                     for run_id, item in staged:
                         self._runs[run_id] = replace(item, expires_at=expires_at)
                         self._size += item.byte_size
+                        if protect:
+                            self._protected.add(run_id)
                 return [run_id for run_id, _ in staged]
             finally:
                 for run_id, item in staged:
@@ -286,7 +310,7 @@ class RunStore:
                 for raw in blocks:
                     size += len(raw)
                     if size > byte_budget:
-                        raise ValueError("Report exceeds this application's disk retention limit")
+                        raise RetentionCapacityError("Report exceeds this application's disk retention limit")
                     stream.write(raw)
                     emit_progress("storage", size, unit="bytes")
                     digest.update(raw)

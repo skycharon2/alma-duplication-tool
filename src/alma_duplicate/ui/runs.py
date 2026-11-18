@@ -254,7 +254,9 @@ class BrowserAssessment:
             return
         from alma_duplicate.ui.queue_browser import assess_geometry
         try:
-            geometry = assess_geometry(document, loader)
+            from alma_duplicate.performance import measure_stage
+            with measure_stage('queue_geometry_evaluation'):
+                geometry = assess_geometry(document, loader)
             report['queue_geometry_assessment'] = json_value(geometry.document)
         except (OSError, ValueError) as exc:
             report['queue_geometry_assessment'] = {

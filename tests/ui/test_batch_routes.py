@@ -174,7 +174,8 @@ def test_failed_branches_and_evicted_reports_are_readable(client, monkeypatch):
     response = client.post('/proposed/batch', data=data | dict(action='assess'))
     page = client.get(response.location)
     assert page.status_code == 200
-    assert b'Failed' in page.data and b'Removed to free storage' in page.data
+    assert b'Failed' in page.data and b'storage capacity limit' in page.data
+    assert b'Removed to free storage' not in page.data
     assert page.text.count('Text report</a>') == 1
     store = client.application.extensions['assessment_runs']
     store.batches.close()

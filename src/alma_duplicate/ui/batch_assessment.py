@@ -2,7 +2,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from copy import deepcopy
-from dataclasses import replace
+from dataclasses import asdict, replace
 import logging
 from threading import Event, RLock
 from time import perf_counter
@@ -12,6 +12,7 @@ from alma_duplicate.performance import PerformanceRecorder
 from alma_duplicate.progress import observe_progress
 from alma_duplicate.ui.batch_requests import prepare_batch_form
 from alma_duplicate.ui.proposed import build_document
+from alma_duplicate.ui.run_store import RetentionCapacityError
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class BatchValidationError(ValueError):
 
 
 def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission_token,
-                  format='csv', progress=None, max_workers=1):
+                  format='csv', progress=None, max_workers=1, performance=None):
     """Validate all branches, reserve a manifest, then assess with bounded target concurrency.
 
     Return the batch ID, including when its branches failed or a concurrent call
@@ -111,24 +112,41 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
                         source_id=source_id, purpose=purpose, event=event)) if progress else nullcontext())
             timing = PerformanceRecorder()
             started = perf_counter()
+            result = None
+            run_id = None
+            failure = None
             try:
                 with observer, timing.record():
                     result = pinned.assess(document)
                     if result.document is None:
                         raise ValueError('Assessment returned no report')
-                    run_id = runs.add(document, result)
+                    run_id = runs.add(document, result, protect=True)
                     runs.batches.update(batch_id, owner, source_id, purpose, 'COMPLETED', run_id=run_id)
-            except Exception:
+            except Exception as exc:
+                failure = type(exc).__name__
                 logger.exception('Batch branch failed: %s / %s / %s', batch_id, source_id, purpose)
                 # Expired/closed parent or inability to record failure propagates:
                 # never continue source queries without an accountable manifest.
                 runs.batches.update(batch_id, owner, source_id, purpose, 'FAILED',
-                                    error='Assessment or report storage failed. Inspect server logs.')
+                                    error=('Report not saved: storage capacity limit reached. Earlier batch reports remain protected.'
+                                           if isinstance(exc, RetentionCapacityError) else
+                                           'Assessment or report storage failed. Inspect server logs.'))
             finally:
                 logger.info('Batch %s target %s %s wall_seconds=%.3f stages=%s',
                             batch_id, source_id, purpose, perf_counter() - started,
                             [(s.name, round(s.wall_seconds, 3), round(s.thread_cpu_seconds, 3))
                              for s in timing.stages])
+            if performance is not None:
+                # Diagnostics cannot change report publication or branch outcomes.
+                try:
+                    performance(dict(source_id=source_id, purpose=purpose, run_id=run_id,
+                        wall_seconds=perf_counter() - started, error_type=failure,
+                        assessment_status=str(result.status) if result is not None else None,
+                        sources={k: v['status'] for k, v in result.document['sources'].items()}
+                            if result is not None and result.document is not None else {},
+                        stages=[asdict(s) for s in timing.stages]))
+                except Exception:
+                    logger.warning('Batch performance observer failed', exc_info=True)
             with progress_lock:
                 completed += 1
                 notify('batch_branch_finished', source_id=source_id, purpose=purpose)

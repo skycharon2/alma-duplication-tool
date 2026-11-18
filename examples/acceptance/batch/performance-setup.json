@@ -1,0 +1,35 @@
+{
+  "values": {
+    "target_kind": "FIXED",
+    "geometry": "SINGLE_POINTING",
+    "setup_id": "setup-1",
+    "sources": [
+      "ARCHIVE",
+      "QUEUE"
+    ],
+    "intents": [
+      "LINE"
+    ],
+    "angular": "0.3",
+    "radius_mode": "EXPLICIT",
+    "redshift": "",
+    "representative": "230.538",
+    "representative_kind": "REST",
+    "aggregate": "0.3",
+    "continuum_setup_declaration": "on",
+    "normal_form_version": "1",
+    "frequency_local_redshift": "0",
+    "continuum_redshift": "",
+    "w123456abcdef_id": "line-1",
+    "w123456abcdef_center": "230.538",
+    "w123456abcdef_center_kind": "REST",
+    "w123456abcdef_mode": "FDM",
+    "w123456abcdef_resolution": "20",
+    "w123456abcdef_rms": "0.3",
+    "w123456abcdef_redshift": "",
+    "radius": "30"
+  },
+  "rows": [
+    "w123456abcdef"
+  ]
+}

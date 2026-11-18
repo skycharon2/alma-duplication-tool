@@ -65,7 +65,9 @@ def test_saved_reports_equal_independently_submitted_targets(store, v2, max_work
     data = values(v2, intents, kind)
     before = deepcopy(data)
     fixed_runner = runner().pin_queue_for_submission(True)
-    batch_id = run(store, data, runner=fixed_runner, max_workers=max_workers)
+    timings = []
+    batch_id = run(store, data, runner=fixed_runner, max_workers=max_workers, performance=timings.append)
+    assert len(timings) == 2 * len(intents)
     manifest = store.batches.get(batch_id, 'browser-a')
     assert manifest['execution_complete'] and data == before
     for source in manifest['sources']:
@@ -134,10 +136,10 @@ def test_branch_failure_does_not_stop_later_work(store, monkeypatch, failure):
                 return SimpleNamespace(document=None)
         return assess(self, document)
 
-    def storage(document, result):
+    def storage(document, result, **kwargs):
         if len(calls) == 2:
             raise OSError('disk full')
-        return add(document, result)
+        return add(document, result, **kwargs)
 
     monkeypatch.setattr(BrowserAssessment, 'assess', assessment)
     if failure == 'storage':
@@ -256,7 +258,7 @@ def test_real_missing_snapshot_failure_is_frozen_for_every_branch(store, tmp_pat
             assert report['sources']['ARCHIVE']['status'] == 'COMPLETED'
 
 
-def test_five_targets_ten_reports_and_eviction_remains_explicit(tmp_path):
+def test_five_targets_ten_reports_preserve_saved_siblings_under_pressure(tmp_path):
     raw = b'name,ra,dec,redshift\n' + b''.join(
         f'target-{i},201.365,-43.019,0.024\n'.encode() for i in range(5))
     store = RunStore(directory=tmp_path, max_runs=2)
@@ -266,8 +268,9 @@ def test_five_targets_ten_reports_and_eviction_remains_explicit(tmp_path):
         manifest = store.batches.get(batch, 'browser-a')
         reports = [r for s in manifest['sources'] for r in s['reports']]
         assert manifest['execution_complete'] and len(reports) == 10
-        assert all(r['state'] == 'COMPLETED' for r in reports)
-        assert [r['availability'] for r in reports] == ['EVICTED'] * 8 + ['AVAILABLE'] * 2
+        assert [r['state'] for r in reports] == ['COMPLETED'] * 2 + ['FAILED'] * 8
+        assert [r['availability'] for r in reports] == ['AVAILABLE'] * 2 + ['NO_REPORT'] * 8
+        assert all('storage capacity limit' in r['error'] for r in reports[2:])
     finally:
         store.close()
 

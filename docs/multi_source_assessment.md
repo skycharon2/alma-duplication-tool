@@ -580,3 +580,34 @@ catalog, navigation, progress and concurrency suite passed 45 tests. All 118
 existing JavaScript tests, static analysis, JavaScript syntax and whitespace
 checks passed. The prior catalog acceptance increment remains staged; these
 concurrency and retention-visibility changes are not staged or committed.
+
+## Batch report protection (Phase 1, 2026-11-16)
+
+New Batch publications opt into atomic capacity protection in RunStore. Protection
+is installed under the same lock as publication, so another target, batch or
+standalone save cannot evict the report between publication and manifest linking.
+It lasts until the report's existing fixed expiry (default 24 hours from save),
+including after batch completion. Reads do not extend it. Expiry and service
+shutdown still remove reports; an open download retains its files until closed.
+Protection does not imply restart persistence or a physical disk reservation.
+
+When count or byte limits cannot accommodate a new report, the save fails with
+an explicit capacity error. Earlier protected reports remain available. Victims
+are removed only after capacity checks and staging succeed; a failed save does
+not evict unrelated ordinary reports. Staging files are cleaned on failure.
+Standalone reports retain their previous eviction policy. Protected reports may
+consume all capacity, in which case later submissions fail to save until expiry
+or a service restart; restarting also loses the reports and is not a retention
+solution. No automatic unpinning or user deletion UI is introduced in this step.
+
+The manifest's detached `storage_budget` snapshot records process-wide limits,
+usage, protected reports and retired download bytes, without exposing other run
+identities. The overview shows usage and per-branch errors. Manifest capacity
+is separate: a completed manifest can still be removed under manifest pressure;
+this does not release its reports' protection before their original expiry.
+Already-evicted historical reports cannot be recovered by this change.
+
+This supersedes the earlier live-acceptance description allowing same-batch
+capacity eviction. It does not change assessment results, source pinning or
+scientific report contents. The reservation covers existing short error text;
+capacity failures are execution/storage failures, never non-duplication results.
