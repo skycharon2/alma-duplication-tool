@@ -131,7 +131,8 @@ def test_auxiliary_and_extension_metadata_survive_without_interpretation(auxilia
     pipeline = run_archive_pipeline(result)
     assert result.is_complete and pipeline.comparison_units_safe
     assert pipeline.query_result.field_metadata[-7:] == extra_metadata
-    assert all(item.returned for item in result.provenance.projection.optional_columns)
+    assert all(item.returned == (item.column_name in auxiliary)
+               for item in result.provenance.projection.optional_columns)
     for prepared in pipeline.prepared_rows:
         for name, value in auxiliary.items():
             assert prepared.raw_row[name] == value
@@ -310,7 +311,7 @@ def test_complete_fixture_runs_full_pipeline() -> None:
     assert len(pipeline.reconstruction.frequency_support_evidence) == 5
     assert pipeline.field_contract.is_usable
     assert pipeline.comparison_units_safe
-    assert pipeline.adapter_version == ADAPTER_VERSION == "7"
+    assert pipeline.adapter_version == ADAPTER_VERSION == "8"
     assert pipeline.obs_id_width_contract.metadata_status is (
         ObsIdWidthMetadataStatus.BOUNDED_VARIABLE
     )
@@ -324,7 +325,7 @@ def test_complete_fixture_runs_full_pipeline() -> None:
     assert (
         pipeline.reconstruction.reconstruction_version
         == RECONSTRUCTION_VERSION
-        == "4"
+        == "5"
     )
     assert pipeline.reconstruction.linked_row_count == 4
     assert pipeline.reconstruction.unlinked_row_count == 1

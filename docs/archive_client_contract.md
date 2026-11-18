@@ -200,16 +200,18 @@ false for every non-complete result.
 
 ## Schema contract
 
-Client version 7 uses schema version 3 and projection version 1. The desired
-`ARCHIVE_SELECTED_COLUMNS` contains 30 names: 24 `ARCHIVE_CORE_COLUMNS` and
-6 `ARCHIVE_OPTIONAL_COLUMNS`. `REQUIRED_ARCHIVE_COLUMNS` contains only the
+Client version 7 uses schema version 3 and projection version 2. The desired
+`ARCHIVE_SELECTED_COLUMNS` contains 32 names: 24 `ARCHIVE_CORE_COLUMNS` and
+8 `ARCHIVE_OPTIONAL_COLUMNS`. `REQUIRED_ARCHIVE_COLUMNS` contains only the
 24 core names, preserving the previous strict core contract. The new columns
-are `s_resolution`, `s_fov`, `t_min`, `t_max`, `band_list`, and `pol_states`:
-raw auxiliary evidence without new typed conversions. See the per-field
+are `s_resolution`, `s_fov`, `t_min`, `t_max`, `band_list`, `pol_states`,
+`em_min`, and `em_max`. The wavelength bounds additionally support the
+unit-validated same-row association described below. Other auxiliary fields
+remain raw evidence. See the per-field
 inventory in `archive_data_dictionary.md`.
 
 Before science queries, the client probes `TAP_SCHEMA.columns` for requested
-optional names with `MAXREC = requested count + 1` (7 by default). Only names
+optional names with `MAXREC = requested count + 1` (9 by default). Only names
 verified present enter retrieval ADQL. Probe failure, OVERFLOW, unknown status,
 invalid names or duplicates disable optional selection and retain a diagnostic;
 they do not establish absence. Arithmetic preflight remains independent. COUNT
@@ -487,3 +489,37 @@ contents can change.
 - [ALMA query by frequency notebook](https://almascience.eso.org/alma-data/archive/archive-notebooks/nb6_ALMA_Query_by_frequency.html)
 - [ALMA query by sensitivity notebook](https://almascience.eso.org/alma-data/archive/archive-notebooks/nb7_ALMA_Query_by_sensitivity.html)
 - [Cycle 13 Science Archive Manual](https://almascience.eso.org/documents-and-tools/cycle13/science-archive-manual)
+
+### Overlapping bracket support: explicit row spectral bounds
+
+Reconstruction version 5 can resolve multiple containing bracket intervals using
+`em_min` and `em_max` from the **same raw row**. Projection version 2 requests these
+as optional columns; their absence does not invalidate an otherwise complete
+Archive query. Adapter version 8 requires unambiguous scalar numeric descriptors,
+explicit length units and positive ordered finite wavelengths. It converts
+`em_max` to the lower frequency and `em_min` to the upper frequency.
+
+Both converted edges must match one containing support component within **half of
+each endpoint's displayed decimal quantum**, plus the existing 1e-9 GHz numerical
+tolerance. Scientific notation and convertible frequency units retain their own
+precision. Only a unique match becomes `BRACKET_ROW_BOUNDS`; missing, conflicting
+or multiply matching evidence leaves the original ambiguity intact. Existing
+unique containment and brace mappings retain their previous behavior. No matching
+by SPW number, list order, nearest midpoint, nominal bandwidth or another row is
+introduced. This is a same-row association, not a frequency reference-frame
+conversion or a change to continuum/line formulae.
+
+Selected components flow through the existing comparison, JSON and visualization
+paths. New bound associations retain converted and raw wavelength bounds and the
+method in `spectral_display.association_evidence`; descriptors remain in source
+metadata. Saved reports are immutable: restart the Web process and rerun the
+assessment to acquire the additional fields. Old captures replay their original
+optional-column request and still require exact ADQL/maxrec matches.
+
+The M33 capture in `tests/fixtures/archive_spw_overlap/` verifies all four SPWs,
+including overlapping wide and narrow windows. Negative tests cover invalid
+units/values, reversed bounds, duplicate metadata/components and rounding limits.
+The JSON-to-visualization regression verifies all four shaded intervals.
+
+References: [ALMA frequency query example](https://almascience.eso.org/alma-data/archive/archive-notebooks/nb6_ALMA_Query_by_frequency.html)
+and [IVOA ObsCore spectral bounds, section 4.17](https://www.ivoa.net/documents/ObsCore/20161004/PR-ObsCore-v1.1-20161004.pdf).

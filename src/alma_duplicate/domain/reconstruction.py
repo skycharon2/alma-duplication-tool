@@ -34,6 +34,7 @@ class SupportMappingMethod(StrEnum):
     BRACKET_INTERVAL_CONTAINMENT = (
         "BRACKET_INTERVAL_CONTAINMENT"
     )
+    BRACKET_ROW_BOUNDS = "BRACKET_ROW_BOUNDS"
     BRACE_NEAREST_CENTRE = (
         "BRACE_NEAREST_CENTRE"
     )
@@ -74,6 +75,7 @@ class ArchiveRowInput:
     obs_id: str | bytes | float | None
     frequency_ghz: float | None
     frequency_support: str | bytes | None
+    spectral_bounds_ghz: tuple[float, float] | None = None
 
 
 @dataclass(

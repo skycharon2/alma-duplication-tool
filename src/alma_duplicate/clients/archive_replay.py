@@ -7,6 +7,7 @@ from datetime import datetime
 import hashlib
 import io
 import json
+import re
 from pathlib import Path
 
 from astropy.io.votable import parse
@@ -70,7 +71,16 @@ class RecordedArchiveClient:
             executor=PyvoTapExecutor(m['endpoint'], service=self),
             clock=lambda: next(times), run_id_factory=lambda: m['query_run_id'],
         )
-        result = client.search(spec)
+        # Reproduce the captured optional projection rather than asking an old
+        # capture for newly introduced columns. run_sync still checks exact ADQL
+        # and maxrec for every request, including the schema probe.
+        from alma_duplicate.clients.archive_queries import ARCHIVE_OPTIONAL_COLUMNS
+        probe = self._manifest['responses'][0]['adql']
+        match = re.search(r"column_name IN \(([^)]*)\)", probe)
+        requested = tuple(re.findall(r"'([a-z_]+)'", match.group(1))) if match else ()
+        if not requested or not set(requested).issubset(ARCHIVE_OPTIONAL_COLUMNS):
+            raise ValueError('Unsupported captured optional projection')
+        result = client.search(spec, optional_columns=requested)
         if self._index != len(self._responses):
             raise ValueError('Archive replay did not consume the full capture')
         if (result.status.value != m['status'] or

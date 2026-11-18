@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.4">
+  <RESOURCE type="results">
+    <INFO name="QUERY_STATUS" value="OK" />
+    <INFO name="QUERY_TIMESTAMP" value="2026-11-18T07:45:25.535" />
+    <INFO name="QUERY" value="SELECT obs_id,frequency,bandwidth,em_min,em_max,frequency_support FROM ivoa.obscore WHERE member_ous_uid='uid://A001/X3833/X1121' AND asdm_uid='uid://A002/X13c84cf/X232f9' AND target_name='M33'" />
+    <TABLE>
+      <FIELD name="obs_id" datatype="char" arraysize="64*" ucd="meta.id" utype="obscore:DataID.observationID">
+        <DESCRIPTION>internal dataset identifier</DESCRIPTION>
+      </FIELD>
+      <FIELD name="frequency" datatype="double" ucd="em.freq;obs;meta.main" unit="GHz" utype="obscore:Char.SpectralAxis.Coverage.Location.refval" xtype="adql:DOUBLE">
+        <DESCRIPTION>Observed (tuned) reference frequency on the sky.</DESCRIPTION>
+      </FIELD>
+      <FIELD name="bandwidth" datatype="double" ucd="em.freq;instr.bandpass" unit="Hz" utype="obscore:Char.SpectralAxis.Coverage.Bounds.Extent" xtype="adql:DOUBLE">
+        <DESCRIPTION>Total Bandwidth</DESCRIPTION>
+      </FIELD>
+      <FIELD name="em_min" datatype="double" ucd="em.wl;stat.min" unit="m" utype="obscore:Char.SpectralAxis.Coverage.Bounds.Limits.LoLimit" xtype="adql:DOUBLE">
+        <DESCRIPTION>start spectral coordinate value</DESCRIPTION>
+      </FIELD>
+      <FIELD name="em_max" datatype="double" ucd="em.wl;stat.max" unit="m" utype="obscore:Char.SpectralAxis.Coverage.Bounds.Limits.HiLimit" xtype="adql:DOUBLE">
+        <DESCRIPTION>stop spectral coordinate value</DESCRIPTION>
+      </FIELD>
+      <FIELD name="frequency_support" datatype="char" arraysize="4000*" ucd="em.freq;obs;meta.main" unit="GHz" utype="obscore:Char.SpectralAxis.Coverage.Location.support" xtype="adql:VARCHAR">
+        <DESCRIPTION>All frequency ranges used by the field</DESCRIPTION>
+      </FIELD>
+      <DATA>
+        <TABLEDATA>
+          <TR>
+            <TD>uid://A001/X3833/X1121.source.M33.spw.25</TD>
+            <TD>230.6763299790975</TD>
+            <TD>4.6875E8</TD>
+            <TD>0.0012983054821849294</TD>
+            <TD>0.0013009448800219512</TD>
+            <TD>[228.49..230.48GHz,31250.00kHz,1.2mJy/beam@10km/s,73.4uJy/beam@native, XX YY] U [229.38..231.36GHz,31250.00kHz,1.2mJy/beam@10km/s,71.5uJy/beam@native, XX YY] U [230.44..230.91GHz,282.23kHz,1.2mJy/beam@10km/s,149.9uJy/beam@native, XX YY] U [231.81..232.27GHz,564.45kHz,1.2mJy/beam@10km/s,150uJy/beam@native, XX YY]</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X3833/X1121.source.M33.spw.17</TD>
+            <TD>229.48524507270804</TD>
+            <TD>2.0E9</TD>
+            <TD>0.0013007457976513318</TD>
+            <TD>0.001312041453237586</TD>
+            <TD>[228.49..230.48GHz,31250.00kHz,1.2mJy/beam@10km/s,73.4uJy/beam@native, XX YY] U [229.38..231.36GHz,31250.00kHz,1.2mJy/beam@10km/s,71.5uJy/beam@native, XX YY] U [230.44..230.91GHz,282.23kHz,1.2mJy/beam@10km/s,149.9uJy/beam@native, XX YY] U [231.81..232.27GHz,564.45kHz,1.2mJy/beam@10km/s,150uJy/beam@native, XX YY]</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X3833/X1121.source.M33.spw.27</TD>
+            <TD>232.0400755792616</TD>
+            <TD>4.6875E8</TD>
+            <TD>0.0012906834561250602</TD>
+            <TD>0.0012932905616028238</TD>
+            <TD>[228.49..230.48GHz,31250.00kHz,1.2mJy/beam@10km/s,73.4uJy/beam@native, XX YY] U [229.38..231.36GHz,31250.00kHz,1.2mJy/beam@10km/s,71.5uJy/beam@native, XX YY] U [230.44..230.91GHz,282.23kHz,1.2mJy/beam@10km/s,149.9uJy/beam@native, XX YY] U [231.81..232.27GHz,564.45kHz,1.2mJy/beam@10km/s,150uJy/beam@native, XX YY]</TD>
+          </TR>
+          <TR>
+            <TD>uid://A001/X3833/X1121.source.M33.spw.19</TD>
+            <TD>230.3718958724025</TD>
+            <TD>2.0E9</TD>
+            <TD>0.0012957609803587572</TD>
+            <TD>0.0013069698528612671</TD>
+            <TD>[228.49..230.48GHz,31250.00kHz,1.2mJy/beam@10km/s,73.4uJy/beam@native, XX YY] U [229.38..231.36GHz,31250.00kHz,1.2mJy/beam@10km/s,71.5uJy/beam@native, XX YY] U [230.44..230.91GHz,282.23kHz,1.2mJy/beam@10km/s,149.9uJy/beam@native, XX YY] U [231.81..232.27GHz,564.45kHz,1.2mJy/beam@10km/s,150uJy/beam@native, XX YY]</TD>
+          </TR>
+        </TABLEDATA>
+      </DATA>
+    </TABLE>
+    <INFO name="placeholder" value="ignore" />
+  </RESOURCE>
+</VOTABLE>
