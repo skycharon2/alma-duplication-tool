@@ -38,7 +38,7 @@ def _run(probe, columns=ARCHIVE_CORE_COLUMNS, count=0, optional=None):
 
 def test_desired_projection_does_not_expand_required_contract():
     assert len(ARCHIVE_CORE_COLUMNS) == 24
-    assert len(ARCHIVE_SELECTED_COLUMNS) == 30
+    assert len(ARCHIVE_SELECTED_COLUMNS) == 32
     assert REQUIRED_ARCHIVE_COLUMNS == frozenset(ARCHIVE_CORE_COLUMNS)
     assert not REQUIRED_ARCHIVE_COLUMNS.intersection(ARCHIVE_OPTIONAL_COLUMNS)
 
@@ -47,10 +47,10 @@ def test_optional_columns_probed_before_adql_and_retained_on_empty_result():
     result, executor = _run(_probe(), ARCHIVE_SELECTED_COLUMNS)
     assert result.status is ArchiveQueryStatus.COMPLETE
     plan = result.provenance.projection
-    assert plan.version == "1"
+    assert plan.version == "2"
     assert plan.selected_columns == ARCHIVE_SELECTED_COLUMNS
     assert len(executor.projection_calls) == 1
-    assert executor.projection_calls[0].maxrec == 7
+    assert executor.projection_calls[0].maxrec == 9
     assert all(item.status is Status.SELECTED and item.returned for item in plan.optional_columns)
     assert tuple(field.name for field in result.field_metadata) == ARCHIVE_SELECTED_COLUMNS
     assert executor.calls[0].adql.split("WHERE", 1)[1] == executor.calls[1].adql.split("WHERE", 1)[1]

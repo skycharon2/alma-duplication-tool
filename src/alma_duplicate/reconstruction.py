@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 import math
+from decimal import Decimal
 
 from astropy import units as u
 
@@ -32,10 +33,11 @@ from alma_duplicate.domain.spectral import (
 )
 from alma_duplicate.parsers.frequency_support import (
     parse_frequency_support,
+    FREQUENCY_RANGE_PATTERN,
 )
 from alma_duplicate.parsers.obs_id import parse_obs_id
 
-RECONSTRUCTION_VERSION = "4"
+RECONSTRUCTION_VERSION = "5"
 
 # 04b showed that direct frequency comparisons require an
 # explicit numerical tolerance.
@@ -184,6 +186,29 @@ def _quantity_to_value(
     return converted
 
 
+def _row_bounds_match(component: FrequencySupportComponent, bounds: tuple[float, float]) -> bool:
+    """Require both row edges to agree with the independently rounded support edges.
+
+    Bounds come from unit-validated em_min/em_max in the same row. Never use the nearest
+    centre, SPW numbering or support order to break an ambiguous association.
+    """
+    interval = component.frequency_interval
+    if interval is None:
+        return False
+    match = FREQUENCY_RANGE_PATTERN.fullmatch(interval.raw_token)
+    if match is None:
+        return False
+    for name, edge in zip(("low", "high"), bounds):
+        displayed = Decimal(match.group(name))
+        half_quantum = float(Decimal(1).scaleb(displayed.as_tuple().exponent) / 2)
+        tolerance = _quantity_to_value(half_quantum, interval.unit, u.GHz)
+        expected = _quantity_to_value(getattr(interval, name), interval.unit, u.GHz)
+        if (tolerance is None or expected is None or not math.isfinite(edge) or edge <= 0
+                or abs(edge - expected) > tolerance + BRACKET_INTERVAL_TOLERANCE_GHZ):
+            return False
+    return True
+
+
 def _map_bracket_support(
     *,
     row: ArchiveRowInput,
@@ -280,6 +305,19 @@ def _map_bracket_support(
             frequency_difference_mhz=None,
         )
 
+    method = SupportMappingMethod.BRACKET_INTERVAL_CONTAINMENT
+    bounds = row.spectral_bounds_ghz
+    if (len(candidates) > 1 and bounds is not None
+            and all(isinstance(v, (int, float)) and not isinstance(v, bool)
+                    and math.isfinite(v) for v in bounds)
+            and 0 < bounds[0] < frequency_ghz < bounds[1]):
+        bounded = [component.component_index for component in components
+                   if component.component_index in candidates
+                   and _row_bounds_match(component, bounds)]
+        if len(bounded) == 1:
+            candidates = bounded
+            method = SupportMappingMethod.BRACKET_ROW_BOUNDS
+
     chosen_index = min(candidates)
 
     if len(candidates) > 1:
@@ -294,10 +332,7 @@ def _map_bracket_support(
         raw_row_id=row.raw_row_id,
         association_key=reconstruction.association_key,
         grammar_family=FrequencySupportGrammar.BRACKET,
-        method=(
-            SupportMappingMethod
-            .BRACKET_INTERVAL_CONTAINMENT
-        ),
+        method=method,
         status=status,
         component_index=chosen_index if len(candidates) == 1 else None,
         candidate_count=len(candidates),

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
+from astropy import units as u
 
 from alma_duplicate.clients.archive_contract import (
     ArchiveQueryResult,
@@ -38,7 +40,7 @@ from alma_duplicate.reconstruction import (
     reconstruct_archive_rows,
 )
 
-ADAPTER_VERSION = "7"
+ADAPTER_VERSION = "8"
 
 
 class IncompleteArchiveQueryError(RuntimeError):
@@ -112,6 +114,35 @@ def _spectral_text(value: object) -> str | bytes | None:
     if isinstance(value, (str, bytes)):
         return value
     return _optional_text(value)
+
+
+def _spectral_bounds(row, metadata):
+    """Optional ObsCore vacuum-wavelength bounds; no units are inferred.
+
+    Preserve original values/descriptors in the query evidence. Reversed,
+    non-scalar or missing descriptors cannot authorize a component association.
+    """
+    values = []
+    for name in ('em_min', 'em_max'):
+        fields = [field for field in metadata if field.name == name]
+        if (len(fields) != 1 or fields[0].datatype not in {'double', 'float'}
+                or fields[0].arraysize not in (None, '1') or not fields[0].unit):
+            return None
+        raw = row.get(name)
+        if raw is None or isinstance(raw, (bool, str, bytes)):
+            return None
+        try:
+            value = float(raw)
+            if not math.isfinite(value) or value <= 0:
+                return None
+            values.append((value * u.Unit(fields[0].unit)).to_value(u.m))
+        except (ValueError, TypeError, OverflowError):
+            return None
+    if not 0 < values[0] < values[1]:
+        return None
+    low, high = [(value * u.m).to_value(u.GHz, equivalencies=u.spectral())
+                 for value in reversed(values)]
+    return (float(low), float(high)) if 0 < low < high and math.isfinite(high) else None
 
 
 def prepare_archive_rows(
@@ -228,6 +259,7 @@ def prepare_archive_rows(
                 .centre
                 .canonical_value
             ),
+            spectral_bounds_ghz=_spectral_bounds(raw_row, result.field_metadata),
             frequency_support=_spectral_text(
                 _required_value(
                     raw_row,

@@ -15,7 +15,7 @@ COUNT_ALIAS = "total_matches"
 ARCHIVE_SCHEMA_VERSION = "3"
 # Outward margin exceeds the local 0.001 arcsec boundary tolerance.
 MOSAIC_DISCOVERY_MARGIN_DEG = 0.002 / 3600
-ARCHIVE_PROJECTION_VERSION = "1"
+ARCHIVE_PROJECTION_VERSION = "2"
 ARCHIVE_QUERY_UNIT_CONTRACT_VERSION = "2"
 
 ARCHIVE_FREQUENCY_QUERY_UNITS = (
@@ -59,7 +59,7 @@ ARCHIVE_CORE_COLUMNS = (
 )
 
 ARCHIVE_OPTIONAL_COLUMNS = (
-    "s_resolution", "s_fov", "t_min", "t_max", "band_list", "pol_states",
+    "s_resolution", "s_fov", "t_min", "t_max", "band_list", "pol_states", "em_min", "em_max",
 )
 # Desired projection; production resolves optional names before emitting ADQL.
 ARCHIVE_SELECTED_COLUMNS = ARCHIVE_CORE_COLUMNS + ARCHIVE_OPTIONAL_COLUMNS

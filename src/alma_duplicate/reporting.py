@@ -173,6 +173,15 @@ def _reported_context(item, detail, summaries):
                 'reference': context.reference,
                 'component': component,
             }
+            if context.evidence.support_mapping.method == 'BRACKET_ROW_BOUNDS':
+                prepared = context.evidence.prepared
+                data['spectral_display']['association_evidence'] = {
+                    'method': context.evidence.support_mapping.method,
+                    'row_bounds_ghz': prepared.reconstruction_input.spectral_bounds_ghz,
+                    'raw_wavelength_bounds': {name: prepared.raw_row.get(name)
+                                              for name in ('em_min', 'em_max')},
+                    'tolerance': 'half of each displayed endpoint quantum plus 1e-9 GHz',
+                }
     if full:
         data.update(evidence_states=item.candidate.context.items, **_context_results(item))
     else:
