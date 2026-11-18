@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Signed out · ALMA{% endblock %}
+{% block content %}
+<h1>Signed out</h1>
+<p>You have signed out of this application. Your identity provider session may still be active.</p>
+<p><a class="button" href="{{ url_for('auth_login') }}">Sign in</a></p>
+{% endblock %}

@@ -28,6 +28,6 @@
 
 </details>{% endfor %}</article>{% endfor %}</section>{% else %}<p>No targets in this view. This is not a search-wide non-duplication verdict.</p>{% endfor %}
 <nav class="report-nav" aria-label="Pagination">{% if page > 1 %}<a href="{{ url_for('run_view',report_id=report_id,view=result_view,page=page-1) }}">Previous</a>{% endif %}<span>Page {{ page }} / {{ pages }}</span>{% if page < pages %}<a href="{{ url_for('run_view',report_id=report_id,view=result_view,page=page+1) }}">Next</a>{% endif %}</nav>
-<p>Reports expire after {{ '%g'|format(retention_hours) }} hours and may be removed sooner on restart or when storage is full. Download results you need to retain.</p>
+{% if persistent %}<p>Saved report · read from persistent storage.</p>{% else %}<p>Reports expire after {{ '%g'|format(retention_hours) }} hours and may be removed sooner on restart or when storage is full. Download results you need to retain.</p>{% endif %}
 </article>
 {% endblock %}

@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "real discovery, authorization code, PKCE, JWKS, callback across processes",
+    "two users, two processes, scoped report/visualization/download, legacy denial",
+    "process restart preserves session and exact report bytes",
+    "logout revocation is visible across processes; old cookie rejected"
+  ],
+  "report_sha256": "f6173191fe090a3adc3d23bb50770e33af9c3c2c90c4a90b9f8145ab5a30e4dd",
+  "date": "2026-11-17",
+  "code_commit": "abc4e38",
+  "postgresql_version": "16.16",
+  "dex_version": "2.46.0",
+  "persistence_tests": {
+    "passed": 52,
+    "skipped": 0
+  },
+  "full_tests": {
+    "passed": 3704,
+    "skipped": 12
+  }
+}

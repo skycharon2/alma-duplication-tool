@@ -27,7 +27,7 @@ from alma_duplicate.ui.report_pages import report_page, report_projection
 from alma_duplicate.ui.visualization import visualization_data
 from alma_duplicate.ui.queue_geometry_visualization import queue_geometry_visualization_data
 from alma_duplicate.ui.unified_queue_visualization import merge_queue_matches
-from alma_duplicate.ui.run_store import DEFAULT_DISK_BYTES, DEFAULT_MAX_AGE
+from alma_duplicate.ui.run_store import DEFAULT_DISK_BYTES, DEFAULT_MAX_AGE, DownloadLease
 from alma_duplicate.ui.proposed import assessment_supported, initial_form, read_form, validate_form
 from alma_duplicate.reporting import report_json_text
 from alma_duplicate.ui.archive_status import archive_run_status
@@ -78,11 +78,23 @@ def create_app(config=None):
     app.config["MAX_RETAINED_BYTES"] = int(os.environ.get('ALMA_UI_MAX_RETAINED_BYTES', str(DEFAULT_DISK_BYTES)))
     app.config["MAX_RUN_AGE_SECONDS"] = DEFAULT_MAX_AGE
     app.config["RUN_STORAGE_PARENT"] = None
+    app.config['AUTH_MODE'] = os.environ.get('ALMA_AUTH_MODE', 'local')
+    for setting in ('OIDC_ISSUER', 'OIDC_METADATA_URL', 'OIDC_CLIENT_ID', 'OIDC_CLIENT_SECRET',
+                    'OIDC_REDIRECT_URI', 'AUTH_SESSION_SECRET', 'ARTIFACT_ROOT', 'DATABASE_URL'):
+        app.config[setting] = os.environ.get('ALMA_' + setting)
     if config is not None:
         app.config.from_mapping(config)
     workers = app.config['BATCH_MAX_WORKERS']
     if type(workers) is not int or not 1 <= workers <= 4:
         raise ValueError('BATCH_MAX_WORKERS must be an integer between 1 and 4')
+
+    if app.config['AUTH_MODE'] not in {'local', 'oidc'}:
+        raise ValueError('AUTH_MODE must be local or oidc')
+    if app.config['AUTH_MODE'] == 'oidc':
+        from alma_duplicate.ui.auth import register_auth
+        register_auth(app)
+        app.config.setdefault('AUTO_QUEUE', False)
+        app.config['REPORT_DIRECTORY'] = None
 
     auto_queue = app.config.get("AUTO_QUEUE")
     if auto_queue is None:
@@ -242,8 +254,56 @@ def create_app(config=None):
         ))
         return render_template('run_unavailable.html', title=title, explanation=explanation), 404
 
+    def persistent_report(report_id):
+        # Deployment supplies a resolver that authorizes the current request's
+        # workspace. No default workspace or unscoped database lookup exists.
+        resolver = app.extensions.get('persistent_report_resolver')
+        if resolver is None:
+            return None
+        try:
+            return resolver(report_id)
+        except LookupError:
+            return None
+
+    def read_run_page(report_id, page=1, view='matches'):
+        data = runs.page(report_id, page, view)
+        if data is not None:
+            return data
+        saved = persistent_report(report_id)
+        if saved is None:
+            return None
+        try:
+            return saved.page(page, view)
+        except (OSError, ValueError, KeyError):
+            return None
+
+    def read_run_queue_page(report_id, page=1, view='matches'):
+        data = runs.queue_page(report_id, page, view)
+        if data is not None:
+            return data
+        saved = persistent_report(report_id)
+        if saved is None:
+            return None
+        try:
+            return saved.queue_page(page, view)
+        except (OSError, ValueError, KeyError):
+            return None
+
+    def open_run_download(report_id, kind):
+        download = runs.open_download(report_id, kind)
+        if download is not None:
+            return download
+        saved = persistent_report(report_id)
+        if saved is None:
+            return None
+        try:
+            stream = saved.open_download(kind)
+            return DownloadLease(stream, saved.artifacts[kind].byte_size, lambda: None)
+        except (OSError, ValueError, KeyError):
+            return None
+
     def saved_observation_settings(report_id):
-        lease = runs.open_download(report_id, 'request')
+        lease = open_run_download(report_id, 'request')
         if lease is None:
             return None
         try:
@@ -256,7 +316,7 @@ def create_app(config=None):
     def run_queue_view(report_id):
         page, view = page_selection(allow_mosaic_views=True)
         try:
-            data = runs.queue_page(report_id, page, view)
+            data = read_run_queue_page(report_id, page, view)
         except IndexError:
             abort(404)
         if data is None:
@@ -271,7 +331,7 @@ def create_app(config=None):
     def run_view(report_id):
         page, view = page_selection(allow_mosaic_views=True)
         try:
-            data = runs.page(report_id, page, view)
+            data = read_run_page(report_id, page, view)
         except IndexError:
             abort(404)
         if data is None:
@@ -284,7 +344,7 @@ def create_app(config=None):
             if not queue_number.isdecimal() or len(queue_number) > 8 or int(queue_number) < 1:
                 abort(400)
             try:
-                queue_data = runs.queue_page(report_id, int(queue_number), 'matches')
+                queue_data = read_run_queue_page(report_id, int(queue_number), 'matches')
             except IndexError:
                 abort(404)
             if queue_data:
@@ -305,7 +365,7 @@ def create_app(config=None):
                 tabs.setdefault(sibling_purpose, sibling_id)
                 if sibling_purpose != purpose:
                     continue
-                sibling = data if sibling_id == report_id else runs.page(sibling_id, 1, "matches")
+                sibling = data if sibling_id == report_id else read_run_page(sibling_id, 1, "matches")
                 if sibling is None:
                     sections.append(dict(source=source, data=None, report_id=sibling_id))
                     continue
@@ -338,7 +398,7 @@ def create_app(config=None):
                     {'matching', 'review', 'not_met', 'all'}):
                 abort(400)
             try:
-                queue_page = runs.queue_page(report_id, int(raw_queue_page), queue_view)
+                queue_page = read_run_queue_page(report_id, int(raw_queue_page), queue_view)
             except IndexError:
                 abort(404)
             if queue_page is not None:
@@ -374,14 +434,14 @@ def create_app(config=None):
         if view != 'matches':
             abort(400)
         try:
-            current = runs.page(report_id, page, 'matches')
+            current = read_run_page(report_id, page, 'matches')
         except IndexError:
             abort(404)
         if current is None:
             return unavailable_run(report_id)
         if not (current.get('mosaic') or current['document'].get('report_kind') == 'QUEUE_MOSAIC'):
             abort(404)
-        lease = runs.open_download(report_id, 'request')
+        lease = open_run_download(report_id, 'request')
         if lease is None:
             return unavailable_run(report_id)
         try:
@@ -394,7 +454,7 @@ def create_app(config=None):
         notices = []
         for sibling, label in group.items():
             if sibling != report_id and label.partition(' · ')[0] == purpose:
-                data = runs.page(sibling, 1, 'matches')
+                data = read_run_page(sibling, 1, 'matches')
                 if data:
                     pages.append((sibling, data))
                 else:
@@ -434,7 +494,7 @@ def create_app(config=None):
     def run_visualization(report_id):
         page, _ = page_selection()
         try:
-            data = runs.page(report_id, page, "matches")
+            data = read_run_page(report_id, page, "matches")
         except IndexError:
             abort(404)
         if data is None:
@@ -447,7 +507,7 @@ def create_app(config=None):
     def run_download(report_id, kind):
         if kind not in {"report", "inspection", "request"}:
             abort(404)
-        download = runs.open_download(report_id, kind)
+        download = open_run_download(report_id, kind)
         if download is None:
             return unavailable_run(report_id)
         response = Response(download, mimetype="application/json", headers={
