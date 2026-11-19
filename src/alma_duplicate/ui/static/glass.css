@@ -321,3 +321,32 @@ input[type="text"], .proposal-page .proposed-form input[type="text"],
 .report-library-welcome p { margin: 0 0 22px; }
 .report-library-welcome .button { display: inline-flex; }
 .report-retention-note { margin: 16px 4px 0; max-width: 78ch; color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+.report-page .comparison-heading { margin-block: 14px 16px; }
+.comparison-heading h1 { margin-bottom: 4px; }
+.comparison-target {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  color: var(--muted);
+}
+.report-page .comparison-target .target-settings-trigger {
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--control-border);
+  border-radius: 7px;
+  background: var(--paper);
+  color: var(--blue-dark);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.comparison-target .target-settings-trigger:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.comparison-heading .report-actions .button { padding: 7px 12px; }
+.report-page .comparison-overview { padding: clamp(14px, 2vw, 22px); }
+.report-page .comparison-overview > h2 { margin-bottom: 8px; }
+.comparison-overview .matching-sources { font-variant-numeric: tabular-nums; }

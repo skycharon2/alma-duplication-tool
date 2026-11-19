@@ -101,6 +101,9 @@ def test_existing_form_runs_queue_without_archive(browser, version, intents):
     page = client.get(response.location)
     assert page.status_code == 200
     assert 'ACA 7-m assessment not available' in page.text
+    queue_page = client.get(response.location + '/queue')
+    assert queue_page.status_code == 200
+    assert 'ACA 7-m assessment not available' in queue_page.text
     visualization = client.get(response.location + '/mosaic-visualization')
     assert visualization.status_code == 200
     assert 'ACA 7-m assessment not available' in visualization.text

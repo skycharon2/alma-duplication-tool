@@ -8,9 +8,9 @@
 {% if q is mapping %}{{ row(label, q.value, (q.unit or '') ~ (' (' ~ q.kind ~ ')' if q.kind in ['SKY','REST'] else '')) }}{% endif %}
 {% endmacro %}
 
-{% macro card(target, settings, download=none) %}
+{% macro card(target, settings, download=none, trigger_label=none) %}
 {% if settings %}
-<button class="target-settings-trigger" type="button" popovertarget="target-observation">{{ target or 'Unnamed target' }} · Observation settings</button>
+<button class="target-settings-trigger" type="button" popovertarget="target-observation">{{ trigger_label or ((target or 'Unnamed target') ~ ' · Observation settings') }}</button>
 <section popover="auto" id="target-observation" class="target-popover" aria-labelledby="target-observation-name">
 <header><div><small>Proposed observation</small><h2 id="target-observation-name">{{ target or 'Unnamed target' }}</h2></div>
 <button type="button" popovertarget="target-observation" popovertargetaction="hide" aria-label="Close observation settings">×</button></header>

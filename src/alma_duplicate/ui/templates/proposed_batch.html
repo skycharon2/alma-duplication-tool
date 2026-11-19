@@ -13,15 +13,36 @@
 <p>Upload up to five fixed ICRS targets. Each target is checked independently using its own coordinates and redshift.</p>
 <div class="form-pair batch-upload"><div><label for="source_list">CSV or TXT source list</label><input type="file" id="source_list" name="source_list" accept=".csv,.txt,text/csv,text/plain" aria-describedby="source-format-help"></div>
 <div><label for="source_format">File format</label><select id="source_format" name="source_format"><option value="csv" {% if values.get('source_format', 'csv') == 'csv' %}selected{% endif %}>CSV (comma separated)</option><option value="txt" {% if values.get('source_format') == 'txt' %}selected{% endif %}>TXT (whitespace separated)</option></select></div></div>
-<p id="source-format-help" class="field-note">Required header: name, ra, dec; optional redshift. Decimal coordinates are degrees; colon-separated RA is hours. UTF-8, up to 100 KB. The selected format applies to the next file uploaded.</p>
+<p id="source-format-help" class="field-note">Use the columns name, ra, dec and optional redshift. Decimal coordinates are in degrees. Colon-separated RA uses hours. Use UTF-8 files up to 100 KB.</p>
 <details class="field-help"><summary>Source-list example and coordinate conventions</summary><pre>name,ra,dec,redshift
 B0218+357,02:21:05.47,+35:56:13.7,0.685
-PKS1830-211,18:33:39.937,-21:03:39.80,0.886</pre><p>TXT uses the same header and fields separated by spaces or tabs. Quote names containing spaces. With a redshift column, use "" for a missing TXT value. Blank lines and full-line # comments are allowed. Missing redshift stays unknown; it is never assumed to be zero.</p></details>
+PKS1830-211,18:33:39.937,-21:03:39.80,0.886</pre>
+<p>ICRS RA must be at least 0° and below 360° (or below 24h). Dec can range from −90° to +90°. Sexagesimal minutes and seconds must each be below 60.</p>
+<p>Redshift must be finite and greater than −1. Zero is valid. Negative values indicate a blueshift. Leave the value blank if it is unknown.</p>
+<p>TXT uses the same header with spaces or tabs between fields. Quote names containing spaces. With a redshift column, use "" for a missing TXT value. Blank lines and full-line # comments are allowed.</p></details>
 <div class="batch-upload-actions"><button class="button" type="submit" name="action" value="preview-sources">Preview source list</button>{% if preview %}<button class="button" type="submit" name="action" value="remove-sources">Remove source list</button>{% endif %}</div>
 <button type="submit" name="action" value="scope" data-update-scope hidden>Update source selection</button>
 {% if preview %}
 <div class="batch-table-scroll" role="region" aria-label="Source-list preview" tabindex="0"><table class="batch-table"><caption>{{ preview.row_count }} targets · {{ preview.format|upper }} · ICRS</caption><thead><tr><th scope="col">Line / target</th><th scope="col">RA / Dec</th><th scope="col">Redshift</th><th scope="col">Validation</th></tr></thead><tbody>
-{% for source in preview.sources %}<tr><th scope="row">{{ source.line_number }} · {{ source.name or 'Missing name' }}</th><td>{{ source.original.get('ra', '—') }}<br>{{ source.original.get('dec', '—') }}</td><td>{{ source.redshift if source.redshift is not none else 'Not supplied' }}</td><td>{{ 'Valid row' if source.is_valid else 'Correct this row' }}{% for issue in source.issues %}<p class="field-note" data-category="{{ issue.severity }}">{{ issue.field }}: {{ issue.message }}</p>{% endfor %}{% if not source.original %}<code>{{ source.raw_line }}</code>{% endif %}</td></tr>{% endfor %}
+{% for source in preview.sources %}
+{% set errors = source.issues|selectattr('severity', 'equalto', 'ERROR')|list %}
+{% set coordinate_errors = errors|selectattr('field', 'in', ('ra', 'dec'))|list %}
+{% set redshift_errors = errors|selectattr('field', 'equalto', 'redshift')|list %}
+<tr>
+<th scope="row">{{ source.line_number }} · {{ source.name or 'Missing name' }}</th>
+<td>{{ source.original.get('ra', '—') or '—' }}<br>{{ source.original.get('dec', '—') or '—' }}
+{% if coordinate_errors %}{% for issue in coordinate_errors %}<p class="batch-input-error"><strong>{{ 'RA' if issue.field == 'ra' else 'Dec' }}</strong> {{ issue.message }}</p>{% endfor %}
+{% elif source.ra_deg is not none and source.dec_deg is not none %}<span class="batch-input-status">Valid ICRS position</span>{% endif %}
+</td>
+<td>{% if redshift_errors %}{{ source.original.get('redshift') }}
+{% for issue in redshift_errors %}<p class="batch-input-error">{{ issue.message }}</p>{% endfor %}
+{% elif source.redshift is not none %}{{ source.redshift }}<span class="batch-input-status">{{ 'Valid blueshift' if source.redshift|float < 0 else 'Valid redshift' }}</span>
+{% else %}<span class="batch-input-status">Not supplied</span>{% endif %}</td>
+<td><strong class="{{ 'batch-input-status' if source.is_valid else 'batch-input-error' }}">{{ 'Valid row' if source.is_valid else 'Correct this row' }}</strong>
+{% for issue in source.issues if issue not in coordinate_errors and issue not in redshift_errors %}<p class="field-note" data-category="{{ issue.severity }}">{{ issue.field }}: {{ issue.message }}</p>{% endfor %}
+{% if not source.original %}<code>{{ source.raw_line }}</code>{% endif %}</td>
+</tr>
+{% endfor %}
 </tbody></table></div>
 <p class="field-note">Duplicate names and coordinates remain separate targets. Correct invalid rows before running.</p>
 {% endif %}

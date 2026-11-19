@@ -10,7 +10,9 @@
 {% endblock %}
 {% block content %}
 <div class="visual-page">
-<header class="visual-heading"><div><p class="visual-eyebrow">SINGLE POINTING · REPORT EXPLORER</p><h1>{{ summary.target }}</h1><p>Position and frequency evidence for recorded matching comparisons.</p></div><a class="button" href="{{ report_url }}">Back to text report</a></header>
+<header class="visual-heading"><div><p class="visual-eyebrow">SINGLE POINTING · REPORT EXPLORER</p><h1>{{ summary.target }}</h1><p>Position and frequency evidence for recorded matching comparisons.</p></div>
+{% if not batch_navigation or batch_navigation.text_url != report_url %}<a class="visual-return" href="{{ report_url }}"><span aria-hidden="true">←</span> Back to text report</a>{% endif %}
+</header>
 {% if source_overview | selectattr('attention') | list %}<p class="notice">Source coverage or evidence is incomplete. <a href="{{ report_url }}#sources">Review the report’s source status</a> before interpreting these matches.</p>{% endif %}
 {% if not visual.supported %}<p class="notice">This view supports fixed targets with single-pointing requests. No geometry is inferred for other observation types.</p>
 {% elif not visual.rows %}<p class="notice">No matching comparison is available to plot on this report page. This does not establish that no duplicates exist. <a href="{{ report_url }}">Review results and missing evidence</a>.</p>

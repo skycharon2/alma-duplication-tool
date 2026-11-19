@@ -168,3 +168,25 @@
 .sky-relationship-metrics dd { margin:4px 0 0; font-size:21px; font-weight:600; font-variant-numeric:tabular-nums; }
 #report-sky-choices > strong { flex-basis:100%; font-size:13px; }
 #report-sky-choices button { text-align:left; overflow-wrap:anywhere; max-width:100%; }
+
+.visual-heading .visual-return {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  color: var(--blue-dark);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.visual-heading .visual-return:hover {
+  background: var(--paper);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.visual-heading .visual-return:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}

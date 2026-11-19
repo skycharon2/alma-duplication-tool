@@ -3,10 +3,15 @@
 {% if destination %}<a class="button" href="{{ destination.url }}">{{ direction }}: {{ destination.name }}{% if not destination.run_id %} · View status{% endif %}</a>{% else %}<span class="batch-nav-boundary">{{ 'First target' if direction == 'Previous target' else 'Last target' }}</span>{% endif %}
 {% endmacro %}
 <nav class="batch-navigation" aria-label="Batch report navigation">
-<div class="batch-navigation-heading"><a href="{{ url_for('batch.overview', batch_id=nav.batch_id, _anchor='source-' + nav.source_id) }}">Back to batch overview</a><span>Target {{ nav.position }} of {{ nav.total }} · {{ nav.name }}</span></div>
-<div class="batch-navigation-targets">{{ target_link(nav.previous, 'Previous target') }}{{ target_link(nav.next, 'Next target') }}</div>
-<div class="batch-navigation-views" aria-label="Target report views">
-{% if nav.text_url %}<a href="{{ nav.text_url }}" {% if not nav.visual %}aria-current="page"{% endif %}>Text report</a><a href="{{ nav.visual_url }}" {% if nav.visual %}aria-current="page"{% endif %}>Visualization</a>{% else %}<span>Current report unavailable. View its status in the batch overview.</span>{% endif %}
-{% if nav.purposes|length > 1 %}<span class="batch-purpose-label">Scientific purpose:</span>{% for destination in nav.purposes %}{% if destination.purpose == nav.purpose %}<span aria-current="true">{{ destination.label }}</span>{% else %}<a href="{{ destination.url }}">{{ destination.label }}{% if not destination.run_id %} · View status{% endif %}</a>{% endif %}{% endfor %}{% endif %}
+<div class="batch-navigation-heading">
+<a class="batch-navigation-return" href="{{ url_for('batch.overview', batch_id=nav.batch_id, _anchor='source-' + nav.source_id) }}">Back to batch overview</a>
+<span class="batch-navigation-current"><strong>{{ nav.name }}</strong><span>Target {{ nav.position }} of {{ nav.total }}</span></span>
+</div>
+<div class="batch-navigation-controls">
+<div class="batch-navigation-targets" role="group" aria-label="Switch target">{{ target_link(nav.previous, 'Previous target') }}{{ target_link(nav.next, 'Next target') }}</div>
+<div class="batch-navigation-views">
+{% if nav.text_url %}<div class="batch-view-switch" role="group" aria-label="Report view"><a href="{{ nav.text_url }}" {% if not nav.visual %}aria-current="page"{% endif %}>Text report</a><a href="{{ nav.visual_url }}" {% if nav.visual %}aria-current="page"{% endif %}>Visualization</a></div>{% else %}<span>Current report unavailable. View its status in the batch overview.</span>{% endif %}
+{% if nav.purposes|length > 1 %}<div class="batch-purpose-switch" role="group" aria-label="Scientific purpose">{% for destination in nav.purposes %}{% if destination.purpose == nav.purpose %}<span aria-current="true">{{ destination.label }}</span>{% else %}<a href="{{ destination.url }}">{{ destination.label }}{% if not destination.run_id %} · View status{% endif %}</a>{% endif %}{% endfor %}</div>{% endif %}
+</div>
 </div>
 </nav>
