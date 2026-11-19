@@ -55,6 +55,7 @@
 <nav class="report-actions" aria-label="Report actions">
 {% if document.report_kind != 'SOLAR_EXEMPTION' and not (batch_navigation and batch_navigation.visual_url) %}<a class="button" href="{{ visualization_url }}">Explore this report</a>{% endif %}
 <a class="button" href="{{ url_for('proposed') }}">Enter another observation</a>
+<a class="button" href="{{ url_for('report_index') }}">Existing reports</a>
 </nav>
 </header>
 {% set selected_queue = document.get('sources', {}).get('QUEUE', {}).get('managed_snapshot') %}
