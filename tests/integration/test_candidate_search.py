@@ -62,6 +62,8 @@ def test_both_sources_execute_and_preserve_original_context_evidence():
 
 
 def test_archive_search_and_queue_loader_overlap():
+    from alma_duplicate.performance import PerformanceRecorder, measure_stage
+
     v = validation()
     archive_result, _ = archive(build_search_plan(v))
     queue_result = queue_rows({})
@@ -78,10 +80,22 @@ def test_archive_search_and_queue_loader_overlap():
         assert archive_started.wait(timeout=5)
         return queue_result
 
-    result = search_candidates(v, archive_client=Client(), queue_loader=load_queue,
-                               interpretations=interpretations(queue_result))
+    with PerformanceRecorder().record() as recorder, measure_stage('outer_search'):
+        result = search_candidates(v, archive_client=Client(), queue_loader=load_queue,
+                                   interpretations=interpretations(queue_result))
     assert result.archive.status is result.queue.status is S.COMPLETED
     assert [row.context.reference.source for row in result.candidates] == ["ARCHIVE", "QUEUE"]
+    stages = {stage.name: stage for stage in recorder.stages}
+    parent = stages['source_search']
+    assert parent.parent_id == stages['outer_search'].stage_id
+    assert stages['csv_load'].parent_id == stages['tap_acquisition'].parent_id == parent.stage_id
+    archive_stages = [s for s in recorder.stages if s.parent_id == parent.stage_id
+                      and (s.name == 'tap_acquisition' or s.name.startswith('archive_'))]
+    assert parent.wall_seconds - parent.self_wall_seconds == pytest.approx(
+        sum(s.wall_seconds for s in archive_stages))
+    assert parent.thread_cpu_seconds - parent.self_thread_cpu_seconds == pytest.approx(
+        sum(s.thread_cpu_seconds for s in archive_stages))
+    assert all(s.self_wall_seconds >= 0 and s.self_thread_cpu_seconds >= 0 for s in recorder.stages)
 
 
 def test_real_archive_client_with_fake_tap_is_bound_and_executed():

@@ -222,7 +222,8 @@ def search_candidates(
 
     if (archive_client is not None and queue_loader is not None
             and plan.for_source("ARCHIVE") is not None and plan.for_source("QUEUE") is not None):
-        with ThreadPoolExecutor(max_workers=1, thread_name_prefix="queue-search") as executor:
+        with (measure_stage("source_search"),
+              ThreadPoolExecutor(max_workers=1, thread_name_prefix="queue-search") as executor):
             queue_search = executor.submit(copy_context().run, run_source, "QUEUE")
             results = {"ARCHIVE": run_source("ARCHIVE"), "QUEUE": queue_search.result()}
     else:

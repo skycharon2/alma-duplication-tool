@@ -75,9 +75,11 @@ exception text. They omit raw rows and HTTP response bodies.
   loading its first page. The remaining bookkeeping is reported as unattributed time.
 
 Timing schema 2 records `stage_id` and `parent_id`. `wall_seconds` and
-`thread_cpu_seconds` are inclusive; `self_wall_seconds` and
-`self_thread_cpu_seconds` exclude child stages. Do not sum inclusive parents and
-children. Unattributed wall time subtracts only root stages from the run total.
+`thread_cpu_seconds` are inclusive. `self_wall_seconds` and
+`self_thread_cpu_seconds` subtract child stages on the same thread.
+The `source_search` stage measures elapsed time across concurrent Archive and Queue
+searches. Queue worker stages can overlap Archive stages, so their times should
+be read separately. Unattributed wall time subtracts root stages from the run total.
 Schema 1 records retain their original, unnested interpretation. Stages are
 listed in completion order, with IDs assigned when they start.
 
