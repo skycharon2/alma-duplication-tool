@@ -111,7 +111,7 @@ def generate_rectangle_grid(geometry: RectangleGeometry, diameter_m: float, *,
                   source_reference_icrs_deg=[g.ra_deg, g.dec_deg],
                   native_reference_lonlat_deg=[float(center.spherical.lon.deg), float(center.spherical.lat.deg)],
                   pa_basis='NATIVE_LONGITUDE_LATITUDE_AXES_EXISTING_GRID_ROTATION',
-                  validation_notes=['GALACTIC_GRID_MODEL_NOT_OT_VALIDATED'] if frame == 'galactic' else [])
+                  validation_notes=[])
     def offset(origin, east, north):
         return origin.directional_offset_by(math.atan2(east, north)*u.rad,
                                             math.hypot(east, north)*u.arcsec)

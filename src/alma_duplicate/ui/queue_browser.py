@@ -92,9 +92,15 @@ def report_header(report):
     inventory = report.get('inventory') or {}
     header['inventory'] = {k: v for k, v in inventory.items() if k != 'source_rows'}
     if 'source_rows' in inventory:
-        header['inventory']['limitation_row_counts'] = dict(sorted(Counter(
-            code for row in inventory['source_rows'] for code in set(row.get('limitations', []))
-        ).items()))
+        limitations = Counter()
+        outside_by_geometry = Counter()
+        for row in inventory['source_rows']:
+            codes = set(row.get('limitations', []))
+            limitations.update(codes)
+            if 'OUTSIDE_SINGLE_TO_MOSAIC_SCOPE' in codes:
+                outside_by_geometry[row.get('geometry_kind') or 'UNKNOWN'] += 1
+        header['inventory']['limitation_row_counts'] = dict(sorted(limitations.items()))
+        header['inventory']['outside_scope_by_geometry'] = dict(sorted(outside_by_geometry.items()))
     header['candidate_counts'] = {k: counts[k] for k in ('matching', 'review', 'not_met')}
     # Count the full candidate inventory before report pagination. An intent is
     # counted once per configuration, even if an old record repeats branches.
@@ -114,3 +120,30 @@ def report_header(report):
     header['intent_counts_scope'] = 'ALL_STORED_CANDIDATE_CONFIGURATIONS'
     header['geometry_reports'] = {}
     return header
+
+
+def displayed_candidate_limitations(candidate):
+    return [limitation for limitation in candidate.get('limitations') or []
+            if limitation.get('code') not in {
+                'GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED', 'GALACTIC_GRID_MODEL_NOT_OT_VALIDATED',
+            }]
+
+
+def ownership_notice_groups(candidates):
+    """Deduplicate identical notices within one object, never its scientific results."""
+    import json
+    groups = {}
+    for candidate in candidates:
+        ownership = candidate.get('pointing_ownership') or {}
+        limitations = displayed_candidate_limitations(candidate)
+        if not limitations and not ownership.get('unassessed_arrays'):
+            continue
+        identity = candidate.get('group') or {}
+        project, target = identity.get('project_code'), identity.get('target_name')
+        # Missing object identities never authorize grouping unrelated records.
+        scope = (project, target) if project and target else ('candidate', candidate.get('candidate_id', id(candidate)))
+        key = (scope, json.dumps([ownership, limitations], sort_keys=True))
+        group = groups.setdefault(key, dict(project=project or 'Not recorded', target=target or 'Queue candidate',
+                                           candidate=dict(candidate, limitations=limitations), count=0))
+        group['count'] += 1
+    return list(groups.values())

@@ -1,6 +1,8 @@
 """Request-driven orchestration over the existing Archive and Queue layers."""
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
+from contextvars import copy_context
 from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Callable, Iterable, Protocol
@@ -207,16 +209,24 @@ def search_candidates(
                              aq_equivalent_filters=aq_equivalent_filters,
                              queue_candidate_beam=queue_candidate_beam)
     started = datetime.now(UTC)
-    results = {}
-    for name in ("ARCHIVE", "QUEUE"):
+
+    def run_source(name):
         result = _run_source(plan, name, archive_client=archive_client, queue_loader=queue_loader,
                              supplied=archive_result if name == "ARCHIVE" else queue_result,
                              interpretations=interpretation_map)
-        results[name] = result
         if result.status == S.COMPLETED:
             count = len(result.retained_rows)
             emit_progress("archive_ready" if name == "ARCHIVE" else "queue_ready",
                           count, count, "candidates")
+        return result
+
+    if (archive_client is not None and queue_loader is not None
+            and plan.for_source("ARCHIVE") is not None and plan.for_source("QUEUE") is not None):
+        with ThreadPoolExecutor(max_workers=1, thread_name_prefix="queue-search") as executor:
+            queue_search = executor.submit(copy_context().run, run_source, "QUEUE")
+            results = {"ARCHIVE": run_source("ARCHIVE"), "QUEUE": queue_search.result()}
+    else:
+        results = {name: run_source(name) for name in ("ARCHIVE", "QUEUE")}
     # Deterministic display order: requested source order, then context ID.
     retained = tuple(row for source in plan.sources for row in results[source.source].retained_rows)
     shown = retained if plan.result_limit is None else retained[:plan.result_limit]

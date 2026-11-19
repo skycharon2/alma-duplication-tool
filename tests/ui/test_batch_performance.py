@@ -17,7 +17,9 @@ def test_profile_records_every_branch_and_sources(workers):
         assert branch['files']['report.json'] > 0
         assert branch['sources'] == {'ARCHIVE': 'COMPLETED', 'QUEUE': 'COMPLETED'}
         assert any(s['name'] == 'scientific_evaluation' for s in branch['stages'])
-        assert sum(s['self_wall_seconds'] for s in branch['stages']) <= branch['wall_seconds']
+        # Concurrent Archive and Queue stages share elapsed time.
+        assert all(0 <= s['self_wall_seconds'] <= s['wall_seconds'] <= branch['wall_seconds']
+                   for s in branch['stages'])
 
 
 def test_storage_failure_is_recorded_without_losing_source_status():

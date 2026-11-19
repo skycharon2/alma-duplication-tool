@@ -56,7 +56,7 @@ def test_summary_counts_context_branches_not_beam_variants_or_pair_rows():
     original = deepcopy(doc)
     summary = report_summary(doc)
     assert summary['counts'] == [{'intent': 'LINE', 'met': 1, 'not_met': 0,
-                                  'review': 0, 'unreported': 1}]
+                                  'review': 0, 'unreported': 1, 'excluded': 0}]
     assert doc == original
 
 
@@ -243,3 +243,88 @@ def test_queue_scope_messages_group_variants_and_repeated_criteria_by_candidate(
     assert [g['candidates'] for g in groups] == [[0], [1], [2]]
     assert all(g['count'] == 8 and len(g['messages']) == 1 for g in groups)
     assert (document, inspection) == before
+
+
+def test_excluded_tp_missing_branch_and_unresolved_counts_stay_separate():
+    from alma_duplicate.ui.report_pages import report_page, report_projection
+    from alma_duplicate.ui.report_view import attention_groups
+    contexts = [{'context_id': f'tp-{i}', 'exclusion_reason': 'TP_IGNORED_FOR_DUPLICATION',
+                 'evaluation_scope': 'IGNORED', 'branches': []} for i in range(99)]
+    contexts += [{'context_id': 'scan', 'branches': [{'branch': 'CONTINUUM', 'status': 'INDETERMINATE'}]},
+                 {'context_id': 'missing', 'branches': []},
+                 {'context_id': 'match', 'branches': [{'branch': 'CONTINUUM', 'status': 'CRITERIA_MET'}]}]
+    doc = {'request': {'normalized': {'intents': ['CONTINUUM']}}, 'context_evaluations': contexts}
+    before = deepcopy(doc)
+    summary = report_summary(doc)
+    assert summary['total'] == 3
+    assert summary['counts'] == [dict(intent='CONTINUUM', met=1, not_met=0, review=1, unreported=1, excluded=99)]
+    groups = attention_groups(doc, {'gap_occurrences': [
+        {'context_id': 'tp-0', 'code': 'LEGACY_GAP', 'category': 'UNCLASSIFIED'}]})
+    assert len(groups) == 1 and groups[0]['candidates'] == [100]
+    assert groups[0]['title'] == 'Missing or conflicting branch results'
+    page = report_page(report_projection(doc, {}), 1, 'all', contexts.__getitem__)
+    assert page['visible_count'] == 3
+    assert page['context_indices'] == [99, 100, 101]
+    assert [c['context_id'] for c in page['contexts']] == ['scan', 'missing', 'match']
+    assert doc == before
+
+
+def test_duplicate_branch_results_do_not_make_missing_count_negative():
+    doc = {'request': {'normalized': {'intents': ['LINE']}}, 'context_evaluations': [
+        {'branches': [{'branch': 'LINE', 'status': 'CRITERIA_MET'}] * 2}]}
+    count = report_summary(doc)['counts'][0]
+    assert count['unreported'] == 1 and count['met'] == 0
+
+
+def test_array_lookup_diagnostics_preserve_tap_success_and_failure_scope():
+    from alma_duplicate.ui.report_view import source_overview
+    doc = {'sources': {'ARCHIVE': {'status': 'COMPLETED', 'array_evidence': {'acquisition': {
+        'status': 'INCOMPLETE', 'error': {'code': 'INCOMPLETE', 'member_ous_uid': 'uid://A/B/C',
+            'details': {'reasons': ['HIT_LIMIT_EXCEEDED'], 'total_hits': 125, 'returned_hits': 100, 'max_hits': 100}},
+        'mirror_attempts': [{'origin': 'https://almascience.eso.org', 'status': 'FAILED', 'error': 'INCOMPLETE'}]}}},
+        'QUEUE': {'status': 'COMPLETED'}}}
+    archive, queue = source_overview(doc)
+    assert archive['label'] == 'Observations retrieved · array information incomplete'
+    notes = ' '.join(archive['notes'])
+    assert 'uid://A/B/C' in notes and 'HIT_LIMIT_EXCEEDED' in notes and 'declared: 125' in notes
+    assert 'almascience.eso.org' in notes
+    assert queue['label'] == 'Retrieved' and not queue['attention']
+
+
+def test_queue_ownership_notices_group_only_same_object_and_evidence():
+    from flask import render_template
+    from alma_duplicate.ui import create_app
+    from alma_duplicate.ui.queue_browser import ownership_notice_groups
+    from tests.ui.test_runs import config
+    c = {'candidate_id': 'a', 'group': {'project_code': 'P', 'target_name': 'T'},
+         'pointing_ownership': {'unassessed_arrays': ['7M'], 'evaluated_arrays': ['12M']},
+         'limitations': [{'title': 'ACA 7-m assessment not available', 'message': '<unavailable>'}]}
+    other = deepcopy(c); other['candidate_id'] = 'b'
+    candidates = [c, other]
+    original = deepcopy(candidates)
+    app = create_app(config())
+    try:
+        with app.test_request_context():
+            html = render_template('_queue_ownership_groups.html', ownership_candidates=candidates)
+        assert html.count('ACA 7-m assessment not available') == 1
+        assert '2 displayed configurations' in html and '&lt;unavailable&gt;' in html
+        assert 'UNKNOWN' in html
+        assert candidates == original
+        other['group']['project_code'] = 'different'
+        assert len(ownership_notice_groups(candidates)) == 2
+        other['group']['project_code'] = 'P'
+        other['pointing_ownership']['unassessed_arrays'] = ['UNKNOWN']
+        assert len(ownership_notice_groups(candidates)) == 2
+    finally:
+        for name in ('assessment_runs', 'source_uploads', 'mosaic_uploads'):
+            app.extensions[name].close()
+
+
+def test_matching_list_obeys_exclusions_and_conflicting_branch_summary():
+    from alma_duplicate.ui.report_view import matching_contexts
+    branch = {'branch': 'LINE', 'status': 'CRITERIA_MET'}
+    doc = {'request': {'normalized': {'intents': ['LINE']}}, 'context_evaluations': [
+        {'branches': [branch], 'exclusion_reason': 'TP_IGNORED_FOR_DUPLICATION'},
+        {'branches': [branch, branch]}, {'branches': [branch]}]}
+    assert [i for i, _ in matching_contexts(doc)] == [2]
+    assert report_summary(doc)['counts'][0]['met'] == 1

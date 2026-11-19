@@ -94,7 +94,7 @@ def test_galactic_offsets_retain_icrs_reference_and_native_frame():
     report = reconstruct_queue_mosaics(parsed(edit))
     c = next(c for c in report["candidates"] if c["rectangle"] and c["rectangle"]["frame_raw"] == "galactic")
     assert c["source_rows"][0]["center"]["icrs_deg"] is not None
-    assert c["source_rows"][0]["center"]["reasons"] == ["GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED"]
+    assert c["source_rows"][0]["center"]["reasons"] == []
     assert c["rectangle"]["pa_convention"] == "OT_P_SIDE_FROM_HORIZONTAL_SIGN_NOT_VERIFIED"
 
 

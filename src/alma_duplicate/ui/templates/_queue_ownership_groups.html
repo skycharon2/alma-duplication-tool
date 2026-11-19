@@ -1,0 +1,7 @@
+{% for group in ownership_notice_groups(ownership_candidates) %}
+<section class="queue-ownership-group" aria-label="Array coverage limitation">
+<h4>{{ group.target }} · {{ group.project }} — Array coverage limitation</h4>
+<p>Applies to {{ group.count }} displayed configuration{{ '' if group.count == 1 else 's' }} with the same recorded limitation. Configuration and array results remain independent.</p>
+{% set c = group.candidate %}{% include '_queue_ownership_notice.html' %}
+</section>
+{% endfor %}

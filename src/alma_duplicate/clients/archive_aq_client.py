@@ -29,7 +29,8 @@ _MEMBER = re.compile(r"uid://[A-Za-z0-9]+/[A-Za-z0-9]+/[A-Za-z0-9]+\Z")
 class ArchiveAqError(ValueError):
     """Safe error metadata; never includes response bodies, headers or secrets."""
 
-    def __init__(self, code: str, member_ous_uid: str | None = None, *, http_status=None, attempts=()):
+    def __init__(self, code: str, member_ous_uid: str | None = None, *, http_status=None, attempts=(), details=None):
+        self.details = details or {}
         self.http_status = http_status
         self.attempts = attempts
         self.code = code
@@ -45,6 +46,7 @@ class ArchiveAqMemberQuery:
     response_sha256: str
     total_hits: int
     max_hits: int
+    request_sizes: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -77,13 +79,17 @@ class ArchiveAqClient:
     """Fetch unique Members in input order with injected HTTP for offline tests.
 
     A successful call returns every hit or raises ArchiveAqError. There are no
-    retries, pagination, fallback, disk writes or implicit calls during import.
+    pagination, disk writes or implicit calls during import. A clean truncated
+    response may trigger one bounded full refetch; partial responses are never merged.
     The request callable follows requests.request(method, url, **kwargs).
     """
 
-    def __init__(self, *, request=None, max_hits=100, origin=ARCHIVE_ORIGINS[0]):
+    def __init__(self, *, request=None, max_hits=100, max_member_hits=10000, origin=ARCHIVE_ORIGINS[0]):
         if type(max_hits) is not int or max_hits < 1:
             raise ValueError("max_hits must be a positive integer")
+        if type(max_member_hits) is not int or max_member_hits < max_hits:
+            raise ValueError("max_member_hits must be an integer at least max_hits")
+        self._max_member_hits = max_member_hits
         self.origin = validate_origins((origin,))[0]
         self.properties_url = self.origin + "/aq/service/api/v1/properties"
         self._request = request if request is not None else requests.request
@@ -141,19 +147,40 @@ class ArchiveAqClient:
                 with measure_stage('aq_member'):
                     payload, digest, retrieved = self._read(
                         "POST", endpoint, member=member, headers=headers, body=body)
-                    hits = self._validate(payload, member)
+                    sizes = [self._max_hits]
+                    try:
+                        hits = self._validate(payload, member)
+                    except ArchiveAqError as exc:
+                        details = exc.details
+                        # Only an otherwise clean, exactly capped response warrants
+                        # expansion. Discard it and validate one complete response.
+                        if (exc.code != 'INCOMPLETE'
+                                or set(details.get('reasons', [])) != {'HIT_COUNT_MISMATCH', 'HIT_LIMIT_EXCEEDED'}
+                                or details.get('returned_hits') != self._max_hits
+                                or not self._max_hits < details.get('total_hits', 0) <= self._max_member_hits):
+                            raise
+                        expected = details['total_hits']
+                        sizes.append(expected)
+                        payload, digest, retrieved = self._read(
+                            'POST', endpoint, member=member, headers=headers, body={**body, 'size': expected})
+                        hits = self._validate(payload, member, limit=expected)
+                        if len(hits) != expected:
+                            raise ArchiveAqError('INCOMPLETE', member, details={
+                                'reasons': ['TOTAL_CHANGED'], 'total_hits': len(hits),
+                                'returned_hits': len(hits), 'max_hits': expected})
                 for hit in hits:
                     source = hit["_source"]
                     records.append(ArrayRecord(hit["_id"], source["mous"], source["sourceName"],
                                                source.get("array"), digest, retrieved, endpoint))
                 queries.append(ArchiveAqMemberQuery(member, endpoint, retrieved, digest,
-                                                   len(hits), self._max_hits))
+                                                   len(hits), sizes[-1], tuple(sizes)))
                 emit_progress("aq", len(queries), len(members), "members")
         catalog = ArchiveArrayCatalog(tuple(records),
             ArchiveArrayCatalogProvenance(ArchiveArrayCatalogMode.LIVE))
         return ArchiveAqFetchResult(catalog, tuple(queries), self.properties_url)
 
-    def _validate(self, payload, member):
+    def _validate(self, payload, member, *, limit=None):
+        limit = self._max_hits if limit is None else limit
         try:
             hits = payload["hits"]["hits"]
             total = payload["hits"]["total"]
@@ -164,10 +191,23 @@ class ArchiveAqClient:
                     or type(failed) is not int or failed < 0 or type(timed_out) is not bool
                     or type(payload.get("terminated_early", False)) is not bool):
                 raise ValueError("Invalid completeness metadata")
-            if (timed_out or failed or payload.get("terminated_early", False)
-                    or total["relation"] != "eq" or total["value"] != len(hits)
-                    or len(hits) > self._max_hits):
-                raise ArchiveAqError("INCOMPLETE", member)
+            reasons = []
+            if timed_out:
+                reasons.append('TIMED_OUT')
+            if failed:
+                reasons.append('FAILED_SHARDS')
+            if payload.get('terminated_early', False):
+                reasons.append('TERMINATED_EARLY')
+            if total['relation'] != 'eq':
+                reasons.append('TOTAL_NOT_EXACT')
+            if total['value'] != len(hits):
+                reasons.append('HIT_COUNT_MISMATCH')
+            if total['value'] > limit or len(hits) > limit:
+                reasons.append('HIT_LIMIT_EXCEEDED')
+            if reasons:
+                raise ArchiveAqError('INCOMPLETE', member, details={
+                    'reasons': reasons, 'total_hits': total['value'],
+                    'returned_hits': len(hits), 'max_hits': limit})
             for hit in hits:
                 source = hit["_source"]
                 values = (hit["_id"], source["mous"], source["sourceName"])
@@ -176,7 +216,7 @@ class ArchiveAqClient:
                         or (source.get("array") is not None and not isinstance(source["array"], str))):
                     raise ValueError("Malformed source")
         except ArchiveAqError:
-            raise ArchiveAqError("INCOMPLETE", member) from None
+            raise
         except (KeyError, TypeError, ValueError):
             raise ArchiveAqError("RESPONSE_INVALID", member) from None
         return hits

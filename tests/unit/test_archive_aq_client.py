@@ -249,3 +249,67 @@ def test_progress_counts_validated_members_only_and_retains_no_partial_catalog()
         ArchiveAqClient(request=http).fetch_members([MEMBER, MEMBER, OTHER])
     assert [(e['completed'], e['total']) for e in events] == [(0, 2), (1, 2)]
     assert all(e['stage'] == 'aq' and e['unit'] == 'members' for e in events)
+
+
+@pytest.mark.parametrize('change,reason', [
+    ({'timed_out': True}, 'TIMED_OUT'),
+    ({'_shards': {'failed': 1}}, 'FAILED_SHARDS'),
+    ({'terminated_early': True}, 'TERMINATED_EARLY'),
+    ({'hits': {'total': {'value': 101, 'relation': 'eq'}, 'hits': []}}, 'HIT_LIMIT_EXCEEDED'),
+    ({'hits': {'total': {'value': 1, 'relation': 'gte'}, 'hits': [hit()]}}, 'TOTAL_NOT_EXACT'),
+])
+def test_incomplete_retains_safe_specific_completeness_diagnostics(change, reason):
+    payload = response() | change
+    payload['private_field'] = SECRET
+    with pytest.raises(ArchiveAqError) as caught:
+        ArchiveAqClient(request=http_for(payload)).fetch_members([MEMBER])
+    error = caught.value
+    assert error.code == 'INCOMPLETE' and error.member_ous_uid == MEMBER
+    assert reason in error.details['reasons']
+    assert error.details['max_hits'] == 100
+    assert SECRET not in repr(error.details)
+
+
+def expanded_http(total=101, final=None):
+    hits = [hit(name=f'source-{i}') for i in range(total)]
+    initial = response(hits[:100])
+    initial['hits']['total']['value'] = total
+    return Http(Reply({'elasticsearchUrl': BASE}), Reply(initial),
+                Reply(response(hits) if final is None else final))
+
+
+def test_exact_total_triggers_one_full_refetch_with_final_response_provenance():
+    http = expanded_http()
+    result = ArchiveAqClient(request=http).fetch_members([MEMBER])
+    assert len(result.catalog.records) == 101
+    assert [call[2]['json']['size'] for call in http.calls[1:]] == [100, 101]
+    query = result.queries[0]
+    assert query.request_sizes == (100, 101) and query.max_hits == query.total_hits == 101
+    assert all(r.response_sha256 == query.response_sha256 for r in result.catalog.records)
+    assert query.response_sha256 == hashlib.sha256(json.dumps(response(
+        [hit(name=f'source-{i}') for i in range(101)])).encode()).hexdigest()
+
+
+@pytest.mark.parametrize('final', [response([]),
+    response([hit(name=f's-{i}') for i in range(100)]),
+    response([hit(name=f's-{i}') for i in range(102)]),
+    response([hit(member=OTHER, name=f's-{i}') for i in range(101)]),
+    response([hit(name=f's-{i}') for i in range(101)]) | {'timed_out': True}])
+def test_expanded_response_still_requires_complete_stable_member_records(final):
+    http = expanded_http(final=final)
+    with pytest.raises(ArchiveAqError):
+        ArchiveAqClient(request=http).fetch_members([MEMBER])
+    assert len(http.calls) == 3  # no repeated growth loop or partial merge
+
+
+def test_expansion_ceiling_preserves_incomplete_result_without_large_request():
+    http = expanded_http()
+    with pytest.raises(ArchiveAqError) as caught:
+        ArchiveAqClient(request=http, max_member_hits=100).fetch_members([MEMBER])
+    assert caught.value.code == 'INCOMPLETE' and len(http.calls) == 2
+
+
+def test_expanded_duplicate_sources_remain_visible_to_ambiguity_binder():
+    result = ArchiveAqClient(request=expanded_http(
+        final=response([hit()] * 101))).fetch_members([MEMBER])
+    assert len(result.catalog.records) == 101

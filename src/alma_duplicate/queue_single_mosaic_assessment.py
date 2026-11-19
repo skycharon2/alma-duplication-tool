@@ -88,8 +88,6 @@ def assess_single_mosaics(validated, *, options, sources, input_sha256, report_d
                 reasons.append('OUTSIDE_SINGLE_TO_MOSAIC_SCOPE')
             if isinstance(row.spectral, SpectralScanEvidence):
                 reasons.append('SPECTRAL_SCAN_NOT_EXPANDED')
-            if row.spatial.coordinate_system_raw.strip().lower() == 'galactic':
-                reasons.append('GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED')
             rows.append(dict(source_row_id=row_id, geometry_kind=row.spatial.mosaic_kind.value,
                              evaluated=row_id in represented, limitations=reasons,
                              tp_treatment='IGNORED' if row.request.use_tp else 'NOT_REQUESTED'))

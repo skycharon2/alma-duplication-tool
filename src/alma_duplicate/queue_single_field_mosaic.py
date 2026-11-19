@@ -36,11 +36,7 @@ def assess_single_field_science(parsed, request, proposed, *, nominal_conversion
         center = _center(row)
         frequency, source, reasons = candidate_frequency(row)
         candidate = dict(candidate_id=candidate_id, source_rows=[dict(source_row_id=i) for i in ids],
-            limitations=([dict(code='GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED',
-                title='Galactic offsets use a project coordinate model',
-                message='The ICRS source reference is transformed to Galactic for the offsets, '
-                        'then back to ICRS. Numerical checks do not establish native OT parity.')]
-                if center['offset_frame'] == 'GALACTIC' else []),
+            limitations=[],
             array_inference=asdict(beam), tp_treatment='IGNORED' if row.request.use_tp else 'NOT_REQUESTED',
             geometry=dict(source_row_id=ids[0], center=center, frequency_source=source,
                           frequency_ghz=frequency, frequency_reasons=reasons),

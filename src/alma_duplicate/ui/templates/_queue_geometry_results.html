@@ -1,6 +1,10 @@
 {% from '_report_comparison.html' import comparison with context %}
+{% from '_queue_matching.html' import geometry_labels with context %}
 <section class="report-overview">
-<h2>Queue candidate results</h2>
+<h2>{{ 'Queue Mosaic candidate results' if geometry_report.report_kind == 'QUEUE_SINGLE_TO_MOSAIC' else 'Queue candidate results' }}</h2>
+{% if geometry_report.report_kind == 'QUEUE_SINGLE_TO_MOSAIC' %}
+<p>Custom and Rectangular Mosaic results from the Queue CSV. <a href="{{ url_for('run_view', report_id=report_id, view='all') }}#candidates">View standard comparisons from Archive and Queue, including Single Field results</a>.</p>
+{% endif %}
 <p>{{ 'Search completed.' if geometry_report.assessment_status == 'COMPLETED' else 'Search incomplete.' }} Results apply to the observations retrieved in this search.</p>
 {% if geometry_report.error %}<p role="alert">Queue geometry assessment failed: {{ geometry_report.error }}. Other recorded results remain available.</p>{% endif %}
 <p>Each configuration and array is evaluated independently. Unresolved or unsupported comparisons do not establish absence of duplication.</p>
@@ -10,15 +14,39 @@
 <p><a href="{{ url_for('run_queue_view', report_id=report_id) }}">Matching candidates</a> · <a href="{{ url_for('run_queue_view', report_id=report_id, view='review') }}">Unresolved comparisons</a> · <a href="{{ url_for('run_queue_view', report_id=report_id, view='not_met') }}">Criteria not met</a></p>
 {% if not entries %}<p>No candidates in this view. Unresolved comparisons are not evidence of absence of duplication.</p>{% endif %}
 {% if geometry_report.inventory %}<details><summary>Candidate inventory and limitations</summary>
-{% set limitations = geometry_report.inventory.limitation_row_counts %}
-{% if limitations %}<ul>{% for code, count in limitations.items() %}<li>{{ code }}: {{ count }} source row{{ '' if count == 1 else 's' }}</li>{% endfor %}</ul>
+{% if geometry_report.inventory.limitation_row_counts is defined %}
+{% set limitations = dict(geometry_report.inventory.limitation_row_counts.items()|rejectattr('0', 'equalto', 'GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED')) %}
+{% endif %}
+{% if limitations %}
+<p>Counts below refer to Queue CSV source rows. A row can appear in multiple categories. The results above count candidate configurations.</p>
+{% if 'OUTSIDE_SINGLE_TO_MOSAIC_SCOPE' in limitations %}
+{% set count = limitations.OUTSIDE_SINGLE_TO_MOSAIC_SCOPE %}
+<p><strong>Queue source rows by geometry.</strong> {{ count }} source row{{ '' if count == 1 else 's' }} listed below. Single Field comparisons are in the standard report.</p>
+{% set by_geometry = geometry_report.inventory.outside_scope_by_geometry %}
+{% if by_geometry %}<ul>
+{% for kind, count in by_geometry.items() %}
+<li>{{ geometry_labels.get(kind, {'UNSPECIFIED_WITH_OFFSET': 'Single field with offsets (blank Mosaic cell)', 'UNKNOWN': 'Unknown geometry'}.get(kind, kind)) }} ({{ count }} source row{{ '' if count == 1 else 's' }}).
+{% if kind == 'SINGLE_FIELD' %}Compared through the standard Single Pointing workflow when evidence is available.
+{% elif kind == 'UNSPECIFIED_WITH_OFFSET' %}The standard Single Pointing workflow applies the recorded offsets before comparing positions.
+{% elif kind == 'UNKNOWN' %}Geometry could not be classified for comparison.
+{% endif %}</li>
+{% endfor %}
+</ul>{% endif %}
+{% endif %}
+{% if 'SPECTRAL_SCAN_NOT_EXPANDED' in limitations %}
+{% set count = limitations.SPECTRAL_SCAN_NOT_EXPANDED %}
+<p><strong>Unsupported spectral configuration.</strong> {{ count }} source row{{ '' if count == 1 else 's' }} with a spectral scan. The current comparison requires regular spectral windows and cannot expand a scan into those windows.</p>
+{% endif %}
+{% set other = limitations.items()|rejectattr('0', 'in', ('OUTSIDE_SINGLE_TO_MOSAIC_SCOPE', 'SPECTRAL_SCAN_NOT_EXPANDED'))|list %}
+{% if other %}<ul>{% for code, count in other %}<li>{{ code }}: {{ count }} source row{{ '' if count == 1 else 's' }}</li>{% endfor %}</ul>{% endif %}
 {% elif limitations is defined %}<p>No source-row limitations recorded.</p>{% endif %}
 <p><a href="{{ url_for('run_download', report_id=report_id, kind='report') }}">Download the full report for the row-level inventory.</a></p>
 </details>{% endif %}
-{% from '_queue_matching.html' import geometry_labels with context %}
+{% set ownership_candidates = entries|map(attribute='candidate')|list %}
+{% include '_queue_ownership_groups.html' %}
 {% for entry in entries %}
 {% set c = entry.candidate %}
-{% include "_queue_ownership_notice.html" %}
+{% if c.get('pointing_ownership') and c.pointing_ownership.unassessed_arrays %}<p class="field-note">This configuration: {{ c.pointing_ownership.unassessed_arrays|join(', ') }} remains UNKNOWN; no corresponding pointing geometry was assessed.</p>{% endif %}
 {% if entry.scope_help %}<p class="unresolved-notice"><strong>{{ entry.target }} · {{ entry.scope_help[1] }}</strong><br>{{ entry.scope_help[2] }}</p>{% endif %}
 <details class="report-context"><summary>{{ entry.project }} · {{ entry.target }} · {{ geometry_labels.get(entry.kind, entry.kind) }}{% for b in c.science.branches %} · {{ b.branch }}: {{ status_labels.get(b.status, b.status) }}{% endfor %}</summary>
 <p>Queue observation · Each array is compared independently.</p>

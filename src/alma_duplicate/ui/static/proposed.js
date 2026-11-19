@@ -43,8 +43,11 @@ function initializeForm(form) {
     if (stageLabel) stageLabel.textContent = stages[state.stage] || 'Assessment is running';
     const current = state.stages[state.stage] || {};
     const {completed, total, unit} = current;
-    if (form.dataset.workflow === 'batch' && Number.isInteger(current.batch_total)) {
+    if (stageLabel && form.dataset.workflow === 'batch' && Number.isInteger(current.batch_total)) {
       stageLabel.textContent += ` · ${current.batch_completed} / ${current.batch_total} checks finished`;
+      if (Number.isInteger(current.batch_workers)) {
+        stageLabel.textContent += ` · Worker limit: ${current.batch_workers}`;
+      }
       if (current.source_position) stageLabel.textContent += ` · Target ${current.source_position}/${current.source_total}: ${current.source_name} · ${current.purpose}`;
     }
     const determined = Number.isInteger(total) && total > 0 && Number.isInteger(completed);

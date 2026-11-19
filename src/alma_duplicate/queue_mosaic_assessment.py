@@ -56,8 +56,6 @@ def assess_queue_mosaic(validated, proposed, *, options, sources, input_sha256, 
                 limitations.append('CANDIDATE_GEOMETRY_NOT_EVALUATED')
             if isinstance(row.spectral, SpectralScanEvidence):
                 limitations.append('SPECTRAL_SCAN_NOT_EXPANDED')
-            if (row.spatial.coordinate_system_raw or '').strip().lower() == 'galactic':
-                limitations.append('GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED')
             rows.append(dict(source_row_id=row_id, geometry_kind=kind.value,
                              evaluated=kind.value in reports, limitations=limitations,
                              tp_treatment='IGNORED' if row.request.use_tp else 'NOT_REQUESTED'))
