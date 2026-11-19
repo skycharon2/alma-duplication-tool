@@ -107,9 +107,10 @@ def test_mosaic_keeps_queue_when_archive_not_configured(tmp_path):
 
 
 @pytest.mark.parametrize('legacy', [False, True])
-def test_missing_aca_alone_does_not_create_a_review_candidate(legacy):
-    from alma_duplicate.ui.queue_browser import report_header, result_bucket
-    from alma_duplicate.ui.queue_saved_pages import queue_saved_page
+def test_missing_aca_alone_does_not_create_a_review_candidate(tmp_path, legacy):
+    import json
+    from types import SimpleNamespace
+    from alma_duplicate.ui.run_store import RunStore
 
     candidates = []
     for index, main_truth in enumerate(('FALSE', 'UNKNOWN', 'TRUE')):
@@ -122,22 +123,34 @@ def test_missing_aca_alone_does_not_create_a_review_candidate(legacy):
                 dict(diameter_m=12, branches=[dict(branch='CONTINUUM', truth=main_truth)]),
             ]))
         candidates.append(candidate)
-    report = {'geometry_reports': {'CUSTOM': {'candidates': candidates}}}
-    header = report_header(report)
-    entries = [dict(kind='CUSTOM', index=index, bucket=result_bucket(candidate))
-               for index, candidate in enumerate(candidates)]
-    if legacy:
-        del header['aca_coverage_only_filtered']
-        header['candidate_counts']['review'] += 1
-        header['candidate_counts_by_intent']['CONTINUUM']['review'] += 1
-        entries[0]['bucket'] = 'review'
-    projection = {'queue_index': {'header': header, 'entries': entries}}
-    review = queue_saved_page(projection, 1, 'review', lambda e: candidates[e['index']])
-    assert review['document']['candidate_counts'] == {'matching': 1, 'review': 1, 'not_met': 0}
-    assert review['document']['candidate_counts_by_intent']['CONTINUUM']['review'] == 1
-    assert review['document']['geometry_reports']['CUSTOM']['candidates'] == [candidates[1]]
-    matching = queue_saved_page(projection, 1, 'matching', lambda e: candidates[e['index']])
-    assert matching['document']['geometry_reports']['CUSTOM']['candidates'] == [candidates[2]]
+    report = dict(schema_version='queue_mosaic_assessment_1', assessment_status='COMPLETED',
+                  duplication_status='NO_SEARCH_WIDE_ABSENCE_CLAIM', proposed={'source_name': 'test'},
+                  geometry_reports={'CUSTOM': {'candidates': candidates}})
+    store = RunStore(directory=tmp_path)
+    try:
+        run_id = store.add({}, SimpleNamespace(document=report, status='COMPLETED'))
+        index_path = store.directory / run_id / 'view.json'
+        if legacy:
+            projection = json.loads(index_path.read_bytes())
+            index = projection['queue_index']
+            header = index['header']
+            del header['aca_coverage_only_filtered']
+            header['candidate_counts']['review'] += 1
+            header['candidate_counts_by_intent']['CONTINUUM']['review'] += 1
+            index['entries'][0]['bucket'] = 'review'
+            index_path.write_text(json.dumps(projection))
+        before = index_path.read_bytes()
+        review = store.queue_page(run_id, 1, 'review')
+        expected_counts = {'matching': 1, 'review': 1, 'not_met': 0}
+        assert review['document']['candidate_counts'] == expected_counts
+        assert store.overview(run_id)['queue_geometry_counts'] == expected_counts
+        assert review['document']['candidate_counts_by_intent']['CONTINUUM']['review'] == 1
+        assert review['document']['geometry_reports']['CUSTOM']['candidates'] == [candidates[1]]
+        matching = store.queue_page(run_id, 1, 'matching')
+        assert matching['document']['geometry_reports']['CUSTOM']['candidates'] == [candidates[2]]
+        assert index_path.read_bytes() == before
+    finally:
+        store.close()
 
 
 def test_snapshot_error_is_cached():

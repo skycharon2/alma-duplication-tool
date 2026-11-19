@@ -2,6 +2,7 @@
 
 from collections import OrderedDict
 from dataclasses import dataclass, replace
+from functools import partial
 import hashlib
 import json
 import math
@@ -28,6 +29,11 @@ from alma_duplicate.ui.queue_custom_report import (
 DEFAULT_DISK_BYTES = 1024 * 1024 * 1024
 DEFAULT_MAX_AGE = 24 * 60 * 60
 MAX_REMOVAL_NOTICES = 1024
+
+
+def _read_queue_candidate(stream, entry):
+    stream.seek(entry['offset'])
+    return json.loads(stream.read(entry['length']))
 
 
 def _indexed_report_blocks(document, offsets):
@@ -395,10 +401,7 @@ class RunStore:
     def _queue_page(self, item, projection, page, view):
         from alma_duplicate.ui.queue_saved_pages import queue_saved_page
         with (item.directory / 'queue-candidates.jsonl').open('rb') as stream:
-            def candidate(entry):
-                stream.seek(entry['offset'])
-                return json.loads(stream.read(entry['length']))
-            data = queue_saved_page(projection, page, view, candidate)
+            data = queue_saved_page(projection, page, view, partial(_read_queue_candidate, stream))
         data.update(run=item, retention_hours=self.max_age / 3600)
         return data
 
@@ -414,18 +417,26 @@ class RunStore:
             return self._queue_page(item, projection, page, view)
 
     def overview(self, run_id):
-        """Read saved summary/index facts without loading contexts or rerunning rules."""
+        """Read saved summary facts, applying current display rules to legacy indexes."""
         with self._lock:
             self._prune_locked()
             item = self._runs.get(run_id)
             if item is None:
                 return None
             projection = json.loads((item.directory / 'view.json').read_bytes())
-            queue = projection.get('queue_index', {}).get('entries', [])
+            index = projection.get('queue_index')
+            if index is None:
+                counts = dict(matching=0, review=0, not_met=0)
+            elif index['header'].get('aca_coverage_only_filtered'):
+                counts = index['header']['candidate_counts']
+            else:
+                from alma_duplicate.ui.queue_saved_pages import queue_saved_index
+                with (item.directory / 'queue-candidates.jsonl').open('rb') as stream:
+                    header, _ = queue_saved_index(index, partial(_read_queue_candidate, stream))
+                    counts = header['candidate_counts']
             return dict(summary=projection.get('summary', {}),
                         sources=projection.get('source_overview', []),
-                        queue_geometry_counts={bucket: sum(e['bucket'] == bucket for e in queue)
-                                               for bucket in ('matching', 'review', 'not_met')})
+                        queue_geometry_counts=counts)
 
     def summaries(self, run_ids):
         """List only explicitly supplied browser links, without loading contexts."""
