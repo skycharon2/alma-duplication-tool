@@ -109,11 +109,13 @@ unset ALMA_UI_AUTO_QUEUE ALMA_UI_QUEUE_CSV ALMA_UI_QUEUE_SNAPSHOT_ROOT
 unset ALMA_UI_ARCHIVE_REPLAY ALMA_UI_ARCHIVE_ARRAY_EVIDENCE ALMA_UI_REPORT_DIR
 export ALMA_UI_LIVE_ARCHIVE=1
 export ALMA_UI_LIVE_ARCHIVE_AQ=1
+export ALMA_UI_BATCH_WORKERS=4
 python -m flask --app alma_duplicate.ui.app:create_app run \
   --host 127.0.0.1 --port 5051
 ```
 
-The two exports enable live Archive TAP and AQ queries. Queue works by default.
+The Archive exports enable live TAP and AQ queries. The batch worker setting
+allows up to four targets to run concurrently. Queue works by default.
 At startup the website downloads the official Queue CSV, validates it, and
 activates the verified snapshot in `data/cache/queue-snapshots`. The first
 launch may take a little longer while the file downloads and is parsed.

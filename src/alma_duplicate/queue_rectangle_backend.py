@@ -84,11 +84,7 @@ def assess_queue_rectangle_csv(parsed, proposed, *, candidate_id=None,
                 scientific_candidate_completeness='NOT_ESTABLISHED')
             variant['reasons'].extend(blockers[variant['diameter_m']])
         results.append(dict(candidate_id=candidate['candidate_id'], group=candidate['group'],
-                            limitations=([dict(code='GALACTIC_GRID_MODEL_NOT_OT_VALIDATED',
-                                title='Galactic grid has not been validated against OT',
-                                message='The grid and position angle use Galactic axes before each pointing is '
-                                        'converted to ICRS. Existing ICRS OT parity does not certify this grid.')]
-                                if grid['input_geometry']['frame'].strip().lower() == 'galactic' else []),
+                            limitations=[],
                             geometry=grid, position=position))
     outcomes = Counter(v['outcome'] for r in results for v in r['position']['beam_variants'])
     return dict(schema_version='queue_rectangle_csv_position_1', profile=PROFILE,

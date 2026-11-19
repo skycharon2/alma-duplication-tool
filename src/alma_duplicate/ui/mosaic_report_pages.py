@@ -104,6 +104,8 @@ def _candidate_entry(index, summary, candidate):
         raise ValueError('Mosaic candidate payload identity mismatch')
     contexts = []
     for context_index, context in enumerate((candidate.get('evaluation') or {}).get('contexts') or ()):
+        if (context.get('coverage') or {}).get('scope_status') == 'IGNORED_TP':
+            continue
         matching = any(branch.get('status') == 'CRITERIA_MET'
                        for branch in context.get('branches') or ())
         contexts.append({
@@ -144,6 +146,8 @@ def mosaic_report_page(projection, page, view, load_candidate):
 
     def visible(summary):
         bucket = summary['bucket']
+        if bucket == 'IGNORED':
+            return False
         return (selected_view == 'all'
                 or (selected_view == 'matching' and bucket == 'MATCH')
                 or (selected_view == 'review' and bucket in ('NEEDS_REVIEW', 'UNAVAILABLE'))
@@ -155,6 +159,8 @@ def mosaic_report_page(projection, page, view, load_candidate):
         for index, summary in enumerate(summaries):
             if summary.get('candidate_index') != index:
                 raise ValueError('Mosaic candidate index identity mismatch')
+            if summary['bucket'] == 'IGNORED':
+                continue
             key = _member_key(summary, index)
             by_member.setdefault(key, []).append(index)
             if summary['bucket'] == 'MATCH':
@@ -200,7 +206,7 @@ def mosaic_report_page(projection, page, view, load_candidate):
     return {
         'mosaic': True,
         'document': projection['document'],
-        'candidate_count': projection['candidate_count'],
+        'candidate_count': sum(summary['bucket'] != 'IGNORED' for summary in summaries),
         'candidate_summaries': [entry['summary'] for entry in entries],
         'candidates': [entry['candidate'] for entry in entries],
         'candidate_entries': entries,

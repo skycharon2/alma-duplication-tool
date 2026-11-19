@@ -526,7 +526,7 @@ review and live acquisition acceptance remain outstanding.
 
 ## Bounded target concurrency (2026-11-16)
 
-The browser now runs up to two targets concurrently. Set `ALMA_UI_BATCH_WORKERS`
+The browser defaults to four concurrent targets. Set `ALMA_UI_BATCH_WORKERS`
 before starting the server to choose 1–4; 1 restores serial execution. Direct
 `execute_batch` callers retain the serial default unless they pass `max_workers`.
 Purposes within a target remain sequential. Stored source order is upload order;
@@ -542,7 +542,10 @@ Stage percentages remain local to that stage, not overall batch completion.
 Each branch records wall time and per-stage wall/thread CPU times using the
 existing performance recorder. These are emitted at INFO level by
 `alma_duplicate.ui.batch_assessment`, outside scientific reports; enable that
-logger when profiling. Threaded execution overlaps network waits but does not
+logger when profiling. When both sources are selected for Single Pointing,
+Archive search and Queue loading and candidate filtering can overlap. Use the
+branch wall time for elapsed time because individual stage times can overlap.
+Threaded execution overlaps network waits but does not
 promise proportional acceleration of CPU-bound Python evaluation. No live
 speedup measurement has been completed. Running requests keep the old code until
 the serving process is restarted.

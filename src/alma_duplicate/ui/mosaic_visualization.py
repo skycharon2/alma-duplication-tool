@@ -1,6 +1,6 @@
 """Read-only Mosaic comparisons from one stored result page."""
 from alma_duplicate.geometry import primary_beam_fwhm_deg
-from alma_duplicate.ui.queue_browser import presentation
+from alma_duplicate.ui.queue_browser import displayed_candidate_limitations, presentation
 from alma_duplicate.ui.visualization import beam_outline, number, position, sky_offset, spectral_view
 from alma_duplicate.ui.region_display import saved_region_outline
 from alma_duplicate.ui.queue_geometry_visualization import _footprint
@@ -165,7 +165,7 @@ def queue_rows(page):
                     continue
                 yield dict(source='Queue', candidate=candidate['candidate_id'], target=entry['target'],
                            project=(entry.get('project') if entry.get('project') not in (None, 'Not recorded') else None),
-                           limitations=candidate.get('limitations', []),
+                           limitations=displayed_candidate_limitations(candidate),
                            pointing_ownership=candidate.get('pointing_ownership'),
                            geometry=entry['kind'], context_id=science.get('context_id'),
                            array=f'{diameter:g} m' if diameter else '', inside=saved.get('counts', {}).get('INSIDE') if bound else None,

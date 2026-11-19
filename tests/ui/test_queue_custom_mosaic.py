@@ -71,7 +71,7 @@ def test_galactic_custom_report_and_explorer_keep_frame_and_array_scope(browser)
         page = client.get(response.location + suffix)
         assert page.status_code == 200
         assert 'ACA 7-m assessment not available' in page.text
-        assert 'Galactic offsets use a project coordinate model' in page.text
+        assert 'Galactic offsets use a project coordinate model' not in page.text
 
 
 @pytest.mark.parametrize('version,intents', [('', ('CONTINUUM',)), ('2', ('CONTINUUM',)),

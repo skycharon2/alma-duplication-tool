@@ -74,19 +74,20 @@ def mosaic_report_projection(document):
     context_count = 0
     for candidate_index, candidate in enumerate(document['candidates']):
         candidate_status = candidate.get('status')
-        source_status_counts[candidate_status or 'UNRECORDED'] += 1
         contexts = [
             _context(record, index)
             for index, record in enumerate((candidate.get('evaluation') or {}).get('contexts', ()))
         ]
+        ignored = bool(contexts) and all(c['ignored_tp'] for c in contexts)
+        contexts = [c for c in contexts if not c['ignored_tp']]
+        source_status_counts[candidate_status or 'UNRECORDED'] += 1
         context_count += len(contexts)
         statuses = [
             branch['status'] for context in contexts for branch in context['branches']
         ]
         if candidate_status == 'EVALUATED':
             branch_counts.update(status or 'UNRECORDED' for status in statuses)
-        bucket = ('IGNORED' if contexts and all(c['ignored_tp'] for c in contexts)
-                  else _bucket(candidate_status, statuses))
+        bucket = 'IGNORED' if ignored else _bucket(candidate_status, statuses)
         bucket_counts[bucket] += 1
         candidates.append({
             'candidate_index': candidate_index,

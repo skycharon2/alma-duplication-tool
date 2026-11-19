@@ -38,7 +38,7 @@ def test_custom_native_offsets_against_spherical_reference(lon, lat, east, north
     assert_icrs(center['icrs_deg'], expected)
     assert center['reference_frame'] == 'ICRS' and center['offset_frame'] == 'GALACTIC'
     assert center['source_reference_icrs_deg'] == [ra, dec]
-    assert 'GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED' in center['reasons']
+    assert center['reasons'] == []
 
 
 @pytest.mark.parametrize('pa', [0, 30, 90, 210])

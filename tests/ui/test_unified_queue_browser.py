@@ -144,12 +144,16 @@ def test_queue_inventory_counts_rows():
     from flask import render_template
     from alma_duplicate.ui.queue_browser import report_header
 
-    document = dict(inventory={'source_rows': [
+    scope = 'OUTSIDE_SINGLE_TO_MOSAIC_SCOPE'
+    document = dict(report_kind='QUEUE_SINGLE_TO_MOSAIC', inventory={'source_rows': [
         {'limitations': ['TP_COVERAGE_NOT_MODELLED', 'SPECTRAL_SCAN_NOT_EXPANDED']},
-        {'limitations': ['TP_COVERAGE_NOT_MODELLED']},
+        {'limitations': ['TP_COVERAGE_NOT_MODELLED', 'GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED']},
+        {'geometry_kind': 'SINGLE_FIELD', 'limitations': [scope, scope]},
+        {'geometry_kind': 'UNSPECIFIED_WITH_OFFSET', 'limitations': [scope]},
     ]})
     header = report_header(document)
     assert 'source_rows' not in header['inventory']
+    assert header['inventory']['limitation_row_counts'][scope] == 2
     app = create_app(dict(TESTING=True, REPORT_DIRECTORY=None))
     try:
         with app.test_request_context():
@@ -158,8 +162,23 @@ def test_queue_inventory_counts_rows():
                 summary = BeautifulSoup(html, 'html.parser').find('summary', string='Candidate inventory and limitations')
                 return summary.parent.get_text(' ', strip=True)
 
-            assert 'TP_COVERAGE_NOT_MODELLED: 2 source rows' in inventory_text()
-            assert 'SPECTRAL_SCAN_NOT_EXPANDED: 1 source row' in inventory_text()
+            rendered = inventory_text()
+            html = render_template('_queue_geometry_results.html', geometry_report=header, report_id='test')
+            link = BeautifulSoup(html, 'html.parser').find('a', string=lambda label:
+                label and 'including Single Field results' in label)
+            assert link['href'] == '/runs/test?view=all#candidates'
+            assert 'TP_COVERAGE_NOT_MODELLED: 2 source rows' in rendered
+            assert '2 source rows listed below' in rendered
+            assert 'Single field (1 source row)' in rendered
+            assert 'Single field with offsets (blank Mosaic cell) (1 source row)' in rendered
+            assert 'Geometry could not be classified for comparison' not in rendered
+            assert 'GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED' not in rendered
+            assert 'Galactic offset model' not in rendered
+            assert '1 source row with a spectral scan' in rendered
+            assert scope not in rendered
+            del header['inventory']['outside_scope_by_geometry']
+            assert '2 source rows listed below' in inventory_text()
+            assert 'Single field (1 source row)' not in inventory_text()
             header['inventory']['limitation_row_counts'] = {}
             assert 'No source-row limitations recorded' in inventory_text()
             del header['inventory']['limitation_row_counts']

@@ -1,5 +1,6 @@
 """End-to-end offline execution tests; no confirmed duplicate labels."""
 from dataclasses import replace
+from threading import Event
 
 import pytest
 
@@ -58,6 +59,29 @@ def test_both_sources_execute_and_preserve_original_context_evidence():
     assert result.execution == "FINISHED" and result.plan.execution == "NOT_EXECUTED"
     assert result.assessment == "NOT_EVALUATED"
     assert result.finished_at >= result.started_at
+
+
+def test_archive_search_and_queue_loader_overlap():
+    v = validation()
+    archive_result, _ = archive(build_search_plan(v))
+    queue_result = queue_rows({})
+    archive_started, queue_started = Event(), Event()
+
+    class Client:
+        def search(self, spec):
+            archive_started.set()
+            assert queue_started.wait(timeout=5)
+            return archive_result
+
+    def load_queue():
+        queue_started.set()
+        assert archive_started.wait(timeout=5)
+        return queue_result
+
+    result = search_candidates(v, archive_client=Client(), queue_loader=load_queue,
+                               interpretations=interpretations(queue_result))
+    assert result.archive.status is result.queue.status is S.COMPLETED
+    assert [row.context.reference.source for row in result.candidates] == ["ARCHIVE", "QUEUE"]
 
 
 def test_real_archive_client_with_fake_tap_is_bound_and_executed():

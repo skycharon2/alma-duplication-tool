@@ -4,7 +4,8 @@ from copy import deepcopy
 from alma_duplicate.report_summary import resolve_context_summary
 
 from alma_duplicate.ui.report_view import (
-    attention_groups, group_title, matching_contexts, member_groups, report_summary, source_overview,
+    attention_groups, excluded_from_assessment, group_title, matching_contexts, member_groups,
+    report_summary, source_overview,
 )
 
 
@@ -12,7 +13,9 @@ def report_projection(document, inspection, *, compact=False):
     """Index exact recorded matches and identities, without deriving new verdicts."""
     matches = matching_contexts(document)
     groups = member_groups(matches)
-    all_groups = member_groups(list(enumerate(document.get('context_evaluations', []))))
+    visible = [(index, context) for index, context in enumerate(document.get('context_evaluations', []))
+               if not excluded_from_assessment(context)]
+    all_groups = member_groups(visible)
     siblings = {(g['member'], c['target'], c['execution']): c['entries']
                 for g in all_groups if g['source'] == 'ARCHIVE' and g['member']
                 for c in g['children'] if c['target'] and c['execution']}
@@ -51,7 +54,7 @@ def report_projection(document, inspection, *, compact=False):
         'source_overview': source_overview(document),
         'attention': attention_groups(document, inspection),
         'groups': groups, 'match_count': len(matches),
-        'total': len(document['context_evaluations']),
+        'total': len(visible), 'visible_indices': [index for index, _ in visible],
     }
 
 
@@ -66,7 +69,7 @@ def report_page(projection, page, view, load_context):
         raise IndexError('Report page unavailable')
     start = (page - 1) * 20
     page_groups = deepcopy(groups[start:start + 20]) if view == 'matches' else []
-    indices = (list(range(start, min(start + 20, count))) if view == 'all' else
+    indices = (list(projection.get('visible_indices', range(count))[start:start + 20]) if view == 'all' else
                [index for group in page_groups for child in group['children'] for index in child['entries']])
     contexts = {index: resolve_context_summary(load_context(index), projection['document']) for index in indices}
     for group in page_groups:

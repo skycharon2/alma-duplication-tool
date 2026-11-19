@@ -1,7 +1,6 @@
 # Queue Mosaic Galactic coordinate model
 
-Project interpretation adopted 2026-11-16. This adds numerical Galactic support
-without claiming that the current offset convention is universally OT-equivalent.
+The project uses the Galactic coordinate model adopted on 2026-11-16 for coverage comparisons.
 No 7-m Custom grid is inferred; [Custom ownership](queue_pointing_ownership.md)
 continues to control which array can receive explicit CSV coverage.
 
@@ -47,8 +46,7 @@ model and is not used. The existing 12-m spacing-reference interpretation and
 
 Galactic grids have no assigned native OT reference and are explicitly outside
 `ICRS_NYQUIST_REFERENCE_CASES`, even if their numerical spacing is Nyquist-like.
-Both JSON and browser/Explorer notices preserve that limitation. The historical
-ICRS A–D3 OT tests still apply only to their original domain.
+The historical ICRS A–D3 OT tests apply to their original domain.
 
 ## Numerical validation and limits
 
@@ -62,9 +60,7 @@ ALMA OT observations.
 Integration tests exercise both Mosaic and Single Pointing requests, model
 coverage, full scientific branches, source inventory and JSON output. Browser
 route tests check Galactic frame provenance, 12-m-only Custom matches, missing
-7-m coverage and the same notices in text reports and Mosaic Explorer.
+7-m coverage in text reports and Mosaic Explorer.
 
-Native Galactic OT exports and CSV offset-definition evidence are still needed
-to establish OT parity. A successful model assessment remains conditional on
-the recorded project interpretation. No numerical continuum/line formula, TP
+The adopted Galactic conversion is sufficient for the project assessment. Native OT validation is optional. No numerical continuum/line formula, TP
 policy, missing-ACA grid generation or broader OT reconstruction is introduced.

@@ -39,6 +39,7 @@ def test_two_targets_overlap_and_progress_never_regresses(store, monkeypatch):
     assert [s['source']['name'] for s in manifest['sources']] == ['first', 'second']
     counts = [e['batch_completed'] for e in events]
     assert counts == sorted(counts) and counts[-1] == 4
+    assert {e['batch_workers'] for e in events} == {2}
 
 
 def test_five_targets_respect_limit_and_keep_failed_target_separate(store, monkeypatch):
@@ -124,14 +125,18 @@ def test_invalid_concurrency_rejected_before_execution(store, workers):
         run(store, max_workers=workers)
 
 
-def test_browser_environment_limits(monkeypatch):
+@pytest.mark.parametrize('override, expected', [(None, 4), ('1', 1)])
+def test_browser_environment_limits(monkeypatch, override, expected):
     from alma_duplicate.ui import create_app
     from tests.ui.test_runs import config
-    monkeypatch.setenv('ALMA_UI_BATCH_WORKERS', '1')
+    if override is None:
+        monkeypatch.delenv('ALMA_UI_BATCH_WORKERS', raising=False)
+    else:
+        monkeypatch.setenv('ALMA_UI_BATCH_WORKERS', override)
     monkeypatch.setenv('ALMA_UI_MAX_RETAINED_BYTES', '2147483648')
     app = create_app(config())
     try:
-        assert app.config['BATCH_MAX_WORKERS'] == 1
+        assert app.config['BATCH_MAX_WORKERS'] == expected
         assert app.extensions['assessment_runs']._max_bytes == 2147483648
     finally:
         app.extensions['assessment_runs'].close()

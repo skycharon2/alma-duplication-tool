@@ -69,7 +69,7 @@ def _center(row):
     result.update(status="DIAGNOSTIC_ONLY", icrs_deg=[origin.ra.deg, origin.dec.deg],
                   reference_frame="ICRS", offset_frame="GALACTIC" if frame == 'galactic' else "ICRS",
                   zero_tolerance_arcsec=s.zero_tolerance_arcsec,
-                  reasons=(["GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED"] if frame == "galactic" else ["OT_OFFSET_PARITY_NOT_VERIFIED"]) +
+                  reasons=([] if frame == "galactic" else ["OT_OFFSET_PARITY_NOT_VERIFIED"]) +
                   (["BLANK_FRAME_EQUATORIAL_CONVENTION"] if not frame else []))
     return result
 

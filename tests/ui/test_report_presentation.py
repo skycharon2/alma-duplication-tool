@@ -246,6 +246,7 @@ def test_queue_scope_messages_group_variants_and_repeated_criteria_by_candidate(
 
 
 def test_excluded_tp_missing_branch_and_unresolved_counts_stay_separate():
+    from alma_duplicate.ui.report_pages import report_page, report_projection
     from alma_duplicate.ui.report_view import attention_groups
     contexts = [{'context_id': f'tp-{i}', 'exclusion_reason': 'TP_IGNORED_FOR_DUPLICATION',
                  'evaluation_scope': 'IGNORED', 'branches': []} for i in range(99)]
@@ -261,6 +262,10 @@ def test_excluded_tp_missing_branch_and_unresolved_counts_stay_separate():
         {'context_id': 'tp-0', 'code': 'LEGACY_GAP', 'category': 'UNCLASSIFIED'}]})
     assert len(groups) == 1 and groups[0]['candidates'] == [100]
     assert groups[0]['title'] == 'Missing or conflicting branch results'
+    page = report_page(report_projection(doc, {}), 1, 'all', contexts.__getitem__)
+    assert page['visible_count'] == 3
+    assert page['context_indices'] == [99, 100, 101]
+    assert [c['context_id'] for c in page['contexts']] == ['scan', 'missing', 'match']
     assert doc == before
 
 

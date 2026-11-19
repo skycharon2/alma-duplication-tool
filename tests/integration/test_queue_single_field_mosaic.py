@@ -46,7 +46,7 @@ def test_galactic_single_field_shared_center_adapter_keeps_provenance():
     candidate = evaluate({'Mos. Coord.': 'galactic'})
     assert candidate['science']['branches'][0]['truth'] == 'TRUE'
     assert candidate['geometry']['center']['offset_frame'] == 'GALACTIC'
-    assert candidate['limitations'][0]['code'] == 'GALACTIC_OFFSET_MODEL_NOT_OT_VALIDATED'
+    assert candidate['limitations'] == []
 
 
 def test_single_field_line_pairs_share_row_and_array():
