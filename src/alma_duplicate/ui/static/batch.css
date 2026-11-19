@@ -41,3 +41,11 @@ body:has(.batch-table) .target-settings-trigger {
 .batch-nav-boundary, .batch-purpose-label { color: var(--muted); font-size: 13px; }
 .batch-table tbody:target { outline: 2px solid var(--blue); outline-offset: -2px; scroll-margin-top: 20px; }
 @media (max-width: 640px) { .batch-navigation { padding: 12px; } .batch-navigation-targets .button { white-space: normal; } }
+
+.batch-input-status, .batch-input-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+}
+.batch-input-status { color: var(--muted); }
+.batch-input-error { color: #8a331e; }

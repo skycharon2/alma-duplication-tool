@@ -98,8 +98,13 @@ def test_real_run_overview_exports_history_and_existing_report_links(client, v2,
 
 def test_invalid_rows_and_failed_replacement_never_run_old_upload(client, monkeypatch):
     monkeypatch.setattr(BrowserAssessment, 'assess', lambda *a: pytest.fail('Assessment invoked'))
-    page, data = upload(client, raw=b'name,ra,dec\ngood,0,0\nbad,360,0')
+    page, data = upload(client, raw=b'name,ra,dec,redshift\nblue,0,0,-0.001\nzero,1,90,0\nbad,360,0,-1')
     assert b'Correct this row' in page.data and b'bad' in page.data
+    rows = BeautifulSoup(page.data, 'html.parser').select('.batch-table tbody tr')
+    assert 'Valid ICRS position' in rows[0].text and 'Valid blueshift' in rows[0].text
+    assert 'Valid redshift' in rows[1].text
+    assert 'Valid ICRS position' not in rows[2].text
+    assert 'Require a finite numeric redshift z > -1.' in rows[2].text
     response = client.post('/proposed/batch', data=data | dict(action='assess'))
     assert b'Correct all source-list errors' in response.data
     page, data = upload(client)
