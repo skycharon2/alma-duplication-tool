@@ -57,6 +57,33 @@ def test_mixed_queue_and_both_intents(tmp_path, monkeypatch, geometry):
         app.extensions['assessment_runs'].close()
 
 
+def test_single_pointing_queue_geometry_failure_keeps_report_pages_available(tmp_path, monkeypatch):
+    path = tmp_path / 'queue.csv'
+    parsed = queue_rows({'Mosaic': ''})
+    path.write_bytes(_render(_records()[:41] + [list(r.raw_values) for r in parsed.raw_rows]))
+    monkeypatch.setattr('alma_duplicate.ui.queue_browser.assess_geometry',
+                        Mock(side_effect=ValueError('Invalid Queue geometry evidence')))
+    app = create_app(dict(TESTING=True, REPORT_DIRECTORY=None, OFFLINE_QUEUE_CSV=str(path),
+        MANAGED_QUEUE_ROOT=None, OFFLINE_ARCHIVE_REPLAY=None, LIVE_ARCHIVE=False, LIVE_AQ=False))
+    try:
+        client = app.test_client()
+        data = form()
+        data['geometry'] = 'SINGLE_POINTING'
+        data.update(dict(ra='150', dec='-30', action='assess'))
+        response = client.post('/proposed', data=data)
+        assert response.status_code == 303
+        main = client.get(response.location)
+        assert main.status_code == 200
+        assert 'Queue geometry assessment unavailable: Invalid Queue geometry evidence' in main.text
+        for query in ('', '?view=review'):
+            queue = client.get(response.location + '/queue' + query)
+            assert queue.status_code == 200
+            assert 'Search incomplete.' in queue.text
+            assert 'Queue geometry assessment failed: Invalid Queue geometry evidence' in queue.text
+    finally:
+        app.extensions['assessment_runs'].close()
+
+
 def test_mosaic_keeps_queue_when_archive_not_configured(tmp_path):
     path = tmp_path / 'queue.csv'
     parsed = custom()

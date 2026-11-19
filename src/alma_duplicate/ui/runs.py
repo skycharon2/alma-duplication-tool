@@ -260,6 +260,8 @@ class BrowserAssessment:
             report['queue_geometry_assessment'] = json_value(geometry.document)
         except (OSError, ValueError) as exc:
             report['queue_geometry_assessment'] = {
+                'report_kind': 'QUEUE_SINGLE_TO_MOSAIC',
+                'scientific_request': {'target_name': document['request'].get('target_name')},
                 'assessment_status': 'SOURCES_UNAVAILABLE', 'geometry_reports': {},
                 'search_completeness': 'NOT_ESTABLISHED',
                 'error': str(exc),
