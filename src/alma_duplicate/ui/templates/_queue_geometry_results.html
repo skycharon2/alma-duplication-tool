@@ -16,9 +16,11 @@
 <p><a href="{{ url_for('run_download', report_id=report_id, kind='report') }}">Download the full report for the row-level inventory.</a></p>
 </details>{% endif %}
 {% from '_queue_matching.html' import geometry_labels with context %}
+{% set ownership_candidates = entries|map(attribute='candidate')|list %}
+{% include '_queue_ownership_groups.html' %}
 {% for entry in entries %}
 {% set c = entry.candidate %}
-{% include "_queue_ownership_notice.html" %}
+{% if c.get('pointing_ownership') and c.pointing_ownership.unassessed_arrays %}<p class="field-note">This configuration: {{ c.pointing_ownership.unassessed_arrays|join(', ') }} remains UNKNOWN; no corresponding pointing geometry was assessed.</p>{% endif %}
 {% if entry.scope_help %}<p class="unresolved-notice"><strong>{{ entry.target }} · {{ entry.scope_help[1] }}</strong><br>{{ entry.scope_help[2] }}</p>{% endif %}
 <details class="report-context"><summary>{{ entry.project }} · {{ entry.target }} · {{ geometry_labels.get(entry.kind, entry.kind) }}{% for b in c.science.branches %} · {{ b.branch }}: {{ status_labels.get(b.status, b.status) }}{% endfor %}</summary>
 <p>Queue observation · Each array is compared independently.</p>

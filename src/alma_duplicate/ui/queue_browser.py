@@ -114,3 +114,23 @@ def report_header(report):
     header['intent_counts_scope'] = 'ALL_STORED_CANDIDATE_CONFIGURATIONS'
     header['geometry_reports'] = {}
     return header
+
+
+def ownership_notice_groups(candidates):
+    """Deduplicate identical notices within one object, never its scientific results."""
+    import json
+    groups = {}
+    for candidate in candidates:
+        ownership = candidate.get('pointing_ownership') or {}
+        limitations = candidate.get('limitations') or []
+        if not limitations and not ownership.get('unassessed_arrays'):
+            continue
+        identity = candidate.get('group') or {}
+        project, target = identity.get('project_code'), identity.get('target_name')
+        # Missing object identities never authorize grouping unrelated records.
+        scope = (project, target) if project and target else ('candidate', candidate.get('candidate_id', id(candidate)))
+        key = (scope, json.dumps([ownership, limitations], sort_keys=True))
+        group = groups.setdefault(key, dict(project=project or 'Not recorded', target=target or 'Queue candidate',
+                                           candidate=candidate, count=0))
+        group['count'] += 1
+    return list(groups.values())

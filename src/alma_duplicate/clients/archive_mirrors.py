@@ -90,13 +90,14 @@ class MirroredArchiveAqClient:
                     raise ArchiveAqError("TIME_BUDGET_EXHAUSTED", attempts=tuple(attempts)) from None
                 except ArchiveAqError as exc:
                     attempts.append(_attempt(origin, started, status="FAILED", error=exc.code,
-                                             http_status=exc.http_status, member_ous_uid=exc.member_ous_uid))
+                                             http_status=exc.http_status, member_ous_uid=exc.member_ous_uid,
+                                             details=exc.details))
                     retry = (exc.code in {"TRANSPORT_ERROR", "INCOMPLETE", "JSON_INVALID", "RESPONSE_INVALID"}
                              or (exc.code == "HTTP_ERROR" and exc.http_status is not None
                                  and (exc.http_status in {408, 429} or 500 <= exc.http_status <= 599)))
                     if not retry or origin == self.origins[-1]:
                         raise ArchiveAqError(exc.code, exc.member_ous_uid, http_status=exc.http_status,
-                                             attempts=tuple(attempts)) from None
+                                             attempts=tuple(attempts), details=exc.details) from None
                 else:
                     attempts.append(_attempt(origin, started, status="COMPLETED"))
                     return replace(result, mirror_attempts=tuple(attempts))

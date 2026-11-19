@@ -2,9 +2,11 @@
 {% from '_mosaic_comparison.html' import comparison with context %}
 {% from '_queue_matching.html' import geometry_labels with context %}
 {% macro details(entries) %}
+{% set ownership_candidates = entries|map(attribute='candidate')|list %}
+{% include '_queue_ownership_groups.html' %}
 {% for entry in entries %}
 {% set c = entry.candidate %}
-{% include "_queue_ownership_notice.html" %}
+{% if c.get('pointing_ownership') and c.pointing_ownership.unassessed_arrays %}<p class="field-note">This configuration: {{ c.pointing_ownership.unassessed_arrays|join(', ') }} remains UNKNOWN; no corresponding pointing geometry was assessed.</p>{% endif %}
 <section class="member-result" id="queue-{{ c.candidate_id }}">
 <h3>{{ entry.target }} · {{ entry.project }}</h3>
 <p class="member-project">

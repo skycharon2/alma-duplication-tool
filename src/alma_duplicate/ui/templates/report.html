@@ -64,7 +64,9 @@
 {% elif not geometry_intents_indexed and geometry_counts.get('matching', 0) %}
 No matching standard comparisons; Queue geometry matches also exist, but their scientific-intent breakdown was not retained in this historical report.
 {% else %}{{ finding.text }}{% endif %}</p>
-{% if count.review or count.unreported %}<p class="unresolved-notice">{{ count.review + count.unreported }} comparison{{ '' if count.review + count.unreported == 1 else 's' }} {{ 'remains' if count.review + count.unreported == 1 else 'remain' }} unresolved.{% if attention %} <a href="#evidence">Review reasons</a>.{% endif %}</p>{% endif %}
+{% if count.review %}<p class="unresolved-notice">{{ count.review }} comparison{{ '' if count.review == 1 else 's' }} {{ 'remains' if count.review == 1 else 'remain' }} unresolved.{% if attention %} <a href="#evidence">Review reasons</a>.{% endif %}</p>{% endif %}
+{% if count.unreported %}<p class="unresolved-notice">{{ count.unreported }} comparisons have missing or conflicting branch results. <a href="#evidence">Review missing results</a>.</p>{% endif %}
+{% if count.excluded %}<p class="field-note">{{ count.excluded }} TP-only contexts excluded from duplication assessment; not counted as unresolved.</p>{% endif %}
 {% endfor %}
 {% if summary.total == 0 and not geometry_counts.get('matching', 0) %}<p>Check source coverage and the recorded search scope before running again. An empty result does not establish that there is no duplication.</p>{% endif %}
 <p class="matching-sources">{{ member_count }} matching Archive Member{{ '' if member_count == 1 else 's' }}. {{ queue_count + geometry_counts.get('matching', 0) }} matching Queue candidate configurations.</p>

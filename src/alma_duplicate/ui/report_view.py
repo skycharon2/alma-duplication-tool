@@ -213,22 +213,30 @@ def geometry_assessed_elsewhere(context, document):
     return bool(scope and scope[0] in {'QUEUE_CUSTOM', 'QUEUE_RECTANGLE'})
 
 
+def excluded_from_assessment(context):
+    """Only an explicit saved exclusion may remove a context from review counts."""
+    return context.get('exclusion_reason') == 'TP_IGNORED_FOR_DUPLICATION'
+
+
 def report_summary(document):
     """Count stored context branch results; no new observation-level verdict."""
     request = document.get('request') or {}
     request = request.get('normalized') or request.get('raw') or {}
     contexts = [c for c in document.get('context_evaluations', [])
                 if not geometry_assessed_elsewhere(c, document)]
+    excluded = sum(excluded_from_assessment(c) for c in contexts)
+    contexts = [c for c in contexts if not excluded_from_assessment(c)]
     intents = request.get('intents') or list(dict.fromkeys(
         b['branch'] for c in contexts for b in c.get('branches', [])))
     counts = []
     for intent in intents:
-        values = [b['status'] for c in contexts for b in c.get('branches', [])
-                  if b['branch'] == intent]
+        branches = [[b.get('status') for b in c.get('branches', [])
+                     if b.get('branch') == intent] for c in contexts]
+        values = [v[0] for v in branches if len(v) == 1]
         counts.append({'intent': intent, 'met': values.count('CRITERIA_MET'),
                        'not_met': values.count('CRITERIA_NOT_MET'),
                        'review': sum(value not in ('CRITERIA_MET', 'CRITERIA_NOT_MET') for value in values),
-                       'unreported': len(contexts) - len(values)})
+                       'unreported': sum(len(v) != 1 for v in branches), 'excluded': excluded})
     findings = []
     for count in counts:
         if not contexts:
@@ -241,7 +249,7 @@ def report_summary(document):
             text = 'None of the evaluated candidates meet these duplication conditions.'
         findings.append({'intent': count['intent'], 'text': text})
     return {'target': request.get('target_name') or 'Unnamed target',
-            'intents': intents, 'counts': counts, 'total': len(contexts),
+            'intents': intents, 'counts': counts, 'total': len(contexts), 'excluded': excluded,
             'findings': findings}
 
 
@@ -252,8 +260,10 @@ def matching_contexts(document):
     """Select explicit positive context branches without recomputing any verdict."""
     intents = set(report_summary(document)['intents']) & set(PURPOSE_LABELS)
     return [(index, context) for index, context in enumerate(document.get('context_evaluations', []))
-            if any(branch.get('branch') in intents and branch.get('status') == 'CRITERIA_MET'
-                   for branch in context.get('branches', []))]
+            if not excluded_from_assessment(context)
+            and not geometry_assessed_elsewhere(context, document)
+            and any([b.get('status') for b in context.get('branches', [])
+                     if b.get('branch') == intent] == ['CRITERIA_MET'] for intent in intents)]
 
 # Translate only explicit backend outcomes. These sentences never compute a verdict.
 CONDITION_TEXT = {
@@ -393,6 +403,50 @@ def summary_line_conditions(scope):
     return result
 
 
+def _aq_diagnostic_notes(acquisition):
+    """Only bounded, recognized diagnostics from saved reports reach summaries."""
+    import re
+    from alma_duplicate.archive_endpoints import ARCHIVE_ORIGINS
+    codes = {'INCOMPLETE', 'TRANSPORT_ERROR', 'HTTP_ERROR', 'JSON_INVALID',
+             'RESPONSE_INVALID', 'DISCOVERY_INVALID', 'TIME_BUDGET_EXHAUSTED'}
+    reasons = {'TIMED_OUT', 'FAILED_SHARDS', 'TERMINATED_EARLY', 'TOTAL_NOT_EXACT',
+               'HIT_COUNT_MISMATCH', 'HIT_LIMIT_EXCEEDED', 'TOTAL_CHANGED'}
+    def member(value):
+        return value if isinstance(value, str) and re.fullmatch(
+            r'uid://[A-Za-z0-9]+/[A-Za-z0-9]+/[A-Za-z0-9]+', value) else None
+    def checks(details):
+        values = details.get('reasons') or []
+        return ', '.join(v for v in values if isinstance(v, str) and v in reasons)
+    error = acquisition.get('error') or {}
+    notes = []
+    if error.get('code'):
+        code = error['code'] if isinstance(error['code'], str) and error['code'] in codes else 'UNRECOGNIZED'
+        notes.append('Array lookup error: ' + code + '.')
+    if member(error.get('member_ous_uid')):
+        notes.append('Failed Member: ' + member(error['member_ous_uid']) + '.')
+    details = error.get('details') or {}
+    if checks(details):
+        notes.append('Completeness checks: ' + checks(details) + '.')
+    if all(type(details.get(k)) is int and details[k] >= 0
+           for k in ('returned_hits', 'total_hits', 'max_hits')):
+        notes.append(f"Records returned: {details['returned_hits']}; declared: {details['total_hits']}; "
+                     f"per-query limit: {details['max_hits']}.")
+    for attempt in acquisition.get('mirror_attempts', []):
+        origin = attempt.get('origin')
+        origin = origin if origin in ARCHIVE_ORIGINS else 'Not recorded'
+        status = attempt.get('status')
+        status = status if status in ('COMPLETED', 'FAILED', 'INCOMPLETE') else 'Not recorded'
+        text = 'Array mirror ' + origin + ': ' + status
+        if isinstance(attempt.get('error'), str) and attempt['error'] in codes:
+            text += ' · ' + attempt['error']
+        if member(attempt.get('member_ous_uid')):
+            text += ' · Member ' + member(attempt['member_ous_uid'])
+        if checks(attempt.get('details') or {}):
+            text += ' · ' + checks(attempt['details'])
+        notes.append(text + '.')
+    return notes
+
+
 def source_overview(document):
     result = []
     descriptions = {
@@ -429,6 +483,10 @@ def source_overview(document):
             notes.append('Array information comes from previously saved data; no live lookup is recorded.')
         elif name == 'ARCHIVE' and not aq:
             notes.append('Additional array information is not recorded for this search.')
+        if aq_status in ('FAILED', 'INCOMPLETE'):
+            if source.get('status') == 'COMPLETED':
+                label = 'Observations retrieved · array information ' + aq_status.lower()
+            notes.extend(_aq_diagnostic_notes(acquisition))
         if source.get('requested_filters_fully_evaluated') is False and source.get('status') == 'COMPLETED':
             notes.append('Some requested retrieval filters could not be evaluated. Review the search limitations.')
         result.append({'name': 'Archive' if name == 'ARCHIVE' else 'Queue', 'label': label,
@@ -488,6 +546,7 @@ def attention_groups(document, inspection):
     scope_help = {c['context_id']: queue_scope_help(c, document) for c in contexts}
     groups = {}
     superseded = {c['context_id'] for c in contexts if geometry_assessed_elsewhere(c, document)}
+    superseded.update(c.get('context_id') for c in contexts if excluded_from_assessment(c))
     for gap in inspection.get('gap_occurrences', []):
         if gap.get('context_id') in superseded:
             continue
@@ -506,4 +565,14 @@ def attention_groups(document, inspection):
         index = indices.get(gap.get('context_id'))
         if index is not None and index not in group['candidates']:
             group['candidates'].append(index)
+    intents = report_summary(document)['intents']
+    missing = [i for i, c in enumerate(contexts)
+               if not excluded_from_assessment(c) and not geometry_assessed_elsewhere(c, document)
+               and any(sum(b.get('branch') == intent for b in c.get('branches', [])) != 1
+                       for intent in intents)]
+    if missing:
+        groups['MISSING_BRANCH_RESULT'] = {
+            'title': 'Missing or conflicting branch results', 'count': len(missing),
+            'messages': ['These comparisons lack one unambiguous saved result for a requested scientific purpose. '
+                         'They are listed separately from recorded unresolved results.'], 'candidates': missing}
     return list(groups.values())

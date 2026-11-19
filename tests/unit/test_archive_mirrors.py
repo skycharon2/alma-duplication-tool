@@ -176,3 +176,19 @@ def test_no_new_mirror_after_budget_expires():
     with pytest.raises(ArchiveAqError) as exc:
         MirroredArchiveAqClient(budget_seconds=10,clock=lambda:now[0],client_factory=aq_factory).fetch_members([MEMBER])
     assert exc.value.code=='TIME_BUDGET_EXHAUSTED' and len(calls)==1
+
+
+def test_aq_completeness_details_survive_all_mirror_failures():
+    replies = []
+    for origin in ORIGINS:
+        payload = response([])
+        payload['hits']['total']['value'] = 101
+        replies.extend([Reply({'elasticsearchUrl': origin + '/aq/service/api/search'}), Reply(payload)])
+    http = Http(*replies)
+    with pytest.raises(ArchiveAqError) as caught:
+        MirroredArchiveAqClient(client_factory=lambda **kw: ArchiveAqClient(request=http, **kw)).fetch_members([MEMBER])
+    error = caught.value
+    assert error.code == 'INCOMPLETE'
+    assert error.details['total_hits'] == 101
+    assert len(error.attempts) == len(ORIGINS)
+    assert all(a['details']['reasons'] == ['HIT_COUNT_MISMATCH', 'HIT_LIMIT_EXCEEDED'] for a in error.attempts)

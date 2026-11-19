@@ -15,9 +15,10 @@
 <h3>Project {{ project }}</h3>
 {% for obj in targets %}<article class="report-context queue-target"><h4>Target {{ obj.target_name }}</h4>
 {% for intent, truth in obj.truth_by_intent.items() %}<p><strong>{{ intent }}: {{ labels[truth] }}</strong> · Matching arrays: {% for d in obj.matching_arrays_by_intent[intent] %}{{ d|int }} m{% if not loop.last %}, {% endif %}{% else %}none{% endfor %}</p>{% endfor %}
+{% set ownership_candidates = obj.setups %}{% include '_queue_ownership_groups.html' %}
 {% for c in obj.setups %}<details class="queue-setup" {% if obj.setups|length == 1 %}open{% endif %}><summary>CSV configuration {{ loop.index }}{% if c.frequency.value_ghz is not none %} · {{ display_number(c.frequency.value_ghz) }} GHz{% endif %} · {{ c.display_spws }} listed SPWs{% if c.display_resolution %} · {{ c.display_resolution }}″{% endif %}{% for b in c.science.branches %} · {{ b.branch }}: {{ labels[b.truth] }}{% for d in c.science.matching_arrays_by_intent[b.branch] %} {{ d|int }} m{% endfor %}{% endfor %}</summary>
 {% for b in c.science.branches %}<p><strong>{{ b.branch }}: {{ labels.get(b.truth, b.truth) }}</strong> · Matching arrays: {% for d in c.science.matching_arrays_by_intent[b.branch] %}{{ d|int }} m{% if not loop.last %}, {% endif %}{% else %}none{% endfor %}</p>{% endfor %}
-{% include '_queue_ownership_notice.html' %}
+{% if c.get('pointing_ownership') and c.pointing_ownership.unassessed_arrays %}<p>Unassessed arrays: {{ c.pointing_ownership.unassessed_arrays|join(', ') }} · UNKNOWN.</p>{% endif %}
 {% include '_queue_custom_configuration.html' %}
 <h5>Array comparisons</h5>
 {% if not c.science.variants %}<p>Array inference is unresolved.</p>{% endif %}
