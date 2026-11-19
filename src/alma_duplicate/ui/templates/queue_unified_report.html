@@ -1,10 +1,11 @@
 {% extends "report_fragment.html" if embedded else "base.html" %}
 {% block content %}
 <article class="report-page"><h1>Queue Mosaic assessment</h1>
-<p>{{ document.proposed.source_name if document.proposed else document.scientific_request.target_name }}</p>
+{% set target = (document.get('proposed') or {}).get('source_name') or (document.get('scientific_request') or {}).get('target_name') %}
+{% if target %}<p>{{ target }}</p>{% endif %}
 <details><summary>Source coverage and downloads</summary>
 <p>Queue observation data</p>
-{% if document.sources.QUEUE.status != 'COMPLETE' %}<p role="alert">Queue unavailable or incomplete; no absence conclusion is established.</p>{% endif %}
+{% if ((document.get('sources') or {}).get('QUEUE') or {}).get('status') != 'COMPLETE' %}<p role="alert">Queue unavailable or incomplete; no absence conclusion is established.</p>{% endif %}
 <a href="{{ url_for('run_download', report_id=report_id, kind='report') }}">Download full report</a>
 <a href="{{ url_for('run_download', report_id=report_id, kind='request') }}">Download request</a>
 

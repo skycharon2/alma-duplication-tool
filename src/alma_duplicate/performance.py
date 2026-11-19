@@ -2,7 +2,7 @@
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
-from threading import Lock
+from threading import Lock, get_ident
 from time import perf_counter, thread_time
 
 _recorder = ContextVar('assessment_performance', default=None)
@@ -47,11 +47,13 @@ def measure_stage(name):
         return
     wall, cpu = recorder.wall_clock(), recorder.cpu_clock()
     stack = _stack.get()
+    thread_id = get_ident()
+    parent_thread, parent = stack[-1] if stack else (None, None)
     with recorder._lock:
         stage = StageTiming(name, 0, 0, True, recorder._next_id,
-                            stack[-1].stage_id if stack else None)
+                            parent.stage_id if parent is not None else None)
         recorder._next_id += 1
-    token = _stack.set((*stack, stage))
+    token = _stack.set((*stack, (thread_id, stage)))
     failed = True
     try:
         yield
@@ -60,12 +62,13 @@ def measure_stage(name):
         stage.wall_seconds = recorder.wall_clock() - wall
         stage.thread_cpu_seconds = recorder.cpu_clock() - cpu
         stage.failed = failed
-        # Children subtract their inclusive duration from the parent's own time.
         stage.self_wall_seconds += stage.wall_seconds
         stage.self_thread_cpu_seconds += stage.thread_cpu_seconds
         _stack.reset(token)
         with recorder._lock:
-            if stack:
-                stack[-1].self_wall_seconds -= stage.wall_seconds
-                stack[-1].self_thread_cpu_seconds -= stage.thread_cpu_seconds
+            # A copied context preserves the parent ID, but worker stages can
+            # overlap the parent's work and consume CPU on a different thread.
+            if parent is not None and parent_thread == thread_id:
+                parent.self_wall_seconds -= stage.wall_seconds
+                parent.self_thread_cpu_seconds -= stage.thread_cpu_seconds
             recorder.stages.append(stage)

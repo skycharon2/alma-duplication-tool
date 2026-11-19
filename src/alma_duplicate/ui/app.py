@@ -188,7 +188,9 @@ def create_app(config=None):
 
     def render_report(data, report_id):
         is_run = data.get('run') is not None
-        if (data.get('unified_queue') or data.get('mosaic')) and data['result_view'] in {'matches', 'matching'}:
+        if ((data.get('unified_queue') or data.get('mosaic'))
+                and data['result_view'] in {'matches', 'matching'}
+                and not (data.get('unified_queue') and data['document'].get('error'))):
             return render_template('combined_mosaic_report.html',
                 sections=[dict(source='QUEUE' if data.get('unified_queue') else 'ARCHIVE', data=data, report_id=report_id)],
                 observation_settings=data.get('observation_settings', {}),
