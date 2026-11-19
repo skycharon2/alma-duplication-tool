@@ -79,6 +79,40 @@ def test_mosaic_keeps_queue_when_archive_not_configured(tmp_path):
         app.extensions['assessment_runs'].close()
 
 
+@pytest.mark.parametrize('legacy', [False, True])
+def test_missing_aca_alone_does_not_create_a_review_candidate(legacy):
+    from alma_duplicate.ui.queue_browser import report_header, result_bucket
+    from alma_duplicate.ui.queue_saved_pages import queue_saved_page
+
+    candidates = []
+    for index, main_truth in enumerate(('FALSE', 'UNKNOWN', 'TRUE')):
+        candidate = dict(candidate_id=str(index),
+            pointing_ownership={'unassessed_arrays': ['7M'], 'evaluated_arrays': ['12M']},
+            science=dict(branches=[dict(branch='CONTINUUM',
+                truth='TRUE' if main_truth == 'TRUE' else 'UNKNOWN')], variants=[
+                dict(diameter_m=7, branches=[dict(branch='CONTINUUM', truth='UNKNOWN',
+                    reasons=['CUSTOM_ARRAY_POINTINGS_UNAVAILABLE'])]),
+                dict(diameter_m=12, branches=[dict(branch='CONTINUUM', truth=main_truth)]),
+            ]))
+        candidates.append(candidate)
+    report = {'geometry_reports': {'CUSTOM': {'candidates': candidates}}}
+    header = report_header(report)
+    entries = [dict(kind='CUSTOM', index=index, bucket=result_bucket(candidate))
+               for index, candidate in enumerate(candidates)]
+    if legacy:
+        del header['aca_coverage_only_filtered']
+        header['candidate_counts']['review'] += 1
+        header['candidate_counts_by_intent']['CONTINUUM']['review'] += 1
+        entries[0]['bucket'] = 'review'
+    projection = {'queue_index': {'header': header, 'entries': entries}}
+    review = queue_saved_page(projection, 1, 'review', lambda e: candidates[e['index']])
+    assert review['document']['candidate_counts'] == {'matching': 1, 'review': 1, 'not_met': 0}
+    assert review['document']['candidate_counts_by_intent']['CONTINUUM']['review'] == 1
+    assert review['document']['geometry_reports']['CUSTOM']['candidates'] == [candidates[1]]
+    matching = queue_saved_page(projection, 1, 'matching', lambda e: candidates[e['index']])
+    assert matching['document']['geometry_reports']['CUSTOM']['candidates'] == [candidates[2]]
+
+
 def test_snapshot_error_is_cached():
     from alma_duplicate.ui.queue_browser import memoized_loader
     loader = Mock(side_effect=OSError('unavailable snapshot'))

@@ -78,16 +78,41 @@ def presentation(report):
     return result
 
 
-def result_bucket(candidate):
-    truths = [b.get('truth') for b in candidate.get('science', {}).get('branches', [])]
-    return ('matching' if 'TRUE' in truths else 'not_met'
-            if truths and all(t == 'FALSE' for t in truths) else 'review')
+def result_bucket(candidate, intent=None):
+    science = candidate.get('science') or {}
+    branches = [b for b in science.get('branches', [])
+                if intent is None or b.get('branch') == intent]
+    truths = {b.get('truth') for b in branches}
+    if 'TRUE' in truths:
+        return 'matching'
+    if truths == {'FALSE'}:
+        return 'not_met'
+    ownership = candidate.get('pointing_ownership') or {}
+    if (ownership.get('unassessed_arrays') == ['7M']
+            and '12M' in ownership.get('evaluated_arrays', [])
+            and truths <= {'FALSE', 'UNKNOWN'}
+            and all(_only_missing_aca(science, b.get('branch'))
+                    for b in branches if b['truth'] == 'UNKNOWN')
+            and 'UNKNOWN' in truths):
+        return 'coverage_only'
+    return 'review'
+
+
+def _only_missing_aca(science, intent):
+    branches = [(v.get('diameter_m'), b) for v in science.get('variants', [])
+                for b in v.get('branches', []) if b.get('branch') == intent]
+    return (len(branches) == 2
+            and any(d == 7 and b.get('truth') == 'UNKNOWN'
+                    and tuple(b.get('reasons') or ()) == ('CUSTOM_ARRAY_POINTINGS_UNAVAILABLE',)
+                    for d, b in branches)
+            and any(d == 12 and b.get('truth') == 'FALSE' for d, b in branches))
 
 
 def report_header(report):
     """Small retained summary, excluding point relations and scientific operands."""
     from collections import Counter
-    counts = Counter(result_bucket(e['candidate']) for e in presentation(report))
+    entries = presentation(report)
+    counts = Counter(result_bucket(e['candidate']) for e in entries)
     header = {k: v for k, v in report.items() if k not in {'geometry_reports', 'inventory'}}
     inventory = report.get('inventory') or {}
     header['inventory'] = {k: v for k, v in inventory.items() if k != 'source_rows'}
@@ -102,20 +127,18 @@ def report_header(report):
         header['inventory']['limitation_row_counts'] = dict(sorted(limitations.items()))
         header['inventory']['outside_scope_by_geometry'] = dict(sorted(outside_by_geometry.items()))
     header['candidate_counts'] = {k: counts[k] for k in ('matching', 'review', 'not_met')}
+    header['aca_coverage_only_filtered'] = True
     # Count the full candidate inventory before report pagination. An intent is
     # counted once per configuration, even if an old record repeats branches.
     intent_counts = {}
-    for entry in presentation(report):
-        by_intent = {}
-        for branch in entry['candidate'].get('science', {}).get('branches', []):
-            intent = branch.get('branch')
-            if intent not in {'CONTINUUM', 'LINE'}:
-                continue
-            by_intent.setdefault(intent, set()).add(branch.get('truth'))
-        for intent, truths in by_intent.items():
-            bucket = ('matching' if 'TRUE' in truths else 'not_met'
-                      if truths == {'FALSE'} else 'review')
-            intent_counts.setdefault(intent, {'matching': 0, 'review': 0, 'not_met': 0})[bucket] += 1
+    for entry in entries:
+        candidate = entry['candidate']
+        intents = {b.get('branch') for b in candidate.get('science', {}).get('branches', [])}
+        for intent in sorted(intents & {'CONTINUUM', 'LINE'}):
+            counts_for_intent = intent_counts.setdefault(intent, {'matching': 0, 'review': 0, 'not_met': 0})
+            bucket = result_bucket(candidate, intent)
+            if bucket in counts_for_intent:
+                counts_for_intent[bucket] += 1
     header['candidate_counts_by_intent'] = intent_counts
     header['intent_counts_scope'] = 'ALL_STORED_CANDIDATE_CONFIGURATIONS'
     header['geometry_reports'] = {}
