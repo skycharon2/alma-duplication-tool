@@ -21,5 +21,5 @@
 </div>
 {% endif %}
 </section>
-<p class="report-retention-note">Browser reports are temporary: up to {{ '%g'|format(retention_hours) }} hours, and may be removed sooner on restart or when storage is full. Download important reports from their report page.</p>
+<p class="report-retention-note">{% if browser_persistent %}Saved reports are private to this browser. Keep this site’s cookie to reopen them after a restart.{% else %}Browser reports are temporary: up to {{ '%g'|format(retention_hours) }} hours, and may be removed sooner on restart or when storage is full. Download important reports from their report page.{% endif %}</p>
 {% endblock %}

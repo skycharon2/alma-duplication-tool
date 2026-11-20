@@ -69,7 +69,7 @@ static assets, OIDC entry/callback, signed-out page and health check are public.
 The old temporary form submissions, Batch manifests, progress tokens and static
 report directory are **not** exposed as a multi-user workflow. Those routes are
 blocked in authenticated mode until the planned persistent Worker/Web integration.
-Local mode is unchanged. This prevents a transitional deployment from attaching
+Local mode defaults to temporary reports and can opt into [browser-scoped database storage](browser_report_storage.md). The authenticated route restrictions prevent a transitional deployment from attaching
 formal identities to globally accessible process-local reports.
 
 There is no team membership management, report sharing, identity-provider token
