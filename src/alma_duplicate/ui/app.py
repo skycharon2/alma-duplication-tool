@@ -79,6 +79,10 @@ def create_app(config=None):
     app.config["MAX_RUN_AGE_SECONDS"] = DEFAULT_MAX_AGE
     app.config["RUN_STORAGE_PARENT"] = None
     app.config['AUTH_MODE'] = os.environ.get('ALMA_AUTH_MODE', 'local')
+    app.config['REPORT_STORAGE'] = os.environ.get('ALMA_REPORT_STORAGE', 'temporary')
+    app.config['BROWSER_SESSION_SECRET'] = os.environ.get('ALMA_BROWSER_SESSION_SECRET')
+    app.config['BROWSER_COOKIE_SECURE'] = (_env_flag('ALMA_BROWSER_COOKIE_SECURE')
+        if 'ALMA_BROWSER_COOKIE_SECURE' in os.environ else True)
     for setting in ('OIDC_ISSUER', 'OIDC_METADATA_URL', 'OIDC_CLIENT_ID', 'OIDC_CLIENT_SECRET',
                     'OIDC_REDIRECT_URI', 'AUTH_SESSION_SECRET', 'ARTIFACT_ROOT', 'DATABASE_URL'):
         app.config[setting] = os.environ.get('ALMA_' + setting)
@@ -90,6 +94,12 @@ def create_app(config=None):
 
     if app.config['AUTH_MODE'] not in {'local', 'oidc'}:
         raise ValueError('AUTH_MODE must be local or oidc')
+    if app.config['REPORT_STORAGE'] not in {'temporary', 'database'}:
+        raise ValueError('REPORT_STORAGE must be temporary or database')
+    if app.config['REPORT_STORAGE'] == 'database':
+        if app.config['AUTH_MODE'] != 'local':
+            raise ValueError('Browser database storage requires local mode')
+        app.config['REPORT_DIRECTORY'] = None
     if app.config['AUTH_MODE'] == 'oidc':
         from alma_duplicate.ui.auth import register_auth
         register_auth(app)
@@ -123,12 +133,16 @@ def create_app(config=None):
         live_archive=app.config["LIVE_ARCHIVE"],
         live_aq=app.config["LIVE_AQ"],
     )
-    runs = RunStore(
-        app.config["MAX_RETAINED_RUNS"],
-        app.config["MAX_RETAINED_BYTES"],
-        max_age=app.config["MAX_RUN_AGE_SECONDS"],
-        directory=app.config["RUN_STORAGE_PARENT"],
-    )
+    if app.config['REPORT_STORAGE'] == 'database':
+        from alma_duplicate.ui.browser_persistence import register_browser_persistence
+        runs = register_browser_persistence(app)
+    else:
+        runs = RunStore(
+            app.config["MAX_RETAINED_RUNS"],
+            app.config["MAX_RETAINED_BYTES"],
+            max_age=app.config["MAX_RUN_AGE_SECONDS"],
+            directory=app.config["RUN_STORAGE_PARENT"],
+        )
     app.extensions["assessment_runs"] = runs
     weakref.finalize(app, runs.close)
     progress = ProgressStore()
@@ -160,6 +174,7 @@ def create_app(config=None):
                                recent_runs=[row for row in recent if row['id'] not in hidden],
                                recent_batches=runs.batches.summaries(
                                    session.get('batch_history', []), session.get('batch_owner')),
+                               browser_persistent=app.config['REPORT_STORAGE'] == 'database',
                                retention_hours=runs.max_age / 3600)
 
     def artifact(report_id):

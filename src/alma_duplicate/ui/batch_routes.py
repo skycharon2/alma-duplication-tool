@@ -179,6 +179,8 @@ def register_batch_routes(app, configured, runs, progress):
                 runs=runs, owner=state.owner, submission_token=submission, format=upload['format'],
                 max_workers=app.config['BATCH_MAX_WORKERS'],
                 progress=(lambda event: progress.update(key, event)) if key else None)
+            if app.config['REPORT_STORAGE'] == 'database':
+                runs.batches.save_completed(batch_id, state.owner)
             session['batch_history'] = list(dict.fromkeys([batch_id] + session.get('batch_history', [])))[:20]
             report_url = url_for('batch.overview', batch_id=batch_id)
             return {'report_url': report_url} if header else redirect(report_url, code=303)
@@ -215,6 +217,7 @@ def register_batch_routes(app, configured, runs, progress):
         if isinstance(shared.get('continuum_requirement'), dict):
             shared['continuum_requirement'].pop('source_redshift', None)
         return render_template('batch_overview.html', batch=manifest, shared=shared,
+                               browser_persistent=app.config['REPORT_STORAGE'] == 'database',
                                unavailable_reports=sum(r['state'] == 'COMPLETED' and r['availability'] != 'AVAILABLE'
                                                        for s in manifest['sources'] for r in s['reports']),
                                retention_hours=runs.max_age / 3600)

@@ -1,6 +1,7 @@
 """Bounded multi-source execution using existing browser scientific assessment."""
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
+from contextvars import copy_context
 from copy import deepcopy
 from dataclasses import asdict, replace
 import logging
@@ -156,7 +157,7 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
             assess_target(index, child)
     else:
         with ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix='batch-target') as executor:
-            futures = [executor.submit(assess_target, index, child)
+            futures = [executor.submit(copy_context().run, assess_target, index, child)
                        for index, child in enumerate(preflight['sources'])]
             try:
                 for future in futures:

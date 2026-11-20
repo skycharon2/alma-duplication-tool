@@ -131,6 +131,9 @@ Assessments use the local snapshot between restarts. If a refresh fails, the
 website keeps the previous active snapshot. If the first download fails,
 Queue is unavailable until a successful startup check.
 
+To keep reports and completed batches across restarts without requiring sign-in,
+see [browser-scoped report storage](docs/browser_report_storage.md).
+
 ### Optional source configurations
 
 For the following alternatives, set the variables in the same terminal **after**

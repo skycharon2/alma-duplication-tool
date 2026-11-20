@@ -45,20 +45,10 @@ def publish_report(engine, store, workspace_id, job_id, *, attempt, lease_token,
     return run_id
 
 
-class SavedReport:
-    """Workspace-scoped saved artifacts. Caller supplies an authorized workspace."""
-    def __init__(self, engine, store, workspace_id, run_id):
-        self.store = store
-        with transaction(engine) as session:
-            repo = WorkspaceRepository(session, workspace_id)
-            self.run = repo.get_run(run_id)
-            job = repo.get_job(self.run['job_id'])
-            if job['state'] != 'COMPLETED' or job['attempt'] != self.run['attempt']:
-                raise RecordUnavailable('Report unavailable')
-            rows = session.execute(select(m.artifacts).where(
-                m.artifacts.c.workspace_id == workspace_id, m.artifacts.c.run_id == run_id)).mappings()
-            self.artifacts = {r['kind']: Artifact(r['kind'], r['storage_key'], r['sha256'], r['byte_size'])
-                              for r in rows}
+class SavedReportArtifacts:
+    """Read immutable artifacts after the caller has authorized their metadata."""
+    def __init__(self, store, run, artifacts):
+        self.store, self.run, self.artifacts = store, run, artifacts
         if not REQUIRED <= self.artifacts.keys():
             raise RecordUnavailable('Report unavailable')
 
@@ -108,3 +98,19 @@ class SavedReport:
         data.update(persistent=True, run_id=self.run['id'],
                     run=dict(self.run, status=self.run['assessment_status']))
         return data
+
+
+class SavedReport(SavedReportArtifacts):
+    """Workspace-scoped saved artifacts. Caller supplies an authorized workspace."""
+    def __init__(self, engine, store, workspace_id, run_id):
+        with transaction(engine) as session:
+            repo = WorkspaceRepository(session, workspace_id)
+            run = repo.get_run(run_id)
+            job = repo.get_job(run['job_id'])
+            if job['state'] != 'COMPLETED' or job['attempt'] != run['attempt']:
+                raise RecordUnavailable('Report unavailable')
+            rows = session.execute(select(m.artifacts).where(
+                m.artifacts.c.workspace_id == workspace_id, m.artifacts.c.run_id == run_id)).mappings()
+            artifacts = {r['kind']: Artifact(r['kind'], r['storage_key'], r['sha256'], r['byte_size'])
+                         for r in rows}
+        super().__init__(store, run, artifacts)

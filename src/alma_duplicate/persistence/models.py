@@ -104,3 +104,14 @@ auth_sessions = Table('auth_sessions', metadata,
     Column('expires_at', DateTime(timezone=True), nullable=False),
     CheckConstraint('length(id) = 64', name='digest_length'))
 Index('ix_auth_sessions_expiry', auth_sessions.c.expires_at)
+
+browser_batches = Table('browser_batches', metadata, identity(), created(),
+    Column('owner_digest', String(64), nullable=False, index=True),
+    Column('manifest', json_type, nullable=False))
+
+browser_reports = Table('browser_reports', metadata, identity(), created(),
+    Column('owner_digest', String(64), nullable=False, index=True),
+    Column('assessment_status', String(64), nullable=False),
+    Column('artifact_manifest', json_type, nullable=False),
+    Column('overview', json_type, nullable=False),
+    Column('batch_id', String(65), ForeignKey('browser_batches.id')))
