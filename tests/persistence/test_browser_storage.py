@@ -2,8 +2,10 @@
 import os
 from uuid import uuid4
 
-from alembic import command
 import pytest
+pytest.importorskip('sqlalchemy')
+pytest.importorskip('alembic')
+from alembic import command
 from sqlalchemy import create_engine
 from sqlalchemy.schema import CreateSchema, DropSchema
 
