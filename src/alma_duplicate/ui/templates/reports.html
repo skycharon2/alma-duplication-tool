@@ -47,5 +47,11 @@
 </div>
 {% endif %}
 </section>
+{% if history_page > 1 or history_has_next %}
+<nav class="report-actions" aria-label="Report history pages">
+  {% if history_page > 1 %}<a class="button" href="{{ url_for('report_index', page=history_page - 1) }}">Newer reports</a>{% endif %}
+  {% if history_has_next %}<a class="button" href="{{ url_for('report_index', page=history_page + 1) }}">Older reports</a>{% endif %}
+</nav>
+{% endif %}
 <p class="report-retention-note">{% if browser_persistent %}Saved reports are private to this browser. Keep this site’s cookie to reopen them after a restart.{% else %}Browser reports are temporary: up to {{ '%g'|format(retention_hours) }} hours, and may be removed sooner on restart or when storage is full. Download important reports from their report page.{% endif %}</p>
 {% endblock %}

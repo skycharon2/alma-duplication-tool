@@ -1,5 +1,6 @@
 """Anonymous browser report access survives a restart and stays private."""
 import os
+from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from pathlib import Path
 from uuid import uuid4
@@ -8,11 +9,11 @@ import pytest
 pytest.importorskip('sqlalchemy')
 pytest.importorskip('alembic')
 from alembic import command
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 from sqlalchemy.schema import CreateSchema, DropSchema
 from werkzeug.datastructures import MultiDict
 
-from alma_duplicate.persistence.models import assessment_input_links
+from alma_duplicate.persistence.models import assessment_input_links, browser_reports
 from alma_duplicate.ui import create_app
 from alma_duplicate.ui.input_snapshot import restore_input_snapshot
 from alma_duplicate.ui.runs import BrowserAssessment
@@ -131,8 +132,12 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert batch_input['upload']['raw'] == source_bytes
         assert batch_input['upload']['format'] == source_format
         source_artifact = next((tmp_path / 'artifacts').glob('*/source-list.bin'))
+        with owner.session_transaction() as browser_session:
+            browser_session.pop('report_history', None)
+            browser_session.pop('batch_history', None)
         listing = owner.get('/reports').text
         assert single.location in listing and batch.location in listing
+        assert f'href="{batch_report}"' not in listing
         for url in (single.location, mosaic.location, batch.location):
             assert f'action="{url}/reuse"' in listing
         visitor_listing = visitor.get('/reports').text
@@ -271,6 +276,23 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert visitor_report.status_code == 303
         assert visitor_report.location in visitor.get('/reports').text
         assert owner.get(visitor_report.location).status_code == 404
+        with engine.begin() as connection:
+            original = connection.execute(select(browser_reports).where(
+                browser_reports.c.id == single.location.rsplit('/', 1)[-1])).mappings().one()
+            for index in range(20):
+                run_id = f'{index:032x}.{index:032x}'
+                overview = original['overview'] | {
+                    'listing': original['overview']['listing'] | {'id': run_id},
+                }
+                connection.execute(browser_reports.insert().values(
+                    dict(original) | dict(id=run_id, overview=overview,
+                        created_at=datetime.now(timezone.utc) + timedelta(seconds=index + 1))))
+        first_page = owner.get('/reports')
+        assert 'Older reports' in first_page.text and single.location not in first_page.text
+        second_page = owner.get('/reports?page=2')
+        assert 'Newer reports' in second_page.text and single.location in second_page.text
+        assert owner.get('/reports?page=3').status_code == 404
+        assert visitor.get('/reports?page=2').status_code == 404
     finally:
         close(app)
         engine.dispose()

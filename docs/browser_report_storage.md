@@ -28,8 +28,10 @@ token scopes every saved report and batch lookup. A shared URL grants no access
 to another browser. The same browser profile can reopen its links while its
 cookie remains valid. Clearing the cookie, changing the session secret, or
 letting the cookie expire removes access from that browser. There is no
-account-based recovery or cross-device access. The report index lists recent
-items tracked by that browser.
+account-based recovery or cross-device access. In database mode, **Existing
+reports** lists saved standalone reports and completed batches for that
+browser. Use **Older reports** to reach earlier assessments. Individual batch
+checks are available from their batch overview.
 
 Completed batches persist as a whole after execution. Uploaded forms and
 in-progress assessments remain process-local and are interrupted by a restart.

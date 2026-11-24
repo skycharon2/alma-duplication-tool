@@ -164,25 +164,35 @@ def create_app(config=None):
 
     @app.get("/reports")
     def report_index():
-        recent = runs.summaries(session.get('report_history', []))
-        groups = session.get('mosaic_report_groups', [])
-        hidden = set()
-        available = {row['id'] for row in recent}
-        for group in groups:
-            retained = [key for key in group if key in available]
-            if retained:
-                hidden.update(retained[1:])
-        recent_runs = [row for row in recent if row['id'] not in hidden]
-        recent_batches = runs.batches.summaries(
-            session.get('batch_history', []), session.get('batch_owner'))
         persistent = app.config['REPORT_STORAGE'] == 'database'
+        groups = session.get('mosaic_report_groups', [])
+        page, has_next = 1, False
+        if persistent:
+            page, _ = page_selection()
+            page_size = 20
+            recent_runs, recent_batches = runs.history_page(
+                offset=(page - 1) * page_size, limit=page_size + 1,
+                hidden_report_ids={key for group in groups for key in list(group)[1:]},
+            )
+            has_next = max(len(recent_runs), len(recent_batches)) > page_size
+            recent_runs, recent_batches = recent_runs[:page_size], recent_batches[:page_size]
+            if page > 1 and not (recent_runs or recent_batches):
+                abort(404)
+        else:
+            recent = runs.summaries(session.get('report_history', []))
+            available = {row['id'] for row in recent}
+            hidden = {key for group in groups for key in [item for item in group if item in available][1:]}
+            recent_runs = [row for row in recent if row['id'] not in hidden]
+            recent_batches = runs.batches.summaries(
+                session.get('batch_history', []), session.get('batch_owner'))
         reusable_ids = runs.reusable_assessment_ids(
             [row['id'] for row in recent_runs],
             [row['batch_id'] for row in recent_batches],
         ) if persistent else set()
-        return render_template("reports.html", reports=reports,
+        return render_template("reports.html", reports=reports if page == 1 else {},
                                recent_runs=recent_runs, recent_batches=recent_batches,
                                reusable_ids=reusable_ids, browser_persistent=persistent,
+                               history_page=page, history_has_next=has_next,
                                retention_hours=runs.max_age / 3600)
 
     def artifact(report_id):

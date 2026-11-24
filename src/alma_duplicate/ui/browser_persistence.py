@@ -125,9 +125,30 @@ class BrowserRuns:
         row = self._report(run_id)
         return row['overview'] if row else None
 
-    def summaries(self, run_ids):
-        return [row['overview']['listing'] for run_id in dict.fromkeys(run_ids)
-                if (row := self._report(run_id)) is not None]
+    def history_page(self, *, offset, limit, hidden_report_ids):
+        """List browser-owned top-level entries without opening report files."""
+        owner = _owner.get()
+        if owner is None:
+            return [], []
+        reports, batches = browser_reports.c, browser_batches.c
+        with self.engine.connect() as db:
+            overviews = db.execute(select(reports.overview).where(
+                reports.owner_digest == owner, reports.batch_id.is_(None),
+                reports.id.not_in(hidden_report_ids),
+            ).order_by(reports.created_at.desc(), reports.id.desc()
+            ).offset(offset).limit(limit)).scalars()
+            report_rows = [overview['listing'] for overview in overviews]
+            manifests = db.execute(select(batches.manifest).where(
+                batches.owner_digest == owner
+            ).order_by(batches.created_at.desc(), batches.id.desc()
+            ).offset(offset).limit(limit)).scalars()
+            batch_rows = [
+                dict(batch_id=manifest['batch_id'], created_at=manifest['created_at'],
+                     source_count=len(manifest['sources']),
+                     execution_complete=manifest['execution_complete'])
+                for manifest in manifests
+            ]
+        return report_rows, batch_rows
 
     def reusable_assessment_ids(self, report_ids, batch_ids):
         """Find linked snapshots without opening uploads on the report listing."""
