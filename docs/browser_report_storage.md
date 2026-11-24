@@ -49,6 +49,53 @@ Database mode uses the existing report-size limit during staging. Saved files
 and metadata accumulate until the deployment operator removes them. Plan
 storage and backups accordingly.
 
+## Local trial on macOS
+
+For a fresh trial on a Mac with Homebrew, install and start PostgreSQL 16.
+The commands use the macOS user that initialized the Homebrew database cluster.
+If you already have a local PostgreSQL installation, use it and create the
+trial database there.
+
+```bash
+brew install postgresql@16
+brew services start postgresql@16
+pg_bin="$(brew --prefix postgresql@16)/bin"
+"$pg_bin/createdb" alma_reuse_trial
+"$pg_bin/psql" -d alma_reuse_trial -c 'SELECT current_database();'
+```
+
+Create the database once. From the repository root, using the Python environment
+from the README quick start, install the persistence dependencies and configure
+the trial. Keep the session key file for future launches and keep it outside the
+repository.
+
+```bash
+python -m pip install -e '.[ui,persistence]'
+
+trial_dir="$HOME/.local/share/alma-reuse-trial"
+mkdir -p "$trial_dir/artifacts"
+if [ ! -s "$trial_dir/session-key" ]; then
+  (umask 077 && python -c 'import secrets; print(secrets.token_hex(32))' > "$trial_dir/session-key")
+fi
+
+export ALMA_AUTH_MODE=local
+export ALMA_REPORT_STORAGE=database
+export ALMA_DATABASE_URL='postgresql+psycopg:///alma_reuse_trial'
+export ALMA_ARTIFACT_ROOT="$trial_dir/artifacts"
+export ALMA_BROWSER_SESSION_SECRET="$(cat "$trial_dir/session-key")"
+export ALMA_BROWSER_COOKIE_SECURE=0
+
+python -m alembic upgrade head
+python -m alembic current
+```
+
+After the migration succeeds, use the README quick-start source settings and
+Flask command in the same terminal. Open
+[Existing reports](http://127.0.0.1:5051/reports) in your browser. The cookie
+setting above is for loopback HTTP. For a shared trial, provide a hosted HTTPS
+URL and use `ALMA_BROWSER_COOKIE_SECURE=1` on the server. PostgreSQL stays on
+the server side, and each visitor uses their own browser profile.
+
 ## Reuse settings from a saved report
 
 1. In **Existing reports**, choose **Reuse settings** beside a saved assessment.

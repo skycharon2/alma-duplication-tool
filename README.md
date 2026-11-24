@@ -131,8 +131,23 @@ Assessments use the local snapshot between restarts. If a refresh fails, the
 website keeps the previous active snapshot. If the first download fails,
 Queue is unavailable until a successful startup check.
 
-To keep reports and completed batches across restarts without requiring sign-in,
-see [browser-scoped report storage](docs/browser_report_storage.md).
+### Try reusing assessment settings
+
+**Reuse settings** requires browser-scoped database storage. For a local trial,
+follow the [macOS PostgreSQL setup](docs/browser_report_storage.md#local-trial-on-macos)
+before starting Flask. If someone hosts the application for you, ask them for
+the trial URL and open it in your own browser. The hosted trial requires no
+website account or local PostgreSQL installation.
+
+1. Run a Single Pointing, Multi-source, or Mosaic assessment.
+2. Open **Existing reports** and choose **Reuse settings** beside the saved assessment.
+3. Change a scientific input, choose **Validate input**, then **Run assessment**.
+4. Open both results from **Existing reports** to confirm the original is still
+   available and the new assessment has its own report or batch link.
+
+Saved reports are scoped to the browser profile. Keep using the same profile
+for the trial. Reports without a saved input snapshot remain available through
+**View report**.
 
 ### Optional source configurations
 
@@ -153,8 +168,9 @@ the validated source and run IDs. See the [snapshot activation guide](docs/queue
 for commands and the [deployment guide](docs/queue_operations_deployment.md)
 for scheduled checks on Linux.
 
-Open **Existing reports** to review results. Download reports you want to keep
-before restarting the server. See the [report browsing guide](docs/ui_report_browser.md).
+Open **Existing reports** to review results. In temporary storage mode, download
+reports you want to keep before restarting the server.
+See the [report browsing guide](docs/ui_report_browser.md).
 
 ### Access a remote Linux host from your laptop
 
