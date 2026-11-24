@@ -10,7 +10,8 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 from alma_duplicate.persistence.db import transaction
 from alma_duplicate.persistence.models import (
-    browser_assessment_trash, browser_batches, browser_reports,
+    assessment_input_links, assessment_input_snapshots,
+    browser_artifact_cleanup, browser_assessment_trash, browser_batches, browser_reports,
 )
 
 
@@ -27,6 +28,47 @@ def assessment_is_active(parent):
         trash.assessment_kind == kind,
         trash.assessment_id == identity,
     ).correlate(parent).exists()
+
+
+def purge_assessment(db, owner, kind, assessment_id, insert):
+    reports, batches = browser_reports, browser_batches
+    report_scope = (reports.c.owner_digest == owner)
+    if kind == 'batch':
+        report_scope &= reports.c.batch_id == assessment_id
+    else:
+        report_scope &= reports.c.batch_id.is_(None) & (
+            func.coalesce(reports.c.assessment_group_id, reports.c.id) == assessment_id)
+    report_scope = select(reports.c.id).where(report_scope)
+
+    links, snapshots = assessment_input_links, assessment_input_snapshots
+    selected_links = links.c.report_id.in_(report_scope)
+    if kind == 'batch':
+        selected_links = or_(selected_links, links.c.batch_id == assessment_id)
+    snapshot_ids = db.scalars(select(snapshots.c.id).where(
+        snapshots.c.owner_digest == owner,
+        snapshots.c.id.in_(select(links.c.snapshot_id).where(selected_links)),
+    ).order_by(snapshots.c.id).with_for_update()).all()
+    db.execute(links.delete().where(selected_links))
+    manifests = db.scalars(reports.delete().where(
+        reports.c.id.in_(report_scope)).returning(reports.c.artifact_manifest)).all()
+    files = {item['storage_key']: item['kind'] for manifest in manifests for item in manifest}
+    if kind == 'batch':
+        db.execute(batches.delete().where(
+            batches.c.owner_digest == owner, batches.c.id == assessment_id))
+    uploads = db.scalars(snapshots.delete().where(
+        snapshots.c.owner_digest == owner, snapshots.c.id.in_(snapshot_ids),
+        ~select(links.c.id).where(links.c.snapshot_id == snapshots.c.id)
+        .correlate(snapshots).exists(),
+    ).returning(snapshots.c.upload)).all()
+    for upload in uploads:
+        if upload is not None:
+            artifact = upload['artifact']
+            files[artifact['storage_key']] = artifact['kind']
+    queue = browser_artifact_cleanup
+    if files:
+        db.execute(insert(queue).on_conflict_do_nothing(index_elements=[queue.c.storage_key]), [
+            dict(storage_key=key, kind=files[key]) for key in sorted(files)
+        ])
 
 
 def register_report_management(app, engine, current_owner):
@@ -89,7 +131,7 @@ def register_report_management(app, engine, current_owner):
 
     @routes.post('/reports/manage/<kind>/<entry_id>/<action>')
     def update_trash(kind, entry_id, action):
-        if kind not in {'report', 'batch'} or action not in {'trash', 'restore'}:
+        if kind not in {'report', 'batch'} or action not in {'trash', 'restore', 'purge'}:
             abort(404)
         tokens = request.form.getlist('csrf')
         expected = session.get('report_management_csrf')
@@ -109,26 +151,42 @@ def register_report_management(app, engine, current_owner):
                 columns.batch_id.is_(None))
         trash = browser_assessment_trash
         with transaction(engine) as db:
-            assessment_id = db.scalar(target.where(
-                columns.id == entry_id, columns.owner_digest == owner))
+            sqlite = db.get_bind().dialect.name == 'sqlite'
+            if sqlite:
+                db.connection().exec_driver_sql('BEGIN IMMEDIATE')
+            target = target.where(columns.id == entry_id, columns.owner_digest == owner)
+            if kind == 'report':
+                # Requests for any sibling serialize on the same representative.
+                member = browser_reports.alias('lock_member')
+                group_id = func.coalesce(member.c.assessment_group_id, member.c.id)
+                target = select(group_id).where(
+                    member.c.owner_digest == owner, member.c.batch_id.is_(None),
+                    group_id == target.scalar_subquery(),
+                ).order_by(member.c.id).limit(1)
+            assessment_id = db.scalar(target.with_for_update())
             if assessment_id is None:
                 abort(404)
             key = dict(owner_digest=owner, assessment_kind=kind.upper(), assessment_id=assessment_id)
+            insert = sqlite_insert if sqlite else pg_insert
             if action == 'trash':
                 now = datetime.now(timezone.utc)
-                insert = pg_insert if db.get_bind().dialect.name == 'postgresql' else sqlite_insert
                 db.execute(insert(trash).values(
                     **key, deleted_at=now, purge_after=now + retention,
                 ).on_conflict_do_nothing(index_elements=list(trash.primary_key.columns)))
             else:
-                db.execute(trash.delete().where(
+                removed = db.scalar(trash.delete().where(
                     trash.c.owner_digest == owner, trash.c.assessment_kind == kind.upper(),
                     trash.c.assessment_id == assessment_id,
-                ))
+                ).returning(trash.c.assessment_id))
+                if action == 'purge':
+                    if removed is None:
+                        abort(409, description='Move the assessment to trash before permanently deleting it.')
+                    purge_assessment(db, owner, kind, assessment_id, insert)
         if action == 'trash':
             flash('Assessment moved to trash.', 'report-management')
             return redirect(url_for('report_index'), code=303)
-        flash('Assessment restored to Existing reports.', 'report-management')
+        flash('Assessment permanently deleted. File cleanup is queued.' if action == 'purge'
+              else 'Assessment restored to Existing reports.', 'report-management')
         return redirect(url_for('report_management.trash_index'), code=303)
 
     app.register_blueprint(routes)

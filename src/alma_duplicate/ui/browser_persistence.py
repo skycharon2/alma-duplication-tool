@@ -272,7 +272,8 @@ class BrowserBatches(BatchStore):
         if row is not None:
             manifest, active = row
             return manifest if active else None
-        return super().get(batch_id, owner)
+        manifest = super().get(batch_id, owner)
+        return manifest if manifest is not None and not manifest['execution_complete'] else None
 
     def lookup_run(self, run_id, owner):
         if not self._authorized(owner):

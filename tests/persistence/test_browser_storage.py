@@ -15,7 +15,8 @@ from sqlalchemy.schema import CreateSchema, DropSchema
 from werkzeug.datastructures import MultiDict
 
 from alma_duplicate.persistence.models import (
-    assessment_input_links, browser_assessment_trash, browser_batches, browser_reports,
+    assessment_input_links, assessment_input_snapshots, browser_artifact_cleanup,
+    browser_assessment_trash, browser_batches, browser_reports,
 )
 from alma_duplicate.ui import create_app
 from alma_duplicate.ui.input_snapshot import restore_input_snapshot
@@ -393,6 +394,52 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert owner.post(f'/reports/manage/report/{sibling_id}/restore',
                           data={'csrf': csrf}).status_code == 303
         assert owner.get(mosaic.location).status_code == 200
+
+        purge_url = f'/reports/manage/batch/{batch_id}/purge'
+        assert owner.post(purge_url, data={'csrf': csrf}).status_code == 409
+        assert owner.post(trash_url, data={'csrf': csrf}).status_code == 303
+        assert visitor.post(purge_url, data={'csrf': visitor_csrf}).status_code == 404
+        assert owner.post(purge_url).status_code == 403
+
+        from alma_duplicate.ui import report_management
+        purge = report_management.purge_assessment
+
+        def fail_after_queue(*args):
+            purge(*args)
+            raise RuntimeError('simulated commit failure')
+
+        with monkeypatch.context() as rollback:
+            rollback.setattr(report_management, 'purge_assessment', fail_after_queue)
+            with pytest.raises(RuntimeError, match='simulated commit failure'):
+                owner.post(purge_url, data={'csrf': csrf})
+        with engine.connect() as db:
+            assert db.execute(select(browser_artifact_cleanup)).first() is None
+        assert f'action="{restore_url}"' in owner.get('/reports/trash').text
+
+        assert owner.post(purge_url, data={'csrf': csrf}).status_code == 303
+        assert owner.post(restore_url, data={'csrf': csrf}).status_code == 404
+        assert owner.get(manifest_url).status_code == 404
+        with engine.connect() as db:
+            assert db.scalar(select(browser_batches.c.id).where(browser_batches.c.id == batch_id)) is None
+            assert db.scalar(select(browser_reports.c.id).where(browser_reports.c.id.in_(batch_runs))) is None
+            assert db.scalar(select(assessment_input_snapshots.c.id).where(
+                assessment_input_snapshots.c.id == batch_input['snapshot_id'])) is None
+            queued = db.scalars(select(browser_artifact_cleanup.c.storage_key)).all()
+        assert queued and all((tmp_path / 'artifacts' / key).is_file() for key in queued)
+        result = app.test_cli_runner().invoke(args=['cleanup-browser-artifacts', '--limit', '500'])
+        assert result.exit_code == 0, result.output
+        assert all(not (tmp_path / 'artifacts' / key).exists() for key in queued)
+        assert owner.get(rerun.location).status_code == 200
+        assert saved_input(owner, 'input_for_batch', rerun.location)['upload']['raw'] == source_bytes
+
+        assert owner.post(f'/reports/manage/report/{mosaic_id}/trash',
+                          data={'csrf': csrf}).status_code == 303
+        assert owner.post(f'/reports/manage/report/{sibling_id}/purge',
+                          data={'csrf': csrf}).status_code == 303
+        with engine.connect() as db:
+            assert db.scalar(select(browser_reports.c.id).where(
+                browser_reports.c.id.in_([mosaic_id, sibling_id]))) is None
+        assert owner.get(mosaic_rerun.location).status_code == 200
     finally:
         close(app)
         engine.dispose()

@@ -148,3 +148,10 @@ queue. In database mode, operators can drain one batch with
 Files with database references and failed removals remain queued for another
 run. The command only processes explicitly queued file paths. Moving a report
 to trash does not enqueue its files.
+
+The permanent-delete endpoint accepts only an assessment that is already in
+the current browser's trash. It removes the assessment, child report records,
+and unshared input snapshots, and enqueues candidate files in the same
+transaction. A failed transaction leaves the trash entry intact. Physical
+space is reclaimed by the cleanup command after reference checks. Permanent
+deletion has no button in the report UI yet.
