@@ -225,7 +225,9 @@ class BatchStore:
 
 def batch_summary(manifest):
     settings = manifest.get('shared_setup', {}).get('document', {}).get('request', {})
-    return dict(batch_id=manifest['batch_id'], created_at=manifest['created_at'],
-                source_count=len(manifest['sources']), execution_complete=manifest['execution_complete'],
-                name=manifest.get('name'), angular_resolution=settings.get('angular_resolution'),
-                representative_frequency=settings.get('representative_frequency'))
+    summary = dict(batch_id=manifest['batch_id'], created_at=manifest['created_at'],
+                   source_count=len(manifest['sources']), execution_complete=manifest['execution_complete'])
+    optional = dict(name=manifest.get('name'), angular_resolution=settings.get('angular_resolution'),
+                    representative_frequency=settings.get('representative_frequency'))
+    summary.update({key: value for key, value in optional.items() if value is not None})
+    return summary
