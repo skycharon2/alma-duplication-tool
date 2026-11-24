@@ -453,6 +453,31 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
             assert db.scalar(select(browser_reports.c.id).where(
                 browser_reports.c.id.in_([mosaic_id, sibling_id]))) is None
         assert owner.get(mosaic_rerun.location).status_code == 200
+
+        # The batch was created by this app process. Its in-memory copy must
+        # not become visible after scheduled expiry removes the database row.
+        due_id = rerun.location.rsplit('/', 1)[-1]
+        future_id = mosaic_rerun.location.rsplit('/', 1)[-1]
+        assert owner.post(f'/reports/manage/batch/{due_id}/trash',
+                          data={'csrf': csrf}).status_code == 303
+        assert owner.post(f'/reports/manage/report/{future_id}/trash',
+                          data={'csrf': csrf}).status_code == 303
+        past = datetime.now(timezone.utc) - timedelta(days=1)
+        with engine.begin() as db:
+            db.execute(browser_assessment_trash.update().where(
+                browser_assessment_trash.c.assessment_kind == 'BATCH',
+                browser_assessment_trash.c.assessment_id == due_id,
+            ).values(deleted_at=past - timedelta(days=7), purge_after=past))
+        runner = app.test_cli_runner()
+        command_args = ['purge-expired-browser-assessments', '--limit', '1']
+        result = runner.invoke(args=command_args)
+        assert result.exit_code == 0, result.output
+        assert 'Expired trash entries removed: 1' in result.output
+        assert owner.get(rerun.location).status_code == 404
+        assert 'Expired trash entries removed: 0' in runner.invoke(args=command_args).output
+        assert owner.post(f'/reports/manage/report/{future_id}/restore',
+                          data={'csrf': csrf}).status_code == 303
+        assert owner.get(mosaic_rerun.location).status_code == 200
     finally:
         close(app)
         engine.dispose()

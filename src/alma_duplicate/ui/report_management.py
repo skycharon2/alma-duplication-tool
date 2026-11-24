@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 import os
 from secrets import compare_digest, token_hex
 
+import click
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 from sqlalchemy import case, func, or_, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -36,6 +37,37 @@ def _assessment_name(kind, payload):
     if kind == 'batch':
         return f"Multi-source assessment · {len(payload['sources'])} targets"
     return payload['listing']['target']
+
+
+def _lock_assessment(db, owner, kind, entry_id, *, group=False):
+    if db.get_bind().dialect.name == 'sqlite':
+        db.connection().exec_driver_sql('BEGIN IMMEDIATE')
+    if kind == 'batch':
+        columns = browser_batches.c
+        query = select(columns.id).where(columns.id == entry_id, columns.owner_digest == owner)
+    else:
+        columns = browser_reports.c
+        identity = func.coalesce(columns.assessment_group_id, columns.id)
+        if not group:
+            member = browser_reports.alias('requested_member').c
+            entry_id = select(func.coalesce(member.assessment_group_id, member.id)).where(
+                member.owner_digest == owner, member.id == entry_id, member.batch_id.is_(None),
+            ).scalar_subquery()
+        query = select(identity).where(
+            columns.owner_digest == owner, columns.batch_id.is_(None), identity == entry_id,
+        ).order_by(columns.id).limit(1)
+    return db.scalar(query.with_for_update())
+
+
+def _remove_trash(db, owner, kind, assessment_id, *, cutoff=None):
+    trash = browser_assessment_trash
+    statement = trash.delete().where(
+        trash.c.owner_digest == owner, trash.c.assessment_kind == kind.upper(),
+        trash.c.assessment_id == assessment_id,
+    )
+    if cutoff is not None:
+        statement = statement.where(trash.c.purge_after <= cutoff)
+    return db.scalar(statement.returning(trash.c.assessment_id))
 
 
 def purge_assessment(db, owner, kind, assessment_id, insert):
@@ -87,6 +119,30 @@ def register_report_management(app, engine, current_owner):
         raise ValueError('REPORT_TRASH_RETENTION_DAYS must be a positive integer')
     retention = timedelta(days=days)
     routes = Blueprint('report_management', __name__)
+    insert = sqlite_insert if engine.dialect.name == 'sqlite' else pg_insert
+
+    @app.cli.command('purge-expired-browser-assessments')
+    @click.option('--limit', type=click.IntRange(1, 500), default=100, show_default=True)
+    def purge_expired_browser_assessments(limit):
+        """Permanently delete expired trash entries and enqueue their files."""
+        cutoff = datetime.now(timezone.utc)
+        trash = browser_assessment_trash.c
+        with engine.connect() as db:
+            candidates = db.execute(select(
+                trash.owner_digest, trash.assessment_kind, trash.assessment_id,
+            ).where(trash.purge_after <= cutoff).order_by(
+                trash.purge_after, trash.owner_digest, trash.assessment_kind, trash.assessment_id,
+            ).limit(limit)).all()
+        removed = 0
+        for owner, kind, assessment_id in candidates:
+            kind = kind.lower()
+            with transaction(engine) as db:
+                target = _lock_assessment(db, owner, kind, assessment_id, group=True)
+                if _remove_trash(db, owner, kind, assessment_id, cutoff=cutoff) is not None:
+                    if target is not None:
+                        purge_assessment(db, owner, kind, assessment_id, insert)
+                    removed += 1
+        click.echo(f'Expired trash entries removed: {removed}. Run file cleanup to reclaim storage.')
 
     @app.context_processor
     def trash_token():
@@ -174,42 +230,19 @@ def register_report_management(app, engine, current_owner):
         if owner is None:
             abort(404)
 
-        if kind == 'batch':
-            columns = browser_batches.c
-            target = select(columns.id)
-        else:
-            columns = browser_reports.c
-            target = select(func.coalesce(columns.assessment_group_id, columns.id)).where(
-                columns.batch_id.is_(None))
         trash = browser_assessment_trash
         with transaction(engine) as db:
-            sqlite = db.get_bind().dialect.name == 'sqlite'
-            if sqlite:
-                db.connection().exec_driver_sql('BEGIN IMMEDIATE')
-            target = target.where(columns.id == entry_id, columns.owner_digest == owner)
-            if kind == 'report':
-                # Requests for any sibling serialize on the same representative.
-                member = browser_reports.alias('lock_member')
-                group_id = func.coalesce(member.c.assessment_group_id, member.c.id)
-                target = select(group_id).where(
-                    member.c.owner_digest == owner, member.c.batch_id.is_(None),
-                    group_id == target.scalar_subquery(),
-                ).order_by(member.c.id).limit(1)
-            assessment_id = db.scalar(target.with_for_update())
+            assessment_id = _lock_assessment(db, owner, kind, entry_id)
             if assessment_id is None:
                 abort(404)
             key = dict(owner_digest=owner, assessment_kind=kind.upper(), assessment_id=assessment_id)
-            insert = sqlite_insert if sqlite else pg_insert
             if action == 'trash':
                 now = datetime.now(timezone.utc)
                 db.execute(insert(trash).values(
                     **key, deleted_at=now, purge_after=now + retention,
                 ).on_conflict_do_nothing(index_elements=list(trash.primary_key.columns)))
             else:
-                removed = db.scalar(trash.delete().where(
-                    trash.c.owner_digest == owner, trash.c.assessment_kind == kind.upper(),
-                    trash.c.assessment_id == assessment_id,
-                ).returning(trash.c.assessment_id))
+                removed = _remove_trash(db, owner, kind, assessment_id)
                 if action == 'purge':
                     if removed is None:
                         abort(409, description='Move the assessment to trash before permanently deleting it.')

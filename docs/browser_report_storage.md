@@ -134,8 +134,9 @@ for moving browser-owned assessments to trash and restoring them. Moving
 a batch always applies to its child reports. Repeated requests leave the
 existing trash timestamp and retention deadline intact if already trashed.
 The planned retention defaults to seven days and can be configured with
-`ALMA_REPORT_TRASH_RETENTION_DAYS`. Expiration does not remove data until
-the cleanup workflow is enabled.
+`ALMA_REPORT_TRASH_RETENTION_DAYS`. Each entry keeps the deadline assigned
+when it entered Trash. Expired entries can be removed by the operator's
+scheduled cleanup.
 
 In **Existing reports**, choose **Move to trash** next to an assessment.
 Open **Trash** from the same page, then choose **Restore** to return the
@@ -157,3 +158,19 @@ space is reclaimed by the cleanup command after reference checks.
 In **Trash**, choose **Delete permanently**, review the assessment and its
 deletion time, then choose **Delete permanently** on the confirmation page.
 **Cancel** returns to Trash with the assessment still available to restore.
+
+### Scheduled cleanup
+
+To enforce retention, schedule these two commands in order using the same
+database and artifact directory as the web app. Run them as the application
+service user.
+
+```bash
+python -m flask --app alma_duplicate.ui.app:create_app purge-expired-browser-assessments
+python -m flask --app alma_duplicate.ui.app:create_app cleanup-browser-artifacts
+```
+
+The first command processes up to 100 due assessments by default and
+rechecks each deadline in the same transaction that removes the assessment.
+The second processes up to 100 queued file paths. Each command supports
+`--limit`. The application itself does not schedule these commands.
