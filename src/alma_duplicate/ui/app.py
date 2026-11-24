@@ -607,6 +607,15 @@ def create_app(config=None):
             observer = (observe_progress(lambda event: progress.update(token, event))
                         if token else nullcontext())
             with observer:
+                input_options = {}
+                if app.config['REPORT_STORAGE'] == 'database':
+                    from alma_duplicate.ui.input_snapshot import capture_input_snapshot
+                    mosaic = is_fixed_mosaic(state.values)
+                    upload = mosaic_uploads.get(state.owner, state.upload_token) if mosaic else None
+                    if mosaic and (not upload or upload['input_sha256'] != state.mosaic_preview['input_sha256']):
+                        raise ValueError('The OT upload expired or no longer matches its preview')
+                    input_options = dict(input_snapshot=capture_input_snapshot(
+                        state, workflow='MOSAIC' if mosaic else 'SINGLE'), upload=upload)
                 runner = replace(configured, archive_connection=state.values.get("archive_connection", "AUTO"))
                 runner = runner.pin_queue_for_submission("QUEUE" in state.values["sources"])
                 documents = [state.document]
@@ -638,7 +647,7 @@ def create_app(config=None):
                     successful_labels.append(label)
                 if not completed:
                     return None, "Assessment could not be completed. No report was created. Check the configured sources and server log."
-                ids = runs.add_group(completed)
+                ids = runs.add_group(completed, **input_options)
                 history = (ids + session.get("report_history", []))[:20]
                 session["report_history"] = history
                 partial = [group for group in session.get("partial_assessments", [])

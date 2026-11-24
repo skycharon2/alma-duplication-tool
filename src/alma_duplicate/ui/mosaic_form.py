@@ -4,7 +4,7 @@ The session-owned temporary upload store and parsing/validation rules are
 unchanged. Upload actions never assess candidates or query Archive/Queue.
 """
 
-from alma_duplicate.ui.proposed import bind_mosaic_input, preview_mosaic_ot
+from alma_duplicate.ui.proposed import bind_mosaic_input, read_mosaic_ot
 
 
 def restore_mosaic_upload(values, store, owner):
@@ -12,11 +12,11 @@ def restore_mosaic_upload(values, store, owner):
     token = values.get("mosaic_upload_token", "")
     if not token:
         return token, None, None
-    preview = store.get(owner, token)
-    if preview is None:
+    upload = store.get(owner, token)
+    if upload is None:
         values.pop("mosaic_upload_token", None)
         return token, None, "The OT upload expired or is unavailable. Import the file again."
-    return token, preview, None
+    return token, upload["preview"], None
 
 
 def replace_mosaic_upload(values, store, owner, old_token, files):
@@ -26,8 +26,9 @@ def replace_mosaic_upload(values, store, owner, old_token, files):
     """
     if len(files) != 1:
         raise ValueError("Select one OT pointings file")
-    replacement = preview_mosaic_ot(files[0], values)
-    new_token = store.put(owner, replacement)
+    replacement, raw = read_mosaic_ot(files[0], values)
+    new_token = store.put(owner, dict(preview=replacement, raw=raw, format="ot",
+        filename=replacement["filename"], input_sha256=replacement["input_sha256"]))
     store.remove(owner, old_token)
     values["mosaic_upload_token"] = new_token
     return replacement

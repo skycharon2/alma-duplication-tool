@@ -17,10 +17,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from alma_duplicate.artifacts.base import Artifact, FILES
 from alma_duplicate.artifacts.local import LocalArtifactStore
 from alma_duplicate.persistence.db import database_engine, transaction
-from alma_duplicate.persistence.models import browser_batches, browser_reports
+from alma_duplicate.persistence.models import assessment_input_links, browser_batches, browser_reports
 from alma_duplicate.persistence.reports import SavedReportArtifacts
 from alma_duplicate.persistence.repositories import RecordUnavailable
 from alma_duplicate.ui.batch_store import BatchStore
+from alma_duplicate.ui.input_snapshot_storage import insert_input_snapshot, read_input_snapshot
 from alma_duplicate.ui.run_store import DownloadLease, RunStore
 
 _owner = ContextVar('browser_report_owner', default=None)
@@ -39,7 +40,7 @@ class BrowserRuns:
     def add(self, request_document, result, *, protect=False):
         return self.add_group([(request_document, result)], protect=protect)[0]
 
-    def add_group(self, assessments, *, protect=False):
+    def add_group(self, assessments, *, protect=False, input_snapshot=None, upload=None):
         owner = _owner.get()
         if owner is None:
             raise ValueError('Missing browser scope')
@@ -61,11 +62,21 @@ class BrowserRuns:
                     artifact_manifest=[asdict(artifact) for artifact in artifacts]))
             with transaction(self.engine) as db:
                 db.execute(browser_reports.insert(), metadata)
+                if input_snapshot is not None:
+                    snapshot_id = insert_input_snapshot(db, self.store, owner, input_snapshot, upload)
+                    db.execute(assessment_input_links.insert(),
+                               [dict(report_id=run_id, snapshot_id=snapshot_id) for run_id in ids])
             return ids
         except SQLAlchemyError:
             raise ValueError('Could not save report metadata in the database') from None
         finally:
             staging.close()
+
+    def input_for_report(self, run_id):
+        return read_input_snapshot(self.engine, self.store, _owner.get(), browser_reports, run_id)
+
+    def input_for_batch(self, batch_id):
+        return read_input_snapshot(self.engine, self.store, _owner.get(), browser_batches, batch_id)
 
     def _report(self, run_id):
         owner = _owner.get()
@@ -135,7 +146,7 @@ class BrowserBatches(BatchStore):
     def _authorized(self, owner):
         return isinstance(owner, str) and sha256(owner.encode()).hexdigest() == _owner.get()
 
-    def save_completed(self, batch_id, owner):
+    def save_completed(self, batch_id, owner, *, input_snapshot=None, upload=None):
         manifest = super().get(batch_id, owner)
         if not self._authorized(owner) or not manifest or not manifest['execution_complete']:
             return
@@ -148,6 +159,9 @@ class BrowserBatches(BatchStore):
                 ).on_conflict_do_nothing(index_elements=['id']).returning(browser_batches.c.id)).scalar_one_or_none()
                 if created is None:
                     return
+                if input_snapshot is not None:
+                    snapshot_id = insert_input_snapshot(db, self._runs.store, digest, input_snapshot, upload)
+                    db.execute(assessment_input_links.insert().values(batch_id=batch_id, snapshot_id=snapshot_id))
                 ids = [r['run_id'] for s in manifest['sources'] for r in s['reports'] if r['run_id']]
                 if ids:
                     updated = db.execute(browser_reports.update().where(

@@ -29,8 +29,27 @@ validation still belongs to the existing form validator.
 
 Action controls, CSRF and upload tokens, execution and validation state,
 ownership and session secrets, previews, and fields from removed rows are
-excluded. This contract does not store uploaded CSV/TXT or OT bytes. Future
-persistence will bind verified file artifacts and owner metadata separately.
-The same original upload must be supplied separately to reproduce a batch or
-a Mosaic submission. Snapshot capture and restore perform no source queries
-and create no report or draft records.
+excluded. The form snapshot itself stores neither file bytes nor storage keys.
+Snapshot capture and restore perform no source queries and create no report or
+draft records.
+
+## Persistent storage
+
+Migration `0004_assessment_input_snapshots` adds optional links from newly
+published browser reports and completed batch manifests to their immutable
+input snapshot. All reports produced by a single submission share one snapshot.
+A completed batch links to its shared form and its original CSV or TXT, rather
+than storing a separate copy of the source list per target.
+
+In database mode, snapshots use the existing browser owner digest and uploads
+use the private artifact store. The filename is normalized for display and the
+original bytes, parser-confirmed hash, format and size are kept separately from
+report downloads. Lookups require both the parent and the snapshot to belong to
+the current browser. Missing legacy links are returned as unavailable, and
+damaged file contents fail integrity checks.
+
+Completed snapshots and their uploads follow persistent report storage and have
+no automatic expiry. Removing an in-progress preview releases only the temporary
+upload. Persistent copies are managed by the deployment operator. Existing
+reports and ordinary temporary mode are not backfilled. This phase provides
+internal read methods for later reuse; it does not expose upload or draft routes.

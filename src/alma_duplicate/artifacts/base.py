@@ -6,6 +6,7 @@ from typing import BinaryIO, Mapping, Protocol
 
 FILES = {'report': 'report.json', 'request': 'request.json', 'inspection': 'inspection.json',
          'view': 'view.json', 'queue-candidates': 'queue-candidates.jsonl'}
+INPUT_FILES = {'source-list': 'source-list.bin', 'ot-pointings': 'ot-pointings.bin'}
 
 
 @dataclass(frozen=True)

@@ -29,8 +29,8 @@ def assessment_supported(values):
             and values.get("geometry", "SINGLE_POINTING") in {"SINGLE_POINTING", "MOSAIC"})
 
 
-def preview_mosaic_ot(upload, values):
-    """Preview one native OT export; never enable science or retain its raw bytes."""
+def read_mosaic_ot(upload, values):
+    """Read one bounded native OT export and return its preview and raw bytes."""
     if values.get("target_kind") != "FIXED" or values.get("geometry") != "MOSAIC":
         raise ValueError("OT preview is for fixed-target Mosaic observations only")
     array = values.get("mosaic_array", "12m")
@@ -44,7 +44,8 @@ def preview_mosaic_ot(upload, values):
     # A bounded read also protects direct callers outside Flask's 1 MiB request cap.
     from alma_duplicate.parsers.ot_pointings import MAX_BYTES
     try:
-        parsed = parse_ot_pointings(upload.stream.read(MAX_BYTES + 1))
+        raw = upload.stream.read(MAX_BYTES + 1)
+        parsed = parse_ot_pointings(raw)
     except csv.Error as exc:
         raise ValueError("Malformed OT pointings CSV") from exc
     return {
@@ -61,7 +62,7 @@ def preview_mosaic_ot(upload, values):
         "filename": upload.filename.replace("\\", "/").split("/")[-1][:200],
         "fixed_icrs_confirmed": values.get("mosaic_fixed_icrs") == "on",
         "complete_confirmed": values.get("mosaic_complete") == "on",
-    }
+    }, raw
 
 
 def read_form(form):

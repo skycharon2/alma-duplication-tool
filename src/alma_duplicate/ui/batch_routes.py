@@ -114,7 +114,8 @@ def register_batch_routes(app, configured, runs, progress):
                     raw = supplied[0].read(MAX_BYTES + 1)
                     format = state.values.get('source_format', 'csv')
                     preview = parse_source_list(raw, format=format)
-                    upload = dict(raw=raw, format=format, preview=preview)
+                    upload = dict(raw=raw, format=format, preview=preview,
+                                  filename=supplied[0].filename[:200], input_sha256=preview['input_sha256'])
                     state.values['source_upload_token'] = uploads.put(owner, upload)
                     state.edit_notice = 'Source list imported. Review each row before running.'
                 except (ValueError, UnicodeError) as exc:
@@ -175,12 +176,16 @@ def register_batch_routes(app, configured, runs, progress):
                 return Response('Assessment already submitted or server busy.', status=429)
         report_url = None
         try:
+            snapshot = None
+            if app.config['REPORT_STORAGE'] == 'database':
+                from alma_duplicate.ui.input_snapshot import capture_input_snapshot
+                snapshot = capture_input_snapshot(state, workflow='MULTI_SOURCE_SINGLE')
             batch_id = execute_batch(state.values, state.rows, upload['raw'], runner=configured,
                 runs=runs, owner=state.owner, submission_token=submission, format=upload['format'],
                 max_workers=app.config['BATCH_MAX_WORKERS'],
                 progress=(lambda event: progress.update(key, event)) if key else None)
-            if app.config['REPORT_STORAGE'] == 'database':
-                runs.batches.save_completed(batch_id, state.owner)
+            if snapshot is not None:
+                runs.batches.save_completed(batch_id, state.owner, input_snapshot=snapshot, upload=upload)
             session['batch_history'] = list(dict.fromkeys([batch_id] + session.get('batch_history', [])))[:20]
             report_url = url_for('batch.overview', batch_id=batch_id)
             return {'report_url': report_url} if header else redirect(report_url, code=303)
