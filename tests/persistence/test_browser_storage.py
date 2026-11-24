@@ -396,9 +396,21 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert owner.get(mosaic.location).status_code == 200
 
         purge_url = f'/reports/manage/batch/{batch_id}/purge'
-        assert owner.post(purge_url, data={'csrf': csrf}).status_code == 409
+        confirmation = {'csrf': csrf, 'confirm': 'yes'}
+        assert owner.get(purge_url).status_code == 404
+        assert owner.post(purge_url, data=confirmation).status_code == 409
         assert owner.post(trash_url, data={'csrf': csrf}).status_code == 303
-        assert visitor.post(purge_url, data={'csrf': visitor_csrf}).status_code == 404
+        assert f'href="{purge_url}"' in owner.get('/reports/trash').text
+        confirm_page = owner.get(purge_url)
+        assert confirm_page.status_code == 200
+        assert 'Delete assessment permanently?' in confirm_page.text
+        assert f'action="{purge_url}"' in confirm_page.text
+        assert 'href="/reports/trash">Cancel</a>' in confirm_page.text
+        assert 'name="confirm" value="yes"' in confirm_page.text
+        assert f'action="{restore_url}"' in owner.get('/reports/trash').text
+        assert visitor.get(purge_url).status_code == 404
+        assert visitor.post(purge_url, data=confirmation | {'csrf': visitor_csrf}).status_code == 404
+        assert owner.post(purge_url, data={'csrf': csrf}).status_code == 400
         assert owner.post(purge_url).status_code == 403
 
         from alma_duplicate.ui import report_management
@@ -411,12 +423,13 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         with monkeypatch.context() as rollback:
             rollback.setattr(report_management, 'purge_assessment', fail_after_queue)
             with pytest.raises(RuntimeError, match='simulated commit failure'):
-                owner.post(purge_url, data={'csrf': csrf})
+                owner.post(purge_url, data=confirmation)
         with engine.connect() as db:
             assert db.execute(select(browser_artifact_cleanup)).first() is None
         assert f'action="{restore_url}"' in owner.get('/reports/trash').text
 
-        assert owner.post(purge_url, data={'csrf': csrf}).status_code == 303
+        assert owner.post(purge_url, data=confirmation).status_code == 303
+        assert 'Assessment permanently deleted. File cleanup is queued.' in owner.get('/reports/trash').text
         assert owner.post(restore_url, data={'csrf': csrf}).status_code == 404
         assert owner.get(manifest_url).status_code == 404
         with engine.connect() as db:
@@ -435,7 +448,7 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert owner.post(f'/reports/manage/report/{mosaic_id}/trash',
                           data={'csrf': csrf}).status_code == 303
         assert owner.post(f'/reports/manage/report/{sibling_id}/purge',
-                          data={'csrf': csrf}).status_code == 303
+                          data=confirmation).status_code == 303
         with engine.connect() as db:
             assert db.scalar(select(browser_reports.c.id).where(
                 browser_reports.c.id.in_([mosaic_id, sibling_id]))) is None

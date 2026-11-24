@@ -14,10 +14,15 @@
     <div class="report-library-name">{{ entry.name }}</div>
     <div class="report-library-kind">Moved to trash<br><time datetime="{{ entry.deleted_at.isoformat() }}{{ 'Z' if not entry.deleted_at.tzinfo }}">{{ entry.deleted_at.strftime('%d %b %Y, %H:%M') }} UTC</time></div>
   </div>
-  <form method="post" action="{{ url_for('report_management.update_trash', kind=entry.kind, entry_id=entry.id, action='restore') }}">
-    <input type="hidden" name="csrf" value="{{ report_management_csrf }}">
-    <button class="button" type="submit" aria-label="Restore {{ entry.name }}">Restore</button>
-  </form>
+  <div class="report-library-actions">
+    <form method="post" action="{{ url_for('report_management.update_trash', kind=entry.kind, entry_id=entry.id, action='restore') }}">
+      <input type="hidden" name="csrf" value="{{ report_management_csrf }}">
+      <button class="button" type="submit" aria-label="Restore {{ entry.name }}">Restore</button>
+    </form>
+    <a class="report-library-secondary report-purge-link"
+       href="{{ url_for('report_management.confirm_purge', kind=entry.kind, entry_id=entry.id) }}"
+       aria-label="Delete {{ entry.name }} permanently">Delete permanently</a>
+  </div>
 </li>
 {% endfor %}
 </ul>

@@ -15,7 +15,7 @@ from alma_duplicate.persistence.models import (
 )
 
 
-def assessment_is_active(parent):
+def _trash_match(parent):
     columns = parent.c
     if parent is browser_reports:
         kind = case((columns.batch_id.is_not(None), 'BATCH'), else_='REPORT')
@@ -23,11 +23,19 @@ def assessment_is_active(parent):
     else:
         kind, identity = 'BATCH', columns.id
     trash = browser_assessment_trash.c
-    return ~select(trash.assessment_id).where(
-        trash.owner_digest == columns.owner_digest,
-        trash.assessment_kind == kind,
-        trash.assessment_id == identity,
-    ).correlate(parent).exists()
+    return ((trash.owner_digest == columns.owner_digest)
+            & (trash.assessment_kind == kind) & (trash.assessment_id == identity))
+
+
+def assessment_is_active(parent):
+    return ~select(browser_assessment_trash.c.assessment_id).where(
+        _trash_match(parent)).correlate(parent).exists()
+
+
+def _assessment_name(kind, payload):
+    if kind == 'batch':
+        return f"Multi-source assessment · {len(payload['sources'])} targets"
+    return payload['listing']['target']
 
 
 def purge_assessment(db, owner, kind, assessment_id, insert):
@@ -82,7 +90,8 @@ def register_report_management(app, engine, current_owner):
 
     @app.context_processor
     def trash_token():
-        if request.endpoint not in {'report_index', 'report_management.trash_index'}:
+        if request.endpoint not in {'report_index', 'report_management.trash_index',
+                                    'report_management.confirm_purge'}:
             return {}
         return {'report_management_csrf': session.setdefault('report_management_csrf', token_hex(32))}
 
@@ -120,14 +129,35 @@ def register_report_management(app, engine, current_owner):
         entries = []
         for deleted_at, report_id, overview, batch_id, manifest in rows[:page_size]:
             if manifest is not None:
-                name = f"Multi-source assessment · {len(manifest['sources'])} targets"
-                kind, entry_id = 'batch', batch_id
+                kind, entry_id, payload = 'batch', batch_id, manifest
             else:
-                name = overview['listing']['target']
-                kind, entry_id = 'report', report_id
-            entries.append(dict(name=name, kind=kind, id=entry_id, deleted_at=deleted_at))
+                kind, entry_id, payload = 'report', report_id, overview
+            entries.append(dict(name=_assessment_name(kind, payload), kind=kind,
+                                id=entry_id, deleted_at=deleted_at))
         return render_template('report_trash.html', entries=entries, page=page,
                                has_next=len(rows) > page_size)
+
+    @routes.get('/reports/manage/<kind>/<entry_id>/purge')
+    def confirm_purge(kind, entry_id):
+        if kind == 'batch':
+            parent = browser_batches
+            query = select(parent.c.manifest)
+        elif kind == 'report':
+            parent = browser_reports
+            query = select(parent.c.overview).where(parent.c.batch_id.is_(None))
+        else:
+            abort(404)
+        trash = browser_assessment_trash
+        with engine.connect() as db:
+            row = db.execute(query.add_columns(trash.c.deleted_at).select_from(
+                parent.join(trash, _trash_match(parent))).where(
+                parent.c.id == entry_id, parent.c.owner_digest == current_owner(),
+            )).first()
+        if row is None:
+            abort(404)
+        payload, deleted_at = row
+        return render_template('report_purge.html', kind=kind, entry_id=entry_id,
+                               name=_assessment_name(kind, payload), deleted_at=deleted_at)
 
     @routes.post('/reports/manage/<kind>/<entry_id>/<action>')
     def update_trash(kind, entry_id, action):
@@ -138,6 +168,8 @@ def register_report_management(app, engine, current_owner):
         if (not expected or len(tokens) != 1 or not tokens[0].isascii()
                 or not compare_digest(tokens[0], expected)):
             abort(403)
+        if action == 'purge' and request.form.getlist('confirm') != ['yes']:
+            abort(400, description='Confirm permanent deletion before continuing.')
         owner = current_owner()
         if owner is None:
             abort(404)

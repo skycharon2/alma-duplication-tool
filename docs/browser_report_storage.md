@@ -153,5 +153,7 @@ The permanent-delete endpoint accepts only an assessment that is already in
 the current browser's trash. It removes the assessment, child report records,
 and unshared input snapshots, and enqueues candidate files in the same
 transaction. A failed transaction leaves the trash entry intact. Physical
-space is reclaimed by the cleanup command after reference checks. Permanent
-deletion has no button in the report UI yet.
+space is reclaimed by the cleanup command after reference checks.
+In **Trash**, choose **Delete permanently**, review the assessment and its
+deletion time, then choose **Delete permanently** on the confirmation page.
+**Cancel** returns to Trash with the assessment still available to restore.
