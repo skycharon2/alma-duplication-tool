@@ -36,3 +36,26 @@ in-progress assessments remain process-local and are interrupted by a restart.
 Database mode uses the existing report-size limit during staging. Saved files
 and metadata accumulate until the deployment operator removes them. Plan
 storage and backups accordingly.
+
+## Reuse settings from a saved report
+
+1. In **Existing reports**, choose **Reuse settings** beside a saved assessment.
+2. Review the restored inputs. For Multi-source or Mosaic, review the restored
+   source list or OT pointings. You can replace the file before validating.
+3. Choose **Validate input**, then **Run assessment** when ready. The new
+   assessment receives its own report or batch ID. **View original assessment**
+   in the draft opens the original result.
+
+Reuse supports Legacy and V2 Single Pointing, Multi-source with its original
+CSV or TXT, and Mosaic with its original OT pointings. Older reports without
+saved input snapshots, preloaded reports, and reports in temporary mode are
+view-only in **Existing reports**.
+
+Saved inputs and original uploads survive restarts with the database, artifact
+directory, and browser cookie. An opened draft lasts 30 minutes by default
+and is held by the web process that created it. After expiry or a restart,
+return to **Existing reports** and create a fresh draft. Access uses the same
+browser profile and cookie as the original report.
+
+See [Assessment input snapshots](assessment_input_snapshot.md) for the input
+contract, upload integrity checks, and draft lifetime configuration.

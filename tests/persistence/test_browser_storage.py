@@ -10,6 +10,7 @@ pytest.importorskip('alembic')
 from alembic import command
 from sqlalchemy import create_engine
 from sqlalchemy.schema import CreateSchema, DropSchema
+from werkzeug.datastructures import MultiDict
 
 from alma_duplicate.persistence.models import assessment_input_links
 from alma_duplicate.ui import create_app
@@ -151,6 +152,9 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
             visitor_csrf = browser_session['assessment_reuse_csrf']
         assert owner.get(single.location + '/reuse').status_code == 405
         assert owner.post(single.location + '/reuse').status_code == 403
+        assert owner.post(single.location + '/reuse', data=MultiDict([
+            ('csrf', reuse_csrf), ('csrf', reuse_csrf),
+        ])).status_code == 403
         assert visitor.post(single.location + '/reuse', data={'csrf': reuse_csrf}).status_code == 403
         assert visitor.post(single.location + '/reuse', data={'csrf': visitor_csrf}).status_code == 404
         assert visitor.post(batch.location + '/reuse', data={'csrf': visitor_csrf}).status_code == 404
@@ -171,6 +175,8 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
                 assert receipt.status_code == 303
                 assert receipt.location.startswith(path + '?draft=')
                 assert visitor.get(receipt.location).status_code == 404
+                wrong_path = '/proposed/mosaic' if path == '/proposed' else '/proposed'
+                assert owner.get(wrong_path + '?' + receipt.location.split('?', 1)[1]).status_code == 404
                 draft = owner.get(receipt.location)
                 assert draft.status_code == 200
                 assert expected in draft.text
