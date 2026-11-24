@@ -141,3 +141,10 @@ In **Existing reports**, choose **Move to trash** next to an assessment.
 Open **Trash** from the same page, then choose **Restore** to return the
 assessment and its reports to the history. Moving a report to trash keeps
 its saved files on disk.
+
+Migration `0007_browser_artifact_cleanup` adds the persistent file cleanup
+queue. In database mode, operators can drain one batch with
+`python -m flask --app alma_duplicate.ui.app:create_app cleanup-browser-artifacts`.
+Files with database references and failed removals remain queued for another
+run. The command only processes explicitly queued file paths. Moving a report
+to trash does not enqueue its files.

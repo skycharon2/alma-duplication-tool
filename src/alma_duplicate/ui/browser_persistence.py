@@ -16,6 +16,7 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.exc import SQLAlchemyError
 
 from alma_duplicate.artifacts.base import Artifact, FILES
+from alma_duplicate.artifacts.cleanup import register_browser_artifact_cleanup
 from alma_duplicate.artifacts.local import LocalArtifactStore
 from alma_duplicate.persistence.db import database_engine, transaction
 from alma_duplicate.persistence.models import (
@@ -328,4 +329,5 @@ def register_browser_persistence(app):
             _owner.reset(reset)
 
     register_report_management(app, engine, _owner.get)
+    register_browser_artifact_cleanup(app, engine, runs.store)
     return runs

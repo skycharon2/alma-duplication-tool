@@ -1,4 +1,5 @@
 """Immutable bundles in an operator-owned persistent local directory."""
+import errno
 import hashlib
 import os
 from pathlib import Path
@@ -58,13 +59,47 @@ class LocalArtifactStore:
             if staging.exists():
                 shutil.rmtree(staging)
 
-    def open_verified(self, artifact):
-        filename = _BUNDLE_FILES.get(artifact.kind)
-        parts = artifact.storage_key.split('/')
+    def _location(self, kind, storage_key):
+        filename = _BUNDLE_FILES.get(kind)
+        parts = storage_key.split('/')
         if (len(parts) != 2 or re.fullmatch('[0-9a-f]{32}', parts[0]) is None
                 or parts[1] != filename):
             raise ValueError('Invalid artifact storage key')
-        directory = self.root / parts[0]
+        return parts[0], filename
+
+    def remove(self, kind, storage_key):
+        """Unlink an immutable artifact. Already-open POSIX streams stay valid."""
+        bundle, filename = self._location(kind, storage_key)
+        root_fd = os.open(self.root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        try:
+            try:
+                bundle_fd = os.open(bundle, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+                                    dir_fd=root_fd)
+            except FileNotFoundError:
+                os.fsync(root_fd)
+                return
+            try:
+                try:
+                    os.unlink(filename, dir_fd=bundle_fd)
+                except FileNotFoundError:
+                    pass
+                os.fsync(bundle_fd)
+            finally:
+                os.close(bundle_fd)
+            try:
+                os.rmdir(bundle, dir_fd=root_fd)
+            except FileNotFoundError:
+                pass
+            except OSError as exc:
+                if exc.errno != errno.ENOTEMPTY:
+                    raise
+            os.fsync(root_fd)
+        finally:
+            os.close(root_fd)
+
+    def open_verified(self, artifact):
+        bundle, filename = self._location(artifact.kind, artifact.storage_key)
+        directory = self.root / bundle
         if directory.is_symlink():
             raise ValueError('Artifact bundle must not be a symlink')
         fd = os.open(directory / filename, os.O_RDONLY | os.O_NOFOLLOW)

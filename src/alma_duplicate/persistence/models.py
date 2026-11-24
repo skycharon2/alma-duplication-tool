@@ -137,6 +137,11 @@ browser_assessment_trash = Table('browser_assessment_trash', metadata,
     CheckConstraint("assessment_kind IN ('REPORT', 'BATCH')", name='assessment_kind'),
     CheckConstraint('purge_after >= deleted_at', name='purge_after_deletion'))
 
+browser_artifact_cleanup = Table('browser_artifact_cleanup', metadata, created(),
+    Column('storage_key', String(512), primary_key=True),
+    Column('kind', String(32), nullable=False),
+    Column('last_attempt_at', DateTime(timezone=True)))
+
 assessment_input_links = Table('assessment_input_links', metadata, identity(),
     Column('snapshot_id', String(65), ForeignKey('assessment_input_snapshots.id'), nullable=False, index=True),
     Column('report_id', String(65), ForeignKey('browser_reports.id', ondelete='CASCADE'), unique=True),
