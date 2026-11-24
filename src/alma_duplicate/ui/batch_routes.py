@@ -83,6 +83,12 @@ def register_batch_routes(app, configured, runs, progress):
             state = ProposalFormState(values=values, rows=rows)
         state.owner = owner
         upload = None
+        if state.upload_token:
+            upload = uploads.get(owner, state.upload_token)
+            if upload is not None:
+                state.values['source_upload_token'] = state.upload_token
+            else:
+                state.execution_error = 'The restored source list is unavailable. Reopen the saved settings or upload the file again.'
         preview = None
         preflights = None
         submission = token_hex(16)
@@ -161,6 +167,7 @@ def register_batch_routes(app, configured, runs, progress):
             submission = token_hex(16)
         return render_template('proposed_batch.html', **form_context(state, configured),
             batch_entry=True, mosaic_entry=False, preview=preview, preflights=preflights,
+            restored_source_name=upload['filename'] if upload and upload.get('restored') else None,
             batch_csrf=csrf, submission_token=submission,
             form_action=url_for('batch.proposed'),
             batch_progress_url=url_for('batch.progress_view', token='TOKEN'))

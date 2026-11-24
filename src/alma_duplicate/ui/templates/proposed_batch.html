@@ -24,6 +24,7 @@ PKS1830-211,18:33:39.937,-21:03:39.80,0.886</pre>
 <div class="batch-upload-actions"><button class="button" type="submit" name="action" value="preview-sources">Preview source list</button>{% if preview %}<button class="button" type="submit" name="action" value="remove-sources">Remove source list</button>{% endif %}</div>
 <button type="submit" name="action" value="scope" data-update-scope hidden>Update source selection</button>
 {% if preview %}
+{% if restored_source_name %}<p class="field-note" role="status">Restored source list <strong>{{ restored_source_name }}</strong>. To replace it, choose another file and select Preview source list.</p>{% endif %}
 <div class="batch-table-scroll" role="region" aria-label="Source-list preview" tabindex="0"><table class="batch-table"><caption>{{ preview.row_count }} targets · {{ preview.format|upper }} · ICRS</caption><thead><tr><th scope="col">Line / target</th><th scope="col">RA / Dec</th><th scope="col">Redshift</th><th scope="col">Validation</th></tr></thead><tbody>
 {% for source in preview.sources %}
 {% set errors = source.issues|selectattr('severity', 'equalto', 'ERROR')|list %}

@@ -1,5 +1,6 @@
 """Anonymous browser report access survives a restart and stays private."""
 import os
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -13,8 +14,7 @@ from alma_duplicate.ui import create_app
 from alma_duplicate.ui.input_snapshot import restore_input_snapshot
 from alma_duplicate.ui.runs import BrowserAssessment
 from tests.persistence.test_foundation import config as migration_config
-from tests.ui.test_batch_routes import upload
-from tests.ui.test_batch_assessment import RAW
+from tests.ui.test_batch_routes import hidden, upload
 from tests.ui.test_mosaic_ot_preview import OT
 from tests.ui.test_queue_custom_mosaic import form, submit
 from tests.ui.test_runs import config
@@ -41,7 +41,7 @@ def database(tmp_path, request):
 
 
 @pytest.mark.parametrize('source_format,source_bytes', [
-    ('csv', RAW),
+    ('csv', (Path(__file__).parents[1] / 'fixtures/source_list/five_targets.csv').read_bytes()),
     ('txt', b'name ra dec redshift\r\nfirst 201.365 -43.019 0.024\r\nsecond 201.365 -43.019 0\r\n'),
 ])
 def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, database,
@@ -90,7 +90,7 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         manifest_url = batch.location + '/download/manifest'
         manifest = owner.get(manifest_url).json
         batch_runs = [r['run_id'] for s in manifest['sources'] for r in s['reports']]
-        assert len(batch_runs) == 4 and all(batch_runs)
+        assert len(batch_runs) == 2 * len(manifest['sources']) and all(batch_runs)
         batch_report = '/runs/' + batch_runs[0]
         download = owner.get(single.location + '/download/report').data
         cookie = owner.get_cookie('alma_browser_reports')
@@ -121,6 +121,7 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert batch_input['snapshot']['workflow'] == 'MULTI_SOURCE_SINGLE'
         assert batch_input['upload']['raw'] == source_bytes
         assert batch_input['upload']['format'] == source_format
+        source_artifact = next((tmp_path / 'artifacts').glob('*/source-list.bin'))
         listing = owner.get('/reports').text
         assert single.location in listing and batch.location in listing
         assert single.location not in visitor.get('/reports').text
@@ -151,7 +152,7 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
             for url, path, expected in (
                     (single.location, '/proposed', 'value="201.365"'),
                     (mosaic.location, '/proposed/mosaic', 'Import the OT pointing file again'),
-                    (batch.location, '/proposed/batch', 'Upload the source list again')):
+                    (batch.location, '/proposed/batch', 'Restored source list')):
                 receipt = owner.post(url + '/reuse', data={'csrf': reuse_csrf})
                 assert receipt.status_code == 303
                 assert receipt.location.startswith(path + '?draft=')
@@ -162,6 +163,8 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
                 assert 'Settings restored from a previous assessment' in draft.text
                 if url == single.location:
                     single_draft_url = receipt.location
+                if url == batch.location:
+                    batch_draft_url, batch_draft = receipt.location, draft
             assert owner.get(single_draft_url.replace('/proposed?', '/proposed/batch?')).status_code == 404
             assert owner.get(single_draft_url + '&draft=ambiguous').status_code == 404
         edited = form_data.copy()
@@ -172,13 +175,39 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert restore_input_snapshot(edited_input['snapshot']).values['ra'] == '201.366'
         assert owner.get(single.location + '/download/report').data == download
         assert 'value="201.365"' in owner.get(single_draft_url).text
+
+        batch_form = restore_input_snapshot(batch_input['snapshot'])
+        batch_post = batch_form.values | dict(rows=batch_form.rows, angular='0.45',
+            batch_csrf=hidden(batch_draft, 'batch_csrf'),
+            submission_token=hidden(batch_draft, 'submission_token'),
+            source_upload_token=hidden(batch_draft, 'source_upload_token'))
+        assert batch_post['source_upload_token']
+        for source in manifest['sources']:
+            assert source['source']['name'] in batch_draft.text
+        preflight = owner.post('/proposed/batch', data=batch_post | {'action': 'validate'})
+        assert preflight.status_code == 200
+        batch_post['submission_token'] = hidden(preflight, 'submission_token')
+        rerun = owner.post('/proposed/batch', data=batch_post | {'action': 'assess'})
+        assert rerun.status_code == 303 and rerun.location != batch.location
+        rerun_manifest = owner.get(rerun.location + '/download/manifest').json
+        assert rerun_manifest['shared_setup']['document']['request']['angular_resolution']['value'] == '0.45'
+        assert [entry['source'] for entry in rerun_manifest['sources']] == [
+            entry['source'] for entry in manifest['sources']]
+        assert saved_input(owner, 'input_for_batch', rerun.location)['upload']['raw'] == source_bytes
+        assert owner.get(manifest_url).json == manifest
+        assert hidden(owner.get(batch_draft_url), 'source_upload_token') == batch_post['source_upload_token']
+
+        replacement = b'name,ra,dec,redshift\nReplacement,10,0,0.01\n'
+        new_preview, replaced = upload(owner, data=batch_post, raw=replacement, format='csv')
+        assert 'Replacement' in new_preview.text and 'Restored source list' not in new_preview.text
+        assert replaced['source_upload_token'] != batch_post['source_upload_token']
+        assert saved_input(owner, 'input_for_batch', batch.location)['upload']['raw'] == source_bytes
         drafts = app.extensions['assessment_drafts']
         expired = drafts.clock() + drafts.ttl + 1
         monkeypatch.setattr(drafts, 'clock', lambda: expired)
         assert owner.get(single_draft_url).status_code == 404
 
-        path = next((tmp_path / 'artifacts').glob('*/source-list.bin'))
-        path.write_bytes(source_bytes[:-1] + b' ')
+        source_artifact.write_bytes(source_bytes[:-1] + b' ')
         with pytest.raises(ValueError, match='digest mismatch'):
             saved_input(owner, 'input_for_batch', batch.location)
         assert owner.post(batch.location + '/reuse', data={'csrf': reuse_csrf}).status_code == 409

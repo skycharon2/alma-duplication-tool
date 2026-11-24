@@ -69,5 +69,13 @@ the original saved inputs can be used to create another. Missing, expired,
 foreign or wrong-workflow drafts return 404. A damaged saved upload prevents
 draft creation and leaves the original report accessible.
 
-The routes currently restore form fields. Batch and Mosaic upload attachment
-and the Existing reports action will be added in later steps.
+For Multi-source drafts, the server reparses the verified CSV or TXT bytes with
+the normal source-list parser and allocates a fresh browser-owned temporary
+upload. The batch form shows the restored filename and rows in its usual
+preview. It supports normal validation, file replacement and submission with a
+new batch ID. The original file bytes, target order and per-target redshifts are
+preserved. If that temporary upload expires or is removed, reopen the saved
+settings to create a fresh copy.
+
+Mosaic drafts currently restore form fields and require the OT upload to be
+supplied again. The Existing reports action will be added in a later step.
