@@ -140,31 +140,46 @@ class BrowserRuns:
         overview = self.overview(run_id)
         return overview.get('assessment_navigation') if overview else None
 
-    def history_page(self, *, offset, limit, hidden_report_ids):
-        """List browser-owned top-level entries without opening report files."""
+    def history_page(self, *, limit, hidden_report_ids, cursors=None):
+        """Read the next older slice of each browser-owned history list."""
         owner = _owner.get()
         if owner is None:
-            return [], []
+            return [], [], None
+
+        def older_rows(db, columns, payload, *filters, cursor):
+            if cursor == '':
+                return []
+            query = select(columns.id, payload).where(columns.owner_digest == owner, *filters)
+            if cursor is not None:
+                timestamp = select(columns.created_at).where(
+                    columns.id == cursor, columns.owner_digest == owner,
+                ).scalar_subquery()
+                query = query.where(or_(
+                    columns.created_at < timestamp,
+                    (columns.created_at == timestamp) & (columns.id < cursor),
+                ))
+            return db.execute(query.order_by(
+                columns.created_at.desc(), columns.id.desc(),
+            ).limit(limit + 1)).all()
+
         reports, batches = browser_reports.c, browser_batches.c
         listed = reports.overview['show_in_history'].as_boolean()
+        report_cursor, batch_cursor = cursors or (None, None)
         with self.engine.connect() as db:
-            overviews = db.execute(select(reports.overview).where(
-                reports.owner_digest == owner, reports.batch_id.is_(None),
+            report_rows = older_rows(db, reports, reports.overview, reports.batch_id.is_(None),
                 or_(listed.is_(True), listed.is_(None) & reports.id.not_in(hidden_report_ids)),
-            ).order_by(reports.created_at.desc(), reports.id.desc()
-            ).offset(offset).limit(limit)).scalars()
-            report_rows = [overview['listing'] for overview in overviews]
-            manifests = db.execute(select(batches.manifest).where(
-                batches.owner_digest == owner
-            ).order_by(batches.created_at.desc(), batches.id.desc()
-            ).offset(offset).limit(limit)).scalars()
-            batch_rows = [
-                dict(batch_id=manifest['batch_id'], created_at=manifest['created_at'],
-                     source_count=len(manifest['sources']),
-                     execution_complete=manifest['execution_complete'])
-                for manifest in manifests
-            ]
-        return report_rows, batch_rows
+                cursor=report_cursor)
+            batch_rows = older_rows(db, batches, batches.manifest, cursor=batch_cursor)
+        next_cursors = tuple(rows[limit - 1].id if len(rows) > limit else ''
+                             for rows in (report_rows, batch_rows))
+        return (
+            [overview['listing'] for _, overview in report_rows[:limit]],
+            [dict(batch_id=batch_id, created_at=manifest['created_at'],
+                  source_count=len(manifest['sources']),
+                  execution_complete=manifest['execution_complete'])
+             for batch_id, manifest in batch_rows[:limit]],
+            next_cursors if any(next_cursors) else None,
+        )
 
     def reusable_assessment_ids(self, report_ids, batch_ids):
         """Find linked snapshots without opening uploads on the report listing."""

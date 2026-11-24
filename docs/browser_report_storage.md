@@ -32,6 +32,11 @@ account-based recovery or cross-device access. In database mode, **Existing
 reports** lists saved standalone reports and completed batches for that
 browser. Use **Older reports** to reach earlier assessments. Individual batch
 checks are available from their batch overview.
+Each older page starts after the last entry already shown in each list, so
+newer submissions do not shift that boundary. **Newest reports** returns to
+the first page and includes the latest submissions. If an operator removes
+the entry anchoring an older-page link, reopen **Existing reports** to start
+from the current history.
 
 New reports retain the links between Archive and Queue branches, paired
 scientific purposes, and notices for branches that could not complete. Older

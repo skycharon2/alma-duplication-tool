@@ -1,5 +1,6 @@
 """Anonymous browser report access survives a restart and stays private."""
 import os
+import re
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from pathlib import Path
@@ -285,20 +286,33 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         with engine.begin() as connection:
             original = connection.execute(select(browser_reports).where(
                 browser_reports.c.id == single.location.rsplit('/', 1)[-1])).mappings().one()
-            for index in range(20):
+            timestamp = datetime.now(timezone.utc) + timedelta(seconds=1)
+            for index in range(21):
                 run_id = f'{index:032x}.{index:032x}'
                 overview = original['overview'] | {
                     'listing': original['overview']['listing'] | {'id': run_id},
                 }
                 connection.execute(browser_reports.insert().values(
                     dict(original) | dict(id=run_id, overview=overview,
-                        created_at=datetime.now(timezone.utc) + timedelta(seconds=index + 1))))
+                        created_at=timestamp)))
         first_page = owner.get('/reports')
         assert 'Older reports' in first_page.text and single.location not in first_page.text
-        second_page = owner.get('/reports?page=2')
-        assert 'Newer reports' in second_page.text and single.location in second_page.text
-        assert owner.get('/reports?page=3').status_code == 404
-        assert visitor.get('/reports?page=2').status_code == 404
+        older_url = re.search(r'href="([^"]+)">Older reports</a>', first_page.text).group(1)
+        with engine.begin() as connection:
+            newest_id = 'a' * 32 + '.' + 'b' * 32
+            connection.execute(browser_reports.insert().values(
+                dict(original) | dict(id=newest_id, overview=original['overview'] | {
+                    'listing': original['overview']['listing'] | {'id': newest_id},
+                }, created_at=timestamp + timedelta(seconds=1))))
+        second_page = owner.get(older_url)
+        assert 'Newest reports' in second_page.text and single.location in second_page.text
+        assert 'Older reports' not in second_page.text
+        assert f'href="/runs/{newest_id}"' in owner.get('/reports').text
+        for index in range(21):
+            link = f'href="/runs/{index:032x}.{index:032x}"'
+            assert (link in first_page.text) != (link in second_page.text)
+        assert visitor.get(older_url).status_code == 404
+        assert owner.get('/reports?older=invalid').status_code == 400
     finally:
         close(app)
         engine.dispose()

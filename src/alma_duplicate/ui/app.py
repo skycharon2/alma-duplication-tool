@@ -166,17 +166,22 @@ def create_app(config=None):
     def report_index():
         persistent = app.config['REPORT_STORAGE'] == 'database'
         groups = session.get('mosaic_report_groups', [])
-        page, has_next = 1, False
+        cursor = request.args.getlist('older') if persistent else []
+        next_cursors = None
         if persistent:
-            page, _ = page_selection()
-            page_size = 20
-            recent_runs, recent_batches = runs.history_page(
-                offset=(page - 1) * page_size, limit=page_size + 1,
+            cursors = None
+            if cursor:
+                if len(cursor) != 1 or not re.fullmatch(
+                        r'(?:[a-f0-9]{32}\.[a-f0-9]{32})?:(?:[a-f0-9]{32})?', cursor[0]):
+                    abort(400)
+                cursors = cursor[0].split(':')
+                if not any(cursors):
+                    abort(400)
+            recent_runs, recent_batches, next_cursors = runs.history_page(
+                limit=20, cursors=cursors,
                 hidden_report_ids={key for group in groups for key in list(group)[1:]},
             )
-            has_next = max(len(recent_runs), len(recent_batches)) > page_size
-            recent_runs, recent_batches = recent_runs[:page_size], recent_batches[:page_size]
-            if page > 1 and not (recent_runs or recent_batches):
+            if cursors and not (recent_runs or recent_batches):
                 abort(404)
         else:
             recent = runs.summaries(session.get('report_history', []))
@@ -189,10 +194,11 @@ def create_app(config=None):
             [row['id'] for row in recent_runs],
             [row['batch_id'] for row in recent_batches],
         ) if persistent else set()
-        return render_template("reports.html", reports=reports if page == 1 else {},
+        return render_template("reports.html", reports={} if cursor else reports,
                                recent_runs=recent_runs, recent_batches=recent_batches,
                                reusable_ids=reusable_ids, browser_persistent=persistent,
-                               history_page=page, history_has_next=has_next,
+                               history_is_older=bool(cursor),
+                               history_next=':'.join(next_cursors) if next_cursors else None,
                                retention_hours=runs.max_age / 3600)
 
     def artifact(report_id):
