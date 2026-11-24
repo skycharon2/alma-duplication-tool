@@ -9,6 +9,7 @@ from flask import Blueprint, Response, abort, redirect, render_template, request
 
 from alma_duplicate.parsers.source_list import MAX_BYTES, parse_source_list
 from alma_duplicate.reporting import report_json_text
+from alma_duplicate.ui.assessment_reuse import load_draft_form
 from alma_duplicate.ui.batch_assessment import BatchValidationError, execute_batch
 from alma_duplicate.ui.batch_requests import prepare_batch_form
 from alma_duplicate.ui.form_context import form_context
@@ -75,10 +76,19 @@ def register_batch_routes(app, configured, runs, progress):
     def proposed():
         owner = session.setdefault('batch_owner', token_hex(24))
         csrf = session.setdefault('batch_csrf', token_hex(32))
-        values, rows = initial_form()
-        values.update(target_kind='FIXED', geometry='SINGLE_POINTING')
-        state = ProposalFormState(values=values, rows=rows, owner=owner)
+        state = load_draft_form(app, 'MULTI_SOURCE_SINGLE')
+        if state is None:
+            values, rows = initial_form()
+            values.update(target_kind='FIXED', geometry='SINGLE_POINTING')
+            state = ProposalFormState(values=values, rows=rows)
+        state.owner = owner
         upload = None
+        if state.upload_token:
+            upload = uploads.get(owner, state.upload_token)
+            if upload is not None:
+                state.values['source_upload_token'] = state.upload_token
+            else:
+                state.execution_error = 'The restored source list is unavailable. Reopen the saved settings or upload the file again.'
         preview = None
         preflights = None
         submission = token_hex(16)
@@ -114,7 +124,8 @@ def register_batch_routes(app, configured, runs, progress):
                     raw = supplied[0].read(MAX_BYTES + 1)
                     format = state.values.get('source_format', 'csv')
                     preview = parse_source_list(raw, format=format)
-                    upload = dict(raw=raw, format=format, preview=preview)
+                    upload = dict(raw=raw, format=format, preview=preview,
+                                  filename=supplied[0].filename[:200], input_sha256=preview['input_sha256'])
                     state.values['source_upload_token'] = uploads.put(owner, upload)
                     state.edit_notice = 'Source list imported. Review each row before running.'
                 except (ValueError, UnicodeError) as exc:
@@ -156,6 +167,7 @@ def register_batch_routes(app, configured, runs, progress):
             submission = token_hex(16)
         return render_template('proposed_batch.html', **form_context(state, configured),
             batch_entry=True, mosaic_entry=False, preview=preview, preflights=preflights,
+            restored_source_name=upload['filename'] if upload and upload.get('restored') else None,
             batch_csrf=csrf, submission_token=submission,
             form_action=url_for('batch.proposed'),
             batch_progress_url=url_for('batch.progress_view', token='TOKEN'))
@@ -175,12 +187,16 @@ def register_batch_routes(app, configured, runs, progress):
                 return Response('Assessment already submitted or server busy.', status=429)
         report_url = None
         try:
+            snapshot = None
+            if app.config['REPORT_STORAGE'] == 'database':
+                from alma_duplicate.ui.input_snapshot import capture_input_snapshot
+                snapshot = capture_input_snapshot(state, workflow='MULTI_SOURCE_SINGLE')
             batch_id = execute_batch(state.values, state.rows, upload['raw'], runner=configured,
                 runs=runs, owner=state.owner, submission_token=submission, format=upload['format'],
                 max_workers=app.config['BATCH_MAX_WORKERS'],
                 progress=(lambda event: progress.update(key, event)) if key else None)
-            if app.config['REPORT_STORAGE'] == 'database':
-                runs.batches.save_completed(batch_id, state.owner)
+            if snapshot is not None:
+                runs.batches.save_completed(batch_id, state.owner, input_snapshot=snapshot, upload=upload)
             session['batch_history'] = list(dict.fromkeys([batch_id] + session.get('batch_history', [])))[:20]
             report_url = url_for('batch.overview', batch_id=batch_id)
             return {'report_url': report_url} if header else redirect(report_url, code=303)

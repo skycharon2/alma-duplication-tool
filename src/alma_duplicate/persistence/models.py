@@ -105,13 +105,28 @@ auth_sessions = Table('auth_sessions', metadata,
     CheckConstraint('length(id) = 64', name='digest_length'))
 Index('ix_auth_sessions_expiry', auth_sessions.c.expires_at)
 
-browser_batches = Table('browser_batches', metadata, identity(), created(),
+assessment_input_snapshots = Table('assessment_input_snapshots', metadata, identity(), created(),
     Column('owner_digest', String(64), nullable=False, index=True),
+    Column('snapshot', json_type, nullable=False),
+    Column('upload', json_type))
+
+browser_batches = Table('browser_batches', metadata, identity(), created(),
+    Column('owner_digest', String(64), nullable=False),
     Column('manifest', json_type, nullable=False))
+Index('ix_browser_batches_history', browser_batches.c.owner_digest,
+      browser_batches.c.created_at, browser_batches.c.id)
 
 browser_reports = Table('browser_reports', metadata, identity(), created(),
-    Column('owner_digest', String(64), nullable=False, index=True),
+    Column('owner_digest', String(64), nullable=False),
     Column('assessment_status', String(64), nullable=False),
     Column('artifact_manifest', json_type, nullable=False),
     Column('overview', json_type, nullable=False),
     Column('batch_id', String(65), ForeignKey('browser_batches.id')))
+Index('ix_browser_reports_history', browser_reports.c.owner_digest, browser_reports.c.batch_id,
+      browser_reports.c.created_at, browser_reports.c.id)
+
+assessment_input_links = Table('assessment_input_links', metadata, identity(),
+    Column('snapshot_id', String(65), ForeignKey('assessment_input_snapshots.id'), nullable=False, index=True),
+    Column('report_id', String(65), ForeignKey('browser_reports.id', ondelete='CASCADE'), unique=True),
+    Column('batch_id', String(65), ForeignKey('browser_batches.id', ondelete='CASCADE'), unique=True),
+    CheckConstraint('(report_id IS NULL) <> (batch_id IS NULL)', name='one_parent'))

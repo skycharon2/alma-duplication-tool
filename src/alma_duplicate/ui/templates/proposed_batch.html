@@ -14,6 +14,7 @@
 <div class="form-pair batch-upload"><div><label for="source_list">CSV or TXT source list</label><input type="file" id="source_list" name="source_list" accept=".csv,.txt,text/csv,text/plain" aria-describedby="source-format-help"></div>
 <div><label for="source_format">File format</label><select id="source_format" name="source_format"><option value="csv" {% if values.get('source_format', 'csv') == 'csv' %}selected{% endif %}>CSV (comma separated)</option><option value="txt" {% if values.get('source_format') == 'txt' %}selected{% endif %}>TXT (whitespace separated)</option></select></div></div>
 <p id="source-format-help" class="field-note">Use the columns name, ra, dec and optional redshift. Decimal coordinates are in degrees. Colon-separated RA uses hours. Use UTF-8 files up to 100 KB.</p>
+{% if config.REPORT_STORAGE == 'database' %}<p class="field-note">Saving this batch retains a private copy of the source list in persistent storage. Removing a preview does not delete a copy already saved with a batch.</p>{% endif %}
 <details class="field-help"><summary>Source-list example and coordinate conventions</summary><pre>name,ra,dec,redshift
 B0218+357,02:21:05.47,+35:56:13.7,0.685
 PKS1830-211,18:33:39.937,-21:03:39.80,0.886</pre>
@@ -23,6 +24,7 @@ PKS1830-211,18:33:39.937,-21:03:39.80,0.886</pre>
 <div class="batch-upload-actions"><button class="button" type="submit" name="action" value="preview-sources">Preview source list</button>{% if preview %}<button class="button" type="submit" name="action" value="remove-sources">Remove source list</button>{% endif %}</div>
 <button type="submit" name="action" value="scope" data-update-scope hidden>Update source selection</button>
 {% if preview %}
+{% if restored_source_name %}<p class="field-note" role="status">Restored source list <strong>{{ restored_source_name }}</strong>. To replace it, choose another file and select Preview source list.</p>{% endif %}
 <div class="batch-table-scroll" role="region" aria-label="Source-list preview" tabindex="0"><table class="batch-table"><caption>{{ preview.row_count }} targets · {{ preview.format|upper }} · ICRS</caption><thead><tr><th scope="col">Line / target</th><th scope="col">RA / Dec</th><th scope="col">Redshift</th><th scope="col">Validation</th></tr></thead><tbody>
 {% for source in preview.sources %}
 {% set errors = source.issues|selectattr('severity', 'equalto', 'ERROR')|list %}
@@ -63,6 +65,6 @@ PKS1830-211,18:33:39.937,-21:03:39.80,0.886</pre>
 {% endfor %}<p class="field-note">Readiness describes input, not a duplication verdict.</p>
 {% else %}<p>Preview your source list, enter the shared requirements, then validate all targets.</p>{% endif %}
 </div><p id="validation-stale" hidden>Inputs changed. Validate again to refresh these diagnostics.</p>
-{% if edit_notice %}<p role="status">{{ edit_notice }}</p>{% endif %}</section>
+{% if edit_notice %}<p role="status">{{ edit_notice }}{% if original_assessment_url %} <a href="{{ original_assessment_url }}">View original assessment</a>{% endif %}</p>{% endif %}</section>
 <nav class="proposal-sections" aria-label="Form sections"><h2>On this page</h2><a href="#observation-type">Source list</a><a href="#requirements">Scientific requirements</a><a href="#search">Data sources</a></nav>
 {% endblock %}

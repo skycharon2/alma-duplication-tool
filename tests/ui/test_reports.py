@@ -510,6 +510,7 @@ def test_unified_library_keeps_both_link_types_without_duplicate_empty_states(re
     assert response.location in html and '/reports/1' in html
     assert html.index(response.location) < html.index('href="/reports/1"')
     assert 'Preloaded' in html and 'This browser' in html
+    assert 'View report' in html and 'Reuse settings' not in html
     assert 'No reports yet' not in html
     assert '<h2>Recent assessments</h2>' not in html
     assert '<h2>Saved reports</h2>' not in html

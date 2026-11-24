@@ -7,7 +7,9 @@ import shutil
 import stat
 from uuid import uuid4
 
-from alma_duplicate.artifacts.base import Artifact, FILES
+from alma_duplicate.artifacts.base import Artifact, FILES, INPUT_FILES
+
+_BUNDLE_FILES = FILES | INPUT_FILES
 
 
 def _sync_directory(path):
@@ -28,7 +30,7 @@ class LocalArtifactStore:
             raise ValueError('Artifact root must be a directory')
 
     def put_bundle(self, files):
-        if not files or set(files) - FILES.keys():
+        if not files or set(files) - _BUNDLE_FILES.keys():
             raise ValueError('Unsupported artifact kinds')
         token = uuid4().hex
         staging, destination = self.root / ('.pending-' + token), self.root / token
@@ -37,7 +39,7 @@ class LocalArtifactStore:
         try:
             for kind, source in files.items():
                 digest, size = hashlib.sha256(), 0
-                filename = FILES[kind]
+                filename = _BUNDLE_FILES[kind]
                 fd = os.open(staging / filename, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
                 with os.fdopen(fd, 'wb') as output, Path(source).open('rb') as stream:
                     while block := stream.read(1024 * 1024):
@@ -57,7 +59,7 @@ class LocalArtifactStore:
                 shutil.rmtree(staging)
 
     def open_verified(self, artifact):
-        filename = FILES.get(artifact.kind)
+        filename = _BUNDLE_FILES.get(artifact.kind)
         parts = artifact.storage_key.split('/')
         if (len(parts) != 2 or re.fullmatch('[0-9a-f]{32}', parts[0]) is None
                 or parts[1] != filename):

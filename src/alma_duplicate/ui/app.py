@@ -8,12 +8,14 @@ from dataclasses import replace
 import weakref
 
 from flask import Flask, Response, abort, redirect, render_template, request, session, url_for
+from itsdangerous import BadData, URLSafeSerializer
 from secrets import token_hex
 
 from alma_duplicate.cli.queue_update import QueueUpdateBusyError, SUCCESS_STATUSES, run_update
 from alma_duplicate.storage.queue_active import QueueActiveError, QueueActiveRegistry
 from alma_duplicate.storage import QueueSnapshotStoreError
 from alma_duplicate.progress import observe_progress
+from alma_duplicate.ui.assessment_reuse import load_draft_form, register_assessment_reuse
 from alma_duplicate.ui.progress import ProgressStore
 from alma_duplicate.ui.reports import load_reports
 from alma_duplicate.ui.calculation_view import calculation_view, line_preparation
@@ -136,6 +138,7 @@ def create_app(config=None):
     if app.config['REPORT_STORAGE'] == 'database':
         from alma_duplicate.ui.browser_persistence import register_browser_persistence
         runs = register_browser_persistence(app)
+        register_assessment_reuse(app, runs)
     else:
         runs = RunStore(
             app.config["MAX_RETAINED_RUNS"],
@@ -162,25 +165,66 @@ def create_app(config=None):
 
     @app.get("/reports")
     def report_index():
-        recent = runs.summaries(session.get('report_history', []))
+        persistent = app.config['REPORT_STORAGE'] == 'database'
         groups = session.get('mosaic_report_groups', [])
-        hidden = set()
-        available = {row['id'] for row in recent}
-        for group in groups:
-            retained = [key for key in group if key in available]
-            if retained:
-                hidden.update(retained[1:])
-        return render_template("reports.html", reports=reports,
-                               recent_runs=[row for row in recent if row['id'] not in hidden],
-                               recent_batches=runs.batches.summaries(
-                                   session.get('batch_history', []), session.get('batch_owner')),
-                               browser_persistent=app.config['REPORT_STORAGE'] == 'database',
+        cursor = request.args.getlist('older') if persistent else []
+        history_next = None
+        if persistent:
+            signer = URLSafeSerializer(app.secret_key, salt='report-history-v1:' + session['batch_owner'])
+            cursors = None
+            if cursor:
+                if len(cursor) != 1 or len(cursor[0]) > 1024:
+                    abort(400)
+                try:
+                    cursors = signer.loads(cursor[0])
+                except BadData:
+                    abort(400)
+            recent_runs, recent_batches, next_cursors = runs.history_page(
+                limit=20, cursors=cursors,
+                hidden_report_ids={key for group in groups for key in list(group)[1:]},
+            )
+            if cursors and not (recent_runs or recent_batches):
+                abort(404)
+            if next_cursors:
+                history_next = signer.dumps(next_cursors)
+        else:
+            recent = runs.summaries(session.get('report_history', []))
+            available = {row['id'] for row in recent}
+            hidden = {key for group in groups for key in [item for item in group if item in available][1:]}
+            recent_runs = [row for row in recent if row['id'] not in hidden]
+            recent_batches = runs.batches.summaries(
+                session.get('batch_history', []), session.get('batch_owner'))
+        reusable_ids = runs.reusable_assessment_ids(
+            [row['id'] for row in recent_runs],
+            [row['batch_id'] for row in recent_batches],
+        ) if persistent else set()
+        return render_template("reports.html", reports={} if cursor else reports,
+                               recent_runs=recent_runs, recent_batches=recent_batches,
+                               reusable_ids=reusable_ids, browser_persistent=persistent,
+                               history_is_older=bool(cursor),
+                               history_next=history_next,
                                retention_hours=runs.max_age / 3600)
 
     def artifact(report_id):
         if report_id not in reports:
             abort(404)
         return reports[report_id]
+
+    def assessment_navigation(report_id):
+        if app.config['REPORT_STORAGE'] == 'database':
+            saved = runs.assessment_navigation(report_id)
+            if saved is not None:
+                return dict(source_group=dict(saved.get('source_reports', [])) or None,
+                            failed_branches=saved.get('failed_branches', []),
+                            purpose_pair=saved.get('purpose_pair'))
+        return dict(
+            source_group=next((group for group in session.get('mosaic_report_groups', [])
+                               if report_id in group), None),
+            failed_branches=next((group['branches'] for group in session.get('partial_assessments', [])
+                                  if report_id in group['report_ids']), []),
+            purpose_pair=next((pair for pair in session.get('purpose_report_pairs', [])
+                               if report_id in pair), None),
+        )
 
     def page_selection(allow_mosaic_views=False):
         page = request.args.get("page", "1")
@@ -369,11 +413,7 @@ def create_app(config=None):
             if queue_data:
                 data['document']['queue_geometry_assessment'] = queue_data['document']
                 data['queue_pagination'] = queue_data
-        data["failed_branches"] = next((group["branches"] for group in
-            session.get("partial_assessments", []) if report_id in group["report_ids"]), [])
-        data["source_group"] = next((g for g in session.get("mosaic_report_groups", []) if report_id in g), None)
-        data["purpose_pair"] = next((pair for pair in session.get("purpose_report_pairs", [])
-                                     if report_id in pair), None)
+        data.update(assessment_navigation(report_id))
         group = data.get("source_group")
         if group and view in {"matches", "matching"}:
             purpose = group[report_id].split(" · ", 1)[0]
@@ -467,7 +507,8 @@ def create_app(config=None):
             submitted = json.load(lease.stream)
         finally:
             lease.close()
-        group = next((g for g in session.get('mosaic_report_groups', []) if report_id in g), {})
+        navigation_data = assessment_navigation(report_id)
+        group = navigation_data['source_group'] or {}
         purpose = group.get(report_id, '').partition(' · ')[0]
         pages = [(report_id, current)]
         notices = []
@@ -478,10 +519,8 @@ def create_app(config=None):
                     pages.append((sibling, data))
                 else:
                     notices.append(f'{label}: saved report unavailable.')
-        for partial in session.get('partial_assessments', []):
-            if report_id in partial['report_ids']:
-                notices.extend(f'{label}: assessment unavailable.' for label in partial['branches']
-                               if label.partition(' · ')[0] == purpose)
+        notices.extend(f'{label}: assessment unavailable.' for label in navigation_data['failed_branches']
+                       if label.partition(' · ')[0] == purpose)
         rows, navigation = [], []
         for key, data in pages:
             archive = data.get('mosaic')
@@ -568,11 +607,17 @@ def create_app(config=None):
         return _mosaic_controller()
 
     def _form_state(*, mosaic=False):
-        values, rows = initial_form()
-        if mosaic:
-            values = initial_mosaic_values(values)
-        state = ProposalFormState(values=values, rows=rows)
+        state = load_draft_form(app, 'MOSAIC' if mosaic else 'SINGLE')
+        if state is None:
+            values, rows = initial_form()
+            if mosaic:
+                values = initial_mosaic_values(values)
+            state = ProposalFormState(values=values, rows=rows)
         state.owner = session.setdefault("mosaic_owner", token_hex(24))
+        if mosaic and state.upload_token:
+            state.values["mosaic_upload_token"] = state.upload_token
+            state.upload_token, state.mosaic_preview, state.mosaic_preview_error = restore_mosaic_upload(
+                state.values, mosaic_uploads, state.owner)
         return state
 
     def _read_post(state, *, require_mosaic=False):
@@ -607,6 +652,15 @@ def create_app(config=None):
             observer = (observe_progress(lambda event: progress.update(token, event))
                         if token else nullcontext())
             with observer:
+                input_options = {}
+                if app.config['REPORT_STORAGE'] == 'database':
+                    from alma_duplicate.ui.input_snapshot import capture_input_snapshot
+                    mosaic = is_fixed_mosaic(state.values)
+                    upload = mosaic_uploads.get(state.owner, state.upload_token) if mosaic else None
+                    if mosaic and (not upload or upload['input_sha256'] != state.mosaic_preview['input_sha256']):
+                        raise ValueError('The OT upload expired or no longer matches its preview')
+                    input_options = dict(input_snapshot=capture_input_snapshot(
+                        state, workflow='MOSAIC' if mosaic else 'SINGLE'), upload=upload)
                 runner = replace(configured, archive_connection=state.values.get("archive_connection", "AUTO"))
                 runner = runner.pin_queue_for_submission("QUEUE" in state.values["sources"])
                 documents = [state.document]
@@ -638,7 +692,12 @@ def create_app(config=None):
                     successful_labels.append(label)
                 if not completed:
                     return None, "Assessment could not be completed. No report was created. Check the configured sources and server log."
-                ids = runs.add_group(completed)
+                if app.config['REPORT_STORAGE'] == 'database':
+                    input_options.update(
+                        source_labels=successful_labels if dual_source or failures else None,
+                        failed_branches=failures, pair_purposes=both and not (dual_source or failures),
+                    )
+                ids = runs.add_group(completed, **input_options)
                 history = (ids + session.get("report_history", []))[:20]
                 session["report_history"] = history
                 partial = [group for group in session.get("partial_assessments", [])

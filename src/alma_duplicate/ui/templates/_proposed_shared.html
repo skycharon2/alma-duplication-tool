@@ -234,7 +234,7 @@
 </div>
 <p id="validation-stale" hidden>Inputs changed. Validate again to refresh the status and diagnostics.</p>
 {% elif target_kind == 'SUN' %}<p>Solar observations are exempt. Input validation is optional unless you want to export a request.</p>{% else %}<p>Not validated. Complete the form, then choose Validate input.</p>{% endif %}
-{% if edit_notice %}<p role="status">{{ edit_notice }}</p>{% endif %}
+{% if edit_notice %}<p role="status">{{ edit_notice }}{% if original_assessment_url %} <a href="{{ original_assessment_url }}">View original assessment</a>{% endif %}</p>{% endif %}
 </section>
 <nav class="proposal-sections" aria-label="Form sections"><h2>On this page</h2><a href="#observation-type">Target</a><a href="#requirements">Scientific requirements</a><a href="#search">Data sources</a></nav>
 {% endblock %}

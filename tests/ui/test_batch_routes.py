@@ -86,7 +86,7 @@ def test_real_run_overview_exports_history_and_existing_report_links(client, v2,
         for report in source['reports']:
             assert client.get('/runs/' + report['run_id'] + '/download/request').is_json
     history = client.get('/reports')
-    assert history.text.count('Multi-source assessment · 2 targets') == 1
+    assert history.text.count('class="report-library-name">Multi-source assessment · 2 targets<') == 1
     with client.session_transaction() as session:
         assert session['batch_history'] == [location.rsplit('/', 1)[1]]
         assert not session.get('report_history')

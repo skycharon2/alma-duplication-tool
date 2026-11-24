@@ -78,6 +78,46 @@ def test_migration_matches_metadata_and_can_upgrade_again(connection):
     assert compare_metadata(MigrationContext.configure(connection), m.metadata) == []
 
 
+def test_browser_history_migrations_preserve_existing_data(connection):
+    cfg = config(connection)
+    command.downgrade(cfg, '0003_browser_reports')
+    connection.commit()
+    owner = 'a' * 64
+    with transaction(connection) as db:
+        db.execute(m.browser_batches.insert().values(
+            id='batch', owner_digest=owner, manifest={'sources': []}))
+        db.execute(m.browser_reports.insert().values(
+            id='report', owner_digest=owner, batch_id='batch', assessment_status='COMPLETED',
+            overview={'listing': {'id': 'report'}}, artifact_manifest=[{'kind': 'report'}]))
+
+    def saved_rows(*tables):
+        return [connection.execute(select(table)).mappings().one() for table in tables]
+
+    reports = (m.browser_reports, m.browser_batches)
+    original = saved_rows(*reports)
+    connection.commit()
+    command.upgrade(cfg, '0004_assessment_input_snapshots')
+    connection.commit()
+    assert saved_rows(*reports) == original
+    assert connection.execute(select(m.assessment_input_links)).first() is None
+    connection.commit()
+    with transaction(connection) as db:
+        db.execute(m.assessment_input_snapshots.insert().values(
+            id='snapshot', owner_digest=owner, snapshot={'workflow': 'MULTI_SOURCE_SINGLE'}))
+        db.execute(m.assessment_input_links.insert().values(batch_id='batch', snapshot_id='snapshot'))
+    tables = (*reports, m.assessment_input_snapshots, m.assessment_input_links)
+    before_index_upgrade = saved_rows(*tables)
+    connection.commit()
+    command.upgrade(cfg, '0005_browser_history_indexes')
+    connection.commit()
+    assert saved_rows(*tables) == before_index_upgrade
+    connection.commit()
+    command.downgrade(cfg, '0004_assessment_input_snapshots')
+    connection.commit()
+    assert saved_rows(*tables) == before_index_upgrade
+    connection.commit()
+
+
 def test_workspace_constraints_and_transaction_rollback(connection):
     seed(connection)
     with pytest.raises(IntegrityError), transaction(connection) as session:
