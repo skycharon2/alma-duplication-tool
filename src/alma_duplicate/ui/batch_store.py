@@ -58,7 +58,7 @@ class BatchStore:
         return all(r['state'] in TERMINAL for s in manifest['sources'] for r in s['reports'])
 
     def create(self, owner, shared_setup, sources, input_sha256, purposes, *,
-               submission_token=None, reserve_execution=False):
+               submission_token=None, reserve_execution=False, name=''):
         """Reserve an ordered batch; sources are parsed source-list records."""
         if not isinstance(owner, str) or not owner or len(owner) > 256:
             raise ValueError('A bounded browser owner token is required')
@@ -83,6 +83,8 @@ class BatchStore:
         manifest = dict(schema_version='batch_manifest_1', batch_id=batch_id,
                         created_at=datetime.now(timezone.utc).isoformat(),
                         input_sha256=input_sha256, shared_setup=deepcopy(shared_setup), sources=[])
+        if name:
+            manifest['name'] = name
         for source in sources:
             manifest['sources'].append(dict(source=source, source_id=source['source_id'],
                 reports=[dict(purpose=p, state='PENDING', run_id=None, error=None) for p in purposes]))
@@ -217,7 +219,13 @@ class BatchStore:
         for batch_id in dict.fromkeys(batch_ids):
             manifest = self.get(batch_id, owner)
             if manifest is not None:
-                result.append(dict(batch_id=batch_id, created_at=manifest['created_at'],
-                                   source_count=len(manifest['sources']),
-                                   execution_complete=manifest['execution_complete']))
+                result.append(batch_summary(manifest))
         return result
+
+
+def batch_summary(manifest):
+    settings = manifest.get('shared_setup', {}).get('document', {}).get('request', {})
+    return dict(batch_id=manifest['batch_id'], created_at=manifest['created_at'],
+                source_count=len(manifest['sources']), execution_complete=manifest['execution_complete'],
+                name=manifest.get('name'), angular_resolution=settings.get('angular_resolution'),
+                representative_frequency=settings.get('representative_frequency'))

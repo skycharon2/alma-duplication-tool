@@ -24,7 +24,7 @@ from alma_duplicate.persistence.models import (
 )
 from alma_duplicate.persistence.reports import SavedReportArtifacts
 from alma_duplicate.persistence.repositories import RecordUnavailable
-from alma_duplicate.ui.batch_store import BatchStore
+from alma_duplicate.ui.batch_store import BatchStore, batch_summary
 from alma_duplicate.ui.input_snapshot_storage import insert_input_snapshot, read_input_snapshot
 from alma_duplicate.ui.report_management import assessment_is_active, register_report_management
 from alma_duplicate.ui.run_store import DownloadLease, RunStore
@@ -193,10 +193,7 @@ class BrowserRuns:
         next_cursors = tuple(next_boundary(rows) for rows in (report_rows, batch_rows))
         return (
             [overview['listing'] for _, overview, _ in report_rows[:limit]],
-            [dict(batch_id=batch_id, created_at=manifest['created_at'],
-                  source_count=len(manifest['sources']),
-                  execution_complete=manifest['execution_complete'])
-             for batch_id, manifest, _ in batch_rows[:limit]],
+            [batch_summary(manifest) for _, manifest, _ in batch_rows[:limit]],
             next_cursors if any(next_cursors) else None,
         )
 

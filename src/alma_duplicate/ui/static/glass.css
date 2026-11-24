@@ -167,6 +167,70 @@ input[type="text"], .proposal-page .proposed-form input[type="text"],
 .report-library-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .report-library-actions form { margin: 0; }
 .report-library-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
+.report-library-heading h1 { margin: 0; }
+.report-library-summary { flex: 1 1 16rem; min-width: 0; }
+.report-library-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; color: var(--muted); font-size: .875rem; margin-block: 3px; }
+.report-library-meta time { font-variant-numeric: tabular-nums; }
+.report-library-history .report-library-actions .button,
+.report-library-heading .report-library-trash-link { border-radius: 10px; text-decoration: none; }
+.report-library-history .report-library-actions :is(.button, .report-library-secondary),
+.report-library-heading .report-library-trash-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 44px;
+}
+.report-library-history .report-library-view { background: #075b7e; border-color: #075b7e; color: #fff; }
+.report-library-history .report-library-trash-action { border-inline-start: 1px solid var(--border); padding-inline-start: 8px; }
+.report-library-history .report-library-trash-action button { color: var(--muted); }
+.report-library-history .report-library-row:focus-within {
+  background: #f4faff;
+  box-shadow: inset 3px 0 #80aec5;
+}
+.report-library-history .report-library-actions :is(a, button):focus-visible,
+.report-library-heading .report-library-trash-link:focus-visible {
+  outline: 2px solid #075b7e;
+  outline-offset: 3px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .report-library-history .report-library-row:hover {
+    background: #f4faff;
+    box-shadow: inset 3px 0 #80aec5;
+  }
+  .report-library-history .report-library-actions button.button:hover,
+  .report-library-heading .report-library-trash-link:hover {
+    background: #e1f0fa;
+    border-color: #6b9ab3;
+    color: #064765;
+  }
+  .report-library-history .report-library-view:hover {
+    background: #064765;
+    border-color: #064765;
+    color: #fff;
+  }
+  .report-library-history .report-library-trash-action button:hover {
+    background: #fae8e8;
+    color: #8d292c;
+    text-decoration: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .report-library-history .report-library-row { transition: background-color .16s ease, box-shadow .16s ease; }
+  .report-library-history .report-library-actions :is(a, button),
+  .report-library-heading .report-library-trash-link {
+    transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .12s ease;
+  }
+  .report-library-history .report-library-actions :is(a, button):active,
+  .report-library-heading .report-library-trash-link:active { transform: translateY(1px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .report-library-history .report-library-actions :is(a, button),
+  .report-library-heading .report-library-trash-link { transition: none; }
+}
+@media (max-width: 600px) {
+  .report-library-history .report-library-actions { width: 100%; }
+  .report-library-history .report-library-trash-action { border-inline-start: 0; padding-inline-start: 0; }
+}
 .report-library-secondary { color: inherit; background: transparent; border: 0; border-radius: 8px; padding: 10px 8px; cursor: pointer; font: inherit; font-size: .875rem; }
 .report-library-secondary:hover { text-decoration: underline; }
 .report-trash-dates { display: flex; flex-wrap: wrap; gap: 6px 24px; margin: 6px 0 0; }

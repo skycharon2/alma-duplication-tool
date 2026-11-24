@@ -5,6 +5,7 @@ import os
 import re
 from contextlib import nullcontext
 from dataclasses import replace
+from datetime import datetime, timezone
 import weakref
 
 from flask import Flask, Response, abort, redirect, render_template, request, session, url_for
@@ -162,6 +163,17 @@ def create_app(config=None):
         response.headers["Cache-Control"] = "no-store"
         response.headers["X-Content-Type-Options"] = "nosniff"
         return response
+
+    @app.template_filter('report_timestamp')
+    def report_timestamp(value):
+        if not value:
+            return None
+        try:
+            timestamp = datetime.fromisoformat(value)
+        except (TypeError, ValueError):
+            return None
+        return (timestamp.astimezone(timezone.utc) if timestamp.tzinfo
+                else timestamp.replace(tzinfo=timezone.utc))
 
     @app.get("/reports")
     def report_index():

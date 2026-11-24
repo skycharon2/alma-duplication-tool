@@ -1,13 +1,19 @@
 {% extends "base.html" %}
-{% macro report_row(name, details, view_url, reuse_url=none, unavailable=false, trash_url=none) %}
+{% macro report_row(name, details, view_url, reuse_url=none, unavailable=false, trash_url=none, date=none, summary=none) %}
 <li class="report-library-row">
-  <div>
+  <div class="report-library-summary">
     <div class="report-library-name">{{ name }}</div>
-    <div class="report-library-kind">{{ details }}</div>
+    <div class="report-library-meta">
+      <span>{{ details }}</span>
+      {% set timestamp = date|report_timestamp %}
+      {% if timestamp %}<time datetime="{{ timestamp.isoformat() }}">{{ timestamp.strftime('%d %b %Y, %H:%M') }} UTC</time>
+      {% elif date %}<span>{{ date }}</span>{% endif %}
+    </div>
+    {% if summary %}<div class="report-library-kind">{{ summary }}</div>{% endif %}
     {% if unavailable %}<div class="report-library-kind">Saved settings unavailable</div>{% endif %}
   </div>
   <div class="report-library-actions">
-    <a class="button" href="{{ view_url }}" aria-label="View report for {{ name }}">View report</a>
+    <a class="button report-library-view" href="{{ view_url }}" aria-label="View report for {{ name }}">View report</a>
     {% if reuse_url %}
     <form method="post" action="{{ reuse_url }}">
       <input type="hidden" name="csrf" value="{{ assessment_reuse_csrf }}">
@@ -15,7 +21,7 @@
     </form>
     {% endif %}
     {% if trash_url %}
-    <form method="post" action="{{ trash_url }}">
+    <form class="report-library-trash-action" method="post" action="{{ trash_url }}">
       <input type="hidden" name="csrf" value="{{ report_management_csrf }}">
       <button class="report-library-secondary" type="submit" aria-label="Move {{ name }} to trash">Move to trash</button>
     </form>
@@ -24,26 +30,27 @@
 </li>
 {% endmacro %}
 {% block content %}
-<div class="page-heading report-library-heading"><div><h1>Existing reports</h1>
-<p>Open a report to review your assessment.</p></div>
-{% if browser_persistent %}<a class="button" href="{{ url_for('report_management.trash_index') }}">Trash</a>{% endif %}
+<div class="page-heading report-library-heading"><h1>Existing reports</h1>
+{% if browser_persistent %}<a class="button report-library-trash-link" href="{{ url_for('report_management.trash_index') }}">Trash</a>{% endif %}
 </div>
 {% include '_report_management_status.html' %}
-<section class="glass-surface report-library" aria-label="Reports">
+<section class="glass-surface report-library report-library-history" aria-label="Reports">
 {% if recent_runs or recent_batches or reports %}
 <ul class="report-library-list">
 {% for item in recent_batches %}
-  {% set name = 'Multi-source assessment · ' ~ item.source_count ~ ' targets' %}
-  {% set details = 'This browser · ' ~ ('Execution finished' if item.execution_complete else 'In progress') ~ ' · ' ~ item.created_at %}
+  {% set target_count = item.source_count ~ (' target' if item.source_count == 1 else ' targets') %}
+  {% set name = item.name or ('Multi-source assessment · ' ~ target_count) %}
+  {% set details = 'Completed' if item.execution_complete else 'In progress' %}
+  {% set summary %}{% if item.name %}Multi-source · {{ target_count }}{% endif %}{% if item.angular_resolution and item.angular_resolution.value is defined %}{% if item.name %} · {% endif %}{{ item.angular_resolution.value }} {{ item.angular_resolution.unit }} resolution{% endif %}{% if item.representative_frequency and item.representative_frequency.value is defined %}{% if item.name or item.angular_resolution %} · {% endif %}{{ item.representative_frequency.value }} {{ item.representative_frequency.unit }}{% if item.representative_frequency.kind %} ({{ item.representative_frequency.kind }}){% endif %}{% endif %}{% endset %}
   {% set reuse_url = url_for('assessment_reuse.reuse_batch', batch_id=item.batch_id) if item.batch_id in reusable_ids else none %}
   {% set trash_url = url_for('report_management.update_trash', kind='batch', entry_id=item.batch_id, action='trash') if browser_persistent and item.execution_complete else none %}
-  {{ report_row(name, details, url_for('batch.overview', batch_id=item.batch_id), reuse_url, browser_persistent and item.execution_complete and not reuse_url, trash_url) }}
+  {{ report_row(name, details, url_for('batch.overview', batch_id=item.batch_id), reuse_url, browser_persistent and item.execution_complete and not reuse_url, trash_url, item.created_at, summary|trim) }}
 {% endfor %}
 {% for item in recent_runs %}
-  {% set details = 'This browser · ' ~ item.status ~ (' · ' ~ item.generated_at if item.generated_at else '') %}
+  {% set details = 'This browser · ' ~ (item.status|replace('_', ' ')|capitalize) %}
   {% set reuse_url = url_for('assessment_reuse.reuse_run', run_id=item.id) if item.id in reusable_ids else none %}
   {% set trash_url = url_for('report_management.update_trash', kind='report', entry_id=item.id, action='trash') if browser_persistent else none %}
-  {{ report_row(item.target, details, url_for('run_view', report_id=item.id), reuse_url, browser_persistent and not reuse_url, trash_url) }}
+  {{ report_row(item.target, details, url_for('run_view', report_id=item.id), reuse_url, browser_persistent and not reuse_url, trash_url, item.generated_at) }}
 {% endfor %}
 {% for id, item in reports.items() %}
   {% set details = 'Preloaded · ' ~ ('Solar exemption — no search' if item.document.report_kind == 'SOLAR_EXEMPTION' else 'Observation comparison') %}
