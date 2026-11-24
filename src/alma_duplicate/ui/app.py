@@ -577,6 +577,10 @@ def create_app(config=None):
                 values = initial_mosaic_values(values)
             state = ProposalFormState(values=values, rows=rows)
         state.owner = session.setdefault("mosaic_owner", token_hex(24))
+        if mosaic and state.upload_token:
+            state.values["mosaic_upload_token"] = state.upload_token
+            state.upload_token, state.mosaic_preview, state.mosaic_preview_error = restore_mosaic_upload(
+                state.values, mosaic_uploads, state.owner)
         return state
 
     def _read_post(state, *, require_mosaic=False):

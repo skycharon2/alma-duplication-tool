@@ -26,12 +26,17 @@ def replace_mosaic_upload(values, store, owner, old_token, files):
     """
     if len(files) != 1:
         raise ValueError("Select one OT pointings file")
-    replacement, raw = read_mosaic_ot(files[0], values)
-    new_token = store.put(owner, dict(preview=replacement, raw=raw, format="ot",
-        filename=replacement["filename"], input_sha256=replacement["input_sha256"]))
+    upload = prepare_mosaic_upload(files[0], values)
+    new_token = store.put(owner, upload)
     store.remove(owner, old_token)
     values["mosaic_upload_token"] = new_token
-    return replacement
+    return upload["preview"]
+
+
+def prepare_mosaic_upload(file, values):
+    preview, raw = read_mosaic_ot(file, values)
+    return dict(preview=preview, raw=raw, format="ot", filename=preview["filename"],
+                input_sha256=preview["input_sha256"])
 
 
 def remove_mosaic_upload(values, store, owner, token):

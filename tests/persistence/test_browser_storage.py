@@ -1,5 +1,6 @@
 """Anonymous browser report access survives a restart and stays private."""
 import os
+from io import BytesIO
 from pathlib import Path
 from uuid import uuid4
 
@@ -75,14 +76,18 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
     app = start(engine)
     try:
         owner = app.test_client()
-        form_data = form()
+        form_data = form(version='1' if source_format == 'csv' else '2')
         form_data['geometry'] = 'SINGLE_POINTING'
         form_data.update(dict(ra='201.365', dec='-43.019', action='assess'))
         assert owner.post('/proposed', data=form_data,
                           headers={'Sec-Fetch-Site': 'cross-site'}).status_code == 403
         single = owner.post('/proposed', data=form_data)
         assert single.status_code == 303, single.text
-        mosaic = submit(owner, form())
+        mosaic_form = form()
+        mosaic_form['mosaic_array'] = '7m'
+        mosaic_form['mosaic_complete'] = 'on'
+        mosaic_form['mosaic_fixed_icrs'] = 'on'
+        mosaic = submit(owner, mosaic_form)
         assert mosaic.status_code == 303, mosaic.text
         _, data = upload(owner, raw=source_bytes, format=source_format)
         batch = owner.post('/proposed/batch', data=data | {'action': 'assess'})
@@ -117,6 +122,8 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert mosaic_input['snapshot']['workflow'] == 'MOSAIC'
         assert mosaic_input['upload']['raw'] == OT
         assert mosaic_input['upload']['filename'] == 'proposed.txt'
+        assert mosaic_input['snapshot']['form_values']['mosaic_complete'] == 'on'
+        assert mosaic_input['snapshot']['form_values']['mosaic_fixed_icrs'] == 'on'
         batch_input = saved_input(owner, 'input_for_batch', batch.location)
         assert batch_input['snapshot']['workflow'] == 'MULTI_SOURCE_SINGLE'
         assert batch_input['upload']['raw'] == source_bytes
@@ -148,10 +155,12 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
 
         with monkeypatch.context() as no_execution:
             no_execution.setattr(BrowserAssessment, 'assess', unexpected_assessment)
+            no_execution.setattr(BrowserAssessment, 'assess_mosaic', unexpected_assessment)
+            no_execution.setattr(BrowserAssessment, 'assess_queue_custom', unexpected_assessment)
             no_execution.setattr(BrowserAssessment, 'pin_queue_for_submission', unexpected_assessment)
             for url, path, expected in (
                     (single.location, '/proposed', 'value="201.365"'),
-                    (mosaic.location, '/proposed/mosaic', 'Import the OT pointing file again'),
+                    (mosaic.location, '/proposed/mosaic', 'Restored OT pointings'),
                     (batch.location, '/proposed/batch', 'Restored source list')):
                 receipt = owner.post(url + '/reuse', data={'csrf': reuse_csrf})
                 assert receipt.status_code == 303
@@ -165,6 +174,8 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
                     single_draft_url = receipt.location
                 if url == batch.location:
                     batch_draft_url, batch_draft = receipt.location, draft
+                if url == mosaic.location:
+                    mosaic_draft_url, mosaic_draft = receipt.location, draft
             assert owner.get(single_draft_url.replace('/proposed?', '/proposed/batch?')).status_code == 404
             assert owner.get(single_draft_url + '&draft=ambiguous').status_code == 404
         edited = form_data.copy()
@@ -175,6 +186,30 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert restore_input_snapshot(edited_input['snapshot']).values['ra'] == '201.366'
         assert owner.get(single.location + '/download/report').data == download
         assert 'value="201.365"' in owner.get(single_draft_url).text
+        assert edited_input['snapshot']['form_contract'] == single_input['snapshot']['form_contract']
+
+        mosaic_state = restore_input_snapshot(mosaic_input['snapshot'])
+        mosaic_post = mosaic_state.values | dict(rows=mosaic_state.rows,
+            mosaic_upload_token=hidden(mosaic_draft, 'mosaic_upload_token'))
+        assert mosaic_post['mosaic_upload_token']
+        assert hidden(mosaic_draft, 'mosaic_complete') == 'on'
+        assert hidden(mosaic_draft, 'mosaic_fixed_icrs') == 'on'
+        assert 'proposed array: 7m' in mosaic_draft.text
+        assert '3 input rows' in mosaic_draft.text
+        validated = owner.post('/proposed/mosaic', data=mosaic_post | {'action': 'validate'})
+        assert validated.status_code == 200 and 'Restored OT pointings' in validated.text
+        mosaic_rerun = owner.post('/proposed/mosaic', data=mosaic_post | {'action': 'assess'})
+        assert mosaic_rerun.status_code == 303 and mosaic_rerun.location != mosaic.location
+        original_request = owner.get(mosaic.location + '/download/request').json
+        assert owner.get(mosaic_rerun.location + '/download/request').json == original_request
+        assert saved_input(owner, 'input_for_report', mosaic_rerun.location)['upload']['raw'] == OT
+        assert hidden(owner.get(mosaic_draft_url), 'mosaic_upload_token') == mosaic_post['mosaic_upload_token']
+        replacement_ot = OT.replace(b'201.366', b'201.367')
+        preview = owner.post('/proposed/mosaic', data=mosaic_post | {
+            'action': 'preview-pointings', 'ot_pointings': (BytesIO(replacement_ot), 'replacement.txt')})
+        assert preview.status_code == 200
+        assert 'replacement.txt' in preview.text and 'Restored OT pointings' not in preview.text
+        assert saved_input(owner, 'input_for_report', mosaic.location)['upload']['raw'] == OT
 
         batch_form = restore_input_snapshot(batch_input['snapshot'])
         batch_post = batch_form.values | dict(rows=batch_form.rows, angular='0.45',

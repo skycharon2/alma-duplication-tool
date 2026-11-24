@@ -1,14 +1,17 @@
 """Create short-lived browser-owned drafts from saved assessment inputs."""
 
+from io import BytesIO
 import os
 import re
 from secrets import compare_digest, token_hex
 import weakref
 
 from flask import Blueprint, abort, redirect, request, session, url_for
+from werkzeug.datastructures import FileStorage
 
 from alma_duplicate.parsers.source_list import parse_source_list
 from alma_duplicate.ui.input_snapshot import restore_input_snapshot
+from alma_duplicate.ui.mosaic_form import prepare_mosaic_upload
 from alma_duplicate.ui.owned_uploads import OwnedUploadStore
 
 _ENDPOINTS = {
@@ -55,7 +58,9 @@ def register_assessment_reuse(app, runs):
         snapshot = saved['snapshot']
         workflow = snapshot['workflow']
         upload = None
+        upload_owner = owner
         if workflow == 'MULTI_SOURCE_SINGLE':
+            uploads = app.extensions['source_uploads']
             upload = saved['upload']
             try:
                 preview = parse_source_list(upload['raw'], format=upload['format'])
@@ -64,15 +69,28 @@ def register_assessment_reuse(app, runs):
                 upload = dict(upload, preview=preview, restored=True)
             except (ValueError, KeyError, TypeError):
                 abort(409, description='The saved source list could not be restored.')
+        elif workflow == 'MOSAIC':
+            uploads = app.extensions['mosaic_uploads']
+            upload_owner = session.setdefault('mosaic_owner', token_hex(24))
+            try:
+                original = saved['upload']
+                with BytesIO(original['raw']) as stream:
+                    upload = prepare_mosaic_upload(
+                        FileStorage(stream=stream, filename=original['filename']),
+                        snapshot['form_values'])
+                if upload['input_sha256'] != original['input_sha256']:
+                    raise ValueError('Saved OT pointings do not match their preview')
+                upload['preview']['restored'] = True
+            except (ValueError, KeyError, TypeError):
+                abort(409, description='The saved OT pointing file could not be restored.')
         upload_token = None
         try:
             if upload is not None:
-                uploads = app.extensions['source_uploads']
-                upload_token = uploads.put(owner, upload)
+                upload_token = uploads.put(upload_owner, upload)
             token = drafts.put(owner, dict(snapshot=snapshot, upload_token=upload_token))
         except ValueError:
             if upload_token is not None:
-                uploads.remove(owner, upload_token)
+                uploads.remove(upload_owner, upload_token)
             abort(503, description='Draft storage is busy. Try again later.')
         return redirect(url_for(_ENDPOINTS[workflow], draft=token), code=303)
 
@@ -100,8 +118,5 @@ def load_draft_form(app, workflow):
         abort(404)
     state = restore_input_snapshot(draft['snapshot'])
     state.upload_token = draft['upload_token'] or ''
-    notice = 'Settings restored from a previous assessment. Review the inputs before running a new assessment.'
-    if workflow == 'MOSAIC':
-        notice += ' Import the OT pointing file again before validating.'
-    state.edit_notice = notice
+    state.edit_notice = 'Settings restored from a previous assessment. Review the inputs before running a new assessment.'
     return state

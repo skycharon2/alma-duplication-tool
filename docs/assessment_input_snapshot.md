@@ -77,5 +77,10 @@ new batch ID. The original file bytes, target order and per-target redshifts are
 preserved. If that temporary upload expires or is removed, reopen the saved
 settings to create a fresh copy.
 
-Mosaic drafts currently restore form fields and require the OT upload to be
-supplied again. The Existing reports action will be added in a later step.
+Single Pointing drafts restore the saved form inputs, including V2 spectral
+windows. Mosaic drafts also reparse the original OT file with the normal
+pointings parser and show the restored preview. The user can validate, replace
+the temporary OT file, or submit a fresh assessment. The original saved inputs
+and uploaded file remain available for future drafts.
+
+The Existing reports action will be added in a later step.
