@@ -111,15 +111,19 @@ assessment_input_snapshots = Table('assessment_input_snapshots', metadata, ident
     Column('upload', json_type))
 
 browser_batches = Table('browser_batches', metadata, identity(), created(),
-    Column('owner_digest', String(64), nullable=False, index=True),
+    Column('owner_digest', String(64), nullable=False),
     Column('manifest', json_type, nullable=False))
+Index('ix_browser_batches_history', browser_batches.c.owner_digest,
+      browser_batches.c.created_at, browser_batches.c.id)
 
 browser_reports = Table('browser_reports', metadata, identity(), created(),
-    Column('owner_digest', String(64), nullable=False, index=True),
+    Column('owner_digest', String(64), nullable=False),
     Column('assessment_status', String(64), nullable=False),
     Column('artifact_manifest', json_type, nullable=False),
     Column('overview', json_type, nullable=False),
     Column('batch_id', String(65), ForeignKey('browser_batches.id')))
+Index('ix_browser_reports_history', browser_reports.c.owner_digest, browser_reports.c.batch_id,
+      browser_reports.c.created_at, browser_reports.c.id)
 
 assessment_input_links = Table('assessment_input_links', metadata, identity(),
     Column('snapshot_id', String(65), ForeignKey('assessment_input_snapshots.id'), nullable=False, index=True),

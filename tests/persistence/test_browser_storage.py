@@ -14,7 +14,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.schema import CreateSchema, DropSchema
 from werkzeug.datastructures import MultiDict
 
-from alma_duplicate.persistence.models import assessment_input_links, browser_reports
+from alma_duplicate.persistence.models import assessment_input_links, browser_batches, browser_reports
 from alma_duplicate.ui import create_app
 from alma_duplicate.ui.input_snapshot import restore_input_snapshot
 from alma_duplicate.ui.runs import BrowserAssessment
@@ -295,6 +295,11 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
                 connection.execute(browser_reports.insert().values(
                     dict(original) | dict(id=run_id, overview=overview,
                         created_at=timestamp)))
+            connection.execute(browser_batches.insert(), [
+                dict(id=f'{index:032x}', owner_digest=original['owner_digest'],
+                     created_at=timestamp, manifest=manifest | {'batch_id': f'{index:032x}'})
+                for index in range(41)
+            ])
         first_page = owner.get('/reports')
         assert 'Older reports' in first_page.text and single.location not in first_page.text
         older_url = re.search(r'href="([^"]+)">Older reports</a>', first_page.text).group(1)
@@ -306,7 +311,15 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
                 }, created_at=timestamp + timedelta(seconds=1))))
         second_page = owner.get(older_url)
         assert 'Newest reports' in second_page.text and single.location in second_page.text
-        assert 'Older reports' not in second_page.text
+        third_url = re.search(r'href="([^"]+)">Older reports</a>', second_page.text).group(1)
+        third_page = owner.get(third_url)
+        assert third_page.status_code == 200
+        assert f'href="{batch.location}"' in third_page.text
+        assert '/runs/' not in third_page.text
+        assert 'Older reports' not in third_page.text
+        for index in range(41):
+            link = f'href="/batches/{index:032x}"'
+            assert sum(link in page.text for page in (first_page, second_page, third_page)) == 1
         assert f'href="/runs/{newest_id}"' in owner.get('/reports').text
         for index in range(21):
             link = f'href="/runs/{index:032x}.{index:032x}"'
@@ -317,6 +330,8 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         with engine.begin() as connection:
             connection.execute(browser_reports.delete().where(
                 browser_reports.c.id == f'{1:032x}.{1:032x}'))
+            connection.execute(browser_batches.delete().where(
+                browser_batches.c.id == f'{21:032x}'))
         assert owner.get(older_url).text == second_page.text
     finally:
         close(app)
