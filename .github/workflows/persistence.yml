@@ -33,8 +33,7 @@ jobs:
       - run: python -m pytest -q tests/persistence
       - name: Verify browser cleanup systemd units
         run: |
-          sudo install -d /srv/alma-duplication-tool/.venv/bin
-          sudo ln -s "$(command -v python)" /srv/alma-duplication-tool/.venv/bin/python
+          sh -n deploy/systemd/run-browser-cleanup.sh
           systemd-analyze --man=no verify \
             deploy/systemd/alma-browser-cleanup.service \
             deploy/systemd/alma-browser-cleanup.timer

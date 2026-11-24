@@ -211,7 +211,7 @@ sudo systemctl list-timers alma-browser-cleanup.timer
 sudo journalctl -u alma-browser-cleanup.service -n 50 --no-pager
 ```
 
-Each successful run purges expired assessments first and then drains the
-artifact queue. If the first command fails, systemd reports the service
-failure and the remaining file cleanup can be run independently after
-checking the journal.
+The service runs the expiry command first, then drains the artifact queue
+even if expiry fails. A failure in either command marks the service run
+as failed and is visible in the journal. The next timer run retries work
+that remains in the database.

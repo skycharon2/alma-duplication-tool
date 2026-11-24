@@ -12,8 +12,7 @@ UMask=0077
 Environment=PYTHONUNBUFFERED=1
 Environment=ALMA_UI_AUTO_QUEUE=0
 EnvironmentFile=/etc/alma-duplication/browser-storage.env
-ExecStart=/srv/alma-duplication-tool/.venv/bin/python -m flask --app alma_duplicate.ui.app:create_app purge-expired-browser-assessments
-ExecStart=/srv/alma-duplication-tool/.venv/bin/python -m flask --app alma_duplicate.ui.app:create_app cleanup-browser-artifacts
+ExecStart=/bin/sh /srv/alma-duplication-tool/deploy/systemd/run-browser-cleanup.sh /srv/alma-duplication-tool/.venv/bin/python
 TimeoutStartSec=15min
 NoNewPrivileges=true
 PrivateTmp=true
