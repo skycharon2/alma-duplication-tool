@@ -1,0 +1,11 @@
+[Unit]
+Description=Run ALMA browser trash and artifact cleanup hourly
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=5min
+Persistent=true
+Unit=alma-browser-cleanup.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-heading"><h1>Delete assessment permanently?</h1></div>
+<section class="glass-surface report-purge-confirm" aria-labelledby="purge-assessment-name">
+  <h2 id="purge-assessment-name" class="report-library-name">{{ name }}</h2>
+  <p class="report-library-kind">Moved to trash on
+    <time datetime="{{ deleted_at.isoformat() }}">{{ deleted_at.strftime('%d %b %Y, %H:%M') }} UTC</time>
+  </p>
+  <p>This removes the assessment and all its reports from Trash. This action cannot be undone. Storage space is released when file cleanup runs.</p>
+  <form method="post" class="report-library-actions"
+        action="{{ url_for('report_management.update_trash', kind=kind, entry_id=entry_id, action='purge') }}">
+    <input type="hidden" name="csrf" value="{{ report_management_csrf }}">
+    <input type="hidden" name="confirm" value="yes">
+    <a class="button" href="{{ url_for('report_management.trash_index') }}">Cancel</a>
+    <button class="button report-purge-submit" type="submit">Delete permanently</button>
+  </form>
+</section>
+{% endblock %}

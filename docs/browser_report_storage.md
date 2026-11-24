@@ -118,3 +118,100 @@ browser profile and cookie as the original report.
 
 See [Assessment input snapshots](assessment_input_snapshot.md) for the input
 contract, upload integrity checks, and draft lifetime configuration.
+
+## Report management storage
+
+Migration `0006_browser_assessment_trash` adds a browser-owned trash record
+for each batch or standalone assessment placed in trash. All reports generated
+by a new standalone submission share one group identifier. For older
+standalone reports, the migration groups reports with a shared input snapshot.
+Reports without a durable grouping identifier are treated individually.
+
+A trash record hides the assessment and its branches from normal history,
+report access, downloads, and new reuse requests. The database rows and
+artifacts are retained. Database mode provides CSRF-protected POST endpoints
+for moving browser-owned assessments to trash and restoring them. Moving
+a batch always applies to its child reports. Repeated requests leave the
+existing trash timestamp and retention deadline intact if already trashed.
+The planned retention defaults to seven days and can be configured with
+`ALMA_REPORT_TRASH_RETENTION_DAYS`. Each entry keeps the deadline assigned
+when it entered Trash. **Trash** shows that deadline in UTC. An entry can
+still be restored while it is present, including after its deadline if the
+operator's scheduled cleanup has yet to process it.
+
+In **Existing reports**, choose **Move to trash** next to an assessment.
+Open **Trash** from the same page, then choose **Restore** to return the
+assessment and its reports to the history. Moving a report to trash keeps
+its saved files on disk.
+
+Migration `0007_browser_artifact_cleanup` adds the persistent file cleanup
+queue. In database mode, operators can drain one batch with
+`python -m flask --app alma_duplicate.ui.app:create_app cleanup-browser-artifacts`.
+Files with database references and failed removals remain queued for another
+run. The command only processes explicitly queued file paths. Moving a report
+to trash does not enqueue its files.
+
+The permanent-delete endpoint accepts only an assessment that is already in
+the current browser's trash. It removes the assessment, child report records,
+and unshared input snapshots, and enqueues candidate files in the same
+transaction. A failed transaction leaves the trash entry intact. Physical
+space is reclaimed by the cleanup command after reference checks.
+In **Trash**, choose **Delete permanently**, review the assessment and its
+deletion time, then choose **Delete permanently** on the confirmation page.
+**Cancel** returns to Trash with the assessment still available to restore.
+
+### Scheduled cleanup
+
+To enforce retention, schedule these two commands in order using the same
+database and artifact directory as the web app. Run them as the application
+service user.
+
+```bash
+python -m flask --app alma_duplicate.ui.app:create_app purge-expired-browser-assessments
+python -m flask --app alma_duplicate.ui.app:create_app cleanup-browser-artifacts
+```
+
+The first command processes up to 100 due assessments by default and
+rechecks each deadline in the same transaction that removes the assessment.
+If a browser restores an assessment before that transaction takes the lock,
+the command skips it. Moving the restored assessment back to Trash starts
+a fresh retention period.
+The second processes up to 100 queued file paths. Each command supports
+`--limit`. The application itself does not schedule these commands.
+
+#### Optional Linux systemd timer
+
+The repository includes an opt-in hourly timer for a Linux deployment using
+database storage. The templates use the `alma` service account, the checkout
+and virtual environment under `/srv/alma-duplication-tool`, and a writable
+artifact directory at `/var/lib/alma-duplication/browser-artifacts`. Adapt
+these paths to your deployment before installing the units.
+The Linux persistence CI workflow checks both unit files with
+`systemd-analyze verify`. The installation check below verifies the copies
+with your deployment paths.
+
+Use the web app's database and artifact settings in the root-readable
+`/etc/alma-duplication/browser-storage.env` file. Use systemd environment-file
+syntax (`NAME=value`), and include `ALMA_AUTH_MODE=local`,
+`ALMA_REPORT_STORAGE=database`, `ALMA_DATABASE_URL`, `ALMA_ARTIFACT_ROOT`
+and `ALMA_BROWSER_SESSION_SECRET`. Match `ReadWritePaths` in the cleanup
+service to the artifact root. The web service account must also have
+filesystem permission to write that directory.
+
+After applying the database migrations, install and enable the timer from
+the repository root:
+
+```bash
+sudo install -m 0644 deploy/systemd/alma-browser-cleanup.service /etc/systemd/system/
+sudo install -m 0644 deploy/systemd/alma-browser-cleanup.timer /etc/systemd/system/
+sudo systemd-analyze verify +  /etc/systemd/system/alma-browser-cleanup.service +  /etc/systemd/system/alma-browser-cleanup.timer
+sudo systemctl daemon-reload
+sudo systemctl enable --now alma-browser-cleanup.timer
+sudo systemctl list-timers alma-browser-cleanup.timer
+sudo journalctl -u alma-browser-cleanup.service -n 50 --no-pager
+```
+
+The service runs the expiry command first, then drains the artifact queue
+even if expiry fails. A failure in either command marks the service run
+as failed and is visible in the journal. The next timer run retries work
+that remains in the database.

@@ -85,6 +85,14 @@ def test_paths_symlinks_and_interrupted_copy(tmp_path):
     path.symlink_to(source)
     with pytest.raises(OSError):
         store.open_verified(artifact)
+    with pytest.raises(ValueError):
+        store.remove(artifact.kind, '../input')
+    store.remove(artifact.kind, artifact.storage_key)
+    store.remove(artifact.kind, artifact.storage_key)
+    assert source.read_bytes() == b'original'
+    path.parent.symlink_to(tmp_path, target_is_directory=True)
+    with pytest.raises(OSError):
+        store.remove(artifact.kind, artifact.storage_key)
     with pytest.raises(FileNotFoundError):
         store.put_bundle({'report': source, 'request': tmp_path / 'missing'})
     assert not list(store.root.glob('.pending-*'))

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-heading report-library-heading">
+  <div><h1>Trash</h1><p>Restore assessments here while they are available. Scheduled cleanup may permanently delete them once their deadlines pass.</p></div>
+  <a class="button" href="{{ url_for('report_index') }}">Existing reports</a>
+</div>
+{% include '_report_management_status.html' %}
+<section class="glass-surface report-library" aria-label="Trashed assessments">
+{% if entries %}
+<ul class="report-library-list">
+{% for entry in entries %}
+<li class="report-library-row">
+  <div>
+    <div class="report-library-name">{{ entry.name }}</div>
+    <dl class="report-trash-dates report-library-kind">
+      <div><dt>Moved to trash</dt><dd><time datetime="{{ entry.deleted_at.isoformat() }}">{{ entry.deleted_at.strftime('%d %b %Y, %H:%M') }} UTC</time></dd></div>
+      <div><dt>Eligible for cleanup from</dt><dd><time datetime="{{ entry.purge_after.isoformat() }}">{{ entry.purge_after.strftime('%d %b %Y, %H:%M') }} UTC</time></dd></div>
+    </dl>
+  </div>
+  <div class="report-library-actions">
+    <form method="post" action="{{ url_for('report_management.update_trash', kind=entry.kind, entry_id=entry.id, action='restore') }}">
+      <input type="hidden" name="csrf" value="{{ report_management_csrf }}">
+      <button class="button" type="submit" aria-label="Restore {{ entry.name }}">Restore</button>
+    </form>
+    <a class="report-library-secondary report-purge-link"
+       href="{{ url_for('report_management.confirm_purge', kind=entry.kind, entry_id=entry.id) }}"
+       aria-label="Delete {{ entry.name }} permanently">Delete permanently</a>
+  </div>
+</li>
+{% endfor %}
+</ul>
+{% else %}
+<div class="report-library-empty"><h2>Trash is empty</h2><p>Assessments moved to trash will appear here.</p></div>
+{% endif %}
+</section>
+{% if page > 1 or has_next %}
+<nav class="report-actions" aria-label="Trash pages">
+  {% if page > 1 %}<a class="button" href="{{ url_for('report_management.trash_index', page=page - 1) }}">Newer entries</a>{% endif %}
+  {% if has_next %}<a class="button" href="{{ url_for('report_management.trash_index', page=page + 1) }}">Older entries</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

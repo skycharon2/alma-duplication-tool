@@ -14,7 +14,10 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.schema import CreateSchema, DropSchema
 from werkzeug.datastructures import MultiDict
 
-from alma_duplicate.persistence.models import assessment_input_links, browser_batches, browser_reports
+from alma_duplicate.persistence.models import (
+    assessment_input_links, assessment_input_snapshots, browser_artifact_cleanup,
+    browser_assessment_trash, browser_batches, browser_reports,
+)
 from alma_duplicate.ui import create_app
 from alma_duplicate.ui.input_snapshot import restore_input_snapshot
 from alma_duplicate.ui.runs import BrowserAssessment
@@ -52,6 +55,7 @@ def database(tmp_path, request):
 def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, database,
                                                                     source_format, source_bytes, monkeypatch):
     url, options = database
+    retention_days = 7 if source_format == 'csv' else 3
     engine = create_engine(url, **options)
     with engine.begin() as connection:
         command.upgrade(migration_config(connection), 'head')
@@ -64,6 +68,7 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
             'BROWSER_TEST_ENGINE': engine,
             'ARTIFACT_ROOT': str(tmp_path / 'artifacts'),
             'BATCH_MAX_WORKERS': 2,
+            'REPORT_TRASH_RETENTION_DAYS': retention_days,
         })
 
     def close(app):
@@ -333,6 +338,188 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
             connection.execute(browser_batches.delete().where(
                 browser_batches.c.id == f'{21:032x}'))
         assert owner.get(older_url).text == second_page.text
+        batch_id = batch.location.rsplit('/', 1)[-1]
+        trash_url = f'/reports/manage/batch/{batch_id}/trash'
+        restore_url = f'/reports/manage/batch/{batch_id}/restore'
+        assert 'href="/reports/trash"' in first_page.text
+        assert 'Trash is empty' in owner.get('/reports/trash').text
+        with owner.session_transaction() as browser_session:
+            csrf = browser_session['report_management_csrf']
+        with visitor.session_transaction() as browser_session:
+            visitor_csrf = browser_session['report_management_csrf']
+        assert owner.get(trash_url).status_code == 405
+        assert owner.post(trash_url).status_code == 403
+        assert owner.post(trash_url, data={'csrf': csrf},
+                          headers={'Sec-Fetch-Site': 'cross-site'}).status_code == 403
+        assert owner.post(trash_url, data=MultiDict([('csrf', csrf), ('csrf', csrf)])).status_code == 403
+        assert visitor.post(trash_url, data={'csrf': csrf}).status_code == 403
+        assert visitor.post(trash_url, data={'csrf': visitor_csrf}).status_code == 404
+        assert owner.post(f'/reports/manage/report/{batch_runs[0]}/trash',
+                          data={'csrf': csrf}).status_code == 404
+        assert owner.post(trash_url, data={'csrf': csrf}).status_code == 303
+        assert 'Assessment moved to trash.' in owner.get('/reports').text
+        trash_page = owner.get('/reports/trash')
+        assert f'action="{restore_url}"' in trash_page.text
+        assert f'value="{csrf}"' in trash_page.text
+        assert restore_url not in visitor.get('/reports/trash').text
+        with engine.connect() as db:
+            trash_record = db.execute(select(browser_assessment_trash)).one()
+        assert trash_record.purge_after - trash_record.deleted_at == timedelta(days=retention_days)
+        deadline = trash_record.purge_after
+        deadline = deadline.astimezone(timezone.utc) if deadline.tzinfo else deadline.replace(tzinfo=timezone.utc)
+        assert 'Eligible for cleanup from' in trash_page.text
+        assert f'datetime="{deadline.isoformat()}"' in trash_page.text
+        assert owner.post(trash_url, data={'csrf': csrf}).status_code == 303
+        with engine.connect() as db:
+            assert db.execute(select(browser_assessment_trash)).one() == trash_record
+        assert visitor.post(restore_url, data={'csrf': visitor_csrf}).status_code == 404
+        for url in (batch.location, manifest_url, batch_report, batch_report + '/download/report'):
+            assert owner.get(url).status_code == 404
+        assert saved_input(owner, 'input_for_batch', batch.location) is None
+        assert owner.get(rerun.location).status_code == 200
+        assert saved_input(owner, 'input_for_batch', rerun.location)['upload']['raw'] == source_bytes
+        assert owner.post(restore_url, data={'csrf': csrf}).status_code == 303
+        assert owner.post(restore_url, data={'csrf': csrf}).status_code == 303
+        restored_page = owner.get('/reports/trash').text
+        assert 'Assessment restored to Existing reports.' in restored_page
+        assert 'Trash is empty' in restored_page
+        assert owner.get(manifest_url).json == manifest
+
+        mosaic_id = mosaic.location.rsplit('/', 1)[-1]
+        sibling_id = f'{uuid4().hex}.{uuid4().hex}'
+        with engine.begin() as db:
+            branch = db.execute(select(browser_reports).where(
+                browser_reports.c.id == mosaic_id)).mappings().one()
+            db.execute(browser_reports.insert().values(dict(branch) | {'id': sibling_id}))
+        assert owner.get(f'/runs/{sibling_id}/download/report').status_code == 200
+        assert owner.post(f'/reports/manage/report/{mosaic_id}/trash',
+                          data={'csrf': csrf}).status_code == 303
+        assert owner.get(mosaic.location).status_code == 404
+        assert owner.get(f'/runs/{sibling_id}/download/report').status_code == 404
+        assert owner.get('/reports/trash').text.count('>Restore</button>') == 1
+        assert owner.post(f'/reports/manage/report/{sibling_id}/restore',
+                          data={'csrf': csrf}).status_code == 303
+        assert owner.get(mosaic.location).status_code == 200
+
+        purge_url = f'/reports/manage/batch/{batch_id}/purge'
+        confirmation = {'csrf': csrf, 'confirm': 'yes'}
+        assert owner.get(purge_url).status_code == 404
+        assert owner.post(purge_url, data=confirmation).status_code == 409
+        assert owner.post(trash_url, data={'csrf': csrf}).status_code == 303
+        assert f'href="{purge_url}"' in owner.get('/reports/trash').text
+        confirm_page = owner.get(purge_url)
+        assert confirm_page.status_code == 200
+        assert 'Delete assessment permanently?' in confirm_page.text
+        assert f'action="{purge_url}"' in confirm_page.text
+        assert 'href="/reports/trash">Cancel</a>' in confirm_page.text
+        assert 'name="confirm" value="yes"' in confirm_page.text
+        assert f'action="{restore_url}"' in owner.get('/reports/trash').text
+        assert visitor.get(purge_url).status_code == 404
+        assert visitor.post(purge_url, data=confirmation | {'csrf': visitor_csrf}).status_code == 404
+        assert owner.post(purge_url, data={'csrf': csrf}).status_code == 400
+        assert owner.post(purge_url).status_code == 403
+
+        from alma_duplicate.ui import report_management
+        purge = report_management.purge_assessment
+
+        def fail_after_queue(*args):
+            purge(*args)
+            raise RuntimeError('simulated commit failure')
+
+        with monkeypatch.context() as rollback:
+            rollback.setattr(report_management, 'purge_assessment', fail_after_queue)
+            with pytest.raises(RuntimeError, match='simulated commit failure'):
+                owner.post(purge_url, data=confirmation)
+        with engine.connect() as db:
+            assert db.execute(select(browser_artifact_cleanup)).first() is None
+        assert f'action="{restore_url}"' in owner.get('/reports/trash').text
+
+        assert owner.post(purge_url, data=confirmation).status_code == 303
+        assert 'Assessment permanently deleted. File cleanup is queued.' in owner.get('/reports/trash').text
+        assert owner.post(restore_url, data={'csrf': csrf}).status_code == 404
+        assert owner.get(manifest_url).status_code == 404
+        with engine.connect() as db:
+            assert db.scalar(select(browser_batches.c.id).where(browser_batches.c.id == batch_id)) is None
+            assert db.scalar(select(browser_reports.c.id).where(browser_reports.c.id.in_(batch_runs))) is None
+            assert db.scalar(select(assessment_input_snapshots.c.id).where(
+                assessment_input_snapshots.c.id == batch_input['snapshot_id'])) is None
+            queued = db.scalars(select(browser_artifact_cleanup.c.storage_key)).all()
+        assert queued and all((tmp_path / 'artifacts' / key).is_file() for key in queued)
+        result = app.test_cli_runner().invoke(args=['cleanup-browser-artifacts', '--limit', '500'])
+        assert result.exit_code == 0, result.output
+        assert all(not (tmp_path / 'artifacts' / key).exists() for key in queued)
+        assert owner.get(rerun.location).status_code == 200
+        assert saved_input(owner, 'input_for_batch', rerun.location)['upload']['raw'] == source_bytes
+
+        assert owner.post(f'/reports/manage/report/{mosaic_id}/trash',
+                          data={'csrf': csrf}).status_code == 303
+        assert owner.post(f'/reports/manage/report/{sibling_id}/purge',
+                          data=confirmation).status_code == 303
+        with engine.connect() as db:
+            assert db.scalar(select(browser_reports.c.id).where(
+                browser_reports.c.id.in_([mosaic_id, sibling_id]))) is None
+        assert owner.get(mosaic_rerun.location).status_code == 200
+
+        # The batch was created by this app process. Its in-memory copy must
+        # not become visible after scheduled expiry removes the database row.
+        due_id = rerun.location.rsplit('/', 1)[-1]
+        future_id = mosaic_rerun.location.rsplit('/', 1)[-1]
+        assert owner.post(f'/reports/manage/batch/{due_id}/trash',
+                          data={'csrf': csrf}).status_code == 303
+        assert owner.post(f'/reports/manage/report/{future_id}/trash',
+                          data={'csrf': csrf}).status_code == 303
+        past = datetime.now(timezone.utc) - timedelta(days=1)
+        with engine.begin() as db:
+            db.execute(browser_assessment_trash.update().where(
+                browser_assessment_trash.c.assessment_kind == 'BATCH',
+                browser_assessment_trash.c.assessment_id == due_id,
+            ).values(deleted_at=past - timedelta(days=7), purge_after=past))
+        runner = app.test_cli_runner()
+        command_args = ['purge-expired-browser-assessments', '--limit', '1']
+        result = runner.invoke(args=command_args)
+        assert result.exit_code == 0, result.output
+        assert 'Expired trash entries removed: 1' in result.output
+        assert owner.get(rerun.location).status_code == 404
+        assert 'Expired trash entries removed: 0' in runner.invoke(args=command_args).output
+        assert owner.post(f'/reports/manage/report/{future_id}/restore',
+                          data={'csrf': csrf}).status_code == 303
+        assert owner.get(mosaic_rerun.location).status_code == 200
+
+        # Let a browser act after the maintenance command has selected an
+        # expired entry, immediately before the command acquires the row lock.
+        future_trash = f'/reports/manage/report/{future_id}/trash'
+        future_restore = f'/reports/manage/report/{future_id}/restore'
+        assert owner.post(future_trash, data={'csrf': csrf}).status_code == 303
+        with engine.begin() as db:
+            db.execute(browser_assessment_trash.update().where(
+                browser_assessment_trash.c.assessment_kind == 'REPORT',
+            ).values(deleted_at=past - timedelta(days=retention_days), purge_after=past))
+            queued_before = set(db.scalars(select(browser_artifact_cleanup.c.storage_key)))
+
+        lock_assessment = report_management._lock_assessment
+        selected = []
+
+        def restore_before_maintenance_lock(db, owner_digest, kind, entry_id, *, group=False):
+            if group:
+                selected.append(entry_id)
+                assert owner.post(future_restore, data={'csrf': csrf}).status_code == 303
+                if source_format == 'txt':
+                    assert owner.post(future_trash, data={'csrf': csrf}).status_code == 303
+            return lock_assessment(db, owner_digest, kind, entry_id, group=group)
+
+        with monkeypatch.context() as interleaving:
+            interleaving.setattr(report_management, '_lock_assessment', restore_before_maintenance_lock)
+            result = runner.invoke(args=command_args)
+        assert result.exit_code == 0, result.output
+        assert selected == [future_id]
+        assert 'Expired trash entries removed: 0' in result.output
+        with engine.connect() as db:
+            assert set(db.scalars(select(browser_artifact_cleanup.c.storage_key))) == queued_before
+        if source_format == 'txt':
+            assert owner.get(mosaic_rerun.location).status_code == 404
+            assert f'action="{future_restore}"' in owner.get('/reports/trash').text
+            assert owner.post(future_restore, data={'csrf': csrf}).status_code == 303
+        assert owner.get(mosaic_rerun.location).status_code == 200
     finally:
         close(app)
         engine.dispose()

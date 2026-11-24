@@ -1,6 +1,7 @@
 """SQLite fast checks plus opt-in PostgreSQL isolation in a disposable schema."""
 import io
 import os
+from dataclasses import asdict
 from pathlib import Path
 from uuid import uuid4
 
@@ -15,6 +16,8 @@ from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
 from alma_duplicate.persistence.db import database_engine, transaction
 from alma_duplicate.persistence import models as m
+from alma_duplicate.artifacts.cleanup import drain_browser_artifact_cleanup
+from alma_duplicate.artifacts.local import LocalArtifactStore
 
 ROOT = Path(__file__).parents[2]
 
@@ -91,7 +94,9 @@ def test_browser_history_migrations_preserve_existing_data(connection):
             overview={'listing': {'id': 'report'}}, artifact_manifest=[{'kind': 'report'}]))
 
     def saved_rows(*tables):
-        return [connection.execute(select(table)).mappings().one() for table in tables]
+        return [connection.execute(select(*(
+            column for column in table.c if column.name != 'assessment_group_id'
+        ))).mappings().one() for table in tables]
 
     reports = (m.browser_reports, m.browser_batches)
     original = saved_rows(*reports)
@@ -116,6 +121,65 @@ def test_browser_history_migrations_preserve_existing_data(connection):
     connection.commit()
     assert saved_rows(*tables) == before_index_upgrade
     connection.commit()
+
+    with transaction(connection) as db:
+        for report_id in ('first-branch', 'second-branch', 'legacy'):
+            db.execute(m.browser_reports.insert().values(
+                id=report_id, owner_digest=owner, assessment_status='COMPLETED',
+                overview={'listing': {'id': report_id}}, artifact_manifest=[]))
+        db.execute(m.assessment_input_snapshots.insert().values(
+            id='shared-input', owner_digest=owner, snapshot={'workflow': 'MOSAIC'}))
+        db.execute(m.assessment_input_links.insert(), [
+            dict(report_id=report_id, snapshot_id='shared-input')
+            for report_id in ('first-branch', 'second-branch')
+        ])
+    command.upgrade(cfg, 'head')
+    connection.commit()
+    groups = dict(connection.execute(select(
+        m.browser_reports.c.id, m.browser_reports.c.assessment_group_id)).all())
+    assert groups == {'report': None, 'first-branch': 'shared-input',
+                      'second-branch': 'shared-input', 'legacy': None}
+    assert connection.scalar(select(func.count()).select_from(m.assessment_input_links)) == 3
+    assert connection.scalar(select(func.count()).select_from(m.browser_assessment_trash)) == 0
+    connection.commit()
+
+
+def test_cleanup_keeps_referenced_files_and_retries_after_restart(connection, tmp_path, monkeypatch):
+    source = tmp_path / 'source'
+    source.write_bytes(b'saved data')
+    root = tmp_path / 'artifacts'
+    store = LocalArtifactStore(root)
+    report, = store.put_bundle({'report': source})
+    upload, = store.put_bundle({'source-list': source})
+    with transaction(connection) as db:
+        db.execute(m.browser_reports.insert().values(
+            id='report', owner_digest='a' * 64, assessment_status='COMPLETED',
+            artifact_manifest=[asdict(report)], overview={}))
+        db.execute(m.assessment_input_snapshots.insert().values(
+            id='snapshot', owner_digest='b' * 64, snapshot={},
+            upload={'artifact': asdict(upload)}))
+        db.execute(m.browser_artifact_cleanup.insert(), [
+            {'storage_key': artifact.storage_key, 'kind': artifact.kind}
+            for artifact in (report, upload)
+        ])
+    assert drain_browser_artifact_cleanup(connection, store, 10) == (0, 2, 0)
+
+    with transaction(connection) as db:
+        db.execute(m.browser_reports.delete().where(m.browser_reports.c.id == 'report'))
+        db.execute(m.assessment_input_snapshots.delete().where(m.assessment_input_snapshots.c.id == 'snapshot'))
+
+    def unavailable(kind, storage_key):
+        raise OSError('simulated failure')
+
+    monkeypatch.setattr(store, 'remove', unavailable)
+    assert drain_browser_artifact_cleanup(connection, store, 10) == (0, 0, 2)
+    with store.open_verified(report) as download:
+        restarted = LocalArtifactStore(root)
+        assert drain_browser_artifact_cleanup(connection, restarted, 10) == (2, 0, 0)
+        assert download.read() == b'saved data'
+    assert not (root / report.storage_key).exists()
+    assert not (root / upload.storage_key).exists()
+    assert drain_browser_artifact_cleanup(connection, restarted, 10) == (0, 0, 0)
 
 
 def test_workspace_constraints_and_transaction_rollback(connection):
