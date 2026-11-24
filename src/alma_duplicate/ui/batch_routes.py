@@ -9,6 +9,7 @@ from flask import Blueprint, Response, abort, redirect, render_template, request
 
 from alma_duplicate.parsers.source_list import MAX_BYTES, parse_source_list
 from alma_duplicate.reporting import report_json_text
+from alma_duplicate.ui.assessment_reuse import load_draft_form
 from alma_duplicate.ui.batch_assessment import BatchValidationError, execute_batch
 from alma_duplicate.ui.batch_requests import prepare_batch_form
 from alma_duplicate.ui.form_context import form_context
@@ -75,9 +76,12 @@ def register_batch_routes(app, configured, runs, progress):
     def proposed():
         owner = session.setdefault('batch_owner', token_hex(24))
         csrf = session.setdefault('batch_csrf', token_hex(32))
-        values, rows = initial_form()
-        values.update(target_kind='FIXED', geometry='SINGLE_POINTING')
-        state = ProposalFormState(values=values, rows=rows, owner=owner)
+        state = load_draft_form(app, 'MULTI_SOURCE_SINGLE')
+        if state is None:
+            values, rows = initial_form()
+            values.update(target_kind='FIXED', geometry='SINGLE_POINTING')
+            state = ProposalFormState(values=values, rows=rows)
+        state.owner = owner
         upload = None
         preview = None
         preflights = None

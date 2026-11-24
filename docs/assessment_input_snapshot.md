@@ -51,5 +51,23 @@ damaged file contents fail integrity checks.
 Completed snapshots and their uploads follow persistent report storage and have
 no automatic expiry. Removing an in-progress preview releases only the temporary
 upload. Persistent copies are managed by the deployment operator. Existing
-reports and ordinary temporary mode are not backfilled. This phase provides
-internal read methods for later reuse; it does not expose upload or draft routes.
+reports and ordinary temporary mode are not backfilled.
+
+## Editable drafts
+
+In database mode, a browser can create a short-lived draft with a CSRF-protected
+POST to `/runs/<run_id>/reuse` or `/batches/<batch_id>/reuse`. The server resolves
+the parent in the caller's browser scope, verifies its snapshot and any upload,
+then redirects with HTTP 303 to the corresponding form. The opaque draft ID
+identifies a copy of the saved form inputs in a bounded process-local store.
+Opening the form only reads that copy. The regular form POST handles edits,
+validation and new runs.
+
+Drafts default to 30 minutes. Configure their lifetime with
+`ALMA_ASSESSMENT_DRAFT_TTL_SECONDS`. Restarting the service clears these drafts;
+the original saved inputs can be used to create another. Missing, expired,
+foreign or wrong-workflow drafts return 404. A damaged saved upload prevents
+draft creation and leaves the original report accessible.
+
+The routes currently restore form fields. Batch and Mosaic upload attachment
+and the Existing reports action will be added in later steps.

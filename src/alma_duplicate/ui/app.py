@@ -14,6 +14,7 @@ from alma_duplicate.cli.queue_update import QueueUpdateBusyError, SUCCESS_STATUS
 from alma_duplicate.storage.queue_active import QueueActiveError, QueueActiveRegistry
 from alma_duplicate.storage import QueueSnapshotStoreError
 from alma_duplicate.progress import observe_progress
+from alma_duplicate.ui.assessment_reuse import load_draft_form, register_assessment_reuse
 from alma_duplicate.ui.progress import ProgressStore
 from alma_duplicate.ui.reports import load_reports
 from alma_duplicate.ui.calculation_view import calculation_view, line_preparation
@@ -136,6 +137,7 @@ def create_app(config=None):
     if app.config['REPORT_STORAGE'] == 'database':
         from alma_duplicate.ui.browser_persistence import register_browser_persistence
         runs = register_browser_persistence(app)
+        register_assessment_reuse(app, runs)
     else:
         runs = RunStore(
             app.config["MAX_RETAINED_RUNS"],
@@ -568,10 +570,12 @@ def create_app(config=None):
         return _mosaic_controller()
 
     def _form_state(*, mosaic=False):
-        values, rows = initial_form()
-        if mosaic:
-            values = initial_mosaic_values(values)
-        state = ProposalFormState(values=values, rows=rows)
+        state = load_draft_form(app, 'MOSAIC' if mosaic else 'SINGLE')
+        if state is None:
+            values, rows = initial_form()
+            if mosaic:
+                values = initial_mosaic_values(values)
+            state = ProposalFormState(values=values, rows=rows)
         state.owner = session.setdefault("mosaic_owner", token_hex(24))
         return state
 

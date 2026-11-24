@@ -11,6 +11,7 @@ from sqlalchemy.schema import CreateSchema, DropSchema
 
 from alma_duplicate.ui import create_app
 from alma_duplicate.ui.input_snapshot import restore_input_snapshot
+from alma_duplicate.ui.runs import BrowserAssessment
 from tests.persistence.test_foundation import config as migration_config
 from tests.ui.test_batch_routes import upload
 from tests.ui.test_batch_assessment import RAW
@@ -44,7 +45,7 @@ def database(tmp_path, request):
     ('txt', b'name ra dec redshift\r\nfirst 201.365 -43.019 0.024\r\nsecond 201.365 -43.019 0\r\n'),
 ])
 def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, database,
-                                                                    source_format, source_bytes):
+                                                                    source_format, source_bytes, monkeypatch):
     url, options = database
     engine = create_engine(url, **options)
     with engine.begin() as connection:
@@ -61,7 +62,7 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         })
 
     def close(app):
-        for key in ('assessment_runs', 'source_uploads', 'mosaic_uploads'):
+        for key in ('assessment_runs', 'source_uploads', 'mosaic_uploads', 'assessment_drafts'):
             app.extensions[key].close()
 
     def saved_input(client, method, url):
@@ -130,10 +131,57 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert saved_input(visitor, 'input_for_report', single.location) is None
         assert saved_input(visitor, 'input_for_report', mosaic.location) is None
         assert saved_input(visitor, 'input_for_batch', batch.location) is None
+
+        with owner.session_transaction() as browser_session:
+            reuse_csrf = browser_session['assessment_reuse_csrf']
+        with visitor.session_transaction() as browser_session:
+            visitor_csrf = browser_session['assessment_reuse_csrf']
+        assert owner.get(single.location + '/reuse').status_code == 405
+        assert owner.post(single.location + '/reuse').status_code == 403
+        assert visitor.post(single.location + '/reuse', data={'csrf': reuse_csrf}).status_code == 403
+        assert visitor.post(single.location + '/reuse', data={'csrf': visitor_csrf}).status_code == 404
+        assert visitor.post(batch.location + '/reuse', data={'csrf': visitor_csrf}).status_code == 404
+
+        def unexpected_assessment(*args, **kwargs):
+            pytest.fail('Restoring a draft started an assessment')
+
+        with monkeypatch.context() as no_execution:
+            no_execution.setattr(BrowserAssessment, 'assess', unexpected_assessment)
+            no_execution.setattr(BrowserAssessment, 'pin_queue_for_submission', unexpected_assessment)
+            for url, path, expected in (
+                    (single.location, '/proposed', 'value="201.365"'),
+                    (mosaic.location, '/proposed/mosaic', 'Import the OT pointing file again'),
+                    (batch.location, '/proposed/batch', 'Upload the source list again')):
+                receipt = owner.post(url + '/reuse', data={'csrf': reuse_csrf})
+                assert receipt.status_code == 303
+                assert receipt.location.startswith(path + '?draft=')
+                assert visitor.get(receipt.location).status_code == 404
+                draft = owner.get(receipt.location)
+                assert draft.status_code == 200
+                assert expected in draft.text
+                assert 'Settings restored from a previous assessment' in draft.text
+                if url == single.location:
+                    single_draft_url = receipt.location
+            assert owner.get(single_draft_url.replace('/proposed?', '/proposed/batch?')).status_code == 404
+            assert owner.get(single_draft_url + '&draft=ambiguous').status_code == 404
+        edited = form_data.copy()
+        edited['ra'] = '201.366'
+        edited_report = owner.post(single_draft_url, data=edited)
+        assert edited_report.status_code == 303 and edited_report.location != single.location
+        edited_input = saved_input(owner, 'input_for_report', edited_report.location)
+        assert restore_input_snapshot(edited_input['snapshot']).values['ra'] == '201.366'
+        assert owner.get(single.location + '/download/report').data == download
+        assert 'value="201.365"' in owner.get(single_draft_url).text
+        drafts = app.extensions['assessment_drafts']
+        expired = drafts.clock() + drafts.ttl + 1
+        monkeypatch.setattr(drafts, 'clock', lambda: expired)
+        assert owner.get(single_draft_url).status_code == 404
+
         path = next((tmp_path / 'artifacts').glob('*/source-list.bin'))
         path.write_bytes(source_bytes[:-1] + b' ')
         with pytest.raises(ValueError, match='digest mismatch'):
             saved_input(owner, 'input_for_batch', batch.location)
+        assert owner.post(batch.location + '/reuse', data={'csrf': reuse_csrf}).status_code == 409
         assert owner.get(manifest_url).json == manifest
         visitor_report = visitor.post('/proposed', data=form_data)
         assert visitor_report.status_code == 303
