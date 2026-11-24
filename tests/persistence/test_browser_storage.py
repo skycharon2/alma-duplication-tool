@@ -100,10 +100,11 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         mosaic = submit(owner, mosaic_form)
         assert mosaic.status_code == 303, mosaic.text
         _, data = upload(owner, raw=source_bytes, format=source_format)
-        batch = owner.post('/proposed/batch', data=data | {'action': 'assess'})
+        batch = owner.post('/proposed/batch', data=data | {'action': 'assess', 'batch_name': 'Original survey'})
         assert batch.status_code == 303, batch.text
         manifest_url = batch.location + '/download/manifest'
         manifest = owner.get(manifest_url).json
+        assert manifest['name'] == 'Original survey'
         batch_runs = [r['run_id'] for s in manifest['sources'] for r in s['reports']]
         assert len(batch_runs) == 2 * len(manifest['sources']) and all(batch_runs)
         batch_report = '/runs/' + batch_runs[0]
@@ -241,7 +242,8 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert saved_input(owner, 'input_for_report', mosaic.location)['upload']['raw'] == OT
 
         batch_form = restore_input_snapshot(batch_input['snapshot'])
-        batch_post = batch_form.values | dict(rows=batch_form.rows, angular='0.45',
+        assert 'Original survey' not in batch_draft.text
+        batch_post = batch_form.values | dict(rows=batch_form.rows, angular='0.45', batch_name='Survey at 0.45 arcsec',
             batch_csrf=hidden(batch_draft, 'batch_csrf'),
             submission_token=hidden(batch_draft, 'submission_token'),
             source_upload_token=hidden(batch_draft, 'source_upload_token'))
@@ -250,10 +252,15 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
             assert source['source']['name'] in batch_draft.text
         preflight = owner.post('/proposed/batch', data=batch_post | {'action': 'validate'})
         assert preflight.status_code == 200
+        assert 'value="Survey at 0.45 arcsec"' in preflight.text
         batch_post['submission_token'] = hidden(preflight, 'submission_token')
         rerun = owner.post('/proposed/batch', data=batch_post | {'action': 'assess'})
         assert rerun.status_code == 303 and rerun.location != batch.location
         rerun_manifest = owner.get(rerun.location + '/download/manifest').json
+        assert rerun_manifest['name'] == 'Survey at 0.45 arcsec'
+        history = owner.get('/reports').text
+        assert 'Original survey' in history and 'Survey at 0.45 arcsec' in history
+        assert '0.45 arcsec resolution' in history
         assert rerun_manifest['shared_setup']['document']['request']['angular_resolution']['value'] == '0.45'
         assert [entry['source'] for entry in rerun_manifest['sources']] == [
             entry['source'] for entry in manifest['sources']]

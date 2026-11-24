@@ -14,12 +14,12 @@
 {% block content %}
 <article class="batch-overview">
 <header class="batch-overview-header">
-<div class="page-heading"><h1>Batch overview</h1><p>{{ batch.sources|length }} independent {{ 'target' if batch.sources|length == 1 else 'targets' }}. {{ 'Execution finished.' if batch.execution_complete else 'Execution in progress.' }}</p></div>
+<div class="page-heading"><h1>{{ batch.name or 'Batch overview' }}</h1><p>{{ batch.sources|length }} independent {{ 'target' if batch.sources|length == 1 else 'targets' }}. {{ 'Execution finished.' if batch.execution_complete else 'Execution in progress.' }}</p></div>
 <nav class="report-actions" aria-label="Batch actions"><a class="button" href="{{ url_for('batch.proposed') }}">New batch</a><a class="button" href="{{ url_for('batch.download_manifest', batch_id=batch.batch_id) }}">Download batch manifest</a>{% if not batch.execution_complete %}<a class="button" href="{{ url_for('batch.overview', batch_id=batch.batch_id) }}">Refresh progress</a>{% endif %}</nav>
 </header>
 {% if unavailable_reports %}<p class="notice" role="status">{{ unavailable_reports }} previously saved reports are no longer available. Execution completion does not mean all reports are still retained. Check the reason beside each target; the batch manifest does not contain the missing report contents.</p>{% endif %}
 <div class="batch-overview-tools">
-{% from '_observation_card.html' import card %}{{ card('Shared scientific requirements', shared) }}
+{% from '_observation_card.html' import card %}{{ card('Shared scientific requirements', shared, trigger_label='Shared observation settings') }}
 {% if batch.storage_budget %}<details class="field-note"><summary>Temporary storage usage</summary><p>{{ batch.storage_budget.retained_runs }} / {{ batch.storage_budget.max_runs }} reports; {{ '%.1f'|format(batch.storage_budget.used_bytes / 1048576) }} / {{ '%.1f'|format(batch.storage_budget.max_bytes / 1048576) }} MiB. {{ batch.storage_budget.protected_runs }} reports protected from capacity eviction. These limits are shared by this server process; they do not reserve physical disk space.</p></details>{% endif %}
 </div>
 <p class="field-note batch-results-scope">Results apply to each target independently. Shared REST inputs can yield different SKY frequencies for different redshifts.</p>

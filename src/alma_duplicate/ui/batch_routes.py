@@ -98,6 +98,11 @@ def register_batch_routes(app, configured, runs, progress):
                 abort(400, description='Form expired. Reload the batch input page.')
             try:
                 state.values, state.rows = read_form(request.form)
+                labels = request.form.getlist('batch_name')
+                label = labels[0].strip() if labels else ''
+                if len(labels) > 1 or len(label) > 80 or not all(c.isprintable() for c in label):
+                    raise ValueError('Batch name must be at most 80 printable characters')
+                state.values['batch_name'] = label
                 if (state.values.get('target_kind') != 'FIXED' or
                         state.values.get('geometry') != 'SINGLE_POINTING'):
                     raise ValueError('Batch input requires fixed Single Pointing targets')

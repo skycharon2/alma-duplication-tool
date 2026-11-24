@@ -53,7 +53,7 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
     shared, _ = build_document(values, rows)
     batch_id = runs.batches.create(owner, dict(document=shared, archive_connection=configured.archive_connection),
         [c['source'] for c in preflight['sources']], preflight['input_sha256'], purposes,
-        submission_token=submission_token, reserve_execution=True)
+        submission_token=submission_token, reserve_execution=True, name=values.get('batch_name', ''))
     if not runs.batches.claim_execution(batch_id, owner):
         return batch_id
     total = len(preflight['sources']) * len(purposes)

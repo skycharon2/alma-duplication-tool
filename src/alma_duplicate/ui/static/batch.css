@@ -25,9 +25,21 @@
 .batch-upload-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-block: 14px; }
 
 .batch-scroll-hint { display: none; }
-body:has(.batch-table) .target-settings-trigger {
-  padding: 10px 16px; border: 1px solid var(--control-border); border-radius: 6px;
+.batch-overview .target-settings-trigger {
+  display: inline-flex; align-items: center; gap: 12px; min-height: 44px;
+  padding: 9px 14px; border: 1px solid var(--control-border); border-radius: 10px;
   background: var(--paper); color: var(--blue-dark); text-align: left; cursor: pointer;
+}
+.batch-overview .target-settings-trigger::after {
+  content: ''; width: 6px; height: 6px; flex: 0 0 6px;
+  border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg);
+}
+.batch-overview .target-settings-trigger:hover,
+.batch-overview-tools:has(.target-popover:popover-open) .target-settings-trigger {
+  background: #e1f0fa; border-color: #6b9ab3;
+}
+.batch-overview .target-settings-trigger:focus-visible {
+  outline: 2px solid #075b7e; outline-offset: 3px;
 }
 @media (max-width: 640px) { .batch-scroll-hint { display: block; margin-top: 16px; } }
 .batch-navigation {
@@ -129,6 +141,7 @@ body:has(.batch-table) .target-settings-trigger {
 .batch-overview-tools .field-note,
 .batch-overview-tools .target-settings-trigger { margin: 0; }
 .batch-overview-header .report-actions { gap: 8px; }
+.batch-overview-header h1 { overflow-wrap: anywhere; }
 .batch-overview-header .button { padding: 8px 13px; }
 .batch-overview-tools .target-settings-trigger { font-size: 13px; }
 .batch-overview-tools details p { max-width: 68ch; }

@@ -12,14 +12,16 @@
 {% if settings %}
 <button class="target-settings-trigger" type="button" popovertarget="target-observation">{{ trigger_label or ((target or 'Unnamed target') ~ ' · Observation settings') }}</button>
 <section popover="auto" id="target-observation" class="target-popover" aria-labelledby="target-observation-name">
-<header><div><small>Proposed observation</small><h2 id="target-observation-name">{{ target or 'Unnamed target' }}</h2></div>
-<button type="button" popovertarget="target-observation" popovertargetaction="hide" aria-label="Close observation settings">×</button></header>
-<p class="observation-mode">{% if settings.position and settings.position.frame %}{{ settings.position.frame }} · {% endif %}{{ {'SINGLE_POINTING':'Single pointing','MOSAIC':'Mosaic'}.get(settings.geometry,'') }}{% for intent in settings.intents %} · {{ {'CONTINUUM':'Continuum','LINE':'Spectral line'}.get(intent,intent) }}{% endfor %}</p>
-<dl class="observation-coordinates">
+<header><div><h2 id="target-observation-name">{{ target or 'Unnamed target' }}</h2>
+<p class="observation-mode">{% if settings.position and settings.position.frame %}{{ settings.position.frame }} · {% endif %}{{ {'SINGLE_POINTING':'Single pointing','MOSAIC':'Mosaic'}.get(settings.geometry,'') }}{% for intent in settings.intents %} · {{ {'CONTINUUM':'Continuum','LINE':'Spectral line'}.get(intent,intent) }}{% endfor %}</p></div>
+<button class="target-popover-close" type="button" popovertarget="target-observation" popovertargetaction="hide" aria-label="Close observation settings">×</button></header>
 {% set pos = settings.position or {} %}
+{% set coordinates %}
 {{ row('RA', pos.ra, '°' if pos.ra_format == 'DEG' else pos.ra_format) }}
 {{ row('Dec', pos.dec, '°' if pos.dec_format == 'DEG' else pos.dec_format) }}
-</dl><dl>
+{% endset %}
+{% if coordinates|trim %}<dl class="observation-coordinates">{{ coordinates }}</dl>{% endif %}
+<dl>
 {{ row('Source redshift z', settings.source_redshift) }}
 {{ quantity('Angular resolution', settings.angular_resolution) }}
 </dl>

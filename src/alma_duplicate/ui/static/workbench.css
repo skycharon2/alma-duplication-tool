@@ -445,24 +445,29 @@ summary { cursor: pointer; padding: .4rem; }
 .target-settings-trigger { margin-top: .4rem; }
 .target-popover {
   inset: 0; margin: auto; box-sizing: border-box;
-  width: min(24rem, calc(100vw - 2rem)); max-height: 80vh; overflow: auto;
-  padding: 1.25rem; color: #193d50; background: #f8fcff;
-  border: 1px solid #b9cedb; border-radius: 1rem; box-shadow: 0 .8rem 3rem #193d5033;
+  width: min(32rem, calc(100% - 2rem)); max-height: 82dvh; overflow: auto;
+  padding: clamp(1rem, 4vw, 1.6rem); color: #193d50; background: #f8fcff;
+  border: 1px solid #a9c4d6; border-radius: 18px; box-shadow: 0 16px 48px #193d5040;
 }
-.target-popover::backdrop { background: rgb(20 46 65 / 18%); }
-.target-popover header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.target-popover::backdrop { background: rgb(20 46 65 / 24%); }
+.target-popover header { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; padding-bottom: .8rem; border-bottom: 1px solid #cfdee7; }
 .target-popover h2, .target-popover h3 { margin: 0; overflow-wrap: anywhere; }
-.target-popover h3 { font-size: 1rem; border-top: 1px solid #cfdee7; padding-top: .75rem; }
+.target-popover h2 { font-size: clamp(1.1rem, 4vw, 1.35rem); }
+.target-popover h3 { font-size: 1rem; border-top: 1px solid #cfdee7; padding-top: .8rem; }
 .target-popover dl { margin: .5rem 0; }
-.target-popover dl > div { display: flex; justify-content: space-between; gap: .8rem; padding: .25rem 0; }
-.target-popover dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
-
-.target-popover header small { color: #456477; }
-.target-popover .observation-mode { margin: .25rem 0 .85rem; color: #456477; }
-.target-popover .observation-coordinates:not(:empty) {
+.target-popover dl > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, auto); gap: .65rem; padding: .4rem 0; }
+.target-popover dt, .target-popover dd { overflow-wrap: anywhere; }
+.target-popover dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.target-popover .observation-mode { margin: .3rem 0 0; color: #456477; font-size: .875rem; }
+.target-popover .observation-coordinates {
   padding: .6rem .8rem; border-radius: .5rem; background: #e7f1f8;
 }
-.target-popover dd { font-weight: 600; }
+.target-popover .target-popover-close {
+  flex: 0 0 44px; min-height: 44px; border: 1px solid #bfd4e1; border-radius: 10px;
+  background: #edf5fa; color: #174c69; font: inherit; font-size: 1.35rem; cursor: pointer;
+}
+.target-popover .target-popover-close:hover { background: #dcecf6; border-color: #80aec5; }
+.target-popover .target-popover-close:focus-visible { outline: 2px solid #075b7e; outline-offset: 2px; }
 
 /* Queue candidate provenance is inside the normal comparison flow. */
 .report-page .member-result, .report-page .member-execution,

@@ -35,7 +35,7 @@ def assessment_is_active(parent):
 
 def _assessment_name(kind, payload):
     if kind == 'batch':
-        return f"Multi-source assessment · {len(payload['sources'])} targets"
+        return payload.get('name') or f"Multi-source assessment · {len(payload['sources'])} targets"
     return payload['listing']['target']
 
 
