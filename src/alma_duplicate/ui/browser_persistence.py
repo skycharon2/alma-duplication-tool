@@ -25,7 +25,7 @@ from alma_duplicate.persistence.reports import SavedReportArtifacts
 from alma_duplicate.persistence.repositories import RecordUnavailable
 from alma_duplicate.ui.batch_store import BatchStore
 from alma_duplicate.ui.input_snapshot_storage import insert_input_snapshot, read_input_snapshot
-from alma_duplicate.ui.report_management import assessment_is_active
+from alma_duplicate.ui.report_management import assessment_is_active, register_report_management
 from alma_duplicate.ui.run_store import DownloadLease, RunStore
 
 _owner = ContextVar('browser_report_owner', default=None)
@@ -327,4 +327,5 @@ def register_browser_persistence(app):
         if reset is not None:
             _owner.reset(reset)
 
+    register_report_management(app, engine, _owner.get)
     return runs

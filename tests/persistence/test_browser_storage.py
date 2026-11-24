@@ -336,22 +336,52 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
                 browser_batches.c.id == f'{21:032x}'))
         assert owner.get(older_url).text == second_page.text
         batch_id = batch.location.rsplit('/', 1)[-1]
-        with engine.begin() as db:
-            owner_digest = db.scalar(select(browser_batches.c.owner_digest).where(
-                browser_batches.c.id == batch_id))
-            db.execute(browser_assessment_trash.insert().values(
-                owner_digest=owner_digest, assessment_kind='BATCH', assessment_id=batch_id,
-                deleted_at=timestamp, purge_after=timestamp + timedelta(days=7)))
+        trash_url = f'/reports/manage/batch/{batch_id}/trash'
+        restore_url = f'/reports/manage/batch/{batch_id}/restore'
+        with owner.session_transaction() as browser_session:
+            csrf = browser_session['report_management_csrf']
+        with visitor.session_transaction() as browser_session:
+            visitor_csrf = browser_session['report_management_csrf']
+        assert owner.get(trash_url).status_code == 405
+        assert owner.post(trash_url).status_code == 403
+        assert owner.post(trash_url, data={'csrf': csrf},
+                          headers={'Sec-Fetch-Site': 'cross-site'}).status_code == 403
+        assert owner.post(trash_url, data=MultiDict([('csrf', csrf), ('csrf', csrf)])).status_code == 403
+        assert visitor.post(trash_url, data={'csrf': csrf}).status_code == 403
+        assert visitor.post(trash_url, data={'csrf': visitor_csrf}).status_code == 404
+        assert owner.post(f'/reports/manage/report/{batch_runs[0]}/trash',
+                          data={'csrf': csrf}).status_code == 404
+        assert owner.post(trash_url, data={'csrf': csrf}).status_code == 303
+        with engine.connect() as db:
+            trash_record = db.execute(select(browser_assessment_trash)).one()
+        assert trash_record.purge_after - trash_record.deleted_at == timedelta(days=7)
+        assert owner.post(trash_url, data={'csrf': csrf}).status_code == 303
+        with engine.connect() as db:
+            assert db.execute(select(browser_assessment_trash)).one() == trash_record
+        assert visitor.post(restore_url, data={'csrf': visitor_csrf}).status_code == 404
         for url in (batch.location, manifest_url, batch_report, batch_report + '/download/report'):
             assert owner.get(url).status_code == 404
         assert saved_input(owner, 'input_for_batch', batch.location) is None
         assert owner.get(rerun.location).status_code == 200
         assert saved_input(owner, 'input_for_batch', rerun.location)['upload']['raw'] == source_bytes
-        with engine.begin() as db:
-            db.execute(browser_assessment_trash.delete().where(
-                browser_assessment_trash.c.owner_digest == owner_digest,
-                browser_assessment_trash.c.assessment_id == batch_id))
+        assert owner.post(restore_url, data={'csrf': csrf}).status_code == 303
+        assert owner.post(restore_url, data={'csrf': csrf}).status_code == 303
         assert owner.get(manifest_url).json == manifest
+
+        mosaic_id = mosaic.location.rsplit('/', 1)[-1]
+        sibling_id = f'{uuid4().hex}.{uuid4().hex}'
+        with engine.begin() as db:
+            branch = db.execute(select(browser_reports).where(
+                browser_reports.c.id == mosaic_id)).mappings().one()
+            db.execute(browser_reports.insert().values(dict(branch) | {'id': sibling_id}))
+        assert owner.get(f'/runs/{sibling_id}/download/report').status_code == 200
+        assert owner.post(f'/reports/manage/report/{mosaic_id}/trash',
+                          data={'csrf': csrf}).status_code == 303
+        assert owner.get(mosaic.location).status_code == 404
+        assert owner.get(f'/runs/{sibling_id}/download/report').status_code == 404
+        assert owner.post(f'/reports/manage/report/{sibling_id}/restore',
+                          data={'csrf': csrf}).status_code == 303
+        assert owner.get(mosaic.location).status_code == 200
     finally:
         close(app)
         engine.dispose()

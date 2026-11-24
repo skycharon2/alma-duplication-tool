@@ -129,5 +129,11 @@ Reports without a durable grouping identifier are treated individually.
 
 A trash record hides the assessment and its branches from normal history,
 report access, downloads, and new reuse requests. The database rows and
-artifacts are retained. This migration leaves existing history active and
-provides the storage foundation for later trash, restore, and cleanup actions.
+artifacts are retained. Database mode provides CSRF-protected POST endpoints
+for moving browser-owned assessments to trash and restoring them. Moving
+a batch always applies to its child reports. Repeated requests leave the
+existing trash timestamp and retention deadline intact if already trashed.
+The planned retention defaults to seven days and can be configured with
+`ALMA_REPORT_TRASH_RETENTION_DAYS`. Expiration does not remove data until
+the cleanup workflow is enabled. The report history UI does not yet expose
+the management endpoints.
