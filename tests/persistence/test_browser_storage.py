@@ -87,6 +87,7 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         single = owner.post('/proposed', data=form_data)
         assert single.status_code == 303, single.text
         mosaic_form = form()
+        mosaic_form.setlist('sources', ['ARCHIVE', 'QUEUE'])
         mosaic_form['mosaic_array'] = '7m'
         mosaic_form['mosaic_complete'] = 'on'
         mosaic_form['mosaic_fixed_icrs'] = 'on'
@@ -135,6 +136,11 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         with owner.session_transaction() as browser_session:
             browser_session.pop('report_history', None)
             browser_session.pop('batch_history', None)
+            browser_session.pop('mosaic_report_groups', None)
+            browser_session.pop('partial_assessments', None)
+        assert 'Archive results unavailable or incomplete.' in owner.get(mosaic.location).text
+        assert 'Continuum · ARCHIVE: assessment unavailable.' in owner.get(
+            mosaic.location + '/mosaic-visualization').text
         listing = owner.get('/reports').text
         assert single.location in listing and batch.location in listing
         assert f'href="{batch_report}"' not in listing

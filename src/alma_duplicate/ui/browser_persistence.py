@@ -42,7 +42,8 @@ class BrowserRuns:
     def add(self, request_document, result, *, protect=False):
         return self.add_group([(request_document, result)], protect=protect)[0]
 
-    def add_group(self, assessments, *, protect=False, input_snapshot=None, upload=None):
+    def add_group(self, assessments, *, protect=False, input_snapshot=None, upload=None,
+                  source_labels=None, failed_branches=(), pair_purposes=False):
         owner = _owner.get()
         if owner is None:
             raise ValueError('Missing browser scope')
@@ -50,6 +51,12 @@ class BrowserRuns:
         staging = RunStore(**self.staging_config)
         try:
             ids = staging.add_group(assessments)
+            navigation = {}
+            if source_labels is not None:
+                navigation = dict(source_reports=list(zip(ids, source_labels, strict=True)),
+                                  failed_branches=list(failed_branches))
+            elif pair_purposes:
+                navigation = dict(purpose_pair=ids)
             metadata = []
             for run_id, (_, result) in zip(ids, assessments, strict=True):
                 directory = staging.directory / run_id
@@ -59,6 +66,10 @@ class BrowserRuns:
                 })
                 overview = staging.overview(run_id)
                 overview['listing'] = staging.summaries([run_id])[0]
+                if navigation:
+                    overview['assessment_navigation'] = navigation
+                if source_labels is not None:
+                    overview['show_in_history'] = run_id == ids[0]
                 metadata.append(dict(id=run_id, owner_digest=owner,
                     assessment_status=str(result.status), overview=overview,
                     artifact_manifest=[asdict(artifact) for artifact in artifacts]))
@@ -125,16 +136,21 @@ class BrowserRuns:
         row = self._report(run_id)
         return row['overview'] if row else None
 
+    def assessment_navigation(self, run_id):
+        overview = self.overview(run_id)
+        return overview.get('assessment_navigation') if overview else None
+
     def history_page(self, *, offset, limit, hidden_report_ids):
         """List browser-owned top-level entries without opening report files."""
         owner = _owner.get()
         if owner is None:
             return [], []
         reports, batches = browser_reports.c, browser_batches.c
+        listed = reports.overview['show_in_history'].as_boolean()
         with self.engine.connect() as db:
             overviews = db.execute(select(reports.overview).where(
                 reports.owner_digest == owner, reports.batch_id.is_(None),
-                reports.id.not_in(hidden_report_ids),
+                or_(listed.is_(True), listed.is_(None) & reports.id.not_in(hidden_report_ids)),
             ).order_by(reports.created_at.desc(), reports.id.desc()
             ).offset(offset).limit(limit)).scalars()
             report_rows = [overview['listing'] for overview in overviews]

@@ -200,6 +200,22 @@ def create_app(config=None):
             abort(404)
         return reports[report_id]
 
+    def assessment_navigation(report_id):
+        if app.config['REPORT_STORAGE'] == 'database':
+            saved = runs.assessment_navigation(report_id)
+            if saved is not None:
+                return dict(source_group=dict(saved.get('source_reports', [])) or None,
+                            failed_branches=saved.get('failed_branches', []),
+                            purpose_pair=saved.get('purpose_pair'))
+        return dict(
+            source_group=next((group for group in session.get('mosaic_report_groups', [])
+                               if report_id in group), None),
+            failed_branches=next((group['branches'] for group in session.get('partial_assessments', [])
+                                  if report_id in group['report_ids']), []),
+            purpose_pair=next((pair for pair in session.get('purpose_report_pairs', [])
+                               if report_id in pair), None),
+        )
+
     def page_selection(allow_mosaic_views=False):
         page = request.args.get("page", "1")
         if not page.isdecimal() or len(page) > 8 or int(page) < 1:
@@ -387,11 +403,7 @@ def create_app(config=None):
             if queue_data:
                 data['document']['queue_geometry_assessment'] = queue_data['document']
                 data['queue_pagination'] = queue_data
-        data["failed_branches"] = next((group["branches"] for group in
-            session.get("partial_assessments", []) if report_id in group["report_ids"]), [])
-        data["source_group"] = next((g for g in session.get("mosaic_report_groups", []) if report_id in g), None)
-        data["purpose_pair"] = next((pair for pair in session.get("purpose_report_pairs", [])
-                                     if report_id in pair), None)
+        data.update(assessment_navigation(report_id))
         group = data.get("source_group")
         if group and view in {"matches", "matching"}:
             purpose = group[report_id].split(" · ", 1)[0]
@@ -485,7 +497,8 @@ def create_app(config=None):
             submitted = json.load(lease.stream)
         finally:
             lease.close()
-        group = next((g for g in session.get('mosaic_report_groups', []) if report_id in g), {})
+        navigation_data = assessment_navigation(report_id)
+        group = navigation_data['source_group'] or {}
         purpose = group.get(report_id, '').partition(' · ')[0]
         pages = [(report_id, current)]
         notices = []
@@ -496,10 +509,8 @@ def create_app(config=None):
                     pages.append((sibling, data))
                 else:
                     notices.append(f'{label}: saved report unavailable.')
-        for partial in session.get('partial_assessments', []):
-            if report_id in partial['report_ids']:
-                notices.extend(f'{label}: assessment unavailable.' for label in partial['branches']
-                               if label.partition(' · ')[0] == purpose)
+        notices.extend(f'{label}: assessment unavailable.' for label in navigation_data['failed_branches']
+                       if label.partition(' · ')[0] == purpose)
         rows, navigation = [], []
         for key, data in pages:
             archive = data.get('mosaic')
@@ -671,6 +682,11 @@ def create_app(config=None):
                     successful_labels.append(label)
                 if not completed:
                     return None, "Assessment could not be completed. No report was created. Check the configured sources and server log."
+                if app.config['REPORT_STORAGE'] == 'database':
+                    input_options.update(
+                        source_labels=successful_labels if dual_source or failures else None,
+                        failed_branches=failures, pair_purposes=both and not (dual_source or failures),
+                    )
                 ids = runs.add_group(completed, **input_options)
                 history = (ids + session.get("report_history", []))[:20]
                 session["report_history"] = history

@@ -33,6 +33,11 @@ reports** lists saved standalone reports and completed batches for that
 browser. Use **Older reports** to reach earlier assessments. Individual batch
 checks are available from their batch overview.
 
+New reports retain the links between Archive and Queue branches, paired
+scientific purposes, and notices for branches that could not complete. Older
+reports can still use any navigation information retained in the browser
+session.
+
 Completed batches persist as a whole after execution. Uploaded forms and
 in-progress assessments remain process-local and are interrupted by a restart.
 Database mode uses the existing report-size limit during staging. Saved files
