@@ -186,6 +186,9 @@ database storage. The templates use the `alma` service account, the checkout
 and virtual environment under `/srv/alma-duplication-tool`, and a writable
 artifact directory at `/var/lib/alma-duplication/browser-artifacts`. Adapt
 these paths to your deployment before installing the units.
+The Linux persistence CI workflow checks both unit files with
+`systemd-analyze verify`. The installation check below verifies the copies
+with your deployment paths.
 
 Use the web app's database and artifact settings in the root-readable
 `/etc/alma-duplication/browser-storage.env` file. Use systemd environment-file
