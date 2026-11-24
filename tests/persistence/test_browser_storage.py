@@ -338,6 +338,8 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         batch_id = batch.location.rsplit('/', 1)[-1]
         trash_url = f'/reports/manage/batch/{batch_id}/trash'
         restore_url = f'/reports/manage/batch/{batch_id}/restore'
+        assert 'href="/reports/trash"' in first_page.text
+        assert 'Trash is empty' in owner.get('/reports/trash').text
         with owner.session_transaction() as browser_session:
             csrf = browser_session['report_management_csrf']
         with visitor.session_transaction() as browser_session:
@@ -352,6 +354,11 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert owner.post(f'/reports/manage/report/{batch_runs[0]}/trash',
                           data={'csrf': csrf}).status_code == 404
         assert owner.post(trash_url, data={'csrf': csrf}).status_code == 303
+        assert 'Assessment moved to trash.' in owner.get('/reports').text
+        trash_page = owner.get('/reports/trash')
+        assert f'action="{restore_url}"' in trash_page.text
+        assert f'value="{csrf}"' in trash_page.text
+        assert restore_url not in visitor.get('/reports/trash').text
         with engine.connect() as db:
             trash_record = db.execute(select(browser_assessment_trash)).one()
         assert trash_record.purge_after - trash_record.deleted_at == timedelta(days=7)
@@ -366,6 +373,9 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert saved_input(owner, 'input_for_batch', rerun.location)['upload']['raw'] == source_bytes
         assert owner.post(restore_url, data={'csrf': csrf}).status_code == 303
         assert owner.post(restore_url, data={'csrf': csrf}).status_code == 303
+        restored_page = owner.get('/reports/trash').text
+        assert 'Assessment restored to Existing reports.' in restored_page
+        assert 'Trash is empty' in restored_page
         assert owner.get(manifest_url).json == manifest
 
         mosaic_id = mosaic.location.rsplit('/', 1)[-1]
@@ -379,6 +389,7 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
                           data={'csrf': csrf}).status_code == 303
         assert owner.get(mosaic.location).status_code == 404
         assert owner.get(f'/runs/{sibling_id}/download/report').status_code == 404
+        assert owner.get('/reports/trash').text.count('>Restore</button>') == 1
         assert owner.post(f'/reports/manage/report/{sibling_id}/restore',
                           data={'csrf': csrf}).status_code == 303
         assert owner.get(mosaic.location).status_code == 200

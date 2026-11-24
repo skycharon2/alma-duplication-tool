@@ -166,6 +166,10 @@ input[type="text"], .proposal-page .proposed-form input[type="text"],
 .report-library-kind { color: var(--muted); font-size: 12px; }
 .report-library-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .report-library-actions form { margin: 0; }
+.report-library-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
+.report-library-secondary { color: inherit; background: transparent; border: 0; border-radius: 8px; padding: 10px 8px; cursor: pointer; font: inherit; font-size: .875rem; }
+.report-library-secondary:hover { text-decoration: underline; }
+.report-management-status { border-inline-start: 3px solid currentColor; padding: 8px 12px; margin-block: 0 16px; }
 .report-library-empty { padding: 28px 24px; color: var(--muted); }
 .report-unavailable { padding: 24px; }
 .report-unavailable p + p { margin-top: 16px; max-width: 75ch; }

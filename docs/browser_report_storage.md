@@ -135,5 +135,9 @@ a batch always applies to its child reports. Repeated requests leave the
 existing trash timestamp and retention deadline intact if already trashed.
 The planned retention defaults to seven days and can be configured with
 `ALMA_REPORT_TRASH_RETENTION_DAYS`. Expiration does not remove data until
-the cleanup workflow is enabled. The report history UI does not yet expose
-the management endpoints.
+the cleanup workflow is enabled.
+
+In **Existing reports**, choose **Move to trash** next to an assessment.
+Open **Trash** from the same page, then choose **Restore** to return the
+assessment and its reports to the history. Moving a report to trash keeps
+its saved files on disk.
