@@ -1,6 +1,7 @@
 """Persistent reports owned by an anonymous browser session."""
 from contextvars import ContextVar
 from dataclasses import asdict
+from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
 import re
@@ -9,7 +10,7 @@ from time import monotonic
 import weakref
 
 from flask import abort, request, session
-from sqlalchemy import or_, select
+from sqlalchemy import String, cast, or_, select, type_coerce
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.exc import SQLAlchemyError
@@ -147,16 +148,23 @@ class BrowserRuns:
             return [], [], None
 
         def older_rows(db, columns, payload, *filters, cursor):
-            if cursor == '':
+            if cursors is not None and cursor is None:
                 return []
-            query = select(columns.id, payload).where(columns.owner_digest == owner, *filters)
+            # SQLite stores both second and microsecond precision values. Keep
+            # the original spelling so an equal timestamp stays equal.
+            sqlite = db.dialect.name == 'sqlite'
+            created = columns.created_at
+            cursor_time = cast(created, String) if sqlite else created
+            query = select(columns.id, payload, cursor_time).where(
+                columns.owner_digest == owner, *filters)
             if cursor is not None:
-                timestamp = select(columns.created_at).where(
-                    columns.id == cursor, columns.owner_digest == owner,
-                ).scalar_subquery()
+                timestamp, run_id = cursor
+                boundary = type_coerce(created, String) if sqlite else created
+                if not sqlite:
+                    timestamp = datetime.fromisoformat(timestamp)
                 query = query.where(or_(
-                    columns.created_at < timestamp,
-                    (columns.created_at == timestamp) & (columns.id < cursor),
+                    boundary < timestamp,
+                    (boundary == timestamp) & (columns.id < run_id),
                 ))
             return db.execute(query.order_by(
                 columns.created_at.desc(), columns.id.desc(),
@@ -170,14 +178,19 @@ class BrowserRuns:
                 or_(listed.is_(True), listed.is_(None) & reports.id.not_in(hidden_report_ids)),
                 cursor=report_cursor)
             batch_rows = older_rows(db, batches, batches.manifest, cursor=batch_cursor)
-        next_cursors = tuple(rows[limit - 1].id if len(rows) > limit else ''
-                             for rows in (report_rows, batch_rows))
+        def next_boundary(rows):
+            if len(rows) <= limit:
+                return None
+            entry_id, _, timestamp = rows[limit - 1]
+            return (timestamp if isinstance(timestamp, str) else timestamp.isoformat(), entry_id)
+
+        next_cursors = tuple(next_boundary(rows) for rows in (report_rows, batch_rows))
         return (
-            [overview['listing'] for _, overview in report_rows[:limit]],
+            [overview['listing'] for _, overview, _ in report_rows[:limit]],
             [dict(batch_id=batch_id, created_at=manifest['created_at'],
                   source_count=len(manifest['sources']),
                   execution_complete=manifest['execution_complete'])
-             for batch_id, manifest in batch_rows[:limit]],
+             for batch_id, manifest, _ in batch_rows[:limit]],
             next_cursors if any(next_cursors) else None,
         )
 

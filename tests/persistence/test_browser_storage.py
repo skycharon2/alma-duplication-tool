@@ -311,8 +311,13 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         for index in range(21):
             link = f'href="/runs/{index:032x}.{index:032x}"'
             assert (link in first_page.text) != (link in second_page.text)
-        assert visitor.get(older_url).status_code == 404
+        assert visitor.get(older_url).status_code == 400
+        assert owner.get(older_url + 'tampered').status_code == 400
         assert owner.get('/reports?older=invalid').status_code == 400
+        with engine.begin() as connection:
+            connection.execute(browser_reports.delete().where(
+                browser_reports.c.id == f'{1:032x}.{1:032x}'))
+        assert owner.get(older_url).text == second_page.text
     finally:
         close(app)
         engine.dispose()

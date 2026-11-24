@@ -8,6 +8,7 @@ from dataclasses import replace
 import weakref
 
 from flask import Flask, Response, abort, redirect, render_template, request, session, url_for
+from itsdangerous import BadData, URLSafeSerializer
 from secrets import token_hex
 
 from alma_duplicate.cli.queue_update import QueueUpdateBusyError, SUCCESS_STATUSES, run_update
@@ -167,15 +168,16 @@ def create_app(config=None):
         persistent = app.config['REPORT_STORAGE'] == 'database'
         groups = session.get('mosaic_report_groups', [])
         cursor = request.args.getlist('older') if persistent else []
-        next_cursors = None
+        history_next = None
         if persistent:
+            signer = URLSafeSerializer(app.secret_key, salt='report-history-v1:' + session['batch_owner'])
             cursors = None
             if cursor:
-                if len(cursor) != 1 or not re.fullmatch(
-                        r'(?:[a-f0-9]{32}\.[a-f0-9]{32})?:(?:[a-f0-9]{32})?', cursor[0]):
+                if len(cursor) != 1 or len(cursor[0]) > 1024:
                     abort(400)
-                cursors = cursor[0].split(':')
-                if not any(cursors):
+                try:
+                    cursors = signer.loads(cursor[0])
+                except BadData:
                     abort(400)
             recent_runs, recent_batches, next_cursors = runs.history_page(
                 limit=20, cursors=cursors,
@@ -183,6 +185,8 @@ def create_app(config=None):
             )
             if cursors and not (recent_runs or recent_batches):
                 abort(404)
+            if next_cursors:
+                history_next = signer.dumps(next_cursors)
         else:
             recent = runs.summaries(session.get('report_history', []))
             available = {row['id'] for row in recent}
@@ -198,7 +202,7 @@ def create_app(config=None):
                                recent_runs=recent_runs, recent_batches=recent_batches,
                                reusable_ids=reusable_ids, browser_persistent=persistent,
                                history_is_older=bool(cursor),
-                               history_next=':'.join(next_cursors) if next_cursors else None,
+                               history_next=history_next,
                                retention_hours=runs.max_age / 3600)
 
     def artifact(report_id):
