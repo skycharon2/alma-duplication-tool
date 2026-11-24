@@ -135,8 +135,9 @@ a batch always applies to its child reports. Repeated requests leave the
 existing trash timestamp and retention deadline intact if already trashed.
 The planned retention defaults to seven days and can be configured with
 `ALMA_REPORT_TRASH_RETENTION_DAYS`. Each entry keeps the deadline assigned
-when it entered Trash. Expired entries can be removed by the operator's
-scheduled cleanup.
+when it entered Trash. **Trash** shows that deadline in UTC. An entry can
+still be restored while it is present, including after its deadline if the
+operator's scheduled cleanup has yet to process it.
 
 In **Existing reports**, choose **Move to trash** next to an assessment.
 Open **Trash** from the same page, then choose **Restore** to return the

@@ -39,6 +39,12 @@ def _assessment_name(kind, payload):
     return payload['listing']['target']
 
 
+def _utc(timestamp):
+    if timestamp.tzinfo is None:
+        return timestamp.replace(tzinfo=timezone.utc)
+    return timestamp.astimezone(timezone.utc)
+
+
 def _lock_assessment(db, owner, kind, entry_id, *, group=False):
     if db.get_bind().dialect.name == 'sqlite':
         db.connection().exec_driver_sql('BEGIN IMMEDIATE')
@@ -172,7 +178,8 @@ def register_report_management(app, engine, current_owner):
         ).limit(1).correlate(trash).scalar_subquery()
         with engine.connect() as db:
             rows = db.execute(select(
-                trash.c.deleted_at, report.c.id, report.c.overview, batch.c.id, batch.c.manifest,
+                trash.c.deleted_at, trash.c.purge_after,
+                report.c.id, report.c.overview, batch.c.id, batch.c.manifest,
             ).select_from(trash.outerjoin(report, report.c.id == first_report).outerjoin(
                 batch, (trash.c.assessment_kind == 'BATCH') & (batch.c.id == trash.c.assessment_id)
                 & (batch.c.owner_digest == trash.c.owner_digest),
@@ -183,13 +190,13 @@ def register_report_management(app, engine, current_owner):
         if page > 1 and not rows:
             abort(404)
         entries = []
-        for deleted_at, report_id, overview, batch_id, manifest in rows[:page_size]:
+        for deleted_at, purge_after, report_id, overview, batch_id, manifest in rows[:page_size]:
             if manifest is not None:
                 kind, entry_id, payload = 'batch', batch_id, manifest
             else:
                 kind, entry_id, payload = 'report', report_id, overview
             entries.append(dict(name=_assessment_name(kind, payload), kind=kind,
-                                id=entry_id, deleted_at=deleted_at))
+                                id=entry_id, deleted_at=_utc(deleted_at), purge_after=_utc(purge_after)))
         return render_template('report_trash.html', entries=entries, page=page,
                                has_next=len(rows) > page_size)
 
@@ -213,7 +220,7 @@ def register_report_management(app, engine, current_owner):
             abort(404)
         payload, deleted_at = row
         return render_template('report_purge.html', kind=kind, entry_id=entry_id,
-                               name=_assessment_name(kind, payload), deleted_at=deleted_at)
+                               name=_assessment_name(kind, payload), deleted_at=_utc(deleted_at))
 
     @routes.post('/reports/manage/<kind>/<entry_id>/<action>')
     def update_trash(kind, entry_id, action):

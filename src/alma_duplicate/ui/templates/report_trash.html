@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="page-heading report-library-heading">
-  <div><h1>Trash</h1><p>Restore an assessment and its reports to Existing reports.</p></div>
+  <div><h1>Trash</h1><p>Restore assessments here while they are available. Scheduled cleanup may permanently delete them once their deadlines pass.</p></div>
   <a class="button" href="{{ url_for('report_index') }}">Existing reports</a>
 </div>
 {% include '_report_management_status.html' %}
@@ -12,7 +12,10 @@
 <li class="report-library-row">
   <div>
     <div class="report-library-name">{{ entry.name }}</div>
-    <div class="report-library-kind">Moved to trash<br><time datetime="{{ entry.deleted_at.isoformat() }}{{ 'Z' if not entry.deleted_at.tzinfo }}">{{ entry.deleted_at.strftime('%d %b %Y, %H:%M') }} UTC</time></div>
+    <dl class="report-trash-dates report-library-kind">
+      <div><dt>Moved to trash</dt><dd><time datetime="{{ entry.deleted_at.isoformat() }}">{{ entry.deleted_at.strftime('%d %b %Y, %H:%M') }} UTC</time></dd></div>
+      <div><dt>Eligible for cleanup from</dt><dd><time datetime="{{ entry.purge_after.isoformat() }}">{{ entry.purge_after.strftime('%d %b %Y, %H:%M') }} UTC</time></dd></div>
+    </dl>
   </div>
   <div class="report-library-actions">
     <form method="post" action="{{ url_for('report_management.update_trash', kind=entry.kind, entry_id=entry.id, action='restore') }}">

@@ -55,6 +55,7 @@ def database(tmp_path, request):
 def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, database,
                                                                     source_format, source_bytes, monkeypatch):
     url, options = database
+    retention_days = 7 if source_format == 'csv' else 3
     engine = create_engine(url, **options)
     with engine.begin() as connection:
         command.upgrade(migration_config(connection), 'head')
@@ -67,6 +68,7 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
             'BROWSER_TEST_ENGINE': engine,
             'ARTIFACT_ROOT': str(tmp_path / 'artifacts'),
             'BATCH_MAX_WORKERS': 2,
+            'REPORT_TRASH_RETENTION_DAYS': retention_days,
         })
 
     def close(app):
@@ -362,7 +364,11 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert restore_url not in visitor.get('/reports/trash').text
         with engine.connect() as db:
             trash_record = db.execute(select(browser_assessment_trash)).one()
-        assert trash_record.purge_after - trash_record.deleted_at == timedelta(days=7)
+        assert trash_record.purge_after - trash_record.deleted_at == timedelta(days=retention_days)
+        deadline = trash_record.purge_after
+        deadline = deadline.astimezone(timezone.utc) if deadline.tzinfo else deadline.replace(tzinfo=timezone.utc)
+        assert 'Eligible for cleanup from' in trash_page.text
+        assert f'datetime="{deadline.isoformat()}"' in trash_page.text
         assert owner.post(trash_url, data={'csrf': csrf}).status_code == 303
         with engine.connect() as db:
             assert db.execute(select(browser_assessment_trash)).one() == trash_record

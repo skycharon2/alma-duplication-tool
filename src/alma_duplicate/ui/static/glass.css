@@ -169,6 +169,9 @@ input[type="text"], .proposal-page .proposed-form input[type="text"],
 .report-library-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
 .report-library-secondary { color: inherit; background: transparent; border: 0; border-radius: 8px; padding: 10px 8px; cursor: pointer; font: inherit; font-size: .875rem; }
 .report-library-secondary:hover { text-decoration: underline; }
+.report-trash-dates { display: flex; flex-wrap: wrap; gap: 6px 24px; margin: 6px 0 0; }
+.report-trash-dates dt { font-weight: 600; }
+.report-trash-dates dd { margin: 0; }
 .report-purge-link { color: #8d292c; }
 .report-purge-confirm { max-width: 42rem; padding: clamp(16px, 4vw, 28px); }
 .report-purge-confirm h2 { margin-top: 0; }
