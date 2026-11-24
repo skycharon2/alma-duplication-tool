@@ -484,6 +484,42 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert owner.post(f'/reports/manage/report/{future_id}/restore',
                           data={'csrf': csrf}).status_code == 303
         assert owner.get(mosaic_rerun.location).status_code == 200
+
+        # Let a browser act after the maintenance command has selected an
+        # expired entry, immediately before the command acquires the row lock.
+        future_trash = f'/reports/manage/report/{future_id}/trash'
+        future_restore = f'/reports/manage/report/{future_id}/restore'
+        assert owner.post(future_trash, data={'csrf': csrf}).status_code == 303
+        with engine.begin() as db:
+            db.execute(browser_assessment_trash.update().where(
+                browser_assessment_trash.c.assessment_kind == 'REPORT',
+            ).values(deleted_at=past - timedelta(days=retention_days), purge_after=past))
+            queued_before = set(db.scalars(select(browser_artifact_cleanup.c.storage_key)))
+
+        lock_assessment = report_management._lock_assessment
+        selected = []
+
+        def restore_before_maintenance_lock(db, owner_digest, kind, entry_id, *, group=False):
+            if group:
+                selected.append(entry_id)
+                assert owner.post(future_restore, data={'csrf': csrf}).status_code == 303
+                if source_format == 'txt':
+                    assert owner.post(future_trash, data={'csrf': csrf}).status_code == 303
+            return lock_assessment(db, owner_digest, kind, entry_id, group=group)
+
+        with monkeypatch.context() as interleaving:
+            interleaving.setattr(report_management, '_lock_assessment', restore_before_maintenance_lock)
+            result = runner.invoke(args=command_args)
+        assert result.exit_code == 0, result.output
+        assert selected == [future_id]
+        assert 'Expired trash entries removed: 0' in result.output
+        with engine.connect() as db:
+            assert set(db.scalars(select(browser_artifact_cleanup.c.storage_key))) == queued_before
+        if source_format == 'txt':
+            assert owner.get(mosaic_rerun.location).status_code == 404
+            assert f'action="{future_restore}"' in owner.get('/reports/trash').text
+            assert owner.post(future_restore, data={'csrf': csrf}).status_code == 303
+        assert owner.get(mosaic_rerun.location).status_code == 200
     finally:
         close(app)
         engine.dispose()

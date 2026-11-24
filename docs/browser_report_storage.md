@@ -173,5 +173,8 @@ python -m flask --app alma_duplicate.ui.app:create_app cleanup-browser-artifacts
 
 The first command processes up to 100 due assessments by default and
 rechecks each deadline in the same transaction that removes the assessment.
+If a browser restores an assessment before that transaction takes the lock,
+the command skips it. Moving the restored assessment back to Trash starts
+a fresh retention period.
 The second processes up to 100 queued file paths. Each command supports
 `--limit`. The application itself does not schedule these commands.
