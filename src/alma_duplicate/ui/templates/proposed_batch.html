@@ -65,6 +65,6 @@ PKS1830-211,18:33:39.937,-21:03:39.80,0.886</pre>
 {% endfor %}<p class="field-note">Readiness describes input, not a duplication verdict.</p>
 {% else %}<p>Preview your source list, enter the shared requirements, then validate all targets.</p>{% endif %}
 </div><p id="validation-stale" hidden>Inputs changed. Validate again to refresh these diagnostics.</p>
-{% if edit_notice %}<p role="status">{{ edit_notice }}</p>{% endif %}</section>
+{% if edit_notice %}<p role="status">{{ edit_notice }}{% if original_assessment_url %} <a href="{{ original_assessment_url }}">View original assessment</a>{% endif %}</p>{% endif %}</section>
 <nav class="proposal-sections" aria-label="Form sections"><h2>On this page</h2><a href="#observation-type">Source list</a><a href="#requirements">Scientific requirements</a><a href="#search">Data sources</a></nav>
 {% endblock %}

@@ -11,6 +11,7 @@ from alembic import command
 from sqlalchemy import create_engine
 from sqlalchemy.schema import CreateSchema, DropSchema
 
+from alma_duplicate.persistence.models import assessment_input_links
 from alma_duplicate.ui import create_app
 from alma_duplicate.ui.input_snapshot import restore_input_snapshot
 from alma_duplicate.ui.runs import BrowserAssessment
@@ -131,7 +132,11 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         source_artifact = next((tmp_path / 'artifacts').glob('*/source-list.bin'))
         listing = owner.get('/reports').text
         assert single.location in listing and batch.location in listing
-        assert single.location not in visitor.get('/reports').text
+        for url in (single.location, mosaic.location, batch.location):
+            assert f'action="{url}/reuse"' in listing
+        visitor_listing = visitor.get('/reports').text
+        assert single.location not in visitor_listing
+        assert 'Reuse settings' not in visitor_listing
         for url in (single.location, single.location + '/download/report',
                     batch.location, manifest_url, batch_report, batch_report + '/visualization',
                     batch_report + '/queue?view=review'):
@@ -170,6 +175,7 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
                 assert draft.status_code == 200
                 assert expected in draft.text
                 assert 'Settings restored from a previous assessment' in draft.text
+                assert f'href="{url}">View original assessment</a>' in draft.text
                 if url == single.location:
                     single_draft_url = receipt.location
                 if url == batch.location:
@@ -247,6 +253,14 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
             saved_input(owner, 'input_for_batch', batch.location)
         assert owner.post(batch.location + '/reuse', data={'csrf': reuse_csrf}).status_code == 409
         assert owner.get(manifest_url).json == manifest
+        with engine.begin() as connection:
+            connection.execute(assessment_input_links.delete().where(
+                assessment_input_links.c.report_id == single.location.rsplit('/', 1)[-1]))
+        legacy_listing = owner.get('/reports').text
+        assert 'Saved settings unavailable' in legacy_listing
+        assert f'href="{single.location}"' in legacy_listing
+        assert f'action="{single.location}/reuse"' not in legacy_listing
+        assert owner.get(single.location).status_code == 200
         visitor_report = visitor.post('/proposed', data=form_data)
         assert visitor_report.status_code == 303
         assert visitor_report.location in visitor.get('/reports').text

@@ -21,6 +21,7 @@ class ProposalFormState:
     document: dict | None = None
     pending_removal: str | None = None
     edit_notice: str | None = None
+    original_assessment_url: str | None = None
     added_row: str | None = None
     purpose_updated: bool = False
     scope_updated: bool = False

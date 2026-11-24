@@ -87,7 +87,12 @@ def register_assessment_reuse(app, runs):
         try:
             if upload is not None:
                 upload_token = uploads.put(upload_owner, upload)
-            token = drafts.put(owner, dict(snapshot=snapshot, upload_token=upload_token))
+            original_url = (
+                url_for('batch.overview', batch_id=parent_id) if workflow == 'MULTI_SOURCE_SINGLE'
+                else url_for('run_view', report_id=parent_id)
+            )
+            token = drafts.put(owner, dict(snapshot=snapshot, upload_token=upload_token,
+                                           original_url=original_url))
         except ValueError:
             if upload_token is not None:
                 uploads.remove(upload_owner, upload_token)
@@ -118,5 +123,7 @@ def load_draft_form(app, workflow):
         abort(404)
     state = restore_input_snapshot(draft['snapshot'])
     state.upload_token = draft['upload_token'] or ''
-    state.edit_notice = 'Settings restored from a previous assessment. Review the inputs before running a new assessment.'
+    state.original_assessment_url = draft['original_url']
+    state.edit_notice = ('Settings restored from a previous assessment. '
+                         'Review or modify the inputs, then validate and run a new assessment.')
     return state

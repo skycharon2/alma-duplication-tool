@@ -1,16 +1,42 @@
 {% extends "base.html" %}
+{% macro report_row(name, details, view_url, reuse_url=none, unavailable=false) %}
+<li class="report-library-row">
+  <div>
+    <div class="report-library-name">{{ name }}</div>
+    <div class="report-library-kind">{{ details }}</div>
+    {% if unavailable %}<div class="report-library-kind">Saved settings unavailable</div>{% endif %}
+  </div>
+  <div class="report-library-actions">
+    <a class="button" href="{{ view_url }}" aria-label="View report for {{ name }}">View report</a>
+    {% if reuse_url %}
+    <form method="post" action="{{ reuse_url }}">
+      <input type="hidden" name="csrf" value="{{ assessment_reuse_csrf }}">
+      <button class="button" type="submit" aria-label="Reuse settings for {{ name }}">Reuse settings</button>
+    </form>
+    {% endif %}
+  </div>
+</li>
+{% endmacro %}
 {% block content %}
 <div class="page-heading"><h1>Existing reports</h1>
 <p>Open a report to review your assessment.</p></div>
 <section class="glass-surface report-library" aria-label="Reports">
 {% if recent_runs or recent_batches or reports %}
 <ul class="report-library-list">
-{% for item in recent_batches %}<li><a href="{{ url_for('batch.overview', batch_id=item.batch_id) }}"><span class="report-library-name">Multi-source assessment · {{ item.source_count }} targets</span><span class="report-library-kind">This browser · {{ 'Execution finished' if item.execution_complete else 'In progress' }} · {{ item.created_at }}</span><span class="report-library-open" aria-hidden="true">↗</span></a></li>{% endfor %}
+{% for item in recent_batches %}
+  {% set name = 'Multi-source assessment · ' ~ item.source_count ~ ' targets' %}
+  {% set details = 'This browser · ' ~ ('Execution finished' if item.execution_complete else 'In progress') ~ ' · ' ~ item.created_at %}
+  {% set reuse_url = url_for('assessment_reuse.reuse_batch', batch_id=item.batch_id) if item.batch_id in reusable_ids else none %}
+  {{ report_row(name, details, url_for('batch.overview', batch_id=item.batch_id), reuse_url, browser_persistent and item.execution_complete and not reuse_url) }}
+{% endfor %}
 {% for item in recent_runs %}
-<li><a href="{{ url_for('run_view', report_id=item.id) }}"><span class="report-library-name">{{ item.target }}</span><span class="report-library-kind">This browser · {{ item.status }}{% if item.generated_at %} · {{ item.generated_at }}{% endif %}</span><span class="report-library-open" aria-hidden="true">↗</span></a></li>
+  {% set details = 'This browser · ' ~ item.status ~ (' · ' ~ item.generated_at if item.generated_at else '') %}
+  {% set reuse_url = url_for('assessment_reuse.reuse_run', run_id=item.id) if item.id in reusable_ids else none %}
+  {{ report_row(item.target, details, url_for('run_view', report_id=item.id), reuse_url, browser_persistent and not reuse_url) }}
 {% endfor %}
 {% for id, item in reports.items() %}
-<li><a href="{{ url_for('report_view', report_id=id) }}"><span class="report-library-name">{{ item.name }}</span><span class="report-library-kind">Preloaded · {{ 'Solar exemption — no search' if item.document.report_kind == 'SOLAR_EXEMPTION' else 'Observation comparison' }}</span><span class="report-library-open" aria-hidden="true">↗</span></a></li>
+  {% set details = 'Preloaded · ' ~ ('Solar exemption — no search' if item.document.report_kind == 'SOLAR_EXEMPTION' else 'Observation comparison') %}
+  {{ report_row(item.name, details, url_for('report_view', report_id=id)) }}
 {% endfor %}
 </ul>
 {% else %}

@@ -172,11 +172,17 @@ def create_app(config=None):
             retained = [key for key in group if key in available]
             if retained:
                 hidden.update(retained[1:])
+        recent_runs = [row for row in recent if row['id'] not in hidden]
+        recent_batches = runs.batches.summaries(
+            session.get('batch_history', []), session.get('batch_owner'))
+        persistent = app.config['REPORT_STORAGE'] == 'database'
+        reusable_ids = runs.reusable_assessment_ids(
+            [row['id'] for row in recent_runs],
+            [row['batch_id'] for row in recent_batches],
+        ) if persistent else set()
         return render_template("reports.html", reports=reports,
-                               recent_runs=[row for row in recent if row['id'] not in hidden],
-                               recent_batches=runs.batches.summaries(
-                                   session.get('batch_history', []), session.get('batch_owner')),
-                               browser_persistent=app.config['REPORT_STORAGE'] == 'database',
+                               recent_runs=recent_runs, recent_batches=recent_batches,
+                               reusable_ids=reusable_ids, browser_persistent=persistent,
                                retention_hours=runs.max_age / 3600)
 
     def artifact(report_id):

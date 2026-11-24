@@ -29,6 +29,7 @@ def form_context(state, configured):
         result=state.result, issues=state.issues, document=state.document,
         selected_windows=selected, stale_ids=stale_ids,
         pending_removal=state.pending_removal, edit_notice=state.edit_notice,
+        original_assessment_url=state.original_assessment_url,
         added_row=state.added_row,
         purpose_updated=state.purpose_updated,
         scope_updated=state.scope_updated, assessment_supported=assessment_supported(values),

@@ -83,4 +83,8 @@ pointings parser and show the restored preview. The user can validate, replace
 the temporary OT file, or submit a fresh assessment. The original saved inputs
 and uploaded file remain available for future drafts.
 
-The Existing reports action will be added in a later step.
+Existing reports offers **View report** and, when a browser-owned input snapshot
+is linked, **Reuse settings**. The draft links back to the original assessment.
+Older database reports without a snapshot remain viewable and show that saved
+settings are unavailable. Temporary and preloaded reports are view-only in this
+list. Partial reconstruction from old request files or manifests is unsupported.

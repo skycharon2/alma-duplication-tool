@@ -9,7 +9,7 @@ from time import monotonic
 import weakref
 
 from flask import abort, request, session
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.exc import SQLAlchemyError
@@ -17,7 +17,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from alma_duplicate.artifacts.base import Artifact, FILES
 from alma_duplicate.artifacts.local import LocalArtifactStore
 from alma_duplicate.persistence.db import database_engine, transaction
-from alma_duplicate.persistence.models import assessment_input_links, browser_batches, browser_reports
+from alma_duplicate.persistence.models import (
+    assessment_input_links, assessment_input_snapshots, browser_batches, browser_reports,
+)
 from alma_duplicate.persistence.reports import SavedReportArtifacts
 from alma_duplicate.persistence.repositories import RecordUnavailable
 from alma_duplicate.ui.batch_store import BatchStore
@@ -126,6 +128,22 @@ class BrowserRuns:
     def summaries(self, run_ids):
         return [row['overview']['listing'] for run_id in dict.fromkeys(run_ids)
                 if (row := self._report(run_id)) is not None]
+
+    def reusable_assessment_ids(self, report_ids, batch_ids):
+        """Find linked snapshots without opening uploads on the report listing."""
+        owner = _owner.get()
+        if owner is None or not (report_ids or batch_ids):
+            return set()
+        links = assessment_input_links
+        snapshots = assessment_input_snapshots
+        with self.engine.connect() as db:
+            rows = db.execute(
+                select(links.c.report_id, links.c.batch_id)
+                .join(snapshots, snapshots.c.id == links.c.snapshot_id)
+                .where(snapshots.c.owner_digest == owner,
+                       or_(links.c.report_id.in_(report_ids), links.c.batch_id.in_(batch_ids)))
+            )
+            return {report_id or batch_id for report_id, batch_id in rows}
 
     def unavailable_reason(self, run_id):
         return None if self._report(run_id) is not None else 'UNKNOWN'
