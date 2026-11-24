@@ -149,6 +149,13 @@ Saved reports are scoped to the browser profile. Keep using the same profile
 for the trial. Reports without a saved input snapshot remain available through
 **View report**.
 
+To manage saved assessments, choose **Move to trash** in **Existing reports**.
+Under **Trash**, use **Restore** or review and confirm **Delete permanently**.
+Moving a batch applies to all its target reports. Trashed files stay on disk
+until permanent deletion and file cleanup complete.
+See the [report management and cleanup guide](docs/browser_report_storage.md#report-management-storage)
+for retention and deployment setup.
+
 ### Optional source configurations
 
 For the following alternatives, set the variables in the same terminal **after**
