@@ -17,6 +17,7 @@ from alma_duplicate.persistence.models import (
     assessment_input_links as links, assessment_input_snapshots as snapshots, browser_reports,
 )
 from alma_duplicate.ui.input_snapshot import restore_input_snapshot
+from alma_duplicate.ui.report_management import assessment_is_active
 
 _UPLOADS = {
     'MULTI_SOURCE_SINGLE': ('source-list', SOURCE_MAX_BYTES, {'csv', 'txt'}),
@@ -61,7 +62,8 @@ def read_input_snapshot(engine, store, owner, parent, parent_id):
             .join(links, links.c.snapshot_id == snapshots.c.id)
             .join(parent, parent.c.id == link)
             .where(parent.c.id == parent_id, parent.c.owner_digest == owner,
-                   snapshots.c.owner_digest == owner)).mappings().first()
+                   snapshots.c.owner_digest == owner,
+                   assessment_is_active(parent))).mappings().first()
     if row is None:
         return None
     snapshot = row['snapshot']

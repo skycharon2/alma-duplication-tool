@@ -118,3 +118,16 @@ browser profile and cookie as the original report.
 
 See [Assessment input snapshots](assessment_input_snapshot.md) for the input
 contract, upload integrity checks, and draft lifetime configuration.
+
+## Report management storage
+
+Migration `0006_browser_assessment_trash` adds a browser-owned trash record
+for each batch or standalone assessment placed in trash. All reports generated
+by a new standalone submission share one group identifier. For older
+standalone reports, the migration groups reports with a shared input snapshot.
+Reports without a durable grouping identifier are treated individually.
+
+A trash record hides the assessment and its branches from normal history,
+report access, downloads, and new reuse requests. The database rows and
+artifacts are retained. This migration leaves existing history active and
+provides the storage foundation for later trash, restore, and cleanup actions.

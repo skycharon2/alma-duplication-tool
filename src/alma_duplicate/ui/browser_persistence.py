@@ -25,6 +25,7 @@ from alma_duplicate.persistence.reports import SavedReportArtifacts
 from alma_duplicate.persistence.repositories import RecordUnavailable
 from alma_duplicate.ui.batch_store import BatchStore
 from alma_duplicate.ui.input_snapshot_storage import insert_input_snapshot, read_input_snapshot
+from alma_duplicate.ui.report_management import assessment_is_active
 from alma_duplicate.ui.run_store import DownloadLease, RunStore
 
 _owner = ContextVar('browser_report_owner', default=None)
@@ -72,6 +73,7 @@ class BrowserRuns:
                 if source_labels is not None:
                     overview['show_in_history'] = run_id == ids[0]
                 metadata.append(dict(id=run_id, owner_digest=owner,
+                    assessment_group_id=ids[0],
                     assessment_status=str(result.status), overview=overview,
                     artifact_manifest=[asdict(artifact) for artifact in artifacts]))
             with transaction(self.engine) as db:
@@ -99,7 +101,8 @@ class BrowserRuns:
         with transaction(self.engine) as db:
             row = db.execute(select(browser_reports).where(
                 browser_reports.c.id == run_id,
-                browser_reports.c.owner_digest == owner)).mappings().first()
+                browser_reports.c.owner_digest == owner,
+                assessment_is_active(browser_reports))).mappings().first()
             return dict(row) if row else None
 
     def _saved(self, run_id):
@@ -176,8 +179,10 @@ class BrowserRuns:
         with self.engine.connect() as db:
             report_rows = older_rows(db, reports, reports.overview, reports.batch_id.is_(None),
                 or_(listed.is_(True), listed.is_(None) & reports.id.not_in(hidden_report_ids)),
+                assessment_is_active(browser_reports),
                 cursor=report_cursor)
-            batch_rows = older_rows(db, batches, batches.manifest, cursor=batch_cursor)
+            batch_rows = older_rows(db, batches, batches.manifest,
+                                    assessment_is_active(browser_batches), cursor=batch_cursor)
         def next_boundary(rows):
             if len(rows) <= limit:
                 return None
@@ -259,10 +264,14 @@ class BrowserBatches(BatchStore):
         if not self._authorized(owner):
             return None
         with transaction(self._runs.engine) as db:
-            manifest = db.execute(select(browser_batches.c.manifest).where(
+            row = db.execute(select(browser_batches.c.manifest,
+                                    assessment_is_active(browser_batches)).where(
                 browser_batches.c.id == batch_id,
-                browser_batches.c.owner_digest == _owner.get())).scalar_one_or_none()
-        return manifest if manifest is not None else super().get(batch_id, owner)
+                browser_batches.c.owner_digest == _owner.get())).first()
+        if row is not None:
+            manifest, active = row
+            return manifest if active else None
+        return super().get(batch_id, owner)
 
     def lookup_run(self, run_id, owner):
         if not self._authorized(owner):

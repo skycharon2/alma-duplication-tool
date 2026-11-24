@@ -14,7 +14,9 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.schema import CreateSchema, DropSchema
 from werkzeug.datastructures import MultiDict
 
-from alma_duplicate.persistence.models import assessment_input_links, browser_batches, browser_reports
+from alma_duplicate.persistence.models import (
+    assessment_input_links, browser_assessment_trash, browser_batches, browser_reports,
+)
 from alma_duplicate.ui import create_app
 from alma_duplicate.ui.input_snapshot import restore_input_snapshot
 from alma_duplicate.ui.runs import BrowserAssessment
@@ -333,6 +335,23 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
             connection.execute(browser_batches.delete().where(
                 browser_batches.c.id == f'{21:032x}'))
         assert owner.get(older_url).text == second_page.text
+        batch_id = batch.location.rsplit('/', 1)[-1]
+        with engine.begin() as db:
+            owner_digest = db.scalar(select(browser_batches.c.owner_digest).where(
+                browser_batches.c.id == batch_id))
+            db.execute(browser_assessment_trash.insert().values(
+                owner_digest=owner_digest, assessment_kind='BATCH', assessment_id=batch_id,
+                deleted_at=timestamp, purge_after=timestamp + timedelta(days=7)))
+        for url in (batch.location, manifest_url, batch_report, batch_report + '/download/report'):
+            assert owner.get(url).status_code == 404
+        assert saved_input(owner, 'input_for_batch', batch.location) is None
+        assert owner.get(rerun.location).status_code == 200
+        assert saved_input(owner, 'input_for_batch', rerun.location)['upload']['raw'] == source_bytes
+        with engine.begin() as db:
+            db.execute(browser_assessment_trash.delete().where(
+                browser_assessment_trash.c.owner_digest == owner_digest,
+                browser_assessment_trash.c.assessment_id == batch_id))
+        assert owner.get(manifest_url).json == manifest
     finally:
         close(app)
         engine.dispose()

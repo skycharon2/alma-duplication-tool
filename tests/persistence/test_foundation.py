@@ -91,7 +91,9 @@ def test_browser_history_migrations_preserve_existing_data(connection):
             overview={'listing': {'id': 'report'}}, artifact_manifest=[{'kind': 'report'}]))
 
     def saved_rows(*tables):
-        return [connection.execute(select(table)).mappings().one() for table in tables]
+        return [connection.execute(select(*(
+            column for column in table.c if column.name != 'assessment_group_id'
+        ))).mappings().one() for table in tables]
 
     reports = (m.browser_reports, m.browser_batches)
     original = saved_rows(*reports)
@@ -115,6 +117,27 @@ def test_browser_history_migrations_preserve_existing_data(connection):
     command.downgrade(cfg, '0004_assessment_input_snapshots')
     connection.commit()
     assert saved_rows(*tables) == before_index_upgrade
+    connection.commit()
+
+    with transaction(connection) as db:
+        for report_id in ('first-branch', 'second-branch', 'legacy'):
+            db.execute(m.browser_reports.insert().values(
+                id=report_id, owner_digest=owner, assessment_status='COMPLETED',
+                overview={'listing': {'id': report_id}}, artifact_manifest=[]))
+        db.execute(m.assessment_input_snapshots.insert().values(
+            id='shared-input', owner_digest=owner, snapshot={'workflow': 'MOSAIC'}))
+        db.execute(m.assessment_input_links.insert(), [
+            dict(report_id=report_id, snapshot_id='shared-input')
+            for report_id in ('first-branch', 'second-branch')
+        ])
+    command.upgrade(cfg, 'head')
+    connection.commit()
+    groups = dict(connection.execute(select(
+        m.browser_reports.c.id, m.browser_reports.c.assessment_group_id)).all())
+    assert groups == {'report': None, 'first-branch': 'shared-input',
+                      'second-branch': 'shared-input', 'legacy': None}
+    assert connection.scalar(select(func.count()).select_from(m.assessment_input_links)) == 3
+    assert connection.scalar(select(func.count()).select_from(m.browser_assessment_trash)) == 0
     connection.commit()
 
 

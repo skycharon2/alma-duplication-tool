@@ -121,9 +121,21 @@ browser_reports = Table('browser_reports', metadata, identity(), created(),
     Column('assessment_status', String(64), nullable=False),
     Column('artifact_manifest', json_type, nullable=False),
     Column('overview', json_type, nullable=False),
+    Column('assessment_group_id', String(65)),
     Column('batch_id', String(65), ForeignKey('browser_batches.id')))
 Index('ix_browser_reports_history', browser_reports.c.owner_digest, browser_reports.c.batch_id,
       browser_reports.c.created_at, browser_reports.c.id)
+Index('ix_browser_reports_assessment_group', browser_reports.c.owner_digest,
+      browser_reports.c.assessment_group_id)
+
+browser_assessment_trash = Table('browser_assessment_trash', metadata,
+    Column('owner_digest', String(64), primary_key=True),
+    Column('assessment_kind', String(8), primary_key=True),
+    Column('assessment_id', String(65), primary_key=True),
+    Column('deleted_at', DateTime(timezone=True), nullable=False),
+    Column('purge_after', DateTime(timezone=True), nullable=False),
+    CheckConstraint("assessment_kind IN ('REPORT', 'BATCH')", name='assessment_kind'),
+    CheckConstraint('purge_after >= deleted_at', name='purge_after_deletion'))
 
 assessment_input_links = Table('assessment_input_links', metadata, identity(),
     Column('snapshot_id', String(65), ForeignKey('assessment_input_snapshots.id'), nullable=False, index=True),
