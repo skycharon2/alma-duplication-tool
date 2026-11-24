@@ -178,3 +178,37 @@ the command skips it. Moving the restored assessment back to Trash starts
 a fresh retention period.
 The second processes up to 100 queued file paths. Each command supports
 `--limit`. The application itself does not schedule these commands.
+
+#### Optional Linux systemd timer
+
+The repository includes an opt-in hourly timer for a Linux deployment using
+database storage. The templates use the `alma` service account, the checkout
+and virtual environment under `/srv/alma-duplication-tool`, and a writable
+artifact directory at `/var/lib/alma-duplication/browser-artifacts`. Adapt
+these paths to your deployment before installing the units.
+
+Use the web app's database and artifact settings in the root-readable
+`/etc/alma-duplication/browser-storage.env` file. Use systemd environment-file
+syntax (`NAME=value`), and include `ALMA_AUTH_MODE=local`,
+`ALMA_REPORT_STORAGE=database`, `ALMA_DATABASE_URL`, `ALMA_ARTIFACT_ROOT`
+and `ALMA_BROWSER_SESSION_SECRET`. Match `ReadWritePaths` in the cleanup
+service to the artifact root. The web service account must also have
+filesystem permission to write that directory.
+
+After applying the database migrations, install and enable the timer from
+the repository root:
+
+```bash
+sudo install -m 0644 deploy/systemd/alma-browser-cleanup.service /etc/systemd/system/
+sudo install -m 0644 deploy/systemd/alma-browser-cleanup.timer /etc/systemd/system/
+sudo systemd-analyze verify +  /etc/systemd/system/alma-browser-cleanup.service +  /etc/systemd/system/alma-browser-cleanup.timer
+sudo systemctl daemon-reload
+sudo systemctl enable --now alma-browser-cleanup.timer
+sudo systemctl list-timers alma-browser-cleanup.timer
+sudo journalctl -u alma-browser-cleanup.service -n 50 --no-pager
+```
+
+Each successful run purges expired assessments first and then drains the
+artifact queue. If the first command fails, systemd reports the service
+failure and the remaining file cleanup can be run independently after
+checking the journal.
