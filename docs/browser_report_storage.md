@@ -121,6 +121,10 @@ contract, upload integrity checks, and draft lifetime configuration.
 
 ## Report management storage
 
+Use **Rename** in **Existing reports** to change a saved assessment's
+display name. Leave the field empty to use the original name. The display
+name is stored separately from the saved report and its scientific inputs.
+
 Migration `0006_browser_assessment_trash` adds a browser-owned trash record
 for each batch or standalone assessment placed in trash. All reports generated
 by a new standalone submission share one group identifier. For older

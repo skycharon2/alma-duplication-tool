@@ -12,7 +12,8 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from alma_duplicate.persistence.db import transaction
 from alma_duplicate.persistence.models import (
     assessment_input_links, assessment_input_snapshots,
-    browser_artifact_cleanup, browser_assessment_trash, browser_batches, browser_reports,
+    browser_artifact_cleanup, browser_assessment_labels, browser_assessment_trash,
+    browser_batches, browser_reports,
 )
 
 
@@ -31,6 +32,17 @@ def _trash_match(parent):
 def assessment_is_active(parent):
     return ~select(browser_assessment_trash.c.assessment_id).where(
         _trash_match(parent)).correlate(parent).exists()
+
+
+def assessment_display_name(parent):
+    columns = parent.c
+    labels = browser_assessment_labels.c
+    kind, identity = ('REPORT', func.coalesce(columns.assessment_group_id, columns.id)
+                      ) if parent is browser_reports else ('BATCH', columns.id)
+    return select(labels.display_name).where(
+        labels.owner_digest == columns.owner_digest, labels.assessment_kind == kind,
+        labels.assessment_id == identity,
+    ).correlate(parent).scalar_subquery()
 
 
 def _assessment_name(kind, payload):
@@ -110,6 +122,11 @@ def purge_assessment(db, owner, kind, assessment_id, insert):
         if upload is not None:
             artifact = upload['artifact']
             files[artifact['storage_key']] = artifact['kind']
+    labels = browser_assessment_labels
+    db.execute(labels.delete().where(
+        labels.c.owner_digest == owner, labels.c.assessment_kind == kind.upper(),
+        labels.c.assessment_id == assessment_id,
+    ))
     queue = browser_artifact_cleanup
     if files:
         db.execute(insert(queue).on_conflict_do_nothing(index_elements=[queue.c.storage_key]), [
@@ -153,7 +170,7 @@ def register_report_management(app, engine, current_owner):
     @app.context_processor
     def trash_token():
         if request.endpoint not in {'report_index', 'report_management.trash_index',
-                                    'report_management.confirm_purge'}:
+                                    'report_management.confirm_purge', 'report_management.rename'}:
             return {}
         return {'report_management_csrf': session.setdefault('report_management_csrf', token_hex(32))}
 
@@ -222,15 +239,68 @@ def register_report_management(app, engine, current_owner):
         return render_template('report_purge.html', kind=kind, entry_id=entry_id,
                                name=_assessment_name(kind, payload), deleted_at=_utc(deleted_at))
 
-    @routes.post('/reports/manage/<kind>/<entry_id>/<action>')
-    def update_trash(kind, entry_id, action):
-        if kind not in {'report', 'batch'} or action not in {'trash', 'restore', 'purge'}:
-            abort(404)
+    def require_csrf():
         tokens = request.form.getlist('csrf')
         expected = session.get('report_management_csrf')
         if (not expected or len(tokens) != 1 or not tokens[0].isascii()
                 or not compare_digest(tokens[0], expected)):
             abort(403)
+
+    @routes.route('/reports/manage/<kind>/<entry_id>/rename', methods=['GET', 'POST'])
+    def rename(kind, entry_id):
+        if kind == 'batch':
+            parent, payload = browser_batches, browser_batches.c.manifest
+        elif kind == 'report':
+            parent, payload = browser_reports, browser_reports.c.overview
+        else:
+            abort(404)
+        owner = current_owner()
+        query = select(payload, assessment_display_name(parent)).where(
+            parent.c.id == entry_id, parent.c.owner_digest == owner,
+            assessment_is_active(parent),
+        )
+        if kind == 'report':
+            query = query.where(parent.c.batch_id.is_(None))
+        if request.method == 'GET':
+            with engine.connect() as db:
+                row = db.execute(query).first()
+            if row is None:
+                abort(404)
+            data, name = row
+            return render_template('report_rename.html', original=_assessment_name(kind, data),
+                                   name=name or '', kind=kind, entry_id=entry_id)
+
+        require_csrf()
+        names = request.form.getlist('display_name')
+        if len(names) != 1:
+            abort(400)
+        name = names[0].strip()
+        if len(name) > 80 or not all(char.isprintable() for char in name):
+            abort(400, description='Display name must be at most 80 printable characters.')
+        labels = browser_assessment_labels
+        with transaction(engine) as db:
+            assessment_id = _lock_assessment(db, owner, kind, entry_id)
+            if assessment_id is None or db.execute(query).first() is None:
+                abort(404)
+            if name:
+                db.execute(insert(labels).values(
+                    owner_digest=owner, assessment_kind=kind.upper(),
+                    assessment_id=assessment_id, display_name=name,
+                ).on_conflict_do_update(index_elements=list(labels.primary_key.columns),
+                                        set_={'display_name': name}))
+            else:
+                db.execute(labels.delete().where(
+                    labels.c.owner_digest == owner, labels.c.assessment_kind == kind.upper(),
+                    labels.c.assessment_id == assessment_id,
+                ))
+        flash('Display name updated.', 'report-management')
+        return redirect(url_for('report_index'), code=303)
+
+    @routes.post('/reports/manage/<kind>/<entry_id>/<action>')
+    def update_trash(kind, entry_id, action):
+        if kind not in {'report', 'batch'} or action not in {'trash', 'restore', 'purge'}:
+            abort(404)
+        require_csrf()
         if action == 'purge' and request.form.getlist('confirm') != ['yes']:
             abort(400, description='Confirm permanent deletion before continuing.')
         owner = current_owner()

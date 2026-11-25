@@ -26,7 +26,7 @@ from alma_duplicate.persistence.reports import SavedReportArtifacts
 from alma_duplicate.persistence.repositories import RecordUnavailable
 from alma_duplicate.ui.batch_store import BatchStore, batch_summary
 from alma_duplicate.ui.input_snapshot_storage import insert_input_snapshot, read_input_snapshot
-from alma_duplicate.ui.report_management import assessment_is_active, register_report_management
+from alma_duplicate.ui.report_management import assessment_display_name, assessment_is_active, register_report_management
 from alma_duplicate.ui.run_store import DownloadLease, RunStore
 
 _owner = ContextVar('browser_report_owner', default=None)
@@ -151,7 +151,8 @@ class BrowserRuns:
         if owner is None:
             return [], [], None
 
-        def older_rows(db, columns, payload, *filters, cursor):
+        def older_rows(db, parent, payload, *filters, cursor):
+            columns = parent.c
             if cursors is not None and cursor is None:
                 return []
             # SQLite stores both second and microsecond precision values. Keep
@@ -159,7 +160,7 @@ class BrowserRuns:
             sqlite = db.dialect.name == 'sqlite'
             created = columns.created_at
             cursor_time = cast(created, String) if sqlite else created
-            query = select(columns.id, payload, cursor_time).where(
+            query = select(columns.id, payload, cursor_time, assessment_display_name(parent)).where(
                 columns.owner_digest == owner, *filters)
             if cursor is not None:
                 timestamp, run_id = cursor
@@ -178,22 +179,22 @@ class BrowserRuns:
         listed = reports.overview['show_in_history'].as_boolean()
         report_cursor, batch_cursor = cursors or (None, None)
         with self.engine.connect() as db:
-            report_rows = older_rows(db, reports, reports.overview, reports.batch_id.is_(None),
+            report_rows = older_rows(db, browser_reports, reports.overview, reports.batch_id.is_(None),
                 or_(listed.is_(True), listed.is_(None) & reports.id.not_in(hidden_report_ids)),
                 assessment_is_active(browser_reports),
                 cursor=report_cursor)
-            batch_rows = older_rows(db, batches, batches.manifest,
+            batch_rows = older_rows(db, browser_batches, batches.manifest,
                                     assessment_is_active(browser_batches), cursor=batch_cursor)
         def next_boundary(rows):
             if len(rows) <= limit:
                 return None
-            entry_id, _, timestamp = rows[limit - 1]
+            entry_id, _, timestamp, _ = rows[limit - 1]
             return (timestamp if isinstance(timestamp, str) else timestamp.isoformat(), entry_id)
 
         next_cursors = tuple(next_boundary(rows) for rows in (report_rows, batch_rows))
         return (
-            [overview['listing'] for _, overview, _ in report_rows[:limit]],
-            [batch_summary(manifest) for _, manifest, _ in batch_rows[:limit]],
+            [overview['listing'] | {'display_name': name} for _, overview, _, name in report_rows[:limit]],
+            [batch_summary(manifest) | {'display_name': name} for _, manifest, _, name in batch_rows[:limit]],
             next_cursors if any(next_cursors) else None,
         )
 

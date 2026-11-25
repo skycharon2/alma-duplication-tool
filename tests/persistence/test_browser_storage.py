@@ -261,6 +261,36 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         history = owner.get('/reports').text
         assert 'Original survey' in history and 'Survey at 0.45 arcsec' in history
         assert '0.45 arcsec resolution' in history
+        rename_url = f'/reports/manage/batch/{batch.location.rsplit("/", 1)[-1]}/rename'
+        assert f'href="{rename_url}"' in history
+        rename_page = owner.get(rename_url)
+        assert rename_page.status_code == 200
+        assert visitor.get(rename_url).status_code == 404
+        with owner.session_transaction() as browser_session:
+            rename_csrf = browser_session['report_management_csrf']
+        with visitor.session_transaction() as browser_session:
+            foreign_csrf = browser_session['report_management_csrf']
+        assert visitor.post(rename_url, data={
+            'csrf': foreign_csrf, 'display_name': 'Foreign name',
+        }).status_code == 404
+        assert owner.post(rename_url, data={'display_name': 'Missing CSRF'}).status_code == 403
+        assert owner.post(rename_url, data={
+            'csrf': rename_csrf, 'display_name': 'x' * 81,
+        }).status_code == 400
+        assert owner.post(rename_url, data={
+            'csrf': rename_csrf, 'display_name': 'Saved baseline',
+        }).status_code == 303
+        assert 'Saved baseline' in owner.get('/reports').text
+        assert owner.get(manifest_url).json == manifest
+        assert owner.post(rename_url, data={'csrf': rename_csrf, 'display_name': ''}).status_code == 303
+        history = owner.get('/reports').text
+        assert 'Saved baseline' not in history and 'Original survey' in history
+        single_rename = f'/reports/manage/report/{single.location.rsplit("/", 1)[-1]}/rename'
+        assert owner.post(single_rename, data={
+            'csrf': rename_csrf, 'display_name': 'Single pointing baseline',
+        }).status_code == 303
+        assert 'Single pointing baseline' in owner.get('/reports').text
+        assert owner.get(single.location + '/download/report').data == download
         assert rerun_manifest['shared_setup']['document']['request']['angular_resolution']['value'] == '0.45'
         assert [entry['source'] for entry in rerun_manifest['sources']] == [
             entry['source'] for entry in manifest['sources']]

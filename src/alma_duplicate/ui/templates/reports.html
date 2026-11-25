@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% macro report_row(name, details, view_url, reuse_url=none, unavailable=false, trash_url=none, date=none, summary=none) %}
+{% macro report_row(name, details, view_url, reuse_url=none, unavailable=false, trash_url=none, date=none, summary=none, rename_url=none) %}
 <li class="report-library-row">
   <div class="report-library-summary">
     <div class="report-library-name">{{ name }}</div>
@@ -20,6 +20,7 @@
       <button class="button" type="submit" aria-label="Reuse settings for {{ name }}">Reuse settings</button>
     </form>
     {% endif %}
+    {% if rename_url %}<a class="report-library-secondary" href="{{ rename_url }}" aria-label="Rename {{ name }}">Rename</a>{% endif %}
     {% if trash_url %}
     <form class="report-library-trash-action" method="post" action="{{ trash_url }}">
       <input type="hidden" name="csrf" value="{{ report_management_csrf }}">
@@ -39,18 +40,20 @@
 <ul class="report-library-list">
 {% for item in recent_batches %}
   {% set target_count = item.source_count ~ (' target' if item.source_count == 1 else ' targets') %}
-  {% set name = item.name or ('Multi-source assessment · ' ~ target_count) %}
+  {% set name = item.display_name or item.name or ('Multi-source assessment · ' ~ target_count) %}
   {% set details = 'Completed' if item.execution_complete else 'In progress' %}
-  {% set summary %}{% if item.name %}Multi-source · {{ target_count }}{% endif %}{% if item.angular_resolution and item.angular_resolution.value is defined %}{% if item.name %} · {% endif %}{{ item.angular_resolution.value }} {{ item.angular_resolution.unit }} resolution{% endif %}{% if item.representative_frequency and item.representative_frequency.value is defined %}{% if item.name or item.angular_resolution %} · {% endif %}{{ item.representative_frequency.value }} {{ item.representative_frequency.unit }}{% if item.representative_frequency.kind %} ({{ item.representative_frequency.kind }}){% endif %}{% endif %}{% endset %}
+  {% set summary %}{% if item.display_name or item.name %}Multi-source · {{ target_count }}{% endif %}{% if item.angular_resolution and item.angular_resolution.value is defined %}{% if item.display_name or item.name %} · {% endif %}{{ item.angular_resolution.value }} {{ item.angular_resolution.unit }} resolution{% endif %}{% if item.representative_frequency and item.representative_frequency.value is defined %}{% if item.display_name or item.name or item.angular_resolution %} · {% endif %}{{ item.representative_frequency.value }} {{ item.representative_frequency.unit }}{% if item.representative_frequency.kind %} ({{ item.representative_frequency.kind }}){% endif %}{% endif %}{% endset %}
   {% set reuse_url = url_for('assessment_reuse.reuse_batch', batch_id=item.batch_id) if item.batch_id in reusable_ids else none %}
   {% set trash_url = url_for('report_management.update_trash', kind='batch', entry_id=item.batch_id, action='trash') if browser_persistent and item.execution_complete else none %}
-  {{ report_row(name, details, url_for('batch.overview', batch_id=item.batch_id), reuse_url, browser_persistent and item.execution_complete and not reuse_url, trash_url, item.created_at, summary|trim) }}
+  {{ report_row(name, details, url_for('batch.overview', batch_id=item.batch_id), reuse_url, browser_persistent and item.execution_complete and not reuse_url, trash_url, item.created_at, summary|trim,
+      url_for('report_management.rename', kind='batch', entry_id=item.batch_id) if trash_url else none) }}
 {% endfor %}
 {% for item in recent_runs %}
   {% set details = 'This browser · ' ~ (item.status|replace('_', ' ')|capitalize) %}
   {% set reuse_url = url_for('assessment_reuse.reuse_run', run_id=item.id) if item.id in reusable_ids else none %}
   {% set trash_url = url_for('report_management.update_trash', kind='report', entry_id=item.id, action='trash') if browser_persistent else none %}
-  {{ report_row(item.target, details, url_for('run_view', report_id=item.id), reuse_url, browser_persistent and not reuse_url, trash_url, item.generated_at) }}
+  {{ report_row(item.display_name or item.target, details, url_for('run_view', report_id=item.id), reuse_url, browser_persistent and not reuse_url, trash_url, item.generated_at, item.target if item.display_name else none,
+      url_for('report_management.rename', kind='report', entry_id=item.id) if trash_url else none) }}
 {% endfor %}
 {% for id, item in reports.items() %}
   {% set details = 'Preloaded · ' ~ ('Solar exemption — no search' if item.document.report_kind == 'SOLAR_EXEMPTION' else 'Observation comparison') %}
