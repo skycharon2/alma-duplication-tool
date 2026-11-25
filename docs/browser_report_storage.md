@@ -49,6 +49,11 @@ Database mode uses the existing report-size limit during staging. Saved files
 and metadata accumulate until the deployment operator removes them. Plan
 storage and backups accordingly.
 
+New browser reports compress inspection files of at least 64 KiB on disk.
+The download still serves the original JSON bytes. Storage usage shows the
+compressed file size. Existing inspection files remain readable in their
+original format.
+
 ## Local trial on macOS
 
 For a fresh trial on a Mac with Homebrew, install and start PostgreSQL 16.

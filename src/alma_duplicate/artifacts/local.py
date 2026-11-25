@@ -1,16 +1,22 @@
 """Immutable bundles in an operator-owned persistent local directory."""
 import errno
+import gzip
 import hashlib
+from contextlib import nullcontext
 import os
 from pathlib import Path
 import re
 import shutil
 import stat
+from tempfile import TemporaryFile
 from uuid import uuid4
+import zlib
 
 from alma_duplicate.artifacts.base import Artifact, FILES, INPUT_FILES
 
 _BUNDLE_FILES = FILES | INPUT_FILES
+_BLOCK_SIZE = 1024 * 1024
+_COMPRESSED_INSPECTION = FILES['inspection'] + '.gz'
 
 
 def _sync_directory(path):
@@ -22,8 +28,9 @@ def _sync_directory(path):
 
 
 class LocalArtifactStore:
-    def __init__(self, root):
+    def __init__(self, root, *, compress_inspection=False):
         self.root = Path(root).absolute()
+        self.compress_inspection = compress_inspection
         if self.root.is_symlink():
             raise ValueError('Artifact root must not be a symlink')
         self.root.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -41,15 +48,23 @@ class LocalArtifactStore:
             for kind, source in files.items():
                 digest, size = hashlib.sha256(), 0
                 filename = _BUNDLE_FILES[kind]
+                compress = (self.compress_inspection and kind == 'inspection'
+                            and Path(source).stat().st_size >= 64 * 1024)
+                if compress:
+                    filename = _COMPRESSED_INSPECTION
                 fd = os.open(staging / filename, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
                 with os.fdopen(fd, 'wb') as output, Path(source).open('rb') as stream:
-                    while block := stream.read(1024 * 1024):
-                        output.write(block)
-                        digest.update(block)
-                        size += len(block)
+                    writer = (gzip.GzipFile(filename='', mode='wb', compresslevel=1, fileobj=output, mtime=0)
+                              if compress else nullcontext(output))
+                    with writer as sink:
+                        while block := stream.read(_BLOCK_SIZE):
+                            sink.write(block)
+                            digest.update(block)
+                            size += len(block)
                     output.flush()
                     os.fsync(output.fileno())
-                records.append(Artifact(kind, f'{token}/{filename}', digest.hexdigest(), size))
+                    stored = output.tell() if compress else None
+                records.append(Artifact(kind, f'{token}/{filename}', digest.hexdigest(), size, stored))
             _sync_directory(staging)
             # Random bundle IDs are never reused. The root is service-owned.
             staging.rename(destination)
@@ -62,6 +77,8 @@ class LocalArtifactStore:
     def _location(self, kind, storage_key):
         filename = _BUNDLE_FILES.get(kind)
         parts = storage_key.split('/')
+        if kind == 'inspection' and parts[-1] == _COMPRESSED_INSPECTION:
+            filename = _COMPRESSED_INSPECTION
         if (len(parts) != 2 or re.fullmatch('[0-9a-f]{32}', parts[0]) is None
                 or parts[1] != filename):
             raise ValueError('Invalid artifact storage key')
@@ -106,12 +123,41 @@ class LocalArtifactStore:
         stream = os.fdopen(fd, 'rb')
         try:
             info = os.fstat(fd)
-            if not stat.S_ISREG(info.st_mode) or info.st_size != artifact.byte_size:
+            compressed = filename == _COMPRESSED_INSPECTION
+            expected_size = artifact.stored_byte_size if compressed else artifact.byte_size
+            if not stat.S_ISREG(info.st_mode) or info.st_size != expected_size:
                 raise ValueError('Artifact size or file type mismatch')
+            if compressed:
+                verified = self._open_compressed_inspection(stream, artifact)
+                stream.close()
+                return verified
             if hashlib.file_digest(stream, 'sha256').hexdigest() != artifact.sha256:
                 raise ValueError('Artifact digest mismatch')
             stream.seek(0)
             return stream
         except BaseException:
             stream.close()
+            raise
+
+    def _open_compressed_inspection(self, stream, artifact):
+        verified = TemporaryFile(mode='w+b')
+        digest = hashlib.sha256()
+        remaining = artifact.byte_size
+        try:
+            try:
+                with gzip.GzipFile(fileobj=stream, mode='rb') as expanded:
+                    while block := expanded.read(min(_BLOCK_SIZE, remaining + 1)):
+                        remaining -= len(block)
+                        if remaining < 0:
+                            raise ValueError('Artifact size mismatch')
+                        digest.update(block)
+                        verified.write(block)
+            except (EOFError, zlib.error) as exc:
+                raise ValueError('Invalid compressed inspection') from exc
+            if remaining or digest.hexdigest() != artifact.sha256:
+                raise ValueError('Artifact digest or size mismatch')
+            verified.seek(0)
+            return verified
+        except BaseException:
+            verified.close()
             raise

@@ -15,6 +15,7 @@ class Artifact:
     storage_key: str
     sha256: str
     byte_size: int
+    stored_byte_size: int | None = None
 
 
 class ArtifactStore(Protocol):

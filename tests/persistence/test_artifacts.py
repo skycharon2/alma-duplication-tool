@@ -98,6 +98,25 @@ def test_paths_symlinks_and_interrupted_copy(tmp_path):
     assert not list(store.root.glob('.pending-*'))
 
 
+def test_browser_inspection_compression_keeps_download_bytes(tmp_path):
+    source = tmp_path / 'inspection.json'
+    raw = b'[' + b'{"evidence":"stable"},' * 10000 + b'{}]'
+    source.write_bytes(raw)
+    root = tmp_path / 'artifacts'
+    legacy, = LocalArtifactStore(root).put_bundle({'inspection': source})
+    compressed, = LocalArtifactStore(root, compress_inspection=True).put_bundle({'inspection': source})
+    assert compressed.storage_key.endswith('/inspection.json.gz')
+    assert compressed.stored_byte_size == (root / compressed.storage_key).stat().st_size
+    assert compressed.stored_byte_size < len(raw) // 10
+    assert compressed.byte_size == legacy.byte_size and compressed.sha256 == legacy.sha256
+    reader = LocalArtifactStore(root)
+    for artifact in (legacy, compressed):
+        with reader.open_verified(artifact) as stream:
+            assert stream.read() == raw
+        reader.remove(artifact.kind, artifact.storage_key)
+        assert not (root / artifact.storage_key).exists()
+
+
 def test_new_process_can_read_saved_report(tmp_path, assessment):
     database = tmp_path / 'metadata.sqlite'
     url = 'sqlite:///' + str(database)
