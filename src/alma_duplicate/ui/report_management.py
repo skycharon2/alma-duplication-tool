@@ -1,11 +1,14 @@
 """Browser-owned trash transitions and visibility rules."""
 from datetime import datetime, timedelta, timezone
+from hashlib import sha256
+import json
 import os
 import re
 from secrets import compare_digest, token_hex
 
 import click
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
+from itsdangerous import BadData, URLSafeTimedSerializer
 from sqlalchemy import case, func, or_, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -56,6 +59,17 @@ def _utc(timestamp):
     if timestamp.tzinfo is None:
         return timestamp.replace(tzinfo=timezone.utc)
     return timestamp.astimezone(timezone.utc)
+
+
+def _trash_snapshot(db, owner):
+    trash = browser_assessment_trash.c
+    entries = db.execute(select(trash.assessment_kind, trash.assessment_id, trash.deleted_at)
+        .where(trash.owner_digest == owner)
+        .order_by(trash.assessment_kind, trash.assessment_id)).all()
+    identity = [(kind, entry_id, _utc(deleted_at).isoformat())
+                for kind, entry_id, deleted_at in entries]
+    digest = sha256(json.dumps(identity, separators=(',', ':')).encode()).hexdigest()
+    return entries, digest
 
 
 def _begin_management_write(db):
@@ -176,7 +190,8 @@ def register_report_management(app, engine, current_owner):
     @app.context_processor
     def trash_token():
         if request.endpoint not in {'report_index', 'report_management.trash_index',
-                                    'report_management.confirm_purge', 'report_management.rename'}:
+                                    'report_management.confirm_purge', 'report_management.rename',
+                                    'report_management.empty_trash'}:
             return {}
         return {'report_management_csrf': session.setdefault('report_management_csrf', token_hex(32))}
 
@@ -251,6 +266,47 @@ def register_report_management(app, engine, current_owner):
         if (not expected or len(tokens) != 1 or not tokens[0].isascii()
                 or not compare_digest(tokens[0], expected)):
             abort(403)
+
+    @routes.route('/reports/trash/empty', methods=['GET', 'POST'])
+    def empty_trash():
+        owner = current_owner()
+        if owner is None:
+            abort(404)
+        signer = URLSafeTimedSerializer(app.secret_key, salt=f'empty-browser-trash-v1:{owner}')
+        if request.method == 'GET':
+            with engine.connect() as db:
+                entries, digest = _trash_snapshot(db, owner)
+            if not entries:
+                return redirect(url_for('report_management.trash_index'), code=303)
+            return render_template('report_empty_trash.html', count=len(entries),
+                                   confirmation=signer.dumps(digest))
+
+        require_csrf()
+        tokens = request.form.getlist('confirmation')
+        if len(tokens) != 1 or len(tokens[0]) > 256:
+            abort(400, description='Open Empty trash to review the assessments first.')
+        try:
+            expected = signer.loads(tokens[0], max_age=900)
+        except BadData:
+            abort(400, description='This confirmation is invalid or expired. Open Empty trash again.')
+        changed = 'Trash changed. Return to Trash and review the current assessments.'
+        with transaction(engine) as db:
+            _begin_management_write(db)
+            entries, digest = _trash_snapshot(db, owner)
+            if digest != expected:
+                abort(409, description=changed)
+            for kind, entry_id, _ in entries:
+                if _lock_assessment(db, owner, kind.lower(), entry_id, group=True, begun=True) is None:
+                    abort(409, description=changed)
+            if _trash_snapshot(db, owner)[1] != expected:
+                abort(409, description=changed)
+            for kind, entry_id, _ in entries:
+                kind = kind.lower()
+                if _remove_trash(db, owner, kind, entry_id) is None:
+                    abort(409, description=changed)
+                purge_assessment(db, owner, kind, entry_id, insert)
+        flash('Trash emptied. File cleanup is queued.', 'report-management')
+        return redirect(url_for('report_management.trash_index'), code=303)
 
     @routes.route('/reports/manage/<kind>/<entry_id>/rename', methods=['GET', 'POST'])
     def rename(kind, entry_id):

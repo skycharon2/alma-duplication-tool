@@ -581,6 +581,38 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
             assert f'action="{future_restore}"' in owner.get('/reports/trash').text
             assert owner.post(future_restore, data={'csrf': csrf}).status_code == 303
         assert owner.get(mosaic_rerun.location).status_code == 200
+
+        empty_url = '/reports/trash/empty'
+        assert owner.get(empty_url).status_code == 303
+        assert owner.post(future_trash, data={'csrf': csrf}).status_code == 303
+        first_confirmation = owner.get(empty_url)
+        assert '1 assessment<' in first_confirmation.text
+        single_id = single.location.rsplit('/', 1)[-1]
+        assert owner.post(f'/reports/manage/report/{single_id}/trash',
+                          data={'csrf': csrf}).status_code == 303
+        assert owner.post(empty_url, data={
+            'csrf': csrf, 'confirmation': hidden(first_confirmation, 'confirmation'),
+        }).status_code == 409
+        assert owner.get('/reports/trash').text.count('>Restore</button>') == 2
+        visitor_id = visitor_report.location.rsplit('/', 1)[-1]
+        assert visitor.post(f'/reports/manage/report/{visitor_id}/trash',
+                            data={'csrf': visitor_csrf}).status_code == 303
+        confirmation_page = owner.get(empty_url)
+        assert '2 assessments<' in confirmation_page.text
+        bulk_confirmation = hidden(confirmation_page, 'confirmation')
+        assert visitor.post(empty_url, data={
+            'csrf': visitor_csrf, 'confirmation': bulk_confirmation,
+        }).status_code == 400
+        assert owner.post(empty_url, data={'confirmation': bulk_confirmation}).status_code == 403
+        assert owner.post(empty_url, data={
+            'csrf': csrf, 'confirmation': bulk_confirmation,
+        }).status_code == 303
+        assert 'Trash is empty' in owner.get('/reports/trash').text
+        assert visitor.get('/reports/trash').text.count('>Restore</button>') == 1
+        assert owner.post(future_restore, data={'csrf': csrf}).status_code == 404
+        assert owner.post(empty_url, data={
+            'csrf': csrf, 'confirmation': bulk_confirmation,
+        }).status_code == 409
     finally:
         close(app)
         engine.dispose()

@@ -166,6 +166,9 @@ space is reclaimed by the cleanup command after reference checks.
 In **Trash**, choose **Delete permanently**, review the assessment and its
 deletion time, then choose **Delete permanently** on the confirmation page.
 **Cancel** returns to Trash with the assessment still available to restore.
+Use **Empty trash** to review and permanently delete all assessments
+currently in your browser's Trash. If the contents change before you
+confirm, reopen the confirmation page to review the updated selection.
 
 ### Scheduled cleanup
 
