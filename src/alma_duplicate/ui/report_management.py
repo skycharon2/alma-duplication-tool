@@ -38,7 +38,7 @@ def assessment_is_active(parent):
         _trash_match(parent)).correlate(parent).exists()
 
 
-def _storage_usage(db, owner):
+def _storage_rows(db, owner, *, groups=None, batch_ids=None):
     reports, batches = browser_reports, browser_batches
     links, snapshots = assessment_input_links, assessment_input_snapshots
 
@@ -46,22 +46,46 @@ def _storage_usage(db, owner):
         return parent.outerjoin(links, parent_link == parent.c.id).outerjoin(
             snapshots, (snapshots.c.id == links.c.snapshot_id) & (snapshots.c.owner_digest == owner))
 
-    rows = union_all(
-        select(case((reports.c.batch_id.is_not(None), 'BATCH'), else_='REPORT'),
+    report_rows = select(case((reports.c.batch_id.is_not(None), 'BATCH'), else_='REPORT'),
                func.coalesce(reports.c.batch_id, reports.c.assessment_group_id, reports.c.id),
                assessment_is_active(reports), reports.c.artifact_manifest, snapshots.c.upload
-        ).select_from(with_upload(reports, links.c.report_id)).where(reports.c.owner_digest == owner),
-        select(literal('BATCH'), batches.c.id, assessment_is_active(batches), literal(None),
+        ).select_from(with_upload(reports, links.c.report_id)).where(reports.c.owner_digest == owner)
+    batch_rows = select(literal('BATCH'), batches.c.id, assessment_is_active(batches), literal(None),
                snapshots.c.upload
-        ).select_from(with_upload(batches, links.c.batch_id)).where(batches.c.owner_digest == owner),
-    )
-    assessments = {}
-    files = {}
-    for kind, entry_id, active, manifest, upload in db.execute(rows).yield_per(256):
-        assessments[kind, entry_id] = active
+        ).select_from(with_upload(batches, links.c.batch_id)).where(batches.c.owner_digest == owner)
+    if groups is not None:
+        report_rows = report_rows.where(or_(
+            reports.c.batch_id.in_(batch_ids),
+            reports.c.batch_id.is_(None) & or_(
+                reports.c.assessment_group_id.in_(groups),
+                reports.c.assessment_group_id.is_(None) & reports.c.id.in_(groups),
+            ),
+        ))
+        batch_rows = batch_rows.where(batches.c.id.in_(batch_ids))
+    for kind, entry_id, active, manifest, upload in db.execute(union_all(report_rows, batch_rows)).yield_per(256):
         descriptors = list(manifest or ())
         if upload:
             descriptors.append(upload['artifact'])
+        yield (kind, entry_id), active, descriptors
+
+
+def assessment_storage_sizes(db, owner, groups, batch_ids):
+    if not (groups or batch_ids):
+        return {}
+    files = {}
+    for entry, _, descriptors in _storage_rows(db, owner, groups=groups, batch_ids=batch_ids):
+        paths = files.setdefault(entry, {})
+        for item in descriptors:
+            key = item['storage_key']
+            paths[key] = max(paths.get(key, 0), item['byte_size'])
+    return {entry: sum(paths.values()) for entry, paths in files.items()}
+
+
+def _storage_usage(db, owner):
+    assessments = {}
+    files = {}
+    for entry, active, descriptors in _storage_rows(db, owner):
+        assessments[entry] = active
         for item in descriptors:
             key, size = item['storage_key'], item['byte_size']
             # Attribute a shared path to active history if any active item uses it.
@@ -260,7 +284,7 @@ def register_report_management(app, engine, current_owner):
         ).limit(1).correlate(trash).scalar_subquery()
         with engine.connect() as db:
             rows = db.execute(select(
-                trash.c.deleted_at, trash.c.purge_after,
+                trash.c.assessment_kind, trash.c.assessment_id, trash.c.deleted_at, trash.c.purge_after,
                 report.c.id, report.c.overview, batch.c.id, batch.c.manifest,
             ).select_from(trash.outerjoin(report, report.c.id == first_report).outerjoin(
                 batch, (trash.c.assessment_kind == 'BATCH') & (batch.c.id == trash.c.assessment_id)
@@ -269,16 +293,22 @@ def register_report_management(app, engine, current_owner):
                      or_(report.c.id.is_not(None), batch.c.id.is_not(None))
             ).order_by(trash.c.deleted_at.desc(), trash.c.assessment_kind, trash.c.assessment_id
             ).offset((page - 1) * page_size).limit(page_size + 1)).all()
+            sizes = assessment_storage_sizes(
+                db, current_owner(),
+                [row.assessment_id for row in rows[:page_size] if row.assessment_kind == 'REPORT'],
+                [row.assessment_id for row in rows[:page_size] if row.assessment_kind == 'BATCH'],
+            )
         if page > 1 and not rows:
             abort(404)
         entries = []
-        for deleted_at, purge_after, report_id, overview, batch_id, manifest in rows[:page_size]:
+        for category, assessment_id, deleted_at, purge_after, report_id, overview, batch_id, manifest in rows[:page_size]:
             if manifest is not None:
                 kind, entry_id, payload = 'batch', batch_id, manifest
             else:
                 kind, entry_id, payload = 'report', report_id, overview
             entries.append(dict(name=_assessment_name(kind, payload), kind=kind,
-                                id=entry_id, deleted_at=_utc(deleted_at), purge_after=_utc(purge_after)))
+                                id=entry_id, deleted_at=_utc(deleted_at), purge_after=_utc(purge_after),
+                                saved_bytes=sizes.get((category, assessment_id))))
         return render_template('report_trash.html', entries=entries, page=page,
                                has_next=len(rows) > page_size)
 

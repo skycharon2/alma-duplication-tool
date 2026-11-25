@@ -10,7 +10,7 @@ from time import monotonic
 import weakref
 
 from flask import abort, request, session
-from sqlalchemy import String, cast, or_, select, type_coerce
+from sqlalchemy import String, cast, func, or_, select, type_coerce
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.exc import SQLAlchemyError
@@ -26,7 +26,10 @@ from alma_duplicate.persistence.reports import SavedReportArtifacts
 from alma_duplicate.persistence.repositories import RecordUnavailable
 from alma_duplicate.ui.batch_store import BatchStore, batch_summary
 from alma_duplicate.ui.input_snapshot_storage import insert_input_snapshot, read_input_snapshot
-from alma_duplicate.ui.report_management import assessment_display_name, assessment_is_active, register_report_management
+from alma_duplicate.ui.report_management import (
+    assessment_display_name, assessment_is_active, assessment_storage_sizes,
+    register_report_management,
+)
 from alma_duplicate.ui.run_store import DownloadLease, RunStore
 
 _owner = ContextVar('browser_report_owner', default=None)
@@ -160,7 +163,9 @@ class BrowserRuns:
             sqlite = db.dialect.name == 'sqlite'
             created = columns.created_at
             cursor_time = cast(created, String) if sqlite else created
-            query = select(columns.id, payload, cursor_time, assessment_display_name(parent)).where(
+            group = (func.coalesce(columns.assessment_group_id, columns.id)
+                     if parent is browser_reports else columns.id)
+            query = select(columns.id, payload, cursor_time, assessment_display_name(parent), group).where(
                 columns.owner_digest == owner, *filters)
             if cursor is not None:
                 timestamp, run_id = cursor
@@ -185,16 +190,20 @@ class BrowserRuns:
                 cursor=report_cursor)
             batch_rows = older_rows(db, browser_batches, batches.manifest,
                                     assessment_is_active(browser_batches), cursor=batch_cursor)
+            sizes = assessment_storage_sizes(db, owner, [row[4] for row in report_rows[:limit]],
+                                             [row[4] for row in batch_rows[:limit]])
         def next_boundary(rows):
             if len(rows) <= limit:
                 return None
-            entry_id, _, timestamp, _ = rows[limit - 1]
+            entry_id, _, timestamp, _, _ = rows[limit - 1]
             return (timestamp if isinstance(timestamp, str) else timestamp.isoformat(), entry_id)
 
         next_cursors = tuple(next_boundary(rows) for rows in (report_rows, batch_rows))
         return (
-            [overview['listing'] | {'display_name': name} for _, overview, _, name in report_rows[:limit]],
-            [batch_summary(manifest) | {'display_name': name} for _, manifest, _, name in batch_rows[:limit]],
+            [overview['listing'] | {'display_name': name, 'saved_bytes': sizes.get(('REPORT', group))}
+             for _, overview, _, name, group in report_rows[:limit]],
+            [batch_summary(manifest) | {'display_name': name, 'saved_bytes': sizes.get(('BATCH', batch_id))}
+             for _, manifest, _, name, batch_id in batch_rows[:limit]],
             next_cursors if any(next_cursors) else None,
         )
 

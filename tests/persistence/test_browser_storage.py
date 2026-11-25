@@ -154,6 +154,8 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert storage_page.status_code == 200
         owner_usage = [int(value) for value in re.findall(r'<data value="(\d+)">', storage_page.text)]
         assert owner_usage[0] == owner_usage[1] > 0 and owner_usage[2] == 0
+        row_sizes = [int(value) for value in re.findall(r'<data value="(\d+)">', listing)]
+        assert len(row_sizes) == 3 and sum(row_sizes) == owner_usage[0]
         assert re.findall(r'<data value="(\d+)">', visitor.get('/reports/storage').text) == ['0'] * 3
         assert single.location in listing and batch.location in listing
         assert f'href="{batch_report}"' not in listing
@@ -320,7 +322,10 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
             r'<data value="(\d+)">', owner.get('/reports/storage').text)]
         assert after_bulk[0] == int(before_bulk_bytes) == after_bulk[1] + after_bulk[2]
         assert after_bulk[1] > 0 and after_bulk[2] > 0
-        assert owner.get('/reports/trash').text.count('>Restore</button>') == 2
+        bulk_trash_page = owner.get('/reports/trash').text
+        assert bulk_trash_page.count('>Restore</button>') == 2
+        trash_sizes = [int(value) for value in re.findall(r'<data value="(\d+)">', bulk_trash_page)]
+        assert len(trash_sizes) == 2 and sum(trash_sizes) == after_bulk[2]
         for entry in (batch_entry, report_entry):
             assert owner.post(f'/reports/manage/{entry.replace(":", "/", 1)}/restore',
                               data={'csrf': rename_csrf}).status_code == 303

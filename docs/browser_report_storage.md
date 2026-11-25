@@ -132,6 +132,10 @@ and assessment counts for this browser. The totals include report files and
 original uploads, count each file path once, and assign paths shared by active
 and trashed assessments to Existing reports. Unreferenced files awaiting cleanup are
 excluded, so the totals describe saved assessments rather than disk usage.
+Each assessment also shows the size of its saved files in **Existing reports**
+and **Trash**. Batch sizes include all target reports and the saved source list.
+Files shared by multiple assessments count once per row, so row sizes can
+add up to more than the browser total.
 
 Migration `0006_browser_assessment_trash` adds a browser-owned trash record
 for each batch or standalone assessment placed in trash. All reports generated
