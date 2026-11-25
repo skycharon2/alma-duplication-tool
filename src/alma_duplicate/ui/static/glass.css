@@ -433,6 +433,11 @@ input[type="text"], .proposal-page .proposed-form input[type="text"],
 .report-selection-toolbar output { color: var(--muted); font-variant-numeric: tabular-nums; }
 .report-selection-toolbar button:disabled { opacity: .55; cursor: default; }
 .report-selection-box { inline-size: 1.15rem; block-size: 1.15rem; margin: 0; accent-color: #075b7e; }
+.report-storage { padding: clamp(16px, 4vw, 28px); }
+.report-storage-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: 12px 24px; margin: 0 0 16px; }
+.report-storage-metrics > div { border-inline-start: 2px solid #a9c4d6; padding-inline-start: 12px; }
+.report-storage-metrics dd { margin: 4px 0 0; }
+.report-storage-metrics data { font-size: 1.4rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .report-library-history .report-library-row:has(.report-selection-box:checked) {
   background: #e4f1f9;
   box-shadow: inset 3px 0 #075b7e;

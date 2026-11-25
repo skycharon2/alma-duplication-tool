@@ -37,7 +37,10 @@
 {% endmacro %}
 {% block content %}
 <div class="page-heading report-library-heading"><h1>Existing reports</h1>
-{% if browser_persistent %}<a class="button report-library-trash-link" href="{{ url_for('report_management.trash_index') }}">Trash</a>{% endif %}
+{% if browser_persistent %}<div class="report-library-actions">
+  <a class="button report-library-trash-link" href="{{ url_for('report_management.storage_usage') }}">Storage usage</a>
+  <a class="button report-library-trash-link" href="{{ url_for('report_management.trash_index') }}">Trash</a>
+</div>{% endif %}
 </div>
 {% include '_report_management_status.html' %}
 <section class="glass-surface report-library report-library-history" aria-label="Reports">

@@ -149,6 +149,12 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert 'Continuum · ARCHIVE: assessment unavailable.' in owner.get(
             mosaic.location + '/mosaic-visualization').text
         listing = owner.get('/reports').text
+        assert 'href="/reports/storage"' in listing
+        storage_page = owner.get('/reports/storage')
+        assert storage_page.status_code == 200
+        owner_usage = [int(value) for value in re.findall(r'<data value="(\d+)">', storage_page.text)]
+        assert owner_usage[0] == owner_usage[1] > 0 and owner_usage[2] == 0
+        assert re.findall(r'<data value="(\d+)">', visitor.get('/reports/storage').text) == ['0'] * 3
         assert single.location in listing and batch.location in listing
         assert f'href="{batch_report}"' not in listing
         for url in (single.location, mosaic.location, batch.location):
@@ -304,11 +310,16 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
             'csrf': foreign_csrf, 'entry': [batch_entry, report_entry],
         }).status_code == 404
         bulk_form = {'csrf': rename_csrf, 'entry': [batch_entry, report_entry, report_entry]}
+        before_bulk_bytes = re.search(r'<data value="(\d+)">', owner.get('/reports/storage').text).group(1)
         assert owner.post(bulk_url, data=bulk_form).status_code == 303
         assert owner.post(bulk_url, data=bulk_form).status_code == 303
         assert owner.get(batch.location).status_code == 404
         assert owner.get(batch_report).status_code == 404
         assert owner.get(single.location).status_code == 404
+        after_bulk = [int(value) for value in re.findall(
+            r'<data value="(\d+)">', owner.get('/reports/storage').text)]
+        assert after_bulk[0] == int(before_bulk_bytes) == after_bulk[1] + after_bulk[2]
+        assert after_bulk[1] > 0 and after_bulk[2] > 0
         assert owner.get('/reports/trash').text.count('>Restore</button>') == 2
         for entry in (batch_entry, report_entry):
             assert owner.post(f'/reports/manage/{entry.replace(":", "/", 1)}/restore',
@@ -448,10 +459,12 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
 
         mosaic_id = mosaic.location.rsplit('/', 1)[-1]
         sibling_id = f'{uuid4().hex}.{uuid4().hex}'
+        before_sibling = owner.get('/reports/storage').text
         with engine.begin() as db:
             branch = db.execute(select(browser_reports).where(
                 browser_reports.c.id == mosaic_id)).mappings().one()
             db.execute(browser_reports.insert().values(dict(branch) | {'id': sibling_id}))
+        assert owner.get('/reports/storage').text == before_sibling
         assert owner.get(f'/runs/{sibling_id}/download/report').status_code == 200
         assert owner.post(f'/reports/manage/report/{mosaic_id}/trash',
                           data={'csrf': csrf}).status_code == 303

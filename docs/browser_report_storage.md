@@ -127,6 +127,11 @@ name is stored separately from the saved report and its scientific inputs.
 To move several assessments to Trash, select them on the current history
 page and choose **Move selected to trash**. A batch selection includes all
 its target reports.
+Choose **Storage usage** from **Existing reports** to see saved file bytes
+and assessment counts for this browser. The totals include report files and
+original uploads, count each file path once, and assign paths shared by active
+and trashed assessments to Existing reports. Unreferenced files awaiting cleanup are
+excluded, so the totals describe saved assessments rather than disk usage.
 
 Migration `0006_browser_assessment_trash` adds a browser-owned trash record
 for each batch or standalone assessment placed in trash. All reports generated

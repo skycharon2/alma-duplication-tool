@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Report storage · ALMA{% endblock %}
+{% block content %}
+<div class="page-heading report-library-heading">
+  <h1>Report storage</h1>
+  <a class="button" href="{{ url_for('report_index') }}">Existing reports</a>
+</div>
+<section class="glass-surface report-storage" aria-label="Saved file usage for this browser">
+  <dl class="report-storage-metrics">
+    <div><dt>Total saved files</dt><dd><data value="{{ usage.total_bytes }}">{{ display_bytes(usage.total_bytes) }}</data></dd></div>
+    <div><dt>Existing reports</dt><dd><data value="{{ usage.history_bytes }}">{{ display_bytes(usage.history_bytes) }}</data></dd>
+      <dd class="report-library-kind">{{ usage.active_count }} {{ 'assessment' if usage.active_count == 1 else 'assessments' }}</dd></div>
+    <div><dt>Trash</dt><dd><data value="{{ usage.trash_bytes }}">{{ display_bytes(usage.trash_bytes) }}</data></dd>
+      <dd class="report-library-kind">{{ usage.trash_count }} {{ 'assessment' if usage.trash_count == 1 else 'assessments' }}</dd></div>
+  </dl>
+  <p class="field-note">Usage includes report files and original uploads saved by this browser. Files shared with an assessment in Existing reports count there. Unreferenced files awaiting cleanup are excluded.</p>
+  {% if usage.trash_count %}<a class="button" href="{{ url_for('report_management.trash_index') }}">Open trash</a>{% endif %}
+</section>
+{% endblock %}

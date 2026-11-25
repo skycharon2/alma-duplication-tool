@@ -9,7 +9,7 @@ from secrets import compare_digest, token_hex
 import click
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 from itsdangerous import BadData, URLSafeTimedSerializer
-from sqlalchemy import case, func, or_, select
+from sqlalchemy import case, func, literal, or_, select, union_all
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
@@ -36,6 +36,50 @@ def _trash_match(parent):
 def assessment_is_active(parent):
     return ~select(browser_assessment_trash.c.assessment_id).where(
         _trash_match(parent)).correlate(parent).exists()
+
+
+def _storage_usage(db, owner):
+    reports, batches = browser_reports, browser_batches
+    links, snapshots = assessment_input_links, assessment_input_snapshots
+
+    def with_upload(parent, parent_link):
+        return parent.outerjoin(links, parent_link == parent.c.id).outerjoin(
+            snapshots, (snapshots.c.id == links.c.snapshot_id) & (snapshots.c.owner_digest == owner))
+
+    rows = union_all(
+        select(case((reports.c.batch_id.is_not(None), 'BATCH'), else_='REPORT'),
+               func.coalesce(reports.c.batch_id, reports.c.assessment_group_id, reports.c.id),
+               assessment_is_active(reports), reports.c.artifact_manifest, snapshots.c.upload
+        ).select_from(with_upload(reports, links.c.report_id)).where(reports.c.owner_digest == owner),
+        select(literal('BATCH'), batches.c.id, assessment_is_active(batches), literal(None),
+               snapshots.c.upload
+        ).select_from(with_upload(batches, links.c.batch_id)).where(batches.c.owner_digest == owner),
+    )
+    assessments = {}
+    files = {}
+    for kind, entry_id, active, manifest, upload in db.execute(rows).yield_per(256):
+        assessments[kind, entry_id] = active
+        descriptors = list(manifest or ())
+        if upload:
+            descriptors.append(upload['artifact'])
+        for item in descriptors:
+            key, size = item['storage_key'], item['byte_size']
+            # Attribute a shared path to active history if any active item uses it.
+            previous_size, previously_active = files.get(key, (0, False))
+            files[key] = (max(size, previous_size), active or previously_active)
+    active_count = sum(assessments.values())
+    history_bytes = sum(size for size, active in files.values() if active)
+    trash_bytes = sum(size for size, active in files.values() if not active)
+    return dict(active_count=active_count, trash_count=len(assessments) - active_count,
+                history_bytes=history_bytes, trash_bytes=trash_bytes,
+                total_bytes=history_bytes + trash_bytes)
+
+
+def _display_bytes(size):
+    for unit, scale in (('GiB', 1024**3), ('MiB', 1024**2), ('KiB', 1024)):
+        if size >= scale:
+            return f'{size / scale:,.1f} {unit}'
+    return f'{size} B'
 
 
 def assessment_display_name(parent):
@@ -237,6 +281,15 @@ def register_report_management(app, engine, current_owner):
                                 id=entry_id, deleted_at=_utc(deleted_at), purge_after=_utc(purge_after)))
         return render_template('report_trash.html', entries=entries, page=page,
                                has_next=len(rows) > page_size)
+
+    @routes.get('/reports/storage')
+    def storage_usage():
+        owner = current_owner()
+        if owner is None:
+            abort(404)
+        with engine.connect() as db:
+            usage = _storage_usage(db, owner)
+        return render_template('report_storage.html', usage=usage, display_bytes=_display_bytes)
 
     @routes.get('/reports/manage/<kind>/<entry_id>/purge')
     def confirm_purge(kind, entry_id):
