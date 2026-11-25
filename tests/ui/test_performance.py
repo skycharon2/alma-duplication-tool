@@ -5,10 +5,21 @@ from pathlib import Path
 import pytest
 
 from alma_duplicate.performance import PerformanceRecorder, measure_stage
-from alma_duplicate.cli.profile_assessment import profile
+from alma_duplicate.cli.profile_assessment import main, profile
 from alma_duplicate.ui.runs import BrowserAssessment
 
 ROOT = Path(__file__).parents[2]
+
+
+def test_profile_measures_queue_snapshot_before_parsing():
+    example = ROOT / 'examples/queue_continuum'
+    document = json.loads((example / 'request.json').read_text())
+    configured = BrowserAssessment(queue_csv=example / 'queue.csv')
+    result = profile(document, configured)
+    assert result['execution'] == 'COMPLETED'
+    assert result['sources']['QUEUE'] == 'COMPLETED'
+    names = [stage['name'] for stage in result['stages']]
+    assert names.index('queue_pin') < names.index('csv_load')
 
 
 def test_clock_accounting_failure_and_isolation():
@@ -50,7 +61,7 @@ def test_profile_and_failed_storage_preserve_evaluation():
     assert 'report_size' not in failed
 
 
-def test_saved_failure_report_is_not_a_successful_source_run(monkeypatch):
+def test_saved_failure_report_is_not_a_successful_source_run(monkeypatch, tmp_path):
     from alma_duplicate.clients import archive_client, archive_aq_client
 
     class FailedTap:
@@ -77,6 +88,12 @@ def test_saved_failure_report_is_not_a_successful_source_run(monkeypatch):
     assert diagnostic['aq_status'] == 'SKIPPED'
     assert diagnostic['aq_reason'] == 'TAP_NOT_COMPLETED'
     assert any(s['name'] == 'tap_acquisition' and s['failed'] for s in result['stages'])
+
+    output = tmp_path / 'failed-source.json'
+    args = [str(ROOT / 'examples/confirmed_line/request.json'), '--live-archive',
+            '--require-complete-sources', '--output', str(output)]
+    assert main(args) == 1
+    assert json.loads(output.read_text())['sources']['ARCHIVE'] == 'FAILED'
 
 
 def test_nested_timing_counts_children_once_and_resets_after_failure():

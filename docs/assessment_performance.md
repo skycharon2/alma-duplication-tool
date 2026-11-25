@@ -17,7 +17,7 @@ python -m alma_duplicate.cli.profile_assessment REQUEST.json \
   --output reports/performance/queue.json
 
 python -m alma_duplicate.cli.profile_assessment REQUEST.json \
-  --live-archive --live-aq \
+  --live-archive --live-aq --archive-connection AUTO --require-complete-sources \
   --output reports/performance/archive.json
 
 python -m alma_duplicate.cli.analyze_report_size SAVED_REPORT.json \
@@ -36,6 +36,9 @@ If retention fails, the timing record preserves the failed write stage and the
 already-computed candidate/outcome counts. A failed write is not a scientific
 negative result. Source failures can still produce a report; inspect `sources`
 and `assessment_status` as well as the profiler's `execution` field.
+Use `--require-complete-sources` when collecting a performance baseline. It
+preserves the diagnostic JSON and returns a nonzero exit code if a selected
+source did not complete. Check AQ status separately for runs requiring live AQ.
 `source_diagnostics` preserves source reasons, upstream status/error kind and AQ
 status/skip reason. A stage's `failed` flag indicates an exception crossing the
 timing boundary; a client returning a structured failure can have `failed=false`.
@@ -56,7 +59,10 @@ exception text. They omit raw rows and HTTP response bodies.
   executor call, including materialization, rather than wire transit alone.
   With the browser retrieval-first policy, `tap_count` appears only if a separate
   completeness check was needed; its absence is not a zero-duration COUNT.
-- `csv_load`: reading and parsing the supplied CSV snapshot.
+- `queue_pin`: freezing the selected Queue snapshot at submission, including
+  reading the supplied CSV bytes. This stage is omitted for Archive-only runs.
+- `csv_load`: loading and parsing Queue data. For a pinned CSV, its file read
+  is already accounted for in `queue_pin`.
 - `archive_binding`, `*_contexts`, `*_filter`: query binding, context construction
   and retrieval filtering, before scientific evaluation.
 - `aq_acquisition`: acquisition orchestration including discovery, Member requests
@@ -140,6 +146,15 @@ The [CASE1 comparison](evidence/tap_retrieval_first_2026-10-12.md) measures
 `COUNT_FIRST` against the browser's `STATUS_THEN_COUNT` policy with the same
 request. Inspect both source status and candidate parity; report creation by
 itself does not establish successful acquisition.
+
+## Browser Mosaic source concurrency
+
+For a browser-submitted Mosaic with both Archive and Queue selected, the
+two sources now run concurrently within each scientific purpose. The limit
+is two active source branches per submission, independent of the Multi-source
+worker setting. Report publication retains the submitted purpose and source
+order. Measure the live gain with identical Mosaic inputs and the same Queue
+snapshot before and after the change.
 
 ## Five-target batch baseline
 
