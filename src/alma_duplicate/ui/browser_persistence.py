@@ -148,7 +148,7 @@ class BrowserRuns:
         overview = self.overview(run_id)
         return overview.get('assessment_navigation') if overview else None
 
-    def history_page(self, *, limit, hidden_report_ids, cursors=None, search=''):
+    def history_page(self, *, limit, hidden_report_ids, cursors=None, search='', kind=''):
         """Read the next older slice of each browser-owned history list."""
         owner = _owner.get()
         if owner is None:
@@ -190,12 +190,14 @@ class BrowserRuns:
         listed = reports.overview['show_in_history'].as_boolean()
         report_cursor, batch_cursor = cursors or (None, None)
         with self.engine.connect() as db:
-            report_rows = older_rows(db, browser_reports, reports.overview, reports.batch_id.is_(None),
+            report_rows = [] if kind == 'batch' else older_rows(
+                db, browser_reports, reports.overview, reports.batch_id.is_(None),
                 or_(listed.is_(True), listed.is_(None) & reports.id.not_in(hidden_report_ids)),
                 assessment_is_active(browser_reports),
                 cursor=report_cursor)
-            batch_rows = older_rows(db, browser_batches, batches.manifest,
-                                    assessment_is_active(browser_batches), cursor=batch_cursor)
+            batch_rows = [] if kind == 'report' else older_rows(
+                db, browser_batches, batches.manifest,
+                assessment_is_active(browser_batches), cursor=batch_cursor)
             sizes = assessment_storage_sizes(db, owner, [row[4] for row in report_rows[:limit]],
                                              [row[4] for row in batch_rows[:limit]])
         def next_boundary(rows):

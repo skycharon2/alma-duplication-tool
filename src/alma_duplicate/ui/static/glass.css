@@ -432,8 +432,12 @@ input[type="text"], .proposal-page .proposed-form input[type="text"],
 }
 .report-selection-toolbar output { color: var(--muted); font-variant-numeric: tabular-nums; }
 .report-history-search { margin-block: 0 16px; }
+.report-history-search .report-library-actions { align-items: flex-end; gap: 10px 14px; }
 .report-history-search label { display: block; margin-bottom: 6px; font-weight: 600; }
-.report-history-search input { inline-size: min(22rem, 100%); min-height: 44px; padding: 8px 12px; border: 1px solid var(--control-border); border-radius: 10px; background: var(--paper); color: var(--ink); }
+.report-history-search :is(input, select) { min-height: 44px; padding: 8px 12px; border: 1px solid var(--control-border); border-radius: 10px; background: var(--paper); color: var(--ink); }
+.report-history-search input { inline-size: min(22rem, 78vw); }
+.report-history-search .button { min-height: 44px; }
+.report-history-search .report-library-actions > a { align-self: center; }
 .report-selection-toolbar button:disabled { opacity: .55; cursor: default; }
 .report-selection-box { inline-size: 1.15rem; block-size: 1.15rem; margin: 0; accent-color: #075b7e; }
 .report-storage { padding: clamp(16px, 4vw, 28px); }

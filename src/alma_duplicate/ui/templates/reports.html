@@ -46,11 +46,21 @@
 {% include '_report_management_status.html' %}
 {% if browser_persistent %}
 <form class="report-history-search" method="get" action="{{ url_for('report_index') }}" role="search" aria-label="Saved reports">
-  <label for="report-search">Search saved reports</label>
   <div class="report-library-actions">
-    <input id="report-search" name="q" type="search" maxlength="80" value="{{ history_search }}">
-    <button class="button" type="submit">Search</button>
-    {% if history_search %}<a href="{{ url_for('report_index') }}">Clear search</a>{% endif %}
+    <div>
+      <label for="report-search">Search saved reports</label>
+      <input id="report-search" name="q" type="search" maxlength="80" value="{{ history_search }}">
+    </div>
+    <div>
+      <label for="report-kind">Assessment type</label>
+      <select id="report-kind" name="kind">
+        <option value="">All types</option>
+        <option value="batch"{% if history_kind == 'batch' %} selected{% endif %}>Multi-source batches</option>
+        <option value="report"{% if history_kind == 'report' %} selected{% endif %}>Standalone assessments</option>
+      </select>
+    </div>
+    <button class="button" type="submit">Apply</button>
+    {% if history_search or history_kind %}<a href="{{ url_for('report_index') }}">Clear filters</a>{% endif %}
   </div>
 </form>
 {% endif %}
@@ -94,9 +104,9 @@
 </ul>
 {% else %}
 <div class="report-library-empty report-library-welcome">
-{% if history_search %}
+{% if history_search or history_kind %}
 <h2>No matching reports</h2>
-<p>Search for a saved display name, batch name, or target name.</p>
+<p>Try another name or assessment type.</p>
 <a class="button" href="{{ url_for('report_index') }}">Show all reports</a>
 {% else %}
 <h2>No reports yet</h2>
@@ -108,8 +118,8 @@
 </section>
 {% if history_is_older or history_next %}
 <nav class="report-actions" aria-label="Report history pages">
-  {% if history_is_older %}<a class="button" href="{{ url_for('report_index', q=history_search or none) }}">Newest reports</a>{% endif %}
-  {% if history_next %}<a class="button" href="{{ url_for('report_index', older=history_next, q=history_search or none) }}">Older reports</a>{% endif %}
+  {% if history_is_older %}<a class="button" href="{{ url_for('report_index', q=history_search or none, kind=history_kind or none) }}">Newest reports</a>{% endif %}
+  {% if history_next %}<a class="button" href="{{ url_for('report_index', older=history_next, q=history_search or none, kind=history_kind or none) }}">Older reports</a>{% endif %}
 </nav>
 {% endif %}
 <p class="report-retention-note">{% if browser_persistent %}Saved reports are private to this browser. Keep this site’s cookie to reopen them after a restart.{% else %}Browser reports are temporary: up to {{ '%g'|format(retention_hours) }} hours, and may be removed sooner on restart or when storage is full. Download important reports from their report page.{% endif %}</p>
