@@ -425,3 +425,15 @@ input[type="text"], .proposal-page .proposed-form input[type="text"],
 .report-page .comparison-overview { padding: clamp(14px, 2vw, 22px); }
 .report-page .comparison-overview > h2 { margin-bottom: 8px; }
 .comparison-overview .matching-sources { font-variant-numeric: tabular-nums; }
+
+.report-selection-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 8px 16px; padding: 10px 24px; border-bottom: 1px solid var(--border);
+}
+.report-selection-toolbar output { color: var(--muted); font-variant-numeric: tabular-nums; }
+.report-selection-toolbar button:disabled { opacity: .55; cursor: default; }
+.report-selection-box { inline-size: 1.15rem; block-size: 1.15rem; margin: 0; accent-color: #075b7e; }
+.report-library-history .report-library-row:has(.report-selection-box:checked) {
+  background: #e4f1f9;
+  box-shadow: inset 3px 0 #075b7e;
+}

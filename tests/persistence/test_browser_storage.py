@@ -291,6 +291,30 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         }).status_code == 303
         assert 'Single pointing baseline' in owner.get('/reports').text
         assert owner.get(single.location + '/download/report').data == download
+        batch_entry = f'batch:{batch.location.rsplit("/", 1)[-1]}'
+        report_entry = f'report:{single.location.rsplit("/", 1)[-1]}'
+        bulk_url = '/reports/manage/trash-selected'
+        assert f'action="{bulk_url}"' in owner.get('/reports').text
+        assert owner.post(bulk_url, data={'csrf': rename_csrf}).status_code == 400
+        assert owner.post(bulk_url, data={
+            'csrf': rename_csrf, 'entry': [batch_entry, f'batch:{"f" * 32}'],
+        }).status_code == 404
+        assert owner.get(batch.location).status_code == 200
+        assert visitor.post(bulk_url, data={
+            'csrf': foreign_csrf, 'entry': [batch_entry, report_entry],
+        }).status_code == 404
+        bulk_form = {'csrf': rename_csrf, 'entry': [batch_entry, report_entry, report_entry]}
+        assert owner.post(bulk_url, data=bulk_form).status_code == 303
+        assert owner.post(bulk_url, data=bulk_form).status_code == 303
+        assert owner.get(batch.location).status_code == 404
+        assert owner.get(batch_report).status_code == 404
+        assert owner.get(single.location).status_code == 404
+        assert owner.get('/reports/trash').text.count('>Restore</button>') == 2
+        for entry in (batch_entry, report_entry):
+            assert owner.post(f'/reports/manage/{entry.replace(":", "/", 1)}/restore',
+                              data={'csrf': rename_csrf}).status_code == 303
+        assert owner.get(manifest_url).json == manifest
+        assert owner.get(single.location + '/download/report').data == download
         assert rerun_manifest['shared_setup']['document']['request']['angular_resolution']['value'] == '0.45'
         assert [entry['source'] for entry in rerun_manifest['sources']] == [
             entry['source'] for entry in manifest['sources']]

@@ -1,6 +1,7 @@
 """Browser-owned trash transitions and visibility rules."""
 from datetime import datetime, timedelta, timezone
 import os
+import re
 from secrets import compare_digest, token_hex
 
 import click
@@ -57,9 +58,14 @@ def _utc(timestamp):
     return timestamp.astimezone(timezone.utc)
 
 
-def _lock_assessment(db, owner, kind, entry_id, *, group=False):
+def _begin_management_write(db):
     if db.get_bind().dialect.name == 'sqlite':
         db.connection().exec_driver_sql('BEGIN IMMEDIATE')
+
+
+def _lock_assessment(db, owner, kind, entry_id, *, group=False, begun=False):
+    if not begun:
+        _begin_management_write(db)
     if kind == 'batch':
         columns = browser_batches.c
         query = select(columns.id).where(columns.id == entry_id, columns.owner_digest == owner)
@@ -294,6 +300,49 @@ def register_report_management(app, engine, current_owner):
                     labels.c.assessment_id == assessment_id,
                 ))
         flash('Display name updated.', 'report-management')
+        return redirect(url_for('report_index'), code=303)
+
+    @routes.post('/reports/manage/trash-selected')
+    def trash_selected():
+        require_csrf()
+        entries = request.form.getlist('entry')
+        if not 1 <= len(entries) <= 40:
+            abort(400, description='Select between 1 and 40 assessments.')
+        if not all(re.fullmatch(
+                r'(batch:[a-f0-9]{32}|report:[a-f0-9]{32}\.[a-f0-9]{32})', entry)
+                for entry in entries):
+            abort(400, description='Invalid assessment selection.')
+        owner = current_owner()
+        if owner is None:
+            abort(404)
+        trash = browser_assessment_trash
+        reports = browser_reports.c
+        identity = func.coalesce(reports.assessment_group_id, reports.id)
+        with transaction(engine) as db:
+            _begin_management_write(db)
+            targets = set()
+            for entry in set(entries):
+                kind, entry_id = entry.split(':', 1)
+                if kind == 'report':
+                    entry_id = db.scalar(select(identity).where(
+                        reports.id == entry_id, reports.owner_digest == owner,
+                        reports.batch_id.is_(None),
+                    ))
+                    if entry_id is None:
+                        abort(404)
+                targets.add((kind, entry_id))
+            # Acquire the same group locks as individual actions, in a stable order.
+            for kind, entry_id in sorted(targets):
+                if _lock_assessment(db, owner, kind, entry_id, group=True, begun=True) is None:
+                    abort(404)
+            now = datetime.now(timezone.utc)
+            db.execute(insert(trash).on_conflict_do_nothing(
+                index_elements=list(trash.primary_key.columns)), [
+                dict(owner_digest=owner, assessment_kind=kind.upper(), assessment_id=entry_id,
+                     deleted_at=now, purge_after=now + retention)
+                for kind, entry_id in sorted(targets)
+            ])
+        flash('Selected assessments moved to trash.', 'report-management')
         return redirect(url_for('report_index'), code=303)
 
     @routes.post('/reports/manage/<kind>/<entry_id>/<action>')

@@ -124,6 +124,9 @@ contract, upload integrity checks, and draft lifetime configuration.
 Use **Rename** in **Existing reports** to change a saved assessment's
 display name. Leave the field empty to use the original name. The display
 name is stored separately from the saved report and its scientific inputs.
+To move several assessments to Trash, select them on the current history
+page and choose **Move selected to trash**. A batch selection includes all
+its target reports.
 
 Migration `0006_browser_assessment_trash` adds a browser-owned trash record
 for each batch or standalone assessment placed in trash. All reports generated
