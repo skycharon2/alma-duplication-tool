@@ -321,7 +321,8 @@ def register_browser_persistence(app):
         weakref.finalize(app, engine.dispose)
     app.config.update(SECRET_KEY=secret, SESSION_COOKIE_NAME='alma_browser_reports',
                       SESSION_COOKIE_SECURE=app.config['BROWSER_COOKIE_SECURE'])
-    runs = BrowserRuns(engine, LocalArtifactStore(Path(app.config['ARTIFACT_ROOT']), compress_inspection=True),
+    runs = BrowserRuns(engine, LocalArtifactStore(Path(app.config['ARTIFACT_ROOT']),
+        compress_inspection=True, compress_reports=True),
         max_runs=app.config['MAX_RETAINED_RUNS'], max_bytes=app.config['MAX_RETAINED_BYTES'],
         max_age=app.config['MAX_RUN_AGE_SECONDS'], directory=app.config['RUN_STORAGE_PARENT'])
 

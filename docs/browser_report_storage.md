@@ -56,6 +56,10 @@ original format.
 New Queue pagination indexes may store candidate blocks compressed on disk.
 The browser reads only the indexed candidate blocks needed for each page.
 Existing candidate indexes and complete report downloads remain readable.
+New browser reports of at least 64 KiB are also compressed in independent
+1 MiB blocks. Report pages verify and expand the blocks containing their
+requested contexts. Full downloads expand and verify the original JSON.
+Existing reports keep their format.
 
 ## Local trial on macOS
 

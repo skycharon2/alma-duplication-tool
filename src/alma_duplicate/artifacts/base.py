@@ -16,6 +16,7 @@ class Artifact:
     sha256: str
     byte_size: int
     stored_byte_size: int | None = None
+    report_blocks: list[tuple[int, str]] | None = None
 
 
 class ArtifactStore(Protocol):

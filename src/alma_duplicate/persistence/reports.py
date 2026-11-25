@@ -74,12 +74,18 @@ class SavedReportArtifacts:
             return self.queue_page(page, view)
         reader = (custom_page if projection.get('queue_custom') else
                   mosaic_report_page if projection.get('mosaic') else report_page)
-        with self.store.open_verified(self.artifacts['report']) as stream:
-            def context(index):
-                offset, length = projection['offsets'][index]
-                stream.seek(offset)
-                return json.loads(stream.read(length))
-            data = reader(projection, page, view, context)
+        artifact = self.artifacts['report']
+        if artifact.report_blocks is not None:
+            with self.store.open_report_ranges(artifact) as ranges:
+                data = reader(projection, page, view, lambda index: json.loads(
+                    ranges.read_range(*projection['offsets'][index])))
+        else:
+            with self.store.open_verified(artifact) as stream:
+                def context(index):
+                    offset, length = projection['offsets'][index]
+                    stream.seek(offset)
+                    return json.loads(stream.read(length))
+                data = reader(projection, page, view, context)
         if 'queue_index' in projection:
             data['document']['queue_geometry_assessment'] = self.queue_page()['document']
         data.update(persistent=True, run_id=self.run['id'], run=dict(self.run, status=self.run['assessment_status']))
