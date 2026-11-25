@@ -168,7 +168,21 @@ def test_upload_is_sufficient_without_separate_confirmations(browser):
     assert calls
 
 @pytest.mark.parametrize("intents", [["LINE"], ["LINE", "CONTINUUM"]])
-def test_mosaic_both_sources_share_page_with_purpose_navigation(browser, intents):
+def test_mosaic_both_sources_share_page_with_purpose_navigation(browser, intents, monkeypatch):
+    from threading import Barrier
+    from alma_duplicate.ui.runs import BrowserAssessment
+
+    overlap = Barrier(2, timeout=5)
+
+    def wait_for_other_source(method):
+        def assess(runner, document, pointings):
+            overlap.wait()
+            return method(runner, document, pointings)
+        return assess
+
+    for method in ('assess_mosaic', 'assess_queue_custom'):
+        monkeypatch.setattr(BrowserAssessment, method,
+                            wait_for_other_source(getattr(BrowserAssessment, method)))
     client, calls = browser
     data = form() | dict(sources=["ARCHIVE", "QUEUE"], mosaic_upload_token=upload(client),
                          normal_form_version="2", action="assess", intents=intents, aggregate="1",

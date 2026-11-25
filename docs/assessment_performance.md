@@ -141,6 +141,15 @@ The [CASE1 comparison](evidence/tap_retrieval_first_2026-10-12.md) measures
 request. Inspect both source status and candidate parity; report creation by
 itself does not establish successful acquisition.
 
+## Browser Mosaic source concurrency
+
+For a browser-submitted Mosaic with both Archive and Queue selected, the
+two sources now run concurrently within each scientific purpose. The limit
+is two active source branches per submission, independent of the Multi-source
+worker setting. Report publication retains the submitted purpose and source
+order. Measure the live gain with identical Mosaic inputs and the same Queue
+snapshot before and after the change.
+
 ## Five-target batch baseline
 
 `python -m alma_duplicate.cli.profile_batch` uses `execute_batch`, including

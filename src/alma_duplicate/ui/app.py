@@ -3,7 +3,9 @@
 import json
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
+from contextvars import copy_context
 from dataclasses import replace
 from datetime import datetime, timezone
 import weakref
@@ -704,10 +706,7 @@ def create_app(config=None):
                 if dual_source:
                     documents = [doc | {"search_options": doc["search_options"] | {"sources": [source]}}
                                  for doc in documents for source in state.values["sources"]]
-                completed = []
-                failures = []
-                successful_labels = []
-                for document in documents:
+                def run_branch(document):
                     label = ({"LINE": "Spectral line", "CONTINUUM": "Continuum"}[
                         document["request"]["intents"][0]] + " · " +
                         " + ".join(document["search_options"]["sources"]))
@@ -717,10 +716,22 @@ def create_app(config=None):
                             raise ValueError("Assessment returned no report")
                     except (OSError, UnicodeError, ValueError, TypeError) as exc:
                         app.logger.warning("Assessment branch %s failed: %s", label, exc)
-                        failures.append(label)
-                        continue
-                    completed.append((saved_document | extra_input, assessment))
-                    successful_labels.append(label)
+                        return label, None
+                    return label, (saved_document | extra_input, assessment)
+
+                if dual_source:
+                    # Pair only the two sources for each purpose. Publish all
+                    # branches in submitted order on the request thread.
+                    results = []
+                    with ThreadPoolExecutor(max_workers=1, thread_name_prefix='mosaic-source') as executor:
+                        for first, second in zip(documents[::2], documents[1::2], strict=True):
+                            sibling = executor.submit(copy_context().run, run_branch, second)
+                            results.extend((run_branch(first), sibling.result()))
+                else:
+                    results = [run_branch(document) for document in documents]
+                completed = [result for _, result in results if result is not None]
+                failures = [label for label, result in results if result is None]
+                successful_labels = [label for label, result in results if result is not None]
                 if not completed:
                     return None, "Assessment could not be completed. No report was created. Check the configured sources and server log."
                 if app.config['REPORT_STORAGE'] == 'database':
