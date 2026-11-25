@@ -18,6 +18,7 @@ from alma_duplicate.cli.queue_update import QueueUpdateBusyError, SUCCESS_STATUS
 from alma_duplicate.storage.queue_active import QueueActiveError, QueueActiveRegistry
 from alma_duplicate.storage import QueueSnapshotStoreError
 from alma_duplicate.progress import observe_progress
+from alma_duplicate.performance import PerformanceRecorder, measure_stage
 from alma_duplicate.ui.assessment_reuse import load_draft_form, register_assessment_reuse
 from alma_duplicate.ui.progress import ProgressStore
 from alma_duplicate.ui.reports import load_reports
@@ -74,6 +75,7 @@ def create_app(config=None):
     app.config["OFFLINE_ARCHIVE_REPLAY"] = os.environ.get("ALMA_UI_ARCHIVE_REPLAY")
     app.config["LIVE_ARCHIVE"] = _env_flag("ALMA_UI_LIVE_ARCHIVE")
     app.config["LIVE_AQ"] = _env_flag("ALMA_UI_LIVE_ARCHIVE_AQ")
+    app.config["ASSESSMENT_TIMINGS"] = _env_flag("ALMA_UI_ASSESSMENT_TIMINGS")
     app.config["SUBMITTED_LINE_V2_UI_ENABLED"] = _env_flag("ALMA_UI_SUBMITTED_LINE_V2")
     app.config["OFFLINE_QUEUE_CSV"] = os.environ.get("ALMA_UI_QUEUE_CSV")
     app.config["MANAGED_QUEUE_ROOT"] = os.environ.get("ALMA_UI_QUEUE_SNAPSHOT_ROOT")
@@ -681,10 +683,12 @@ def create_app(config=None):
         if token and not progress.begin(token):
             return Response("Assessment already submitted or server busy. Wait before trying again.", status=429), None
         report_url = None
+        recorder = PerformanceRecorder() if app.config['ASSESSMENT_TIMINGS'] else None
         try:
             observer = (observe_progress(lambda event: progress.update(token, event))
                         if token else nullcontext())
-            with observer:
+            with (observer, recorder.record() if recorder else nullcontext(),
+                  measure_stage('browser_assessment')):
                 input_options = {}
                 if app.config['REPORT_STORAGE'] == 'database':
                     from alma_duplicate.ui.input_snapshot import capture_input_snapshot
@@ -695,7 +699,9 @@ def create_app(config=None):
                     input_options = dict(input_snapshot=capture_input_snapshot(
                         state, workflow='MOSAIC' if mosaic else 'SINGLE'), upload=upload)
                 runner = replace(configured, archive_connection=state.values.get("archive_connection", "AUTO"))
-                runner = runner.pin_queue_for_submission("QUEUE" in state.values["sources"])
+                if "QUEUE" in state.values["sources"]:
+                    with measure_stage('queue_pin'):
+                        runner = runner.pin_queue_for_submission(True)
                 documents = [state.document]
                 both = set(state.values["intents"]) == {"LINE", "CONTINUUM"}
                 if both:
@@ -711,9 +717,10 @@ def create_app(config=None):
                         document["request"]["intents"][0]] + " · " +
                         " + ".join(document["search_options"]["sources"]))
                     try:
-                        saved_document, assessment, extra_input = dispatch(runner, document)
-                        if assessment.document is None:
-                            raise ValueError("Assessment returned no report")
+                        with measure_stage(label):
+                            saved_document, assessment, extra_input = dispatch(runner, document)
+                            if assessment.document is None:
+                                raise ValueError("Assessment returned no report")
                     except (OSError, UnicodeError, ValueError, TypeError) as exc:
                         app.logger.warning("Assessment branch %s failed: %s", label, exc)
                         return label, None
@@ -739,7 +746,8 @@ def create_app(config=None):
                         source_labels=successful_labels if dual_source or failures else None,
                         failed_branches=failures, pair_purposes=both and not (dual_source or failures),
                     )
-                ids = runs.add_group(completed, **input_options)
+                with measure_stage('report_save'):
+                    ids = runs.add_group(completed, **input_options)
                 history = (ids + session.get("report_history", []))[:20]
                 session["report_history"] = history
                 partial = [group for group in session.get("partial_assessments", [])
@@ -763,6 +771,13 @@ def create_app(config=None):
         finally:
             if token:
                 progress.finish(token, report_url=report_url)
+            if recorder:
+                from dataclasses import asdict
+                app.logger.warning('Assessment timings %s', json.dumps({
+                    'workflow': 'MOSAIC' if is_fixed_mosaic(state.values) else 'SINGLE',
+                    'report_saved': report_url is not None,
+                    'stages': [asdict(stage) for stage in recorder.stages],
+                }))
 
     def _single_submission(state, action):
         state.document, state.result, state.issues = validate_form(

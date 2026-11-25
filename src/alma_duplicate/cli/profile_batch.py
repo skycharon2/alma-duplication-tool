@@ -1,4 +1,5 @@
 """Profile the actual batch path; never change scientific reports or retention policy."""
+from collections import Counter, defaultdict
 import argparse
 from datetime import datetime, timezone
 import json
@@ -10,11 +11,11 @@ from time import perf_counter, process_time
 
 from alma_duplicate.cli.profile_assessment import file_hash
 from alma_duplicate.ui.batch_assessment import execute_batch
-from alma_duplicate.ui.runs import BrowserAssessment, RunStore
+from alma_duplicate.ui.runs import ARCHIVE_CONNECTIONS, BrowserAssessment, RunStore
 
 
 def profile_batch(values, rows, raw, configured, *, workers=1, max_bytes=1024**3,
-                  format='csv'):
+                  format='csv', aq_member_workers=2):
     records = []
     lock = Lock()
     def collect(record):
@@ -23,13 +24,14 @@ def profile_batch(values, rows, raw, configured, *, workers=1, max_bytes=1024**3
     output = dict(schema_version='batch_performance_1',
                   started_at=datetime.now(timezone.utc).isoformat(),
                   python=platform.python_version(), platform=platform.platform(),
-                  workers=workers, storage_budget_bytes=max_bytes, execution='FAILED')
+                  workers=workers, aq_member_workers=aq_member_workers,
+                  storage_budget_bytes=max_bytes, execution='FAILED')
     runs = RunStore(max_bytes=max_bytes)
     wall, cpu = perf_counter(), process_time()
     try:
         batch_id = execute_batch(values, rows, raw, runner=configured, runs=runs,
             owner='performance', submission_token='0' * 32, format=format,
-            max_workers=workers, performance=collect)
+            max_workers=workers, performance=collect, aq_member_workers=aq_member_workers)
         manifest = runs.batches.get(batch_id, 'performance')
         if manifest is None:
             raise RuntimeError('Batch manifest unavailable')
@@ -58,6 +60,24 @@ def profile_batch(values, rows, raw, configured, *, workers=1, max_bytes=1024**3
         peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         output['process_lifetime_peak_rss_bytes'] = int(peak if platform.system() == 'Darwin' else peak * 1024)
         runs.close()
+    stages = defaultdict(lambda: dict(calls=0, wall_seconds=0.0, failed=0))
+    targets = Counter()
+    members = Counter()
+    for branch in output.get('branches', []):
+        members.update(branch.pop('aq_members', ()))
+        if 'wall_seconds' in branch:
+            targets[branch['source_id']] += branch['wall_seconds']
+        for stage in branch['stages']:
+            totals = stages[stage['name']]
+            totals['calls'] += 1
+            totals['wall_seconds'] += stage['wall_seconds']
+            totals['failed'] += stage['failed']
+    slowest = targets.most_common(1)
+    output['summary'] = dict(
+        slowest_target=dict(source_id=slowest[0][0], wall_seconds=slowest[0][1]) if slowest else None,
+        stages=dict(stages), aq_member_queries=members.total(), aq_unique_members=len(members),
+        aq_repeated_member_queries=members.total() - len(members),
+    )
     return output
 
 
@@ -67,11 +87,13 @@ def main(argv=None):
     parser.add_argument('targets', type=Path)
     parser.add_argument('--format', choices=['csv', 'txt'], default='csv')
     parser.add_argument('--workers', type=int, choices=[1, 2, 3, 4], default=1)
+    parser.add_argument('--aq-member-workers', type=int, choices=[1, 2], default=2)
     parser.add_argument('--sources', choices=['queue', 'archive', 'both'], required=True)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--archive-replay', type=Path)
     group.add_argument('--live-archive', action='store_true')
     parser.add_argument('--live-aq', action='store_true')
+    parser.add_argument('--archive-connection', choices=ARCHIVE_CONNECTIONS)
     parser.add_argument('--archive-array-evidence', type=Path)
     parser.add_argument('--queue-csv', type=Path)
     parser.add_argument('--storage-mib', type=int, default=1024)
@@ -86,6 +108,8 @@ def main(argv=None):
     setup = json.loads(args.setup.read_text())
     values = dict(setup['values'], sources={'queue': ['QUEUE'], 'archive': ['ARCHIVE'],
                                          'both': ['ARCHIVE', 'QUEUE']}[args.sources])
+    if args.archive_connection is not None:
+        values['archive_connection'] = args.archive_connection
     paths = dict(setup=args.setup, targets=args.targets, queue_csv=args.queue_csv,
                  archive_replay=args.archive_replay, archive_array_evidence=args.archive_array_evidence)
     hashes = {k: file_hash(v) for k, v in paths.items() if v is not None}
@@ -93,14 +117,19 @@ def main(argv=None):
         archive_array_evidence=args.archive_array_evidence, live_archive=args.live_archive,
         live_aq=args.live_aq, report_detail='matches')
     output = profile_batch(values, setup['rows'], args.targets.read_bytes(), runner,
-                           workers=args.workers, max_bytes=args.storage_mib * 1024**2, format=args.format)
+                           workers=args.workers, max_bytes=args.storage_mib * 1024**2,
+                           format=args.format, aq_member_workers=args.aq_member_workers)
     output.update(input_sha256=hashes, selected_sources=args.sources,
-                  archive_mode=runner.archive_kind, live_aq=args.live_aq)
+                  archive_mode=runner.archive_kind, live_aq=args.live_aq,
+                  archive_connection=values.get('archive_connection', 'AUTO'))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open('x') as stream:
         json.dump(output, stream, indent=2, allow_nan=False)
         stream.write('\n')
     print(f"{output['execution']}: {output['wall_seconds']:.3f}s; {args.output}")
+    slowest = output['summary']['slowest_target']
+    if slowest:
+        print(f"  Slowest target: {slowest['source_id']} ({slowest['wall_seconds']:.3f}s)")
     for branch in output.get('branches', []):
         print(f"  {branch['source_id']} {branch['purpose']}: {branch.get('state', 'UNKNOWN')}; "
               f"availability={branch.get('availability', 'UNKNOWN')}; sources={branch.get('sources', {})}")

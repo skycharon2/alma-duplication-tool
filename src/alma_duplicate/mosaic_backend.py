@@ -177,22 +177,24 @@ def run_mosaic_backend(request, mosaic, *, archive_client=None, array_catalog=No
 def _run_region_backend(mosaic, evaluate_contexts, *, archive_client=None,
                         discovery_provider=None, report_fields=None):
     """Shared discovery/metadata orchestration; science is selected by the caller."""
+    from alma_duplicate.performance import measure_stage
     from alma_duplicate.progress import emit_progress
     from alma_duplicate.clients.archive_mirrors import MirroredArchiveClient
     from alma_duplicate.mosaic_pointing_diagnostics import position_summary
     root = Path(mosaic.output_directory)
     root.mkdir(parents=True, exist_ok=False)
     emit_progress("archive_search")
-    if mosaic.preparation_directory is not None:
-        from alma_duplicate.mosaic_candidate_discovery import plan_discovery
-        discovery = json.loads((Path(mosaic.preparation_directory)/'discovery.json').read_text())
-        if discovery.get('plan') != plan_discovery(mosaic.proposed, margin_arcsec=mosaic.margin_arcsec):
-            raise ValueError('Resume discovery differs from proposed pointings or search margin')
-    else:
-        discovery = (discovery_provider or discover_candidates)(
-            mosaic.proposed, root/'discovery', margin_arcsec=mosaic.margin_arcsec,
-            **({'origins': mosaic.discovery_origins} if mosaic.discovery_origins else
-               {'origin': mosaic.discovery_origin} if mosaic.discovery_origin else {}))
+    with measure_stage('mosaic_discovery'):
+        if mosaic.preparation_directory is not None:
+            from alma_duplicate.mosaic_candidate_discovery import plan_discovery
+            discovery = json.loads((Path(mosaic.preparation_directory)/'discovery.json').read_text())
+            if discovery.get('plan') != plan_discovery(mosaic.proposed, margin_arcsec=mosaic.margin_arcsec):
+                raise ValueError('Resume discovery differs from proposed pointings or search margin')
+        else:
+            discovery = (discovery_provider or discover_candidates)(
+                mosaic.proposed, root/'discovery', margin_arcsec=mosaic.margin_arcsec,
+                **({'origins': mosaic.discovery_origins} if mosaic.discovery_origins else
+                   {'origin': mosaic.discovery_origin} if mosaic.discovery_origin else {}))
     client = archive_client if archive_client is not None else MirroredArchiveClient()
     total = len({(c['member_ous_uid'], c['source_name']) for c in discovery['candidates']})
     emit_progress("archive_ready", total, unit="candidates")
@@ -206,7 +208,8 @@ def _run_region_backend(mosaic, evaluate_contexts, *, archive_client=None,
         item = dict(member_ous_uid=member, source_name=source)
         emit_progress("evaluation", len(results), total, "candidates")
         try:
-            metadata = client.search(ArchiveQuerySpec(0, 0, 180, member_ous_uid=member, target_name=source))
+            with measure_stage('mosaic_candidate_metadata'):
+                metadata = client.search(ArchiveQuerySpec(0, 0, 180, member_ous_uid=member, target_name=source))
             if any(row.get('member_ous_uid') != member or row.get('target_name') != source
                    or (candidate.get('project_code') is not None and row.get('proposal_id') != candidate['project_code'])
                    for row in metadata.rows):
@@ -217,13 +220,14 @@ def _run_region_backend(mosaic, evaluate_contexts, *, archive_client=None,
             if built.status != 'COMPLETE':
                 item.update(status='INCOMPLETE', reasons=list(built.reasons))
             else:
-                evaluated = evaluate_contexts(built.contexts, metadata)
-                from alma_duplicate.mosaic_spectral_evidence import attach_archive_spectral_setups
-                spectral_displays = attach_archive_spectral_setups(evaluated, built.contexts)
-                item.update(status='EVALUATED' if built.contexts else 'NO_METADATA_CONTEXTS',
-                            evaluation=evaluated, position_summary=position_summary(evaluated))
-                if spectral_displays:
-                    item['spectral_setup_displays'] = spectral_displays
+                with measure_stage('mosaic_candidate_evaluation'):
+                    evaluated = evaluate_contexts(built.contexts, metadata)
+                    from alma_duplicate.mosaic_spectral_evidence import attach_archive_spectral_setups
+                    spectral_displays = attach_archive_spectral_setups(evaluated, built.contexts)
+                    item.update(status='EVALUATED' if built.contexts else 'NO_METADATA_CONTEXTS',
+                                evaluation=evaluated, position_summary=position_summary(evaluated))
+                    if spectral_displays:
+                        item['spectral_setup_displays'] = spectral_displays
         except (OSError, ValueError, KeyError, TypeError) as exc:
             item.update(status='INCOMPLETE', error=str(exc))
         results.append(item)

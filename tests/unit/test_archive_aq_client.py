@@ -3,6 +3,7 @@ import hashlib
 import json
 from dataclasses import asdict
 from pathlib import Path
+from threading import Barrier
 
 import pytest
 import requests
@@ -62,6 +63,45 @@ def test_member_timings_preserve_failure_and_do_not_capture_credentials():
     assert [s.failed for s in recorder.stages] == [False, False, True, True]
     assert SECRET not in repr(recorder.stages)
     assert len(http.calls) == 3
+
+
+def test_parallel_members_overlap_keep_order_and_inherit_timing_context():
+    overlap = Barrier(2, timeout=5)
+
+    def http(method, url, **kwargs):
+        if method == 'GET':
+            return Reply({'elasticsearchUrl': BASE})
+        member = kwargs['json']['query']['term']['mous']
+        overlap.wait()
+        return Reply(response([hit(member)]))
+
+    recorder = PerformanceRecorder()
+    with recorder.record(), measure_stage('aq_acquisition'):
+        result = ArchiveAqClient(request=http, member_workers=2).fetch_members([MEMBER, OTHER, MEMBER])
+    assert [q.member_ous_uid for q in result.queries] == [MEMBER, OTHER]
+    stages = [s for s in recorder.stages if s.name == 'aq_member']
+    assert len(stages) == 2
+    assert all(s.parent_id == recorder.stages[-1].stage_id and not s.failed for s in stages)
+
+
+def test_parallel_member_failure_discards_pair_and_does_not_start_next_pair():
+    overlap = Barrier(2, timeout=5)
+    third = 'uid://A001/X123/XABC'
+
+    def http(method, url, **kwargs):
+        if method == 'GET':
+            return Reply({'elasticsearchUrl': BASE})
+        member = kwargs['json']['query']['term']['mous']
+        assert member != third
+        overlap.wait()
+        if member == OTHER:
+            raise requests.Timeout()
+        return Reply(response([hit(member)]))
+
+    with pytest.raises(ArchiveAqError) as error:
+        ArchiveAqClient(request=http, member_workers=2).fetch_members([MEMBER, OTHER, third])
+    assert error.value.code == 'TRANSPORT_ERROR'
+    assert error.value.member_ous_uid == OTHER
 
 
 @pytest.fixture(autouse=True)

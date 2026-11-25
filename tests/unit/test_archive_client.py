@@ -224,6 +224,32 @@ def test_query_stages_preserve_complete_result():
     assert all(s.parent_id == recorder.stages[-1].stage_id for s in recorder.stages[:-1])
 
 
+def test_projection_cache_reuses_only_valid_probes_for_the_same_endpoint():
+    cache = {}
+    executor = FakeTapExecutor(
+        [_count_response(1), _retrieval_response(1)] * 4,
+        projection_action=TapResponse(rows=(), declared_columns=('column_name',),
+                                      field_metadata=_field_metadata(('column_name',)),
+                                      query_status_raw='OVERFLOW'),
+    )
+
+    def search(endpoint):
+        return ArchiveClient(endpoint, executor=executor, projection_cache=cache).search(_spec())
+
+    first = search('https://first.invalid/tap')
+    assert first.provenance.projection.probe_error is not None
+    executor.projection_action = None
+    refreshed = search('https://first.invalid/tap')
+    reused = search('https://first.invalid/tap')
+    other = search('https://other.invalid/tap')
+    assert len(executor.projection_calls) == 3
+    assert len(executor.calls) == 8
+    assert refreshed.status == reused.status == other.status == ArchiveQueryStatus.COMPLETE
+    assert refreshed.rows == reused.rows
+    assert refreshed.provenance.projection == reused.provenance.projection
+    assert refreshed.provenance.query_hash == reused.provenance.query_hash
+
+
 def test_complete_result_reconciles_count_and_rows() -> None:
     client, executor = _client(
         [

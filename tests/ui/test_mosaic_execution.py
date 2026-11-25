@@ -168,7 +168,7 @@ def test_upload_is_sufficient_without_separate_confirmations(browser):
     assert calls
 
 @pytest.mark.parametrize("intents", [["LINE"], ["LINE", "CONTINUUM"]])
-def test_mosaic_both_sources_share_page_with_purpose_navigation(browser, intents, monkeypatch):
+def test_mosaic_both_sources_share_page_with_purpose_navigation(browser, intents, monkeypatch, caplog):
     from threading import Barrier
     from alma_duplicate.ui.runs import BrowserAssessment
 
@@ -184,11 +184,24 @@ def test_mosaic_both_sources_share_page_with_purpose_navigation(browser, intents
         monkeypatch.setattr(BrowserAssessment, method,
                             wait_for_other_source(getattr(BrowserAssessment, method)))
     client, calls = browser
+    client.application.config['ASSESSMENT_TIMINGS'] = True
     data = form() | dict(sources=["ARCHIVE", "QUEUE"], mosaic_upload_token=upload(client),
                          normal_form_version="2", action="assess", intents=intents, aggregate="1",
                          representative="690", continuum_setup_declaration="on", setup_complete="")
     response = client.post("/proposed/mosaic", data=data)
     assert response.status_code == 303, response.text
+    timing, = [json.loads(record.getMessage().removeprefix('Assessment timings '))
+               for record in caplog.records if record.getMessage().startswith('Assessment timings ')]
+    assert timing['workflow'] == 'MOSAIC' and timing['report_saved']
+    stages = timing['stages']
+    root, = [stage for stage in stages if stage['parent_id'] is None]
+    assert root['name'] == 'browser_assessment'
+    assert {stage['name'] for stage in stages if stage['parent_id'] == root['stage_id']} >= {
+        'Spectral line · ARCHIVE', 'Spectral line · QUEUE', 'report_save', 'queue_pin',
+    }
+    assert {stage['name'] for stage in stages} >= {
+        'mosaic_discovery', 'mosaic_candidate_metadata', 'mosaic_candidate_evaluation',
+    }
     with client.session_transaction() as state:
         group, = state["mosaic_report_groups"]
     from bs4 import BeautifulSoup
