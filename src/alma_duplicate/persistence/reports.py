@@ -86,15 +86,13 @@ class SavedReportArtifacts:
         return data
 
     def queue_page(self, page=1, view='matches'):
-        from alma_duplicate.ui.queue_saved_pages import queue_saved_page
+        from functools import partial
+        from alma_duplicate.ui.queue_saved_pages import queue_saved_page, read_queue_candidate
         projection = self._json('view')
         if 'queue_index' not in projection:
             return None
         with self.store.open_verified(self.artifacts['queue-candidates']) as stream:
-            def candidate(entry):
-                stream.seek(entry['offset'])
-                return json.loads(stream.read(entry['length']))
-            data = queue_saved_page(projection, page, view, candidate)
+            data = queue_saved_page(projection, page, view, partial(read_queue_candidate, stream))
         data.update(persistent=True, run_id=self.run['id'],
                     run=dict(self.run, status=self.run['assessment_status']))
         return data

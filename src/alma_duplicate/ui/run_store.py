@@ -14,6 +14,7 @@ from tempfile import TemporaryDirectory
 from threading import Lock
 import time
 from uuid import uuid4
+import zlib
 
 from alma_duplicate.performance import measure_stage
 from alma_duplicate.progress import emit_progress
@@ -25,15 +26,11 @@ from alma_duplicate.ui.mosaic_report_pages import mosaic_report_page
 from alma_duplicate.ui.queue_custom_report import (
     SCHEMA as QUEUE_CUSTOM_SCHEMA, projection as queue_custom_projection, report_page as queue_custom_page,
 )
+from alma_duplicate.ui.queue_saved_pages import read_queue_candidate
 
 DEFAULT_DISK_BYTES = 1024 * 1024 * 1024
 DEFAULT_MAX_AGE = 24 * 60 * 60
 MAX_REMOVAL_NOTICES = 1024
-
-
-def _read_queue_candidate(stream, entry):
-    stream.seek(entry['offset'])
-    return json.loads(stream.read(entry['length']))
 
 
 def _indexed_report_blocks(document, offsets):
@@ -340,10 +337,15 @@ class RunStore:
                     offset = 0
                     for entry in presentation(geometry):
                         raw = json.dumps(entry['candidate'], ensure_ascii=False, allow_nan=False).encode('utf-8')
-                        queue_index['entries'].append(dict(kind=entry['kind'], bucket=result_bucket(entry['candidate']),
-                                                          offset=offset, length=len(raw)))
-                        yield raw + b'\n'
-                        offset += len(raw) + 1
+                        compressed = zlib.compress(raw, level=1)
+                        payload = compressed if len(compressed) < len(raw) else raw
+                        location = dict(kind=entry['kind'], bucket=result_bucket(entry['candidate']),
+                                        offset=offset, length=len(payload))
+                        if payload is compressed:
+                            location['compressed'] = True
+                        queue_index['entries'].append(location)
+                        yield payload + b'\n'
+                        offset += len(payload) + 1
                 write('queue-candidates.jsonl', candidate_blocks())
             with measure_stage("view_projection"):
                 projection = (dict(unified_queue=True, document={'generated_at': document.get('generated_at')},
@@ -401,7 +403,7 @@ class RunStore:
     def _queue_page(self, item, projection, page, view):
         from alma_duplicate.ui.queue_saved_pages import queue_saved_page
         with (item.directory / 'queue-candidates.jsonl').open('rb') as stream:
-            data = queue_saved_page(projection, page, view, partial(_read_queue_candidate, stream))
+            data = queue_saved_page(projection, page, view, partial(read_queue_candidate, stream))
         data.update(run=item, retention_hours=self.max_age / 3600)
         return data
 
@@ -432,7 +434,7 @@ class RunStore:
             else:
                 from alma_duplicate.ui.queue_saved_pages import queue_saved_index
                 with (item.directory / 'queue-candidates.jsonl').open('rb') as stream:
-                    header, _ = queue_saved_index(index, partial(_read_queue_candidate, stream))
+                    header, _ = queue_saved_index(index, partial(read_queue_candidate, stream))
                     counts = header['candidate_counts']
             return dict(summary=projection.get('summary', {}),
                         sources=projection.get('source_overview', []),

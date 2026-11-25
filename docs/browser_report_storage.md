@@ -53,6 +53,9 @@ New browser reports compress inspection files of at least 64 KiB on disk.
 The download still serves the original JSON bytes. Storage usage shows the
 compressed file size. Existing inspection files remain readable in their
 original format.
+New Queue pagination indexes may store candidate blocks compressed on disk.
+The browser reads only the indexed candidate blocks needed for each page.
+Existing candidate indexes and complete report downloads remain readable.
 
 ## Local trial on macOS
 

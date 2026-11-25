@@ -111,6 +111,7 @@ def test_missing_aca_alone_does_not_create_a_review_candidate(tmp_path, legacy):
     import json
     from types import SimpleNamespace
     from alma_duplicate.ui.run_store import RunStore
+    from alma_duplicate.ui.queue_saved_pages import read_queue_candidate
 
     candidates = []
     for index, main_truth in enumerate(('FALSE', 'UNKNOWN', 'TRUE')):
@@ -130,9 +131,19 @@ def test_missing_aca_alone_does_not_create_a_review_candidate(tmp_path, legacy):
     try:
         run_id = store.add({}, SimpleNamespace(document=report, status='COMPLETED'))
         index_path = store.directory / run_id / 'view.json'
+        projection = json.loads(index_path.read_bytes())
+        index = projection['queue_index']
+        assert any(entry.get('compressed') for entry in index['entries'])
         if legacy:
-            projection = json.loads(index_path.read_bytes())
-            index = projection['queue_index']
+            candidate_path = index_path.with_name('queue-candidates.jsonl')
+            with candidate_path.open('rb') as stream:
+                decoded = [read_queue_candidate(stream, entry) for entry in index['entries']]
+            with candidate_path.open('wb') as stream:
+                for entry, candidate in zip(index['entries'], decoded, strict=True):
+                    payload = json.dumps(candidate).encode()
+                    entry.update(offset=stream.tell(), length=len(payload))
+                    entry.pop('compressed', None)
+                    stream.write(payload + b'\n')
             header = index['header']
             del header['aca_coverage_only_filtered']
             header['candidate_counts']['review'] += 1
