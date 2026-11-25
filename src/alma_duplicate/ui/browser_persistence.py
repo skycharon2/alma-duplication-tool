@@ -148,7 +148,7 @@ class BrowserRuns:
         overview = self.overview(run_id)
         return overview.get('assessment_navigation') if overview else None
 
-    def history_page(self, *, limit, hidden_report_ids, cursors=None):
+    def history_page(self, *, limit, hidden_report_ids, cursors=None, search=''):
         """Read the next older slice of each browser-owned history list."""
         owner = _owner.get()
         if owner is None:
@@ -165,8 +165,14 @@ class BrowserRuns:
             cursor_time = cast(created, String) if sqlite else created
             group = (func.coalesce(columns.assessment_group_id, columns.id)
                      if parent is browser_reports else columns.id)
-            query = select(columns.id, payload, cursor_time, assessment_display_name(parent), group).where(
+            label = assessment_display_name(parent)
+            query = select(columns.id, payload, cursor_time, label, group).where(
                 columns.owner_digest == owner, *filters)
+            if search:
+                original = (payload['listing']['target'].as_string() if parent is browser_reports
+                            else func.coalesce(payload['name'].as_string(), 'Multi-source assessment'))
+                query = query.where(or_(label.icontains(search, autoescape=True),
+                                        original.icontains(search, autoescape=True)))
             if cursor is not None:
                 timestamp, run_id = cursor
                 boundary = type_coerce(created, String) if sqlite else created

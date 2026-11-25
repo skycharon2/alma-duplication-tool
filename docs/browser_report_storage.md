@@ -124,6 +124,9 @@ contract, upload integrity checks, and draft lifetime configuration.
 Use **Rename** in **Existing reports** to change a saved assessment's
 display name. Leave the field empty to use the original name. The display
 name is stored separately from the saved report and its scientific inputs.
+Search **Existing reports** by display name, original batch name, or target
+name for a standalone assessment. Search covers all saved pages for the
+current browser.
 To move several assessments to Trash, select them on the current history
 page and choose **Move selected to trash**. A batch selection includes all
 its target reports.

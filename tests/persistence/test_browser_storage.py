@@ -289,6 +289,11 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
             'csrf': rename_csrf, 'display_name': 'Saved baseline',
         }).status_code == 303
         assert 'Saved baseline' in owner.get('/reports').text
+        search_page = owner.get('/reports?q=sAvEd+baseline').text
+        assert f'href="{batch.location}"' in search_page
+        assert f'href="{rerun.location}"' not in search_page
+        assert 'No matching reports' in visitor.get('/reports?q=Saved+baseline').text
+        assert 'No matching reports' in owner.get('/reports?q=%25').text
         assert owner.get(manifest_url).json == manifest
         assert owner.post(rename_url, data={'csrf': rename_csrf, 'display_name': ''}).status_code == 303
         history = owner.get('/reports').text
@@ -383,6 +388,12 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
                 for index in range(41)
             ])
         first_page = owner.get('/reports')
+        filtered_first = owner.get('/reports?q=Original+survey')
+        filtered_url = re.search(r'href="([^"]+)">Older reports</a>', filtered_first.text).group(1)
+        filtered_url = filtered_url.replace('&amp;', '&')
+        assert 'q=Original+survey' in filtered_url
+        assert owner.get(filtered_url).status_code == 200
+        assert owner.get(filtered_url.replace('Original+survey', 'different')).status_code == 400
         assert 'Older reports' in first_page.text and single.location not in first_page.text
         older_url = re.search(r'href="([^"]+)">Older reports</a>', first_page.text).group(1)
         with engine.begin() as connection:
