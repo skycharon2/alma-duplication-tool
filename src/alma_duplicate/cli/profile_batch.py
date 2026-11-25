@@ -15,7 +15,7 @@ from alma_duplicate.ui.runs import ARCHIVE_CONNECTIONS, BrowserAssessment, RunSt
 
 
 def profile_batch(values, rows, raw, configured, *, workers=1, max_bytes=1024**3,
-                  format='csv', aq_member_workers=2, tap_workers=None):
+                  format='csv', aq_member_workers=2, tap_workers=None, aq_group_size=32):
     records = []
     lock = Lock()
     def collect(record):
@@ -25,6 +25,7 @@ def profile_batch(values, rows, raw, configured, *, workers=1, max_bytes=1024**3
                   started_at=datetime.now(timezone.utc).isoformat(),
                   python=platform.python_version(), platform=platform.platform(),
                   workers=workers, aq_member_workers=aq_member_workers,
+                  aq_group_size=aq_group_size,
                   tap_workers=workers if tap_workers is None else tap_workers,
                   storage_budget_bytes=max_bytes, execution='FAILED')
     runs = RunStore(max_bytes=max_bytes)
@@ -33,7 +34,7 @@ def profile_batch(values, rows, raw, configured, *, workers=1, max_bytes=1024**3
         batch_id = execute_batch(values, rows, raw, runner=configured, runs=runs,
             owner='performance', submission_token='0' * 32, format=format,
             max_workers=workers, performance=collect, aq_member_workers=aq_member_workers,
-            tap_workers=tap_workers)
+            tap_workers=tap_workers, aq_group_size=aq_group_size)
         manifest = runs.batches.get(batch_id, 'performance')
         if manifest is None:
             raise RuntimeError('Batch manifest unavailable')
@@ -92,6 +93,8 @@ def main(argv=None):
     parser.add_argument('--tap-workers', type=int, choices=range(1, 6),
                         help='Maximum simultaneous live TAP searches (defaults to --workers)')
     parser.add_argument('--aq-member-workers', type=int, choices=[1, 2], default=2)
+    parser.add_argument('--aq-group-size', type=int, choices=range(1, 33), default=32,
+                        help='Maximum Members per AQ request (1 uses individual requests)')
     parser.add_argument('--sources', choices=['queue', 'archive', 'both'], required=True)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--archive-replay', type=Path)
@@ -123,7 +126,7 @@ def main(argv=None):
     output = profile_batch(values, setup['rows'], args.targets.read_bytes(), runner,
                            workers=args.workers, max_bytes=args.storage_mib * 1024**2,
                            format=args.format, aq_member_workers=args.aq_member_workers,
-                           tap_workers=args.tap_workers)
+                           tap_workers=args.tap_workers, aq_group_size=args.aq_group_size)
     output.update(input_sha256=hashes, selected_sources=args.sources,
                   archive_mode=runner.archive_kind, live_aq=args.live_aq,
                   archive_connection=values.get('archive_connection', 'AUTO'))

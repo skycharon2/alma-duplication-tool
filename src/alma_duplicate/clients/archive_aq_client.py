@@ -87,10 +87,14 @@ class ArchiveAqClient:
     The request callable follows requests.request(method, url, **kwargs).
     """
 
-    def __init__(self, *, request=None, max_hits=100, max_member_hits=10000, origin=ARCHIVE_ORIGINS[0], member_workers=1):
+    def __init__(self, *, request=None, max_hits=100, max_member_hits=10000, origin=ARCHIVE_ORIGINS[0], member_workers=1,
+                 group_size=1):
         if type(member_workers) is not int or member_workers not in (1, 2):
             raise ValueError("AQ member workers must be 1 or 2")
         self._member_workers = member_workers
+        if type(group_size) is not int or not 1 <= group_size <= 32:
+            raise ValueError("AQ group size must be an integer between 1 and 32")
+        self._group_size = group_size
         if type(max_hits) is not int or max_hits < 1:
             raise ValueError("max_hits must be a positive integer")
         if type(max_member_hits) is not int or max_member_hits < max_hits:
@@ -166,24 +170,65 @@ class ArchiveAqClient:
             headers = {"Accept": "application/json", "Content-Type": "application/json"}
             if key:
                 headers["Authorization"] = "ApiKey " + key
-            executor_scope = ThreadPoolExecutor(max_workers=1) if sibling_request else nullcontext()
-            with executor_scope as executor:
-                step = 2 if executor else 1
-                for index in range(0, len(members), step):
-                    sibling = None
-                    if executor and index + 1 < len(members):
-                        sibling = executor.submit(copy_context().run, self._fetch_member,
-                                                  sibling_request, endpoint, headers, members[index + 1])
-                    results = [self._fetch_member(request, endpoint, headers, members[index])]
-                    if sibling is not None:
-                        results.append(sibling.result())
-                    for member_records, query in results:
-                        records.extend(member_records)
-                        queries.append(query)
-                        emit_progress("aq", len(queries), len(members), "members")
+            for member_records, query in self._member_results(members, request, sibling_request, endpoint, headers):
+                records.extend(member_records)
+                queries.append(query)
+                emit_progress("aq", len(queries), len(members), "members")
         catalog = ArchiveArrayCatalog(tuple(records),
             ArchiveArrayCatalogProvenance(ArchiveArrayCatalogMode.LIVE))
         return ArchiveAqFetchResult(catalog, tuple(queries), self.properties_url)
+
+    def _member_results(self, members, request, sibling_request, endpoint, headers):
+        if self._group_size == 1:
+            yield from self._individual_results(members, request, sibling_request, endpoint, headers)
+            return
+        for offset in range(0, len(members), self._group_size):
+            group = members[offset:offset + self._group_size]
+            if len(group) == 1:
+                yield self._fetch_member(request, endpoint, headers, group[0])
+                continue
+            try:
+                with measure_stage('aq_group'):
+                    results = self._fetch_group(request, endpoint, headers, group)
+            except ArchiveAqError:
+                with measure_stage('aq_group_fallback'):
+                    yield from self._individual_results(group, request, sibling_request, endpoint, headers)
+            else:
+                yield from results
+
+    def _individual_results(self, members, request, sibling_request, endpoint, headers):
+        executor_scope = ThreadPoolExecutor(max_workers=1) if sibling_request else nullcontext()
+        with executor_scope as executor:
+            step = 2 if executor else 1
+            for index in range(0, len(members), step):
+                sibling = None
+                if executor and index + 1 < len(members):
+                    sibling = executor.submit(copy_context().run, self._fetch_member,
+                                              sibling_request, endpoint, headers, members[index + 1])
+                results = [self._fetch_member(request, endpoint, headers, members[index])]
+                if sibling is not None:
+                    results.append(sibling.result())
+                yield from results
+
+    def _fetch_group(self, request, endpoint, headers, members):
+        limit = min(10000, self._max_hits * len(members))
+        payload, digest, retrieved = self._read(request, 'POST', endpoint, headers=headers, body={
+            'size': limit, 'track_total_hits': True, '_source': ['mous', 'sourceName', 'array'],
+            'query': {'terms': {'mous': list(members)}},
+        })
+        hits = self._validate(payload, None, limit=limit, group=set(members))
+        grouped = {member: [] for member in members}
+        for hit in hits:
+            source = hit['_source']
+            member = source['mous']
+            grouped[member].append(ArrayRecord(hit['_id'], member, source['sourceName'],
+                                              source.get('array'), digest, retrieved, endpoint))
+        if any(len(records) > self._max_member_hits for records in grouped.values()):
+            raise ArchiveAqError('INCOMPLETE')
+        return [(records, ArchiveAqMemberQuery(member, endpoint, retrieved, digest,
+                                               len(records), limit, (limit,)))
+                for member, records in grouped.items()]
+
 
     def _fetch_member(self, request, endpoint, headers, member):
         body = {"size": self._max_hits, "track_total_hits": True,
@@ -221,7 +266,7 @@ class ArchiveAqClient:
         return records, ArchiveAqMemberQuery(member, endpoint, retrieved, digest,
                                              len(hits), sizes[-1], tuple(sizes))
 
-    def _validate(self, payload, member, *, limit=None):
+    def _validate(self, payload, member, *, limit=None, group=None):
         limit = self._max_hits if limit is None else limit
         try:
             hits = payload["hits"]["hits"]
@@ -254,7 +299,7 @@ class ArchiveAqClient:
                 source = hit["_source"]
                 values = (hit["_id"], source["mous"], source["sourceName"])
                 if (not all(isinstance(v, str) and v.strip() for v in values)
-                        or source["mous"] != member
+                        or (source["mous"] != member if group is None else source["mous"] not in group)
                         or (source.get("array") is not None and not isinstance(source["array"], str))):
                     raise ValueError("Malformed source")
         except ArchiveAqError:

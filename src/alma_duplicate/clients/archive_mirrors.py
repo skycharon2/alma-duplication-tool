@@ -87,12 +87,13 @@ class MirroredArchiveAqClient:
     """Restart the entire Member batch at each mirror, discarding partial batches."""
 
     def __init__(self, *, origins=ARCHIVE_ORIGINS, budget_seconds=DEFAULT_BUDGET_SECONDS,
-                 client_factory=None, clock=time.monotonic, member_workers=1):
+                 client_factory=None, clock=time.monotonic, member_workers=1, group_size=1):
         self.origins = validate_origins(origins)
         self.budget_seconds = budget_seconds
         self.client_factory = client_factory
         self.clock = clock
         self.member_workers = member_workers
+        self.group_size = group_size
 
     def fetch_members(self, members):
         from alma_duplicate.clients.archive_aq_client import ArchiveAqClient
@@ -108,6 +109,8 @@ class MirroredArchiveAqClient:
                 try:
                     request_timeout()
                     options = {'member_workers': self.member_workers} if self.member_workers != 1 else {}
+                    if self.group_size != 1:
+                        options['group_size'] = self.group_size
                     result = factory(origin=origin, **options).fetch_members(members)
                 except ArchiveBudgetExpired:
                     attempts.append(_attempt(origin, started, status="FAILED", error="TIME_BUDGET_EXHAUSTED"))

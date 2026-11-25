@@ -50,6 +50,8 @@ def database(tmp_path, request):
 
 @pytest.mark.parametrize('source_format,source_bytes', [
     ('csv', (Path(__file__).parents[1] / 'fixtures/source_list/five_targets.csv').read_bytes()),
+    ('csv', ('name,ra,dec,redshift\n' + ''.join(
+        f'target-{i},201.365,-43.019,0\n' for i in range(10))).encode()),
     ('txt', b'name ra dec redshift\r\nfirst 201.365 -43.019 0.024\r\nsecond 201.365 -43.019 0\r\n'),
 ])
 def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, database,

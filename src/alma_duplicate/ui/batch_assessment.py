@@ -61,7 +61,7 @@ class BatchValidationError(ValueError):
 
 def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission_token,
                   format='csv', progress=None, max_workers=1, performance=None, aq_member_workers=2,
-                  tap_workers=None):
+                  tap_workers=None, aq_group_size=32):
     """Validate all branches, reserve a manifest, then assess with bounded target concurrency.
 
     Return the batch ID, including when its branches failed or a concurrent call
@@ -76,6 +76,8 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
         raise ValueError('Batch TAP workers must be an integer between 1 and 5')
     if type(aq_member_workers) is not int or aq_member_workers not in (1, 2):
         raise ValueError('AQ member workers must be 1 or 2')
+    if type(aq_group_size) is not int or not 1 <= aq_group_size <= 32:
+        raise ValueError('AQ group size must be an integer between 1 and 32')
     if submission_token is None:
         raise ValueError('A submission token is required')
     values, rows = deepcopy(values), list(rows)
@@ -131,7 +133,7 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
     notify('batch_started', 0)
     try:
         pinned = configured.pin_queue_for_submission('QUEUE' in values.get('sources', []))
-        pinned = replace(pinned, aq_member_workers=aq_member_workers)
+        pinned = replace(pinned, aq_member_workers=aq_member_workers, aq_group_size=aq_group_size)
     except Exception:
         logger.exception('Batch source setup failed for %s', batch_id)
         for child in preflight['sources']:

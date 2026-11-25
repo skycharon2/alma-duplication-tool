@@ -297,6 +297,47 @@ took 207.8 seconds. Its last two TAP searches started at 101.9 and 104.0
 seconds. The five-slot run finished 38.9 seconds sooner (18.7%). Both runs
 had the same source completion statuses and candidate decision digests.
 
+### AQ multi-Member probe
+
+On the European mirror, a `terms` search on `mous` for the public Case 2
+Members `uid://A001/X133d/X9c3` and `uid://A001/X133d/X9c5` completed with
+an exact total and no failed shards or timeout. It returned six rows per
+Member, matching the two independent `term` searches as multisets by
+observation ID, Member, source name and array label. With an already open
+HTTP session, the independent searches took 0.099 seconds total and the
+grouped search took 0.104 seconds. This proves support for the query shape on
+that mirror; it does not establish a speedup or production fallback behavior.
+
+`python scripts/profile_grouped_aq.py MEMBERS.txt` compares the existing
+two-worker Member path with experimental groups of 16 and 32. A live
+European run used 64 public Members from the Archive discovery fixtures.
+All three modes returned the same 246 rows and the same count for each Member.
+Elapsed times including discovery were 2.474 s, 0.483 s and 0.430 s,
+respectively. No group fell back during this run. Offline tests exercise
+fallback to individual requests for truncated responses, unexpected Member
+IDs, and HTTP errors. These measurements were made with the profiler prototype.
+
+A ten-target CONTINUUM trial used the same input hashes, European mirror,
+five TAP slots and four local workers as the per-Member baseline. With
+groups of 32, 65 grouped AQ requests covered 1,871 Member queries, with no
+fallback. The 3C273 AQ stage fell from 44.70 s to 4.10 s. Batch time fell
+from 168.96 s to 121.42 s. All ten reports remained available, source
+statuses and retained context counts matched, and all candidate decision
+digests matched. The prototype was injected only into this CLI trial.
+
+Multi-source now uses groups of up to 32 Members by default. For a controlled
+comparison, run the batch profiler with `--aq-group-size 1` and again with
+`--aq-group-size 32`. `aq_group` records the grouped requests and
+`aq_group_fallback` records groups retried through individual requests. Single
+Pointing continues to use its individual Member retrieval path.
+
+The integrated path repeated the ten-target live CLI run in 120.54 s,
+with a 3.71 s AQ stage for 3C273, 64 grouped requests and no group fallback.
+Source statuses, retained counts and candidate decision digests matched the
+168.96 s individual-request baseline. Separate browser route tests exercised
+ten targets and both purposes against an isolated PostgreSQL database using
+replay data.
+
 ### Two-target TAP experiment
 
 `scripts/profile_two_target_tap.py` accepts a batch setup JSON and a two-target

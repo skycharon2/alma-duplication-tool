@@ -34,6 +34,7 @@ class BrowserAssessment:
     managed_queue_root: str | None = None
     archive_connection: str = "AUTO"
     aq_member_workers: int = 1
+    aq_group_size: int = 1
     archive_search_slot: Callable[[], AbstractContextManager] | None = field(
         default=None, repr=False, compare=False)
     _pinned_queue: tuple[Callable | None, PinnedQueue | None] | None = field(
@@ -252,6 +253,8 @@ class BrowserAssessment:
         from alma_duplicate.clients.archive_mirrors import MirroredArchiveAqClient
 
         options = {'member_workers': self.aq_member_workers} if self.aq_member_workers != 1 else {}
+        if self.aq_group_size != 1:
+            options['group_size'] = self.aq_group_size
         client = MirroredArchiveAqClient(origins=ARCHIVE_CONNECTIONS[self.archive_connection], **options)
         return client.fetch_members(members)
 
