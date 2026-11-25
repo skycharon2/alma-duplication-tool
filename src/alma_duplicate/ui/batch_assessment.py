@@ -65,8 +65,7 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
             values | {'intents': [purpose]}, rows, source_bytes, format=format, require_line_complete=True)
     if not purposes or any(not p['is_valid'] or not p['can_search'] for p in preflights.values()):
         raise BatchValidationError(preflights)
-    configured = replace(runner, archive_connection=values.get('archive_connection', 'AUTO'),
-                         aq_member_workers=aq_member_workers)
+    configured = replace(runner, archive_connection=values.get('archive_connection', 'AUTO'))
     if not configured.enabled:
         raise ValueError('Assessment sources are not configured')
     shared, _ = build_document(values, rows)
@@ -103,6 +102,7 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
     notify('batch_started', 0)
     try:
         pinned = configured.pin_queue_for_submission('QUEUE' in values.get('sources', []))
+        pinned = replace(pinned, aq_member_workers=aq_member_workers)
     except Exception:
         logger.exception('Batch source setup failed for %s', batch_id)
         for child in preflight['sources']:
