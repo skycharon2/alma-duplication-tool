@@ -17,7 +17,7 @@ python -m alma_duplicate.cli.profile_assessment REQUEST.json \
   --output reports/performance/queue.json
 
 python -m alma_duplicate.cli.profile_assessment REQUEST.json \
-  --live-archive --live-aq \
+  --live-archive --live-aq --archive-connection AUTO \
   --output reports/performance/archive.json
 
 python -m alma_duplicate.cli.analyze_report_size SAVED_REPORT.json \
@@ -56,7 +56,10 @@ exception text. They omit raw rows and HTTP response bodies.
   executor call, including materialization, rather than wire transit alone.
   With the browser retrieval-first policy, `tap_count` appears only if a separate
   completeness check was needed; its absence is not a zero-duration COUNT.
-- `csv_load`: reading and parsing the supplied CSV snapshot.
+- `queue_pin`: freezing the selected Queue snapshot at submission, including
+  reading the supplied CSV bytes. This stage is omitted for Archive-only runs.
+- `csv_load`: loading and parsing Queue data. For a pinned CSV, its file read
+  is already accounted for in `queue_pin`.
 - `archive_binding`, `*_contexts`, `*_filter`: query binding, context construction
   and retrieval filtering, before scientific evaluation.
 - `aq_acquisition`: acquisition orchestration including discovery, Member requests

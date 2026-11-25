@@ -12,7 +12,7 @@ from time import perf_counter, thread_time
 from alma_duplicate.cli.json_input import load_request_document
 from alma_duplicate.performance import PerformanceRecorder, measure_stage
 from alma_duplicate.report_size import analyze_report
-from alma_duplicate.ui.runs import BrowserAssessment, RunStore
+from alma_duplicate.ui.runs import ARCHIVE_CONNECTIONS, BrowserAssessment, RunStore
 
 
 def file_hash(path):
@@ -37,6 +37,10 @@ def profile(document, configured, *, max_bytes=1024**3, analyze_size=False):
     wall, cpu = perf_counter(), thread_time()
     try:
         with recorder.record():
+            selected = document['search_options']['sources']
+            if 'QUEUE' in selected:
+                with measure_stage('queue_pin'):
+                    configured = configured.pin_queue_for_submission(True)
             result = configured.assess(document)
             if result.document is None:
                 raise ValueError('No assessment report')
@@ -90,6 +94,7 @@ def main(argv=None):
     source.add_argument('--live-archive', action='store_true')
     source.add_argument('--archive-replay', type=Path)
     parser.add_argument('--live-aq', action='store_true')
+    parser.add_argument('--archive-connection', choices=ARCHIVE_CONNECTIONS, default='AUTO')
     parser.add_argument('--queue-csv', type=Path)
     parser.add_argument('--archive-array-evidence', type=Path)
     parser.add_argument('--storage-mib', type=int, default=1024)
@@ -105,6 +110,7 @@ def main(argv=None):
     configured = BrowserAssessment(archive_replay=args.archive_replay, queue_csv=args.queue_csv,
                                    archive_array_evidence=args.archive_array_evidence,
                                    live_archive=args.live_archive, live_aq=args.live_aq,
+                                   archive_connection=args.archive_connection,
                                    report_detail=args.report_detail)
     _, document = load_request_document(args.request)
     hashes = {name: file_hash(path) for name, path in {
@@ -116,6 +122,7 @@ def main(argv=None):
     result['input_sha256'] = hashes
     result['report_detail'] = args.report_detail
     result['source_modes'] = {'archive': configured.archive_kind,
+                              'archive_connection': configured.archive_connection,
                               'live_aq': configured.live_aq, 'queue_csv': bool(configured.queue_csv)}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open('x', encoding='utf-8') as stream:

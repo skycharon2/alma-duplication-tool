@@ -11,6 +11,17 @@ from alma_duplicate.ui.runs import BrowserAssessment
 ROOT = Path(__file__).parents[2]
 
 
+def test_profile_measures_queue_snapshot_before_parsing():
+    example = ROOT / 'examples/queue_continuum'
+    document = json.loads((example / 'request.json').read_text())
+    configured = BrowserAssessment(queue_csv=example / 'queue.csv')
+    result = profile(document, configured)
+    assert result['execution'] == 'COMPLETED'
+    assert result['sources']['QUEUE'] == 'COMPLETED'
+    names = [stage['name'] for stage in result['stages']]
+    assert names.index('queue_pin') < names.index('csv_load')
+
+
 def test_clock_accounting_failure_and_isolation():
     clock = iter([10., 12., 20., 23.])
     cpu = iter([1., 1.5, 2., 3.])
