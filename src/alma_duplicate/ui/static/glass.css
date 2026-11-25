@@ -445,6 +445,9 @@ input[type="text"], .proposal-page .proposed-form input[type="text"],
 .report-storage-metrics > div { border-inline-start: 2px solid #a9c4d6; padding-inline-start: 12px; }
 .report-storage-metrics dd { margin: 4px 0 0; }
 .report-storage-metrics data { font-size: 1.4rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.report-storage-policy { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 16px 0 6px; padding-top: 14px; border-top: 1px solid var(--border); }
+.report-storage-policy dt { color: var(--muted); font-size: .875rem; }
+.report-storage-policy dd { margin: 2px 0 0; font-weight: 600; }
 .report-library-history .report-library-row:has(.report-selection-box:checked) {
   background: #e4f1f9;
   box-shadow: inset 3px 0 #075b7e;

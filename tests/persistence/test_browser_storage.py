@@ -152,6 +152,8 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert 'href="/reports/storage"' in listing
         storage_page = owner.get('/reports/storage')
         assert storage_page.status_code == 200
+        assert 'Browser storage quota</dt><dd>None' in storage_page.text
+        assert f'<dd>{retention_days} days</dd>' in storage_page.text
         owner_usage = [int(value) for value in re.findall(r'<data value="(\d+)">', storage_page.text)]
         assert owner_usage[0] == owner_usage[1] > 0 and owner_usage[2] == 0
         row_sizes = [int(value) for value in re.findall(r'<data value="(\d+)">', listing)]

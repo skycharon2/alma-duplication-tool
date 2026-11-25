@@ -140,6 +140,9 @@ Each assessment also shows the size of its saved files in **Existing reports**
 and **Trash**. Batch sizes include all target reports and the saved source list.
 Files shared by multiple assessments count once per row, so row sizes can
 add up to more than the browser total.
+The overview also shows the configured retention period for new Trash
+entries. Persistent browser storage currently has no per-browser quota.
+Each existing Trash entry retains the deadline set when it was moved.
 
 Migration `0006_browser_assessment_trash` adds a browser-owned trash record
 for each batch or standalone assessment placed in trash. All reports generated

@@ -319,7 +319,8 @@ def register_report_management(app, engine, current_owner):
             abort(404)
         with engine.connect() as db:
             usage = _storage_usage(db, owner)
-        return render_template('report_storage.html', usage=usage, display_bytes=_display_bytes)
+        return render_template('report_storage.html', usage=usage, display_bytes=_display_bytes,
+                               retention_days=days)
 
     @routes.get('/reports/manage/<kind>/<entry_id>/purge')
     def confirm_purge(kind, entry_id):

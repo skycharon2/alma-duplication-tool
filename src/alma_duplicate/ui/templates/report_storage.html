@@ -14,6 +14,12 @@
       <dd class="report-library-kind">{{ usage.trash_count }} {{ 'assessment' if usage.trash_count == 1 else 'assessments' }}</dd></div>
   </dl>
   <p class="field-note">Usage includes report files and original uploads saved by this browser. Files shared with an assessment in Existing reports count there. Unreferenced files awaiting cleanup are excluded.</p>
+  <dl class="report-storage-policy">
+    <div><dt>Browser storage quota</dt><dd>None</dd></div>
+    <div><dt>Retention for new Trash entries</dt>
+      <dd>{{ retention_days }} {{ 'day' if retention_days == 1 else 'days' }}</dd></div>
+  </dl>
+  <p class="field-note">Each Trash entry shows its own cleanup date. Scheduled cleanup processes eligible entries when it runs.</p>
   {% if usage.trash_count %}<a class="button" href="{{ url_for('report_management.trash_index') }}">Open trash</a>{% endif %}
 </section>
 {% endblock %}
