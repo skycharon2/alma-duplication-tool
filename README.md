@@ -153,6 +153,11 @@ To manage saved assessments, choose **Move to trash** in **Existing reports**.
 Under **Trash**, use **Restore** or review and confirm **Delete permanently**.
 Moving a batch applies to all its target reports. Trashed files stay on disk
 until permanent deletion and file cleanup complete.
+Use **Rename** to change a history label. Search saved assessments by name
+or filter by assessment type. Select several rows to move them to Trash
+together, or review **Empty trash** to permanently delete all trashed
+assessments for this browser. **Storage usage** shows saved file sizes and
+the configured retention period.
 See the [report management and cleanup guide](docs/browser_report_storage.md#report-management-storage)
 for retention and deployment setup.
 
