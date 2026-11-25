@@ -227,8 +227,12 @@ for a target's elapsed time because its `aq_member` timings can overlap.
 For an AQ concurrency comparison, keep `--workers`, inputs and mirror selection
 fixed and run once with `--aq-member-workers 1` and once with
 `--aq-member-workers 2`. Compare source and AQ statuses, `retained_contexts`
-and `branch_outcomes` per target and purpose alongside timing. Outcome counts
-compare report summaries, so they cannot establish row-by-row equivalence.
+and `branch_outcomes` per target and purpose alongside timing.
+`candidate_outcome_sha256` additionally compares the multiset of retained
+candidate display identities, source/component, and branch status, truth and
+reasons. It ignores candidate order and per-run identifiers. A matching digest
+covers these published decisions and does not compare raw TAP values or
+intermediate criterion calculations.
 
 `branches` remains in source/purpose order, irrespective of completion order.
 Each record includes source acquisition statuses, assessment status, nested stage

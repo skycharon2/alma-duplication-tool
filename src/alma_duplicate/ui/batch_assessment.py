@@ -5,6 +5,8 @@ from contextlib import nullcontext
 from contextvars import copy_context
 from copy import deepcopy
 from dataclasses import asdict, replace
+from hashlib import sha256
+import json
 import logging
 from threading import Event, RLock
 from time import perf_counter
@@ -17,6 +19,19 @@ from alma_duplicate.ui.proposed import build_document
 from alma_duplicate.ui.run_store import RetentionCapacityError
 
 logger = logging.getLogger(__name__)
+
+
+def _candidate_outcome_digest(contexts):
+    """Hash the multiset of visible candidate identities and decisions."""
+    candidates = []
+    for context in contexts:
+        reference = context.get('reference', {})
+        decisions = sorted((b['branch'], b['status'], b['truth'], sorted(b['reasons']))
+                           for b in context['branches'])
+        identity = (reference.get('source'), reference.get('component_index'),
+                    context.get('display_identity', {}))
+        candidates.append(json.dumps((identity, decisions), sort_keys=True, separators=(',', ':')))
+    return sha256('\n'.join(sorted(candidates)).encode('utf-8')).hexdigest()
 
 
 class BatchValidationError(ValueError):
@@ -156,6 +171,7 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
                         sources={k: v['status'] for k, v in sources.items()}, aq_status=aq.get('status'),
                         aq_members=tuple(query['member_ous_uid'] for query in aq.get('queries', [])),
                         retained_contexts=len(contexts), branch_outcomes=dict(outcomes),
+                        candidate_outcome_sha256=_candidate_outcome_digest(contexts) if report else None,
                         stages=[asdict(s) for s in timing.stages]))
                 except Exception:
                     logger.warning('Batch performance observer failed', exc_info=True)
