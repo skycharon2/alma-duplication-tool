@@ -1,4 +1,5 @@
 """Whole-operation failover, provenance and conservative failure boundaries."""
+from contextlib import ExitStack
 import hashlib
 import json
 
@@ -49,6 +50,32 @@ def test_tap_contract_errors_do_not_switch(kind):
         return ArchiveClient(endpoint, executor=FakeTapExecutor([TapExecutionError(kind, "bad query")]), **kwargs)
     result = MirroredArchiveClient(client_factory=factory).search(_spec())
     assert result.error_kind is kind and len(calls) == 1
+
+
+def test_scoped_tap_transport_reuses_and_closes_one_executor_per_mirror(monkeypatch):
+    from alma_duplicate.clients import archive_client
+
+    opened, closed = [], []
+
+    def executor(endpoint):
+        opened.append(endpoint)
+        actions = ([TapExecutionError(K.SERVICE_ERROR, 'offline')] * 2
+                   if endpoint == ORIGINS[0] + '/tap'
+                   else [_count_response(1), _retrieval_response(1)] * 2)
+        transport = FakeTapExecutor(actions)
+        transport.close = lambda: closed.append(endpoint)
+        return transport
+
+    monkeypatch.setattr(archive_client, 'PyvoTapExecutor', executor)
+    with ExitStack() as scope:
+        client = MirroredArchiveClient(transport_scope=scope, reuse_projection=True)
+        results = [client.search(_spec()), client.search(_spec())]
+        assert opened == [origin + '/tap' for origin in ORIGINS[:2]]
+        assert not closed
+        assert all(result.status is S.COMPLETE and len(result.rows) == 1 for result in results)
+        assert all(result.provenance.endpoint == opened[1] for result in results)
+        assert results[0].provenance.query_run_id != results[1].provenance.query_run_id
+    assert closed == opened[::-1]
 
 
 def test_tap_complete_empty_stops_and_all_failures_remain_errors():

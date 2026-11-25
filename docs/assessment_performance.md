@@ -147,7 +147,36 @@ The [CASE1 comparison](evidence/tap_retrieval_first_2026-10-12.md) measures
 request. Inspect both source status and candidate parity; report creation by
 itself does not establish successful acquisition.
 
+## Browser submission timings
+
+To time a real Single Pointing or Mosaic submission, set
+`ALMA_UI_ASSESSMENT_TIMINGS=1` in the Flask terminal before starting the server.
+Run the assessment as usual and find the `Assessment timings` JSON line in
+that terminal. `browser_assessment` starts after form validation and ends
+when the server generates the report URL or stops the assessment. It excludes
+browser rendering and network time between the browser and Flask.
+
+Use `parent_id` to group stages under each source and purpose. For Archive
+Mosaic, `mosaic_discovery` finds candidates, `mosaic_candidate_metadata`
+measures each candidate's Archive metadata lookup, and
+`mosaic_candidate_evaluation` measures its comparison and spectral display
+preparation. Queue Mosaic elapsed time is recorded on its branch. `report_save`
+measures group storage. Concurrent branches overlap, so their times should
+not be added to get total latency. Check source status in the resulting report.
+Timing logs contain stage names and durations, without submitted inputs or report IDs.
+
 ## Browser Mosaic source concurrency
+
+Within a browser Mosaic Archive branch, each TAP mirror's successful optional
+column probe is reused for subsequent candidates. Failed or malformed probes
+are retried as needed. Each candidate still retrieves and validates its own rows.
+Compare `tap_projection_metadata` call counts with `mosaic_candidate_metadata`
+call counts when measuring the effect.
+
+The browser Mosaic Archive branch also reuses one TAP HTTP session per mirror
+for its sequential candidate queries. Sessions close when the branch exits,
+including on failure. Compare cumulative `tap_retrieval` time and candidate
+results using the same Mosaic input and mirror selection.
 
 For a browser-submitted Mosaic with both Archive and Queue selected, the
 two sources now run concurrently within each scientific purpose. The limit
@@ -181,6 +210,29 @@ Outputs never overwrite an existing record. Input file SHA-256 hashes identify
 setup, targets and supplied source manifests/snapshot; replay manifest hashes do
 not recursively hash their referenced files. Preserve the referenced evidence
 files alongside the manifest for reproducibility.
+
+Match the browser's mirror selection with `--archive-connection AUTO`, or
+choose the same explicit mirror used in the browser. `summary.slowest_target`
+reports the largest sum of elapsed purpose-branch times for any target.
+`summary.stages` aggregates call counts and inclusive elapsed time by stage.
+`aq_repeated_member_queries` counts the occurrences beyond the first for each
+Member across successful AQ query records. Failed attempts may still appear in
+stage timings. No Member UIDs are added to the diagnostic output.
+
+Multi-source runs up to two AQ Member queries per target at a time, using
+separate HTTP sessions. With four target workers, a batch has at most eight
+active AQ Member queries. Each mirror attempt still requires a complete set
+of validated results, published in Member input order. Use `aq_acquisition`
+for a target's elapsed time because its `aq_member` timings can overlap.
+For an AQ concurrency comparison, keep `--workers`, inputs and mirror selection
+fixed and run once with `--aq-member-workers 1` and once with
+`--aq-member-workers 2`. Compare source and AQ statuses, `retained_contexts`
+and `branch_outcomes` per target and purpose alongside timing.
+`candidate_outcome_sha256` additionally compares the multiset of retained
+candidate display identities, source/component, and branch status, truth and
+reasons. It ignores candidate order and per-run identifiers. A matching digest
+covers these published decisions and does not compare raw TAP values or
+intermediate criterion calculations.
 
 `branches` remains in source/purpose order, irrespective of completion order.
 Each record includes source acquisition statuses, assessment status, nested stage

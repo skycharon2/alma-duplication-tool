@@ -1,4 +1,5 @@
 """Retry whole Archive operations across official mirrors, never combine rows."""
+from contextlib import ExitStack
 from dataclasses import replace
 from datetime import datetime, timezone
 import time
@@ -23,18 +24,22 @@ def _now():
 
 
 class MirroredArchiveClient:
-    """One fresh TAP client per attempt; successful empty results end the search."""
+    """Retry each search across mirrors; optionally reuse transport within a caller's scope."""
 
     def __init__(self, *, origins=ARCHIVE_ORIGINS, budget_seconds=DEFAULT_BUDGET_SECONDS,
-                 completeness_policy="COUNT_FIRST", client_factory=None, clock=time.monotonic):
+                 completeness_policy="COUNT_FIRST", client_factory=None, clock=time.monotonic,
+                 reuse_projection=False, transport_scope: ExitStack | None = None):
         self.origins = validate_origins(origins)
         self.budget_seconds = budget_seconds
         self.completeness_policy = completeness_policy
         self.client_factory = client_factory
         self.clock = clock
+        self._projection_cache = {} if reuse_projection else None
+        self._transport_scope = transport_scope
+        self._executors = {}
 
     def search(self, spec):
-        from alma_duplicate.clients.archive_client import ArchiveClient
+        from alma_duplicate.clients.archive_client import ArchiveClient, PyvoTapExecutor
         factory = self.client_factory or ArchiveClient
         attempts, last = [], None
         with request_budget(self.budget_seconds, self.clock):
@@ -42,7 +47,16 @@ class MirroredArchiveClient:
                 started = _now()
                 try:
                     request_timeout()
-                    result = factory(origin + "/tap", completeness_policy=self.completeness_policy).search(spec)
+                    options = dict(completeness_policy=self.completeness_policy)
+                    if self._projection_cache is not None and self.client_factory is None:
+                        options["projection_cache"] = self._projection_cache
+                    if self._transport_scope is not None and self.client_factory is None:
+                        if origin not in self._executors:
+                            executor = PyvoTapExecutor(origin + "/tap")
+                            self._transport_scope.callback(executor.close)
+                            self._executors[origin] = executor
+                        options["executor"] = self._executors[origin]
+                    result = factory(origin + "/tap", **options).search(spec)
                 except ArchiveBudgetExpired:
                     attempts.append(_attempt(origin, started, status="NOT_COMPLETED", error="TIME_BUDGET_EXHAUSTED"))
                     break
@@ -65,11 +79,12 @@ class MirroredArchiveAqClient:
     """Restart the entire Member batch at each mirror, discarding partial batches."""
 
     def __init__(self, *, origins=ARCHIVE_ORIGINS, budget_seconds=DEFAULT_BUDGET_SECONDS,
-                 client_factory=None, clock=time.monotonic):
+                 client_factory=None, clock=time.monotonic, member_workers=1):
         self.origins = validate_origins(origins)
         self.budget_seconds = budget_seconds
         self.client_factory = client_factory
         self.clock = clock
+        self.member_workers = member_workers
 
     def fetch_members(self, members):
         from alma_duplicate.clients.archive_aq_client import ArchiveAqClient
@@ -84,7 +99,8 @@ class MirroredArchiveAqClient:
                 started = _now()
                 try:
                     request_timeout()
-                    result = factory(origin=origin).fetch_members(members)
+                    options = {'member_workers': self.member_workers} if self.member_workers != 1 else {}
+                    result = factory(origin=origin, **options).fetch_members(members)
                 except ArchiveBudgetExpired:
                     attempts.append(_attempt(origin, started, status="FAILED", error="TIME_BUDGET_EXHAUSTED"))
                     raise ArchiveAqError("TIME_BUDGET_EXHAUSTED", attempts=tuple(attempts)) from None

@@ -24,6 +24,7 @@ from pyvo.dal.exceptions import (
 from alma_duplicate.clients.archive_contract import (
     ArchiveAngularResolutionPrefilterStatus,
     ArchiveFrequencyPrefilterStatus,
+    ArchiveProjectionEvidence,
     ArchiveQueryColumnUnit,
     ArchiveQueryErrorKind,
     ArchiveQueryProvenance,
@@ -170,10 +171,18 @@ class PyvoTapExecutor:
 
         self.endpoint = normalized_endpoint
         self._service = service
+        self._session = None
+
+    def close(self) -> None:
+        if self._session is not None:
+            self._session.close()
+            self._session = None
+            self._service = None
 
     def _get_service(self) -> _PyvoService:
         if self._service is None:
             session = create_session()
+            self._session = session
             session.mount("https://", _TapTimeoutAdapter())
             session.mount("http://", _TapTimeoutAdapter())
             self._service = TAPService(self.endpoint, session=session)
@@ -511,6 +520,7 @@ class ArchiveClient:
         clock: Callable[[], datetime] | None = None,
         run_id_factory: Callable[[], str] | None = None,
         completeness_policy: str = "COUNT_FIRST",
+        projection_cache: dict[tuple[str, tuple[str, ...]], ArchiveProjectionEvidence] | None = None,
     ) -> None:
         normalized_endpoint = endpoint.strip().rstrip("/")
         if not normalized_endpoint:
@@ -521,6 +531,7 @@ class ArchiveClient:
         if completeness_policy not in {"COUNT_FIRST", "STATUS_THEN_COUNT"}:
             raise ValueError("Unknown TAP completeness policy")
         self.completeness_policy = completeness_policy
+        self._projection_cache = projection_cache
         self.endpoint = normalized_endpoint
         self.maxrec = maxrec
         self._executor = executor or PyvoTapExecutor(
@@ -725,7 +736,13 @@ class ArchiveClient:
         """Resolve optional evidence, then execute the unchanged core search."""
 
         started_at = self._clock()
-        projection = plan_archive_projection(self._executor, optional_columns)
+        cache = self._projection_cache
+        key = (self.endpoint, tuple(optional_columns))
+        projection = cache.get(key) if cache is not None else None
+        if projection is None:
+            projection = plan_archive_projection(self._executor, optional_columns)
+            if cache is not None and projection.probe_error is None:
+                cache[key] = projection
         result = self._search(spec, projection.selected_columns, started_at)
         has_response = result.provenance.retrieved_count is not None
         returned = {field.name for field in result.field_metadata}

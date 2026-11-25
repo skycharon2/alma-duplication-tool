@@ -12,6 +12,10 @@ def test_profile_records_every_branch_and_sources(workers):
     assert result['execution'] == 'COMPLETED'
     assert len(result['branches']) == 2
     assert result['process_lifetime_peak_rss_bytes'] > 0
+    summary = result['summary']
+    assert summary['slowest_target']['wall_seconds'] == max(b['wall_seconds'] for b in result['branches'])
+    assert summary['stages']['scientific_evaluation']['calls'] == 2
+    assert summary['aq_member_queries'] == 0
     for branch in result['branches']:
         assert branch['availability'] == 'AVAILABLE'
         assert branch['files']['report.json'] > 0
@@ -20,6 +24,51 @@ def test_profile_records_every_branch_and_sources(workers):
         # Concurrent Archive and Queue stages share elapsed time.
         assert all(0 <= s['self_wall_seconds'] <= s['wall_seconds'] <= branch['wall_seconds']
                    for s in branch['stages'])
+
+
+def test_profile_compares_aq_worker_counts_without_serializing_member_identifiers(monkeypatch):
+    from alma_duplicate.ui.runs import BrowserAssessment
+
+    assess = BrowserAssessment.assess
+    worker_counts = []
+
+    def with_aq(self, document):
+        worker_counts.append(self.aq_member_workers)
+        result = assess(self, document)
+        result.document['sources']['ARCHIVE']['array_evidence'] = {'acquisition': {
+            'status': 'COMPLETED', 'queries': [{'member_ous_uid': 'uid://A/B/C'}],
+        }}
+        return result
+
+    monkeypatch.setattr(BrowserAssessment, 'assess', with_aq)
+    baseline = profile_batch(values(intents=['LINE']), [ROW], RAW, runner(), workers=2,
+                             aq_member_workers=1)
+    result = profile_batch(values(intents=['LINE']), [ROW], RAW, runner(), workers=2,
+                           aq_member_workers=2)
+    assert worker_counts == [1, 1, 2, 2]
+    assert result['summary']['aq_member_queries'] == 2
+    assert result['summary']['aq_unique_members'] == 1
+    assert result['summary']['aq_repeated_member_queries'] == 1
+    assert all(b['aq_status'] == 'COMPLETED' and 'aq_members' not in b for b in result['branches'])
+    fields = ('source_id', 'purpose', 'retained_contexts', 'branch_outcomes', 'candidate_outcome_sha256')
+    assert [tuple(b[key] for key in fields) for b in baseline['branches']] == [
+        tuple(b[key] for key in fields) for b in result['branches']]
+    assert all(b['retained_contexts'] > 0 and b['branch_outcomes'] for b in result['branches'])
+
+
+def test_candidate_digest_detects_swapped_outcomes_and_ignores_run_ids_and_order():
+    from alma_duplicate.ui.batch_assessment import _candidate_outcome_digest
+
+    def candidate(name, truth, context_id):
+        return dict(context_id=context_id, reference={'source': 'ARCHIVE'},
+                    display_identity={'Observation ID': name}, branches=[
+                        dict(branch='LINE', status=truth, truth=truth, reasons=[], context_id=context_id)])
+
+    first = [candidate('a', 'TRUE', 'run1-a'), candidate('b', 'FALSE', 'run1-b')]
+    reordered = [candidate('b', 'FALSE', 'run2-b'), candidate('a', 'TRUE', 'run2-a')]
+    swapped = [candidate('a', 'FALSE', 'run2-a'), candidate('b', 'TRUE', 'run2-b')]
+    assert _candidate_outcome_digest(first) == _candidate_outcome_digest(reordered)
+    assert _candidate_outcome_digest(first) != _candidate_outcome_digest(swapped)
 
 
 def test_storage_failure_is_recorded_without_losing_source_status():

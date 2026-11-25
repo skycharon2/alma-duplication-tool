@@ -32,6 +32,7 @@ class BrowserAssessment:
     report_detail: str = 'matches'
     managed_queue_root: str | None = None
     archive_connection: str = "AUTO"
+    aq_member_workers: int = 1
     _pinned_queue: tuple[Callable | None, PinnedQueue | None] | None = field(
         default=None, repr=False, compare=False)
 
@@ -129,14 +130,18 @@ class BrowserAssessment:
 
     def assess_mosaic(self, document, proposed):
         """Run metadata-only Mosaic science; temporary acquisition files are scoped to this call."""
+        from contextlib import ExitStack
         from pathlib import Path
         from tempfile import TemporaryDirectory
         from alma_duplicate.mosaic_backend import MosaicAssessmentInput
         from alma_duplicate.clients.archive_mirrors import MirroredArchiveClient
         if not self.live_archive:
             raise ValueError("Browser Mosaic assessment requires live Archive configuration.")
-        with TemporaryDirectory(prefix="alma-mosaic-") as directory:
+        with TemporaryDirectory(prefix="alma-mosaic-") as directory, ExitStack() as transport_scope:
             from alma_duplicate.separated_setup_input import SEPARATED_INPUT_CONTRACT
+            archive = MirroredArchiveClient(origins=ARCHIVE_CONNECTIONS[self.archive_connection],
+                completeness_policy='STATUS_THEN_COUNT', reuse_projection=True,
+                transport_scope=transport_scope)
             if document['request'].get('line_input_contract') in {SEPARATED_INPUT_CONTRACT, 'SEPARATE_OBSERVATION_REQUIREMENTS_V2'}:
                 from types import SimpleNamespace
                 from alma_duplicate.submitted_line_assessment import assess_submitted_line_mosaic_search_v2
@@ -144,14 +149,10 @@ class BrowserAssessment:
                     document['request'], MosaicAssessmentInput(
                         proposed, Path(directory) / 'assessment', None, 1.0,
                         discovery_origins=ARCHIVE_CONNECTIONS[self.archive_connection]),
-                    archive_client=MirroredArchiveClient(
-                        origins=ARCHIVE_CONNECTIONS[self.archive_connection],
-                        completeness_policy='STATUS_THEN_COUNT'))
+                    archive_client=archive)
                 return SimpleNamespace(document=report, status=report['assessment_status'])
             return assess_observation(document["request"], document["search_options"],
-                sources=AssessmentSources(archive_kind="LIVE", archive_provider=lambda: ArchiveInput(
-                    MirroredArchiveClient(origins=ARCHIVE_CONNECTIONS[self.archive_connection],
-                                          completeness_policy="STATUS_THEN_COUNT"))),
+                sources=AssessmentSources(archive_kind="LIVE", archive_provider=lambda: ArchiveInput(archive)),
                 mosaic=MosaicAssessmentInput(proposed=proposed,
                     output_directory=Path(directory) / "assessment", cache_directory=None,
                     margin_arcsec=1.0,
@@ -203,8 +204,7 @@ class BrowserAssessment:
             source = archive_provider() if archive_kind else None
             fetcher = None
             if self.live_aq and archive_kind == 'LIVE':
-                from alma_duplicate.clients.archive_mirrors import MirroredArchiveAqClient
-                fetcher = MirroredArchiveAqClient(origins=ARCHIVE_CONNECTIONS[self.archive_connection]).fetch_members
+                fetcher = self._fetch_archive_arrays
             report = assess_submitted_line_single_v2(document['request'], document['search_options'],
                 archive_client=source.client if source else None, archive_arrays=source.array_catalog if source else None,
                 archive_replay_metadata=source.replay_metadata if source else None, archive_array_fetcher=fetcher,
@@ -213,11 +213,6 @@ class BrowserAssessment:
                 report["sources"]["QUEUE"]["managed_snapshot"] = dict(selection.provenance)
             self._append_queue_geometry(document, report, loader, queue)
             return SimpleNamespace(document=report, status=report['assessment_status'])
-
-        def fetch_archive_arrays(members):
-            # The shared entry calls this only after TAP retained linked Members.
-            from alma_duplicate.clients.archive_mirrors import MirroredArchiveAqClient
-            return MirroredArchiveAqClient(origins=ARCHIVE_CONNECTIONS[self.archive_connection]).fetch_members(members)
 
         assessment = assess_observation(
             document["request"],
@@ -233,7 +228,7 @@ class BrowserAssessment:
                 archive_provider=archive_provider if archive_kind else None,
                 queue_loader=loader,
                 archive_array_fetcher=(
-                    fetch_archive_arrays
+                    self._fetch_archive_arrays
                     if self.live_aq and archive_kind == "LIVE" else None
                 ),
             ),
@@ -248,6 +243,13 @@ class BrowserAssessment:
         if assessment.document is not None:
             self._append_queue_geometry(document, assessment.document, loader, queue)
         return assessment
+
+    def _fetch_archive_arrays(self, members):
+        from alma_duplicate.clients.archive_mirrors import MirroredArchiveAqClient
+
+        options = {'member_workers': self.aq_member_workers} if self.aq_member_workers != 1 else {}
+        client = MirroredArchiveAqClient(origins=ARCHIVE_CONNECTIONS[self.archive_connection], **options)
+        return client.fetch_members(members)
 
     def _append_queue_geometry(self, document, report, loader, selected):
         if not selected or document['request'].get('target_kind') != 'FIXED':

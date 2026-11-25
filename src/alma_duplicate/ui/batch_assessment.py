@@ -1,9 +1,12 @@
 """Bounded multi-source execution using existing browser scientific assessment."""
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from contextvars import copy_context
 from copy import deepcopy
 from dataclasses import asdict, replace
+from hashlib import sha256
+import json
 import logging
 from threading import Event, RLock
 from time import perf_counter
@@ -18,6 +21,19 @@ from alma_duplicate.ui.run_store import RetentionCapacityError
 logger = logging.getLogger(__name__)
 
 
+def _candidate_outcome_digest(contexts):
+    """Hash the multiset of visible candidate identities and decisions."""
+    candidates = []
+    for context in contexts:
+        reference = context.get('reference', {})
+        decisions = sorted((b['branch'], b['status'], b['truth'], sorted(b['reasons']))
+                           for b in context['branches'])
+        identity = (reference.get('source'), reference.get('component_index'),
+                    context.get('display_identity', {}))
+        candidates.append(json.dumps((identity, decisions), sort_keys=True, separators=(',', ':')))
+    return sha256('\n'.join(sorted(candidates)).encode('utf-8')).hexdigest()
+
+
 class BatchValidationError(ValueError):
     """All preflight results remain available to the future input controller."""
 
@@ -27,7 +43,7 @@ class BatchValidationError(ValueError):
 
 
 def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission_token,
-                  format='csv', progress=None, max_workers=1, performance=None):
+                  format='csv', progress=None, max_workers=1, performance=None, aq_member_workers=2):
     """Validate all branches, reserve a manifest, then assess with bounded target concurrency.
 
     Return the batch ID, including when its branches failed or a concurrent call
@@ -36,6 +52,8 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
     """
     if type(max_workers) is not int or not 1 <= max_workers <= 4:
         raise ValueError('Batch workers must be an integer between 1 and 4')
+    if type(aq_member_workers) is not int or aq_member_workers not in (1, 2):
+        raise ValueError('AQ member workers must be 1 or 2')
     if submission_token is None:
         raise ValueError('A submission token is required')
     values, rows = deepcopy(values), list(rows)
@@ -84,6 +102,7 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
     notify('batch_started', 0)
     try:
         pinned = configured.pin_queue_for_submission('QUEUE' in values.get('sources', []))
+        pinned = replace(pinned, aq_member_workers=aq_member_workers)
     except Exception:
         logger.exception('Batch source setup failed for %s', batch_id)
         for child in preflight['sources']:
@@ -140,11 +159,19 @@ def execute_batch(values, rows, source_bytes, *, runner, runs, owner, submission
             if performance is not None:
                 # Diagnostics cannot change report publication or branch outcomes.
                 try:
+                    report = (result.document or {}) if result is not None else {}
+                    sources = report.get('sources', {})
+                    aq = (sources.get('ARCHIVE', {}).get('array_evidence') or {}).get('acquisition') or {}
+                    contexts = report.get('context_evaluations', [])
+                    outcomes = Counter(f"{branch['branch']}:{branch['status']}"
+                                       for context in contexts for branch in context['branches'])
                     performance(dict(source_id=source_id, purpose=purpose, run_id=run_id,
                         wall_seconds=perf_counter() - started, error_type=failure,
                         assessment_status=str(result.status) if result is not None else None,
-                        sources={k: v['status'] for k, v in result.document['sources'].items()}
-                            if result is not None and result.document is not None else {},
+                        sources={k: v['status'] for k, v in sources.items()}, aq_status=aq.get('status'),
+                        aq_members=tuple(query['member_ous_uid'] for query in aq.get('queries', [])),
+                        retained_contexts=len(contexts), branch_outcomes=dict(outcomes),
+                        candidate_outcome_sha256=_candidate_outcome_digest(contexts) if report else None,
                         stages=[asdict(s) for s in timing.stages]))
                 except Exception:
                     logger.warning('Batch performance observer failed', exc_info=True)

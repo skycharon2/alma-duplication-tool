@@ -3,6 +3,9 @@
 Construction performs no I/O. Only fetch_members accesses HTTP; source selection,
 array interpretation and scientific evaluation remain with the existing binder.
 """
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import ExitStack, nullcontext
+from contextvars import copy_context
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
@@ -84,7 +87,10 @@ class ArchiveAqClient:
     The request callable follows requests.request(method, url, **kwargs).
     """
 
-    def __init__(self, *, request=None, max_hits=100, max_member_hits=10000, origin=ARCHIVE_ORIGINS[0]):
+    def __init__(self, *, request=None, max_hits=100, max_member_hits=10000, origin=ARCHIVE_ORIGINS[0], member_workers=1):
+        if type(member_workers) is not int or member_workers not in (1, 2):
+            raise ValueError("AQ member workers must be 1 or 2")
+        self._member_workers = member_workers
         if type(max_hits) is not int or max_hits < 1:
             raise ValueError("max_hits must be a positive integer")
         if type(max_member_hits) is not int or max_member_hits < max_hits:
@@ -124,18 +130,26 @@ class ArchiveAqClient:
         if any(not isinstance(m, str) or not _MEMBER.fullmatch(m) for m in members):
             raise ValueError("Invalid Member OUS UID")
         members = tuple(dict.fromkeys(members))
-        if self._request is not None or not members:
-            return self._fetch_members(members, self._request)
+        if not members:
+            return self._fetch_members(members, None)
 
-        with requests.Session() as session:
-            def request(method, url, **options):
-                # Preserve the stateless behavior of the previous per-call transport.
-                session.cookies.clear()
-                return session.request(method, url, **options)
+        with ExitStack() as scope:
+            def open_transport():
+                if self._request is not None:
+                    return self._request
+                session = scope.enter_context(requests.Session())
 
-            return self._fetch_members(members, request)
+                def request(method, url, **options):
+                    session.cookies.clear()
+                    return session.request(method, url, **options)
 
-    def _fetch_members(self, members, request):
+                return request
+
+            request = open_transport()
+            sibling_request = open_transport() if self._member_workers == 2 and len(members) > 1 else None
+            return self._fetch_members(members, request, sibling_request)
+
+    def _fetch_members(self, members, request, sibling_request=None):
         records, queries = [], []
         emit_progress("aq", 0, len(members), "members")
         if members:
@@ -152,44 +166,60 @@ class ArchiveAqClient:
             headers = {"Accept": "application/json", "Content-Type": "application/json"}
             if key:
                 headers["Authorization"] = "ApiKey " + key
-            for member in members:
-                body = {"size": self._max_hits, "track_total_hits": True,
-                        "_source": ["mous", "sourceName", "array"],
-                        "query": {"term": {"mous": member}}}
-                with measure_stage('aq_member'):
-                    payload, digest, retrieved = self._read(
-                        request, "POST", endpoint, member=member, headers=headers, body=body)
-                    sizes = [self._max_hits]
-                    try:
-                        hits = self._validate(payload, member)
-                    except ArchiveAqError as exc:
-                        details = exc.details
-                        # Only an otherwise clean, exactly capped response warrants
-                        # expansion. Discard it and validate one complete response.
-                        if (exc.code != 'INCOMPLETE'
-                                or set(details.get('reasons', [])) != {'HIT_COUNT_MISMATCH', 'HIT_LIMIT_EXCEEDED'}
-                                or details.get('returned_hits') != self._max_hits
-                                or not self._max_hits < details.get('total_hits', 0) <= self._max_member_hits):
-                            raise
-                        expected = details['total_hits']
-                        sizes.append(expected)
-                        payload, digest, retrieved = self._read(
-                            request, 'POST', endpoint, member=member, headers=headers, body={**body, 'size': expected})
-                        hits = self._validate(payload, member, limit=expected)
-                        if len(hits) != expected:
-                            raise ArchiveAqError('INCOMPLETE', member, details={
-                                'reasons': ['TOTAL_CHANGED'], 'total_hits': len(hits),
-                                'returned_hits': len(hits), 'max_hits': expected})
-                for hit in hits:
-                    source = hit["_source"]
-                    records.append(ArrayRecord(hit["_id"], source["mous"], source["sourceName"],
-                                               source.get("array"), digest, retrieved, endpoint))
-                queries.append(ArchiveAqMemberQuery(member, endpoint, retrieved, digest,
-                                                   len(hits), sizes[-1], tuple(sizes)))
-                emit_progress("aq", len(queries), len(members), "members")
+            executor_scope = ThreadPoolExecutor(max_workers=1) if sibling_request else nullcontext()
+            with executor_scope as executor:
+                step = 2 if executor else 1
+                for index in range(0, len(members), step):
+                    sibling = None
+                    if executor and index + 1 < len(members):
+                        sibling = executor.submit(copy_context().run, self._fetch_member,
+                                                  sibling_request, endpoint, headers, members[index + 1])
+                    results = [self._fetch_member(request, endpoint, headers, members[index])]
+                    if sibling is not None:
+                        results.append(sibling.result())
+                    for member_records, query in results:
+                        records.extend(member_records)
+                        queries.append(query)
+                        emit_progress("aq", len(queries), len(members), "members")
         catalog = ArchiveArrayCatalog(tuple(records),
             ArchiveArrayCatalogProvenance(ArchiveArrayCatalogMode.LIVE))
         return ArchiveAqFetchResult(catalog, tuple(queries), self.properties_url)
+
+    def _fetch_member(self, request, endpoint, headers, member):
+        body = {"size": self._max_hits, "track_total_hits": True,
+                "_source": ["mous", "sourceName", "array"],
+                "query": {"term": {"mous": member}}}
+        with measure_stage('aq_member'):
+            payload, digest, retrieved = self._read(
+                request, "POST", endpoint, member=member, headers=headers, body=body)
+            sizes = [self._max_hits]
+            try:
+                hits = self._validate(payload, member)
+            except ArchiveAqError as exc:
+                details = exc.details
+                # Only an otherwise clean, exactly capped response warrants
+                # expansion. Discard it and validate one complete response.
+                if (exc.code != 'INCOMPLETE'
+                        or set(details.get('reasons', [])) != {'HIT_COUNT_MISMATCH', 'HIT_LIMIT_EXCEEDED'}
+                        or details.get('returned_hits') != self._max_hits
+                        or not self._max_hits < details.get('total_hits', 0) <= self._max_member_hits):
+                    raise
+                expected = details['total_hits']
+                sizes.append(expected)
+                payload, digest, retrieved = self._read(
+                    request, 'POST', endpoint, member=member, headers=headers, body={**body, 'size': expected})
+                hits = self._validate(payload, member, limit=expected)
+                if len(hits) != expected:
+                    raise ArchiveAqError('INCOMPLETE', member, details={
+                        'reasons': ['TOTAL_CHANGED'], 'total_hits': len(hits),
+                        'returned_hits': len(hits), 'max_hits': expected})
+        records = [
+            ArrayRecord(hit["_id"], member, hit["_source"]["sourceName"],
+                        hit["_source"].get("array"), digest, retrieved, endpoint)
+            for hit in hits
+        ]
+        return records, ArchiveAqMemberQuery(member, endpoint, retrieved, digest,
+                                             len(hits), sizes[-1], tuple(sizes))
 
     def _validate(self, payload, member, *, limit=None):
         limit = self._max_hits if limit is None else limit

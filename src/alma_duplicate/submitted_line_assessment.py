@@ -9,6 +9,7 @@ fail-closed for the separated wire format.
 from dataclasses import replace
 
 from alma_duplicate.candidate_search import search_candidates
+from alma_duplicate.performance import measure_stage
 from alma_duplicate.domain.comparison import ArchiveContextEvidence
 from alma_duplicate.domain.proposed_observation import SearchReadiness
 from alma_duplicate.reporting import json_value, report_document
@@ -110,8 +111,9 @@ def assess_submitted_line_single_v2(
             "QUEUE" in validated.search_options.sources and validated.search_options.radius_mode != "AUTO"),
     )
     from alma_duplicate.archive_array_acquisition import acquire_archive_arrays
-    acquisition = (acquire_archive_arrays(search.archive, archive_array_fetcher)
-                   if archive_array_fetcher is not None else None)
+    with measure_stage('aq_acquisition'):
+        acquisition = (acquire_archive_arrays(search.archive, archive_array_fetcher)
+                       if archive_array_fetcher is not None else None)
     catalog = acquisition.catalog if acquisition is not None else archive_arrays
 
     def evaluate_row(row, array_evidence=None, diameter=None):
@@ -143,15 +145,16 @@ def assess_submitted_line_single_v2(
     contexts = []
     from alma_duplicate.rules.evaluation_model import BeamVariant
     from alma_duplicate.rules.queue_beam import aggregate_beam_variants
-    for row in search.archive.retained_rows:
-        evidence = catalog.bind(row.context) if catalog is not None else None
-        if evidence is not None and len(evidence.diameters_m) == 2:
-            variants = tuple(BeamVariant(d, evaluate_row(row, evidence, d)) for d in evidence.diameters_m)
-            contexts.append(ContextEvaluation(candidate=row, criteria=(),
-                branches=aggregate_beam_variants(variants, source="ARCHIVE"),
-                beam_variants=variants, array_evidence=evidence))
-        else:
-            contexts.append(evaluate_row(row, evidence))
+    with measure_stage('archive_evaluation'):
+        for row in search.archive.retained_rows:
+            evidence = catalog.bind(row.context) if catalog is not None else None
+            if evidence is not None and len(evidence.diameters_m) == 2:
+                variants = tuple(BeamVariant(d, evaluate_row(row, evidence, d)) for d in evidence.diameters_m)
+                contexts.append(ContextEvaluation(candidate=row, criteria=(),
+                    branches=aggregate_beam_variants(variants, source="ARCHIVE"),
+                    beam_variants=variants, array_evidence=evidence))
+            else:
+                contexts.append(evaluate_row(row, evidence))
 
     from alma_duplicate.rules.queue_common import evaluate_queue_common
     from alma_duplicate.rules.queue_line import evaluate_queue_line
@@ -177,14 +180,15 @@ def assess_submitted_line_single_v2(
         return ContextEvaluation(candidate=row, criteria=common + extra,
                                  branches=tuple(branches), line_pairing=pairing, line_pairs=pairs)
 
-    for row in search.queue.retained_rows:
-        diameters = resolve_queue_beam_interpretation(row.context.evidence.row).diameters_m
-        if len(diameters) == 2:
-            variants = tuple(BeamVariant(d, evaluate_queue_row(row, d)) for d in diameters)
-            contexts.append(ContextEvaluation(candidate=row, criteria=(),
-                branches=aggregate_beam_variants(variants, source="QUEUE"), beam_variants=variants))
-        else:
-            contexts.append(evaluate_queue_row(row, diameters[0] if diameters else None))
+    with measure_stage('queue_evaluation'):
+        for row in search.queue.retained_rows:
+            diameters = resolve_queue_beam_interpretation(row.context.evidence.row).diameters_m
+            if len(diameters) == 2:
+                variants = tuple(BeamVariant(d, evaluate_queue_row(row, d)) for d in diameters)
+                contexts.append(ContextEvaluation(candidate=row, criteria=(),
+                    branches=aggregate_beam_variants(variants, source="QUEUE"), beam_variants=variants))
+            else:
+                contexts.append(evaluate_queue_row(row, diameters[0] if diameters else None))
     report = EvaluationReport(
         search_result=search, request_criteria=() if setup is None else (setup,),
         context_evaluations=tuple(contexts),
@@ -192,8 +196,9 @@ def assess_submitted_line_single_v2(
             queue_line="QUEUE" in validated.search_options.sources and "LINE" in prepared.line_request.intents,
             queue_continuum="QUEUE" in validated.search_options.sources and "CONTINUUM" in prepared.line_request.intents),
     )
-    document = report_document(report, input_sha256=input_sha256, detail=report_detail,
-                               archive_replay_metadata=archive_replay_metadata)
+    with measure_stage('report_assembly'):
+        document = report_document(report, input_sha256=input_sha256, detail=report_detail,
+                                   archive_replay_metadata=archive_replay_metadata)
     if acquisition is not None:
         document['sources']['ARCHIVE']['array_evidence'] = acquisition.metadata
     elif catalog is not None:
