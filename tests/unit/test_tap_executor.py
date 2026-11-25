@@ -292,6 +292,25 @@ def test_tap_timeout_returns_service_error_instead_of_hanging(monkeypatch):
     assert caught.value.kind is ArchiveQueryErrorKind.SERVICE_ERROR
 
 
+def test_stream_timing_separates_headers_and_body(monkeypatch):
+    from io import BytesIO
+    from types import SimpleNamespace
+    from requests.adapters import HTTPAdapter
+    from alma_duplicate.clients.archive_client import _TapTimeoutAdapter
+    from alma_duplicate.performance import PerformanceRecorder, measure_stage
+
+    raw = BytesIO(b'result')
+    monkeypatch.setattr(HTTPAdapter, 'send', lambda *args, **kwargs: SimpleNamespace(raw=raw))
+    with PerformanceRecorder().record() as recorder, measure_stage('tap_votable'):
+        response = _TapTimeoutAdapter().send(None, stream=True)
+        assert response.raw.read(3) == b'res'
+        assert response.raw.read() == b'ult'
+    assert [s.name for s in recorder.stages] == [
+        'tap_http_headers', 'tap_http_body_read', 'tap_http_body_read', 'tap_votable',
+    ]
+    assert all(s.parent_id == recorder.stages[-1].stage_id for s in recorder.stages[:-1])
+
+
 def test_stream_read_timeout_wrapped_by_pyvo_is_service_error():
     from pyvo.dal.exceptions import DALFormatError
     from urllib3.exceptions import ReadTimeoutError

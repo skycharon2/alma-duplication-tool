@@ -219,6 +219,142 @@ reports the largest sum of elapsed purpose-branch times for any target.
 Member across successful AQ query records. Failed attempts may still appear in
 stage timings. No Member UIDs are added to the diagnostic output.
 
+Each profiled branch also records `archive_tap`, with the requested connection,
+the reported Archive source status, the TAP region and attempted regions in order.
+The browser logs the same fields at INFO level using the
+`alma_duplicate.ui.batch_assessment` logger. Compare `tap_retrieval` timings
+using the same inputs, worker count and Queue snapshot, and check the candidate
+decision digest and source statuses before attributing changes to the mirror.
+
+`archive_tap.retrieval_phases` summarizes HTTP send through response headers,
+streamed response body reads, VOTable processing outside those operations,
+and conversion to typed rows. Header time includes connection setup and server
+wait. Body read time includes decompression. VOTable overhead includes parser
+work and request bookkeeping. These measurements do not isolate server time.
+
+### Continuum TAP predicate comparison
+
+Using the public CENA target from the five-target fixture, a 230 GHz SKY
+continuum request with automatic search area, and the European mirror, a
+single live comparison returned the following results. Each query used the
+same resolved projection, `MAXREC=10000`, and an explicit OK response. Row
+comparison ignored ordering and preserved multiplicity.
+
+| Retrieval | Elapsed | Rows |
+| --- | ---: | ---: |
+| Existing center-or-mosaic predicate | 53.98 s | 502 |
+| Center query plus mosaic footprints outside the center cone | 49.49 s + 0.70 s | 502 + 0 |
+| Existing predicate, rerun | 50.92 s | 502 |
+| Replace center `CONTAINS` with `DISTANCE <= radius` | 12.32 s | 106 |
+
+The split matched all baseline rows on this target, with the center query
+still accounting for most elapsed time. The distance variant omitted 396 rows.
+The production query remains the existing center-or-mosaic predicate.
+
+A follow-up compared the same production predicate with an inclusive
+declination range on the center branch, expanded by `1e-8` degrees and
+clamped at the poles. It retained the original `CONTAINS` and the independent
+mosaic footprint branch. The experiment used the five-target fixture and at
+most four concurrent comparisons against Europe, with the same projection and
+completeness checks in each pair.
+
+| Target | Existing query | With declination range | Rows |
+| --- | ---: | ---: | ---: |
+| B0218+357 | 50.14 s | 50.33 s | 46 |
+| PKS1830-211 | 50.72 s | 50.95 s | 336 |
+| CENA | 51.86 s | 51.10 s | 502 |
+| WHya | 51.76 s | 51.82 s | 129 |
+| M33 | 50.19 s | 51.86 s | 268 |
+
+All five row multisets matched, including duplicate multiplicity. Median
+retrieval was 50.72 s with the existing query and 51.10 s with the range.
+The range was excluded from production because it did not reduce latency.
+
+Live Archive batches with more targets than configured workers can admit one
+additional target. Its TAP search waits for a shared slot, measured as
+`tap_slot_wait`, and can start as soon as another target finishes TAP.
+The TAP limit defaults to the configured target worker count. Set
+`ALMA_UI_BATCH_TAP_WORKERS=5` for the web server or use `--workers 4
+--tap-workers 5` for the profiler to try five simultaneous TAP searches.
+After releasing its TAP slot, each branch waits for local capacity before
+continuing to AQ, scientific evaluation and report publication. Replay and
+Queue-only runs retain their original scheduling.
+
+A ten-target CONTINUUM check at 230 GHz SKY used four local workers and
+five TAP slots on the European mirror, with the Queue test snapshot and
+temporary report storage. The profiler recorded five TAP starts at batch
+start and the remaining five 55.1–59.5 seconds later. All ten Archive and
+Queue searches completed and all ten reports were available. Nine AQ
+acquisitions completed and one was skipped. Total wall time was 169.0
+seconds. The last target (3C273) spent 44.7 seconds in AQ after its 55.7-second
+TAP retrieval. This is one live run, not an estimate for every ten-target list.
+That AQ acquisition issued 1,218 Member searches, with a median of 55 ms
+and a maximum of 349 ms per search. The cumulative work, rather than an
+individual slow request, accounted for the long AQ stage.
+
+With the same input hashes and four TAP slots, the ten-target comparison
+took 207.8 seconds. Its last two TAP searches started at 101.9 and 104.0
+seconds. The five-slot run finished 38.9 seconds sooner (18.7%). Both runs
+had the same source completion statuses and candidate decision digests.
+
+### AQ multi-Member probe
+
+On the European mirror, a `terms` search on `mous` for the public Case 2
+Members `uid://A001/X133d/X9c3` and `uid://A001/X133d/X9c5` completed with
+an exact total and no failed shards or timeout. It returned six rows per
+Member, matching the two independent `term` searches as multisets by
+observation ID, Member, source name and array label. With an already open
+HTTP session, the independent searches took 0.099 seconds total and the
+grouped search took 0.104 seconds. This proves support for the query shape on
+that mirror; it does not establish a speedup or production fallback behavior.
+
+`python scripts/profile_grouped_aq.py MEMBERS.txt` compares the existing
+two-worker Member path with experimental groups of 16 and 32. A live
+European run used 64 public Members from the Archive discovery fixtures.
+All three modes returned the same 246 rows and the same count for each Member.
+Elapsed times including discovery were 2.474 s, 0.483 s and 0.430 s,
+respectively. No group fell back during this run. Offline tests exercise
+fallback to individual requests for truncated responses, unexpected Member
+IDs, and HTTP errors. These measurements were made with the profiler prototype.
+
+A ten-target CONTINUUM trial used the same input hashes, European mirror,
+five TAP slots and four local workers as the per-Member baseline. With
+groups of 32, 65 grouped AQ requests covered 1,871 Member queries, with no
+fallback. The 3C273 AQ stage fell from 44.70 s to 4.10 s. Batch time fell
+from 168.96 s to 121.42 s. All ten reports remained available, source
+statuses and retained context counts matched, and all candidate decision
+digests matched. The prototype was injected only into this CLI trial.
+
+Multi-source now uses groups of up to 32 Members by default. For a controlled
+comparison, run the batch profiler with `--aq-group-size 1` and again with
+`--aq-group-size 32`. `aq_group` records the grouped requests and
+`aq_group_fallback` records groups retried through individual requests. Single
+Pointing continues to use its individual Member retrieval path.
+
+The integrated path repeated the ten-target live CLI run in 120.54 s,
+with a 3.71 s AQ stage for 3C273, 64 grouped requests and no group fallback.
+Source statuses, retained counts and candidate decision digests matched the
+168.96 s individual-request baseline. Separate browser route tests exercised
+ten targets and both purposes against an isolated PostgreSQL database using
+replay data.
+
+### Two-target TAP experiment
+
+`scripts/profile_two_target_tap.py` accepts a batch setup JSON and a two-target
+CSV. It compares parallel independent queries against a single European TAP
+query joining an uploaded table of target positions. The prototype requires
+automatic search areas with a shared radius and uses a literal radius because
+the European service rejected a radius supplied as an uploaded column.
+It retains both the center and Mosaic footprint conditions. Each joined row
+is tagged with the matching target, and comparison preserves duplicate rows.
+The script requires explicit successful responses below the row cap and
+returns a failure status if the joined query fails or its per-target results differ.
+
+For PKS1830-211 and CENA at 230 GHz SKY, independent requests completed in
+51.96 seconds wall time and returned 336 and 502 rows respectively. The
+joined request timed out after 60.22 seconds, so live row parity could not
+be established. It is not used by batch execution.
+
 Multi-source runs up to two AQ Member queries per target at a time, using
 separate HTTP sessions. With four target workers, a batch has at most eight
 active AQ Member queries. Each mirror attempt still requires a complete set

@@ -90,10 +90,12 @@ def test_file_failures(raw):
 
 
 def test_limit_counts_invalid_rows_and_never_truncates():
-    raw = b'name,ra,dec\n' + b'bad\n' * 6
+    raw = b'name,ra,dec\n' + b'bad\n' * 11
     with pytest.raises(ValueError, match='limit'):
         parse_source_list(raw)
-    assert parse_source_list(raw, max_sources=6)['row_count'] == 6
+    at_limit = b'name,ra,dec\n' + b'bad\n' * 10
+    assert parse_source_list(at_limit)['row_count'] == 10
+    assert parse_source_list(raw, max_sources=11)['row_count'] == 11
     with pytest.raises(ValueError):
         parse_source_list(raw, max_sources=True)
     with pytest.raises(ValueError):

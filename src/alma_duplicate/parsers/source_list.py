@@ -13,7 +13,7 @@ from decimal import Decimal, InvalidOperation
 from alma_duplicate.request_validation import validate_preview_position
 
 MAX_BYTES = 100_000
-MAX_SOURCES = 5
+MAX_SOURCES = 10
 _NUMBER = re.compile(r'[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?\Z')
 
 

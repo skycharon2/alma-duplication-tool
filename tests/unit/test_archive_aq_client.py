@@ -104,6 +104,37 @@ def test_parallel_member_failure_discards_pair_and_does_not_start_next_pair():
     assert error.value.member_ous_uid == OTHER
 
 
+@pytest.mark.parametrize('invalid', ['truncated', 'wrong_member', 'http_failure'])
+def test_grouped_probe_falls_back_for_the_whole_invalid_group(invalid):
+    grouped = response([hit(), hit(OTHER)])
+    if invalid == 'truncated':
+        grouped['hits']['total']['value'] = 3
+    elif invalid == 'wrong_member':
+        grouped['hits']['hits'][1] = hit('uid://A001/X123/XABC')
+    http = Http(Reply({'elasticsearchUrl': BASE}), Reply(grouped, 503 if invalid == 'http_failure' else 200),
+                Reply(response([hit()])), Reply(response([hit(OTHER)])))
+    with PerformanceRecorder().record() as recorder:
+        result = ArchiveAqClient(group_size=16, request=http).fetch_members([MEMBER, OTHER])
+    assert [q.member_ous_uid for q in result.queries] == [MEMBER, OTHER]
+    assert [q.total_hits for q in result.queries] == [1, 1]
+    assert [s.name for s in recorder.stages if s.name.startswith('aq_group')] == [
+        'aq_group', 'aq_group_fallback',
+    ]
+    assert len(http.calls) == 4
+
+
+def test_grouped_probe_keeps_zero_hit_members_and_shared_response_provenance():
+    payload = response([hit(), hit(name='second')])
+    http = Http(Reply({'elasticsearchUrl': BASE}), Reply(payload))
+    result = ArchiveAqClient(group_size=32, request=http).fetch_members([OTHER, MEMBER])
+    empty, populated = result.queries
+    assert (empty.member_ous_uid, empty.total_hits) == (OTHER, 0)
+    assert (populated.member_ous_uid, populated.total_hits) == (MEMBER, 2)
+    assert all(record.response_sha256 == empty.response_sha256 == populated.response_sha256
+               for record in result.catalog.records)
+    assert len(http.calls) == 2
+
+
 @pytest.fixture(autouse=True)
 def forbid_network(monkeypatch):
     monkeypatch.setattr(requests.sessions.Session, "request",

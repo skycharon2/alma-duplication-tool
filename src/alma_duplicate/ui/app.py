@@ -82,6 +82,8 @@ def create_app(config=None):
     app.config["ARCHIVE_ARRAY_EVIDENCE"] = os.environ.get("ALMA_UI_ARCHIVE_ARRAY_EVIDENCE")
     app.config["MAX_RETAINED_RUNS"] = 20
     app.config["BATCH_MAX_WORKERS"] = int(os.environ.get('ALMA_UI_BATCH_WORKERS', '4'))
+    tap_workers = os.environ.get('ALMA_UI_BATCH_TAP_WORKERS')
+    app.config['BATCH_TAP_WORKERS'] = int(tap_workers) if tap_workers is not None else None
     app.config["MAX_RETAINED_BYTES"] = int(os.environ.get('ALMA_UI_MAX_RETAINED_BYTES', str(DEFAULT_DISK_BYTES)))
     app.config["MAX_RUN_AGE_SECONDS"] = DEFAULT_MAX_AGE
     app.config["RUN_STORAGE_PARENT"] = None
@@ -98,6 +100,9 @@ def create_app(config=None):
     workers = app.config['BATCH_MAX_WORKERS']
     if type(workers) is not int or not 1 <= workers <= 4:
         raise ValueError('BATCH_MAX_WORKERS must be an integer between 1 and 4')
+    tap_workers = app.config['BATCH_TAP_WORKERS']
+    if tap_workers is not None and (type(tap_workers) is not int or not 1 <= tap_workers <= 5):
+        raise ValueError('BATCH_TAP_WORKERS must be an integer between 1 and 5')
 
     if app.config['AUTH_MODE'] not in {'local', 'oidc'}:
         raise ValueError('AUTH_MODE must be local or oidc')

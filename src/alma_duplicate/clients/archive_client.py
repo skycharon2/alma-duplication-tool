@@ -67,7 +67,17 @@ class _TapTimeoutAdapter(HTTPAdapter):
     def send(self, request, **kwargs):
         if kwargs.get("timeout") is None:
             kwargs["timeout"] = request_timeout(TAP_HTTP_TIMEOUT)
-        return super().send(request, **kwargs)
+        with measure_stage('tap_http_headers') as timing:
+            response = super().send(request, **kwargs)
+        if timing is not None and kwargs.get('stream'):
+            read = response.raw.read
+
+            def timed_read(*args, **options):
+                with measure_stage('tap_http_body_read'):
+                    return read(*args, **options)
+
+            response.raw.read = timed_read
+        return response
 
 
 @dataclass(frozen=True, slots=True)
@@ -193,6 +203,7 @@ class PyvoTapExecutor:
         adql: str,
         *,
         maxrec: int,
+        uploads: Mapping[str, object] | None = None,
     ) -> TapResponse:
         if not adql.strip():
             raise ValueError("adql must not be blank")
@@ -201,10 +212,9 @@ class PyvoTapExecutor:
 
         try:
             request_timeout(TAP_HTTP_TIMEOUT)
-            result = self._get_service().run_sync(
-                adql,
-                maxrec=maxrec,
-            )
+            with measure_stage('tap_votable'):
+                options = {'uploads': uploads} if uploads is not None else {}
+                result = self._get_service().run_sync(adql, maxrec=maxrec, **options)
         except ArchiveBudgetExpired as exc:
             raise TapExecutionError(ArchiveQueryErrorKind.SERVICE_ERROR, str(exc)) from exc
         except DALQueryError as exc:
@@ -234,30 +244,31 @@ class PyvoTapExecutor:
             ) from exc
 
         try:
-            table = result.to_table()
-            columns = tuple(
-                str(column)
-                for column in table.colnames
-            )
-            rows = tuple(
-                {
-                    column: table_row[column]
-                    for column in columns
-                }
-                for table_row in table
-            )
-            response = TapResponse(
-                rows=rows,
-                declared_columns=columns,
-                field_metadata=_extract_field_metadata(result),
-                query_status_raw=getattr(
-                    result,
-                    "query_status",
-                    None,
-                ),
-                warnings=_extract_info_warnings(result),
-                explicit_success=_explicit_votable_success(result),
-            )
+            with measure_stage('tap_materialize'):
+                table = result.to_table()
+                columns = tuple(
+                    str(column)
+                    for column in table.colnames
+                )
+                rows = tuple(
+                    {
+                        column: table_row[column]
+                        for column in columns
+                    }
+                    for table_row in table
+                )
+                response = TapResponse(
+                    rows=rows,
+                    declared_columns=columns,
+                    field_metadata=_extract_field_metadata(result),
+                    query_status_raw=getattr(
+                        result,
+                        "query_status",
+                        None,
+                    ),
+                    warnings=_extract_info_warnings(result),
+                    explicit_success=_explicit_votable_success(result),
+                )
         except (AttributeError, KeyError, TypeError, ValueError) as exc:
             raise TapExecutionError(
                 ArchiveQueryErrorKind.RESPONSE_FORMAT_ERROR,

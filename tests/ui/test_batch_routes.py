@@ -64,6 +64,13 @@ def test_preview_and_validation_are_offline_and_keep_science(client, monkeypatch
 
 @pytest.mark.parametrize('v2', [False, True])
 def test_real_run_overview_exports_history_and_existing_report_links(client, v2, monkeypatch):
+    assess = BrowserAssessment.assess
+
+    def verify_group_size(runner, document):
+        assert runner.aq_group_size == 32
+        return assess(runner, document)
+
+    monkeypatch.setattr(BrowserAssessment, 'assess', verify_group_size)
     page, data = upload(client, fields(client) | values(v2))
     response = client.post('/proposed/batch', data=data | dict(action='assess'))
     assert response.status_code == 303, response.text

@@ -28,7 +28,8 @@ class MirroredArchiveClient:
 
     def __init__(self, *, origins=ARCHIVE_ORIGINS, budget_seconds=DEFAULT_BUDGET_SECONDS,
                  completeness_policy="COUNT_FIRST", client_factory=None, clock=time.monotonic,
-                 reuse_projection=False, transport_scope: ExitStack | None = None):
+                 reuse_projection=False, transport_scope: ExitStack | None = None,
+                 search_slot=None):
         self.origins = validate_origins(origins)
         self.budget_seconds = budget_seconds
         self.completeness_policy = completeness_policy
@@ -37,8 +38,15 @@ class MirroredArchiveClient:
         self._projection_cache = {} if reuse_projection else None
         self._transport_scope = transport_scope
         self._executors = {}
+        self._search_slot = search_slot
 
     def search(self, spec):
+        if self._search_slot is None:
+            return self._search(spec)
+        with self._search_slot():
+            return self._search(spec)
+
+    def _search(self, spec):
         from alma_duplicate.clients.archive_client import ArchiveClient, PyvoTapExecutor
         factory = self.client_factory or ArchiveClient
         attempts, last = [], None
@@ -79,12 +87,13 @@ class MirroredArchiveAqClient:
     """Restart the entire Member batch at each mirror, discarding partial batches."""
 
     def __init__(self, *, origins=ARCHIVE_ORIGINS, budget_seconds=DEFAULT_BUDGET_SECONDS,
-                 client_factory=None, clock=time.monotonic, member_workers=1):
+                 client_factory=None, clock=time.monotonic, member_workers=1, group_size=1):
         self.origins = validate_origins(origins)
         self.budget_seconds = budget_seconds
         self.client_factory = client_factory
         self.clock = clock
         self.member_workers = member_workers
+        self.group_size = group_size
 
     def fetch_members(self, members):
         from alma_duplicate.clients.archive_aq_client import ArchiveAqClient
@@ -100,6 +109,8 @@ class MirroredArchiveAqClient:
                 try:
                     request_timeout()
                     options = {'member_workers': self.member_workers} if self.member_workers != 1 else {}
+                    if self.group_size != 1:
+                        options['group_size'] = self.group_size
                     result = factory(origin=origin, **options).fetch_members(members)
                 except ArchiveBudgetExpired:
                     attempts.append(_attempt(origin, started, status="FAILED", error="TIME_BUDGET_EXHAUSTED"))

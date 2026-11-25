@@ -10,6 +10,7 @@ import re
 from uuid import uuid4
 
 from sqlalchemy import select, func
+from alma_duplicate.parsers.source_list import MAX_SOURCES
 from alma_duplicate.persistence import models as m
 
 
@@ -113,7 +114,7 @@ class WorkspaceRepository:
         purposes, sources = list(purposes), list(sources)
         if not purposes or len(set(purposes)) != len(purposes) or set(purposes) - {'LINE', 'CONTINUUM'}:
             raise ValueError('Expected unique scientific purposes')
-        if not sources or len(sources) > (5 if kind == 'MULTI' else 1):
+        if not sources or len(sources) > (MAX_SOURCES if kind == 'MULTI' else 1):
             raise ValueError('Invalid source count')
         prepared = []
         submission_id = uuid4().hex
