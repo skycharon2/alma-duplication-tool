@@ -181,8 +181,25 @@ def create_app(config=None):
         groups = session.get('mosaic_report_groups', [])
         cursor = request.args.getlist('older') if persistent else []
         history_next = None
+        search = ''
+        history_kind = ''
         if persistent:
-            signer = URLSafeSerializer(app.secret_key, salt='report-history-v1:' + session['batch_owner'])
+            queries = request.args.getlist('q')
+            if len(queries) > 1:
+                abort(400)
+            search = queries[0].strip() if queries else ''
+            if len(search) > 80 or not all(char.isprintable() for char in search):
+                abort(400)
+            kinds = request.args.getlist('kind')
+            if len(kinds) > 1 or (kinds and kinds[0] not in {'', 'batch', 'report'}):
+                abort(400)
+            history_kind = kinds[0] if kinds else ''
+            salt = 'report-history-v1:' + session['batch_owner']
+            if history_kind:
+                salt = 'report-history-v2:' + session['batch_owner'] + ':' + json.dumps([search, history_kind])
+            elif search:
+                salt += ':' + search
+            signer = URLSafeSerializer(app.secret_key, salt=salt)
             cursors = None
             if cursor:
                 if len(cursor) != 1 or len(cursor[0]) > 1024:
@@ -192,7 +209,7 @@ def create_app(config=None):
                 except BadData:
                     abort(400)
             recent_runs, recent_batches, next_cursors = runs.history_page(
-                limit=20, cursors=cursors,
+                limit=20, cursors=cursors, search=search, kind=history_kind,
                 hidden_report_ids={key for group in groups for key in list(group)[1:]},
             )
             if cursors and not (recent_runs or recent_batches):
@@ -210,11 +227,13 @@ def create_app(config=None):
             [row['id'] for row in recent_runs],
             [row['batch_id'] for row in recent_batches],
         ) if persistent else set()
-        return render_template("reports.html", reports={} if cursor else reports,
+        return render_template("reports.html", reports={} if cursor or search or history_kind else reports,
                                recent_runs=recent_runs, recent_batches=recent_batches,
                                reusable_ids=reusable_ids, browser_persistent=persistent,
                                history_is_older=bool(cursor),
                                history_next=history_next,
+                               history_search=search,
+                               history_kind=history_kind,
                                retention_hours=runs.max_age / 3600)
 
     def artifact(report_id):

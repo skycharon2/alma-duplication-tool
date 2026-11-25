@@ -2,7 +2,10 @@
 {% block content %}
 <div class="page-heading report-library-heading">
   <div><h1>Trash</h1><p>Restore assessments here while they are available. Scheduled cleanup may permanently delete them once their deadlines pass.</p></div>
-  <a class="button" href="{{ url_for('report_index') }}">Existing reports</a>
+  <div class="report-library-actions">
+    <a class="button" href="{{ url_for('report_index') }}">Existing reports</a>
+    {% if entries %}<a class="report-library-secondary report-purge-link" href="{{ url_for('report_management.empty_trash') }}">Empty trash</a>{% endif %}
+  </div>
 </div>
 {% include '_report_management_status.html' %}
 <section class="glass-surface report-library" aria-label="Trashed assessments">
@@ -15,6 +18,7 @@
     <dl class="report-trash-dates report-library-kind">
       <div><dt>Moved to trash</dt><dd><time datetime="{{ entry.deleted_at.isoformat() }}">{{ entry.deleted_at.strftime('%d %b %Y, %H:%M') }} UTC</time></dd></div>
       <div><dt>Eligible for cleanup from</dt><dd><time datetime="{{ entry.purge_after.isoformat() }}">{{ entry.purge_after.strftime('%d %b %Y, %H:%M') }} UTC</time></dd></div>
+      {% if entry.saved_bytes is not none %}<div><dt>Saved files</dt><dd><data value="{{ entry.saved_bytes }}">{{ entry.saved_bytes|filesizeformat(true) }}</data></dd></div>{% endif %}
     </dl>
   </div>
   <div class="report-library-actions">

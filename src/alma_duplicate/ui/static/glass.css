@@ -425,3 +425,30 @@ input[type="text"], .proposal-page .proposed-form input[type="text"],
 .report-page .comparison-overview { padding: clamp(14px, 2vw, 22px); }
 .report-page .comparison-overview > h2 { margin-bottom: 8px; }
 .comparison-overview .matching-sources { font-variant-numeric: tabular-nums; }
+
+.report-selection-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 8px 16px; padding: 10px 24px; border-bottom: 1px solid var(--border);
+}
+.report-selection-toolbar output { color: var(--muted); font-variant-numeric: tabular-nums; }
+.report-history-search { margin-block: 0 16px; }
+.report-history-search .report-library-actions { align-items: flex-end; gap: 10px 14px; }
+.report-history-search label { display: block; margin-bottom: 6px; font-weight: 600; }
+.report-history-search :is(input, select) { min-height: 44px; padding: 8px 12px; border: 1px solid var(--control-border); border-radius: 10px; background: var(--paper); color: var(--ink); }
+.report-history-search input { inline-size: min(22rem, 78vw); }
+.report-history-search .button { min-height: 44px; }
+.report-history-search .report-library-actions > a { align-self: center; }
+.report-selection-toolbar button:disabled { opacity: .55; cursor: default; }
+.report-selection-box { inline-size: 1.15rem; block-size: 1.15rem; margin: 0; accent-color: #075b7e; }
+.report-storage { padding: clamp(16px, 4vw, 28px); }
+.report-storage-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: 12px 24px; margin: 0 0 16px; }
+.report-storage-metrics > div { border-inline-start: 2px solid #a9c4d6; padding-inline-start: 12px; }
+.report-storage-metrics dd { margin: 4px 0 0; }
+.report-storage-metrics data { font-size: 1.4rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.report-storage-policy { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 16px 0 6px; padding-top: 14px; border-top: 1px solid var(--border); }
+.report-storage-policy dt { color: var(--muted); font-size: .875rem; }
+.report-storage-policy dd { margin: 2px 0 0; font-weight: 600; }
+.report-library-history .report-library-row:has(.report-selection-box:checked) {
+  background: #e4f1f9;
+  box-shadow: inset 3px 0 #075b7e;
+}

@@ -121,6 +121,29 @@ contract, upload integrity checks, and draft lifetime configuration.
 
 ## Report management storage
 
+Use **Rename** in **Existing reports** to change a saved assessment's
+display name. Leave the field empty to use the original name. The display
+name is stored separately from the saved report and its scientific inputs.
+Search **Existing reports** by display name, original batch name, or target
+name for a standalone assessment. Search covers all saved pages for the
+current browser. Use **Assessment type** to show only Multi-source batches
+or standalone assessments, with or without a search term.
+To move several assessments to Trash, select them on the current history
+page and choose **Move selected to trash**. A batch selection includes all
+its target reports.
+Choose **Storage usage** from **Existing reports** to see saved file bytes
+and assessment counts for this browser. The totals include report files and
+original uploads, count each file path once, and assign paths shared by active
+and trashed assessments to Existing reports. Unreferenced files awaiting cleanup are
+excluded, so the totals describe saved assessments rather than disk usage.
+Each assessment also shows the size of its saved files in **Existing reports**
+and **Trash**. Batch sizes include all target reports and the saved source list.
+Files shared by multiple assessments count once per row, so row sizes can
+add up to more than the browser total.
+The overview also shows the configured retention period for new Trash
+entries. Persistent browser storage currently has no per-browser quota.
+Each existing Trash entry retains the deadline set when it was moved.
+
 Migration `0006_browser_assessment_trash` adds a browser-owned trash record
 for each batch or standalone assessment placed in trash. All reports generated
 by a new standalone submission share one group identifier. For older
@@ -159,6 +182,9 @@ space is reclaimed by the cleanup command after reference checks.
 In **Trash**, choose **Delete permanently**, review the assessment and its
 deletion time, then choose **Delete permanently** on the confirmation page.
 **Cancel** returns to Trash with the assessment still available to restore.
+Use **Empty trash** to review and permanently delete all assessments
+currently in your browser's Trash. If the contents change before you
+confirm, reopen the confirmation page to review the updated selection.
 
 ### Scheduled cleanup
 

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Rename saved assessment · ALMA{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>Rename saved assessment</h1></div>
+<section class="glass-surface report-purge-confirm" aria-label="Display name">
+  <p>{{ original }}</p>
+  <form method="post">
+    <input type="hidden" name="csrf" value="{{ report_management_csrf }}">
+    <label for="display_name">Display name</label>
+    <input id="display_name" name="display_name" type="text" maxlength="80"
+           value="{{ name }}" aria-describedby="display-name-help">
+    <p id="display-name-help" class="field-note">Appears in Existing reports. Leave blank to use the original name.</p>
+    <div class="report-library-actions">
+      <a class="button" href="{{ url_for('report_index') }}">Cancel</a>
+      <button class="button" type="submit">Save name</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

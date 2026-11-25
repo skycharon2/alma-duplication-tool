@@ -137,6 +137,12 @@ browser_assessment_trash = Table('browser_assessment_trash', metadata,
     CheckConstraint("assessment_kind IN ('REPORT', 'BATCH')", name='assessment_kind'),
     CheckConstraint('purge_after >= deleted_at', name='purge_after_deletion'))
 
+browser_assessment_labels = Table('browser_assessment_labels', metadata,
+    Column('owner_digest', String(64), primary_key=True),
+    Column('assessment_kind', String(8), primary_key=True),
+    Column('assessment_id', String(65), primary_key=True),
+    Column('display_name', String(80), nullable=False))
+
 browser_artifact_cleanup = Table('browser_artifact_cleanup', metadata, created(),
     Column('storage_key', String(512), primary_key=True),
     Column('kind', String(32), nullable=False),

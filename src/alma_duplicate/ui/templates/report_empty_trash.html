@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Empty trash · ALMA{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>Empty trash?</h1></div>
+<section class="glass-surface report-purge-confirm" aria-labelledby="empty-trash-count">
+  <h2 id="empty-trash-count">{{ count }} {{ 'assessment' if count == 1 else 'assessments' }}</h2>
+  <p>This permanently deletes the assessments and their reports from Trash. File cleanup will reclaim space when it runs.</p>
+  <form method="post" class="report-library-actions">
+    <input type="hidden" name="csrf" value="{{ report_management_csrf }}">
+    <input type="hidden" name="confirmation" value="{{ confirmation }}">
+    <a class="button" href="{{ url_for('report_management.trash_index') }}">Cancel</a>
+    <button class="button report-purge-submit" type="submit">Empty trash</button>
+  </form>
+</section>
+{% endblock %}

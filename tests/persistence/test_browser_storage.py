@@ -149,6 +149,16 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert 'Continuum · ARCHIVE: assessment unavailable.' in owner.get(
             mosaic.location + '/mosaic-visualization').text
         listing = owner.get('/reports').text
+        assert 'href="/reports/storage"' in listing
+        storage_page = owner.get('/reports/storage')
+        assert storage_page.status_code == 200
+        assert 'Browser storage quota</dt><dd>None' in storage_page.text
+        assert f'<dd>{retention_days} days</dd>' in storage_page.text
+        owner_usage = [int(value) for value in re.findall(r'<data value="(\d+)">', storage_page.text)]
+        assert owner_usage[0] == owner_usage[1] > 0 and owner_usage[2] == 0
+        row_sizes = [int(value) for value in re.findall(r'<data value="(\d+)">', listing)]
+        assert len(row_sizes) == 3 and sum(row_sizes) == owner_usage[0]
+        assert re.findall(r'<data value="(\d+)">', visitor.get('/reports/storage').text) == ['0'] * 3
         assert single.location in listing and batch.location in listing
         assert f'href="{batch_report}"' not in listing
         for url in (single.location, mosaic.location, batch.location):
@@ -261,6 +271,79 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         history = owner.get('/reports').text
         assert 'Original survey' in history and 'Survey at 0.45 arcsec' in history
         assert '0.45 arcsec resolution' in history
+        rename_url = f'/reports/manage/batch/{batch.location.rsplit("/", 1)[-1]}/rename'
+        assert f'href="{rename_url}"' in history
+        rename_page = owner.get(rename_url)
+        assert rename_page.status_code == 200
+        assert visitor.get(rename_url).status_code == 404
+        with owner.session_transaction() as browser_session:
+            rename_csrf = browser_session['report_management_csrf']
+        with visitor.session_transaction() as browser_session:
+            foreign_csrf = browser_session['report_management_csrf']
+        assert visitor.post(rename_url, data={
+            'csrf': foreign_csrf, 'display_name': 'Foreign name',
+        }).status_code == 404
+        assert owner.post(rename_url, data={'display_name': 'Missing CSRF'}).status_code == 403
+        assert owner.post(rename_url, data={
+            'csrf': rename_csrf, 'display_name': 'x' * 81,
+        }).status_code == 400
+        assert owner.post(rename_url, data={
+            'csrf': rename_csrf, 'display_name': 'Saved baseline',
+        }).status_code == 303
+        assert 'Saved baseline' in owner.get('/reports').text
+        search_page = owner.get('/reports?q=sAvEd+baseline').text
+        assert f'href="{batch.location}"' in search_page
+        assert f'href="{rerun.location}"' not in search_page
+        assert 'No matching reports' in visitor.get('/reports?q=Saved+baseline').text
+        assert 'No matching reports' in owner.get('/reports?q=%25').text
+        batches_only = owner.get('/reports?kind=batch').text
+        assert f'href="{batch.location}"' in batches_only and '/runs/' not in batches_only
+        standalone_only = owner.get('/reports?kind=report').text
+        assert f'href="{single.location}"' in standalone_only and '/batches/' not in standalone_only
+        assert 'No matching reports' in owner.get('/reports?q=Saved+baseline&kind=report').text
+        assert owner.get('/reports?kind=invalid').status_code == 400
+        assert owner.get(manifest_url).json == manifest
+        assert owner.post(rename_url, data={'csrf': rename_csrf, 'display_name': ''}).status_code == 303
+        history = owner.get('/reports').text
+        assert 'Saved baseline' not in history and 'Original survey' in history
+        single_rename = f'/reports/manage/report/{single.location.rsplit("/", 1)[-1]}/rename'
+        assert owner.post(single_rename, data={
+            'csrf': rename_csrf, 'display_name': 'Single pointing baseline',
+        }).status_code == 303
+        assert 'Single pointing baseline' in owner.get('/reports').text
+        assert owner.get(single.location + '/download/report').data == download
+        batch_entry = f'batch:{batch.location.rsplit("/", 1)[-1]}'
+        report_entry = f'report:{single.location.rsplit("/", 1)[-1]}'
+        bulk_url = '/reports/manage/trash-selected'
+        assert f'action="{bulk_url}"' in owner.get('/reports').text
+        assert owner.post(bulk_url, data={'csrf': rename_csrf}).status_code == 400
+        assert owner.post(bulk_url, data={
+            'csrf': rename_csrf, 'entry': [batch_entry, f'batch:{"f" * 32}'],
+        }).status_code == 404
+        assert owner.get(batch.location).status_code == 200
+        assert visitor.post(bulk_url, data={
+            'csrf': foreign_csrf, 'entry': [batch_entry, report_entry],
+        }).status_code == 404
+        bulk_form = {'csrf': rename_csrf, 'entry': [batch_entry, report_entry, report_entry]}
+        before_bulk_bytes = re.search(r'<data value="(\d+)">', owner.get('/reports/storage').text).group(1)
+        assert owner.post(bulk_url, data=bulk_form).status_code == 303
+        assert owner.post(bulk_url, data=bulk_form).status_code == 303
+        assert owner.get(batch.location).status_code == 404
+        assert owner.get(batch_report).status_code == 404
+        assert owner.get(single.location).status_code == 404
+        after_bulk = [int(value) for value in re.findall(
+            r'<data value="(\d+)">', owner.get('/reports/storage').text)]
+        assert after_bulk[0] == int(before_bulk_bytes) == after_bulk[1] + after_bulk[2]
+        assert after_bulk[1] > 0 and after_bulk[2] > 0
+        bulk_trash_page = owner.get('/reports/trash').text
+        assert bulk_trash_page.count('>Restore</button>') == 2
+        trash_sizes = [int(value) for value in re.findall(r'<data value="(\d+)">', bulk_trash_page)]
+        assert len(trash_sizes) == 2 and sum(trash_sizes) == after_bulk[2]
+        for entry in (batch_entry, report_entry):
+            assert owner.post(f'/reports/manage/{entry.replace(":", "/", 1)}/restore',
+                              data={'csrf': rename_csrf}).status_code == 303
+        assert owner.get(manifest_url).json == manifest
+        assert owner.get(single.location + '/download/report').data == download
         assert rerun_manifest['shared_setup']['document']['request']['angular_resolution']['value'] == '0.45'
         assert [entry['source'] for entry in rerun_manifest['sources']] == [
             entry['source'] for entry in manifest['sources']]
@@ -313,6 +396,14 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
                 for index in range(41)
             ])
         first_page = owner.get('/reports')
+        filtered_first = owner.get('/reports?q=Original+survey&kind=batch')
+        filtered_url = re.search(r'href="([^"]+)">Older reports</a>', filtered_first.text).group(1)
+        filtered_url = filtered_url.replace('&amp;', '&')
+        assert 'q=Original+survey' in filtered_url
+        assert 'kind=batch' in filtered_url
+        assert owner.get(filtered_url).status_code == 200
+        assert owner.get(filtered_url.replace('Original+survey', 'different')).status_code == 400
+        assert owner.get(filtered_url.replace('kind=batch', 'kind=report')).status_code == 400
         assert 'Older reports' in first_page.text and single.location not in first_page.text
         older_url = re.search(r'href="([^"]+)">Older reports</a>', first_page.text).group(1)
         with engine.begin() as connection:
@@ -394,10 +485,12 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
 
         mosaic_id = mosaic.location.rsplit('/', 1)[-1]
         sibling_id = f'{uuid4().hex}.{uuid4().hex}'
+        before_sibling = owner.get('/reports/storage').text
         with engine.begin() as db:
             branch = db.execute(select(browser_reports).where(
                 browser_reports.c.id == mosaic_id)).mappings().one()
             db.execute(browser_reports.insert().values(dict(branch) | {'id': sibling_id}))
+        assert owner.get('/reports/storage').text == before_sibling
         assert owner.get(f'/runs/{sibling_id}/download/report').status_code == 200
         assert owner.post(f'/reports/manage/report/{mosaic_id}/trash',
                           data={'csrf': csrf}).status_code == 303
@@ -527,6 +620,38 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
             assert f'action="{future_restore}"' in owner.get('/reports/trash').text
             assert owner.post(future_restore, data={'csrf': csrf}).status_code == 303
         assert owner.get(mosaic_rerun.location).status_code == 200
+
+        empty_url = '/reports/trash/empty'
+        assert owner.get(empty_url).status_code == 303
+        assert owner.post(future_trash, data={'csrf': csrf}).status_code == 303
+        first_confirmation = owner.get(empty_url)
+        assert '1 assessment<' in first_confirmation.text
+        single_id = single.location.rsplit('/', 1)[-1]
+        assert owner.post(f'/reports/manage/report/{single_id}/trash',
+                          data={'csrf': csrf}).status_code == 303
+        assert owner.post(empty_url, data={
+            'csrf': csrf, 'confirmation': hidden(first_confirmation, 'confirmation'),
+        }).status_code == 409
+        assert owner.get('/reports/trash').text.count('>Restore</button>') == 2
+        visitor_id = visitor_report.location.rsplit('/', 1)[-1]
+        assert visitor.post(f'/reports/manage/report/{visitor_id}/trash',
+                            data={'csrf': visitor_csrf}).status_code == 303
+        confirmation_page = owner.get(empty_url)
+        assert '2 assessments<' in confirmation_page.text
+        bulk_confirmation = hidden(confirmation_page, 'confirmation')
+        assert visitor.post(empty_url, data={
+            'csrf': visitor_csrf, 'confirmation': bulk_confirmation,
+        }).status_code == 400
+        assert owner.post(empty_url, data={'confirmation': bulk_confirmation}).status_code == 403
+        assert owner.post(empty_url, data={
+            'csrf': csrf, 'confirmation': bulk_confirmation,
+        }).status_code == 303
+        assert 'Trash is empty' in owner.get('/reports/trash').text
+        assert visitor.get('/reports/trash').text.count('>Restore</button>') == 1
+        assert owner.post(future_restore, data={'csrf': csrf}).status_code == 404
+        assert owner.post(empty_url, data={
+            'csrf': csrf, 'confirmation': bulk_confirmation,
+        }).status_code == 409
     finally:
         close(app)
         engine.dispose()
