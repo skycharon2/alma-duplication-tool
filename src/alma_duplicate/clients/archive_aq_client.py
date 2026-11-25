@@ -92,16 +92,16 @@ class ArchiveAqClient:
         self._max_member_hits = max_member_hits
         self.origin = validate_origins((origin,))[0]
         self.properties_url = self.origin + "/aq/service/api/v1/properties"
-        self._request = request if request is not None else requests.request
+        self._request = request
         self._max_hits = max_hits
 
-    def _read(self, method, url, *, member=None, headers=None, body=None):
+    def _read(self, request, method, url, *, member=None, headers=None, body=None):
         options = {"timeout": request_timeout(), "allow_redirects": False,
                    "headers": headers or {"Accept": "application/json"}}
         if body is not None:
             options["json"] = body
         try:
-            response = self._request(method, url, **options)
+            response = request(method, url, **options)
         except requests.RequestException:
             raise ArchiveAqError("TRANSPORT_ERROR", member) from None
         # Do not follow redirects or call raise_for_status, whose exception may
@@ -124,11 +124,23 @@ class ArchiveAqClient:
         if any(not isinstance(m, str) or not _MEMBER.fullmatch(m) for m in members):
             raise ValueError("Invalid Member OUS UID")
         members = tuple(dict.fromkeys(members))
+        if self._request is not None or not members:
+            return self._fetch_members(members, self._request)
+
+        with requests.Session() as session:
+            def request(method, url, **options):
+                # Preserve the stateless behavior of the previous per-call transport.
+                session.cookies.clear()
+                return session.request(method, url, **options)
+
+            return self._fetch_members(members, request)
+
+    def _fetch_members(self, members, request):
         records, queries = [], []
         emit_progress("aq", 0, len(members), "members")
         if members:
             with measure_stage('aq_discovery'):
-                properties, _, _ = self._read("GET", self.properties_url)
+                properties, _, _ = self._read(request, "GET", self.properties_url)
             try:
                 endpoint = _endpoint(properties["elasticsearchUrl"], origin=self.origin)
                 key = properties.get("elasticsearchApiKey")
@@ -146,7 +158,7 @@ class ArchiveAqClient:
                         "query": {"term": {"mous": member}}}
                 with measure_stage('aq_member'):
                     payload, digest, retrieved = self._read(
-                        "POST", endpoint, member=member, headers=headers, body=body)
+                        request, "POST", endpoint, member=member, headers=headers, body=body)
                     sizes = [self._max_hits]
                     try:
                         hits = self._validate(payload, member)
@@ -162,7 +174,7 @@ class ArchiveAqClient:
                         expected = details['total_hits']
                         sizes.append(expected)
                         payload, digest, retrieved = self._read(
-                            'POST', endpoint, member=member, headers=headers, body={**body, 'size': expected})
+                            request, 'POST', endpoint, member=member, headers=headers, body={**body, 'size': expected})
                         hits = self._validate(payload, member, limit=expected)
                         if len(hits) != expected:
                             raise ArchiveAqError('INCOMPLETE', member, details={

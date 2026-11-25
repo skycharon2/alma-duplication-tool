@@ -17,7 +17,7 @@ python -m alma_duplicate.cli.profile_assessment REQUEST.json \
   --output reports/performance/queue.json
 
 python -m alma_duplicate.cli.profile_assessment REQUEST.json \
-  --live-archive --live-aq --archive-connection AUTO \
+  --live-archive --live-aq --archive-connection AUTO --require-complete-sources \
   --output reports/performance/archive.json
 
 python -m alma_duplicate.cli.analyze_report_size SAVED_REPORT.json \
@@ -36,6 +36,9 @@ If retention fails, the timing record preserves the failed write stage and the
 already-computed candidate/outcome counts. A failed write is not a scientific
 negative result. Source failures can still produce a report; inspect `sources`
 and `assessment_status` as well as the profiler's `execution` field.
+Use `--require-complete-sources` when collecting a performance baseline. It
+preserves the diagnostic JSON and returns a nonzero exit code if a selected
+source did not complete. Check AQ status separately for runs requiring live AQ.
 `source_diagnostics` preserves source reasons, upstream status/error kind and AQ
 status/skip reason. A stage's `failed` flag indicates an exception crossing the
 timing boundary; a client returning a structured failure can have `failed=false`.

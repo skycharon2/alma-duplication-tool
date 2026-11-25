@@ -101,6 +101,8 @@ def main(argv=None):
     parser.add_argument('--report-detail', choices=('full', 'matches'), default='matches')
     parser.add_argument('--analyze-size', action='store_true',
                         help='Analyze report fields after timing; includes extra diagnostic work')
+    parser.add_argument('--require-complete-sources', action='store_true',
+                        help='Exit unsuccessfully if any selected source did not complete; retain timing JSON')
     parser.add_argument('--output', type=Path, required=True, help='New timing JSON; never overwrite an existing record')
     args = parser.parse_args(argv)
     if args.storage_mib < 1:
@@ -133,7 +135,15 @@ def main(argv=None):
     for stage in result['stages']:
         print(f"  {stage['name']}: {stage['wall_seconds']:.3f} s inclusive; "
               f"{stage['self_wall_seconds']:.3f} s self" + (' (failed)' if stage['failed'] else ''))
-    return 0 if result['execution'] == 'COMPLETED' else 1
+    if result['execution'] != 'COMPLETED':
+        return 1
+    if args.require_complete_sources:
+        incomplete = [name for name in document['search_options']['sources']
+                      if result.get('sources', {}).get(name) != 'COMPLETED']
+        if incomplete:
+            print(f"Incomplete sources: {', '.join(incomplete)}")
+            return 1
+    return 0
 
 
 if __name__ == '__main__':
