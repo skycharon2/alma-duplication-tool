@@ -199,6 +199,7 @@ def register_batch_routes(app, configured, runs, progress):
             batch_id = execute_batch(state.values, state.rows, upload['raw'], runner=configured,
                 runs=runs, owner=state.owner, submission_token=submission, format=upload['format'],
                 max_workers=app.config['BATCH_MAX_WORKERS'],
+                tap_workers=app.config['BATCH_TAP_WORKERS'],
                 progress=(lambda event: progress.update(key, event)) if key else None)
             if snapshot is not None:
                 runs.batches.save_completed(batch_id, state.owner, input_snapshot=snapshot, upload=upload)

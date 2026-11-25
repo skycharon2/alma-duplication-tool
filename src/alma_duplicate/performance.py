@@ -56,7 +56,7 @@ def measure_stage(name):
     token = _stack.set((*stack, (thread_id, stage)))
     failed = True
     try:
-        yield
+        yield stage
         failed = False
     finally:
         stage.wall_seconds = recorder.wall_clock() - wall

@@ -24,6 +24,17 @@ def create(repo, **kwargs):
         input_sha256='a'*64, sources=[source(), source()], purposes=['LINE', 'CONTINUUM']) | kwargs))
 
 
+def test_multi_submission_accepts_ten_targets_and_rejects_eleven(connection):
+    seed(connection)
+    with transaction(connection) as session:
+        repo = WorkspaceRepository(session, 'a')
+        identity = create(repo, sources=[source() for _ in range(10)])
+        assert len(repo.sources_for_submission(identity)) == 10
+        assert len(repo.jobs_for_submission(identity)) == 20
+        with pytest.raises(ValueError):
+            create(repo, sources=[source() for _ in range(11)])
+
+
 def test_order_duplicates_scoping_and_detached_metadata(connection):
     seed(connection)
     with transaction(connection) as session:

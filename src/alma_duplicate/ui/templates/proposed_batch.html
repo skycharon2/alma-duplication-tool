@@ -13,7 +13,7 @@
 <div><label for="batch_name">Batch name <span class="field-note">(optional)</span></label>
 <input id="batch_name" name="batch_name" type="text" maxlength="80" value="{{ values.get('batch_name', '') }}" aria-describedby="batch-name-help">
 <p class="field-note" id="batch-name-help">{% if original_assessment_url %}Give this new run a name to distinguish it from the original.{% else %}Use a name that helps you find this run later.{% endif %}</p></div>
-<p>Upload up to five fixed ICRS targets. Each target is checked independently using its own coordinates and redshift.</p>
+<p>Upload up to 10 fixed ICRS targets. Each target is checked independently using its own coordinates and redshift.</p>
 <div class="form-pair batch-upload"><div><label for="source_list">CSV or TXT source list</label><input type="file" id="source_list" name="source_list" accept=".csv,.txt,text/csv,text/plain" aria-describedby="source-format-help"></div>
 <div><label for="source_format">File format</label><select id="source_format" name="source_format"><option value="csv" {% if values.get('source_format', 'csv') == 'csv' %}selected{% endif %}>CSV (comma separated)</option><option value="txt" {% if values.get('source_format') == 'txt' %}selected{% endif %}>TXT (whitespace separated)</option></select></div></div>
 <p id="source-format-help" class="field-note">Use the columns name, ra, dec and optional redshift. Decimal coordinates are in degrees. Colon-separated RA uses hours. Use UTF-8 files up to 100 KB.</p>

@@ -1,6 +1,6 @@
 """Bounded overlap, shared Queue initialization and isolated progress."""
 from concurrent.futures import ThreadPoolExecutor
-from threading import Barrier, Lock
+from threading import Barrier, Event, Lock
 
 import pytest
 
@@ -73,6 +73,65 @@ def test_five_targets_respect_limit_and_keep_failed_target_separate(store, monke
     assert peak == 2 and manifest['execution_complete']
     assert [s['reports'][0]['state'] for s in manifest['sources']] == [
         'COMPLETED', 'COMPLETED', 'FAILED', 'COMPLETED', 'COMPLETED']
+
+
+def test_live_archive_starts_next_target_before_previous_report_is_saved(store, monkeypatch):
+    original = BrowserAssessment.assess
+    third_started = Event()
+    first_pair = Barrier(2, timeout=5)
+
+    def assess(self, document):
+        name = document['request']['target_name']
+        with self.archive_search_slot():
+            if name == 'third':
+                third_started.set()
+            else:
+                first_pair.wait()
+        assert third_started.wait(5)
+        return original(runner(), document)
+
+    monkeypatch.setattr(BrowserAssessment, 'assess', assess)
+    raw = b'name,ra,dec,redshift\nfirst,201,-43,0\nsecond,201,-43,0\nthird,201,-43,0\n'
+    batch_id = execute_batch(values(intents=['LINE']), [ROW], raw,
+                             runner=BrowserAssessment(live_archive=True), runs=store,
+                             owner='browser-a', submission_token=TOKEN, max_workers=2)
+    manifest = store.batches.get(batch_id, 'browser-a')
+    assert all(s['reports'][0]['state'] == 'COMPLETED' for s in manifest['sources'])
+
+
+@pytest.mark.parametrize('target_count', [5, 10])
+def test_five_tap_slots_keep_local_work_at_four(store, monkeypatch, target_count):
+    original = BrowserAssessment.assess
+    tap_overlap = Barrier(5, timeout=10)
+    local_overlap = Barrier(4, timeout=10)
+    lock = Lock()
+    entered = active = peak = 0
+
+    def assess(self, document):
+        nonlocal entered, active, peak
+        with self.archive_search_slot():
+            tap_overlap.wait()
+        with lock:
+            entered += 1
+            active += 1
+            peak = max(peak, active)
+            first_wave = entered <= 4
+        try:
+            if first_wave:
+                local_overlap.wait()
+            return original(runner(), document)
+        finally:
+            with lock:
+                active -= 1
+
+    monkeypatch.setattr(BrowserAssessment, 'assess', assess)
+    raw = ('name,ra,dec,redshift\n' + ''.join(f'target-{i},201,-43,0\n' for i in range(target_count))).encode()
+    batch_id = execute_batch(values(intents=['LINE']), [ROW], raw,
+                             runner=BrowserAssessment(live_archive=True), runs=store,
+                             owner='browser-a', submission_token=TOKEN, max_workers=4, tap_workers=5)
+    manifest = store.batches.get(batch_id, 'browser-a')
+    assert entered == target_count and peak == 4
+    assert all(s['reports'][0]['state'] == 'COMPLETED' for s in manifest['sources'])
 
 
 @pytest.mark.parametrize('failed', [False, True])

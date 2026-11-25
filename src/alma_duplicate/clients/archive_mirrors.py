@@ -28,7 +28,8 @@ class MirroredArchiveClient:
 
     def __init__(self, *, origins=ARCHIVE_ORIGINS, budget_seconds=DEFAULT_BUDGET_SECONDS,
                  completeness_policy="COUNT_FIRST", client_factory=None, clock=time.monotonic,
-                 reuse_projection=False, transport_scope: ExitStack | None = None):
+                 reuse_projection=False, transport_scope: ExitStack | None = None,
+                 search_slot=None):
         self.origins = validate_origins(origins)
         self.budget_seconds = budget_seconds
         self.completeness_policy = completeness_policy
@@ -37,8 +38,15 @@ class MirroredArchiveClient:
         self._projection_cache = {} if reuse_projection else None
         self._transport_scope = transport_scope
         self._executors = {}
+        self._search_slot = search_slot
 
     def search(self, spec):
+        if self._search_slot is None:
+            return self._search(spec)
+        with self._search_slot():
+            return self._search(spec)
+
+    def _search(self, spec):
         from alma_duplicate.clients.archive_client import ArchiveClient, PyvoTapExecutor
         factory = self.client_factory or ArchiveClient
         attempts, last = [], None

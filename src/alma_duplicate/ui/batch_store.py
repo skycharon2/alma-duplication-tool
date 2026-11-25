@@ -8,6 +8,8 @@ import re
 from threading import RLock
 from uuid import uuid4
 
+from alma_duplicate.parsers.source_list import MAX_SOURCES
+
 TERMINAL = {'COMPLETED', 'FAILED'}
 
 
@@ -70,8 +72,8 @@ class BatchStore:
         if not isinstance(input_sha256, str) or not re.fullmatch('[a-f0-9]{64}', input_sha256):
             raise ValueError('Expected source upload SHA-256')
         sources, purposes = deepcopy(list(sources)), list(purposes)
-        if not 1 <= len(sources) <= 5 or not purposes or len(purposes) != len(set(purposes)) or set(purposes) - {'LINE', 'CONTINUUM'}:
-            raise ValueError('Expected 1–5 sources and unique LINE/CONTINUUM purposes')
+        if not 1 <= len(sources) <= MAX_SOURCES or not purposes or len(purposes) != len(set(purposes)) or set(purposes) - {'LINE', 'CONTINUUM'}:
+            raise ValueError(f'Expected 1–{MAX_SOURCES} sources and unique LINE/CONTINUUM purposes')
         if any(not isinstance(s, dict) for s in sources):
             raise ValueError('Expected parsed source records')
         ids = [s.get('source_id') for s in sources]

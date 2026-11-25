@@ -82,8 +82,8 @@ files, resolves no source names and calls no Archive/Queue service.
 - File/encoding/header/limit failures raise `ValueError`. Row failures remain in
   the ordered preview with ERROR diagnostics and `is_valid=False`. Reject the
   batch preflight until corrected; never silently run just the valid subset.
-- Default limit is five input rows, including malformed rows. The parser accepts
-  an explicit alternative limit; browser v1 will keep five. No truncation.
+- The browser accepts up to ten input rows, including malformed rows. The parser
+  also accepts an explicit alternative limit. Any excess rows reject the upload.
 - Record schema version `source_list_1` and SHA-256 of the exact uploaded bytes.
   `raw_text` is decoded text (BOM removed); the hash identifies original bytes.
 

@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field, replace
 from collections.abc import Callable
+from contextlib import AbstractContextManager
 
 from alma_duplicate.assessment import (
     ArchiveInput, AssessmentOptions, AssessmentSources, assess_observation,
@@ -33,6 +34,8 @@ class BrowserAssessment:
     managed_queue_root: str | None = None
     archive_connection: str = "AUTO"
     aq_member_workers: int = 1
+    archive_search_slot: Callable[[], AbstractContextManager] | None = field(
+        default=None, repr=False, compare=False)
     _pinned_queue: tuple[Callable | None, PinnedQueue | None] | None = field(
         default=None, repr=False, compare=False)
 
@@ -185,7 +188,8 @@ class BrowserAssessment:
 
                 return ArchiveInput(
                     MirroredArchiveClient(origins=ARCHIVE_CONNECTIONS[self.archive_connection],
-                                          completeness_policy="STATUS_THEN_COUNT"),
+                                          completeness_policy="STATUS_THEN_COUNT",
+                                          search_slot=self.archive_search_slot),
                     array_catalog=catalog,
                 )
 
