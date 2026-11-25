@@ -54,6 +54,8 @@ def database(tmp_path, request):
 ])
 def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, database,
                                                                     source_format, source_bytes, monkeypatch):
+    from alma_duplicate.artifacts import local
+    monkeypatch.setattr(local, '_COMPRESSION_MIN_SIZE', 1)
     url, options = database
     retention_days = 7 if source_format == 'csv' else 3
     engine = create_engine(url, **options)
@@ -109,6 +111,7 @@ def test_reports_and_completed_batches_survive_browser_app_restart(tmp_path, dat
         assert len(batch_runs) == 2 * len(manifest['sources']) and all(batch_runs)
         batch_report = '/runs/' + batch_runs[0]
         download = owner.get(single.location + '/download/report').data
+        assert list((tmp_path / 'artifacts').glob('*/report.json.gz'))
         cookie = owner.get_cookie('alma_browser_reports')
         assert cookie and cookie.http_only and cookie.expires
     finally:

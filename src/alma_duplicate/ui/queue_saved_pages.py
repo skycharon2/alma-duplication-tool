@@ -1,6 +1,20 @@
 """Pure pagination shared by temporary and persistent Queue report readers."""
 from copy import deepcopy
+import json
 import math
+import zlib
+
+
+def read_queue_candidate(stream, entry):
+    """Read one indexed candidate from either a legacy or compact bundle."""
+    stream.seek(entry['offset'])
+    payload = stream.read(entry['length'])
+    if entry.get('compressed'):
+        try:
+            payload = zlib.decompress(payload)
+        except zlib.error as exc:
+            raise ValueError('Invalid compressed Queue candidate') from exc
+    return json.loads(payload)
 
 
 def queue_saved_index(index, load_candidate):

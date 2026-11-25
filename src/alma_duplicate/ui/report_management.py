@@ -77,7 +77,7 @@ def assessment_storage_sizes(db, owner, groups, batch_ids):
         paths = files.setdefault(entry, {})
         for item in descriptors:
             key = item['storage_key']
-            paths[key] = max(paths.get(key, 0), item['byte_size'])
+            paths[key] = max(paths.get(key, 0), item.get('stored_byte_size') or item['byte_size'])
     return {entry: sum(paths.values()) for entry, paths in files.items()}
 
 
@@ -87,7 +87,8 @@ def _storage_usage(db, owner):
     for entry, active, descriptors in _storage_rows(db, owner):
         assessments[entry] = active
         for item in descriptors:
-            key, size = item['storage_key'], item['byte_size']
+            key = item['storage_key']
+            size = item.get('stored_byte_size') or item['byte_size']
             # Attribute a shared path to active history if any active item uses it.
             previous_size, previously_active = files.get(key, (0, False))
             files[key] = (max(size, previous_size), active or previously_active)

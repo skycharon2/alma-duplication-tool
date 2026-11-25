@@ -98,6 +98,54 @@ def test_paths_symlinks_and_interrupted_copy(tmp_path):
     assert not list(store.root.glob('.pending-*'))
 
 
+def test_browser_inspection_compression_keeps_download_bytes(tmp_path):
+    source = tmp_path / 'inspection.json'
+    raw = b'[' + b'{"evidence":"stable"},' * 10000 + b'{}]'
+    source.write_bytes(raw)
+    root = tmp_path / 'artifacts'
+    legacy, = LocalArtifactStore(root).put_bundle({'inspection': source})
+    compressed, = LocalArtifactStore(root, compress_inspection=True).put_bundle({'inspection': source})
+    assert compressed.storage_key.endswith('/inspection.json.gz')
+    assert compressed.stored_byte_size == (root / compressed.storage_key).stat().st_size
+    assert compressed.stored_byte_size < len(raw) // 10
+    assert compressed.byte_size == legacy.byte_size and compressed.sha256 == legacy.sha256
+    reader = LocalArtifactStore(root)
+    for artifact in (legacy, compressed):
+        with reader.open_verified(artifact) as stream:
+            assert stream.read() == raw
+        reader.remove(artifact.kind, artifact.storage_key)
+        assert not (root / artifact.storage_key).exists()
+
+
+def test_compressed_report_supports_ranges_and_exact_download(tmp_path):
+    source = tmp_path / 'report.json'
+    raw = b'[' + b'{"evidence":"stable"},' * 110000 + b'{}]'
+    source.write_bytes(raw)
+    store = LocalArtifactStore(tmp_path / 'artifacts', compress_reports=True)
+    artifact, = store.put_bundle({'report': source})
+    assert len(artifact.report_blocks) == 3
+    assert artifact.stored_byte_size < len(raw) // 10
+    boundary = 1024 * 1024
+    with store.open_report_ranges(artifact) as ranges:
+        assert ranges.read_range(boundary - 17, 60) == raw[boundary - 17:boundary + 43]
+        assert ranges.read_range(0, 30) == raw[:30]
+        with pytest.raises(ValueError, match='Invalid logical report range'):
+            ranges.read_range(len(raw), 1)
+    with store.open_verified(artifact) as download:
+        assert download.read() == raw
+
+    # Corrupt only the last block. A request for the first block should still
+    # read just that block, and a request for corrupt data must fail.
+    with (store.root / artifact.storage_key).open('r+b') as file:
+        file.seek(artifact.report_blocks[-2][0])
+        file.write(b'XX')
+    with store.open_report_ranges(artifact) as ranges:
+        assert ranges.read_range(0, 30) == raw[:30]
+        with pytest.raises(OSError):
+            ranges.read_range(boundary * 2, 30)
+    store.remove(artifact.kind, artifact.storage_key)
+
+
 def test_new_process_can_read_saved_report(tmp_path, assessment):
     database = tmp_path / 'metadata.sqlite'
     url = 'sqlite:///' + str(database)
